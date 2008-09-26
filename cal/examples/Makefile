@@ -56,5 +56,10 @@ clean:
 	rm -f time-subscriber.o time-publisher.o
 
 
-.PHONY: all time-subscriber time-publisher clean
+test:
+
+install:
+
+
+.PHONY: all time-subscriber time-publisher test install clean
 

@@ -4,12 +4,9 @@ DIRS =     \
 
 
 
-all clean:
+all test install clean:
 	set -e; for i in $(DIRS); do $(MAKE) -C $$i $@; done
 
 
-test:
-
-
-.PHONY: all clean test
+.PHONY: all install clean test
 

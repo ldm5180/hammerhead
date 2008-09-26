@@ -31,3 +31,10 @@ dnssd-announcer: dnssd-announcer.o cal-pd.a
 clean:
 	rm -f dnssd-announcer dnssd-announcer.o cal-pd.a $(OBJS)
 
+test:
+
+install: cal-pd.a
+	install -m 0644 cal-pd.a $(DESTDIR)/usr/lib/
+
+.PHONY: all test install clean
+

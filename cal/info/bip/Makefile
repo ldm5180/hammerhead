@@ -22,3 +22,9 @@ cal-i.a: cal-i.a($(OBJS) $(COMMON_OBJS))
 clean:
 	rm -f $(OBJS) cal-i.a
 
+test:
+
+install:
+
+.PHONY: all test install clean
+

@@ -14,5 +14,9 @@ all: $(OBJS)
 clean:
 	rm -f $(OBJS)
 
-.PHONY: all clean
+test:
+
+install:
+
+.PHONY: all test install clean
 

@@ -18,11 +18,8 @@ SUBDIRS =       \
     examples    \
 
 
-all:
-	set -e; for i in $(SUBDIRS); do $(MAKE) -C $$i all; done
-
-clean:
+all test install clean:
 	set -e; for i in $(SUBDIRS); do $(MAKE) -C $$i $@; done
 
-.PHONY: all clean
+.PHONY: all test install clean
 

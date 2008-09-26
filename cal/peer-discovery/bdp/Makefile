@@ -31,3 +31,9 @@ cal-pd.a: cal-pd.a($(OBJS) $(COMMON_OBJS))
 clean:
 	rm -f $(OBJS) cal-pd.a
 
+install:
+
+test:
+
+.PHONY: all test install clean
+

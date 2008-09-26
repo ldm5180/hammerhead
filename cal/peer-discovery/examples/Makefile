@@ -51,5 +51,10 @@ clean:
 	rm -f main-of-hab.o main-of-client.o glib-on-cal.o
 
 
-.PHONY: all modules cal-pd-announcer cal-pd-listener clean
+test:
+
+install:
+
+
+.PHONY: all modules cal-pd-announcer cal-pd-listener test install clean
 
