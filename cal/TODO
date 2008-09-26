@@ -1,0 +1,25 @@
+
+There's a problem about how CAL-I communication endpoints are handled
+by CAL-PD.  I think CAL-I and CAL-PD need to be a matched pair to deal
+gracefully with this.
+
+At r11618, the only example that's near working is DNSSD & BIP.
+BIP listens for connections on a certain randomly chosen port on all
+network interfaces.  DNSSD automatically announces on all interfaces.
+So BIP's advertised endpoint is just a port number, and the IP comes
+from DNSSD.  This setup is restrictive, not very general.
+
+Also, the protocol advertised by mDNS/SD is always _bionet._tcp, it should
+probably have something to do with the CAL-I protocol in use, and for
+bionet it should mention bionet, and so it needs to come from above CAL.
+
+
+
+
+CAL-PD should have some internal smarts (below the user-accessed
+CAL-PD API but above the CAL-PD module) that does some sanity checks
+like filtering duplicate Joins from the module.  All to make the module
+simpler.  For example the dnssd cal-pd module reports multiple services
+for each publisher: IPv4 and IPv6 on each interface.
+
+

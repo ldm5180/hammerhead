@@ -1,0 +1,62 @@
+#!/bin/sh
+
+
+if [ -z "$TEST_USER" ]; then
+    export TEST_USER='root'
+    #export TEST_USER=''
+    echo "TEST_USER unset, using default $TEST_USER"
+fi
+
+if [ -z "$TEST_MACHINE" ]; then
+    export TEST_MACHINE=bionet-remote-basestation.local
+    #export TEST_MACHINE=slurp
+    echo "TEST_MACHINE unset, using default $TEST_MACHINE"
+fi
+
+if [ -z "$TEST_USER" ]; then
+    export TEST_DEST="${TEST_MACHINE}"
+else 
+    export TEST_DEST="${TEST_USER}@${TEST_MACHINE}"
+fi
+
+
+export TEST_DIR="/tmp/bionet-test-$(hostname)-$$"
+
+export CAL_PD_MODULES="bdp dnssd"
+
+
+function cleanup_test_environment () {
+    echo "cleaning up test environment for '${TEST_DEST}'"
+    ssh ${TEST_DEST} rm -rf ${TEST_DIR}
+}
+
+trap 'echo caught signal; exit 1' INT TERM
+trap 'echo bye; cleanup_test_environment' EXIT
+
+
+echo "setting up test environment for '${TEST_DEST}'"
+ssh ${TEST_DEST} mkdir ${TEST_DIR}
+
+
+# now run all the tests
+for TEST in $(ls -1d tests/* | sort); do
+    [ ! -d "$TEST" ] && continue
+
+    echo 
+    echo "*** ${TEST}"
+    echo
+
+    pushd "$TEST"
+    ./run
+    if [ $? -eq 0 ]; then
+        echo "    TEST PASSED!"
+    elif [ $? -eq 1 ]; then
+        echo "    TEST FAILED!"
+    else 
+        echo "    TEST did not complete"
+    fi
+    popd
+    
+    echo
+done
+

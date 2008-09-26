@@ -1,0 +1,6 @@
+
+export TARGET_OS ?= LINUX
+
+CC = gcc
+CFLAGS = -Werror -Wall -g `pkg-config --cflags glib-2.0`
+

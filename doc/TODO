@@ -1,0 +1,58 @@
+
+which cipher?
+
+which hash?
+
+optionally turn off signatures (for high-rate resources)
+
+optionally turn off encryption
+
+node list:
+
+    sequence numbers for node list updates (new-node and lost-node)
+
+    include the seq num in the node-list fingerprint
+
+    timestamps for new-node and lost-node events
+
+Howard Weiss says:
+
+    You mention "Integrity is handled by checksums" but say nothing more.
+    Why checksums if you are already using digital signatures which are
+    much stronger?
+
+        verify that all messages are signed
+
+
+    > There are lots of sections where you talk about messages being sent
+    > which include the sender's public key and then the message is signed and
+    > encrypted.  But you also say that the recvr will authenticate the
+    > message using the public key and then decrypt it.  I think the ordering
+    > is wrong.  If the sender signs and then encrypts, the recvr must first
+    > decrypt and then authenticate.  It really doesn't matter which happens
+    > first (security-wise, although put 3 security professionals in a room
+    > and you'll get at least 7 opinions on this), but you need to be
+    > consistent.  Must people think that the best order for this is to
+    > symmetrically encrypt the payload and then sign the message so that the
+    > recvr can authenticate first before going thru the effor to decrypt.
+
+
+
+
+AMS:
+
+    Does peer discovery get sent over RAMS?  No.
+
+
+security:
+
+    stream ciphers need to resync if they loose blocks, block ciphers dont
+    (unless you run them in feedback mode?)
+
+    el gamal is a fast public key cipher, but ciphertexts are twice as
+    large as their plaintexts
+
+    rsa is a slow public cipher, but ciphertexts are the same size as
+    their plaintexts
+
+

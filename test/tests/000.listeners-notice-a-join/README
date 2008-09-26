@@ -1,0 +1,5 @@
+
+A CAL-PD listener starts up.  After the initial Peer Info Request
+startup transient, a CAL-PD announcer starts up.  The test succeeds if
+the listener notices the announcer's Join within a short timeout.
+

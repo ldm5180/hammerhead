@@ -1,0 +1,4 @@
+
+RFC 2845 <http://www.ietf.org/rfc/rfc2845.txt> specifies secret-key
+authentication of DNS transactions.
+

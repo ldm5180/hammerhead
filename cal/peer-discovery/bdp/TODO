@@ -1,0 +1,41 @@
+
+doesnt do id certs
+
+
+doesnt provide peer unicast addresses
+
+
+doesnt follow the design for Leaving (doesnt retransmit the Leaving
+packet)
+
+
+Peer Info conversation:
+
+    doesnt use a nonce (client ip & port is conversation identifier)
+
+    Peer Info Reply short random timeout is missing
+
+
+
+
+network socket management...
+
+    CAL-PD BDP uses two sockets:
+    
+        * one (port shared by all processes on the host) for listening to mcasts
+        
+        * one (port unique to each process) for sending mcast & unicast, & receiving unicast
+
+    These are BDP sockets, and have nothing to do with the rest of the application.
+
+
+
+
+CAL-I/BIP needs some sockets too:
+
+    * one per peer for unicast stuff
+
+    * one per topic for mcast subscriptions
+
+    * more?  
+

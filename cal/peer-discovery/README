@@ -1,0 +1,26 @@
+
+This is a prototype of CAL-PD, the Communication Abstraction Layer for
+Peer Discovery.
+
+
+Each CAL-PD module lives in its own directory; the name of the directory
+is the name of the CAL-PD module.
+
+
+Each module must have a Makefile defining (at least) the two targets
+"all" and "clean":
+
+    "make all" must compile an object archive file named "cal-pd.a"
+    (deposited into the module's directory).
+
+    "make clean" must clean up.
+
+
+Each module's cal-pd.a must define a variable named cal_pd. of type
+bionet_cal_pd_t.
+
+
+When you run "make" in the top-level directory (where this README file
+lives), it builds all the CAL-PD modules, then builds the all test
+executables against all of the modules.
+

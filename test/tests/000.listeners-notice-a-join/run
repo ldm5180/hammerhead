@@ -1,0 +1,211 @@
+#!/usr/bin/python
+
+from twisted.internet import reactor
+from twisted.internet import protocol
+from twisted.internet import defer
+from twisted.python import failure # now why would i want to import that?  
+import random
+import sys
+import os
+import time
+
+exit_value = 2  # this test script will exit 0 on success, 1 on failure, and 2 if the test did not run right
+
+
+class RecordProcessProtocol(protocol.ProcessProtocol):
+
+    def __init__(self, filename):
+        self.stdout_file = open(filename + ".stdout", 'w')
+        self.stderr_file = open(filename + ".stderr", 'w')
+
+    def outReceived(self, data):
+        self.stdout_file.write(data)
+        print "got stdout:\n%s" % data
+
+    def errReceived(self, data):
+        self.stderr_file.write(data)
+        print "got stderr:\n%s" % data
+
+    def processEnded(self, reason):
+        print "processEnded, self=%s, reason=%s" % (self, reason)
+
+        p = find_process(pp=self)
+        if p == None:
+            print "strange, cannot find process by pp"
+            raise SystemExit
+        p['reason'] = reason
+
+        print "processEnded, argv=%s, reason.type is %s" % (p['argv'], p['reason'].type)
+
+        self.stdout_file.close()
+        self.stderr_file.close()
+
+        rc = reason.value.exitCode
+        if rc == 0:
+            p['deferred'].callback('win!')
+        else:
+            p['deferred'].errback(failure.Failure(failure.DefaultException, 'fail!'))
+
+        del p['deferred']
+
+
+
+
+def find_process(pp=None, deferred=None, handle=None):
+    if pp != None:
+        for p in processes:
+            if p['pp'] == pp: return p
+    return None
+
+
+def start_process(record_filename, argv):
+    p = {}
+    p['argv'] = argv
+    p['pp'] = RecordProcessProtocol(record_filename)
+    p['deferred'] = defer.Deferred()
+    p['handle'] = reactor.spawnProcess(
+        p['pp'],
+        argv[0],
+        argv,
+        env = None
+    )
+    return p
+
+
+
+
+def kill_all_processes():
+    for p in processes:
+        p['pp'].transport.signalProcess('TERM')
+
+
+def listener_callback(result, p):
+    print "in listener_callback, test seems to have worked!"
+    print "    result=%s" % result
+    print "    p=%s" % p
+
+    processes.remove(p)
+    kill_all_processes()
+    if len(processes) == 0:
+        reactor.callLater(0, test_next_cal_pd_module, [])
+    global exit_value
+    exit_value = 0
+    return 1
+
+
+def listener_errback(failure, p):
+    print "in listener_errback, test seems to have failed!"
+    print "    failure=%s" % failure
+    print "    p=%s" % p
+
+    processes.remove(p)
+    kill_all_processes()
+    if len(processes) == 0:
+        reactor.callLater(0, test_next_cal_pd_module, [])
+    global exit_value
+    exit_value = 1
+    return 1
+
+
+def announcer_callback(result, p):
+    processes.remove(p)
+    kill_all_processes()
+    if len(processes) == 0:
+        reactor.callLater(0, test_next_cal_pd_module, [])
+    return 1
+
+
+def announcer_errback(failure, p):
+    processes.remove(p)
+    kill_all_processes()
+    if len(processes) == 0:
+        reactor.callLater(0, test_next_cal_pd_module, [])
+    return 1
+
+
+def my_system(cmd):
+    print "running command: '%s'" % cmd
+    os.system(cmd)
+
+
+
+
+target = 'root@bionet-remote-basestation.local'
+#target = 'seb@slurp'
+
+
+# the test has this long to return a result, or we call it a failure
+timeout = 20
+
+
+# start the listener, then wait this long, then start the announcer
+startup_delay = 10
+
+
+processes = []
+
+
+# make a random peer name for this test so the test is not bothered by other stuff going on
+peer_name = "%04X" % random.randint(0, 65535)
+for i in range(0, 3):
+    peer_name += "-%04X" % random.randint(0, 65535)
+
+
+my_system("make")
+
+
+cal_pd_modules = os.environ['CAL_PD_MODULES'].rsplit()
+
+def test_next_cal_pd_module(arg):
+    print "run_test here!"
+    print "cal_pd_modules is ", cal_pd_modules
+
+    if len(cal_pd_modules) == 0:
+        print "done"
+        reactor.stop()
+        return
+
+    cal_pd_module = cal_pd_modules.pop(0)
+    print "testing ", cal_pd_module
+
+    my_system("scp %s-listener %s:%s" % (cal_pd_module, os.environ['TEST_DEST'], os.environ['TEST_DIR']))
+
+    p = start_process(
+        "recording.%s-listener.remote" % cal_pd_module,
+        [
+            'ssh',
+            os.environ['TEST_DEST'],
+            '%s/%s-listener' % (os.environ['TEST_DIR'], cal_pd_module),
+            '--timeout',
+            '%d' % timeout,
+            '--peer',
+            peer_name
+        ]
+    )
+    p['deferred'].addCallback(listener_callback, p)
+    p['deferred'].addErrback(listener_errback, p)
+    processes.append(p)
+
+    time.sleep(startup_delay)
+
+    p = start_process(
+        "recording.%s-announcer.local" % cal_pd_module,
+        [
+            './%s-announcer' % cal_pd_module,
+            '--timeout',
+            '%d' % (timeout - startup_delay),
+            '--peer',
+            peer_name
+        ]
+    )
+    p['deferred'].addCallback(announcer_callback, p)
+    p['deferred'].addErrback(announcer_errback, p)
+    processes.append(p)
+
+
+reactor.callLater(0, test_next_cal_pd_module, [])
+
+reactor.run()
+
+sys.exit(exit_value)
+

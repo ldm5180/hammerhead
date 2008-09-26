@@ -1,0 +1,27 @@
+
+There are several implementations of mDNS/SD, and several APIs.
+
+
+The CAL-PD "dnssd" module in this directory uses the Bonjour API,
+described here:
+
+    <http://developer.apple.com/documentation/Networking/Conceptual/dns_discovery_api/Introduction.html>
+
+
+The Bonjour API appears to require one file descriptor for each active
+service request.  This is not a problem for the announcer side, but it is
+a problem for the browser side.  Registering the browse is one service,
+but each thing that's added (discovered as a result of the browse)
+needs resolving, and each resolve is another service request.
+
+This can be fixed by forking off another thread, to handle all the
+Bonjour fds on the back end and provide a pipe fd to the main thread,
+just like bdp does.
+
+Other alternative APIs are Avahi and HOWL and maybe KDNSSD.
+
+And yet another alternative is to dictate an event loop and let dnssd
+just add fds to it dynamically as it pleases...  But this feels like it
+forces too much structure on the user app.
+
+

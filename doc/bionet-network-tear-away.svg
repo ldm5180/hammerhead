@@ -1,0 +1,682 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="990"
+   height="765"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   version="1.0"
+   sodipodi:docbase="/home/seb/work/bioserve/sandbox/generic-sw/src/bionet-0.5/doc/p2p"
+   sodipodi:docname="bionet-network-tear-away.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.69803922"
+     inkscape:cx="495"
+     inkscape:cy="382.5"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     width="990px"
+     height="765px"
+     inkscape:window-width="1269"
+     inkscape:window-height="736"
+     inkscape:window-x="0"
+     inkscape:window-y="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 45.025126,241.79918 L 435.34958,241.79918"
+       id="path2160" />
+    <text
+       xml:space="preserve"
+       style="font-size:14.18632412px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="49.546913"
+       y="238.34216"
+       id="text5220"
+       sodipodi:linespacing="125%"
+       transform="scale(1.020884,0.9795433)"><tspan
+         sodipodi:role="line"
+         id="tspan5222"
+         x="49.546913"
+         y="238.34216">IP network</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 285.72932,455.78409 L 285.72932,386.46675"
+       id="path5184" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 285.72932,332.26811 L 285.72932,241.44078"
+       id="path5122" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5126"
+       width="121.89175"
+       height="88.338913"
+       x="224.78345"
+       y="304.44299" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:5.00000048;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 54.068214,455.4029 L 517.39044,455.4029"
+       id="path5182" />
+    <g
+       id="g8743"
+       transform="matrix(0.9051618,0,0,0.8685073,7.196061,-44.369089)">
+      <g
+         transform="translate(34.506623,0.945334)"
+         id="g7356">
+        <path
+           id="path5204"
+           d="M 77.829929,634.49197 L 77.829929,576.00481"
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:5.63923502;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+        <g
+           id="g7339"
+           transform="translate(-38.046986,0)">
+          <rect
+             y="618.8764"
+             x="29.838356"
+             height="133.06334"
+             width="172.07712"
+             id="rect5212"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.25569391;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+          <g
+             transform="translate(8.5196533,4.9052459)"
+             id="g6355">
+            <text
+               xml:space="preserve"
+               style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+               x="106.61996"
+               y="641.79266"
+               id="text5214"
+               sodipodi:linespacing="125%"><tspan
+                 sodipodi:role="line"
+                 id="tspan5216"
+                 x="106.61996"
+                 y="641.79266">Bionet</tspan><tspan
+                 sodipodi:role="line"
+                 x="106.61996"
+                 y="666.79266"
+                 id="tspan5218">Node</tspan></text>
+            <g
+               id="g6316"
+               transform="translate(-6.8780632,8.9190461)">
+              <text
+                 id="text6298"
+                 y="680.31934"
+                 x="40.112358"
+                 style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+                 xml:space="preserve"><tspan
+                   y="680.31934"
+                   x="40.112358"
+                   id="tspan6300"
+                   sodipodi:role="line">Resource A</tspan><tspan
+                   id="tspan6306"
+                   y="695.31934"
+                   x="40.112358"
+                   sodipodi:role="line">Resource B</tspan></text>
+              <text
+                 id="text6308"
+                 y="680.47754"
+                 x="131.79774"
+                 style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+                 xml:space="preserve"><tspan
+                   y="680.47754"
+                   x="131.79774"
+                   id="tspan6310"
+                   sodipodi:role="line">Stream A</tspan><tspan
+                   id="tspan6312"
+                   y="695.47754"
+                   x="131.79774"
+                   sodipodi:role="line">Stream B</tspan><tspan
+                   id="tspan6314"
+                   y="710.47754"
+                   x="131.79774"
+                   sodipodi:role="line">Stream C</tspan><tspan
+                   id="tspan8632"
+                   y="725.47754"
+                   x="131.79774"
+                   sodipodi:role="line">Stream D</tspan></text>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g
+         transform="translate(5.565361,0)"
+         id="g8652">
+        <path
+           id="path8382"
+           d="M 302.15119,635.4373 L 302.15119,576.95014"
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:5.63923502;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.25569391;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect8386"
+           width="172.07712"
+           height="133.06334"
+           x="216.11263"
+           y="619.82172" />
+        <text
+           xml:space="preserve"
+           style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+           x="301.41388"
+           y="647.64325"
+           id="text8390"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan8392"
+             x="301.41388"
+             y="647.64325">Bionet</tspan><tspan
+             sodipodi:role="line"
+             x="301.41388"
+             y="672.64325"
+             id="tspan8394">Node</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+           x="228.02821"
+           y="695.08899"
+           id="text8398"><tspan
+             sodipodi:role="line"
+             id="tspan8400"
+             x="228.02821"
+             y="695.08899">Resource A</tspan><tspan
+             sodipodi:role="line"
+             x="228.02821"
+             y="710.08899"
+             id="tspan8402">Resource B</tspan><tspan
+             sodipodi:role="line"
+             x="228.02821"
+             y="725.08899"
+             id="tspan8406">Resource C</tspan></text>
+      </g>
+      <g
+         transform="translate(425.2666,0.945334)"
+         id="g8416">
+        <path
+           id="path8418"
+           d="M 77.829929,634.49197 L 77.829929,576.00481"
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:5.63923502;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+        <g
+           id="g8420"
+           transform="translate(-38.046986,0)">
+          <rect
+             y="618.8764"
+             x="29.838356"
+             height="133.06334"
+             width="172.07712"
+             id="rect8422"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.25569391;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+          <g
+             transform="translate(8.5196533,4.9052459)"
+             id="g8424">
+            <text
+               xml:space="preserve"
+               style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+               x="106.61996"
+               y="641.79266"
+               id="text8426"
+               sodipodi:linespacing="125%"><tspan
+                 sodipodi:role="line"
+                 id="tspan8428"
+                 x="106.61996"
+                 y="641.79266">Bionet</tspan><tspan
+                 sodipodi:role="line"
+                 x="106.61996"
+                 y="666.79266"
+                 id="tspan8430">Node</tspan></text>
+            <g
+               id="g8432"
+               transform="translate(-6.8780632,8.9190461)">
+              <text
+                 id="text8444"
+                 y="680.47754"
+                 x="131.79774"
+                 style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+                 xml:space="preserve"><tspan
+                   y="680.47754"
+                   x="131.79774"
+                   id="tspan8446"
+                   sodipodi:role="line">Stream A</tspan><tspan
+                   id="tspan8450"
+                   y="695.47754"
+                   x="131.79774"
+                   sodipodi:role="line" /></text>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:14.18632507px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="54.38245"
+       y="452.63599"
+       id="text8792"
+       sodipodi:linespacing="125%"
+       transform="scale(1.020884,0.9795433)"><tspan
+         sodipodi:role="line"
+         id="tspan8794"
+         x="54.38245"
+         y="452.63599">wired sensor network</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 786.81505,332.2681 L 786.81505,241.44077"
+       id="path8804" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8808"
+       width="121.89175"
+       height="88.338913"
+       x="725.8692"
+       y="304.44299" />
+    <g
+       id="g8844"
+       transform="matrix(0.9051618,0,0,0.8685073,786.46554,-65.464861)">
+      <rect
+         y="618.8764"
+         x="29.838356"
+         height="133.06334"
+         width="172.07712"
+         id="rect8846"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.25569391;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         transform="translate(8.5196533,4.9052459)"
+         id="g8848">
+        <text
+           xml:space="preserve"
+           style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+           x="106.61996"
+           y="641.79266"
+           id="text8850"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan8852"
+             x="106.61996"
+             y="641.79266">Bionet</tspan><tspan
+             sodipodi:role="line"
+             x="106.61996"
+             y="666.79266"
+             id="tspan8854">Node</tspan></text>
+        <g
+           id="g8856"
+           transform="translate(-6.8780632,8.9190461)">
+          <text
+             id="text8858"
+             y="680.31934"
+             x="40.112358"
+             style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+             xml:space="preserve"><tspan
+               y="680.31934"
+               x="40.112358"
+               id="tspan8860"
+               sodipodi:role="line">Resource A</tspan><tspan
+               id="tspan8862"
+               y="695.31934"
+               x="40.112358"
+               sodipodi:role="line" /></text>
+          <text
+             id="text8864"
+             y="680.47754"
+             x="131.79774"
+             style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+             xml:space="preserve"><tspan
+               y="680.47754"
+               x="131.79774"
+               id="tspan8866"
+               sodipodi:role="line">Stream A</tspan><tspan
+               id="tspan8868"
+               y="695.47754"
+               x="131.79774"
+               sodipodi:role="line">Stream B</tspan><tspan
+               id="tspan8872"
+               y="710.47754"
+               x="131.79774"
+               sodipodi:role="line">Stream C</tspan></text>
+        </g>
+      </g>
+    </g>
+    <g
+       id="g8973"
+       transform="matrix(0.9051618,0,0,0.8685073,604.12446,-82.244969)">
+      <rect
+         y="618.8764"
+         x="29.838356"
+         height="133.06334"
+         width="172.07712"
+         id="rect8975"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.25569391;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         transform="translate(8.5196533,4.9052459)"
+         id="g8977">
+        <text
+           xml:space="preserve"
+           style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+           x="106.61996"
+           y="641.79266"
+           id="text8979"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan8981"
+             x="106.61996"
+             y="641.79266">Bionet</tspan><tspan
+             sodipodi:role="line"
+             x="106.61996"
+             y="666.79266"
+             id="tspan8983">Node</tspan></text>
+        <g
+           id="g8985"
+           transform="translate(-6.8780632,8.9190461)">
+          <text
+             id="text8987"
+             y="680.31934"
+             x="40.112358"
+             style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+             xml:space="preserve"><tspan
+               y="680.31934"
+               x="40.112358"
+               id="tspan8989"
+               sodipodi:role="line">Resource A</tspan><tspan
+               id="tspan8991"
+               y="695.31934"
+               x="40.112358"
+               sodipodi:role="line">Resource B</tspan></text>
+          <text
+             id="text8993"
+             y="680.47754"
+             x="131.79774"
+             style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+             xml:space="preserve"><tspan
+               y="680.47754"
+               x="131.79774"
+               id="tspan8995"
+               sodipodi:role="line">Stream A</tspan><tspan
+               id="tspan9001"
+               y="695.47754"
+               x="131.79774"
+               sodipodi:role="line" /></text>
+        </g>
+      </g>
+    </g>
+    <path
+       style="fill:#ffff00;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 747.14714,397.16438 L 724.35007,418.50478 L 734.91457,423.83989 L 716.00968,449.44837 L 744.36702,422.50611 L 733.5245,416.6375 L 747.14714,397.16438 z "
+       id="path9003"
+       sodipodi:nodetypes="ccccccc" />
+    <path
+       style="fill:#ffff00;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 831.38512,398.76491 L 850.56803,429.44173 L 839.16949,430.50876 L 859.46444,465.18691 L 847.50989,434.24332 L 860.02048,433.44305 L 831.38512,398.76491 z "
+       id="path9974"
+       sodipodi:nodetypes="ccccccc" />
+    <text
+       xml:space="preserve"
+       style="font-size:14.18632412px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="741.56238"
+       y="418.63763"
+       id="text9983"
+       sodipodi:linespacing="125%"
+       transform="scale(1.020884,0.9795433)"><tspan
+         sodipodi:role="line"
+         id="tspan9985"
+         x="741.56238"
+         y="418.63763">wireless</tspan><tspan
+         sodipodi:role="line"
+         x="741.56238"
+         y="436.37054"
+         id="tspan9989">sensor</tspan><tspan
+         sodipodi:role="line"
+         x="741.56238"
+         y="454.10344"
+         id="tspan9987">network</tspan></text>
+    <g
+       id="g4345">
+      <path
+         id="path3134"
+         d="M 386.09486,240.55498 L 386.09486,149.72765"
+         style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <rect
+         y="68.724464"
+         x="325.14899"
+         height="88.338913"
+         width="121.89175"
+         id="rect3136"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         transform="translate(4.7345619,-6.0547619)"
+         id="g4219">
+        <text
+           xml:space="preserve"
+           style="font-size:10.6397419px;font-style:normal;font-weight:normal;line-height:125%;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans"
+           x="373.22125"
+           y="110.81744"
+           id="text3138"
+           sodipodi:linespacing="125%"
+           transform="scale(1.0208839,0.9795433)"><tspan
+             sodipodi:role="line"
+             x="373.22125"
+             y="110.81744"
+             id="tspan3142"
+             style="font-size:21.2794838px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans">Client</tspan></text>
+        <rect
+           style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2275"
+           width="75.188553"
+           height="29.550085"
+           x="343.76602"
+           y="86.004677" />
+      </g>
+      <g
+         transform="translate(4.7345619,33.818431)"
+         id="g4224">
+        <text
+           xml:space="preserve"
+           style="font-size:10.6397419px;font-style:normal;font-weight:normal;line-height:125%;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans"
+           x="373.22125"
+           y="110.81744"
+           id="text4226"
+           sodipodi:linespacing="125%"
+           transform="scale(1.0208839,0.9795433)"><tspan
+             sodipodi:role="line"
+             x="373.22125"
+             y="110.81744"
+             id="tspan4228"
+             style="font-size:21.2794838px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans">Client</tspan></text>
+        <rect
+           style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect4230"
+           width="75.188553"
+           height="29.550085"
+           x="343.76602"
+           y="86.004677" />
+      </g>
+    </g>
+    <g
+       id="g4332"
+       transform="translate(4.3468285,37.072016)">
+      <text
+         transform="scale(1.0208839,0.9795433)"
+         sodipodi:linespacing="125%"
+         id="text5128"
+         y="349.29694"
+         x="275.3302"
+         style="font-size:10.6397419px;font-style:normal;font-weight:normal;line-height:125%;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:21.2794838px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;font-family:Bitstream Vera Sans"
+           id="tspan5132"
+           y="349.29694"
+           x="275.3302"
+           sodipodi:role="line">HAB</tspan></text>
+      <rect
+         y="319.77869"
+         x="248.8774"
+         height="29.550087"
+         width="65.010193"
+         id="rect4312"
+         style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+    <g
+       id="g4324"
+       transform="translate(-95.630978,227.57046)">
+      <text
+         transform="scale(1.0208839,0.9795433)"
+         sodipodi:linespacing="125%"
+         id="text4326"
+         y="110.81744"
+         x="373.22125"
+         style="font-size:10.6397419px;font-style:normal;font-weight:normal;line-height:125%;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:21.2794838px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans"
+           id="tspan4328"
+           y="110.81744"
+           x="373.22125"
+           sodipodi:role="line">Client</tspan></text>
+      <rect
+         y="86.004677"
+         x="343.76602"
+         height="29.550085"
+         width="75.188553"
+         id="rect4330"
+         style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+    <g
+       id="g4364">
+      <path
+         id="path5108"
+         d="M 643.99986,240.55497 L 643.99986,149.72764"
+         style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         id="g4357">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect5112"
+           width="121.89175"
+           height="88.338913"
+           x="583.05402"
+           y="68.724457" />
+        <g
+           id="g4337"
+           transform="translate(262.63959,12.114194)">
+          <text
+             transform="scale(1.0208839,0.9795433)"
+             sodipodi:linespacing="125%"
+             id="text4339"
+             y="110.81744"
+             x="373.22125"
+             style="font-size:10.6397419px;font-style:normal;font-weight:normal;line-height:125%;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans"
+             xml:space="preserve"><tspan
+               style="font-size:21.2794838px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans"
+               id="tspan4341"
+               y="110.81744"
+               x="373.22125"
+               sodipodi:role="line">Client</tspan></text>
+          <rect
+             y="86.004677"
+             x="343.76602"
+             height="29.550085"
+             width="75.188553"
+             id="rect4343"
+             style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+        </g>
+      </g>
+    </g>
+    <g
+       id="g4412"
+       transform="translate(505.43258,14.05872)">
+      <text
+         transform="scale(1.0208839,0.9795433)"
+         sodipodi:linespacing="125%"
+         id="text4414"
+         y="349.29694"
+         x="275.3302"
+         style="font-size:10.6397419px;font-style:normal;font-weight:normal;line-height:125%;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:21.2794838px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;font-family:Bitstream Vera Sans"
+           id="tspan4416"
+           y="349.29694"
+           x="275.3302"
+           sodipodi:role="line">HAB</tspan></text>
+      <rect
+         y="319.77869"
+         x="248.8774"
+         height="29.550087"
+         width="65.010193"
+         id="rect4418"
+         style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+    <g
+       id="g2279">
+      <path
+         id="path2274"
+         d="M 860.94635,240.55497 L 860.94635,149.72764"
+         style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         id="g2305">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2278"
+           width="121.89175"
+           height="88.338913"
+           x="800.00049"
+           y="68.724457" />
+        <text
+           xml:space="preserve"
+           style="font-size:10.6397419px;font-style:normal;font-weight:normal;line-height:125%;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-family:Bitstream Vera Sans"
+           x="842.64331"
+           y="109.69792"
+           id="text2282"
+           sodipodi:linespacing="125%"
+           transform="scale(1.0208839,0.9795433)"><tspan
+             sodipodi:role="line"
+             x="842.64331"
+             y="109.69792"
+             id="tspan2284"
+             style="font-size:21.2794838px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans">ACL</tspan><tspan
+             sodipodi:role="line"
+             x="842.64331"
+             y="136.29728"
+             style="font-size:21.2794838px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;font-family:Bitstream Vera Sans"
+             id="tspan2303">Server</tspan></text>
+        <rect
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2286"
+           width="75.188553"
+           height="53.403618"
+           x="823.35211"
+           y="86.192108" />
+      </g>
+    </g>
+    <path
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 537.956,241.79918 L 928.28045,241.79918"
+       id="path2288" />
+  </g>
+</svg>

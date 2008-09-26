@@ -1,0 +1,70 @@
+
+We'll want to be able to test manually (from a sandbox) and
+automatically (from the buildslaves' sandboxes).
+
+The test should allocate the test network, power up all the
+machines & wait for them to boot, copy the new executables to
+the test machines, reboot them (or exproc restart or something),
+then run the test suite.
+
+Run a test server on some kind of test administration machine.
+Send it a "test config", which will include executables to be
+tested and a test suite.
+
+The test machines will have to have some static configuration
+(symlinks from /exp/etc/foo.conf to /exp/var/etc, maybe?), and
+the test programs will have to preserve that.  The test programs
+will provide the configs etc that they need.
+
+Prolly do just bionet-2 tests for now.  Expect a reasonable disk
+image, network config, etc.
+
+
+tests should return 0 on success, 1 on failure, and 2 on non-bionet
+problems that prevent the test from running properly
+
+
+The tests will probably often look something like this:
+
+    process on machine A     process on machine B
+    ---------------------------------------------
+    send a packet
+                             get the packet
+    ---------------------------------------------
+
+
+Or like this:
+
+    process on machine A     process on machine B
+    ---------------------------------------------
+    send a packet
+                             get the packet
+                             think
+                             send a reply
+    get the reply
+    ---------------------------------------------
+
+
+We'll want two kinds of tests (just like bionet-0 has):
+
+    1.  Hand-craft packets and feed them to the library (to make sure
+        the libarary handles them properly), and look at the packets
+        the library emits (to make sure it sends out what it aught).
+
+    2.  Run the library code against itself, and try to push it into
+        corners.
+
+
+In both cases we'll want to run (at least) two processes, usually on
+different machines.  Each process under test should be managed, so we
+can kill it when we're done with it, and it'd be nice if we could capture
+its output in a sensible way, and maybe strace it too.
+
+So an API something like this:
+
+    (process_handle, stdin, stdout, stderr, strace_output) = start_process(strace, user, host, command);
+    kill_process(process_handle);
+
+
+Looks like maybe Twisted can do it.
+

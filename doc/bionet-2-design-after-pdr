@@ -1,0 +1,74 @@
+
+
+Overview
+~~~~~~~~
+
+Bionet version 2 (hereafter referred to as just Bionet) is a
+network-transparent device-driver framework.  It uses secure peer-to-peer
+pub/sub communications.
+
+This document is a work-in-progress describing our current thinking
+about the Bionet architecture.
+
+
+Bionet Peers
+~~~~~~~~~~~~
+
+A Bionet network is made up of a set of peers.  Each Bionet peer is
+a process running on a computer.  Peers can join and leave the Bionet
+network at any time.  There are two kinds of peers: "Hardware Abstractors"
+(HABs) and "Clients".
+
+HABs interface with specific sensors and effectors and export them to
+the Bionet network.  HABs are publishers of sensor data and consumers
+of effector settings.
+
+Clients get data from HABs and process it, and provide settings for
+effectors to HABs.  Clients are subscribers of sensor data and providers
+of effector settings.  Clients choose what data they want to subscribe to.
+
+
+Communications
+~~~~~~~~~~~~~~
+
+Bionet communication consists of two distinct protocols: Peer Discovery
+and Information Exchange.
+
+
+Peer Discovery
+~~~~~~~~~~~~~~
+
+The Bionet Peer Discovery protocol allows Clients to find HABs on
+the network.  All peers start Peer Discovery when they want to join
+the Bionet network and end Peer Discovery when they want to leave.
+The Peer Discovery protocol uses mDNS/SD.  HABs are mDNS servers and
+Clients are mDNS clients.
+
+
+Information Exchange
+~~~~~~~~~~~~~~~~~~~~
+
+The Bionet Information Exchange protocol is a publication/subscribe
+protocol built on top of TCP/IP.  The subscription topic space is
+federated, with each HAB managing its own topic space.
+
+HABs and Clients are mutually authenticated (FIXME: how?), and the HABs
+enforce per-topic authorization of Clients (FIXME: how?).  All Information
+Exchange communications use Transport Layer Security (TLS) for privacy.
+
+
+Bionet Data Manager
+~~~~~~~~~~~~~~~~~~~
+
+Bionet is a "soft realtime" system that aims to disseminate up-to-date
+information to interested parties.  The Bionet Data Manager (BDM) is
+a component of Bionet that records and provides a historical record of
+the data that flows over Bionet.
+
+The BDM joins the Bionet network as a Client.  It subscribes using
+the regular Bionet Client interface, and records the data it receives.
+Recorded data is made available to the network using a pub/sub protocol
+suite similar to the Bionet protocols.  In addition, the BDM communicates
+with other BDM processes over DTN, to relay the data and make it available
+where it's needed.
+

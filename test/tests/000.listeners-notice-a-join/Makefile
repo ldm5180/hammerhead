@@ -1,0 +1,32 @@
+
+include ../Makefile.params
+
+
+all: announcer listener
+
+
+announcer: $(foreach M,$(CAL_PD_MODULES),$M-announcer)
+
+%-announcer: announcer.o ${CAL_DIR}/peer-discovery/%/cal-pd.a
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS) $($(patsubst %-announcer,%,$@)_LDLIBS)
+
+
+listener: $(foreach M,$(CAL_PD_MODULES),$M-listener)
+
+%-listener: listener.o ${CAL_DIR}/peer-discovery/%/cal-pd.a
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS) $($(patsubst %-listener,%,$@)_LDLIBS)
+
+
+clean:
+	set -e; for i in $(CAL_PD_MODULES); do   \
+	    rm -f $$i-announcer $$i-listener;    \
+	done
+
+	rm -f recording.*.std???
+
+	rm -f announcer.o listener.o
+
+
+.PHONY: all announcer listener clean
+
+

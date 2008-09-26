@@ -1,0 +1,4 @@
+
+CAL is the Communication Abstraction Layer.  It provides an interface
+for the Bionet library to communicate between peer processes.
+
