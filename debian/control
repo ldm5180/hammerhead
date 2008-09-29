@@ -1,0 +1,13 @@
+Source: bionet2
+Priority: extra
+Maintainer: Sebastian Kuzminsky <seb@highlab.com>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.7.3
+Section: libs
+Homepage: http://bioserve.colorado.edu/bionet
+
+Package: bionet2
+Section: unknown
+Architecture: any
+Description: Bionet2
+ All Bionet2 stuff in one big lump.
