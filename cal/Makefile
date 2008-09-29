@@ -8,11 +8,12 @@ SUBDIRS =           \
     examples        \
 
 
-all test install clean:
+all test clean:
 	set -e; for i in $(SUBDIRS); do $(MAKE) -C $$i $@; done
 
 
 install:
+	set -e; for i in $(SUBDIRS); do $(MAKE) -C $$i $@; done
 	install -m 0644 cal.h $(DESTDIR)/usr/include/
 
 
