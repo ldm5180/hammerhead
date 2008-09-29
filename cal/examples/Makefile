@@ -58,7 +58,13 @@ clean:
 
 test:
 
-install:
+install: time-publisher time-subscriber
+	set -e; for PD in $(CAL_PD_MODULES); do                                 \
+	    for I in $(CAL_I_MODULES); do                                       \
+	        install -m 0755 time-publisher-$$PD-$$I $(DESTDIR)/usr/bin/;    \
+	        install -m 0755 time-subscriber-$$PD-$$I $(DESTDIR)/usr/bin/;   \
+	    done                                                                \
+	done
 
 
 .PHONY: all time-subscriber time-publisher test install clean
