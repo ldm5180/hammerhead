@@ -54,6 +54,12 @@ clean:
 test:
 
 install:
+	set -e; for i in $(MODULES); do                                 \
+	    install -m 0755 cal-pd-$$i-announcer $(DESTDIR)/usr/bin/;   \
+	    install -m 0755 cal-pd-$$i-listener  $(DESTDIR)/usr/bin/;   \
+	    install -m 0755 hab-$$i              $(DESTDIR)/usr/bin/;   \
+	    install -m 0755 client-$$i           $(DESTDIR)/usr/bin/;   \
+	done
 
 
 .PHONY: all modules cal-pd-announcer cal-pd-listener test install clean
