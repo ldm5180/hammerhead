@@ -1,7 +1,7 @@
 Source: bionet2
 Priority: extra
 Maintainer: Sebastian Kuzminsky <seb@highlab.com>
-Build-Depends: debhelper (>= 7)
+Build-Depends: debhelper (>= 6), libavahi-compat-libdnssd-dev, libglib2.0-dev     
 Standards-Version: 3.7.3
 Section: libs
 Homepage: http://bioserve.colorado.edu/bionet
@@ -9,5 +9,6 @@ Homepage: http://bioserve.colorado.edu/bionet
 Package: bionet2
 Section: unknown
 Architecture: any
+Depends: libavahi-compat-libdnssd1, libglib2.0-0       
 Description: Bionet2
  All Bionet2 stuff in one big lump.
