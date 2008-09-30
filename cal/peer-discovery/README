@@ -7,16 +7,21 @@ Each CAL-PD module lives in its own directory; the name of the directory
 is the name of the CAL-PD module.
 
 
-Each module must have a Makefile defining (at least) the two targets
-"all" and "clean":
+Each module must have a Makefile defining (at least) the four targets
+"all", "test", "install", and "clean":
 
     "make all" must compile an object archive file named "cal-pd.a"
     (deposited into the module's directory).
 
+    "make test" should run all available tests defined by this module.
+
+    "make install" should copy the cal-pd.a library file to
+    $(DESTDIR)/usr/lib.
+
     "make clean" must clean up.
 
 
-Each module's cal-pd.a must define a variable named cal_pd. of type
+Each module's cal-pd.a must define a variable named "cal_pd", of type
 bionet_cal_pd_t.
 
 
