@@ -8,9 +8,8 @@ dnssd_LDLIBS = `pkg-config --libs avahi-compat-libdns_sd`
 endif
 
 
-MODULES =     \
-    dnssd     \
-    bdp       \
+MODULES = $(shell cat CAL-PD-Modules-list)
+
 
 SUBDIRS =       \
     shared      \

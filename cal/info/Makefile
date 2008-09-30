@@ -2,8 +2,7 @@
 include ../Makefile.params
 
 
-MODULES =     \
-    bip       \
+MODULES = $(shell cat CAL-I-Modules-list)
 
 SUBDIRS =       \
     $(MODULES)  \

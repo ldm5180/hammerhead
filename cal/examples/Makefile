@@ -9,12 +9,9 @@ dnssd_LDLIBS = `pkg-config --libs avahi-compat-libdns_sd`
 endif
 
 
-CAL_PD_MODULES =  \
-    dnssd         \
-    bdp           \
+CAL_PD_MODULES = $(shell cat ../peer-discovery/CAL-PD-Modules-list)
 
-CAL_I_MODULES =  \
-    bip          \
+CAL_I_MODULES = $(shell cat ../info/CAL-I-Modules-list)
 
 
 all: time-publisher time-subscriber
