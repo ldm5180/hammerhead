@@ -116,6 +116,12 @@ void resolve_callback(DNSServiceRef service_ref,
 } 
 
 
+
+
+// 
+// this function gets called whenever a service of our type, "_bionet._tcp", comes or goes
+//
+
 void browse_callback(DNSServiceRef service,
 		     DNSServiceFlags flags,
 		     uint32_t interfaceIndex,
