@@ -16,10 +16,7 @@ OBJS =             \
     browse.o       \
     global.o       \
 
-COMMON_OBJS =                              \
-    ../shared/free-event.o                 \
-    ../shared/free-peer.o                  \
-    ../shared/peer-add-unicast-address.o   \
+COMMON_OBJS = $(wildcard ../shared/*.o)
 
 
 all: cal-pd.a dnssd-announcer
