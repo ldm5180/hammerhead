@@ -23,10 +23,6 @@ typedef struct {
     // in a subscriber, this has no meaning yet, but it will probably hold the subscriber's TCP socket to this publisher
     int socket;
 
-    // these are unused for now
-    // pubkey_t *public_key;
-    // char *identity_certificate;
-
     // it's up to the user to manage this one
     void *user_data;
 } cal_peer_t;
