@@ -26,6 +26,7 @@ clean:
 test:
 
 install:
+	install -m 0644 cal-i.a $(DESTDIR)/usr/lib/
 
 .PHONY: all test install clean
 
