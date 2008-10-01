@@ -54,7 +54,7 @@ void cal_pd_free_event(cal_event_t *event);
 
 typedef struct {
     //
-    // used by HABs:
+    // these make a peer "findable" by others:
     //
 
     // Inform the network that the peer "me" has joined
@@ -67,7 +67,7 @@ typedef struct {
 
 
     // 
-    // used by Clients:
+    // these let a peer see what other peers are out there:
     //
 
     // starts tracking the peer list
@@ -84,6 +84,8 @@ typedef struct {
     // the fd from subscribe_peer_list() is invalid after this function returns
     void (*unsubscribe_peer_list)(void);
 } cal_pd_t;
+
+
 
 
 typedef struct {
