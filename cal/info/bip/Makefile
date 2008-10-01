@@ -8,6 +8,7 @@ COMMON_OBJS =               \
 
 OBJS =                      \
     cal-i-api.o             \
+    connect.o               \
     publisher.o             \
     subscriber.o            \
     sendto.o                \

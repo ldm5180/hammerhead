@@ -34,3 +34,13 @@ int bip_subscriber_read(void);
 
 int bip_sendto(cal_peer_t *peer, void *msg, int size);
 
+
+
+
+//
+// internal helpers
+//
+
+int bip_connect_to_peer(cal_peer_t *peer);
+
+
