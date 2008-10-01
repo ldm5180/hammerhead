@@ -7,15 +7,21 @@
 #define __CAL_H
 
 
+#include <sys/socket.h>
+
+
 
 
 typedef struct {
     char *name;  // FIXME: freeform ascii string, no cryptographic protection or certification yet
 
-    // unicast addresses for this peer
-    // each string is of the form "protocol://IP:Port"
-    int num_unicast_addresses;
-    char **unicast_address;
+    // this is the address that the peer is listening on, if known
+    // if addr.sa_family == AF_UNSPEC (0), the peer address is unknown
+    struct sockaddr addr; 
+
+    // in a publisher, this is the listening socket; filled out by cal_i.init_publisher() and advertised by cal_pd.join()
+    // in a subscriber, this has no meaning yet, but it will probably hold the subscriber's TCP socket to this publisher
+    int socket;
 
     // these are unused for now
     // pubkey_t *public_key;
@@ -89,7 +95,7 @@ typedef struct {
     // publisher stuff
     //
 
-    // fills out this->num_unicast_addresses and this->unicast_address
+    // fills out this->addr and this->socket
     int (*init_publisher)(cal_peer_t *this, void (*callback)(cal_event_t *event));
     void (*publish)(char *topic, void *msg, int size);
     int (*publisher_read)(void);  // maybe calls callback

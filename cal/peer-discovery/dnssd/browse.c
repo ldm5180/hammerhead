@@ -6,12 +6,16 @@
 
 
 #include <errno.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include <arpa/inet.h>
+
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #include <glib.h>
 
@@ -51,6 +55,9 @@ void resolve_callback(DNSServiceRef service_ref,
     int r;
     struct service_context *sc = context;
     cal_event_t *event = sc->event;
+    struct sockaddr_in *sin = (struct sockaddr_in *)&event->peer.addr;
+    struct addrinfo *ai;
+
 
     // printf("dnssd: in resolve_callback\n");
 
@@ -64,19 +71,45 @@ void resolve_callback(DNSServiceRef service_ref,
         return;
     }
 
-    port = ntohs(port);
 
 #if 0
     printf(
         "dnssd: resolved fullname='%s', hosttarget='%s', port=%d, txt='%s'\n",
         fullname,
         hosttarget,
-        port,
+        ntohs(port),
         txtRecord
     );
 #endif
 
+    r = getaddrinfo(hosttarget, NULL, NULL, &ai);
+    if (r != 0) {
+        fprintf(stderr, "dnssd: resolve_callback(): error with getaddrinfo(\"%s\", ...): %s", hosttarget, gai_strerror(r));
+        return;
+    }
 
+    sin->sin_family = AF_UNSPEC;
+
+    for ( ; ai != NULL; ai = ai->ai_next) {
+        if (ai->ai_family == AF_INET) {
+            sin->sin_family = AF_INET;
+            sin->sin_port = port;
+            sin->sin_addr = ((struct sockaddr_in *)ai->ai_addr)->sin_addr;
+            break;
+        } else if (ai->ai_family == AF_INET6) {
+            printf("IPv6: (ignored for now)\n");
+        } else {
+            printf("unknown address family %d\n", ai->ai_family);
+        }
+    }
+
+    if (sin->sin_family == AF_UNSPEC) {
+        fprintf(stderr, "no ipv4 address found for '%s'\n", hosttarget);
+        return;
+    }
+
+
+#if 0
     // parse all the unicast addresses out of the txt record
     {
         int i;
@@ -104,6 +137,7 @@ void resolve_callback(DNSServiceRef service_ref,
             i ++;
         } while (1);
     }
+#endif
 
 
     // the event becomes the responsibility of the callback now, so they might leak memory but we're not

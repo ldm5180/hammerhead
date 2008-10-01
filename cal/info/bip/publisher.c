@@ -15,9 +15,6 @@
 
 
 int bip_init_publisher(cal_peer_t *this, void (*callback)(cal_event_t *event)) {
-    char tmp_str[100];
-    struct sockaddr_in my_address;
-
     bip_socket = bip_make_listening_socket();
     if (bip_socket < 0) {
         return -1;
@@ -28,19 +25,16 @@ int bip_init_publisher(cal_peer_t *this, void (*callback)(cal_event_t *event)) {
         socklen_t len;
         int r;
 
-        len = sizeof(my_address);
-        r = getsockname(bip_socket, (struct sockaddr *)&my_address, &len);
+        len = sizeof(this->addr);
+        r = getsockname(bip_socket, &this->addr, &len);
         if (r < 0) {
             printf("error in getsockname: %s\n", strerror(errno));
             return -1;
         }
     }
 
-    snprintf(tmp_str, sizeof(tmp_str), "bip://this-host:%d", ntohs(my_address.sin_port));
 
-    this->num_unicast_addresses = 1;
-    this->unicast_address = (char **)calloc(1, sizeof(char *));
-    this->unicast_address[0] = strdup(tmp_str);
+    this->socket = bip_socket;
 
     return bip_socket;
 }

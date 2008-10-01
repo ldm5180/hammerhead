@@ -1,9 +1,12 @@
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <arpa/inet.h>
+
+#include <sys/socket.h>
 
 #include <dns_sd.h>
 
@@ -67,15 +70,15 @@ static void register_callback(DNSServiceRef sdRef,
 int dnssd_register(cal_peer_t* peer) {
     DNSServiceErrorType error;
     TXTRecordRef txt_ref;
-    int i;
+    struct sockaddr_in *sin;
+
+
+    sin = (struct sockaddr_in *)&peer->addr;
+
 
     // Shutup annoying nag message on Linux.
     setenv("AVAHI_COMPAT_NOWARN", "1", 1);
 
-    if (peer->num_unicast_addresses < 1) {
-        fprintf(stderr, "dnssd: peer has no unicast addresses!\n");
-        return 0;
-    }
 
     advertisedRef = malloc(sizeof(DNSServiceRef));
     if (advertisedRef == NULL) {
@@ -85,6 +88,7 @@ int dnssd_register(cal_peer_t* peer) {
 
     TXTRecordCreate(&txt_ref, 0, NULL);
 
+#if 0
     for (i = 0; i < peer->num_unicast_addresses; i ++) {
         char key[100];
 
@@ -104,6 +108,7 @@ int dnssd_register(cal_peer_t* peer) {
             return 0;
         }
     }
+#endif
 
     error = DNSServiceRegister(
         advertisedRef,                   // DNSServiceRef *sdRef
@@ -113,7 +118,7 @@ int dnssd_register(cal_peer_t* peer) {
         cal_pd_dnssd_service_name,       // const char *regtype
         "",                              // const char *domain
         NULL,                            // const char *host
-        htons(9),                        // uint16_t port (9 is discard, which means "no port")
+        sin->sin_port,                   // uint16_t port (in network byte order)
         TXTRecordGetLength(&txt_ref),    // uint16_t txtLen
         TXTRecordGetBytesPtr(&txt_ref),  // const void *txtRecord
         register_callback,               // DNSServiceRegisterReply callBack

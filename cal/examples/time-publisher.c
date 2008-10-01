@@ -17,8 +17,8 @@ extern cal_i_t cal_i;  // FIXME: good god rename that
 
 cal_peer_t me = {
     .name = "time-publisher",
-    .num_unicast_addresses = 0,
-    .unicast_address = NULL,
+    .addr.sa_family = AF_UNSPEC,
+    .socket = -1,
     .user_data = NULL
 };
 

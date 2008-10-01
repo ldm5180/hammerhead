@@ -1,9 +1,14 @@
 
 #include <errno.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <arpa/inet.h>
+
+#include <sys/socket.h>
 
 #include "cal.h"
 
@@ -18,12 +23,13 @@ extern cal_i_t cal_i;  // FIXME: good god rename that
 void cal_pd_callback(cal_event_t *event) {
     switch (event->event_type) {
         case CAL_EVENT_JOIN: {
-            int i;
-
-            printf("Join event from '%s':\n", event->peer.name);
-            for (i = 0; i < event->peer.num_unicast_addresses; i ++) {
-                printf("    %s\n", event->peer.unicast_address[i]);
-            }
+            struct sockaddr_in *sin = (struct sockaddr_in *)&event->peer.addr;
+            printf(
+                "Join event from '%s' (%s:%hu)\n",
+                event->peer.name,
+                inet_ntoa(sin->sin_addr),
+                ntohs(sin->sin_port)
+            );
 
             if (strcmp(event->peer.name, "time-publisher") != 0) {
                 break;

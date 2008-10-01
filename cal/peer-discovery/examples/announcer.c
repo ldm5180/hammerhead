@@ -6,22 +6,17 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include "cal.h"
 
 
 extern cal_pd_t cal_pd;
 
 
-const char *unicast_addresses[] = {
-    "bip://localhost:12345"
-};
-
-cal_peer_t me = {
-    .name = "a random cal-test program",
-    .num_unicast_addresses = 1,
-    .unicast_address = (char **)unicast_addresses,
-    .user_data = NULL
-};
+cal_peer_t me;
 
 
 static void exit_signal_handler(int signal_number) {
@@ -62,12 +57,23 @@ static void make_shutdowns_clean(void) {
 
 int main(int argc, char *argv[]) {
     int r;
+    struct sockaddr_in *sin;
 
+
+    memset(&me, '\0', sizeof(me));
+    me.name = strdup("a random cal-test program");
+    me.socket = -1;
+
+    me.addr.sa_family = AF_INET;
+    sin = (struct sockaddr_in *)&me.addr;
+    sin->sin_port = htons(12345);           // a fake port, good as any
+    sin->sin_addr.s_addr = INADDR_ANY;      // this part is ignored for now, cal-pd/mdns-sd advertises on all available interfaces
 
     if (argc > 1) {
         me.name = argv[1];
         printf("using '%s' for the peer name\n", me.name);
     }
+
 
     make_shutdowns_clean();
 
