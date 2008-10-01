@@ -3,6 +3,7 @@ include Makefile.params
 
 
 SUBDIRS =           \
+    shared          \
     peer-discovery  \
     info            \
     examples        \

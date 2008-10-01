@@ -1,7 +1,7 @@
 
-include ../../Makefile.params
+include ../Makefile.params
 
-CFLAGS += -I .. -I ../.. -I ../../info
+CFLAGS += -I ..
 
 OBJS =                          \
     free-event.o                \

@@ -1,9 +1,9 @@
 
 include ../../Makefile.params
 
-CFLAGS += -I .. -I ../.. -I ../../peer-discovery
+CFLAGS += -I ../..
 
-COMMON_OBJS =               \
+COMMON_OBJS =  $(wildcard ../../shared/*.o)
 
 
 OBJS =                      \

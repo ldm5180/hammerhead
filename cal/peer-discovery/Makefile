@@ -12,7 +12,6 @@ MODULES = $(shell cat CAL-PD-Modules-list)
 
 
 SUBDIRS =       \
-    shared      \
     $(MODULES)  \
     examples    \
 
