@@ -19,14 +19,12 @@ OBJS =             \
 COMMON_OBJS = $(wildcard ../shared/*.o)
 
 
-all: cal-pd.a dnssd-announcer
+all: cal-pd.a
 
 cal-pd.a: cal-pd.a($(OBJS) $(COMMON_OBJS))
 
-dnssd-announcer: dnssd-announcer.o cal-pd.a
-
 clean:
-	rm -f dnssd-announcer dnssd-announcer.o cal-pd.a $(OBJS)
+	rm -f cal-pd.a $(OBJS)
 
 test:
 
