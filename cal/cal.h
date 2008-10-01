@@ -28,8 +28,8 @@ typedef struct {
 } cal_peer_t;
 
 
-int cal_peer_add_unicast_address(cal_peer_t *peer, const char *new_addr);
-void cal_pd_free_peer(cal_peer_t *peer);
+cal_peer_t *cal_peer_new(const char *name);
+void cal_peer_free(cal_peer_t *peer);
 
 
 
@@ -43,11 +43,12 @@ typedef enum {
 
 typedef struct {
     cal_event_type_t event_type;
-    cal_peer_t peer;
+    cal_peer_t *peer;
 } cal_event_t;
 
 
-void cal_pd_free_event(cal_event_t *event);
+cal_event_t *cal_event_new(cal_event_type_t type);
+void cal_event_free(cal_event_t *event);
 
 
 

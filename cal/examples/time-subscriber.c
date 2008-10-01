@@ -23,27 +23,30 @@ extern cal_i_t cal_i;  // FIXME: good god rename that
 void cal_pd_callback(cal_event_t *event) {
     switch (event->event_type) {
         case CAL_EVENT_JOIN: {
-            struct sockaddr_in *sin = (struct sockaddr_in *)&event->peer.addr;
+            struct sockaddr_in *sin = (struct sockaddr_in *)&event->peer->addr;
             printf(
                 "Join event from '%s' (%s:%hu)\n",
-                event->peer.name,
+                event->peer->name,
                 inet_ntoa(sin->sin_addr),
                 ntohs(sin->sin_port)
             );
 
-            if (strcmp(event->peer.name, "time-publisher") != 0) {
+            if (strcmp(event->peer->name, "time-publisher") != 0) {
                 break;
             }
 
             printf("found a time-publisher, subscribing to the time from it\n");
-            cal_i.sendto(&event->peer, "hey there!", 11);
-            cal_i.subscribe(&event->peer, "time");
+            cal_i.sendto(event->peer, "hey there!", 11);
+            cal_i.subscribe(event->peer, "time");
+
+            // steal this peer from the event
+            event->peer = NULL;
 
             break;
         }
 
         case CAL_EVENT_LEAVE: {
-            printf("Leave event from '%s'\n", event->peer.name);
+            printf("Leave event from '%s'\n", event->peer->name);
             break;
         }
 
@@ -53,7 +56,7 @@ void cal_pd_callback(cal_event_t *event) {
         }
     }
 
-    cal_pd_free_event(event);
+    cal_event_free(event);
 }
 
 

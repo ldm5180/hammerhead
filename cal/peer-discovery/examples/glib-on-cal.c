@@ -38,7 +38,7 @@ static void callback(cal_event_t *event) {
             printf("got JOIN event\n");
             if (my_cb_new_hab != NULL) {
                 bionet_hab_t hab;
-                hab.name = event->peer.name;
+                hab.name = event->peer->name;
                 my_cb_new_hab(&hab);
             }
             break;
@@ -48,7 +48,7 @@ static void callback(cal_event_t *event) {
             printf("got LEAVE event\n");
             if (my_cb_lost_hab != NULL) {
                 bionet_hab_t hab;
-                hab.name = event->peer.name;
+                hab.name = event->peer->name;
                 my_cb_lost_hab(&hab);
             }
             break;
@@ -60,7 +60,7 @@ static void callback(cal_event_t *event) {
         }
     }
 
-    cal_pd_free_event(event);  // don't forget!
+    cal_event_free(event);  // don't forget!
 }
 
 static gboolean readable_handler(GIOChannel *ch, GIOCondition cond, gpointer unused) {

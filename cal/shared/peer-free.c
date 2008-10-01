@@ -5,7 +5,7 @@
 #include "cal.h"
 
 
-void cal_pd_free_peer(cal_peer_t *peer) {
+void cal_peer_free(cal_peer_t *peer) {
     if (peer == NULL) {
         return;
     }

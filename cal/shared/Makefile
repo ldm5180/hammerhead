@@ -4,8 +4,10 @@ include ../Makefile.params
 CFLAGS += -I ..
 
 OBJS =                          \
-    free-event.o                \
-    free-peer.o                 \
+    event-new.o                 \
+    event-free.o                \
+    peer-new.o                  \
+    peer-free.o                 \
 
 
 all: $(OBJS)

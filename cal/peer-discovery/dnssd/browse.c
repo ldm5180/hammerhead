@@ -55,7 +55,7 @@ void resolve_callback(DNSServiceRef service_ref,
     int r;
     struct service_context *sc = context;
     cal_event_t *event = sc->event;
-    struct sockaddr_in *sin = (struct sockaddr_in *)&event->peer.addr;
+    struct sockaddr_in *sin = (struct sockaddr_in *)&event->peer->addr;
     struct addrinfo *ai;
 
 
@@ -68,6 +68,7 @@ void resolve_callback(DNSServiceRef service_ref,
 
     if (errorCode != kDNSServiceErr_NoError) {
         fprintf(stderr, "dnssd: Error returned from resolve: %d\n.", errorCode);
+        cal_event_free(event);
         return;
     }
 
@@ -85,6 +86,7 @@ void resolve_callback(DNSServiceRef service_ref,
     r = getaddrinfo(hosttarget, NULL, NULL, &ai);
     if (r != 0) {
         fprintf(stderr, "dnssd: resolve_callback(): error with getaddrinfo(\"%s\", ...): %s", hosttarget, gai_strerror(r));
+        cal_event_free(event);
         return;
     }
 
@@ -105,6 +107,7 @@ void resolve_callback(DNSServiceRef service_ref,
 
     if (sin->sin_family == AF_UNSPEC) {
         fprintf(stderr, "no ipv4 address found for '%s'\n", hosttarget);
+        cal_event_free(event);
         return;
     }
 
@@ -185,18 +188,16 @@ void browse_callback(DNSServiceRef service,
     }
 
 
-    // FIXME: this should probably be cal_event_new(), that socket value is a doozy
-    event = calloc(1, sizeof(cal_event_t));
+    event = cal_event_new(CAL_EVENT_NONE);
     if (event == NULL) {
         fprintf(stderr, "dnssd: out of memory!  dropping this joining peer!\n");
         return;
     }
-    event->peer.socket = -1;
 
-    event->peer.name = strdup(name);
-    if (event->peer.name == NULL) {
+    event->peer = cal_peer_new(name);
+    if (event->peer == NULL) {
         fprintf(stderr, "dnssd: out of memory!  dropping this joining peer!\n");
-        free(event);
+        cal_event_free(event);
         return;
     }
 
@@ -204,16 +205,16 @@ void browse_callback(DNSServiceRef service,
         struct service_context *sc;
         DNSServiceErrorType error;
 
-        // printf("dnssd: trying to resolve...\n");
+        event->event_type = CAL_EVENT_JOIN;
 
         sc = malloc(sizeof(struct service_context));
         if (sc == NULL) {
             fprintf(stderr, "dnssd: out of memory!  dropping this joining peer!\n");
+            cal_event_free(event);
             return;
         }
 
         sc->event = event;
-        sc->event->event_type = CAL_EVENT_JOIN;
 
         // Now create a resolve call to fill out the rest of the cal_peer_t
         error = DNSServiceResolve(&sc->service_ref, 0, interfaceIndex, 
@@ -221,8 +222,7 @@ void browse_callback(DNSServiceRef service,
                                   resolve_callback, (void*)sc);
         if (error != kDNSServiceErr_NoError) {
             fprintf(stderr, "dnssd: failed to start resolv service, dropping this peer\n");
-            free(sc->event->peer.name);
-            free(sc->event);
+            cal_event_free(event);
             free(sc);
             return;
         }
