@@ -185,11 +185,14 @@ void browse_callback(DNSServiceRef service,
     }
 
 
+    // FIXME: this should probably be cal_event_new(), that socket value is a doozy
     event = calloc(1, sizeof(cal_event_t));
     if (event == NULL) {
         fprintf(stderr, "dnssd: out of memory!  dropping this joining peer!\n");
         return;
     }
+    event->peer.socket = -1;
+
     event->peer.name = strdup(name);
     if (event->peer.name == NULL) {
         fprintf(stderr, "dnssd: out of memory!  dropping this joining peer!\n");
