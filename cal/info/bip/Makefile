@@ -1,7 +1,7 @@
 
 include ../../Makefile.params
 
-CFLAGS += -I ../.. -I ../../util
+CFLAGS += -I .. -I ../.. -I ../../util -I ../../peer-discovery
 
 COMMON_OBJS =  $(wildcard ../../util/*.o)
 

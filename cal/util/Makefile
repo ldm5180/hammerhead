@@ -1,7 +1,7 @@
 
 include ../Makefile.params
 
-CFLAGS += -I .. -I .
+CFLAGS += -I .. -I ../peer-discovery -I ../info -I .
 
 OBJS =                          \
     event-new.o                 \

@@ -1,7 +1,7 @@
 
 include ../../Makefile.params
 
-CFLAGS += -I ../.. -I ../../util
+CFLAGS += -I .. -I ../.. -I ../../util -I ../../info
 LDLIBS = -lpthread `pkg-config --libs glib-2.0`
 
 ifeq (${TARGET_OS},LINUX)
