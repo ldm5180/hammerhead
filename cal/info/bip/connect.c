@@ -48,6 +48,8 @@ int bip_connect_to_peer(cal_peer_t *peer) {
         return -1;
     }
 
+    ((struct sockaddr_in *)ai->ai_addr)->sin_port = htons(peer->as.ipv4.port);
+
     r = connect(s, ai->ai_addr, ai->ai_addrlen);
     if (r != 0) {
         struct sockaddr_in *sin = (struct sockaddr_in *)ai->ai_addr;
