@@ -22,7 +22,7 @@ void cal_peer_free(cal_peer_t *peer) {
 
         case CAL_AS_IPv4: {
             if (peer->as.ipv4.hostname != NULL) {
-                free (peer->as.ipv4.hostname);
+                free(peer->as.ipv4.hostname);
             }
             break;
         }
