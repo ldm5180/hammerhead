@@ -19,6 +19,8 @@ clean:
 test:
 
 install:
+	install -m 0644 cal-peer.h $(DESTDIR)/usr/include/
+	install -m 0644 cal-event.h $(DESTDIR)/usr/include/
 
 .PHONY: all test install clean
 
