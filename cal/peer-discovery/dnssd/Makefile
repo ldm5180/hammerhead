@@ -1,7 +1,7 @@
 
 include ../../Makefile.params
 
-CFLAGS += -I ../..
+CFLAGS += -I ../.. -I ../../util
 
 LDLIBS = `pkg-config --libs glib-2.0`
 
@@ -16,7 +16,7 @@ OBJS =             \
     browse.o       \
     global.o       \
 
-COMMON_OBJS = $(wildcard ../../shared/*.o)
+COMMON_OBJS = $(wildcard ../../util/*.o)
 
 
 all: cal-pd.a

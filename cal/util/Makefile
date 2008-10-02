@@ -1,7 +1,7 @@
 
 include ../Makefile.params
 
-CFLAGS += -I ..
+CFLAGS += -I .. -I .
 
 OBJS =                          \
     event-new.o                 \

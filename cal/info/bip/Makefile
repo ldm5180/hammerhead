@@ -1,9 +1,9 @@
 
 include ../../Makefile.params
 
-CFLAGS += -I ../..
+CFLAGS += -I ../.. -I ../../util
 
-COMMON_OBJS =  $(wildcard ../../shared/*.o)
+COMMON_OBJS =  $(wildcard ../../util/*.o)
 
 
 OBJS =                      \
