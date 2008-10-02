@@ -53,7 +53,7 @@ int bip_init_publisher(cal_peer_t *this, void (*callback)(cal_event_t *event)) {
 
 
     // ok! listen for connections
-    // we dont need to bind since listen on an unbound socket defaults to INADDR_ANY and an random port, which is what we want
+    // we dont need to bind since listen on an unbound socket defaults to INADDR_ANY and a random port, which is what we want
     r = listen(sock, 20);
     if (r != 0) {
         printf("ERROR: cannot listen on port: %s\n", strerror(errno));
