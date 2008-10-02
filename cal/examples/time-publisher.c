@@ -19,7 +19,17 @@ cal_peer_t *me;
 
 
 void cal_i_callback(cal_event_t *event) {
-    printf("cal_i callback!\n");
+    switch (event->event_type) {
+        case CAL_EVENT_CONNECT: {
+            printf("got a connection from %s (%s)\n", event->peer->name, cal_peer_address_to_str(event->peer));
+            break;
+        }
+
+        default: {
+            printf("unhandled event type %d\n", event->event_type);
+            break;
+        }
+    }
 }
 
 
