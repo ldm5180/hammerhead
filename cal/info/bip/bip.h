@@ -15,10 +15,6 @@ typedef struct {
 } bip_subscription_request_t;
 
 
-// misc helper functions
-int bip_make_listening_socket(void);
-
-
 //
 // CAL-I API functions
 //

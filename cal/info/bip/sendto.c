@@ -15,13 +15,15 @@
 
 
 int bip_sendto(cal_peer_t *peer, void *msg, int size) {
-    bip_connect_to_peer(peer);
-    if (peer->socket < 0) {
+    int r;
+
+    r = bip_connect_to_peer(peer);
+    if (r < 0) {
         return -1;
     }
 
     printf("sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
 
-    return write(peer->socket, msg, size);
+    return write(peer->as.ipv4.socket, msg, size);
 }
 

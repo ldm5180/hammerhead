@@ -70,10 +70,12 @@ static void register_callback(DNSServiceRef sdRef,
 int dnssd_register(cal_peer_t* peer) {
     DNSServiceErrorType error;
     TXTRecordRef txt_ref;
-    struct sockaddr_in *sin;
 
 
-    sin = (struct sockaddr_in *)&peer->addr;
+    if (peer->addressing_scheme != CAL_AS_IPv4) {
+        fprintf(stderr, "dnssd: dont know what to do with peer addressing scheme %d (can only handle IPv4)\n", peer->addressing_scheme);
+        return 0;
+    }
 
 
     // Shutup annoying nag message on Linux.
@@ -118,7 +120,7 @@ int dnssd_register(cal_peer_t* peer) {
         cal_pd_dnssd_service_name,       // const char *regtype
         "",                              // const char *domain
         NULL,                            // const char *host
-        sin->sin_port,                   // uint16_t port (in network byte order)
+        htons(peer->as.ipv4.port),       // uint16_t port (in network byte order)
         TXTRecordGetLength(&txt_ref),    // uint16_t txtLen
         TXTRecordGetBytesPtr(&txt_ref),  // const void *txtRecord
         register_callback,               // DNSServiceRegisterReply callBack

@@ -7,6 +7,7 @@ OBJS =                          \
     event-new.o                 \
     event-free.o                \
     peer-new.o                  \
+    peer-address.o              \
     peer-free.o                 \
 
 

@@ -55,8 +55,7 @@ void resolve_callback(DNSServiceRef service_ref,
     int r;
     struct service_context *sc = context;
     cal_event_t *event = sc->event;
-    struct sockaddr_in *sin = (struct sockaddr_in *)&event->peer->addr;
-    struct addrinfo *ai;
+    cal_peer_t *peer = event->peer;
 
 
     // printf("dnssd: in resolve_callback\n");
@@ -83,33 +82,8 @@ void resolve_callback(DNSServiceRef service_ref,
     );
 #endif
 
-    r = getaddrinfo(hosttarget, NULL, NULL, &ai);
-    if (r != 0) {
-        fprintf(stderr, "dnssd: resolve_callback(): error with getaddrinfo(\"%s\", ...): %s", hosttarget, gai_strerror(r));
-        cal_event_free(event);
-        return;
-    }
-
-    sin->sin_family = AF_UNSPEC;
-
-    for ( ; ai != NULL; ai = ai->ai_next) {
-        if (ai->ai_family == AF_INET) {
-            sin->sin_family = AF_INET;
-            sin->sin_port = port;
-            sin->sin_addr = ((struct sockaddr_in *)ai->ai_addr)->sin_addr;
-            break;
-        } else if (ai->ai_family == AF_INET6) {
-            printf("IPv6: (ignored for now)\n");
-        } else {
-            printf("unknown address family %d\n", ai->ai_family);
-        }
-    }
-
-    if (sin->sin_family == AF_UNSPEC) {
-        fprintf(stderr, "no ipv4 address found for '%s'\n", hosttarget);
-        cal_event_free(event);
-        return;
-    }
+    peer->as.ipv4.port = ntohs(port);
+    peer->as.ipv4.hostname = strdup(hosttarget);
 
 
 #if 0
@@ -200,6 +174,9 @@ void browse_callback(DNSServiceRef service,
         cal_event_free(event);
         return;
     }
+
+    cal_peer_set_addressing_scheme(event->peer, CAL_AS_IPv4);
+
 
     if (flags & kDNSServiceFlagsAdd) {
         struct service_context *sc;

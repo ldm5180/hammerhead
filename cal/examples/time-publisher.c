@@ -15,12 +15,7 @@ extern cal_pd_t cal_pd;
 extern cal_i_t cal_i;  // FIXME: good god rename that
 
 
-cal_peer_t me = {
-    .name = "time-publisher",
-    .addr.sa_family = AF_UNSPEC,
-    .socket = -1,
-    .user_data = NULL
-};
+cal_peer_t *me;
 
 
 void cal_i_callback(cal_event_t *event) {
@@ -29,6 +24,8 @@ void cal_i_callback(cal_event_t *event) {
 
 
 int main(int argc, char *argv[]) {
+    me = cal_peer_new("time-publisher");
+
     while (1) {
         int cal_i_fd = -1;
         int max_fd;
@@ -36,19 +33,19 @@ int main(int argc, char *argv[]) {
         fd_set readers;
 
         while (cal_i_fd < 0) {
-            r = cal_pd.leave(&me);
+            r = cal_pd.leave(me);
             if (r < 0) {
                 printf("failed to leave the peer list, oh well\n");
             }
 
-            cal_i_fd = cal_i.init_publisher(&me, cal_i_callback);
+            cal_i_fd = cal_i.init_publisher(me, cal_i_callback);
             if (cal_i_fd < 0) {
                 printf("failed to init publisher\n");
                 sleep(1);
                 continue;
             }
 
-            r = cal_pd.join(&me);
+            r = cal_pd.join(me);
             if (r < 0) {
                 printf("failed to join the peer list\n");
                 sleep(1);

@@ -19,11 +19,12 @@ cal_peer_t *cal_peer_new(const char *name) {
         peer->name = strdup(name);
         if (peer->name == NULL) {
             fprintf(stderr, "cal_peer_new(): out of memory\n");
+            free(peer);
             return NULL;
         }
     }
 
-    peer->socket = -1;
+    peer->addressing_scheme = CAL_AS_NONE;
 
     return peer;
 }

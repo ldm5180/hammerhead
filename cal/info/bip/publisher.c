@@ -1,6 +1,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,33 +9,70 @@
 
 #include <arpa/inet.h>
 
+#include <netinet/in.h>
+
 #include <sys/socket.h>
 
 #include "cal.h"
 #include "bip.h"
 
 
+
+
 int bip_init_publisher(cal_peer_t *this, void (*callback)(cal_event_t *event)) {
-    bip_socket = bip_make_listening_socket();
-    if (bip_socket < 0) {
+    int r;
+    int sock;
+
+    struct sockaddr_in my_address;
+    socklen_t my_address_len;
+
+
+    cal_peer_set_addressing_scheme(this, CAL_AS_IPv4);
+
+
+    //
+    // create the socket
+    //
+
+    sock = socket(PF_INET, SOCK_STREAM, 0);
+    if (sock == -1) {
+        printf("ERROR: cannot create TCP socket: %s\n", strerror(errno));
         return -1;
     }
 
 
+    // turn on REUSEADDR, so it'll start right back up after dying
     {
-        socklen_t len;
+        int flag = 1;
         int r;
 
-        len = sizeof(this->addr);
-        r = getsockname(bip_socket, &this->addr, &len);
-        if (r < 0) {
-            printf("error in getsockname: %s\n", strerror(errno));
-            return -1;
-        }
+        r = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void*)&flag, sizeof(int));
+        if (r < 0) printf("WARNING: ignoring setsockopt SO_REUSEADDR error: %s", strerror(errno));
     }
 
 
-    this->socket = bip_socket;
+
+    // ok! listen for connections
+    // we dont need to bind since listen on an unbound socket defaults to INADDR_ANY and an random port, which is what we want
+    r = listen(sock, 20);
+    if (r != 0) {
+        printf("ERROR: cannot listen on port: %s\n", strerror(errno));
+        return -1;
+    }
+
+    memset(&my_address, 0, sizeof(my_address));
+    my_address_len = sizeof(my_address);
+    r = getsockname(sock, (struct sockaddr *)&my_address, &my_address_len);
+    if (r != 0) {
+        fprintf(stderr, "bip: bip_init_publisher(): cannot get socket port: %s\n", strerror(errno));
+        return -1;
+    }
+
+
+    bip_socket = sock;
+
+    this->as.ipv4.socket = sock;
+    this->as.ipv4.port = ntohs(my_address.sin_port);
 
     return bip_socket;
 }

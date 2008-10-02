@@ -57,17 +57,13 @@ static void make_shutdowns_clean(void) {
 
 int main(int argc, char *argv[]) {
     int r;
-    struct sockaddr_in *sin;
 
 
     memset(&me, '\0', sizeof(me));
     me.name = strdup("a random cal-test program");
-    me.socket = -1;
 
-    me.addr.sa_family = AF_INET;
-    sin = (struct sockaddr_in *)&me.addr;
-    sin->sin_port = htons(12345);           // a fake port, good as any
-    sin->sin_addr.s_addr = INADDR_ANY;      // this part is ignored for now, cal-pd/mdns-sd advertises on all available interfaces
+    cal_peer_set_addressing_scheme(&me, CAL_AS_IPv4);
+    me.as.ipv4.port = 12345;   // a fake port, good as any
 
     if (argc > 1) {
         me.name = argv[1];

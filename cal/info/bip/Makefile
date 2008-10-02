@@ -13,7 +13,6 @@ OBJS =                      \
     subscriber.o            \
     sendto.o                \
     global.o                \
-    make-listening-socket.o \
 
 
 all: cal-i.a

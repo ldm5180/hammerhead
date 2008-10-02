@@ -23,12 +23,10 @@ extern cal_i_t cal_i;  // FIXME: good god rename that
 void cal_pd_callback(cal_event_t *event) {
     switch (event->event_type) {
         case CAL_EVENT_JOIN: {
-            struct sockaddr_in *sin = (struct sockaddr_in *)&event->peer->addr;
             printf(
-                "Join event from '%s' (%s:%hu)\n",
+                "Join event from '%s' (%s)\n",
                 event->peer->name,
-                inet_ntoa(sin->sin_addr),
-                ntohs(sin->sin_port)
+                cal_peer_address_to_str(event->peer)
             );
 
             if (strcmp(event->peer->name, "time-publisher") != 0) {
