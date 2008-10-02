@@ -182,7 +182,7 @@ void browse_callback(DNSServiceRef service,
         struct service_context *sc;
         DNSServiceErrorType error;
 
-        event->event_type = CAL_EVENT_JOIN;
+        event->type = CAL_EVENT_JOIN;
 
         sc = malloc(sizeof(struct service_context));
         if (sc == NULL) {
@@ -210,7 +210,7 @@ void browse_callback(DNSServiceRef service,
     } else {
         int r;
 
-        event->event_type = CAL_EVENT_LEAVE;
+        event->type = CAL_EVENT_LEAVE;
 
         // Do we really need to fillout all the fields in the cal_peer_t?
         // Probably not.  Plus it is now gone.  For now, just fill out

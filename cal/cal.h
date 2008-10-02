@@ -74,7 +74,7 @@ typedef enum {
 
 
 typedef struct {
-    cal_event_type_t event_type;
+    cal_event_type_t type;
     cal_peer_t *peer;
 } cal_event_t;
 

@@ -14,7 +14,7 @@ cal_event_t *cal_event_new(cal_event_type_t type) {
         return NULL;
     }
 
-    event->event_type = type;
+    event->type = type;
 
     return event;
 }

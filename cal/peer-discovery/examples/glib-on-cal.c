@@ -33,7 +33,7 @@ int leave(bionet_hab_t *me) {
 
 
 static void callback(cal_event_t *event) {
-    switch (event->event_type) {
+    switch (event->type) {
         case CAL_EVENT_JOIN: {
             printf("got JOIN event\n");
             if (my_cb_new_hab != NULL) {
@@ -55,7 +55,7 @@ static void callback(cal_event_t *event) {
         }
 
         default: {
-            printf("unknown event type %d\n", event->event_type);
+            printf("unknown event type %d\n", event->type);
             break;
         }
     }

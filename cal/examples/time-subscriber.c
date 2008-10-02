@@ -21,7 +21,7 @@ extern cal_i_t cal_i;  // FIXME: good god rename that
 
 
 void cal_pd_callback(cal_event_t *event) {
-    switch (event->event_type) {
+    switch (event->type) {
         case CAL_EVENT_JOIN: {
             printf(
                 "Join event from '%s' (%s)\n",
@@ -49,7 +49,7 @@ void cal_pd_callback(cal_event_t *event) {
         }
 
         default: {
-            printf("unknown event type %d\n", event->event_type);
+            printf("unknown event type %d\n", event->type);
             break;
         }
     }
