@@ -5,7 +5,7 @@
 
 
 void cal_peer_set_addressing_scheme(cal_peer_t *peer, cal_as_type_t addressing_scheme) {
-    switch (peer->addressing_scheme) {
+    switch (addressing_scheme) {
         case CAL_AS_NONE: {
             peer->addressing_scheme = addressing_scheme;
             return;
