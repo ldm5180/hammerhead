@@ -27,6 +27,8 @@ int bip_init_publisher(cal_peer_t *this, void (*callback)(cal_event_t *event)) {
     socklen_t my_address_len;
 
 
+    cal_i_bip_subscriber_callback = callback;
+
     cal_peer_set_addressing_scheme(this, CAL_AS_IPv4);
 
 
@@ -83,6 +85,7 @@ void bip_publish(char *topic, void *msg, int size) {
 }
 
 
+#if 0
 int bip_publisher_read(void) {
     int r;
     int i;
@@ -99,5 +102,57 @@ int bip_publisher_read(void) {
         printf("   %c\n", isprint(buffer[i]) ? buffer[i] : '.');
     }
     return r;
+}
+#endif
+
+
+int bip_publisher_read(void) {
+    int socket;
+    struct sockaddr_in sin;
+    socklen_t sin_len;
+
+    cal_event_t *event;
+
+
+    sin_len = sizeof(struct sockaddr);
+    socket = accept(bip_socket, (struct sockaddr *)&sin, &sin_len);
+    if (socket < 0) {
+        fprintf(stderr, "bip: bip_publisher_read(): error accepting a connection: %s\n", strerror(errno));
+        return 0;
+    }
+
+    event = cal_event_new(CAL_EVENT_CONNECT);
+    if (event == NULL) {
+        // an error has been logged already
+        close(socket);
+        return 1;
+    }
+
+    event->peer = cal_peer_new(NULL);
+    if (event->peer == NULL) {
+        // an error has been logged already
+        cal_event_free(event);
+        close(socket);
+        return 1;
+    }
+
+    cal_peer_set_addressing_scheme(event->peer, CAL_AS_IPv4);
+    event->peer->as.ipv4.socket = socket;
+    event->peer->as.ipv4.port = ntohs(sin.sin_port);
+
+    event->peer->as.ipv4.hostname = strdup(inet_ntoa(sin.sin_addr));
+    if (event->peer->as.ipv4.hostname == NULL) {
+        fprintf(stderr, "bip: bip_publisher_read(): out of memory\n");
+        cal_event_free(event);
+        close(socket);
+        return 1;
+    }
+
+
+    cal_i_bip_subscriber_callback(event);
+
+    cal_event_free(event);
+
+    return 1;
 }
 

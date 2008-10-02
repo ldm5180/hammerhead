@@ -67,8 +67,9 @@ const char *cal_peer_address_to_str(const cal_peer_t *peer);
 
 typedef enum {
     CAL_EVENT_NONE = 0,
-    CAL_EVENT_JOIN,
-    CAL_EVENT_LEAVE
+    CAL_EVENT_JOIN,       // we've noticed that a peer has joined the network
+    CAL_EVENT_LEAVE,      // we've noticed that a peer has left the network
+    CAL_EVENT_CONNECT     // a peer has connected to us
 } cal_event_type_t;
 
 
