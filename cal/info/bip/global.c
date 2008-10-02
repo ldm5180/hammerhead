@@ -3,6 +3,7 @@
 #include "bip.h"
 
 
+// FIXME: this one's used by the publisher too
 void (*cal_i_bip_subscriber_callback)(cal_event_t *event) = NULL;
 
 
