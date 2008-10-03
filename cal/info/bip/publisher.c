@@ -24,6 +24,8 @@ static pthread_t *bip_publisher_thread = NULL;
 static int bip_publisher_fds_to_user[2];
 static int bip_publisher_fds_from_user[2];
 
+static int bip_listening_socket = -1;
+
 
 
 

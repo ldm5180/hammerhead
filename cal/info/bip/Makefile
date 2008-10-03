@@ -12,7 +12,6 @@ OBJS =                      \
     publisher.o             \
     subscriber.o            \
     sendto.o                \
-    global.o                \
 
 
 all: cal-i.a

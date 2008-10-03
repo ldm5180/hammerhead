@@ -7,9 +7,6 @@
 extern cal_i_t cal_i;
 
 
-extern int bip_listening_socket;
-
-
 typedef struct {
     cal_peer_t *peer;
     char *topic;
