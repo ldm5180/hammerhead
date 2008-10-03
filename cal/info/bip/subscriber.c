@@ -14,9 +14,6 @@
 #include "bip.h"
 
 
-#define Max(a, b) ((a) > (b) ? (a) : (b))
-
-
 static pthread_t *cal_i_bip_subscriber_thread = NULL;
 
 static int cal_i_bip_subscriber_fds_to_user[2];
