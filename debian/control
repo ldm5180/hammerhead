@@ -9,6 +9,6 @@ Homepage: http://bioserve.colorado.edu/bionet
 Package: bionet2
 Section: unknown
 Architecture: any
-Depends: libavahi-compat-libdnssd1, libglib2.0-0       
+Depends: ${shlibs:Depends}
 Description: Bionet2
  All Bionet2 stuff in one big lump.
