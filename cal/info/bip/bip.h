@@ -4,7 +4,8 @@
 #include "cal.h"
 
 
-extern void (*cal_i_bip_subscriber_callback)(cal_event_t *event);
+extern cal_i_t cal_i;
+
 
 extern int bip_socket;
 

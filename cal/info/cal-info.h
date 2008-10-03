@@ -24,6 +24,10 @@ typedef struct {
     //
 
 
+    //! set by init_publisher(), called by publisher_read()
+    void (*publisher_callback)(cal_event_t *event);
+
+
     //!
     //! \brief Make this peer available for connections.
     //!
@@ -65,9 +69,15 @@ typedef struct {
     int (*publisher_read)(void);
 
 
+
+
     //
     // subscriber stuff
     //
+
+
+    //! set by init_subscriber(), called by subscriber_read()
+    void (*subscriber_callback)(cal_event_t *event);
 
 
     int (*init_subscriber)(void (*callback)(cal_event_t *event));
@@ -76,8 +86,10 @@ typedef struct {
     int (*subscriber_read)(void);  // maybe calls callback
 
 
+
+
     //
-    // usable by both
+    // usable by both publishers and subscribers
     //
 
     int (*sendto)(cal_peer_t *peer, void *msg, int size);

@@ -27,7 +27,7 @@ int bip_init_publisher(cal_peer_t *this, void (*callback)(cal_event_t *event)) {
     socklen_t my_address_len;
 
 
-    cal_i_bip_subscriber_callback = callback;
+    cal_i.publisher_callback = callback;
 
     cal_peer_set_addressing_scheme(this, CAL_AS_IPv4);
 
@@ -149,7 +149,10 @@ int bip_publisher_read(void) {
     }
 
 
-    cal_i_bip_subscriber_callback(event);
+    if (cal_i.publisher_callback != NULL) {
+        cal_i.publisher_callback(event);
+    }
+
 
     cal_event_free(event);
 

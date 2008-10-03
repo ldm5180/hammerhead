@@ -96,7 +96,7 @@ int bip_init_subscriber(void (*callback)(cal_event_t *event)) {
     }
 
     // record the user's callback function
-    cal_i_bip_subscriber_callback = callback;
+    cal_i.subscriber_callback = callback;
 
     // start the subscriber thread to talk to the peers
     r = pthread_create(cal_i_bip_subscriber_thread, NULL, cal_i_bip_subscriber_function, NULL);
@@ -116,7 +116,7 @@ int bip_init_subscriber(void (*callback)(cal_event_t *event)) {
 fail3:
     free(cal_i_bip_subscriber_thread);
     cal_i_bip_subscriber_thread = NULL;
-    cal_i_bip_subscriber_callback = NULL;
+    cal_i.subscriber_callback = NULL;
 
 fail2:
     close(cal_i_bip_subscriber_fds_from_user[0]);
@@ -153,7 +153,7 @@ void bip_cancel_subscriber(void) {
     close(cal_i_bip_subscriber_fds_from_user[0]);
     close(cal_i_bip_subscriber_fds_from_user[1]);
 
-    cal_i_bip_subscriber_callback = NULL;
+    cal_i.subscriber_callback = NULL;
 }
 
 
