@@ -120,36 +120,50 @@ static void bip_publisher_accept_connection(void) {
 
 static int bip_publisher_read_from_client(cal_peer_t *peer) {
     int r;
-    char buffer[1024];
+    cal_event_t *event;
 
-    r = read(peer->as.ipv4.socket, buffer, sizeof(buffer));
-    if (r < 0) {
-        fprintf(stderr, "bip_publisher_read_from_client(): error reading from client %s (%s): %s\n", peer->name, cal_peer_address_to_str(peer), strerror(errno));
-        bip_publisher_disconnect_peer(peer);
-        return -1;
-    } else if (r == 0) {
-        fprintf(stderr, "bip_publisher_read_from_client(): client %s (%s) disconnects\n", peer->name, cal_peer_address_to_str(peer));
-        bip_publisher_disconnect_peer(peer);
-        return -1;
+
+    event = cal_event_new(CAL_EVENT_MESSAGE);
+    if (event == NULL) {
+        fprintf(stderr, "bip_publisher_read_from_client(): out of memory!\n");
+        goto fail0;
     }
 
+    event->msg.buffer = malloc(1024);
+    if (event->msg.buffer == NULL) {
+        fprintf(stderr, "bip_publisher_read_from_client(): out of memory!\n");
+        goto fail1;
+    }
 
-    //
-    // client said something - for now we just print it
-    //
+    r = read(peer->as.ipv4.socket, event->msg.buffer, sizeof(event->msg.buffer));
+    if (r < 0) {
+        fprintf(stderr, "bip_publisher_read_from_client(): error reading from client %s (%s): %s\n", peer->name, cal_peer_address_to_str(peer), strerror(errno));
+        goto fail1;
+    } else if (r == 0) {
+        fprintf(stderr, "bip_publisher_read_from_client(): client %s (%s) disconnects\n", peer->name, cal_peer_address_to_str(peer));
+        goto fail1;
+    }
 
-    {
-        int i;
-        printf("read %d bytes from client %s (%s):\n", r, peer->name, cal_peer_address_to_str(peer));
-        for (i = 0; i < r; i ++) {
-            if ((i % 8) == 0) printf("    ");
-            printf("%02X ", buffer[i]);
-            if ((i % 8) == 7) printf("\n");
-        }
-        if ((i % 8) != 7) printf("\n");
+    event->msg.size = r;
+    event->peer = peer;
+
+    r = write(bip_publisher_fds_to_user[1], &event, sizeof(cal_event_t*));
+    if (r < 0) {
+        printf("bip_publisher_read_from_client(): error writing Message event: %s\n", strerror(errno));
+        goto fail1;
+    } else if (r != sizeof(cal_event_t*)) {
+        printf("bip_publisher_read_from_client(): short write of Message event!\n");
+        goto fail1;
     }
 
     return 0;
+
+fail1:
+    cal_event_free(event);
+
+fail0:
+    bip_publisher_disconnect_peer(peer);
+    return -1;
 }
 
 

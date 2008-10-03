@@ -21,13 +21,29 @@ cal_peer_t *me;
 void cal_i_callback(cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
-            printf("got a connection from %s (%s)\n", event->peer->name, cal_peer_address_to_str(event->peer));
+            printf("got a Connect event from %s (%s)\n", event->peer->name, cal_peer_address_to_str(event->peer));
             event->peer = NULL;  // FIXME: cal-i requires that you do this
             break;
         }
 
         case CAL_EVENT_DISCONNECT: {
-            printf("got a disconnection from %s (%s)\n", event->peer->name, cal_peer_address_to_str(event->peer));
+            printf("got a Disconnect event from %s (%s)\n", event->peer->name, cal_peer_address_to_str(event->peer));
+            break;
+        }
+
+        case CAL_EVENT_MESSAGE: {
+            int i;
+
+            printf("got a Message event from %s (%s), %d bytes:\n", event->peer->name, cal_peer_address_to_str(event->peer), event->msg.size);
+            for (i = 0; i < event->msg.size; i ++) {
+                if ((i % 8) == 0) printf("    ");
+                printf("%02X ", event->msg.buffer[i]);
+                if ((i % 8) == 7) printf("\n");
+            }
+            if ((i % 8) != 7) printf("\n");
+
+            event->peer = NULL;  // FIXME: cal-i requires that you do this
+
             break;
         }
 

@@ -24,14 +24,22 @@ typedef enum {
     CAL_EVENT_JOIN,       ///< we've noticed that a peer has joined the network
     CAL_EVENT_LEAVE,      ///< we've noticed that a peer has left the network
     CAL_EVENT_CONNECT,    ///< a peer has connected to us
-    CAL_EVENT_DISCONNECT  ///< a peer has disconnected from us
+    CAL_EVENT_DISCONNECT, ///< a peer has disconnected from us
+    CAL_EVENT_MESSAGE     ///< a peer has sent us a message
 } cal_event_type_t;
+
+
+typedef struct {
+    char *buffer;
+    int size;
+} cal_message_t;
 
 
 /// this is the structure of a CAL Event
 typedef struct {
     cal_event_type_t type;  ///< the event type
-    cal_peer_t *peer;       ///< the peer that generated the event
+    cal_peer_t *peer;       ///< the peer that generated the event (all events have this)
+    cal_message_t msg;      ///< the message sent (only the CAL_EVENT_MESSAGE event type has this)
 } cal_event_t;
 
 
