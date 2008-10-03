@@ -22,6 +22,7 @@ void cal_i_callback(cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
             printf("got a connection from %s (%s)\n", event->peer->name, cal_peer_address_to_str(event->peer));
+            event->peer = NULL;  // FIXME: cal-i requires that you do this
             break;
         }
 

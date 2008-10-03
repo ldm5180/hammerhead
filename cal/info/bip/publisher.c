@@ -13,6 +13,8 @@
 
 #include <sys/socket.h>
 
+#include <glib.h>
+
 #include "cal.h"
 #include "bip.h"
 
@@ -25,6 +27,8 @@ static int bip_publisher_fds_to_user[2];
 static int bip_publisher_fds_from_user[2];
 
 static int bip_listening_socket = -1;
+
+static GPtrArray *clients;
 
 
 
@@ -77,6 +81,7 @@ void bip_publisher_accept_connection(void) {
         return;
     }
 
+    g_ptr_array_add(clients, event->peer);
 
     r = write(bip_publisher_fds_to_user[1], &event, sizeof(cal_event_t*));
     if (r < 0) {
@@ -87,8 +92,35 @@ void bip_publisher_accept_connection(void) {
 }
 
 
+void bip_publisher_read_from_client(cal_peer_t *peer) {
+    int r;
+    char buffer[100];
+
+    r = read(peer->as.ipv4.socket, buffer, sizeof(buffer));
+    if (r < 0) {
+        // FIXME: peer disconnected
+        return;
+    } else if (r == 0) {
+        // FIXME: peer disconnected
+        return;
+    } else {
+        int i;
+        printf("read %d bytes from client %s (%s):\n", r, peer->name, cal_peer_address_to_str(peer));
+        for (i = 0; i < r; i ++) {
+            if ((i % 8) == 0) printf("    ");
+            printf("%02X ", buffer[i]);
+            if ((i % 8) == 7) printf("\n");
+        }
+        if ((i % 8) != 7) printf("\n");
+    }
+}
+
+
 void *bip_publisher_function(void *arg) {
+    clients = g_ptr_array_new();
+
     while (1) {
+        int i;
         fd_set readers;
         int max_fd;
         int r;
@@ -102,6 +134,17 @@ void *bip_publisher_function(void *arg) {
         FD_SET(bip_listening_socket, &readers);
         max_fd = Max(max_fd, bip_listening_socket);
 
+
+        // see if any peer has anything to say
+        for (i = 0; i < clients->len; i ++) {
+            cal_peer_t *peer = g_ptr_array_index(clients, i);
+            int fd = peer->as.ipv4.socket;
+
+            FD_SET(fd, &readers);
+            max_fd = Max(max_fd, fd);
+        }
+
+
         // block until there's something to do
         r = select(max_fd + 1, &readers, NULL, NULL, NULL);
 
@@ -111,6 +154,16 @@ void *bip_publisher_function(void *arg) {
 
         if (FD_ISSET(bip_listening_socket, &readers)) {
             bip_publisher_accept_connection();
+        }
+
+        // see if any peer has anything to say
+        for (i = 0; i < clients->len; i ++) {
+            cal_peer_t *peer = g_ptr_array_index(clients, i);
+            int fd = peer->as.ipv4.socket;
+
+            if (FD_ISSET(fd, &readers)) {
+                bip_publisher_read_from_client(peer);
+            }
         }
 
     }
