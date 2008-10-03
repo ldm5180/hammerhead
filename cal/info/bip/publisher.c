@@ -33,12 +33,38 @@ static GPtrArray *clients;
 
 
 
-void bip_publisher_read_from_user(void) {
+static void bip_publisher_disconnect_peer(cal_peer_t *peer) {
+    int r;
+    cal_event_t *event;
+
+    close(peer->as.ipv4.socket);
+    peer->as.ipv4.socket = -1;
+
+    g_ptr_array_remove_fast(clients, peer);
+
+    event = cal_event_new(CAL_EVENT_DISCONNECT);
+    if (event == NULL) {
+        fprintf(stderr, "bip_disconnect_peer(): out of memory\n");
+        return;
+    }
+
+    event->peer = peer;
+
+    r = write(bip_publisher_fds_to_user[1], &event, sizeof(cal_event_t*));
+    if (r < 0) {
+        printf("bip_publisher_disconnect_peer(): error writing Disconnect event: %s\n", strerror(errno));
+    } else if (r != sizeof(cal_event_t*)) {
+        printf("bip_publisher_disconnect_peer(): short write of Disconnect event!\n");
+    }
+}
+
+
+static void bip_publisher_read_from_user(void) {
     printf("bip: user has something to say\n");
 }
 
 
-void bip_publisher_accept_connection(void) {
+static void bip_publisher_accept_connection(void) {
     int r;
     int socket;
     struct sockaddr_in sin;
@@ -92,18 +118,27 @@ void bip_publisher_accept_connection(void) {
 }
 
 
-void bip_publisher_read_from_client(cal_peer_t *peer) {
+static int bip_publisher_read_from_client(cal_peer_t *peer) {
     int r;
-    char buffer[100];
+    char buffer[1024];
 
     r = read(peer->as.ipv4.socket, buffer, sizeof(buffer));
     if (r < 0) {
-        // FIXME: peer disconnected
-        return;
+        fprintf(stderr, "bip_publisher_read_from_client(): error reading from client %s (%s): %s\n", peer->name, cal_peer_address_to_str(peer), strerror(errno));
+        bip_publisher_disconnect_peer(peer);
+        return -1;
     } else if (r == 0) {
-        // FIXME: peer disconnected
-        return;
-    } else {
+        fprintf(stderr, "bip_publisher_read_from_client(): client %s (%s) disconnects\n", peer->name, cal_peer_address_to_str(peer));
+        bip_publisher_disconnect_peer(peer);
+        return -1;
+    }
+
+
+    //
+    // client said something - for now we just print it
+    //
+
+    {
         int i;
         printf("read %d bytes from client %s (%s):\n", r, peer->name, cal_peer_address_to_str(peer));
         for (i = 0; i < r; i ++) {
@@ -113,10 +148,12 @@ void bip_publisher_read_from_client(cal_peer_t *peer) {
         }
         if ((i % 8) != 7) printf("\n");
     }
+
+    return 0;
 }
 
 
-void *bip_publisher_function(void *arg) {
+static void *bip_publisher_function(void *arg) {
     clients = g_ptr_array_new();
 
     while (1) {
@@ -162,10 +199,12 @@ void *bip_publisher_function(void *arg) {
             int fd = peer->as.ipv4.socket;
 
             if (FD_ISSET(fd, &readers)) {
-                bip_publisher_read_from_client(peer);
+                if (bip_publisher_read_from_client(peer) != 0) {
+                    // the client disconnected, which probably reordered the clients array
+                    break;
+                }
             }
         }
-
     }
 }
 

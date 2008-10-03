@@ -26,6 +26,11 @@ void cal_i_callback(cal_event_t *event) {
             break;
         }
 
+        case CAL_EVENT_DISCONNECT: {
+            printf("got a disconnection from %s (%s)\n", event->peer->name, cal_peer_address_to_str(event->peer));
+            break;
+        }
+
         default: {
             printf("unhandled event type %d\n", event->type);
             break;
@@ -35,33 +40,28 @@ void cal_i_callback(cal_event_t *event) {
 
 
 int main(int argc, char *argv[]) {
+    int cal_i_fd;
+    int r;
+
+
     me = cal_peer_new("time-publisher");
 
+    cal_i_fd = cal_i.init_publisher(me, cal_i_callback);
+    if (cal_i_fd < 0) {
+        printf("failed to init publisher\n");
+        exit(1);
+    }
+
+    r = cal_pd.join(me);
+    if (r < 0) {
+        printf("failed to join the peer list\n");
+        exit(1);
+    }
+
+
     while (1) {
-        int cal_i_fd = -1;
         int max_fd;
-        int r;
         fd_set readers;
-
-        while (cal_i_fd < 0) {
-            r = cal_pd.leave(me);
-            if (r < 0) {
-                printf("failed to leave the peer list, oh well\n");
-            }
-
-            cal_i_fd = cal_i.init_publisher(me, cal_i_callback);
-            if (cal_i_fd < 0) {
-                printf("failed to init publisher\n");
-                sleep(1);
-                continue;
-            }
-
-            r = cal_pd.join(me);
-            if (r < 0) {
-                printf("failed to join the peer list\n");
-                sleep(1);
-            }
-        }
 
         FD_ZERO(&readers);
         max_fd = -1;

@@ -23,7 +23,8 @@ typedef enum {
     CAL_EVENT_NONE = 0,   ///< uninitialized event
     CAL_EVENT_JOIN,       ///< we've noticed that a peer has joined the network
     CAL_EVENT_LEAVE,      ///< we've noticed that a peer has left the network
-    CAL_EVENT_CONNECT     ///< a peer has connected to us
+    CAL_EVENT_CONNECT,    ///< a peer has connected to us
+    CAL_EVENT_DISCONNECT  ///< a peer has disconnected from us
 } cal_event_type_t;
 
 
