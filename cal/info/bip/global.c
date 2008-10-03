@@ -4,5 +4,5 @@
 
 
 // FIXME: this one's used by the publisher
-int bip_socket = -1;
+int bip_listening_socket = -1;
 
