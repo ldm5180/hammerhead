@@ -33,6 +33,7 @@ void cal_i_callback(cal_event_t *event) {
 
         case CAL_EVENT_MESSAGE: {
             int i;
+            char *msg = "hey yourself";
 
             printf("got a Message event from %s (%s), %d bytes:\n", event->peer->name, cal_peer_address_to_str(event->peer), event->msg.size);
             for (i = 0; i < event->msg.size; i ++) {
@@ -41,6 +42,8 @@ void cal_i_callback(cal_event_t *event) {
                 if ((i % 8) == 7) printf("\n");
             }
             if ((i % 8) != 7) printf("\n");
+
+            cal_i.publisher_sendto(event->peer, msg, strlen(msg));
 
             event->peer = NULL;  // FIXME: cal-i requires that you do this
 
