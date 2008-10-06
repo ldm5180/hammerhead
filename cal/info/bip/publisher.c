@@ -118,8 +118,6 @@ static void bip_publisher_accept_connection(void) {
 }
 
 
-#define BIP_MSG_BUFFER_SIZE (1024)
-
 static int bip_publisher_read_from_client(cal_peer_t *peer) {
     int r;
     cal_event_t *event;

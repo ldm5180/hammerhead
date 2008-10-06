@@ -4,6 +4,9 @@
 #include "cal.h"
 
 
+#define BIP_MSG_BUFFER_SIZE (1024)
+
+
 extern cal_i_t cal_i;
 
 
