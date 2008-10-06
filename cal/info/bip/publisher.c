@@ -118,6 +118,8 @@ static void bip_publisher_accept_connection(void) {
 }
 
 
+#define BIP_MSG_BUFFER_SIZE (1024)
+
 static int bip_publisher_read_from_client(cal_peer_t *peer) {
     int r;
     cal_event_t *event;
@@ -129,13 +131,13 @@ static int bip_publisher_read_from_client(cal_peer_t *peer) {
         goto fail0;
     }
 
-    event->msg.buffer = malloc(1024);
+    event->msg.buffer = malloc(BIP_MSG_BUFFER_SIZE);
     if (event->msg.buffer == NULL) {
         fprintf(stderr, "bip_publisher_read_from_client(): out of memory!\n");
         goto fail1;
     }
 
-    r = read(peer->as.ipv4.socket, event->msg.buffer, sizeof(event->msg.buffer));
+    r = read(peer->as.ipv4.socket, event->msg.buffer, BIP_MSG_BUFFER_SIZE);
     if (r < 0) {
         fprintf(stderr, "bip_publisher_read_from_client(): error reading from client %s (%s): %s\n", peer->name, cal_peer_address_to_str(peer), strerror(errno));
         goto fail1;
