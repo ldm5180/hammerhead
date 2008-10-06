@@ -53,8 +53,6 @@ void cal_pd_callback(cal_event_t *event) {
             break;
         }
     }
-
-    cal_event_free(event);
 }
 
 
