@@ -11,7 +11,6 @@ OBJS =                      \
     connect.o               \
     publisher.o             \
     subscriber.o            \
-    sendto.o                \
 
 
 all: cal-i.a
