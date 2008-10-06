@@ -59,8 +59,31 @@ void cal_pd_callback(cal_event_t *event) {
 
 
 void cal_i_callback(cal_event_t *event) {
-    printf("CAL-I callback\n");
-    // cal_i_free_event(event);
+    switch (event->type) {
+        case CAL_EVENT_MESSAGE: {
+            int i;
+
+            printf(
+                "Message event from '%s' (%s)\n",
+                event->peer->name,
+                cal_peer_address_to_str(event->peer)
+            );
+
+            for (i = 0; i < event->msg.size; i ++) {
+                if ((i % 8) == 0) printf("    ");
+                printf("%02X ", event->msg.buffer[i]);
+                if ((i % 8) == 7) printf("\n");
+            }
+            if ((i % 8) != 7) printf("\n");
+
+            break;
+        }
+
+        default: {
+            printf("unknown event type %d\n", event->type);
+            break;
+        }
+    }
 }
 
 

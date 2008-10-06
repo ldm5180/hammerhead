@@ -90,7 +90,25 @@ typedef struct {
     int (*init_subscriber)(void (*callback)(cal_event_t *event));
     void (*cancel_subscriber)(void);
     void (*subscribe)(cal_peer_t *peer, char *topic);
+
+
+    //!
+    //! \brief Service the CAL-I subscriber's file descriptor.
+    //!
+    //! This function should be called whenever the file descriptor
+    //! returned from init_subscriber() is readable.  It will service the
+    //! file descriptor and may call the callback with an appropriate
+    //! event.
+    //!
+    //! \return True (non-zero) on success.  False (zero) on failure,
+    //!     indicating that the file descriptor returned from
+    //!     init_subscriber() is invalid and the caller needs to re-call
+    //!     init_subscriber() to get a new fd.
+    //!
+
     int (*subscriber_read)(void);  // maybe calls callback
+
+
     int (*subscriber_sendto)(cal_peer_t *peer, void *msg, int size);
 
 } cal_i_t;

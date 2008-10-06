@@ -104,6 +104,8 @@ static int bip_subscriber_thread_sendto(cal_peer_t *peer, void *msg, int size) {
 }
 
 
+
+
 // this function is called by the subscriber thread when the user app wants to tell it something
 void bip_subscriber_read_from_user(void) {
     cal_event_t *event;
@@ -132,6 +134,46 @@ void bip_subscriber_read_from_user(void) {
 }
 
 
+
+
+// this function is called by the subscriber thread when a connected publisher has something to say
+static void bip_subscriber_read_from_publisher(cal_peer_t *peer) {
+    cal_event_t *event;
+    int r;
+
+    event = cal_event_new(CAL_EVENT_MESSAGE);
+    if (event == NULL) {
+        fprintf(stderr, "bip_subscriber_read_from_publisher: out of memory!\n");
+        return;
+    }
+
+    event->peer = peer;
+    event->msg.buffer = malloc(BIP_MSG_BUFFER_SIZE);
+    if (event->msg.buffer == NULL) {
+        cal_event_free(event);
+        fprintf(stderr, "bip_subscriber_read_from_publisher: out of memory!\n");
+        return;
+    }
+
+    r = read(peer->as.ipv4.socket, event->msg.buffer, BIP_MSG_BUFFER_SIZE);
+    if (r < 0) {
+        printf("bip: error reading from peer %s: %s\n", peer->name, strerror(errno));
+        return;
+    }
+
+    event->msg.size = r;
+
+    r = write(cal_i_bip_subscriber_fds_to_user[1], &event, sizeof(event));
+    if (r < 0) {
+        fprintf(stderr, "bip_subscriber_read_from_publisher(): error writing to user thread!!");
+    } else if (r < sizeof(event)) {
+        fprintf(stderr, "bip_subscriber_read_from_publisher(): short write to user thread!!");
+    }
+}
+
+
+
+
 //
 // this function gets run by the thread started by init_subscriber()
 // canceled by cancel_subscriber()
@@ -147,6 +189,7 @@ void *cal_i_bip_subscriber_function(void *arg) {
         fd_set readers;
         int max_fd;
         int r;
+        int i;
 
         FD_ZERO(&readers);
         max_fd = -1;
@@ -154,11 +197,24 @@ void *cal_i_bip_subscriber_function(void *arg) {
         FD_SET(cal_i_bip_subscriber_fds_from_user[0], &readers);
         max_fd = Max(max_fd, cal_i_bip_subscriber_fds_from_user[0]);
 
+        for (i = 0; i < bip_connected_publishers->len; i ++) {
+            cal_peer_t *peer = g_ptr_array_index(bip_connected_publishers, i);
+            FD_SET(peer->as.ipv4.socket, &readers);
+            max_fd = Max(max_fd, peer->as.ipv4.socket);
+        }
+
         // block until there's something to do
         r = select(max_fd + 1, &readers, NULL, NULL, NULL);
 
         if (FD_ISSET(cal_i_bip_subscriber_fds_from_user[0], &readers)) {
             bip_subscriber_read_from_user();
+        }
+
+        for (i = 0; i < bip_connected_publishers->len; i ++) {
+            cal_peer_t *peer = g_ptr_array_index(bip_connected_publishers, i);
+            if (FD_ISSET(peer->as.ipv4.socket, &readers)) {
+                bip_subscriber_read_from_publisher(peer);
+            }
         }
     }
 }
@@ -280,21 +336,23 @@ void bip_subscribe(cal_peer_t *peer, char *topic) {
 
 // this function is called by the user app when some published data has come in
 int bip_subscriber_read(void) {
+    cal_event_t *event;
     int r;
-    int i;
-    char buffer[100];
 
-    r = read(cal_i_bip_subscriber_fds_to_user[0], buffer, sizeof(buffer));
+    r = read(cal_i_bip_subscriber_fds_to_user[0], &event, sizeof(event));
     if (r < 0) {
         printf("error in bip_subscriber_read(): %s\n", strerror(errno));
-        return -1;
+        return 0;
+    } else if (r != sizeof(event)) {
+        printf("bip_subscriber_read(): short read from bip subscriber thread\n");
+        return 0;
     }
 
-    printf("bip_read got %d bytes:\n", r);
-    for (i = 0; i < r; i ++) {
-        printf("   %c\n", isprint(buffer[i]) ? buffer[i] : '.');
-    }
-    return r;
+    cal_i.subscriber_callback(event);
+
+    // FIXME memory leak
+
+    return 1;
 }
 
 
