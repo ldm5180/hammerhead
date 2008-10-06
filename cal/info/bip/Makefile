@@ -8,7 +8,6 @@ COMMON_OBJS =  $(wildcard ../../util/*.o)
 
 OBJS =                      \
     cal-i-api.o             \
-    connect.o               \
     publisher.o             \
     subscriber.o            \
 

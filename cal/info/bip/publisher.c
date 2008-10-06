@@ -365,10 +365,13 @@ int bip_publisher_read(void) {
 
 
 int bip_publisher_sendto(cal_peer_t *peer, void *msg, int size) {
-    int r;
+    if (peer->addressing_scheme != CAL_AS_IPv4) {
+        fprintf(stderr, "bip_publisher_sendto(): peer %s (%s) has unknown addressing scheme, ignoring\n", peer->name, cal_peer_address_to_str(peer));
+        return -1;
+    }
 
-    r = bip_connect_to_peer(peer);
-    if (r < 0) {
+    if (peer->as.ipv4.socket < 0) {
+        fprintf(stderr, "bip_publisher_sendto(): peer %s (%s) has no socket, ignoring\n", peer->name, cal_peer_address_to_str(peer));
         return -1;
     }
 
