@@ -90,22 +90,45 @@ static int bip_connect_to_peer(cal_peer_t *peer) {
 
 
 
-// this function is called by the subscriber thread when the user app wants to tell it something
-void bip_subscriber_read_from_user(void) {
-    bip_subscription_request_t *req;
+static int bip_subscriber_thread_sendto(cal_peer_t *peer, void *msg, int size) {
     int r;
 
-    r = read(cal_i_bip_subscriber_fds_from_user[0], &req, sizeof(req));
+    r = bip_connect_to_peer(peer);
+    if (r < 0) {
+        return -1;
+    }
+
+    printf("sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
+
+    return write(peer->as.ipv4.socket, msg, size);
+}
+
+
+// this function is called by the subscriber thread when the user app wants to tell it something
+void bip_subscriber_read_from_user(void) {
+    cal_event_t *event;
+    int r;
+
+    r = read(cal_i_bip_subscriber_fds_from_user[0], &event, sizeof(event));
     if (r < 0) {
         printf("bip: error reading from user: %s\n", strerror(errno));
         return;
-    } else if (r != sizeof(req)) {
+    } else if (r != sizeof(event)) {
         printf("bip: short read from user\n");
         return;
     }
 
-    // FIXME: hope it's NULL terminated
-    printf("read subscription request from user: peer=\"%s\", topic=\"%s\"\n", req->peer->name, req->topic);
+    switch (event->type) {
+        case CAL_EVENT_MESSAGE: {
+            bip_subscriber_thread_sendto(event->peer, event->msg.buffer, event->msg.size);
+            break;
+        }
+
+        default: {
+            fprintf(stderr, "bip: unknown event %d from user\n", event->type);
+            break;
+        }
+    }
 }
 
 
@@ -117,6 +140,8 @@ void bip_subscriber_read_from_user(void) {
 void *cal_i_bip_subscriber_function(void *arg) {
     // close(cal_i_bip_subscriber_fds_to_user[0]);
     // close(cal_i_bip_subscriber_fds_from_user[1]);
+
+    bip_connected_publishers = g_ptr_array_new();
 
     while (1) {
         fd_set readers;
@@ -177,8 +202,6 @@ int bip_init_subscriber(void (*callback)(cal_event_t *event)) {
 
     // the from_user fd is written by bip.read(), the user doesnt need to know it
 
-    bip_connected_publishers = g_ptr_array_new();
-
     return cal_i_bip_subscriber_fds_to_user[0];
 
 
@@ -229,6 +252,7 @@ void bip_cancel_subscriber(void) {
 
 
 void bip_subscribe(cal_peer_t *peer, char *topic) {
+#if 0  // FIXME: need a Subscribe event
     bip_subscription_request_t *req;
     int r;
 
@@ -248,6 +272,7 @@ void bip_subscribe(cal_peer_t *peer, char *topic) {
     } else if (r != sizeof(bip_subscription_request_t*)) {
         printf("bip_subscribe: short write of subscription request!\n");
     }
+#endif
 }
 
 
@@ -277,14 +302,27 @@ int bip_subscriber_read(void) {
 
 int bip_subscriber_sendto(cal_peer_t *peer, void *msg, int size) {
     int r;
+    cal_event_t *event;
 
-    r = bip_connect_to_peer(peer);
-    if (r < 0) {
+    event = cal_event_new(CAL_EVENT_MESSAGE);
+    if (event == NULL) {
         return -1;
     }
 
-    printf("sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
+    event->peer = peer;
+    event->msg.buffer = msg;
+    event->msg.size = size;
 
-    return write(peer->as.ipv4.socket, msg, size);
+    r = write(cal_i_bip_subscriber_fds_from_user[1], &event, sizeof(event));
+    if (r < 0) {
+        fprintf(stderr, "bip_subscriber_sendto(): error writing to subscriber thread!!");
+        return -1;
+    }
+    if (r < sizeof(event)) {
+        fprintf(stderr, "bip_subscriber_sendto(): short write to subscriber thread!!");
+        return -1;
+    }
+
+    return 0;
 }
 
