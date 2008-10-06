@@ -8,13 +8,13 @@ cal_i_t cal_i = {
     .init_publisher = bip_init_publisher,
     .publish = bip_publish,
     .publisher_read = bip_publisher_read,
+    .publisher_sendto = bip_publisher_sendto,
 
     .subscriber_callback = NULL,
     .init_subscriber = bip_init_subscriber,
     .cancel_subscriber = bip_cancel_subscriber,
     .subscribe = bip_subscribe,
     .subscriber_read = bip_subscriber_read,
-
-    .sendto = bip_sendto
+    .subscriber_sendto = bip_subscriber_sendto
 };
 

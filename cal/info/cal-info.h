@@ -69,6 +69,13 @@ typedef struct {
     int (*publisher_read)(void);
 
 
+    //!
+    //! \brief Send a message to a connected client
+    //!
+
+    int (*publisher_sendto)(cal_peer_t *peer, void *msg, int size);
+
+
 
 
     //
@@ -84,15 +91,7 @@ typedef struct {
     void (*cancel_subscriber)(void);
     void (*subscribe)(cal_peer_t *peer, char *topic);
     int (*subscriber_read)(void);  // maybe calls callback
-
-
-
-
-    //
-    // usable by both publishers and subscribers
-    //
-
-    int (*sendto)(cal_peer_t *peer, void *msg, int size);
+    int (*subscriber_sendto)(cal_peer_t *peer, void *msg, int size);
 
 } cal_i_t;
 

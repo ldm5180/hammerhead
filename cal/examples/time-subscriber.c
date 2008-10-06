@@ -34,7 +34,7 @@ void cal_pd_callback(cal_event_t *event) {
             }
 
             printf("found a time-publisher, subscribing to the time from it\n");
-            cal_i.sendto(event->peer, "hey there!", 11);
+            cal_i.subscriber_sendto(event->peer, "hey there!", 11);
             cal_i.subscribe(event->peer, "time");
 
             // steal this peer from the event

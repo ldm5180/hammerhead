@@ -363,3 +363,17 @@ int bip_publisher_read(void) {
     return 1;
 }
 
+
+int bip_publisher_sendto(cal_peer_t *peer, void *msg, int size) {
+    int r;
+
+    r = bip_connect_to_peer(peer);
+    if (r < 0) {
+        return -1;
+    }
+
+    printf("sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
+
+    return write(peer->as.ipv4.socket, msg, size);
+}
+
