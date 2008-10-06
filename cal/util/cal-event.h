@@ -35,9 +35,11 @@ typedef enum {
     //! cal_pd.subscriber_peer_list().  The event indicates that a
     //! previously Joined peer has left the network.  No further
     //! communication with this peer is possible, it's gone.  The
-    //! event->peer describes the peer that left.  The peer pointer will
-    //! remain valid until the user's callback returns, then it will be
-    //! made undefined.  The event->msg is empty and should be ignored.
+    //! event->peer describes the peer that left, and points to a
+    //! cal_peer_t that was previously the subject of a Join event.  The
+    //! peer pointer will remain valid until the user's callback returns,
+    //! then it will be made undefined.  The event->msg is empty and should
+    //! be ignored.
     CAL_EVENT_LEAVE,
 
     //! This event is delivered to peers who have called
@@ -50,15 +52,18 @@ typedef enum {
     //! This event is delivered to peers who have called
     //! cal_i.init_publisher().  The event indicates that a previously
     //! connected peer has disconnected from us.  The event->peer describes
-    //! the peer that disconnected.  No further communication with the peer
-    //! is possible, it's gone.  The peer pointer will remain valid until
-    //! the user's callback returns, then it will be made undefined.
-    //! The event->msg is empty and should be ignored.
+    //! the peer that disconnected, and points to a cal_peer_t that was
+    //! previously the subject of a Connect event.  No further
+    //! communication with the peer is possible, it's gone.  The peer
+    //! pointer will remain valid until the user's callback returns, then
+    //! it will be made undefined.  The event->msg is empty and should be
+    //! ignored.
     CAL_EVENT_DISCONNECT,
 
     //! This event indicates that a peer has sent us a message.  The
-    //! event->peer describes the peer that sent the message, and
-    //! event->msg contains the message.  The event->msg.buffer is
+    //! event->peer describes the peer that sent the message, and points to
+    //! a cal_peer_t that was previously the subject of a Connect event.
+    //! The event->msg contains the message.  The event->msg.buffer is
     //! dynamically allocated by the CAL-I library, and becomes the
     //! property of the user's callback function.  The user's callback must
     //! free it or otherwise manage the memory to avoid memory leaks here.
