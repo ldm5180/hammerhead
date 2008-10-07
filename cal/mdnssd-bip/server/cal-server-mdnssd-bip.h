@@ -31,9 +31,6 @@ extern pthread_t *cal_server_mdnssd_bip_thread;
 void *cal_server_mdnssd_bip_function(void *peer_as_voidp);
 
 
-extern DNSServiceRef *cal_server_mdnssd_bip_advertisedRef;
-
-
 
 
 #endif  //  __CAL_SERVER_MDNSSD_BIP_H

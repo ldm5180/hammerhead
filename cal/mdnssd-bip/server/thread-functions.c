@@ -26,6 +26,8 @@
 
 static GPtrArray *clients = NULL;
 
+static DNSServiceRef *advertisedRef = NULL;
+
 
 
 
@@ -188,6 +190,17 @@ fail0:
 
 
 
+void cleanup_advertisedRef(void *unused) {
+    if (advertisedRef != NULL) {
+        DNSServiceRefDeallocate(*advertisedRef);
+	free(advertisedRef);
+	advertisedRef = NULL;
+    }
+}
+
+
+
+
 void *cal_server_mdnssd_bip_function(void *peer_as_voidp) {
     cal_peer_t *this = peer_as_voidp;
 
@@ -195,14 +208,18 @@ void *cal_server_mdnssd_bip_function(void *peer_as_voidp) {
     DNSServiceErrorType error;
 
 
-    clients = g_ptr_array_new();
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
 
     // Shutup annoying nag message on Linux.
     setenv("AVAHI_COMPAT_NOWARN", "1", 1);
 
 
-    cal_server_mdnssd_bip_advertisedRef = malloc(sizeof(DNSServiceRef));
-    if (cal_server_mdnssd_bip_advertisedRef == NULL) {
+    clients = g_ptr_array_new();
+
+
+    advertisedRef = malloc(sizeof(DNSServiceRef));
+    if (advertisedRef == NULL) {
         fprintf(stderr, ID "server thread: out of memory!\n");
         return NULL;
     }
@@ -222,8 +239,8 @@ void *cal_server_mdnssd_bip_function(void *peer_as_voidp) {
         );  
 
         if (error != kDNSServiceErr_NoError) {
-            free(cal_server_mdnssd_bip_advertisedRef);
-            cal_server_mdnssd_bip_advertisedRef = NULL;
+            free(advertisedRef);
+            advertisedRef = NULL;
             TXTRecordDeallocate(&txt_ref);
             fprintf(stderr, "dnssd: Error registering service: %d\n", error);
             return 0;
@@ -232,7 +249,7 @@ void *cal_server_mdnssd_bip_function(void *peer_as_voidp) {
 #endif
 
     error = DNSServiceRegister(
-        cal_server_mdnssd_bip_advertisedRef,  // DNSServiceRef *sdRef
+        advertisedRef,                        // DNSServiceRef *sdRef
         0,                                    // DNSServiceFlags flags
         0,                                    // uint32_t interfaceIndex
         this->name,                           // const char *name
@@ -247,11 +264,13 @@ void *cal_server_mdnssd_bip_function(void *peer_as_voidp) {
     );
 
     if (error != kDNSServiceErr_NoError) {
-        free(cal_server_mdnssd_bip_advertisedRef);
-        cal_server_mdnssd_bip_advertisedRef = NULL;
+        free(advertisedRef);
+        advertisedRef = NULL;
         fprintf(stderr, ID "server thread: Error registering service: %d\n", error);
         return NULL;
     }
+
+    pthread_cleanup_push(cleanup_advertisedRef, NULL);
 
 
     while (1) {
@@ -304,5 +323,7 @@ void *cal_server_mdnssd_bip_function(void *peer_as_voidp) {
             }
         }
     }
+
+    pthread_cleanup_pop(0);  // cleanup_advertisedRef
 }
 

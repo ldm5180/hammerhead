@@ -149,13 +149,6 @@ void cal_server_mdnssd_bip_shutdown(void) {
         }
     }
 
-
-    if (cal_server_mdnssd_bip_advertisedRef != NULL) {
-        DNSServiceRefDeallocate(*cal_server_mdnssd_bip_advertisedRef);
-	free(cal_server_mdnssd_bip_advertisedRef);
-	cal_server_mdnssd_bip_advertisedRef = NULL;
-    }
-
     close(cal_server_mdnssd_bip_fds_to_user[0]);
     close(cal_server_mdnssd_bip_fds_to_user[1]);
 
