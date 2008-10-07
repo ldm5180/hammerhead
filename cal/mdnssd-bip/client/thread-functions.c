@@ -24,6 +24,22 @@
 
 
 
+// 
+// this is a linked list, each payload is a (struct cal_client_mdnssd_bip_service_context *)
+// we add the first one when we start the mDNS-SD browse running, then we add one each time we start a resolve
+// when the resolve finishes we remove its node from the list
+//
+
+struct cal_client_mdnssd_bip_service_context {
+    DNSServiceRef service_ref;
+    cal_event_t *event;
+};
+
+static GSList *service_list = NULL;
+
+
+
+
 static  GPtrArray *connected_publishers;
 
 
@@ -201,7 +217,7 @@ static void resolve_callback(
 
     // remove this service_ref from the list
     DNSServiceRefDeallocate(sc->service_ref);
-    cal_client_mdnssd_bip_service_list = g_slist_remove(cal_client_mdnssd_bip_service_list, sc);
+    service_list = g_slist_remove(service_list, sc);
     free(sc);
 
     if (errorCode != kDNSServiceErr_NoError) {
@@ -306,7 +322,7 @@ static void browse_callback(
 
         // add this new service ref to the list
         // printf("adding this resolve from service ref list\n");
-        cal_client_mdnssd_bip_service_list = g_slist_prepend(cal_client_mdnssd_bip_service_list, sc);
+        service_list = g_slist_prepend(service_list, sc);
     } else {
         int r;
 
@@ -329,6 +345,27 @@ static void browse_callback(
 
 
 
+// cancel all pending mDNS-SD service requests
+void cleanup_service_list(void *unused) {
+    GSList *ptr;
+
+    printf("cleaning up\n");
+
+    ptr = service_list;
+    while (ptr != NULL) {
+        GSList *next = ptr->next;
+        struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
+
+        DNSServiceRefDeallocate(sc->service_ref);
+        service_list = g_slist_remove(service_list, sc);
+        free(sc);
+        ptr = next;
+    }
+}
+
+
+
+
 //
 // this function gets run in the thread started by init()
 // canceled by shutdown()
@@ -340,6 +377,9 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
     // Shutup annoying nag message on Linux.
     setenv("AVAHI_COMPAT_NOWARN", "1", 1);
+
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
 
     browse = malloc(sizeof(struct cal_client_mdnssd_bip_service_context));
     if (browse == NULL) {
@@ -363,7 +403,8 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 	return NULL;
     }
 
-    cal_client_mdnssd_bip_service_list = g_slist_prepend(cal_client_mdnssd_bip_service_list, browse);
+    service_list = g_slist_prepend(service_list, browse);
+    pthread_cleanup_push(cleanup_service_list, NULL);
     
     connected_publishers = g_ptr_array_new();
 
@@ -381,7 +422,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
 
         // each DNS-SD service request has its own fd
-        for (ptr = cal_client_mdnssd_bip_service_list; ptr != NULL; ptr = ptr->next) {
+        for (ptr = service_list; ptr != NULL; ptr = ptr->next) {
             struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
             int fd = DNSServiceRefSockFD(sc->service_ref);
             FD_SET(fd, &readers);
@@ -405,7 +446,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
 
         // see if any DNS-SD service requests finished
-        for (ptr = cal_client_mdnssd_bip_service_list; ptr != NULL; ptr = ptr->next) {
+        for (ptr = service_list; ptr != NULL; ptr = ptr->next) {
             struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
             int fd = DNSServiceRefSockFD(sc->service_ref);
 
@@ -436,6 +477,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
             }
         }
     }
-}
 
+    pthread_cleanup_pop(0);  // don't execute cleanup_service_list
+}
 

@@ -56,9 +56,6 @@ int cal_client_mdnssd_bip_init(void (*callback)(cal_event_t *event)) {
         goto fail3;
     }
 
-    // close(cal_i_bip_subscriber_fds_to_user[1]);
-    // close(cal_i_bip_subscriber_fds_from_user[0]);
-
 
     return cal_client_mdnssd_bip_fds_to_user[0];
 
@@ -97,25 +94,6 @@ void cal_client_mdnssd_bip_shutdown(void) {
             cal_client_mdnssd_bip_thread = NULL;
         }
     }
-
-
-    // cancel all pending mDNS-SD service requests
-    // FIXME: it'd be nice to move this to the CAL Client thread
-    {
-        GSList *ptr;
-
-        ptr = cal_client_mdnssd_bip_service_list;
-        while (ptr != NULL) {
-            GSList *next = ptr->next;
-            struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
-
-            DNSServiceRefDeallocate(sc->service_ref);
-            cal_client_mdnssd_bip_service_list = g_slist_remove(cal_client_mdnssd_bip_service_list, sc);
-            free(sc);
-            ptr = next;
-        }
-    }
-
 
     close(cal_client_mdnssd_bip_fds_to_user[0]);
     close(cal_client_mdnssd_bip_fds_to_user[1]);

@@ -27,22 +27,6 @@ extern int cal_client_mdnssd_bip_fds_from_user[2];
 
 
 
-// 
-// this is a linked list, each payload is a (struct cal_client_mdnssd_bip_service_context *)
-// we add the first one when we start the mDNS-SD browse running, then we add one each time we start a resolve
-// when the resolve finishes we remove its node from the list
-//
-
-struct cal_client_mdnssd_bip_service_context {
-    DNSServiceRef service_ref;
-    cal_event_t *event;
-};
-
-extern GSList *cal_client_mdnssd_bip_service_list;
-
-
-
-
 // the Client thread
 extern pthread_t *cal_client_mdnssd_bip_thread;
 void *cal_client_mdnssd_bip_function(void *arg);
