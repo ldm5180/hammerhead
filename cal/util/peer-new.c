@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "cal.h"
+#include "cal-peer.h"
 
 
 cal_peer_t *cal_peer_new(const char *name) {

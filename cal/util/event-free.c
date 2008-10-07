@@ -1,7 +1,8 @@
 
 #include <stdlib.h>
 
-#include "cal.h"
+#include "cal-event.h"
+#include "cal-peer.h"
 
 
 void cal_event_free(cal_event_t *event) {

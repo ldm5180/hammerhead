@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "cal.h"
+#include "cal-peer.h"
 
 
 void cal_peer_free(cal_peer_t *peer) {

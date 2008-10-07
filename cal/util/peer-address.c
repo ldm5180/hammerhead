@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 
-#include "cal.h"
+#include "cal-peer.h"
 
 
 void cal_peer_set_addressing_scheme(cal_peer_t *peer, cal_as_type_t addressing_scheme) {
