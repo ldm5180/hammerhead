@@ -157,7 +157,13 @@ static void bip_read_from_publisher(cal_peer_t *peer) {
 
     r = read(peer->as.ipv4.socket, event->msg.buffer, BIP_MSG_BUFFER_SIZE);
     if (r < 0) {
-        printf(ID "bip_read_from_publisher(): error reading from peer %s: %s\n", peer->name, strerror(errno));
+        fprintf(stderr, ID "bip_read_from_publisher(): error reading from peer %s: %s\n", peer->name, strerror(errno));
+        g_ptr_array_remove_fast(connected_publishers, peer);
+        return;
+    } else if (r == 0) {
+        fprintf(stderr, ID "bip_read_from_publisher(): peer %s disconnects\n", peer->name);
+        cal_event_free(event);
+        g_ptr_array_remove_fast(connected_publishers, peer);
         return;
     }
 
