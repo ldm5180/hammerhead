@@ -94,11 +94,29 @@ static int cal_pd_dnssd_read(void) {
         return 0;
     }
 
-    // printf("cal_pd_dnssd_read: got an event %p!\n", event);
-
     if (cal_pd_dnssd_callback != NULL) {
         cal_pd_dnssd_callback(event);
     }
+
+
+    // manage memory
+    switch (event->type) {
+        case CAL_EVENT_JOIN: {
+            event->peer = NULL;  // the CAL-PD subscriber thread has a copy, we'll free it when the peer leaves later
+            break;
+        }
+
+        case CAL_EVENT_LEAVE: {
+            break;
+        }
+
+        default: {
+            fprintf(stderr, "cal_pd_dnssd_read(): got unhandled event type %d\n", event->type);
+            break;
+        }
+    }
+
+    cal_event_free(event);
 
     return 1;
 }
