@@ -99,6 +99,10 @@ int cal_server_mdnssd_bip_init(cal_peer_t *this, void (*callback)(cal_event_t *e
 
     cal_server_mdnssd_bip_listening_socket = sock;
 
+    cal_peer_set_addressing_scheme(this, CAL_AS_IPv4);
+    this->as.ipv4.socket = cal_server_mdnssd_bip_fds_to_user[0];  // not really a socket...
+    this->as.ipv4.port = ntohs(my_address.sin_port);
+
 
     // start the publisher thread to talk to the peers
     r = pthread_create(cal_server_mdnssd_bip_thread, NULL, cal_server_mdnssd_bip_function, this);
@@ -107,9 +111,6 @@ int cal_server_mdnssd_bip_init(cal_peer_t *this, void (*callback)(cal_event_t *e
         goto fail3;
     }
 
-    cal_peer_set_addressing_scheme(this, CAL_AS_IPv4);
-    this->as.ipv4.socket = cal_server_mdnssd_bip_fds_to_user[0];  // not really a socket...
-    this->as.ipv4.port = ntohs(my_address.sin_port);
 
     return this->as.ipv4.socket;
 
