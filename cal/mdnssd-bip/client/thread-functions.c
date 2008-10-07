@@ -29,7 +29,7 @@ static  GPtrArray *connected_publishers;
 
 
 
-static int bip_connect_to_peer(cal_peer_t *peer) {
+static int connect_to_peer(cal_peer_t *peer) {
     int s;
     int r;
 
@@ -38,7 +38,7 @@ static int bip_connect_to_peer(cal_peer_t *peer) {
 
 
     if (peer->addressing_scheme != CAL_AS_IPv4) {
-        fprintf(stderr, ID "bip_connect_to_peer(): peer '%s' has unknown addressing scheme %d\n", peer->name, peer->addressing_scheme);
+        fprintf(stderr, ID "connect_to_peer(): peer '%s' has unknown addressing scheme %d\n", peer->name, peer->addressing_scheme);
         return -1;
     }
 
@@ -46,7 +46,7 @@ static int bip_connect_to_peer(cal_peer_t *peer) {
 
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0) {
-        fprintf(stderr, ID "bip_connect_to_peer(): error making socket: %s\n", strerror(errno));
+        fprintf(stderr, ID "connect_to_peer(): error making socket: %s\n", strerror(errno));
         return -1;
     }
 
@@ -55,11 +55,11 @@ static int bip_connect_to_peer(cal_peer_t *peer) {
     ai_hints.ai_socktype = SOCK_STREAM;  // TCP
     r = getaddrinfo(peer->as.ipv4.hostname, NULL, &ai_hints, &ai);
     if (r != 0) {
-        fprintf(stderr, ID "bip_connect_to_peer(): error with getaddrinfo(\"%s\", ...): %s", peer->as.ipv4.hostname, gai_strerror(r));
+        fprintf(stderr, ID "connect_to_peer(): error with getaddrinfo(\"%s\", ...): %s", peer->as.ipv4.hostname, gai_strerror(r));
         return -1;
     }
     if (ai == NULL) {
-        fprintf(stderr, ID "bip_connect_to_peer(): no results from getaddrinfo(\"%s\", ...)", peer->as.ipv4.hostname);
+        fprintf(stderr, ID "connect_to_peer(): no results from getaddrinfo(\"%s\", ...)", peer->as.ipv4.hostname);
         return -1;
     }
 
@@ -71,7 +71,7 @@ static int bip_connect_to_peer(cal_peer_t *peer) {
         fprintf(
             stderr,
             ID
-            "bip_connect_to_peer(): error connecting to peer '%s' at %s (%s): %s\n",
+            "connect_to_peer(): error connecting to peer '%s' at %s (%s): %s\n",
             peer->name,
             cal_peer_address_to_str(peer),
             inet_ntoa(sin->sin_addr),
@@ -93,12 +93,12 @@ static int bip_connect_to_peer(cal_peer_t *peer) {
 static int bip_sendto(cal_peer_t *peer, void *msg, int size) {
     int r;
 
-    r = bip_connect_to_peer(peer);
+    r = connect_to_peer(peer);
     if (r < 0) {
         return -1;
     }
 
-    printf(ID "bip_sendto(): sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
+    printf(ID "sendto(): sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
 
     return write(peer->as.ipv4.socket, msg, size);
 }
@@ -107,7 +107,7 @@ static int bip_sendto(cal_peer_t *peer, void *msg, int size) {
 
 
 // this function is called by the thread main function when the user thread wants to tell it something
-static void bip_read_from_user(void) {
+static void read_from_user(void) {
     cal_event_t *event;
     int r;
 
@@ -137,13 +137,13 @@ static void bip_read_from_user(void) {
 
 
 // this function is called by the thread main function when a connected publisher has something to say
-static void bip_read_from_publisher(cal_peer_t *peer) {
+static void read_from_publisher(cal_peer_t *peer) {
     cal_event_t *event;
     int r;
 
     event = cal_event_new(CAL_EVENT_MESSAGE);
     if (event == NULL) {
-        fprintf(stderr, ID "bip_read_from_publisher(): out of memory!\n");
+        fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
         return;
     }
 
@@ -151,17 +151,17 @@ static void bip_read_from_publisher(cal_peer_t *peer) {
     event->msg.buffer = malloc(BIP_MSG_BUFFER_SIZE);
     if (event->msg.buffer == NULL) {
         cal_event_free(event);
-        fprintf(stderr, ID "bip_read_from_publisher(): out of memory!\n");
+        fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
         return;
     }
 
     r = read(peer->as.ipv4.socket, event->msg.buffer, BIP_MSG_BUFFER_SIZE);
     if (r < 0) {
-        fprintf(stderr, ID "bip_read_from_publisher(): error reading from peer %s: %s\n", peer->name, strerror(errno));
+        fprintf(stderr, ID "read_from_publisher(): error reading from peer %s: %s\n", peer->name, strerror(errno));
         g_ptr_array_remove_fast(connected_publishers, peer);
         return;
     } else if (r == 0) {
-        fprintf(stderr, ID "bip_read_from_publisher(): peer %s disconnects\n", peer->name);
+        fprintf(stderr, ID "read_from_publisher(): peer %s disconnects\n", peer->name);
         cal_event_free(event);
         g_ptr_array_remove_fast(connected_publishers, peer);
         return;
@@ -171,9 +171,9 @@ static void bip_read_from_publisher(cal_peer_t *peer) {
 
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
-        fprintf(stderr, ID "bip_read_from_publisher(): error writing to user thread!!");
+        fprintf(stderr, ID "read_from_publisher(): error writing to user thread!!");
     } else if (r < sizeof(event)) {
-        fprintf(stderr, ID "bip_read_from_publisher(): short write to user thread!!");
+        fprintf(stderr, ID "read_from_publisher(): short write to user thread!!");
     }
 }
 
@@ -424,14 +424,14 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
         // see if the user thread said anything
         if (FD_ISSET(cal_client_mdnssd_bip_fds_from_user[0], &readers)) {
-            bip_read_from_user();
+            read_from_user();
         }
 
         // see if any of our servers said anything
         for (i = 0; i < connected_publishers->len; i ++) {
             cal_peer_t *peer = g_ptr_array_index(connected_publishers, i);
             if (FD_ISSET(peer->as.ipv4.socket, &readers)) {
-                bip_read_from_publisher(peer);
+                read_from_publisher(peer);
                 break;
             }
         }
