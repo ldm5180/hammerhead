@@ -44,13 +44,10 @@ typedef struct {
 
 
     //!
-    //! \brief Withdraw this peer from the network.
-    //!
-    //! \param this The CAL Peer to withdraw.  Must be one that has
-    //!     previously had .init() called on it.
+    //! \brief Withdraw from the network.
     //!
 
-    void (*shutdown)(cal_peer_t *this);
+    void (*shutdown)(void);
 
 
     //!

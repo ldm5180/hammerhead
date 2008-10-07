@@ -134,7 +134,7 @@ fail0:
 
 
 
-void cal_server_mdnssd_bip_shutdown(cal_peer_t *this) {
+void cal_server_mdnssd_bip_shutdown(void) {
     if (cal_server_mdnssd_bip_thread != NULL) {
         int r;
 
