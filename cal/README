@@ -2,3 +2,29 @@
 CAL is the Communication Abstraction Layer.  It provides an interface
 for the Bionet library to communicate between peer processes.
 
+
+Each CAL Module lives in its own directory; the name of the directory
+is the name of the CAL Module.  The active CAL Modules are listed in
+the filenamed CAL-Modules.
+
+
+Each module must have a Makefile defining (at least) the four targets
+"all", "test", "install", and "clean":
+
+    "make all" must compile two object archive files named
+    "client/cal-client.a" and "server/cal-server.a" respectively.
+
+    "make test" should run all available tests defined by this module.
+
+    "make install" should copy the two library files to
+    $(DESTDIR)/usr/lib.
+
+    "make clean" must clean up.
+
+
+Each module's cal-client.a must define a variable named "cal_client", of type
+cal_client_t.
+
+Each module's cal-server.a must define a variable named "cal_server", of type
+cal_server_t.
+
