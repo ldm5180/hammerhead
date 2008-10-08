@@ -51,6 +51,25 @@ typedef struct {
     int (*read)(void);
 
 
+    //!
+    //! \brief Send a message to a server.
+    //!
+    //! This function sends a message (just an array of bytes) to a server.
+    //!
+    //! \param peer The server to send the message to.  The peer pointer
+    //!     must have been the subject of a previous Join event, and not
+    //!     the subject of a Leave event since then.
+    //!
+    //! \param msg The buffer to send.  The msg buffer must be dynamically
+    //!     allocated, and it becomes the property of the CAL Client
+    //!     library.  After passing the msg buffer to cal_client.sendto,
+    //!     the user must not write to the buffer or free it.
+    //!
+    //! \param size The size of the buffer, in bytes.
+    //!
+    //! \returns True (non-zero) on success.  False (zero) on failure.
+    //!
+
     int (*sendto)(cal_peer_t *peer, void *msg, int size);
 
 } cal_client_t;
