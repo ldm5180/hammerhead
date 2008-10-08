@@ -171,7 +171,7 @@ int cal_client_mdnssd_bip_read(void) {
 
         default: {
             fprintf(stderr, ID "read(): got unhandled event type %d\n", event->type);
-            break;
+            return 1;  // dont free events we dont understand
         }
     }
 
@@ -189,7 +189,7 @@ int cal_client_mdnssd_bip_sendto(cal_peer_t *peer, void *msg, int size) {
 
     event = cal_event_new(CAL_EVENT_MESSAGE);
     if (event == NULL) {
-        return -1;
+        return 0;
     }
 
     event->peer = peer;
@@ -199,14 +199,14 @@ int cal_client_mdnssd_bip_sendto(cal_peer_t *peer, void *msg, int size) {
     r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
     if (r < 0) {
         fprintf(stderr, ID "sendto(): error writing to client thread: %s", strerror(errno));
-        return -1;
+        return 0;
     }
     if (r < sizeof(event)) {
         fprintf(stderr, ID "sendto(): short write to client thread!!");
-        return -1;
+        return 0;
     }
 
-    return 0;
+    return 1;
 }
 
 
