@@ -24,49 +24,55 @@ typedef enum {
     //! uninitialized or invalid event (the user should never see this)
     CAL_EVENT_NONE = 0,
 
-    //! This event is delivered to peers who have called
-    //! cal_pd.subscriber_peer_list().  The event indicates that a peer has
-    //! joined the network.  The event->peer describes the new peer.  The
-    //! peer pointer will remain valid until the matching Leave event
-    //! happens.  The event->msg is empty and should be ignored.
+    //! This event is delivered to clients who have called
+    //! cal_client.init().  The event indicates that a server has joined
+    //! the network.  The event->peer describes the new server.  The client
+    //! should not modify the peer!  The peer pointer will remain valid
+    //! until the matching Leave event happens.  The event->msg is empty
+    //! and should be ignored.
     CAL_EVENT_JOIN,
 
-    //! This event is delivered to peers who have called
-    //! cal_pd.subscriber_peer_list().  The event indicates that a
-    //! previously Joined peer has left the network.  No further
-    //! communication with this peer is possible, it's gone.  The
-    //! event->peer describes the peer that left, and points to a
-    //! cal_peer_t that was previously the subject of a Join event.  The
-    //! peer pointer will remain valid until the user's callback returns,
-    //! then it will be made undefined.  The event->msg is empty and should
-    //! be ignored.
+    //! This event is delivered to clients who have called
+    //! cal_client.init().  The event indicates that a previously Joined
+    //! server has left the network.  The event->peer describes the server
+    //! that left, and points to a cal_peer_t that was previously the
+    //! subject of a Join event.  No further communication with this server
+    //! is possible, it's gone.  The peer pointer will remain valid until
+    //! the user's callback returns, then it will be made undefined.  The
+    //! event->msg is empty and should be ignored.
     CAL_EVENT_LEAVE,
 
-    //! This event is delivered to peers who have called
-    //! cal_i.init_publisher().  The event indicates that a peer has
-    //! connected to us.  The event->peer describes the connected peer.
-    //! The peer pointer will remain valid until the matching Disconnect
-    //! event happens.  The event->msg is empty and should be ignored.
+    //! This event is delivered to servers who have called
+    //! cal_server.init().  The event indicates that a client has
+    //! connected to us.  The event->peer describes the connected client.
+    //! The server should not modify the peer!  The peer pointer will
+    //! remain valid until the matching Disconnect event happens.  The
+    //! event->msg is empty and should be ignored.
     CAL_EVENT_CONNECT,
 
-    //! This event is delivered to peers who have called
-    //! cal_i.init_publisher().  The event indicates that a previously
-    //! connected peer has disconnected from us.  The event->peer describes
-    //! the peer that disconnected, and points to a cal_peer_t that was
-    //! previously the subject of a Connect event.  No further
-    //! communication with the peer is possible, it's gone.  The peer
+    //! This event is delivered to servers who have called
+    //! cal_server.init().  The event indicates that a previously
+    //! connected client has disconnected from us.  The event->peer
+    //! describes the client that disconnected, and points to a cal_peer_t
+    //! that was previously the subject of a Connect event.  No further
+    //! communication with the client is possible, it's gone.  The peer
     //! pointer will remain valid until the user's callback returns, then
     //! it will be made undefined.  The event->msg is empty and should be
     //! ignored.
     CAL_EVENT_DISCONNECT,
 
     //! This event indicates that a peer has sent us a message.  The
-    //! event->peer describes the peer that sent the message, and points to
-    //! a cal_peer_t that was previously the subject of a Connect event.
-    //! The event->msg contains the message.  The event->msg.buffer is
-    //! dynamically allocated by the CAL-I library, and becomes the
-    //! property of the user's callback function.  The user's callback must
-    //! free it or otherwise manage the memory to avoid memory leaks here.
+    //! event->peer describes the peer that sent the message.  In a client,
+    //! the peer is a server that the client has gotten a Join event from
+    //! and has subsequently connected to.  In a server, the peer is a
+    //! client that the server has gotten a Connect event from.  The
+    //! event->msg contains the message.  The event->msg.buffer is
+    //! dynamically allocated by the CAL library.  This buffer will be
+    //! freed when the user's callback function returns.  The user can
+    //! steal the buffer by making a copy of the pointer and setting
+    //! event->msg.buffer to NULL before returning, in which case it will
+    //! not be freed by CAL library and it becomes the user's
+    //! responsibility to free it when appropriate.
     //! FIXME: how to manage event->peer in subscribers?  give them Connect
     //! and Disconnect events?
     CAL_EVENT_MESSAGE
