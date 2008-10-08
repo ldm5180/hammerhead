@@ -31,6 +31,19 @@ static DNSServiceRef *advertisedRef = NULL;
 
 
 
+static cal_peer_t *find_client_by_ptr(const cal_peer_t *peer) {
+    int i;
+
+    for (i = 0; i < clients->len; i ++) {
+        if (g_ptr_array_index(clients, i) == peer) return (cal_peer_t *)peer;
+    }
+
+    return NULL;
+}
+
+
+
+
 static void register_callback(
     DNSServiceRef sdRef, 
     DNSServiceFlags flags, 
@@ -47,10 +60,46 @@ static void register_callback(
 
 
 
+static int bip_sendto(cal_peer_t *peer, void *msg, int size) {
+    printf(ID "sendto(): sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
+    return write(peer->as.ipv4.socket, msg, size);
+}
+
+
+
 
 static void read_from_user(void) {
-    // FIXME
-    printf(ID "server thread: user has something to say\n");
+    cal_event_t *event;
+    int r;
+
+    r = read(cal_server_mdnssd_bip_fds_from_user[0], &event, sizeof(event));
+    if (r < 0) {
+        fprintf(stderr, ID "read_from_user: error reading from user: %s\n", strerror(errno));
+        return;
+    } else if (r != sizeof(event)) {
+        fprintf(stderr, ID "read_from_user: short read from user\n");
+        return;
+    }
+
+    switch (event->type) {
+        case CAL_EVENT_MESSAGE: {
+            if (find_client_by_ptr(event->peer) == NULL) {
+                fprintf(stderr, ID "read_from_user: unknown peer pointer passed in, dropping outgoing Message event\n");
+                return;
+            }
+            bip_sendto(event->peer, event->msg.buffer, event->msg.size);
+            // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
+            event->peer = NULL;  // the peer is still connected, dont free it yet
+            break;
+        }
+
+        default: {
+            fprintf(stderr, ID "read_from_user(): unknown event %d from user\n", event->type);
+            return;  // dont free events we dont understand
+        }
+    }
+
+    cal_event_free(event);
 }
 
 

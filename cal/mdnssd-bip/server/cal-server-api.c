@@ -183,7 +183,6 @@ int cal_server_mdnssd_bip_read(void) {
     }
 
     // manage memory
-    // FIXME
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
             event->peer = NULL;  // the peer is still around until the Disconnect
@@ -200,7 +199,7 @@ int cal_server_mdnssd_bip_read(void) {
 
         default: {
             fprintf(stderr, ID "read: got unhandled event type %d\n", event->type);
-            break;
+            return 1;  // dont free events we dont understand
         }
     }
 
@@ -212,21 +211,30 @@ int cal_server_mdnssd_bip_read(void) {
 
 
 
-// FIXME: prolly pass a Message event to the cal thread
 int cal_server_mdnssd_bip_sendto(cal_peer_t *peer, void *msg, int size) {
-    if (peer->addressing_scheme != CAL_AS_IPv4) {
-        fprintf(stderr, ID "sendto(): peer %s (%s) has unknown addressing scheme, ignoring\n", peer->name, cal_peer_address_to_str(peer));
-        return -1;
+    int r;
+    cal_event_t *event;
+
+    event = cal_event_new(CAL_EVENT_MESSAGE);
+    if (event == NULL) {
+        return 0;
     }
 
-    if (peer->as.ipv4.socket < 0) {
-        fprintf(stderr, ID "sendto(): peer %s (%s) has no socket, ignoring\n", peer->name, cal_peer_address_to_str(peer));
-        return -1;
+    event->peer = peer;
+    event->msg.buffer = msg;
+    event->msg.size = size;
+
+    r = write(cal_server_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    if (r < 0) {
+        fprintf(stderr, ID "sendto(): error writing to server thread: %s", strerror(errno));
+        return 0;
+    }
+    if (r < sizeof(event)) {
+        fprintf(stderr, ID "sendto(): short write to server thread!!");
+        return 0;
     }
 
-    printf("sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
-
-    return write(peer->as.ipv4.socket, msg, size);
+    return 1;
 }
 
 
