@@ -59,6 +59,15 @@ static cal_peer_t *find_peer_by_name(const char *name) {
 }
 
 
+void disconnect_server(cal_peer_t *peer) {
+    if (peer->as.ipv4.socket != -1) {
+        close(peer->as.ipv4.socket);
+    }
+    peer->as.ipv4.socket = -1;
+    g_ptr_array_remove_fast(connected_publishers, peer);
+}
+
+
 
 
 static int connect_to_peer(cal_peer_t *peer) {
@@ -191,24 +200,18 @@ static void read_from_publisher(cal_peer_t *peer) {
     r = read(peer->as.ipv4.socket, event->msg.buffer, BIP_MSG_BUFFER_SIZE);
     if (r < 0) {
         fprintf(stderr, ID "read_from_publisher(): error reading from peer %s: %s\n", peer->name, strerror(errno));
-
-        close(peer->as.ipv4.socket);
-        peer->as.ipv4.socket = -1;
+        disconnect_server(peer);
 
         event->peer = NULL;  // the peer is still there until we get the mDNS-SD Leave event
         cal_event_free(event);
-        g_ptr_array_remove_fast(connected_publishers, peer);
 
         return;
     } else if (r == 0) {
         fprintf(stderr, ID "read_from_publisher(): peer %s disconnects\n", peer->name);
-
-        close(peer->as.ipv4.socket);
-        peer->as.ipv4.socket = -1;
+        disconnect_server(peer);
 
         event->peer = NULL;  // the peer is still there until we get the mDNS-SD Leave event
         cal_event_free(event);
-        g_ptr_array_remove_fast(connected_publishers, peer);
 
         return;
     }
@@ -370,7 +373,7 @@ static void browse_callback(
         g_ptr_array_remove_fast(known_peers, event->peer);
 
         // if we were connecte to this peer, we're not any more...
-        g_ptr_array_remove_fast(connected_publishers, event->peer);
+        disconnect_server(event->peer);
 
         // the event and the peer become the responsibility of the callback now, so they might leak memory but we're not
         r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
@@ -416,6 +419,18 @@ void cleanup_known_peers(void *unused) {
 }
 
 
+// clean up the connected-publishers list
+void cleanup_connected_publishers(void *unused) {
+    while (connected_publishers->len > 0) {
+        cal_peer_t *peer;
+        peer = g_ptr_array_index(connected_publishers, 0);
+        disconnect_server(peer);
+    }
+
+    g_ptr_array_free(connected_publishers, 1);
+}
+
+
 //
 // this function gets run in the thread started by init()
 // canceled by shutdown()
@@ -455,11 +470,12 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
     service_list = g_slist_prepend(service_list, browse);
     pthread_cleanup_push(cleanup_service_list, NULL);
-    
+
     known_peers = g_ptr_array_new();
     pthread_cleanup_push(cleanup_known_peers, NULL);
 
     connected_publishers = g_ptr_array_new();
+    pthread_cleanup_push(cleanup_connected_publishers, NULL);
 
 
     while (1) {
@@ -542,6 +558,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     // NOT REACHED!
     //
 
+    pthread_cleanup_pop(0);  // don't execute cleanup_connected_publishers
     pthread_cleanup_pop(0);  // don't execute cleanup_known_peers
     pthread_cleanup_pop(0);  // don't execute cleanup_service_list
 }
