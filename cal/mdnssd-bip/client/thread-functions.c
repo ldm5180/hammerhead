@@ -59,6 +59,17 @@ static cal_peer_t *find_peer_by_name(const char *name) {
 }
 
 
+static cal_peer_t *find_peer_by_ptr(const cal_peer_t *peer) {
+    int i;
+
+    for (i = 0; i < known_peers->len; i ++) {
+        if (g_ptr_array_index(known_peers, i) == peer) return (cal_peer_t *)peer;
+    }
+
+    return NULL;
+}
+
+
 void disconnect_server(cal_peer_t *peer) {
     if (peer->as.ipv4.socket != -1) {
         close(peer->as.ipv4.socket);
@@ -154,25 +165,32 @@ static void read_from_user(void) {
 
     r = read(cal_client_mdnssd_bip_fds_from_user[0], &event, sizeof(event));
     if (r < 0) {
-        printf(ID "read_from_user(): error reading from user: %s\n", strerror(errno));
+        fprintf(stderr, ID "read_from_user(): error reading from user: %s\n", strerror(errno));
         return;
     } else if (r != sizeof(event)) {
-        printf(ID "read_from_user(): short read from user\n");
+        fprintf(stderr, ID "read_from_user(): short read from user\n");
         return;
     }
 
     switch (event->type) {
         case CAL_EVENT_MESSAGE: {
+            if (find_peer_by_ptr(event->peer) == NULL) {
+                fprintf(stderr, ID "read_from_user: unknown peer pointer passed in, dropping outgoing Message event\n");
+                return;
+            }
             bip_sendto(event->peer, event->msg.buffer, event->msg.size);
             // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
+            event->peer = NULL;  // the peer is still connected, dont free it yet
             break;
         }
 
         default: {
             fprintf(stderr, ID "read_from_user(): unknown event %d from user\n", event->type);
-            break;
+            return;
         }
     }
+
+    cal_event_free(event);
 }
 
 
