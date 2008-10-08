@@ -25,6 +25,8 @@ extern cal_client_t cal_client;
 void cal_callback(cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_JOIN: {
+            char *msg = strdup("hey there!");
+
             printf(
                 "Join event from '%s' (%s)\n",
                 event->peer->name,
@@ -36,11 +38,8 @@ void cal_callback(cal_event_t *event) {
             }
 
             printf("found a time-publisher, subscribing to the time from it\n");
-            cal_client.sendto(event->peer, "hey there!", 11);
+            cal_client.sendto(event->peer, msg, strlen(msg));
             cal_client.subscribe(event->peer, "time");
-
-            // steal this peer from the event
-            event->peer = NULL;
 
             break;
         }
