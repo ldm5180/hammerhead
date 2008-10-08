@@ -49,6 +49,7 @@ static void register_callback(
 
 
 static void read_from_user(void) {
+    // FIXME
     printf(ID "server thread: user has something to say\n");
 }
 
@@ -123,6 +124,7 @@ static void disconnect_peer(cal_peer_t *peer) {
     event = cal_event_new(CAL_EVENT_DISCONNECT);
     if (event == NULL) {
         fprintf(stderr, ID "disconnect_peer(): out of memory\n");
+        cal_peer_free(peer);
         return;
     }
 
@@ -139,6 +141,8 @@ static void disconnect_peer(cal_peer_t *peer) {
 
 
 
+// reads from the peer, sends a Message event to the user thread
+// returns 0 on success, -1 on failure (in which case the peer is disconnected)
 static int read_from_client(cal_peer_t *peer) {
     int r;
     cal_event_t *event;
@@ -199,6 +203,17 @@ void cleanup_advertisedRef(void *unused) {
 }
 
 
+// clean up the clients list
+void cleanup_clients(void *unused) {
+    while (clients->len > 0) {
+        cal_peer_t *peer;
+        peer = g_ptr_array_remove_index_fast(clients, 0);
+        close(peer->as.ipv4.socket);
+        cal_peer_free(peer);
+    }
+
+    g_ptr_array_free(clients, 1);
+}
 
 
 void *cal_server_mdnssd_bip_function(void *peer_as_voidp) {
@@ -216,6 +231,7 @@ void *cal_server_mdnssd_bip_function(void *peer_as_voidp) {
 
 
     clients = g_ptr_array_new();
+    pthread_cleanup_push(cleanup_clients, NULL)
 
 
     advertisedRef = malloc(sizeof(DNSServiceRef));
@@ -324,6 +340,11 @@ void *cal_server_mdnssd_bip_function(void *peer_as_voidp) {
         }
     }
 
+    // 
+    // NOT REACHED
+    //
+
     pthread_cleanup_pop(0);  // cleanup_advertisedRef
+    pthread_cleanup_pop(0);  // cleanup_clients
 }
 
