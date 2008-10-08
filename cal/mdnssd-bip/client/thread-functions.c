@@ -40,7 +40,23 @@ static GSList *service_list = NULL;
 
 
 
-static  GPtrArray *connected_publishers;
+static GPtrArray *known_peers;
+
+static GPtrArray *connected_publishers;
+
+
+
+
+static cal_peer_t *find_peer_by_name(const char *name) {
+    int i;
+
+    for (i = 0; i < known_peers->len; i ++) {
+        cal_peer_t *peer = g_ptr_array_index(known_peers, i);
+        if (strcmp(peer->name, name) == 0) return peer;
+    }
+
+    return NULL;
+}
 
 
 
@@ -139,6 +155,7 @@ static void read_from_user(void) {
     switch (event->type) {
         case CAL_EVENT_MESSAGE: {
             bip_sendto(event->peer, event->msg.buffer, event->msg.size);
+            // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
             break;
         }
 
@@ -174,12 +191,25 @@ static void read_from_publisher(cal_peer_t *peer) {
     r = read(peer->as.ipv4.socket, event->msg.buffer, BIP_MSG_BUFFER_SIZE);
     if (r < 0) {
         fprintf(stderr, ID "read_from_publisher(): error reading from peer %s: %s\n", peer->name, strerror(errno));
+
+        close(peer->as.ipv4.socket);
+        peer->as.ipv4.socket = -1;
+
+        event->peer = NULL;  // the peer is still there until we get the mDNS-SD Leave event
+        cal_event_free(event);
         g_ptr_array_remove_fast(connected_publishers, peer);
+
         return;
     } else if (r == 0) {
         fprintf(stderr, ID "read_from_publisher(): peer %s disconnects\n", peer->name);
+
+        close(peer->as.ipv4.socket);
+        peer->as.ipv4.socket = -1;
+
+        event->peer = NULL;  // the peer is still there until we get the mDNS-SD Leave event
         cal_event_free(event);
         g_ptr_array_remove_fast(connected_publishers, peer);
+
         return;
     }
 
@@ -234,6 +264,9 @@ static void resolve_callback(
         return;
     }
 
+    // the peer is our responsibility, remember it for later
+    g_ptr_array_add(known_peers, peer);
+
     // the event becomes the responsibility of the callback now, so they might leak memory but we're not
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
     if (r < 0) {
@@ -260,38 +293,32 @@ static void browse_callback(
     const char *domain,
     void *context
 ) {
-
-    cal_event_t *event;
-
-
     if (errorCode != kDNSServiceErr_NoError) {
         fprintf(stderr, ID "browse_callback: Error returned from browse: %d\n", errorCode);
         return;
     }
 
 
-    event = cal_event_new(CAL_EVENT_NONE);
-    if (event == NULL) {
-        fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
-        return;
-    }
-
-    // FIXME: might be a leave, in which case we should look up the peer, not make a new one
-    event->peer = cal_peer_new(name);
-    if (event->peer == NULL) {
-        fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
-        cal_event_free(event);
-        return;
-    }
-
-    cal_peer_set_addressing_scheme(event->peer, CAL_AS_IPv4);
-
-
     if (flags & kDNSServiceFlagsAdd) {
         struct cal_client_mdnssd_bip_service_context *sc;
         DNSServiceErrorType error;
+        cal_event_t *event;
 
-        event->type = CAL_EVENT_JOIN;
+        event = cal_event_new(CAL_EVENT_JOIN);
+        if (event == NULL) {
+            fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
+            return;
+        }
+
+        event->peer = cal_peer_new(name);
+        if (event->peer == NULL) {
+            fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
+            cal_event_free(event);
+            return;
+        }
+
+        cal_peer_set_addressing_scheme(event->peer, CAL_AS_IPv4);
+
 
         sc = malloc(sizeof(struct cal_client_mdnssd_bip_service_context));
         if (sc == NULL) {
@@ -325,14 +352,27 @@ static void browse_callback(
         service_list = g_slist_prepend(service_list, sc);
     } else {
         int r;
+        cal_event_t *event;
 
-        event->type = CAL_EVENT_LEAVE;
+        event = cal_event_new(CAL_EVENT_LEAVE);
+        if (event == NULL) {
+            fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
+            return;
+        }
 
-        // Do we really need to fillout all the fields in the cal_peer_t?
-        // Probably not.  Plus it is now gone.  For now, just fill out
-        // the name.
+        event->peer = find_peer_by_name(name);
+        if (event->peer == NULL) {
+            fprintf(stderr, ID "browse_callback: got a Leave event for an unknown peer (%s)!  dropping this event!\n", name);
+            cal_event_free(event);
+            return;
+        }
 
-        // the event becomes the responsibility of the callback now, so they might leak memory but we're not
+        g_ptr_array_remove_fast(known_peers, event->peer);
+
+        // if we were connecte to this peer, we're not any more...
+        g_ptr_array_remove_fast(connected_publishers, event->peer);
+
+        // the event and the peer become the responsibility of the callback now, so they might leak memory but we're not
         r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
         if (r < 0) {
             fprintf(stderr, ID "browser_callback: error writing event: %s\n", strerror(errno));
@@ -364,6 +404,16 @@ void cleanup_service_list(void *unused) {
 }
 
 
+// clean up the known-peers list
+void cleanup_known_peers(void *unused) {
+    while (known_peers->len > 0) {
+        cal_peer_t *peer;
+        peer = g_ptr_array_remove_index_fast(known_peers, 0);
+        cal_peer_free(peer);
+    }
+
+    g_ptr_array_free(known_peers, 1);
+}
 
 
 //
@@ -406,6 +456,9 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     service_list = g_slist_prepend(service_list, browse);
     pthread_cleanup_push(cleanup_service_list, NULL);
     
+    known_peers = g_ptr_array_new();
+    pthread_cleanup_push(cleanup_known_peers, NULL);
+
     connected_publishers = g_ptr_array_new();
 
 
@@ -453,12 +506,16 @@ void *cal_client_mdnssd_bip_function(void *arg) {
             if (FD_ISSET(fd, &readers)) {
                 DNSServiceErrorType err;
 
+                // this will call the service_ref's callback, which will
+                // change the service_list (and possibly known_peers and
+                // connected_publishers)
                 err = DNSServiceProcessResult(sc->service_ref);
                 if (err != kDNSServiceErr_NoError) {
                     fprintf(stderr, ID "client thread: Error processing service reference result: %d.\n", err);
-                    // FIXME
-                    return NULL;
+                    sleep(1);
                 }
+
+                // since the service_list has changed, we should stop iterating over it
                 break;
             }
         }
@@ -473,11 +530,19 @@ void *cal_client_mdnssd_bip_function(void *arg) {
             cal_peer_t *peer = g_ptr_array_index(connected_publishers, i);
             if (FD_ISSET(peer->as.ipv4.socket, &readers)) {
                 read_from_publisher(peer);
+
+                // read_from_publisher can change the connected_publishers
+                // list, so we need to stop iterating over it now
                 break;
             }
         }
     }
 
+    //
+    // NOT REACHED!
+    //
+
+    pthread_cleanup_pop(0);  // don't execute cleanup_known_peers
     pthread_cleanup_pop(0);  // don't execute cleanup_service_list
 }
 
