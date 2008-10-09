@@ -19,14 +19,38 @@
 
 typedef struct {
 
-    //! set by .init(), called by .read()
-    void (*callback)(cal_event_t *event);
+    //!
+    //! \brief A callback function provided by the user, to be called by
+    //!     the CAL Client library whenever an event requires the user's
+    //!     attention.
+    //!
+    //! Set by .init(), called by .read()
+    //!
+    //! The events are documented in the cal_event_t enum, in the
+    //! cal-event.h file.
+    //!
+    //! \param event The event that requires the user's attention.  The
+    //!     event is const, so the callback function should treat it as
+    //!     read-only.
+    //!
+
+    void (*callback)(const cal_event_t *event);
 
 
-    // starts tracking the peer list
-    // creates a file descriptor for the user to monitor, the user must call .read() when the fd is readable
-    // returns the fd, or -1 on error
-    int (*init)(void (*callback)(cal_event_t *event));
+    //!
+    //! \brief Join the network and start looking for servers.
+    //!
+    //! \param callback The callback function to be called by the CAL
+    //!     library when events happen to this peer.
+    //!
+    //! \return On success, returns a file descriptor which should be
+    //!     monitored by the caller.  When the fd is readable, the caller
+    //!     should call the .read() function.  The caller must never read
+    //!     or write the returned file descriptor directly.  On failure,
+    //!     returns -1.
+    //!
+
+    int (*init)(void (*callback)(const cal_event_t *event));
 
 
     void (*shutdown)(void);

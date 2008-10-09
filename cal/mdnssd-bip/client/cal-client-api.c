@@ -22,7 +22,7 @@
 
 
 
-int cal_client_mdnssd_bip_init(void (*callback)(cal_event_t *event)) {
+int cal_client_mdnssd_bip_init(void (*callback)(const cal_event_t *event)) {
     int r;
 
 

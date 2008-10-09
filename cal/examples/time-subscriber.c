@@ -22,7 +22,7 @@ extern cal_client_t cal_client;
 
 
 
-void cal_callback(cal_event_t *event) {
+void cal_callback(const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_JOIN: {
             char *msg = strdup("hey there!");
