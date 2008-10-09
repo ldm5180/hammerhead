@@ -28,3 +28,22 @@ cal_client_t.
 Each module's cal-server.a must define a variable named "cal_server", of type
 cal_server_t.
 
+
+
+
+The CAL library provides a peer-to-peer pub/sub framework.  Servers
+(publishers) are discoverable (findable) by clients (subscribers).
+Subscribers connect to publishers and request subscription to specific
+topics.  Subscription topics are ASCII strings.  The publisher's CAL
+library keeps track of connected subscribers and their subscriptions.
+The publisher (the user code) can call into the CAL library to publish
+a messages on a particular topic.  The publisher user code provides
+a (reentrant) function that determines if a publish topic matches
+a subscription's topic.  Any clients with subscriptions that match
+the publisher's topic get a copy of the message.  The CAL server
+library remembers the user code's published messages (just one for
+each published topic), and if a new subscription comes in for which
+the CAL server library has matching previously published information,
+the CAL server library autonomously sends the client the old matching
+published message(s).
+
