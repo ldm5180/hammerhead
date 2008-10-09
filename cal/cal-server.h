@@ -21,11 +21,13 @@ typedef struct {
 
     //!
     //! \brief A callback function provided by the user, to be called by
-    //!     the CAL Server library whenever an event requires the user's attention.
+    //!     the CAL Server library whenever an event requires the user's
+    //!     attention.
     //!
     //! Set by .init(), called by .read()
     //!
-    //! The events are documented in the cal_event_t enum, in the cal-event.h file.
+    //! The events are documented in the cal_event_t enum, in the
+    //! cal-event.h file.
     //!
     //! \param event The event that requires the user's attention.  The
     //!     event is const, so the callback function should treat it as
