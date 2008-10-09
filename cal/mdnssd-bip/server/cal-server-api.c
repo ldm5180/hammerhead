@@ -23,7 +23,7 @@
 
 
 
-int cal_server_mdnssd_bip_init(cal_peer_t *this, void (*callback)(cal_event_t *event)) {
+int cal_server_mdnssd_bip_init(cal_peer_t *this, void (*callback)(const cal_event_t *event)) {
     int r;
     int sock;
 

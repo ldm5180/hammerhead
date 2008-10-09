@@ -19,8 +19,20 @@
 
 typedef struct {
 
-    //! set by .init(), called by .read()
-    void (*callback)(cal_event_t *event);
+    //!
+    //! \brief A callback function provided by the user, to be called by
+    //!     the CAL Server library whenever an event requires the user's attention.
+    //!
+    //! Set by .init(), called by .read()
+    //!
+    //! The events are documented in the cal_event_t enum, in the cal-event.h file.
+    //!
+    //! \param event The event that requires the user's attention.  The
+    //!     event is const, so the callback function should treat it as
+    //!     read-only.
+    //!
+
+    void (*callback)(const cal_event_t *event);
 
 
     //!
@@ -40,7 +52,7 @@ typedef struct {
     //!     returns -1.
     //!
 
-    int (*init)(cal_peer_t *this, void (*callback)(cal_event_t *event));
+    int (*init)(cal_peer_t *this, void (*callback)(const cal_event_t *event));
 
 
     //!

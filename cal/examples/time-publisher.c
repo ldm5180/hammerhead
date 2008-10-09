@@ -12,7 +12,7 @@
 cal_peer_t *this;
 
 
-void cal_callback(cal_event_t *event) {
+void cal_callback(const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
             printf("got a Connect event from %s (%s)\n", event->peer->name, cal_peer_address_to_str(event->peer));
