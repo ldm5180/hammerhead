@@ -34,21 +34,5 @@ void *cal_client_mdnssd_bip_function(void *arg);
 
 
 
-//
-// these are the CAL Client API functions
-//
-
-int cal_client_mdnssd_bip_init(void (*callback)(const cal_event_t *event));
-void cal_client_mdnssd_bip_shutdown(void);
-
-void cal_client_mdnssd_bip_subscribe(cal_peer_t *peer, char *topic);
-
-int cal_client_mdnssd_bip_read(void);
-
-int cal_client_mdnssd_bip_sendto(cal_peer_t *peer, void *msg, int size);
-
-
-
-
 #endif  //  __CAL_MDNSSD_BIP_CLIENT_H
 
