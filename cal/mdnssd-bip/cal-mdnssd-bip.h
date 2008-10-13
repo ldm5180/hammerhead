@@ -36,7 +36,23 @@
 // helper functions used by both the Client and Server *threads*.
 //
 
-int bip_sendto(const cal_peer_t *peer, const void *msg, int size);
+
+//! 
+//! \brief Sends a message to a peer
+//! 
+//! \param peer The peer to send the message to.  Must be already
+//!     connected.
+//! 
+//! \param msg_type The message type to send.
+//!
+//! \param msg The payload of the message.
+//!
+//! \param size The number of bytes in msg to send.
+//!
+//! \return 0 on success, -1 on error.
+//!
+
+int bip_send_message(const cal_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size);
 
 
 //! 

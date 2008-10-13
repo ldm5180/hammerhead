@@ -22,15 +22,14 @@
 
 
 
-int bip_sendto(const cal_peer_t *peer, const void *msg, int size) {
+int bip_send_message(const cal_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size) {
     int r;
 
-    uint8_t msg_type;
     uint32_t msg_size;
 
     printf("bip_sendto: sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
 
-    msg_type = BIP_MSG_TYPE_MESSAGE;
+    msg_type = msg_type;
     msg_size = htonl(size);
 
     // FIXME: this should be one write
@@ -45,6 +44,13 @@ int bip_sendto(const cal_peer_t *peer, const void *msg, int size) {
         return -1;
     }
 
-    return write(peer->as.ipv4.socket, msg, size);
+    if (size == 0) return 0;
+
+    r = write(peer->as.ipv4.socket, msg, size);
+    if (r != sizeof(msg_size)) {
+        return -1;
+    }
+
+    return 0;
 }
 

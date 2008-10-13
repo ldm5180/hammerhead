@@ -80,7 +80,7 @@ static void read_from_user(void) {
                 fprintf(stderr, ID "read_from_user: unknown peer pointer passed in, dropping outgoing Message event\n");
                 return;
             }
-            bip_sendto(event->peer, event->msg.buffer, event->msg.size);
+            bip_send_message(event->peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
             // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
             event->peer = NULL;  // the peer is still connected, dont free it yet
             break;

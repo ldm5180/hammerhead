@@ -6,7 +6,7 @@ CFLAGS += -I .. -I ../../util
 
 OBJS =                      \
     bip-read-from-peer.o    \
-    bip-sendto.o            \
+    bip-send-message.o      \
 
 
 all: $(OBJS)
