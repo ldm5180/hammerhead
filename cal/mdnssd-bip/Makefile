@@ -3,6 +3,7 @@ include ../Makefile.params
 
 
 SUBDIRS =       \
+    shared      \
     client      \
     server      \
 

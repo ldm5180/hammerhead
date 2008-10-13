@@ -60,13 +60,6 @@ static void register_callback(
 
 
 
-static int bip_sendto(cal_peer_t *peer, void *msg, int size) {
-    printf(ID "sendto(): sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
-    return write(peer->as.ipv4.socket, msg, size);
-}
-
-
-
 
 static void read_from_user(void) {
     cal_event_t *event;
@@ -194,50 +187,58 @@ static void disconnect_peer(cal_peer_t *peer) {
 // returns 0 on success, -1 on failure (in which case the peer is disconnected)
 static int read_from_client(cal_peer_t *peer) {
     int r;
+    int payload_size;
     cal_event_t *event;
 
+    r = bip_read_from_peer(peer);
+    if (r < 0) {
+        disconnect_peer(peer);
+        return -1;
+    }
+
+    // message is not here yet, wait for more to come in
+    if (r == 0) return 0;
+
+
+    // 
+    // exactly one message is in the peer's buffer, handle it now
+    //
+
+
+    payload_size = ntohl(*(uint32_t*)&peer->buffer[BIP_MSG_HEADER_SIZE_OFFSET]);
 
     event = cal_event_new(CAL_EVENT_MESSAGE);
     if (event == NULL) {
-        fprintf(stderr, ID "read_from_client(): out of memory!\n");
-        goto fail0;
+        fprintf(stderr, ID "read_from_client: out of memory!\n");
+        peer->index = 0;
+        return -1;
     }
 
-    event->msg.buffer = malloc(BIP_MSG_BUFFER_SIZE);
-    if (event->msg.buffer == NULL) {
-        fprintf(stderr, ID "read_from_client(): out of memory!\n");
-        goto fail1;
-    }
-
-    r = read(peer->as.ipv4.socket, event->msg.buffer, BIP_MSG_BUFFER_SIZE);
-    if (r < 0) {
-        fprintf(stderr, ID "read_from_client(): error reading from client %s (%s): %s\n", peer->name, cal_peer_address_to_str(peer), strerror(errno));
-        goto fail1;
-    } else if (r == 0) {
-        fprintf(stderr, ID "read_from_client(): client %s (%s) disconnects\n", peer->name, cal_peer_address_to_str(peer));
-        goto fail1;
-    }
-
-    event->msg.size = r;
     event->peer = peer;
+    event->msg.buffer = malloc(payload_size);
+    if (event->msg.buffer == NULL) {
+        cal_event_free(event);
+        fprintf(stderr, ID "read_from_client: out of memory!\n");
+        peer->index = 0;
+        return -1;
+    }
 
-    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
+    memcpy(event->msg.buffer, &peer->buffer[BIP_MSG_HEADER_SIZE], payload_size);
+
+    peer->index = 0;
+
+    event->msg.size = payload_size;
+
+    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
-        fprintf(stderr, ID "read_from_client(): error writing Message event: %s\n", strerror(errno));
-        goto fail1;
-    } else if (r != sizeof(cal_event_t*)) {
-        fprintf(stderr, ID "read_from_client(): short write of Message event!\n");
-        goto fail1;
+        fprintf(stderr, ID "read_from_client: error writing to user thread!!");
+        return -1;
+    } else if (r < sizeof(event)) {
+        fprintf(stderr, ID "read_from_client: short write to user thread!!");
+        return -1;
     }
 
     return 0;
-
-fail1:
-    cal_event_free(event);
-
-fail0:
-    disconnect_peer(peer);
-    return -1;
 }
 
 

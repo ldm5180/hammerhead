@@ -4,8 +4,7 @@ include ../../Makefile.params
 
 CFLAGS += -I .. -I ../.. -I ../../util
 
-COMMON_OBJS =  $(wildcard ../../util/*.o)
-
+COMMON_OBJS =  $(wildcard ../../util/*.o) $(wildcard ../shared/*.o)
 
 OBJS =                      \
     cal-server-api.o        \

@@ -24,3 +24,14 @@ just add fds to it dynamically as it pleases...  But this feels like it
 forces too much structure on the user app.
 
 
+
+
+Bionet Information Protocol (BIP):
+
+    Each message between a BIP client and a BIP server is prefixed with
+    this header:
+
+        u8 MessageType;   // 0 = sendto message, 1 = subscription request, 2 = publish
+        u32 MessageSize;  // size of payload, in bytes, in network byte order
+
+

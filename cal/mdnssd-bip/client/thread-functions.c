@@ -142,22 +142,6 @@ static int connect_to_peer(cal_peer_t *peer) {
 
 
 
-static int bip_sendto(cal_peer_t *peer, void *msg, int size) {
-    int r;
-
-    r = connect_to_peer(peer);
-    if (r < 0) {
-        return -1;
-    }
-
-    printf(ID "sendto(): sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer->name);
-
-    return write(peer->as.ipv4.socket, msg, size);
-}
-
-
-
-
 // this function is called by the thread main function when the user thread wants to tell it something
 static void read_from_user(void) {
     cal_event_t *event;
@@ -176,6 +160,10 @@ static void read_from_user(void) {
         case CAL_EVENT_MESSAGE: {
             if (find_peer_by_ptr(event->peer) == NULL) {
                 fprintf(stderr, ID "read_from_user: unknown peer pointer passed in, dropping outgoing Message event\n");
+                return;
+            }
+            r = connect_to_peer(event->peer);
+            if (r < 0) {
                 return;
             }
             bip_sendto(event->peer, event->msg.buffer, event->msg.size);
@@ -200,41 +188,46 @@ static void read_from_user(void) {
 static void read_from_publisher(cal_peer_t *peer) {
     cal_event_t *event;
     int r;
+    int payload_size;
+
+    r = bip_read_from_peer(peer);
+    if (r < 0) {
+        disconnect_server(peer);
+        return;
+    }
+
+    // message is not here yet, wait for more to come in
+    if (r == 0) return;
+
+
+    // 
+    // exactly one message is in the peer's buffer, handle it now
+    //
+
+
+    payload_size = ntohl(*(uint32_t*)&peer->buffer[BIP_MSG_HEADER_SIZE_OFFSET]);
 
     event = cal_event_new(CAL_EVENT_MESSAGE);
     if (event == NULL) {
         fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
+        peer->index = 0;
         return;
     }
 
     event->peer = peer;
-    event->msg.buffer = malloc(BIP_MSG_BUFFER_SIZE);
+    event->msg.buffer = malloc(payload_size);
     if (event->msg.buffer == NULL) {
         cal_event_free(event);
         fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
+        peer->index = 0;
         return;
     }
 
-    r = read(peer->as.ipv4.socket, event->msg.buffer, BIP_MSG_BUFFER_SIZE);
-    if (r < 0) {
-        fprintf(stderr, ID "read_from_publisher(): error reading from peer %s: %s\n", peer->name, strerror(errno));
-        disconnect_server(peer);
+    memcpy(event->msg.buffer, &peer->buffer[BIP_MSG_HEADER_SIZE], payload_size);
 
-        event->peer = NULL;  // the peer is still there until we get the mDNS-SD Leave event
-        cal_event_free(event);
+    peer->index = 0;
 
-        return;
-    } else if (r == 0) {
-        fprintf(stderr, ID "read_from_publisher(): peer %s disconnects\n", peer->name);
-        disconnect_server(peer);
-
-        event->peer = NULL;  // the peer is still there until we get the mDNS-SD Leave event
-        cal_event_free(event);
-
-        return;
-    }
-
-    event->msg.size = r;
+    event->msg.size = payload_size;
 
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
