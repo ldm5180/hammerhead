@@ -99,7 +99,8 @@ typedef struct {
 } cal_client_t;
 
 
-extern cal_client_t cal_client;  //!< the CAL Client library provides this
+//!< the CAL Client module provides this
+extern cal_client_t cal_client;
 
 
 

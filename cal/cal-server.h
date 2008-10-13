@@ -111,6 +111,7 @@ typedef struct {
 } cal_server_t;
 
 
+//! the CAL Server module provides this
 extern cal_server_t cal_server;
 
 
