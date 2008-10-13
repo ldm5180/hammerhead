@@ -58,6 +58,11 @@ typedef struct {
         cal_as_ipv4_t ipv4;
     } as;
 
+    //! incoming buffer
+    // FIXME: probably should be dynamically allocated & sized...
+    char buffer[1024];
+    int index;
+
     //! it's up to the user to manage this one
     void *user_data;
 } cal_peer_t;
