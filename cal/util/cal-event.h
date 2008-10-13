@@ -79,7 +79,11 @@ typedef enum {
 
     //! This event indicates that a client has registered a new
     //! subscription with us.
-    CAL_EVENT_SUBSCRIBE
+    CAL_EVENT_SUBSCRIBE,
+
+    //! This event indicates that a server has published new information to
+    //! us.
+    CAL_EVENT_PUBLISH
 
 } cal_event_type_t;
 

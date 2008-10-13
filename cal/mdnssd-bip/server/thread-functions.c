@@ -75,6 +75,7 @@ static void read_from_user(void) {
     }
 
     switch (event->type) {
+
         case CAL_EVENT_MESSAGE: {
             if (find_client_by_ptr(event->peer) == NULL) {
                 fprintf(stderr, ID "read_from_user: unknown peer pointer passed in, dropping outgoing Message event\n");
@@ -83,6 +84,16 @@ static void read_from_user(void) {
             bip_send_message(event->peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
             // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
             event->peer = NULL;  // the peer is still connected, dont free it yet
+            break;
+        }
+
+        case CAL_EVENT_PUBLISH: {
+            int i;
+            // FIXME: only publish to subscribed clients
+            for (i = 0; i < clients->len; i ++) {
+                cal_peer_t *peer = g_ptr_array_index(clients, i);
+                bip_send_message(peer, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
+            }
             break;
         }
 

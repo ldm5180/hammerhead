@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "cal-server.h"
@@ -124,15 +125,25 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         fd_set readers;
+        struct timeval timeout;
+
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
 
         FD_ZERO(&readers);
         FD_SET(cal_fd, &readers);
 
         printf("entering select\n");
-        r = select(cal_fd + 1, &readers, NULL, NULL, NULL);
+        r = select(cal_fd + 1, &readers, NULL, NULL, &timeout);
         if (r == -1) {
             printf("select fails: %s\n", strerror(errno));
             exit(1);
+        }
+
+        if (r == 0) {
+            time_t t = time(NULL);
+            char *s = ctime(&t);
+            cal_server.publish("time", s, strlen(s)+1);
         }
 
         if (FD_ISSET(cal_fd, &readers)) {

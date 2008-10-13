@@ -175,6 +175,11 @@ int cal_client_mdnssd_bip_read(void) {
             break;
         }
 
+        case CAL_EVENT_PUBLISH: {
+            event->peer = NULL;  // the CAL Client thread has a copy, we'll free it when the peer leaves later
+            break;
+        }
+
         default: {
             fprintf(stderr, ID "read(): got unhandled event type %d\n", event->type);
             return 1;  // dont free events we dont understand

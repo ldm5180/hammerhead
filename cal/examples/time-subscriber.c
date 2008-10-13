@@ -68,6 +68,27 @@ void cal_callback(const cal_event_t *event) {
             break;
         }
 
+        case CAL_EVENT_PUBLISH: {
+            int i;
+
+            printf(
+                "Publish event from '%s' (%s)\n",
+                event->peer->name,
+                cal_peer_address_to_str(event->peer)
+            );
+
+            printf("%s", event->msg.buffer);
+
+            for (i = 0; i < event->msg.size; i ++) {
+                if ((i % 8) == 0) printf("    ");
+                printf("%02X ", event->msg.buffer[i]);
+                if ((i % 8) == 7) printf("\n");
+            }
+            if ((i % 8) != 7) printf("\n");
+
+            break;
+        }
+
         default: {
             printf("unknown event type %d\n", event->type);
             break;

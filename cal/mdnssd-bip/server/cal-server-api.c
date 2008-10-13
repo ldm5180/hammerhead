@@ -247,7 +247,38 @@ int cal_server_mdnssd_bip_sendto(cal_peer_t *peer, void *msg, int size) {
 
 
 void cal_server_mdnssd_bip_publish(char *topic, void *msg, int size) {
-    printf(ID "publish: not implemented yet\n");
+    int r;
+    cal_event_t *event;
+
+    event = cal_event_new(CAL_EVENT_PUBLISH);
+    if (event == NULL) {
+        fprintf(stderr, ID "publish: out of memory\n");
+        return;
+    }
+
+    event->topic = strdup(topic);
+    if (event->topic == NULL) {
+        fprintf(stderr, ID "publish: out of memory\n");
+        return;
+    }
+
+    event->msg.buffer = malloc(size);
+    if (event->msg.buffer == NULL) {
+        fprintf(stderr, ID "publish: out of memory\n");
+        return;
+    }
+    memcpy(event->msg.buffer, msg, size);
+    event->msg.size = size;
+
+    r = write(cal_server_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    if (r < 0) {
+        fprintf(stderr, ID "publish: error writing to server thread: %s", strerror(errno));
+        return;
+    }
+    if (r < sizeof(event)) {
+        fprintf(stderr, ID "publish: short write to server thread!!");
+        return;
+    }
 }
 
 
