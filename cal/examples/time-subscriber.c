@@ -19,6 +19,8 @@
 
 extern cal_client_t cal_client;
 
+char *topic = "time";
+
 
 
 
@@ -39,7 +41,10 @@ void cal_callback(const cal_event_t *event) {
 
             printf("found a time-publisher, subscribing to the time from it\n");
             cal_client.sendto(event->peer, msg, strlen(msg));
-            cal_client.subscribe(event->peer, "time");
+
+            if (topic != NULL) {
+                cal_client.subscribe(event->peer, topic);
+            }
 
             break;
         }
@@ -150,6 +155,11 @@ void make_shutdowns_clean(void) {
 
 int main(int argc, char *argv[]) {
     int cal_fd = -1;
+
+
+    if (argc >= 2) {
+        topic = argv[1];
+    }
 
 
     make_shutdowns_clean();
