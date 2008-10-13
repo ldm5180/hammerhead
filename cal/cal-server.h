@@ -41,8 +41,10 @@ typedef struct {
     //! \brief Make this peer available for connections.
     //!
     //! \param this A handle for the CAL Peer that is going to start
-    //!     accepting connections.  This peer's addressing information will
-    //!     be set to indicate how other peers can connect to it.
+    //!     accepting connections.  This peer should have the .name field
+    //!     set to what the server's advertised name should be.  This
+    //!     peer's addressing information will be set to indicate how other
+    //!     peers can connect to it, and announced on the CAL network.
     //!
     //! \param callback The callback function to be called by the CAL
     //!     library when events happen to this peer.
