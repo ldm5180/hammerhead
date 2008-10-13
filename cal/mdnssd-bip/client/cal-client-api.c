@@ -115,14 +115,13 @@ int cal_client_mdnssd_bip_subscribe(const cal_peer_t *peer, const char *topic) {
         return 0;
     }
 
-    event->msg.buffer = strdup(topic);
-    if (event->msg.buffer == NULL) {
+    event->topic = strdup(topic);
+    if (event->topic == NULL) {
         fprintf(stderr, ID "subscribe: out of memory\n");
         return 0;
     }
 
     event->peer = (cal_peer_t *)peer;
-    event->msg.size = strlen(topic) + 1;
 
     r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
     if (r < 0) {

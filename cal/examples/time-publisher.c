@@ -42,7 +42,7 @@ void cal_callback(const cal_event_t *event) {
         }
 
         case CAL_EVENT_SUBSCRIBE: {
-            printf("Client %s (%s) wants to subscribe to '%s'\n", event->peer->name, cal_peer_address_to_str(event->peer), event->msg.buffer);
+            printf("Client %s (%s) wants to subscribe to '%s'\n", event->peer->name, cal_peer_address_to_str(event->peer), event->topic);
             break;
         }
 

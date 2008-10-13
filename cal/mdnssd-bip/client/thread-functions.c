@@ -181,7 +181,7 @@ static void read_from_user(void) {
             if (r < 0) {
                 return;
             }
-            bip_send_message(event->peer, BIP_MSG_TYPE_SUBSCRIBE, event->msg.buffer, event->msg.size);
+            bip_send_message(event->peer, BIP_MSG_TYPE_SUBSCRIBE, event->topic, strlen(event->topic) + 1);
             // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
             event->peer = NULL;  // the peer is still connected, dont free it yet
             break;

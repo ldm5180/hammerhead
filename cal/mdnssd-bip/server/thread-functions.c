@@ -215,27 +215,40 @@ static int read_from_client(cal_peer_t *peer) {
         return -1;
     }
 
-    event->msg.buffer = malloc(payload_size);
-    if (event->msg.buffer == NULL) {
-        cal_event_free(event);
-        fprintf(stderr, ID "read_from_client: out of memory!\n");
-        peer->index = 0;
-        return -1;
-    }
-
-    memcpy(event->msg.buffer, &peer->buffer[BIP_MSG_HEADER_SIZE], payload_size);
-    event->msg.size = payload_size;
-
-    peer->index = 0;
-
     switch (peer->buffer[BIP_MSG_HEADER_TYPE_OFFSET]) {
         case BIP_MSG_TYPE_MESSAGE: {
             event->type = CAL_EVENT_MESSAGE;
+
+            event->msg.buffer = malloc(payload_size);
+            if (event->msg.buffer == NULL) {
+                cal_event_free(event);
+                fprintf(stderr, ID "read_from_client: out of memory!\n");
+                peer->index = 0;
+                return -1;
+            }
+
+            memcpy(event->msg.buffer, &peer->buffer[BIP_MSG_HEADER_SIZE], payload_size);
+            event->msg.size = payload_size;
+
+            peer->index = 0;
+
             break;
         }
 
         case BIP_MSG_TYPE_SUBSCRIBE: {
             event->type = CAL_EVENT_SUBSCRIBE;
+
+            event->topic = malloc(payload_size);
+            if (event->topic == NULL) {
+                cal_event_free(event);
+                fprintf(stderr, ID "read_from_client: out of memory!\n");
+                peer->index = 0;
+                return -1;
+            }
+
+            memcpy(event->topic, &peer->buffer[BIP_MSG_HEADER_SIZE], payload_size);
+
+            peer->index = 0;
             break;
         }
 
