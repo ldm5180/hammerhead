@@ -106,28 +106,35 @@ void cal_client_mdnssd_bip_shutdown(void) {
 
 
 
-void cal_client_mdnssd_bip_subscribe(cal_peer_t *peer, char *topic) {
-#if 0  // FIXME: need a Subscribe event
-    bip_subscription_request_t *req;
+int cal_client_mdnssd_bip_subscribe(const cal_peer_t *peer, const char *topic) {
     int r;
+    cal_event_t *event;
 
-    req = (bip_subscription_request_t *)malloc(sizeof(bip_subscription_request_t));
-    if (req == NULL) {
-        printf("out of memory!\n");
-        return;
-    } 
-
-    // FIXME
-    req->peer = peer;
-    req->topic = strdup(topic);
-
-    r = write(cal_i_bip_subscriber_fds_from_user[1], &req, sizeof(bip_subscription_request_t*));
-    if (r < 0) {
-        printf("bip_subscribe: error writing subscription request: %s\n", strerror(errno));
-    } else if (r != sizeof(bip_subscription_request_t*)) {
-        printf("bip_subscribe: short write of subscription request!\n");
+    event = cal_event_new(CAL_EVENT_SUBSCRIBE);
+    if (event == NULL) {
+        return 0;
     }
-#endif
+
+    event->msg.buffer = strdup(topic);
+    if (event->msg.buffer == NULL) {
+        fprintf(stderr, ID "subscribe: out of memory\n");
+        return 0;
+    }
+
+    event->peer = (cal_peer_t *)peer;
+    event->msg.size = strlen(topic) + 1;
+
+    r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    if (r < 0) {
+        fprintf(stderr, ID "subscribe(): error writing to client thread: %s", strerror(errno));
+        return 0;
+    }
+    if (r < sizeof(event)) {
+        fprintf(stderr, ID "subscribe(): short write to client thread!!");
+        return 0;
+    }
+
+    return 1;
 }
 
 

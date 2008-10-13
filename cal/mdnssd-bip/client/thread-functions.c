@@ -172,6 +172,21 @@ static void read_from_user(void) {
             break;
         }
 
+        case CAL_EVENT_SUBSCRIBE: {
+            if (find_peer_by_ptr(event->peer) == NULL) {
+                fprintf(stderr, ID "read_from_user: unknown peer pointer passed in, dropping outgoing Subscribe event\n");
+                return;
+            }
+            r = connect_to_peer(event->peer);
+            if (r < 0) {
+                return;
+            }
+            bip_send_message(event->peer, BIP_MSG_TYPE_SUBSCRIBE, event->msg.buffer, event->msg.size);
+            // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
+            event->peer = NULL;  // the peer is still connected, dont free it yet
+            break;
+        }
+
         default: {
             fprintf(stderr, ID "read_from_user(): unknown event %d from user\n", event->type);
             return;

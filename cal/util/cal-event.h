@@ -75,7 +75,11 @@ typedef enum {
     //! responsibility to free it when appropriate.
     //! FIXME: how to manage event->peer in subscribers?  give them Connect
     //! and Disconnect events?
-    CAL_EVENT_MESSAGE
+    CAL_EVENT_MESSAGE,
+
+    //! This event indicates that a client has registered a new
+    //! subscription with us.
+    CAL_EVENT_SUBSCRIBE
 
 } cal_event_type_t;
 

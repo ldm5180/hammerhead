@@ -56,7 +56,20 @@ typedef struct {
     void (*shutdown)(void);
 
 
-    void (*subscribe)(cal_peer_t *peer, char *topic);
+    //!
+    //! \brief Subscribe to a new topic from a server.
+    //!
+    //! \param peer The server to subscribe from.  The peer must have been
+    //!     the subject of a previous Join message, and not the subject of
+    //!     a subsequence Leave message.
+    //!
+    //! \param topic The topic to subscribe to.  A NULL-terminated ASCII
+    //!     string.
+    //!
+    //! \return True (non-zero) on success, False (zero) on failure.
+    //!
+
+    int (*subscribe)(const cal_peer_t *peer, const char *topic);
 
 
     //!

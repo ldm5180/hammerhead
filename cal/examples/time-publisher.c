@@ -41,6 +41,11 @@ void cal_callback(const cal_event_t *event) {
             break;
         }
 
+        case CAL_EVENT_SUBSCRIBE: {
+            printf("Client %s (%s) wants to subscribe to '%s'\n", event->peer->name, cal_peer_address_to_str(event->peer), event->msg.buffer);
+            break;
+        }
+
         default: {
             printf("unhandled event type %d\n", event->type);
             break;

@@ -193,6 +193,12 @@ int cal_server_mdnssd_bip_read(void) {
             event->peer = NULL;  // the peer is still around until the Disconnect
             break;
         }
+
+        case CAL_EVENT_SUBSCRIBE: {
+            event->peer = NULL;  // the peer is still around until the Disconnect
+            break;
+        }
+
         case CAL_EVENT_DISCONNECT: {
             break;
         }
