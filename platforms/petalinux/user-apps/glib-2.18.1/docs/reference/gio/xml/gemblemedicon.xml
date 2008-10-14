@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY version SYSTEM "version.xml">
+]>
+<refentry id="GEmblemedIcon">
+<refmeta>
+<refentrytitle role="top_of_page" id="GEmblemedIcon.top_of_page">GEmblemedIcon</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>GIO Library</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>GEmblemedIcon</refname>
+<refpurpose>Icon with emblems</refpurpose>
+<!--[<xref linkend="desc" endterm="desc.title"/>]-->
+</refnamediv>
+
+<refsynopsisdiv id="GEmblemedIcon.synopsis" role="synopsis">
+<title role="synopsis.title">Synopsis</title>
+
+<synopsis>
+
+#include &lt;gio/gio.h&gt;
+
+                    <link linkend="GEmblemedIcon-struct">GEmblemedIcon</link>;
+<link linkend="GIcon">GIcon</link>*              <link linkend="g-emblemed-icon-new">g_emblemed_icon_new</link>                 (<link linkend="GIcon">GIcon</link> *icon,
+                                                         <link linkend="GEmblem">GEmblem</link> *emblem);
+<link linkend="GIcon">GIcon</link>*              <link linkend="g-emblemed-icon-get-icon">g_emblemed_icon_get_icon</link>            (<link linkend="GEmblemedIcon">GEmblemedIcon</link> *emblemed);
+<link linkend="GList">GList</link>*              <link linkend="g-emblemed-icon-get-emblems">g_emblemed_icon_get_emblems</link>         (<link linkend="GEmblemedIcon">GEmblemedIcon</link> *emblemed);
+<link linkend="void">void</link>                <link linkend="g-emblemed-icon-add-emblem">g_emblemed_icon_add_emblem</link>          (<link linkend="GEmblemedIcon">GEmblemedIcon</link> *emblemed,
+                                                         <link linkend="GEmblem">GEmblem</link> *emblem);
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1 id="GEmblemedIcon.object-hierarchy" role="object_hierarchy">
+<title role="object_hierarchy.title">Object Hierarchy</title>
+<synopsis>
+  <link linkend="GObject">GObject</link>
+   +----GEmblemedIcon
+</synopsis>
+
+</refsect1>
+
+
+
+<refsect1 id="GEmblemedIcon.implemented-interfaces" role="impl_interfaces">
+<title role="impl_interfaces.title">Implemented Interfaces</title>
+<para>
+GEmblemedIcon implements
+ <link linkend="GIcon">GIcon</link>.</para>
+
+</refsect1>
+
+
+
+
+
+<refsect1 id="GEmblemedIcon.description" role="desc">
+<title role="desc.title">Description</title>
+<para>
+<link linkend="GEmblemedIcon"><type>GEmblemedIcon</type></link> is an implementation of <link linkend="GIcon"><type>GIcon</type></link> that supports
+adding an emblem to an icon. Adding multiple emblems to an
+icon is ensured via <link linkend="g-emblemed-icon-add-emblem"><function>g_emblemed_icon_add_emblem()</function></link>. 
+</para>
+<para>
+Note that <link linkend="GEmblemedIcon"><type>GEmblemedIcon</type></link> allows no control over the position
+of the emblems. See also <link linkend="GEmblem"><type>GEmblem</type></link> for more information.</para>
+<para>
+
+</para>
+</refsect1>
+
+<refsect1 id="GEmblemedIcon.details" role="details">
+<title role="details.title">Details</title>
+<refsect2 id="GEmblemedIcon-struct" role="struct">
+<title>GEmblemedIcon</title>
+<indexterm zone="GEmblemedIcon-struct"><primary>GEmblemedIcon</primary></indexterm><programlisting>typedef struct _GEmblemedIcon GEmblemedIcon;</programlisting>
+<para>
+An implementation of <link linkend="GIcon"><type>GIcon</type></link> for icons with emblems.</para>
+<para>
+
+</para></refsect2>
+<refsect2 id="g-emblemed-icon-new" role="function" condition="since:2.18">
+<title>g_emblemed_icon_new ()</title>
+<indexterm zone="g-emblemed-icon-new" role="2.18"><primary>g_emblemed_icon_new</primary></indexterm><programlisting><link linkend="GIcon">GIcon</link>*              g_emblemed_icon_new                 (<link linkend="GIcon">GIcon</link> *icon,
+                                                         <link linkend="GEmblem">GEmblem</link> *emblem);</programlisting>
+<para>
+Creates a new emblemed icon for <parameter>icon</parameter> with the emblem <parameter>emblem</parameter>.</para>
+<para>
+
+</para><variablelist role="params">
+<varlistentry><term><parameter>icon</parameter>&nbsp;:</term>
+<listitem><simpara> a <link linkend="GIcon"><type>GIcon</type></link>
+</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>emblem</parameter>&nbsp;:</term>
+<listitem><simpara> a <link linkend="GEmblem"><type>GEmblem</type></link>
+</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&nbsp;:</term><listitem><simpara> a new <link linkend="GIcon"><type>GIcon</type></link>
+
+</simpara></listitem></varlistentry>
+</variablelist><para role="since">Since  2.18
+</para></refsect2>
+<refsect2 id="g-emblemed-icon-get-icon" role="function" condition="since:2.18">
+<title>g_emblemed_icon_get_icon ()</title>
+<indexterm zone="g-emblemed-icon-get-icon" role="2.18"><primary>g_emblemed_icon_get_icon</primary></indexterm><programlisting><link linkend="GIcon">GIcon</link>*              g_emblemed_icon_get_icon            (<link linkend="GEmblemedIcon">GEmblemedIcon</link> *emblemed);</programlisting>
+<para>
+Gets the main icon for <parameter>emblemed</parameter>.</para>
+<para>
+
+</para><variablelist role="params">
+<varlistentry><term><parameter>emblemed</parameter>&nbsp;:</term>
+<listitem><simpara> a <link linkend="GEmblemedIcon"><type>GEmblemedIcon</type></link>
+</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&nbsp;:</term><listitem><simpara> a <link linkend="GIcon"><type>GIcon</type></link> that is owned by <parameter>emblemed</parameter>
+
+</simpara></listitem></varlistentry>
+</variablelist><para role="since">Since  2.18
+</para></refsect2>
+<refsect2 id="g-emblemed-icon-get-emblems" role="function" condition="since:2.18">
+<title>g_emblemed_icon_get_emblems ()</title>
+<indexterm zone="g-emblemed-icon-get-emblems" role="2.18"><primary>g_emblemed_icon_get_emblems</primary></indexterm><programlisting><link linkend="GList">GList</link>*              g_emblemed_icon_get_emblems         (<link linkend="GEmblemedIcon">GEmblemedIcon</link> *emblemed);</programlisting>
+<para>
+Gets the list of emblems for the <parameter>icon</parameter>.</para>
+<para>
+
+</para><variablelist role="params">
+<varlistentry><term><parameter>emblemed</parameter>&nbsp;:</term>
+<listitem><simpara> a <link linkend="GEmblemedIcon"><type>GEmblemedIcon</type></link>
+</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&nbsp;:</term><listitem><simpara> a <link linkend="GList"><type>GList</type></link> of <link linkend="GEmblem"><type>GEmblem</type></link> <!-- -->s that is owned by <parameter>emblemed</parameter>
+
+</simpara></listitem></varlistentry>
+</variablelist><para role="since">Since  2.18
+</para></refsect2>
+<refsect2 id="g-emblemed-icon-add-emblem" role="function" condition="since:2.18">
+<title>g_emblemed_icon_add_emblem ()</title>
+<indexterm zone="g-emblemed-icon-add-emblem" role="2.18"><primary>g_emblemed_icon_add_emblem</primary></indexterm><programlisting><link linkend="void">void</link>                g_emblemed_icon_add_emblem          (<link linkend="GEmblemedIcon">GEmblemedIcon</link> *emblemed,
+                                                         <link linkend="GEmblem">GEmblem</link> *emblem);</programlisting>
+<para>
+Adds <parameter>emblem</parameter> to the <link linkend="GList"><type>GList</type></link> of <link linkend="GEmblem"><type>GEmblem</type></link> <!-- -->s.</para>
+<para>
+
+</para><variablelist role="params">
+<varlistentry><term><parameter>emblemed</parameter>&nbsp;:</term>
+<listitem><simpara> a <link linkend="GEmblemedIcon"><type>GEmblemedIcon</type></link>
+</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>emblem</parameter>&nbsp;:</term>
+<listitem><simpara> a <link linkend="GEmblem"><type>GEmblem</type></link>
+</simpara></listitem></varlistentry>
+</variablelist><para role="since">Since  2.18
+</para></refsect2>
+
+</refsect1>
+
+
+
+<refsect1 id="GEmblemedIcon.see-also">
+<title>See Also</title>
+<link linkend="GIcon"><type>GIcon</type></link>, <link linkend="GLoadableIcon"><type>GLoadableIcon</type></link>, <link linkend="GThemedIcon"><type>GThemedIcon</type></link>, <link linkend="GEmblem"><type>GEmblem</type></link>
+</refsect1>
+
+</refentry>

@@ -1,0 +1,206 @@
+<refentry id="glib-Basic-Types">
+<refmeta>
+<refentrytitle role="top_of_page" id="glib-Basic-Types.top_of_page">Basic Types</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>GLIB Library</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>Basic Types</refname>
+<refpurpose>standard GLib types, defined for ease-of-use and portability</refpurpose>
+<!--[<xref linkend="desc" endterm="desc.title"/>]-->
+</refnamediv>
+
+<refsynopsisdiv id="glib-Basic-Types.synopsis" role="synopsis">
+<title role="synopsis.title">Synopsis</title>
+
+<synopsis>
+
+#include &lt;glib.h&gt;
+
+typedef             <link linkend="gboolean">gboolean</link>;
+typedef             <link linkend="gpointer">gpointer</link>;
+typedef             <link linkend="gconstpointer">gconstpointer</link>;
+typedef             <link linkend="gchar">gchar</link>;
+typedef             <link linkend="guchar">guchar</link>;
+
+typedef             <link linkend="gint">gint</link>;
+typedef             <link linkend="guint">guint</link>;
+typedef             <link linkend="gshort">gshort</link>;
+typedef             <link linkend="gushort">gushort</link>;
+typedef             <link linkend="glong">glong</link>;
+typedef             <link linkend="gulong">gulong</link>;
+
+
+<link linkend="GLIB-VAR:CAPS">GLIB_VAR</link>            <link linkend="guint64">guint64</link>                             ();
+
+typedef             <link linkend="gfloat">gfloat</link>;
+typedef             <link linkend="gdouble">gdouble</link>;
+</synopsis>
+</refsynopsisdiv>
+
+
+
+
+
+
+
+
+
+<refsect1 id="glib-Basic-Types.description" role="desc">
+<title role="desc.title">Description</title>
+<para>
+GLib defines a number of commonly used types, which can be divided into
+4 groups:
+
+<itemizedlist>
+<listitem><para>
+New types which are not part of standard C - <link linkend="gboolean"><type>gboolean</type></link>, <link linkend="gsize"><type>gsize</type></link>, <link linkend="gssize"><type>gssize</type></link>.
+</para></listitem>
+
+<listitem><para>
+Integer types which are guaranteed to be the same size across all platforms -
+<link linkend="gint8"><type>gint8</type></link>, <link linkend="guint8"><type>guint8</type></link>, <link linkend="gint16"><type>gint16</type></link>, <link linkend="guint16"><type>guint16</type></link>, <link linkend="gint32"><type>gint32</type></link>, <link linkend="guint32"><type>guint32</type></link>, <link linkend="gint64"><type>gint64</type></link>, <link linkend="guint64"><type>guint64</type></link>.
+</para></listitem>
+
+<listitem><para>
+Types which are easier to use than their standard C counterparts -
+<link linkend="gpointer"><type>gpointer</type></link>, <link linkend="gconstpointer"><type>gconstpointer</type></link>, <link linkend="guchar"><type>guchar</type></link>, <link linkend="guint"><type>guint</type></link>, <link linkend="gushort"><type>gushort</type></link>, <link linkend="gulong"><type>gulong</type></link>.
+</para></listitem>
+
+<listitem><para>
+Types which correspond exactly to standard C types, but are included
+for completeness - <link linkend="gchar"><type>gchar</type></link>, <link linkend="gint"><type>gint</type></link>, <link linkend="gshort"><type>gshort</type></link>, <link linkend="glong"><type>glong</type></link>, <link linkend="gfloat"><type>gfloat</type></link>, <link linkend="gdouble"><type>gdouble</type></link>.
+</para></listitem>
+</itemizedlist>
+
+</para>
+</refsect1>
+
+<refsect1 id="glib-Basic-Types.details" role="details">
+<title role="details.title">Details</title>
+<refsect2 id="gboolean" role="typedef">
+<title>gboolean</title>
+<indexterm zone="gboolean"><primary>gboolean</primary></indexterm><programlisting>typedef gint   gboolean;
+</programlisting>
+<para>
+A standard <type>boolean</type> type.
+Variables of this type should only contain the value <link linkend="TRUE:CAPS"><literal>TRUE</literal></link> or <link linkend="FALSE:CAPS"><literal>FALSE</literal></link>.
+</para></refsect2>
+<refsect2 id="gpointer" role="typedef">
+<title>gpointer</title>
+<indexterm zone="gpointer"><primary>gpointer</primary></indexterm><programlisting>typedef void* gpointer;
+</programlisting>
+<para>
+An untyped pointer.
+<link linkend="gpointer"><type>gpointer</type></link> looks better and is easier to use than <type>void*</type>.
+</para></refsect2>
+<refsect2 id="gconstpointer" role="typedef">
+<title>gconstpointer</title>
+<indexterm zone="gconstpointer"><primary>gconstpointer</primary></indexterm><programlisting>typedef const void *gconstpointer;
+</programlisting>
+<para>
+An untyped pointer to constant data.
+The data pointed to should not be changed.
+</para>
+<para>
+This is typically used in function prototypes to indicate that the
+data pointed to will not be altered by the function.
+</para></refsect2>
+<refsect2 id="gchar" role="typedef">
+<title>gchar</title>
+<indexterm zone="gchar"><primary>gchar</primary></indexterm><programlisting>typedef char   gchar;
+</programlisting>
+<para>
+Corresponds to the standard C <type>char</type> type.
+</para></refsect2>
+<refsect2 id="guchar" role="typedef">
+<title>guchar</title>
+<indexterm zone="guchar"><primary>guchar</primary></indexterm><programlisting>typedef unsigned char   guchar;
+</programlisting>
+<para>
+Corresponds to the standard C <type>unsigned char</type> type.
+</para></refsect2>
+<refsect2 id="gint" role="typedef">
+<title>gint</title>
+<indexterm zone="gint"><primary>gint</primary></indexterm><programlisting>typedef int    gint;
+</programlisting>
+<para>
+Corresponds to the standard C <type>int</type> type.
+Values of this type can range from <link linkend="G-MININT:CAPS"><type>G_MININT</type></link> to <link linkend="G-MAXINT:CAPS"><type>G_MAXINT</type></link>.
+</para></refsect2>
+<refsect2 id="guint" role="typedef">
+<title>guint</title>
+<indexterm zone="guint"><primary>guint</primary></indexterm><programlisting>typedef unsigned int    guint;
+</programlisting>
+<para>
+Corresponds to the standard C <type>unsigned int</type> type.
+Values of this type can range from 0 to <link linkend="G-MAXUINT:CAPS"><type>G_MAXUINT</type></link>.
+</para></refsect2>
+<refsect2 id="gshort" role="typedef">
+<title>gshort</title>
+<indexterm zone="gshort"><primary>gshort</primary></indexterm><programlisting>typedef short  gshort;
+</programlisting>
+<para>
+Corresponds to the standard C <type>short</type> type.
+Values of this type can range from <link linkend="G-MINSHORT:CAPS"><type>G_MINSHORT</type></link> to <link linkend="G-MAXSHORT:CAPS"><type>G_MAXSHORT</type></link>.
+</para></refsect2>
+<refsect2 id="gushort" role="typedef">
+<title>gushort</title>
+<indexterm zone="gushort"><primary>gushort</primary></indexterm><programlisting>typedef unsigned short  gushort;
+</programlisting>
+<para>
+Corresponds to the standard C <type>unsigned short</type> type.
+Values of this type can range from 0 to <link linkend="G-MAXUSHORT:CAPS"><type>G_MAXUSHORT</type></link>.
+</para></refsect2>
+<refsect2 id="glong" role="typedef">
+<title>glong</title>
+<indexterm zone="glong"><primary>glong</primary></indexterm><programlisting>typedef long   glong;
+</programlisting>
+<para>
+Corresponds to the standard C <type>long</type> type.
+Values of this type can range from <link linkend="G-MINLONG:CAPS"><type>G_MINLONG</type></link> to <link linkend="G-MAXLONG:CAPS"><type>G_MAXLONG</type></link>.
+</para></refsect2>
+<refsect2 id="gulong" role="typedef">
+<title>gulong</title>
+<indexterm zone="gulong"><primary>gulong</primary></indexterm><programlisting>typedef unsigned long   gulong;
+</programlisting>
+<para>
+Corresponds to the standard C <type>unsigned long</type> type.
+Values of this type can range from 0 to <link linkend="G-MAXULONG:CAPS"><type>G_MAXULONG</type></link>.
+</para></refsect2>
+<refsect2 id="guint64" role="function">
+<title>guint64 ()</title>
+<indexterm zone="guint64"><primary>guint64</primary></indexterm><programlisting><link linkend="GLIB-VAR:CAPS">GLIB_VAR</link>            guint64                             ();</programlisting>
+<para>
+An unsigned integer guaranteed to be 64 bits on all platforms.
+Values of this type can range from 0 to 18,446,744,073,709,551,615.
+</para><variablelist role="params">
+<varlistentry><term><emphasis>Returns</emphasis>&nbsp;:</term><listitem><simpara>
+
+
+</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="gfloat" role="typedef">
+<title>gfloat</title>
+<indexterm zone="gfloat"><primary>gfloat</primary></indexterm><programlisting>typedef float   gfloat;
+</programlisting>
+<para>
+Corresponds to the standard C <type>float</type> type.
+Values of this type can range from -<link linkend="G-MAXFLOAT:CAPS"><type>G_MAXFLOAT</type></link> to <link linkend="G-MAXFLOAT:CAPS"><type>G_MAXFLOAT</type></link>.
+</para></refsect2>
+<refsect2 id="gdouble" role="typedef">
+<title>gdouble</title>
+<indexterm zone="gdouble"><primary>gdouble</primary></indexterm><programlisting>typedef double  gdouble;
+</programlisting>
+<para>
+Corresponds to the standard C <type>double</type> type.
+Values of this type can range from -<link linkend="G-MAXDOUBLE:CAPS"><type>G_MAXDOUBLE</type></link> to <link linkend="G-MAXDOUBLE:CAPS"><type>G_MAXDOUBLE</type></link>.
+</para></refsect2>
+
+</refsect1>
+
+
+
+
+</refentry>

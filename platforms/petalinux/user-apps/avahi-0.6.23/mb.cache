@@ -1,0 +1,5 @@
+glib_cv_stack_grows=no
+ac_cv_func_posix_getpwuid_r=yes
+ac_cv_func_posix_getgrgid_r=yes
+ac_cv_lib_expat_XML_ParserCreate=yes
+

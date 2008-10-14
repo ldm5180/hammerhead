@@ -1,0 +1,174 @@
+<refentry id="glib-Limits-of-Basic-Types">
+<refmeta>
+<refentrytitle role="top_of_page" id="glib-Limits-of-Basic-Types.top_of_page">Limits of Basic Types</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>GLIB Library</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>Limits of Basic Types</refname>
+<refpurpose>portable method of determining the limits of the standard types</refpurpose>
+<!--[<xref linkend="desc" endterm="desc.title"/>]-->
+</refnamediv>
+
+<refsynopsisdiv id="glib-Limits-of-Basic-Types.synopsis" role="synopsis">
+<title role="synopsis.title">Synopsis</title>
+
+<synopsis>
+
+#include &lt;glib.h&gt;
+
+#define             <link linkend="G-MININT8:CAPS">G_MININT8</link>
+#define             <link linkend="G-MAXINT8:CAPS">G_MAXINT8</link>
+#define             <link linkend="G-MAXUINT8:CAPS">G_MAXUINT8</link>
+
+#define             <link linkend="G-MININT16:CAPS">G_MININT16</link>
+#define             <link linkend="G-MAXINT16:CAPS">G_MAXINT16</link>
+#define             <link linkend="G-MAXUINT16:CAPS">G_MAXUINT16</link>
+
+#define             <link linkend="G-MININT32:CAPS">G_MININT32</link>
+#define             <link linkend="G-MAXINT32:CAPS">G_MAXINT32</link>
+#define             <link linkend="G-MAXUINT32:CAPS">G_MAXUINT32</link>
+
+#define             <link linkend="G-MININT64:CAPS">G_MININT64</link>
+#define             <link linkend="G-MAXINT64:CAPS">G_MAXINT64</link>
+#define             <link linkend="G-MAXUINT64:CAPS">G_MAXUINT64</link>
+</synopsis>
+</refsynopsisdiv>
+
+
+
+
+
+
+
+
+
+<refsect1 id="glib-Limits-of-Basic-Types.description" role="desc">
+<title role="desc.title">Description</title>
+<para>
+These macros provide a portable method to determine the limits of some of
+the standard integer and floating point types.
+</para>
+</refsect1>
+
+<refsect1 id="glib-Limits-of-Basic-Types.details" role="details">
+<title role="details.title">Details</title>
+<refsect2 id="G-MININT8:CAPS" role="macro" condition="since:2.4">
+<title>G_MININT8</title>
+<indexterm zone="G-MININT8:CAPS" role="2.4"><primary>G_MININT8</primary></indexterm><programlisting>#define G_MININT8	((gint8)  0x80)
+</programlisting>
+<para>
+The minimum value which can be held in a <link linkend="gint8"><type>gint8</type></link>.
+</para><para role="since">Since 2.4
+
+
+</para></refsect2>
+<refsect2 id="G-MAXINT8:CAPS" role="macro" condition="since:2.4">
+<title>G_MAXINT8</title>
+<indexterm zone="G-MAXINT8:CAPS" role="2.4"><primary>G_MAXINT8</primary></indexterm><programlisting>#define G_MAXINT8	((gint8)  0x7f)
+</programlisting>
+<para>
+The maximum value which can be held in a <link linkend="gint8"><type>gint8</type></link>.
+</para><para role="since">Since 2.4
+
+
+</para></refsect2>
+<refsect2 id="G-MAXUINT8:CAPS" role="macro" condition="since:2.4">
+<title>G_MAXUINT8</title>
+<indexterm zone="G-MAXUINT8:CAPS" role="2.4"><primary>G_MAXUINT8</primary></indexterm><programlisting>#define G_MAXUINT8	((guint8) 0xff)
+</programlisting>
+<para>
+The maximum value which can be held in a <link linkend="guint8"><type>guint8</type></link>.
+</para><para role="since">Since 2.4
+
+
+</para></refsect2>
+<refsect2 id="G-MININT16:CAPS" role="macro" condition="since:2.4">
+<title>G_MININT16</title>
+<indexterm zone="G-MININT16:CAPS" role="2.4"><primary>G_MININT16</primary></indexterm><programlisting>#define G_MININT16	((gint16)  0x8000)
+</programlisting>
+<para>
+The minimum value which can be held in a <link linkend="gint16"><type>gint16</type></link>.
+</para><para role="since">Since 2.4
+
+
+</para></refsect2>
+<refsect2 id="G-MAXINT16:CAPS" role="macro" condition="since:2.4">
+<title>G_MAXINT16</title>
+<indexterm zone="G-MAXINT16:CAPS" role="2.4"><primary>G_MAXINT16</primary></indexterm><programlisting>#define G_MAXINT16	((gint16)  0x7fff)
+</programlisting>
+<para>
+The maximum value which can be held in a <link linkend="gint16"><type>gint16</type></link>.
+</para><para role="since">Since 2.4
+
+
+</para></refsect2>
+<refsect2 id="G-MAXUINT16:CAPS" role="macro" condition="since:2.4">
+<title>G_MAXUINT16</title>
+<indexterm zone="G-MAXUINT16:CAPS" role="2.4"><primary>G_MAXUINT16</primary></indexterm><programlisting>#define G_MAXUINT16	((guint16) 0xffff)
+</programlisting>
+<para>
+The maximum value which can be held in a <link linkend="guint16"><type>guint16</type></link>.
+</para><para role="since">Since 2.4
+
+
+</para></refsect2>
+<refsect2 id="G-MININT32:CAPS" role="macro" condition="since:2.4">
+<title>G_MININT32</title>
+<indexterm zone="G-MININT32:CAPS" role="2.4"><primary>G_MININT32</primary></indexterm><programlisting>#define G_MININT32	((gint32)  0x80000000)
+</programlisting>
+<para>
+The minimum value which can be held in a <link linkend="gint32"><type>gint32</type></link>.
+</para><para role="since">Since 2.4
+
+
+</para></refsect2>
+<refsect2 id="G-MAXINT32:CAPS" role="macro" condition="since:2.4">
+<title>G_MAXINT32</title>
+<indexterm zone="G-MAXINT32:CAPS" role="2.4"><primary>G_MAXINT32</primary></indexterm><programlisting>#define G_MAXINT32	((gint32)  0x7fffffff)
+</programlisting>
+<para>
+The maximum value which can be held in a <link linkend="gint32"><type>gint32</type></link>.
+</para><para role="since">Since 2.4
+
+
+</para></refsect2>
+<refsect2 id="G-MAXUINT32:CAPS" role="macro" condition="since:2.4">
+<title>G_MAXUINT32</title>
+<indexterm zone="G-MAXUINT32:CAPS" role="2.4"><primary>G_MAXUINT32</primary></indexterm><programlisting>#define G_MAXUINT32	((guint32) 0xffffffff)
+</programlisting>
+<para>
+The maximum value which can be held in a <link linkend="guint32"><type>guint32</type></link>.
+</para><para role="since">Since 2.4
+
+
+</para></refsect2>
+<refsect2 id="G-MININT64:CAPS" role="macro">
+<title>G_MININT64</title>
+<indexterm zone="G-MININT64:CAPS"><primary>G_MININT64</primary></indexterm><programlisting>#define G_MININT64	((gint64) G_GINT64_CONSTANT(0x8000000000000000))
+</programlisting>
+<para>
+The minimum value which can be held in a <link linkend="gint64"><type>gint64</type></link>.
+</para></refsect2>
+<refsect2 id="G-MAXINT64:CAPS" role="macro">
+<title>G_MAXINT64</title>
+<indexterm zone="G-MAXINT64:CAPS"><primary>G_MAXINT64</primary></indexterm><programlisting>#define G_MAXINT64	G_GINT64_CONSTANT(0x7fffffffffffffff)
+</programlisting>
+<para>
+The maximum value which can be held in a <link linkend="gint64"><type>gint64</type></link>.
+</para></refsect2>
+<refsect2 id="G-MAXUINT64:CAPS" role="macro">
+<title>G_MAXUINT64</title>
+<indexterm zone="G-MAXUINT64:CAPS"><primary>G_MAXUINT64</primary></indexterm><programlisting>#define G_MAXUINT64	G_GINT64_CONSTANT(0xffffffffffffffffU)
+</programlisting>
+<para>
+The maximum value which can be held in a <link linkend="guint64"><type>guint64</type></link>.
+</para></refsect2>
+
+</refsect1>
+
+
+
+
+</refentry>
