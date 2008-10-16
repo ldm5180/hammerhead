@@ -95,7 +95,8 @@ typedef struct {
     //! \param msg The buffer to send.  The msg buffer must be dynamically
     //!     allocated, and it becomes the property of the CAL Server
     //!     library.  After passing the msg buffer to cal_server.sendto,
-    //!     the user must not write to the buffer or free it.
+    //!     the user must not write to the buffer or free it.  FIXME: Note
+    //!     that this is opposite from how the .publish() msg behaves
     //!
     //! \param size The size of the buffer, in bytes.
     //!
@@ -113,7 +114,8 @@ typedef struct {
     //!     free the string.
     //!
     //! \param msg The content of the message to publish.  When publish()
-    //!     returns, the caller may modify or free the msg buffer.
+    //!     returns, the caller may modify or free the msg buffer.  FIXME:
+    //!     Note that this is opposite from how the .sendto() msg behaves
     //!
     //! \param size The size of msg, in bytes.
     //!
