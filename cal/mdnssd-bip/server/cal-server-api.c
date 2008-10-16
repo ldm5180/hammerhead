@@ -217,7 +217,7 @@ int cal_server_mdnssd_bip_read(void) {
 
 
 
-int cal_server_mdnssd_bip_sendto(cal_peer_t *peer, void *msg, int size) {
+int cal_server_mdnssd_bip_sendto(const cal_peer_t *peer, void *msg, int size) {
     int r;
     cal_event_t *event;
 
@@ -226,7 +226,7 @@ int cal_server_mdnssd_bip_sendto(cal_peer_t *peer, void *msg, int size) {
         return 0;
     }
 
-    event->peer = peer;
+    event->peer = (cal_peer_t *)peer;
     event->msg.buffer = msg;
     event->msg.size = size;
 

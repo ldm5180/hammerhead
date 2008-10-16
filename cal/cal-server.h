@@ -102,7 +102,7 @@ typedef struct {
     //! \returns True (non-zero) on success.  False (zero) on failure.
     //!
 
-    int (*sendto)(cal_peer_t *peer, void *msg, int size);
+    int (*sendto)(const cal_peer_t *peer, void *msg, int size);
 
 
     //!
