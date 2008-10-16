@@ -246,7 +246,7 @@ int cal_server_mdnssd_bip_sendto(cal_peer_t *peer, void *msg, int size) {
 
 
 
-void cal_server_mdnssd_bip_publish(char *topic, void *msg, int size) {
+void cal_server_mdnssd_bip_publish(const char *topic, const void *msg, int size) {
     int r;
     cal_event_t *event;
 

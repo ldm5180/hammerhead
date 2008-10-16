@@ -105,8 +105,20 @@ typedef struct {
     int (*sendto)(cal_peer_t *peer, void *msg, int size);
 
 
-    //! \brief Just a place-holder for now
-    void (*publish)(char *topic, void *msg, int size);
+    //!
+    //! \brief Publish a message to all subscribed clients.
+    //!
+    //! \param topic The topic to publish on.  topic is a NULL-terminated
+    //!     ASCII string.  When publish() returns, the caller may modify or
+    //!     free the string.
+    //!
+    //! \param msg The content of the message to publish.  When publish()
+    //!     returns, the caller may modify or free the msg buffer.
+    //!
+    //! \param size The size of msg, in bytes.
+    //!
+
+    void (*publish)(const char *topic, const void *msg, int size);
 
 } cal_server_t;
 
