@@ -60,7 +60,7 @@ am_time_subscriber_OBJECTS =  \
 time_subscriber_OBJECTS = $(am_time_subscriber_OBJECTS)
 am__DEPENDENCIES_1 =
 time_subscriber_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) \
 	../mdnssd-bip/client/libcal-mdnssd-bip-client.la
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
@@ -88,8 +88,6 @@ AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AVAHI_COMPAT_LIBDNS_SD_CFLAGS = @AVAHI_COMPAT_LIBDNS_SD_CFLAGS@
 AVAHI_COMPAT_LIBDNS_SD_LIBS = @AVAHI_COMPAT_LIBDNS_SD_LIBS@
-AVAHI_GLIB_CFLAGS = @AVAHI_GLIB_CFLAGS@
-AVAHI_GLIB_LIBS = @AVAHI_GLIB_LIBS@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -188,13 +186,13 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 time_publisher_SOURCES = time-publisher.c
-time_publisher_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(AVAHI_GLIB_CFLAGS) $(DBUS_CFLAGS) -I.. -I../util
-time_publisher_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(AVAHI_GLIB_LIBS) $(DBUS_LIBS)
+time_publisher_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../util
+time_publisher_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS)
 time_publisher_LDADD = $(AM_LDADD) ../mdnssd-bip/server/libcal-mdnssd-bip-server.la -lpthread 
 time_subscriber_SOURCES = time-subscriber.c
-time_subscriber_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(AVAHI_GLIB_CFLAGS) $(DBUS_CFLAGS) -I.. -I../util
+time_subscriber_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../util
 time_subscriber_LDFLAGS = $(AM_LDFLAGS) $(DBUS_LIBS)
-time_subscriber_LDADD = $(AM_LDADD) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(AVAHI_GLIB_LIBS) ../mdnssd-bip/client/libcal-mdnssd-bip-client.la -lpthread 
+time_subscriber_LDADD = $(AM_LDADD) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) ../mdnssd-bip/client/libcal-mdnssd-bip-client.la -lpthread 
 all: all-am
 
 .SUFFIXES:

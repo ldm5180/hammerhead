@@ -58,8 +58,7 @@ libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libcal_mdnssd_bip_shared_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libcal_mdnssd_bip_shared_la_OBJECTS =  \
 	libcal_mdnssd_bip_shared_la-bip-read-from-peer.lo \
 	libcal_mdnssd_bip_shared_la-bip-send-message.lo
@@ -91,8 +90,6 @@ AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AVAHI_COMPAT_LIBDNS_SD_CFLAGS = @AVAHI_COMPAT_LIBDNS_SD_CFLAGS@
 AVAHI_COMPAT_LIBDNS_SD_LIBS = @AVAHI_COMPAT_LIBDNS_SD_LIBS@
-AVAHI_GLIB_CFLAGS = @AVAHI_GLIB_CFLAGS@
-AVAHI_GLIB_LIBS = @AVAHI_GLIB_LIBS@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -191,9 +188,9 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 lib_LTLIBRARIES = libcal-mdnssd-bip-shared.la
-libcal_mdnssd_bip_shared_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(AVAHI_GLIB_CFLAGS) $(DBUS_CFLAGS) -I.. -I../.. -I../../util
+libcal_mdnssd_bip_shared_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../.. -I../../util
 libcal_mdnssd_bip_shared_la_SOURCES = bip-read-from-peer.c bip-send-message.c
-libcal_mdnssd_bip_shared_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(AVAHI_GLIB_LIBS) $(DBUS_CFLAGS) 
+libcal_mdnssd_bip_shared_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_CFLAGS) 
 all: all-am
 
 .SUFFIXES:
