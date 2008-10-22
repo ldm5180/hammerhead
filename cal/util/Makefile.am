@@ -1,3 +1,4 @@
+include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libpeer.la libevent.la
 

@@ -5,7 +5,10 @@
 #CXXFLAGS=-g -O0 -Wall -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Wno-deprecated -Woverloaded-virtual -Wwrite-strings -fprofile-arcs -ftest-coverage
 #LDFLAGS=-fprofile-arcs -ftest-coverage -lgcov
 
+include $(top_srcdir)/common.am
+
 SUBDIRS = cal . 
+
 
 
 #

@@ -1,4 +1,4 @@
-#AM_CFLAGS = -Wall -Werror -g -I.. -I../util `pkg-config --cflags glib-2.0`
+include $(top_srcdir)/common.am
 
 bin_PROGRAMS = time-publisher time-subscriber
 

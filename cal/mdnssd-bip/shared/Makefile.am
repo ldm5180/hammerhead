@@ -1,4 +1,4 @@
-#AM_CFLAGS = -Wall -Werror -g `pkg-config --cflags glib-2.0` -I.. -I../.. -I../../util
+include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libcal-mdnssd-bip-shared.la
 

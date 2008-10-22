@@ -1,0 +1,2 @@
+AM_CFLAGS=-Wall -Werror -g
+CFLAGS=$(AM_FLAGS)
