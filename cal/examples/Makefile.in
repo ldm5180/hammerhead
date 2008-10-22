@@ -48,18 +48,14 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am_time_publisher_OBJECTS = time_publisher-time-publisher.$(OBJEXT)
 time_publisher_OBJECTS = $(am_time_publisher_OBJECTS)
-time_publisher_DEPENDENCIES =  \
-	../mdnssd-bip/server/libcal-mdnssd-bip-server.la
+time_publisher_DEPENDENCIES =
 time_publisher_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(time_publisher_CFLAGS) \
 	$(CFLAGS) $(time_publisher_LDFLAGS) $(LDFLAGS) -o $@
 am_time_subscriber_OBJECTS =  \
 	time_subscriber-time-subscriber.$(OBJEXT)
 time_subscriber_OBJECTS = $(am_time_subscriber_OBJECTS)
-am__DEPENDENCIES_1 =
-time_subscriber_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) \
-	../mdnssd-bip/client/libcal-mdnssd-bip-client.la
+time_subscriber_DEPENDENCIES =
 time_subscriber_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(time_subscriber_CFLAGS) \
 	$(CFLAGS) $(time_subscriber_LDFLAGS) $(LDFLAGS) -o $@
@@ -200,12 +196,12 @@ top_srcdir = @top_srcdir@
 AM_CFLAGS = -Wall -Werror -g
 time_publisher_SOURCES = time-publisher.c
 time_publisher_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../util
-time_publisher_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS)
-time_publisher_LDADD = $(AM_LDADD) ../mdnssd-bip/server/libcal-mdnssd-bip-server.la -lpthread 
+time_publisher_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) -L../util -L../mdnssd-bip/server -L../mdnssd-bip/shared
+time_publisher_LDADD = $(AM_LDADD) -lcal-mdnssd-bip-server -lcal-mdnssd-bip-shared -lpeer -lpthread 
 time_subscriber_SOURCES = time-subscriber.c
 time_subscriber_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../util
-time_subscriber_LDFLAGS = $(AM_LDFLAGS) $(DBUS_LIBS)
-time_subscriber_LDADD = $(AM_LDADD) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) ../mdnssd-bip/client/libcal-mdnssd-bip-client.la -lpthread 
+time_subscriber_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) -L../util -L../mdnssd-bip/client -L../mdnssd-bip/shared
+time_subscriber_LDADD = $(AM_LDADD)  -lcal-mdnssd-bip-client -lcal-mdnssd-bip-shared -levent -lpthread 
 all: all-am
 
 .SUFFIXES:
