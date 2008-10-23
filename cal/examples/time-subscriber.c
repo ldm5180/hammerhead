@@ -29,39 +29,31 @@ void cal_callback(const cal_event_t *event) {
         case CAL_EVENT_JOIN: {
             char *msg = strdup("hey there!");
 
-            printf(
-                "Join event from '%s' (%s)\n",
-                event->peer->name,
-                cal_peer_address_to_str(event->peer)
-            );
+            printf("Join event from '%s'\n", event->peer_name);
 
-            if (strcmp(event->peer->name, "time-publisher") != 0) {
+            if (strcmp(event->peer_name, "time-publisher") != 0) {
                 break;
             }
 
             printf("found a time-publisher, subscribing to the time from it\n");
-            cal_client.sendto(event->peer, msg, strlen(msg));
+            cal_client.sendto(event->peer_name, msg, strlen(msg));
 
             if (topic != NULL) {
-                cal_client.subscribe(event->peer, topic);
+                cal_client.subscribe(event->peer_name, topic);
             }
 
             break;
         }
 
         case CAL_EVENT_LEAVE: {
-            printf("Leave event from '%s'\n", event->peer->name);
+            printf("Leave event from '%s'\n", event->peer_name);
             break;
         }
 
         case CAL_EVENT_MESSAGE: {
             int i;
 
-            printf(
-                "Message event from '%s' (%s)\n",
-                event->peer->name,
-                cal_peer_address_to_str(event->peer)
-            );
+            printf("Message event from '%s'\n", event->peer_name);
 
             for (i = 0; i < event->msg.size; i ++) {
                 if ((i % 8) == 0) printf("    ");
@@ -76,11 +68,7 @@ void cal_callback(const cal_event_t *event) {
         case CAL_EVENT_PUBLISH: {
             int i;
 
-            printf(
-                "Publish event from '%s' (%s)\n",
-                event->peer->name,
-                cal_peer_address_to_str(event->peer)
-            );
+            printf("Publish event from '%s'\n", event->peer_name);
 
             printf("%s", event->msg.buffer);
 

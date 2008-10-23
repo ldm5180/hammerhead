@@ -18,8 +18,28 @@
 #include <dns_sd.h>
 
 #include "cal-client.h"
-#include "cal-mdnssd-bip.h"
 #include "cal-client-mdnssd-bip.h"
+
+
+
+
+typedef struct {
+    char *hostname;  //!< DNS hostname, or IP address as a dotted quad ascii string
+    uint16_t port;   //!< in host byte order
+
+    int socket;      //!< the socket connected to this peer, or -1 if we're not currently connected
+
+    //! incoming buffer
+    // FIXME: probably should be dynamically allocated & sized...
+    char buffer[1024];
+    int index;
+} bip_peer_network_info_t;
+
+
+typedef struct {
+    bip_peer_network_info_t *net;  // NULL if the peer is not currently on the network
+    GSList *subscriptions;         // each is a dynamically allocated string of the topic
+} bip_peer_t;
 
 
 
@@ -40,48 +60,161 @@ static GSList *service_list = NULL;
 
 
 
-static GPtrArray *known_peers;
-
-static GPtrArray *connected_publishers;
-
-
+// the key is a peer name
+// the value is a bip_peer_t pointer if the peer is known, NULL if it's unknown
+static GHashTable *peers = NULL;
 
 
-static cal_peer_t *find_peer_by_name(const char *name) {
-    int i;
 
-    for (i = 0; i < known_peers->len; i ++) {
-        cal_peer_t *peer = g_ptr_array_index(known_peers, i);
-        if (strcmp(peer->name, name) == 0) return peer;
-    }
 
-    return NULL;
+bip_peer_t *get_peer_by_name(const char *peer_name) {
+    char *hash_key;
+    bip_peer_t *peer;
+
+    peer = g_hash_table_lookup(peers, peer_name);
+    if (peer != NULL) return peer;
+
+    peer = calloc(1, sizeof(bip_peer_t));
+    if (peer == NULL) {
+        fprintf(stderr, ID "get_peer_by_name: out of memory\n");
+        return NULL;
+    };
+
+    hash_key = strdup(peer_name);
+    if (hash_key == NULL) {
+        fprintf(stderr, ID "get_peer_by_name: out of memory\n");
+        free(peer);
+        return NULL;
+    };
+
+    g_hash_table_insert(peers, hash_key, peer);
+
+    return peer;
 }
 
 
-static cal_peer_t *find_peer_by_ptr(const cal_peer_t *peer) {
-    int i;
-
-    for (i = 0; i < known_peers->len; i ++) {
-        if (g_ptr_array_index(known_peers, i) == peer) return (cal_peer_t *)peer;
-    }
-
-    return NULL;
+static void bip_net_free(bip_peer_network_info_t *net) {
+    if (net == NULL) return;
+    if (net->hostname != NULL) free(net->hostname);
+    free(net);
 }
 
 
-void disconnect_server(cal_peer_t *peer) {
-    if (peer->as.ipv4.socket != -1) {
-        close(peer->as.ipv4.socket);
+static void bip_peer_free(bip_peer_t *peer) {
+    if (peer == NULL) return;
+    if (peer->net != NULL) bip_net_free(peer->net);
+    while (g_slist_length(peer->subscriptions) > 0) {
+        char *s = g_slist_nth_data(peer->subscriptions, 0);
+        peer->subscriptions = g_slist_remove(peer->subscriptions, s);
+        free(s);
     }
-    peer->as.ipv4.socket = -1;
-    g_ptr_array_remove_fast(connected_publishers, peer);
+    free(peer);
+}
+
+
+void peer_leaves(bip_peer_t *peer) {
+    if (peer == NULL) return;
+    bip_net_free(peer->net);
+    peer->net = NULL;
+}
+
+
+void disconnect_server(bip_peer_t *peer) {
+    if (peer == NULL) return;
+    if (peer->net == NULL) return;
+    if (peer->net->socket != -1) close(peer->net->socket);
+    peer->net->socket = -1;
+}
+
+
+int bip_client_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size) {
+    int r;
+
+    uint32_t msg_size;
+
+    if (peer->net == NULL) return -1;
+    if (peer->net->socket == -1) return -1;
+
+    printf("bip_send_message: sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer_name);
+
+    msg_type = msg_type;
+    msg_size = htonl(size);
+
+    // FIXME: this should be one write
+
+    r = write(peer->net->socket, &msg_type, sizeof(msg_type));
+    if (r != sizeof(msg_type)) {
+        return -1;
+    }
+
+    r = write(peer->net->socket, &msg_size, sizeof(msg_size));
+    if (r != sizeof(msg_size)) {
+        return -1;
+    }
+
+    if (size == 0) return 0;
+
+    r = write(peer->net->socket, msg, size);
+    if (r != sizeof(msg_size)) {
+        return -1;
+    }
+
+    return 0;
+}
+
+
+int bip_client_read_from_peer(const char *peer_name, bip_peer_t *peer) {
+    int r;
+    int max_bytes_to_read;
+    int payload_size;
+
+
+    if (peer->net == NULL) return -1;
+    if (peer->net->socket == -1) return -1;
+
+    if (peer->net->index < BIP_MSG_HEADER_SIZE) {
+        max_bytes_to_read = BIP_MSG_HEADER_SIZE - peer->net->index;
+        r = read(peer->net->socket, &peer->net->buffer[peer->net->index], max_bytes_to_read);
+        if (r < 0) {
+            fprintf(stderr, "bip_read_from_peer(): error reading from peer %s: %s\n", peer_name, strerror(errno));
+            return -1;
+        } else if (r == 0) {
+            fprintf(stderr, "bip_read_from_peer(): peer %s disconnects\n", peer_name);
+            return -1;
+        }
+
+        peer->net->index += r;
+
+        if (peer->net->index < BIP_MSG_HEADER_SIZE) return 0;
+    }
+
+    payload_size = ntohl(*(uint32_t *)&peer->net->buffer[BIP_MSG_HEADER_SIZE_OFFSET]);
+
+    max_bytes_to_read = (payload_size + BIP_MSG_HEADER_SIZE) - peer->net->index;
+    if (max_bytes_to_read > 0) {
+        r = read(peer->net->socket, &peer->net->buffer[peer->net->index], max_bytes_to_read);
+        if (r < 0) {
+            fprintf(stderr, "bip_read_from_peer(): error reading from peer %s: %s\n", peer_name, strerror(errno));
+            return -1;
+        } else if (r == 0) {
+            fprintf(stderr, "bip_read_from_peer(): peer %s disconnects\n", peer_name);
+            return -1;
+        }
+
+        peer->net->index += r;
+
+        if (r != max_bytes_to_read) return 0;
+    }
+
+    // yay a packet is in the peer's buffer!
+    return 1;
 }
 
 
 
 
-static int connect_to_peer(cal_peer_t *peer) {
+
+static int connect_to_peer(const char *peer_name, bip_peer_t *peer) {
     int s;
     int r;
 
@@ -89,12 +222,12 @@ static int connect_to_peer(cal_peer_t *peer) {
     struct addrinfo *ai;
 
 
-    if (peer->addressing_scheme != CAL_AS_IPv4) {
-        fprintf(stderr, ID "connect_to_peer(): peer '%s' has unknown addressing scheme %d\n", peer->name, peer->addressing_scheme);
+    if (peer->net == NULL) {
+        fprintf(stderr, ID "connect_to_peer: peer '%s' has no known network address\n", peer_name);
         return -1;
     }
 
-    if (peer->as.ipv4.socket >= 0) return peer->as.ipv4.socket;
+    if (peer->net->socket >= 0) return peer->net->socket;
 
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0) {
@@ -105,17 +238,17 @@ static int connect_to_peer(cal_peer_t *peer) {
     memset(&ai_hints, 0, sizeof(ai_hints));
     ai_hints.ai_family = AF_INET;  // IPv4
     ai_hints.ai_socktype = SOCK_STREAM;  // TCP
-    r = getaddrinfo(peer->as.ipv4.hostname, NULL, &ai_hints, &ai);
+    r = getaddrinfo(peer->net->hostname, NULL, &ai_hints, &ai);
     if (r != 0) {
-        fprintf(stderr, ID "connect_to_peer(): error with getaddrinfo(\"%s\", ...): %s", peer->as.ipv4.hostname, gai_strerror(r));
+        fprintf(stderr, ID "connect_to_peer(): error with getaddrinfo(\"%s\", ...): %s", peer->net->hostname, gai_strerror(r));
         return -1;
     }
     if (ai == NULL) {
-        fprintf(stderr, ID "connect_to_peer(): no results from getaddrinfo(\"%s\", ...)", peer->as.ipv4.hostname);
+        fprintf(stderr, ID "connect_to_peer(): no results from getaddrinfo(\"%s\", ...)", peer->net->hostname);
         return -1;
     }
 
-    ((struct sockaddr_in *)ai->ai_addr)->sin_port = htons(peer->as.ipv4.port);
+    ((struct sockaddr_in *)ai->ai_addr)->sin_port = htons(peer->net->port);
 
     r = connect(s, ai->ai_addr, ai->ai_addrlen);
     if (r != 0) {
@@ -123,18 +256,17 @@ static int connect_to_peer(cal_peer_t *peer) {
         fprintf(
             stderr,
             ID
-            "connect_to_peer(): error connecting to peer '%s' at %s (%s): %s\n",
-            peer->name,
-            cal_peer_address_to_str(peer),
+            "connect_to_peer(): error connecting to peer '%s' at %s:%hu (%s): %s\n",
+            peer_name,
+            peer->net->hostname,
+            peer->net->port,
             inet_ntoa(sin->sin_addr),
             strerror(errno)
         );
         return -1;
     }
 
-    peer->as.ipv4.socket = s;
-
-    g_ptr_array_add(connected_publishers, peer);
+    peer->net->socket = s;
 
     return s;
 }
@@ -158,32 +290,33 @@ static void read_from_user(void) {
 
     switch (event->type) {
         case CAL_EVENT_MESSAGE: {
-            if (find_peer_by_ptr(event->peer) == NULL) {
-                fprintf(stderr, ID "read_from_user: unknown peer pointer passed in, dropping outgoing Message event\n");
-                return;
-            }
-            r = connect_to_peer(event->peer);
-            if (r < 0) {
-                return;
-            }
-            bip_send_message(event->peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
+            bip_peer_t *peer;
+
+            peer = get_peer_by_name(event->peer_name);
+            if (peer == NULL) return;
+
+            r = connect_to_peer(event->peer_name, peer);
+            if (r < 0) return;
+
+            bip_client_send_message(event->peer_name, peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
             // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
-            event->peer = NULL;  // the peer is still connected, dont free it yet
+
             break;
         }
 
+
         case CAL_EVENT_SUBSCRIBE: {
-            if (find_peer_by_ptr(event->peer) == NULL) {
-                fprintf(stderr, ID "read_from_user: unknown peer pointer passed in, dropping outgoing Subscribe event\n");
-                return;
-            }
-            r = connect_to_peer(event->peer);
-            if (r < 0) {
-                return;
-            }
-            bip_send_message(event->peer, BIP_MSG_TYPE_SUBSCRIBE, event->topic, strlen(event->topic) + 1);
+            bip_peer_t *peer;
+
+            peer = get_peer_by_name(event->peer_name);
+            if (peer == NULL) return;
+
+            r = connect_to_peer(event->peer_name, peer);
+            if (r < 0) return;
+
+            bip_client_send_message(event->peer_name, peer, BIP_MSG_TYPE_SUBSCRIBE, event->topic, strlen(event->topic) + 1);
             // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
-            event->peer = NULL;  // the peer is still connected, dont free it yet
+
             break;
         }
 
@@ -200,12 +333,12 @@ static void read_from_user(void) {
 
 
 // this function is called by the thread main function when a connected publisher has something to say
-static void read_from_publisher(cal_peer_t *peer) {
+static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
     cal_event_t *event;
     int r;
     int payload_size;
 
-    r = bip_read_from_peer(peer);
+    r = bip_client_read_from_peer(peer_name, peer);
     if (r < 0) {
         disconnect_server(peer);
         return;
@@ -220,27 +353,34 @@ static void read_from_publisher(cal_peer_t *peer) {
     //
 
 
-    payload_size = ntohl(*(uint32_t*)&peer->buffer[BIP_MSG_HEADER_SIZE_OFFSET]);
+    payload_size = ntohl(*(uint32_t*)&peer->net->buffer[BIP_MSG_HEADER_SIZE_OFFSET]);
 
-    switch (peer->buffer[BIP_MSG_HEADER_TYPE_OFFSET]) {
+    switch (peer->net->buffer[BIP_MSG_HEADER_TYPE_OFFSET]) {
         case BIP_MSG_TYPE_MESSAGE: {
             event = cal_event_new(CAL_EVENT_MESSAGE);
             if (event == NULL) {
                 fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
-                peer->index = 0;
+                peer->net->index = 0;
                 return;
             }
 
-            event->peer = peer;
+            event->peer_name = strdup(peer_name);
+            if (event->peer_name == NULL) {
+                cal_event_free(event);
+                fprintf(stderr, ID "read_from_publisher: out of memory!\n");
+                peer->net->index = 0;
+                return;
+            }
+
             event->msg.buffer = malloc(payload_size);
             if (event->msg.buffer == NULL) {
                 cal_event_free(event);
                 fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
-                peer->index = 0;
+                peer->net->index = 0;
                 return;
             }
 
-            memcpy(event->msg.buffer, &peer->buffer[BIP_MSG_HEADER_SIZE], payload_size);
+            memcpy(event->msg.buffer, &peer->net->buffer[BIP_MSG_HEADER_SIZE], payload_size);
 
             event->msg.size = payload_size;
 
@@ -251,20 +391,27 @@ static void read_from_publisher(cal_peer_t *peer) {
             event = cal_event_new(CAL_EVENT_PUBLISH);
             if (event == NULL) {
                 fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
-                peer->index = 0;
+                peer->net->index = 0;
                 return;
             }
 
-            event->peer = peer;
+            event->peer_name = strdup(peer_name);
+            if (event->peer_name == NULL) {
+                cal_event_free(event);
+                fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
+                peer->net->index = 0;
+                return;
+            }
+
             event->msg.buffer = malloc(payload_size);
             if (event->msg.buffer == NULL) {
                 cal_event_free(event);
                 fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
-                peer->index = 0;
+                peer->net->index = 0;
                 return;
             }
 
-            memcpy(event->msg.buffer, &peer->buffer[BIP_MSG_HEADER_SIZE], payload_size);
+            memcpy(event->msg.buffer, &peer->net->buffer[BIP_MSG_HEADER_SIZE], payload_size);
 
             event->msg.size = payload_size;
 
@@ -273,7 +420,7 @@ static void read_from_publisher(cal_peer_t *peer) {
     }
 
 
-    peer->index = 0;
+    peer->net->index = 0;
 
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
@@ -302,7 +449,9 @@ static void resolve_callback(
     int r;
     struct cal_client_mdnssd_bip_service_context *sc = context;
     cal_event_t *event = sc->event;
-    cal_peer_t *peer = event->peer;
+
+    char *peer_name;
+    bip_peer_t *peer;
 
 
     // remove this service_ref from the list
@@ -316,16 +465,40 @@ static void resolve_callback(
         return;
     }
 
-    peer->as.ipv4.port = ntohs(port);
-    peer->as.ipv4.hostname = strdup(hosttarget);
-    if (peer->as.ipv4.hostname == NULL) {
+    peer_name = strdup(event->peer_name);
+    if (peer_name == NULL) {
         fprintf(stderr, ID "resolve_callback: out of memory\n");
-        cal_event_free(event);
         return;
     }
 
-    // the peer is our responsibility, remember it for later
-    g_ptr_array_add(known_peers, peer);
+    peer = get_peer_by_name(peer_name);
+    if (peer == NULL) {
+        fprintf(stderr, ID "resolve_callback: out of memory\n");
+        free(peer_name);
+        return;
+    }
+
+    // FIXME: check that peer has no net
+
+    peer->net = calloc(1, sizeof(bip_peer_network_info_t));
+    if (peer->net == NULL) {
+        fprintf(stderr, ID "resolve_callback: out of memory\n");
+        free(peer_name);
+        cal_event_free(event);
+        return;
+    }
+    peer->net->socket = -1;  // not connected yet
+
+    peer->net->port = ntohs(port);
+
+    peer->net->hostname = strdup(hosttarget);
+    if (peer->net->hostname == NULL) {
+        fprintf(stderr, ID "resolve_callback: out of memory\n");
+        cal_event_free(event);
+        free(peer_name);
+        free(peer->net);
+        return;
+    }
 
     // the event becomes the responsibility of the callback now, so they might leak memory but we're not
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
@@ -370,14 +543,12 @@ static void browse_callback(
             return;
         }
 
-        event->peer = cal_peer_new(name);
-        if (event->peer == NULL) {
+        event->peer_name = strdup(name);
+        if (event->peer_name == NULL) {
             fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
             cal_event_free(event);
             return;
         }
-
-        cal_peer_set_addressing_scheme(event->peer, CAL_AS_IPv4);
 
 
         sc = malloc(sizeof(struct cal_client_mdnssd_bip_service_context));
@@ -389,7 +560,7 @@ static void browse_callback(
 
         sc->event = event;
 
-        // Now create a resolve call to fill out the rest of the cal_peer_t
+        // Now create a resolve call to fill out the network info part of the bip_peer
         error = DNSServiceResolve(
             &sc->service_ref,
             0,
@@ -413,6 +584,13 @@ static void browse_callback(
     } else {
         int r;
         cal_event_t *event;
+        bip_peer_t *peer;
+
+        peer = g_hash_table_lookup(peers, name);
+        if (peer == NULL) return;  // strange, we haven't seen a Join for this peer, so ignore the Leave event
+
+        disconnect_server(peer);
+        peer_leaves(peer);
 
         event = cal_event_new(CAL_EVENT_LEAVE);
         if (event == NULL) {
@@ -420,17 +598,12 @@ static void browse_callback(
             return;
         }
 
-        event->peer = find_peer_by_name(name);
-        if (event->peer == NULL) {
-            fprintf(stderr, ID "browse_callback: got a Leave event for an unknown peer (%s)!  dropping this event!\n", name);
+        event->peer_name = strdup(name);
+        if (event->peer_name == NULL) {
+            fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
             cal_event_free(event);
             return;
         }
-
-        g_ptr_array_remove_fast(known_peers, event->peer);
-
-        // if we were connecte to this peer, we're not any more...
-        disconnect_server(event->peer);
 
         // the event and the peer become the responsibility of the callback now, so they might leak memory but we're not
         r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
@@ -464,27 +637,19 @@ void cleanup_service_list(void *unused) {
 }
 
 
-// clean up the known-peers list
-void cleanup_known_peers(void *unused) {
-    while (known_peers->len > 0) {
-        cal_peer_t *peer;
-        peer = g_ptr_array_remove_index_fast(known_peers, 0);
-        cal_peer_free(peer);
-    }
-
-    g_ptr_array_free(known_peers, 1);
+// clean up the peers hash table
+void cleanup_peers(void *unused) {
+    g_hash_table_unref(peers);
 }
 
 
-// clean up the connected-publishers list
-void cleanup_connected_publishers(void *unused) {
-    while (connected_publishers->len > 0) {
-        cal_peer_t *peer;
-        peer = g_ptr_array_index(connected_publishers, 0);
-        disconnect_server(peer);
-    }
+void free_peer(void *peer_as_void) {
+    bip_peer_t *peer = peer_as_void;
 
-    g_ptr_array_free(connected_publishers, 1);
+    if (peer == NULL) return;
+
+    disconnect_server(peer);
+    bip_peer_free(peer);
 }
 
 
@@ -528,18 +693,14 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     service_list = g_slist_prepend(service_list, browse);
     pthread_cleanup_push(cleanup_service_list, NULL);
 
-    known_peers = g_ptr_array_new();
-    pthread_cleanup_push(cleanup_known_peers, NULL);
-
-    connected_publishers = g_ptr_array_new();
-    pthread_cleanup_push(cleanup_connected_publishers, NULL);
+    peers = g_hash_table_new_full(g_str_hash, g_str_equal, free, free_peer);
+    pthread_cleanup_push(cleanup_peers, NULL);
 
 
     while (1) {
         fd_set readers;
         int max_fd;
         int r;
-        int i;
         GSList *ptr;
 
 
@@ -560,10 +721,18 @@ void *cal_client_mdnssd_bip_function(void *arg) {
         max_fd = Max(max_fd, cal_client_mdnssd_bip_fds_from_user[0]);
 
         // each server we're connected to might want to say something
-        for (i = 0; i < connected_publishers->len; i ++) {
-            cal_peer_t *peer = g_ptr_array_index(connected_publishers, i);
-            FD_SET(peer->as.ipv4.socket, &readers);
-            max_fd = Max(max_fd, peer->as.ipv4.socket);
+        {
+            GHashTableIter iter;
+            const char *name;
+            bip_peer_t *peer;
+
+            g_hash_table_iter_init (&iter, peers);
+            while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
+                if (peer->net == NULL) continue;
+                if (peer->net->socket == -1) continue;
+                FD_SET(peer->net->socket, &readers);
+                max_fd = Max(max_fd, peer->net->socket);
+            }
         }
 
 
@@ -599,14 +768,20 @@ void *cal_client_mdnssd_bip_function(void *arg) {
         }
 
         // see if any of our servers said anything
-        for (i = 0; i < connected_publishers->len; i ++) {
-            cal_peer_t *peer = g_ptr_array_index(connected_publishers, i);
-            if (FD_ISSET(peer->as.ipv4.socket, &readers)) {
-                read_from_publisher(peer);
+        {
+            GHashTableIter iter;
+            const char *name;
+            bip_peer_t *peer;
 
-                // read_from_publisher can change the connected_publishers
-                // list, so we need to stop iterating over it now
-                break;
+            g_hash_table_iter_init(&iter, peers);
+            while (g_hash_table_iter_next (&iter, (gpointer)&name, (gpointer)&peer)) {
+                if (peer->net == NULL) continue;
+                if (peer->net->socket == -1) continue;
+                if (FD_ISSET(peer->net->socket, &readers)) {
+                    read_from_publisher(name, peer);
+                    // read_from_publisher can disconnect the peer, so we need to stop iterating over it now
+                    break;
+                }
             }
         }
     }
@@ -615,8 +790,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     // NOT REACHED!
     //
 
-    pthread_cleanup_pop(0);  // don't execute cleanup_connected_publishers
-    pthread_cleanup_pop(0);  // don't execute cleanup_known_peers
+    pthread_cleanup_pop(0);  // don't execute cleanup_peers
     pthread_cleanup_pop(0);  // don't execute cleanup_service_list
 }
 

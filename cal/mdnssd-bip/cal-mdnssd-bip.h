@@ -8,7 +8,7 @@
 #define __CAL_MDNSSD_BIP_H
 
 
-#include "cal-util.h"
+#include "cal-event.h"
 
 
 

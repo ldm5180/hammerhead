@@ -8,8 +8,6 @@
 #include <dns_sd.h>
 #include <glib.h>
 
-#include "cal-util.h"
-
 #include "cal-mdnssd-bip.h"
 
 

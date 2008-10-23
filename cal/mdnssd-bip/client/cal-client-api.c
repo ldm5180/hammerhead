@@ -106,7 +106,7 @@ void cal_client_mdnssd_bip_shutdown(void) {
 
 
 
-int cal_client_mdnssd_bip_subscribe(const cal_peer_t *peer, const char *topic) {
+int cal_client_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
     int r;
     cal_event_t *event;
 
@@ -121,7 +121,12 @@ int cal_client_mdnssd_bip_subscribe(const cal_peer_t *peer, const char *topic) {
         return 0;
     }
 
-    event->peer = (cal_peer_t *)peer;
+    event->peer_name = strdup(peer_name);
+    if (event->peer_name == NULL) {
+        fprintf(stderr, ID "subscribe: out of memory\n");
+        cal_event_free(event);
+        return 0;
+    }
 
     r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
     if (r < 0) {
@@ -194,16 +199,23 @@ int cal_client_mdnssd_bip_read(void) {
 
 
 
-int cal_client_mdnssd_bip_sendto(cal_peer_t *peer, void *msg, int size) {
+int cal_client_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
     int r;
     cal_event_t *event;
 
     event = cal_event_new(CAL_EVENT_MESSAGE);
     if (event == NULL) {
+        fprintf(stderr, ID "sendto: out of memory");
         return 0;
     }
 
-    event->peer = peer;
+    event->peer_name = strdup(peer_name);
+    if (event->peer_name == NULL) {
+        cal_event_free(event);
+        fprintf(stderr, ID "sendto: out of memory");
+        return 0;
+    }
+
     event->msg.buffer = msg;
     event->msg.size = size;
 

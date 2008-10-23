@@ -12,7 +12,7 @@
 #define __CAL_CLIENT_H
 
 
-#include "cal-util.h"
+#include "cal-event.h"
 
 
 
@@ -59,9 +59,7 @@ typedef struct {
     //!
     //! \brief Subscribe to a new topic from a server.
     //!
-    //! \param peer The server to subscribe from.  The peer must have been
-    //!     the subject of a previous Join message, and not the subject of
-    //!     a subsequence Leave message.
+    //! \param peer_name The name of the server to subscribe from.
     //!
     //! \param topic The topic to subscribe to.  A NULL-terminated ASCII
     //!     string.
@@ -69,7 +67,7 @@ typedef struct {
     //! \return True (non-zero) on success, False (zero) on failure.
     //!
 
-    int (*subscribe)(const cal_peer_t *peer, const char *topic);
+    int (*subscribe)(const char *peer_name, const char *topic);
 
 
     //!
@@ -93,9 +91,7 @@ typedef struct {
     //!
     //! This function sends a message (just an array of bytes) to a server.
     //!
-    //! \param peer The server to send the message to.  The peer pointer
-    //!     must have been the subject of a previous Join event, and not
-    //!     the subject of a Leave event since then.
+    //! \param peer The name of the server to send the message to.
     //!
     //! \param msg The buffer to send.  The msg buffer must be dynamically
     //!     allocated, and it becomes the property of the CAL Client
@@ -107,7 +103,7 @@ typedef struct {
     //! \returns True (non-zero) on success.  False (zero) on failure.
     //!
 
-    int (*sendto)(cal_peer_t *peer, void *msg, int size);
+    int (*sendto)(const char *peer_name, void *msg, int size);
 
 } cal_client_t;
 
