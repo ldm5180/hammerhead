@@ -53,13 +53,19 @@ libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libcal_mdnssd_bip_client_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	../shared/libcal-mdnssd-bip-shared.la ../../util/libpeer.la \
-	../../util/libevent.la
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am__objects_1 = libcal_mdnssd_bip_client_la-bip-read-from-peer.lo \
+	libcal_mdnssd_bip_client_la-bip-send-message.lo
+am__objects_2 = libcal_mdnssd_bip_client_la-event-free.lo \
+	libcal_mdnssd_bip_client_la-event-new.lo \
+	libcal_mdnssd_bip_client_la-peer-address.lo \
+	libcal_mdnssd_bip_client_la-peer-free.lo \
+	libcal_mdnssd_bip_client_la-peer-new.lo
 am_libcal_mdnssd_bip_client_la_OBJECTS =  \
 	libcal_mdnssd_bip_client_la-cal-client-api.lo \
 	libcal_mdnssd_bip_client_la-global.lo \
-	libcal_mdnssd_bip_client_la-thread-functions.lo
+	libcal_mdnssd_bip_client_la-thread-functions.lo \
+	$(am__objects_1) $(am__objects_2)
 libcal_mdnssd_bip_client_la_OBJECTS =  \
 	$(am_libcal_mdnssd_bip_client_la_OBJECTS)
 libcal_mdnssd_bip_client_la_LINK = $(LIBTOOL) --tag=CC \
@@ -201,10 +207,12 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CFLAGS = -Wall -Werror -g
+LIBCAL_EVENT_SOURCES = ../../util/event-free.c ../../util/event-new.c ../../util/peer-address.c ../../util/peer-free.c ../../util/peer-new.c
+LIBCAL_MDNSSD_BIP_SHARED_SOURCES = ../shared/bip-read-from-peer.c ../shared/bip-send-message.c
 lib_LTLIBRARIES = libcal-mdnssd-bip-client.la
 libcal_mdnssd_bip_client_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../.. -I../../util
-libcal_mdnssd_bip_client_la_SOURCES = cal-client-api.c global.c thread-functions.c
-libcal_mdnssd_bip_client_la_LIBADD = $(AM_LDADD) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(GLIB20_LIBS) $(DBUS_LIBS) ../shared/libcal-mdnssd-bip-shared.la ../../util/libpeer.la ../../util/libevent.la
+libcal_mdnssd_bip_client_la_SOURCES = cal-client-api.c global.c thread-functions.c $(LIBCAL_MDNSSD_BIP_SHARED_SOURCES) $(LIBCAL_EVENT_SOURCES)
+libcal_mdnssd_bip_client_la_LIBADD = $(AM_LDADD) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(GLIB20_LIBS) $(DBUS_LIBS)
 all: all-am
 
 .SUFFIXES:
@@ -274,8 +282,15 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_client_la-bip-read-from-peer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_client_la-bip-send-message.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_client_la-cal-client-api.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_client_la-event-free.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_client_la-event-new.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_client_la-global.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_client_la-peer-address.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_client_la-peer-free.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_client_la-peer-new.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_client_la-thread-functions.Plo@am__quote@
 
 .c.o:
@@ -319,6 +334,55 @@ libcal_mdnssd_bip_client_la-thread-functions.lo: thread-functions.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='thread-functions.c' object='libcal_mdnssd_bip_client_la-thread-functions.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_client_la-thread-functions.lo `test -f 'thread-functions.c' || echo '$(srcdir)/'`thread-functions.c
+
+libcal_mdnssd_bip_client_la-bip-read-from-peer.lo: ../shared/bip-read-from-peer.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -MT libcal_mdnssd_bip_client_la-bip-read-from-peer.lo -MD -MP -MF $(DEPDIR)/libcal_mdnssd_bip_client_la-bip-read-from-peer.Tpo -c -o libcal_mdnssd_bip_client_la-bip-read-from-peer.lo `test -f '../shared/bip-read-from-peer.c' || echo '$(srcdir)/'`../shared/bip-read-from-peer.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libcal_mdnssd_bip_client_la-bip-read-from-peer.Tpo $(DEPDIR)/libcal_mdnssd_bip_client_la-bip-read-from-peer.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../shared/bip-read-from-peer.c' object='libcal_mdnssd_bip_client_la-bip-read-from-peer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_client_la-bip-read-from-peer.lo `test -f '../shared/bip-read-from-peer.c' || echo '$(srcdir)/'`../shared/bip-read-from-peer.c
+
+libcal_mdnssd_bip_client_la-bip-send-message.lo: ../shared/bip-send-message.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -MT libcal_mdnssd_bip_client_la-bip-send-message.lo -MD -MP -MF $(DEPDIR)/libcal_mdnssd_bip_client_la-bip-send-message.Tpo -c -o libcal_mdnssd_bip_client_la-bip-send-message.lo `test -f '../shared/bip-send-message.c' || echo '$(srcdir)/'`../shared/bip-send-message.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libcal_mdnssd_bip_client_la-bip-send-message.Tpo $(DEPDIR)/libcal_mdnssd_bip_client_la-bip-send-message.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../shared/bip-send-message.c' object='libcal_mdnssd_bip_client_la-bip-send-message.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_client_la-bip-send-message.lo `test -f '../shared/bip-send-message.c' || echo '$(srcdir)/'`../shared/bip-send-message.c
+
+libcal_mdnssd_bip_client_la-event-free.lo: ../../util/event-free.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -MT libcal_mdnssd_bip_client_la-event-free.lo -MD -MP -MF $(DEPDIR)/libcal_mdnssd_bip_client_la-event-free.Tpo -c -o libcal_mdnssd_bip_client_la-event-free.lo `test -f '../../util/event-free.c' || echo '$(srcdir)/'`../../util/event-free.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libcal_mdnssd_bip_client_la-event-free.Tpo $(DEPDIR)/libcal_mdnssd_bip_client_la-event-free.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../util/event-free.c' object='libcal_mdnssd_bip_client_la-event-free.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_client_la-event-free.lo `test -f '../../util/event-free.c' || echo '$(srcdir)/'`../../util/event-free.c
+
+libcal_mdnssd_bip_client_la-event-new.lo: ../../util/event-new.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -MT libcal_mdnssd_bip_client_la-event-new.lo -MD -MP -MF $(DEPDIR)/libcal_mdnssd_bip_client_la-event-new.Tpo -c -o libcal_mdnssd_bip_client_la-event-new.lo `test -f '../../util/event-new.c' || echo '$(srcdir)/'`../../util/event-new.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libcal_mdnssd_bip_client_la-event-new.Tpo $(DEPDIR)/libcal_mdnssd_bip_client_la-event-new.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../util/event-new.c' object='libcal_mdnssd_bip_client_la-event-new.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_client_la-event-new.lo `test -f '../../util/event-new.c' || echo '$(srcdir)/'`../../util/event-new.c
+
+libcal_mdnssd_bip_client_la-peer-address.lo: ../../util/peer-address.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -MT libcal_mdnssd_bip_client_la-peer-address.lo -MD -MP -MF $(DEPDIR)/libcal_mdnssd_bip_client_la-peer-address.Tpo -c -o libcal_mdnssd_bip_client_la-peer-address.lo `test -f '../../util/peer-address.c' || echo '$(srcdir)/'`../../util/peer-address.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libcal_mdnssd_bip_client_la-peer-address.Tpo $(DEPDIR)/libcal_mdnssd_bip_client_la-peer-address.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../util/peer-address.c' object='libcal_mdnssd_bip_client_la-peer-address.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_client_la-peer-address.lo `test -f '../../util/peer-address.c' || echo '$(srcdir)/'`../../util/peer-address.c
+
+libcal_mdnssd_bip_client_la-peer-free.lo: ../../util/peer-free.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -MT libcal_mdnssd_bip_client_la-peer-free.lo -MD -MP -MF $(DEPDIR)/libcal_mdnssd_bip_client_la-peer-free.Tpo -c -o libcal_mdnssd_bip_client_la-peer-free.lo `test -f '../../util/peer-free.c' || echo '$(srcdir)/'`../../util/peer-free.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libcal_mdnssd_bip_client_la-peer-free.Tpo $(DEPDIR)/libcal_mdnssd_bip_client_la-peer-free.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../util/peer-free.c' object='libcal_mdnssd_bip_client_la-peer-free.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_client_la-peer-free.lo `test -f '../../util/peer-free.c' || echo '$(srcdir)/'`../../util/peer-free.c
+
+libcal_mdnssd_bip_client_la-peer-new.lo: ../../util/peer-new.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -MT libcal_mdnssd_bip_client_la-peer-new.lo -MD -MP -MF $(DEPDIR)/libcal_mdnssd_bip_client_la-peer-new.Tpo -c -o libcal_mdnssd_bip_client_la-peer-new.lo `test -f '../../util/peer-new.c' || echo '$(srcdir)/'`../../util/peer-new.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libcal_mdnssd_bip_client_la-peer-new.Tpo $(DEPDIR)/libcal_mdnssd_bip_client_la-peer-new.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../util/peer-new.c' object='libcal_mdnssd_bip_client_la-peer-new.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_client_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_client_la-peer-new.lo `test -f '../../util/peer-new.c' || echo '$(srcdir)/'`../../util/peer-new.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
