@@ -12,6 +12,10 @@ void cal_event_free(cal_event_t *event) {
 
     cal_peer_free(event->peer);
 
+    if (event->peer_name != NULL) {
+        free(event->peer_name);
+    }
+
     if (event->msg.buffer != NULL) {
         free(event->msg.buffer);
     }
