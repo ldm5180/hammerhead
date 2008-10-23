@@ -18,28 +18,8 @@
 #include <dns_sd.h>
 
 #include "cal-client.h"
+#include "cal-mdnssd-bip.h"
 #include "cal-client-mdnssd-bip.h"
-
-
-
-
-typedef struct {
-    char *hostname;  //!< DNS hostname, or IP address as a dotted quad ascii string
-    uint16_t port;   //!< in host byte order
-
-    int socket;      //!< the socket connected to this peer, or -1 if we're not currently connected
-
-    //! incoming buffer
-    // FIXME: probably should be dynamically allocated & sized...
-    char buffer[1024];
-    int index;
-} bip_peer_network_info_t;
-
-
-typedef struct {
-    bip_peer_network_info_t *net;  // NULL if the peer is not currently on the network
-    GSList *subscriptions;         // each is a dynamically allocated string of the topic
-} bip_peer_t;
 
 
 
@@ -90,25 +70,6 @@ bip_peer_t *get_peer_by_name(const char *peer_name) {
     g_hash_table_insert(peers, hash_key, peer);
 
     return peer;
-}
-
-
-static void bip_net_free(bip_peer_network_info_t *net) {
-    if (net == NULL) return;
-    if (net->hostname != NULL) free(net->hostname);
-    free(net);
-}
-
-
-static void bip_peer_free(bip_peer_t *peer) {
-    if (peer == NULL) return;
-    if (peer->net != NULL) bip_net_free(peer->net);
-    while (g_slist_length(peer->subscriptions) > 0) {
-        char *s = g_slist_nth_data(peer->subscriptions, 0);
-        peer->subscriptions = g_slist_remove(peer->subscriptions, s);
-        free(s);
-    }
-    free(peer);
 }
 
 

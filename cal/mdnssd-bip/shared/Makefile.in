@@ -56,7 +56,9 @@ libcal_mdnssd_bip_shared_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libcal_mdnssd_bip_shared_la_OBJECTS =  \
 	libcal_mdnssd_bip_shared_la-bip-read-from-peer.lo \
-	libcal_mdnssd_bip_shared_la-bip-send-message.lo
+	libcal_mdnssd_bip_shared_la-bip-send-message.lo \
+	libcal_mdnssd_bip_shared_la-bip-net-free.lo \
+	libcal_mdnssd_bip_shared_la-bip-peer-free.lo
 libcal_mdnssd_bip_shared_la_OBJECTS =  \
 	$(am_libcal_mdnssd_bip_shared_la_OBJECTS)
 libcal_mdnssd_bip_shared_la_LINK = $(LIBTOOL) --tag=CC \
@@ -200,7 +202,7 @@ top_srcdir = @top_srcdir@
 AM_CFLAGS = -Wall -Werror -g
 lib_LTLIBRARIES = libcal-mdnssd-bip-shared.la
 libcal_mdnssd_bip_shared_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../.. -I../../util
-libcal_mdnssd_bip_shared_la_SOURCES = bip-read-from-peer.c bip-send-message.c
+libcal_mdnssd_bip_shared_la_SOURCES = bip-read-from-peer.c bip-send-message.c bip-net-free.c bip-peer-free.c
 libcal_mdnssd_bip_shared_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_CFLAGS) 
 all: all-am
 
@@ -271,6 +273,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_shared_la-bip-net-free.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_shared_la-bip-peer-free.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_shared_la-bip-read-from-peer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcal_mdnssd_bip_shared_la-bip-send-message.Plo@am__quote@
 
@@ -308,6 +312,20 @@ libcal_mdnssd_bip_shared_la-bip-send-message.lo: bip-send-message.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bip-send-message.c' object='libcal_mdnssd_bip_shared_la-bip-send-message.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_shared_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_shared_la-bip-send-message.lo `test -f 'bip-send-message.c' || echo '$(srcdir)/'`bip-send-message.c
+
+libcal_mdnssd_bip_shared_la-bip-net-free.lo: bip-net-free.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_shared_la_CFLAGS) $(CFLAGS) -MT libcal_mdnssd_bip_shared_la-bip-net-free.lo -MD -MP -MF $(DEPDIR)/libcal_mdnssd_bip_shared_la-bip-net-free.Tpo -c -o libcal_mdnssd_bip_shared_la-bip-net-free.lo `test -f 'bip-net-free.c' || echo '$(srcdir)/'`bip-net-free.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libcal_mdnssd_bip_shared_la-bip-net-free.Tpo $(DEPDIR)/libcal_mdnssd_bip_shared_la-bip-net-free.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bip-net-free.c' object='libcal_mdnssd_bip_shared_la-bip-net-free.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_shared_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_shared_la-bip-net-free.lo `test -f 'bip-net-free.c' || echo '$(srcdir)/'`bip-net-free.c
+
+libcal_mdnssd_bip_shared_la-bip-peer-free.lo: bip-peer-free.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_shared_la_CFLAGS) $(CFLAGS) -MT libcal_mdnssd_bip_shared_la-bip-peer-free.lo -MD -MP -MF $(DEPDIR)/libcal_mdnssd_bip_shared_la-bip-peer-free.Tpo -c -o libcal_mdnssd_bip_shared_la-bip-peer-free.lo `test -f 'bip-peer-free.c' || echo '$(srcdir)/'`bip-peer-free.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libcal_mdnssd_bip_shared_la-bip-peer-free.Tpo $(DEPDIR)/libcal_mdnssd_bip_shared_la-bip-peer-free.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bip-peer-free.c' object='libcal_mdnssd_bip_shared_la-bip-peer-free.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcal_mdnssd_bip_shared_la_CFLAGS) $(CFLAGS) -c -o libcal_mdnssd_bip_shared_la-bip-peer-free.lo `test -f 'bip-peer-free.c' || echo '$(srcdir)/'`bip-peer-free.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

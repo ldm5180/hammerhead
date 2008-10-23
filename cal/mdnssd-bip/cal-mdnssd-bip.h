@@ -8,7 +8,30 @@
 #define __CAL_MDNSSD_BIP_H
 
 
+#include <glib.h>
+
 #include "cal-event.h"
+
+
+
+
+typedef struct {
+    char *hostname;  //!< DNS hostname, or IP address as a dotted quad ascii string
+    uint16_t port;   //!< in host byte order
+
+    int socket;      //!< the socket connected to this peer, or -1 if we're not currently connected
+
+    //! incoming buffer
+    // FIXME: probably should be dynamically allocated & sized...
+    char buffer[1024];
+    int index;
+} bip_peer_network_info_t;
+
+
+typedef struct {
+    bip_peer_network_info_t *net;  // NULL if the peer is not currently on the network
+    GSList *subscriptions;         // each is a dynamically allocated string of the topic
+} bip_peer_t;
 
 
 
@@ -35,6 +58,10 @@
 // 
 // helper functions used by both the Client and Server *threads*.
 //
+
+
+void bip_net_free(bip_peer_network_info_t *net);
+void bip_peer_free(bip_peer_t *peer);
 
 
 //! 
