@@ -8,6 +8,8 @@
 #define __CAL_MDNSSD_BIP_H
 
 
+#include <stdint.h>
+
 #include <glib.h>
 
 #include "cal-event.h"
@@ -79,11 +81,13 @@ void bip_peer_free(bip_peer_t *peer);
 //! \return 0 on success, -1 on error.
 //!
 
-int bip_send_message(const cal_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size);
+int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size);
 
 
 //! 
 //! \brief Reads data from a peer, up to one complete packet.
+//!
+//! \param peer_name The name of the peer we're reading from.
 //!
 //! \param peer The peer to read from.  The data will be read into the end
 //!     of the peer's buffer.
@@ -94,7 +98,7 @@ int bip_send_message(const cal_peer_t *peer, uint8_t msg_type, const void *msg, 
 //!     the peer's buffer.
 //!
 
-int bip_read_from_peer(cal_peer_t *peer);
+int bip_read_from_peer(const char *peer_name, bip_peer_t *peer);
 
 
 

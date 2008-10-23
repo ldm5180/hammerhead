@@ -10,18 +10,15 @@
 #include "cal-server.h"
 
 
-cal_peer_t *this;
-
-
 void cal_callback(const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
-            printf("got a Connect event from %s (%s)\n", event->peer->name, cal_peer_address_to_str(event->peer));
+            printf("got a Connect event from %s\n", event->peer_name);
             break;
         }
 
         case CAL_EVENT_DISCONNECT: {
-            printf("got a Disconnect event from %s (%s)\n", event->peer->name, cal_peer_address_to_str(event->peer));
+            printf("got a Disconnect event from %s\n", event->peer_name);
             break;
         }
 
@@ -29,7 +26,7 @@ void cal_callback(const cal_event_t *event) {
             int i;
             char *msg = strdup("hey yourself");
 
-            printf("got a Message event from %s (%s), %d bytes:\n", event->peer->name, cal_peer_address_to_str(event->peer), event->msg.size);
+            printf("got a Message event from %s, %d bytes:\n", event->peer_name, event->msg.size);
             for (i = 0; i < event->msg.size; i ++) {
                 if ((i % 8) == 0) printf("    ");
                 printf("%02X ", event->msg.buffer[i]);
@@ -37,13 +34,13 @@ void cal_callback(const cal_event_t *event) {
             }
             if ((i % 8) != 7) printf("\n");
 
-            cal_server.sendto(event->peer, msg, strlen(msg));
+            cal_server.sendto(event->peer_name, msg, strlen(msg));
 
             break;
         }
 
         case CAL_EVENT_SUBSCRIBE: {
-            printf("Client %s (%s) wants to subscribe to '%s'\n", event->peer->name, cal_peer_address_to_str(event->peer), event->topic);
+            printf("Client %s wants to subscribe to '%s'\n", event->peer_name, event->topic);
             break;
         }
 
@@ -114,9 +111,7 @@ int main(int argc, char *argv[]) {
     make_shutdowns_clean();
 
 
-    this = cal_peer_new("time-publisher");
-
-    cal_fd = cal_server.init(this, cal_callback);
+    cal_fd = cal_server.init("time-publisher", cal_callback);
     if (cal_fd < 0) {
         printf("failed to init server\n");
         exit(1);

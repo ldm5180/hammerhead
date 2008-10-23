@@ -167,7 +167,6 @@ int cal_client_mdnssd_bip_read(void) {
     // manage memory
     switch (event->type) {
         case CAL_EVENT_JOIN: {
-            event->peer = NULL;  // the CAL Client thread has a copy, we'll free it when the peer leaves later
             break;
         }
 
@@ -176,12 +175,10 @@ int cal_client_mdnssd_bip_read(void) {
         }
 
         case CAL_EVENT_MESSAGE: {
-            event->peer = NULL;  // the CAL Client thread has a copy, we'll free it when the peer leaves later
             break;
         }
 
         case CAL_EVENT_PUBLISH: {
-            event->peer = NULL;  // the CAL Client thread has a copy, we'll free it when the peer leaves later
             break;
         }
 

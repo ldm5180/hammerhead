@@ -88,91 +88,6 @@ void disconnect_server(bip_peer_t *peer) {
 }
 
 
-int bip_client_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size) {
-    int r;
-
-    uint32_t msg_size;
-
-    if (peer->net == NULL) return -1;
-    if (peer->net->socket == -1) return -1;
-
-    printf("bip_send_message: sending \"%s\" (%d bytes) to %s\n", (char *)msg, size, peer_name);
-
-    msg_type = msg_type;
-    msg_size = htonl(size);
-
-    // FIXME: this should be one write
-
-    r = write(peer->net->socket, &msg_type, sizeof(msg_type));
-    if (r != sizeof(msg_type)) {
-        return -1;
-    }
-
-    r = write(peer->net->socket, &msg_size, sizeof(msg_size));
-    if (r != sizeof(msg_size)) {
-        return -1;
-    }
-
-    if (size == 0) return 0;
-
-    r = write(peer->net->socket, msg, size);
-    if (r != sizeof(msg_size)) {
-        return -1;
-    }
-
-    return 0;
-}
-
-
-int bip_client_read_from_peer(const char *peer_name, bip_peer_t *peer) {
-    int r;
-    int max_bytes_to_read;
-    int payload_size;
-
-
-    if (peer->net == NULL) return -1;
-    if (peer->net->socket == -1) return -1;
-
-    if (peer->net->index < BIP_MSG_HEADER_SIZE) {
-        max_bytes_to_read = BIP_MSG_HEADER_SIZE - peer->net->index;
-        r = read(peer->net->socket, &peer->net->buffer[peer->net->index], max_bytes_to_read);
-        if (r < 0) {
-            fprintf(stderr, "bip_read_from_peer(): error reading from peer %s: %s\n", peer_name, strerror(errno));
-            return -1;
-        } else if (r == 0) {
-            fprintf(stderr, "bip_read_from_peer(): peer %s disconnects\n", peer_name);
-            return -1;
-        }
-
-        peer->net->index += r;
-
-        if (peer->net->index < BIP_MSG_HEADER_SIZE) return 0;
-    }
-
-    payload_size = ntohl(*(uint32_t *)&peer->net->buffer[BIP_MSG_HEADER_SIZE_OFFSET]);
-
-    max_bytes_to_read = (payload_size + BIP_MSG_HEADER_SIZE) - peer->net->index;
-    if (max_bytes_to_read > 0) {
-        r = read(peer->net->socket, &peer->net->buffer[peer->net->index], max_bytes_to_read);
-        if (r < 0) {
-            fprintf(stderr, "bip_read_from_peer(): error reading from peer %s: %s\n", peer_name, strerror(errno));
-            return -1;
-        } else if (r == 0) {
-            fprintf(stderr, "bip_read_from_peer(): peer %s disconnects\n", peer_name);
-            return -1;
-        }
-
-        peer->net->index += r;
-
-        if (r != max_bytes_to_read) return 0;
-    }
-
-    // yay a packet is in the peer's buffer!
-    return 1;
-}
-
-
-
 
 
 static int connect_to_peer(const char *peer_name, bip_peer_t *peer) {
@@ -259,8 +174,8 @@ static void read_from_user(void) {
             r = connect_to_peer(event->peer_name, peer);
             if (r < 0) return;
 
-            bip_client_send_message(event->peer_name, peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
-            // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
+            bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
+            // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
 
             break;
         }
@@ -275,8 +190,8 @@ static void read_from_user(void) {
             r = connect_to_peer(event->peer_name, peer);
             if (r < 0) return;
 
-            bip_client_send_message(event->peer_name, peer, BIP_MSG_TYPE_SUBSCRIBE, event->topic, strlen(event->topic) + 1);
-            // FIXME: bip_sendto might not have worked, we need to report to the user or retry or something
+            bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_SUBSCRIBE, event->topic, strlen(event->topic) + 1);
+            // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
 
             break;
         }
@@ -299,7 +214,7 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
     int r;
     int payload_size;
 
-    r = bip_client_read_from_peer(peer_name, peer);
+    r = bip_read_from_peer(peer_name, peer);
     if (r < 0) {
         disconnect_server(peer);
         return;

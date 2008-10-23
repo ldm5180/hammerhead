@@ -18,17 +18,23 @@
 #define ID "CAL Server mDNS-SD/BIP "
 
 
+// describes "this" server
+typedef struct {
+    char *name;
+    uint16_t port;
+    int socket;
+} cal_server_mdnssd_bip_t;
+
+
 extern void (*cal_server_mdnssd_bip_callback)(cal_event_t *event);
 
 // pipes between CAL Server thread and user thread
 extern int cal_server_mdnssd_bip_fds_to_user[2];
 extern int cal_server_mdnssd_bip_fds_from_user[2];
 
-extern int cal_server_mdnssd_bip_listening_socket;
-
 
 extern pthread_t *cal_server_mdnssd_bip_thread;
-void *cal_server_mdnssd_bip_function(void *peer_as_voidp);
+void *cal_server_mdnssd_bip_function(void *this_as_voidp);
 
 
 

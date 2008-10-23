@@ -40,11 +40,7 @@ typedef struct {
     //!
     //! \brief Make this peer available for connections.
     //!
-    //! \param this A handle for the CAL Peer that is going to start
-    //!     accepting connections.  This peer should have the .name field
-    //!     set to what the server's advertised name should be.  This
-    //!     peer's addressing information will be set to indicate how other
-    //!     peers can connect to it, and announced on the CAL network.
+    //! \param name The name to announce this CAL server as on the network.
     //!
     //! \param callback The callback function to be called by the CAL
     //!     library when events happen to this peer.
@@ -56,7 +52,7 @@ typedef struct {
     //!     returns -1.
     //!
 
-    int (*init)(cal_peer_t *this, void (*callback)(const cal_event_t *event));
+    int (*init)(const char *name, void (*callback)(const cal_event_t *event));
 
 
     //!
@@ -88,9 +84,10 @@ typedef struct {
     //! This function sends a message (just an array of bytes) to a
     //! connected client.
     //!
-    //! \param peer The client to send the message to.  The peer pointer
-    //!     must have been the subject of a previous Connect event, and not
-    //!     the subject of a Disconnect event since then.
+    //! \param peer_name The name of the client to send the message to.
+    //!     The peer_name should have been the subject of a previous
+    //!     Connect event, and not the subject of a Disconnect event since
+    //!     then.
     //!
     //! \param msg The buffer to send.  The msg buffer must be dynamically
     //!     allocated, and it becomes the property of the CAL Server
@@ -103,7 +100,7 @@ typedef struct {
     //! \returns True (non-zero) on success.  False (zero) on failure.
     //!
 
-    int (*sendto)(const cal_peer_t *peer, void *msg, int size);
+    int (*sendto)(const char *peer_name, void *msg, int size);
 
 
     //!

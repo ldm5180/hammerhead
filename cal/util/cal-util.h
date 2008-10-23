@@ -3,7 +3,6 @@
 #define __CAL_UTIL_H
 
 
-#include "cal-peer.h"
 #include "cal-event.h"
 
 

@@ -15,7 +15,6 @@
 
 #include <glib.h>
 
-#include "cal-util.h"
 #include "cal-server.h"
 #include "cal-mdnssd-bip.h"
 #include "cal-server-mdnssd-bip.h"
@@ -23,20 +22,35 @@
 
 
 
-int cal_server_mdnssd_bip_init(cal_peer_t *this, void (*callback)(const cal_event_t *event)) {
+int cal_server_mdnssd_bip_init(const char *name, void (*callback)(const cal_event_t *event)) {
     int r;
-    int sock;
 
     struct sockaddr_in my_address;
     socklen_t my_address_len;
+
+    cal_server_mdnssd_bip_t *this;
+
+
+    this = (cal_server_mdnssd_bip_t *)calloc(1, sizeof(cal_server_mdnssd_bip_t));
+    if (this == NULL) {
+        fprintf(stderr, ID "init: out of memory\n");
+        return -1;
+    }
+
+    this->name = strdup(name);
+    if (this->name == NULL) {
+        fprintf(stderr, ID "init: out of memory\n");
+        free(this);
+        return -1;
+    }
 
 
     //
     // create the listening socket
     //
 
-    sock = socket(PF_INET, SOCK_STREAM, 0);
-    if (sock == -1) {
+    this->socket = socket(PF_INET, SOCK_STREAM, 0);
+    if (this->socket == -1) {
         fprintf(stderr, ID "init: cannot create TCP socket: %s\n", strerror(errno));
         return -1;
     }
@@ -47,14 +61,14 @@ int cal_server_mdnssd_bip_init(cal_peer_t *this, void (*callback)(const cal_even
         int flag = 1;
         int r;
 
-        r = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void*)&flag, sizeof(int));
+        r = setsockopt(this->socket, SOL_SOCKET, SO_REUSEADDR, (void*)&flag, sizeof(int));
         if (r < 0) fprintf(stderr, ID "init: ignoring setsockopt SO_REUSEADDR error: %s", strerror(errno));
     }
 
 
     // ok! listen for connections
     // we dont need to bind since listen on an unbound socket defaults to INADDR_ANY and a random port, which is what we want
-    r = listen(sock, 20);
+    r = listen(this->socket, 20);
     if (r != 0) {
         fprintf(stderr, ID "init: cannot listen on port: %s\n", strerror(errno));
         goto fail0;
@@ -62,11 +76,13 @@ int cal_server_mdnssd_bip_init(cal_peer_t *this, void (*callback)(const cal_even
 
     memset(&my_address, 0, sizeof(my_address));
     my_address_len = sizeof(my_address);
-    r = getsockname(sock, (struct sockaddr *)&my_address, &my_address_len);
+    r = getsockname(this->socket, (struct sockaddr *)&my_address, &my_address_len);
     if (r != 0) {
         fprintf(stderr, ID "init: cannot get socket port: %s\n", strerror(errno));
         goto fail0;
     }
+
+    this->port = ntohs(my_address.sin_port);
 
 
     // 
@@ -97,12 +113,6 @@ int cal_server_mdnssd_bip_init(cal_peer_t *this, void (*callback)(const cal_even
     // record the user's callback function
     cal_server.callback = callback;
 
-    cal_server_mdnssd_bip_listening_socket = sock;
-
-    cal_peer_set_addressing_scheme(this, CAL_AS_IPv4);
-    this->as.ipv4.socket = cal_server_mdnssd_bip_fds_to_user[0];  // not really a socket...
-    this->as.ipv4.port = ntohs(my_address.sin_port);
-
 
     // start the publisher thread to talk to the peers
     r = pthread_create(cal_server_mdnssd_bip_thread, NULL, cal_server_mdnssd_bip_function, this);
@@ -112,7 +122,7 @@ int cal_server_mdnssd_bip_init(cal_peer_t *this, void (*callback)(const cal_even
     }
 
 
-    return this->as.ipv4.socket;
+    return cal_server_mdnssd_bip_fds_to_user[0];
 
 
 fail3:
@@ -128,7 +138,7 @@ fail1:
     close(cal_server_mdnssd_bip_fds_to_user[1]);
 
 fail0:
-    close(sock);
+    close(this->socket);
     return -1;
 }
 
@@ -185,17 +195,14 @@ int cal_server_mdnssd_bip_read(void) {
     // manage memory
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
-            event->peer = NULL;  // the peer is still around until the Disconnect
             break;
         }
 
         case CAL_EVENT_MESSAGE: {
-            event->peer = NULL;  // the peer is still around until the Disconnect
             break;
         }
 
         case CAL_EVENT_SUBSCRIBE: {
-            event->peer = NULL;  // the peer is still around until the Disconnect
             break;
         }
 
@@ -217,7 +224,7 @@ int cal_server_mdnssd_bip_read(void) {
 
 
 
-int cal_server_mdnssd_bip_sendto(const cal_peer_t *peer, void *msg, int size) {
+int cal_server_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
     int r;
     cal_event_t *event;
 
@@ -226,7 +233,12 @@ int cal_server_mdnssd_bip_sendto(const cal_peer_t *peer, void *msg, int size) {
         return 0;
     }
 
-    event->peer = (cal_peer_t *)peer;
+    event->peer_name = strdup(peer_name);
+    if (event->peer_name == NULL) {
+        free(event);
+        return 0;
+    }
+
     event->msg.buffer = msg;
     event->msg.size = size;
 

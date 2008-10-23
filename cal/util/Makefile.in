@@ -54,9 +54,6 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libevent_la_LIBADD =
 am_libevent_la_OBJECTS = event-free.lo event-new.lo
 libevent_la_OBJECTS = $(am_libevent_la_OBJECTS)
-libpeer_la_LIBADD =
-am_libpeer_la_OBJECTS = peer-address.lo peer-free.lo peer-new.lo
-libpeer_la_OBJECTS = $(am_libpeer_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -69,8 +66,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libevent_la_SOURCES) $(libpeer_la_SOURCES)
-DIST_SOURCES = $(libevent_la_SOURCES) $(libpeer_la_SOURCES)
+SOURCES = $(libevent_la_SOURCES)
+DIST_SOURCES = $(libevent_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -192,8 +189,7 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CFLAGS = -Wall -Werror -g
-lib_LTLIBRARIES = libpeer.la libevent.la
-libpeer_la_SOURCES = peer-address.c peer-free.c peer-new.c
+lib_LTLIBRARIES = libevent.la
 libevent_la_SOURCES = event-free.c event-new.c
 all: all-am
 
@@ -257,8 +253,6 @@ clean-libLTLIBRARIES:
 	done
 libevent.la: $(libevent_la_OBJECTS) $(libevent_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libevent_la_OBJECTS) $(libevent_la_LIBADD) $(LIBS)
-libpeer.la: $(libpeer_la_OBJECTS) $(libpeer_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libpeer_la_OBJECTS) $(libpeer_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -268,9 +262,6 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event-free.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event-new.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/peer-address.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/peer-free.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/peer-new.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
