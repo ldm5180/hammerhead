@@ -133,7 +133,6 @@ int main(int argc, char *argv[]) {
         FD_ZERO(&readers);
         FD_SET(cal_fd, &readers);
 
-        printf("entering select\n");
         r = select(cal_fd + 1, &readers, NULL, NULL, &timeout);
         if (r == -1) {
             printf("select fails: %s\n", strerror(errno));
