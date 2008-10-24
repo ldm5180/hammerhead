@@ -19,8 +19,6 @@
 
 extern cal_client_t cal_client;
 
-char *topic = "time";
-
 
 
 
@@ -35,12 +33,8 @@ void cal_callback(const cal_event_t *event) {
                 break;
             }
 
-            printf("found a time-publisher, subscribing to the time from it\n");
+            printf("found a time-publisher, sending it a message\n");
             cal_client.sendto(event->peer_name, msg, strlen(msg));
-
-            if (topic != NULL) {
-                cal_client.subscribe(event->peer_name, topic);
-            }
 
             break;
         }
@@ -142,30 +136,21 @@ void make_shutdowns_clean(void) {
 
 
 int main(int argc, char *argv[]) {
-    int cal_fd = -1;
-
-
-    if (argc >= 2) {
-        topic = argv[1];
-    }
+    int cal_fd;
 
 
     make_shutdowns_clean();
 
 
+    cal_fd = cal_client.init(cal_callback);
+    if (cal_fd < 0) exit(1);
+
+    cal_client.subscribe("time-publisher", "time");
+
+
     while (1) {
         int r;
         fd_set readers;
-
-
-        while (cal_fd == -1) {
-            cal_fd = cal_client.init(cal_callback);
-            if (cal_fd < 0) {
-                sleep(1);
-                continue;
-            }
-        }
-
 
 	FD_ZERO(&readers);
 	FD_SET(cal_fd, &readers);
@@ -182,8 +167,7 @@ int main(int argc, char *argv[]) {
             if (!cal_client.read()) {
                 printf("error reading CAL event!\n");
                 cal_client.shutdown();
-                cal_fd = -1;
-                continue;
+                exit(1);
             }
         }
     }
