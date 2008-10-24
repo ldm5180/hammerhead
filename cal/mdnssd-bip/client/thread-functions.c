@@ -350,20 +350,22 @@ static void resolve_callback(
         return;
     }
 
+    peer = get_peer_by_name(event->peer_name);
+    if (peer == NULL) {
+        fprintf(stderr, ID "resolve_callback: out of memory\n");
+        return;
+    }
+
+    if (peer->net != NULL) {
+        fprintf(stderr, ID "resolve_callback: new peer collides with existing peer '%s'\n", event->peer_name);
+        return;
+    }
+
     peer_name = strdup(event->peer_name);
     if (peer_name == NULL) {
         fprintf(stderr, ID "resolve_callback: out of memory\n");
         return;
     }
-
-    peer = get_peer_by_name(peer_name);
-    if (peer == NULL) {
-        fprintf(stderr, ID "resolve_callback: out of memory\n");
-        free(peer_name);
-        return;
-    }
-
-    // FIXME: check that peer has no net
 
     peer->net = calloc(1, sizeof(bip_peer_network_info_t));
     if (peer->net == NULL) {
