@@ -60,19 +60,7 @@ void cal_callback(const cal_event_t *event) {
         }
 
         case CAL_EVENT_PUBLISH: {
-            int i;
-
-            printf("Publish event from '%s'\n", event->peer_name);
-
-            printf("%s", event->msg.buffer);
-
-            for (i = 0; i < event->msg.size; i ++) {
-                if ((i % 8) == 0) printf("    ");
-                printf("%02X ", event->msg.buffer[i]);
-                if ((i % 8) == 7) printf("\n");
-            }
-            if ((i % 8) != 7) printf("\n");
-
+            printf("%s\n", event->msg.buffer);
             break;
         }
 

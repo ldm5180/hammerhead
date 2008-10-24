@@ -137,6 +137,7 @@ int main(int argc, char *argv[]) {
         if (r == 0) {
             time_t t = time(NULL);
             char *s = ctime(&t);
+            s[strlen(s)-1] = (char)0;
             cal_server.publish("time", s, strlen(s)+1);
         }
 
