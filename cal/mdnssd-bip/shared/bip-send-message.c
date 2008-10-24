@@ -31,7 +31,7 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
     if (peer->net == NULL) return -1;
     if (peer->net->socket == -1) return -1;
 
-    printf("bip_send_message: sending message type %d \"%s\" (%d bytes) to %s\n", msg_type, (char *)msg, size, peer_name);
+    // printf("bip_send_message: sending message type %d \"%s\" (%d bytes) to %s\n", msg_type, (char *)msg, size, peer_name);
 
     msg_type = msg_type;
     msg_size = htonl(size);
