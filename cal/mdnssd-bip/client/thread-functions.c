@@ -183,14 +183,23 @@ static void read_from_user(void) {
 
         case CAL_EVENT_SUBSCRIBE: {
             bip_peer_t *peer;
+            char *topic;
 
             peer = get_peer_by_name(event->peer_name);
             if (peer == NULL) return;
 
+            // steal this topic
+            topic = event->topic;
+            event->topic = NULL;
+
+            peer->subscriptions = g_slist_prepend(peer->subscriptions, topic);
+
+            if (peer->net == NULL) break;
+
             r = connect_to_peer(event->peer_name, peer);
             if (r < 0) return;
 
-            bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_SUBSCRIBE, event->topic, strlen(event->topic) + 1);
+            bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_SUBSCRIBE, topic, strlen(topic) + 1);
             // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
 
             break;
@@ -375,6 +384,28 @@ static void resolve_callback(
         free(peer->net);
         return;
     }
+
+
+    // send any subscriptions we have for this peer
+    if (peer->subscriptions != NULL) {
+        GSList *si;
+
+        r = connect_to_peer(peer_name, peer);
+        if (r < 0) {
+            fprintf(stderr, ID "resolve_callback: error connecting to peer '%s' to subscribe\n", peer_name);
+            cal_event_free(event);
+            free(peer_name);
+            free(peer->net);
+            return;
+        }
+
+        for (si = peer->subscriptions; si != NULL; si = si->next) {
+            char *topic = si->data;
+            bip_send_message(peer_name, peer, BIP_MSG_TYPE_SUBSCRIBE, topic, strlen(topic) + 1);
+            // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
+        }
+    }
+
 
     // the event becomes the responsibility of the callback now, so they might leak memory but we're not
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
