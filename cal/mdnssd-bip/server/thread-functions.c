@@ -208,31 +208,30 @@ fail0:
 
 
 
-static void disconnect_peer(const char *peer_name, bip_peer_t *peer) {
+static void send_disconnect_event(const char *peer_name) {
     int r;
     cal_event_t *event;
 
-    close(peer->net->socket);
-    bip_peer_free(peer);
-
     event = cal_event_new(CAL_EVENT_DISCONNECT);
     if (event == NULL) {
-        fprintf(stderr, ID "disconnect_peer(): out of memory\n");
+        fprintf(stderr, ID "send_disconnect_event: out of memory\n");
         return;
     }
 
     event->peer_name = strdup(peer_name);
     if (event->peer_name == NULL) {
-        fprintf(stderr, ID "disconnect_peer: out of memory\n");
+        fprintf(stderr, ID "send_disconnect_event: out of memory\n");
         cal_event_free(event);
         return;
     }
 
     r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
     if (r < 0) {
-        fprintf(stderr, ID "disconnect_peer(): error writing Disconnect event: %s\n", strerror(errno));
+        fprintf(stderr, ID "send_disconnect_event: error writing Disconnect event: %s\n", strerror(errno));
+        cal_event_free(event);
     } else if (r != sizeof(cal_event_t*)) {
-        fprintf(stderr, ID "disconnect_peer(): short write of Disconnect event!\n");
+        fprintf(stderr, ID "send_disconnect_event: short write of Disconnect event!\n");
+        cal_event_free(event);
     }
 }
 
@@ -240,7 +239,7 @@ static void disconnect_peer(const char *peer_name, bip_peer_t *peer) {
 
 
 // reads from the peer, sends a Message event to the user thread
-// returns 0 on success, -1 on failure (in which case the peer is disconnected)
+// returns 0 on success, -1 on failure (in which case the peer has been disconnected and removed from the clients hash)
 static int read_from_client(const char *peer_name, bip_peer_t *peer) {
     int r;
     int payload_size;
@@ -248,7 +247,8 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer) {
 
     r = bip_read_from_peer(peer_name, peer);
     if (r < 0) {
-        disconnect_peer(peer_name, peer);
+        send_disconnect_event(peer_name);
+        g_hash_table_remove(clients, peer_name);  // close the network connection, free all allocated memory for key & value
         return -1;
     }
 
