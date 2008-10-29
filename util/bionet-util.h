@@ -20,6 +20,7 @@
 
 typedef struct bionet_hab       bionet_hab_t;
 typedef struct bionet_node      bionet_node_t;
+typedef struct bionet_stream    bionet_stream_t;
 typedef struct bionet_resource  bionet_resource_t;
 typedef struct bionet_datapoint bionet_datapoint_t;
 
@@ -28,6 +29,7 @@ typedef struct bionet_datapoint bionet_datapoint_t;
 
 #include "bionet-hab.h"
 #include "bionet-node.h"
+#include "bionet-stream.h"
 #include "bionet-resource.h"
 #include "bionet-datapoint.h"
 
