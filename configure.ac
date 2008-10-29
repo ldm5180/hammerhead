@@ -86,6 +86,8 @@ AC_CONFIG_FILES([Makefile
 		 cal/mdnssd-bip/shared/Makefile
 		 cal/mdnssd-bip/client/Makefile
 		 cal/mdnssd-bip/server/Makefile
-		 cal/examples/Makefile])
+		 cal/examples/Makefile
+                 util/Makefile
+                 ])
 
 AC_OUTPUT
