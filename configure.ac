@@ -88,6 +88,7 @@ AC_CONFIG_FILES([Makefile
 		 cal/mdnssd-bip/server/Makefile
 		 cal/examples/Makefile
                  util/Makefile
-                 ])
+                 client/Makefile
+                 client/libbionet/Makefile])
 
 AC_OUTPUT
