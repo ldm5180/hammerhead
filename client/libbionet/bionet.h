@@ -58,75 +58,23 @@ int bionet_set_id(const char *new_id);
 
 //
 //
-//       NAME:  bionet_connect_to_nag()
-//
-//
-//   FUNCTION:  Explicitly connects to the Network Aggregator.  Calling
-//              this function from the Client is optional, it will be
-//              called implicitly when needed by other Bionet library
-//              functions.
-//
-//              If the NAG connection is already opened, the function does
-//              nothing and just returns the socket.
-//
-//
-//  ARGUMENTS:  None.
-//
-//
-//    RETURNS:  On success, returns the socket file descriptor of the NAG
-//              connection.  The socket should not be accessed directly by
-//              the Client, it's only made available so the Client can
-//              select(2) on it, to know when it should call
-//              bionet_read_from_nag(). 
-//
-//              On failure, returns -1.
-//
-//
-
-int bionet_connect_to_nag(void);
-
-
-
-
-//
-//
-//       NAME:  bionet_is_connected()
-//
-//   FUNCTION:  Checks to see if the Bionet library is connected to the
-//              NAG.
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  Returns false (0) if the library is NOT connected to the
-//              NAG, returns true (non-zero) if the library IS connected to
-//              the NAG.
-//
-//
-
-int bionet_is_connected(void);
-
-
-
-
-//
-//
 //       NAME:  bionet_register_callback_new_hab()
 //              bionet_register_callback_lost_hab()
 //
 //              bionet_register_callback_new_node()
 //              bionet_register_callback_lost_node()
 //
-//              bionet_register_callback_resource_value()
+//              bionet_register_callback_datapoint()
 //
 //
 //   FUNCTION:  Registers callback functions with the Bionet library.
-//              These functions will be called when the NAG publishes
-//              information that the Client has subscribed to.
+//              These functions will be called when information is
+//              published that the Client has subscribed to.
 //
 //              The 'cb_new_hab' and 'cb_lost_hab' functions get called
 //              when a HAB that matches a HAB-list subscription joins and
-//              leaves (respectively) the NAG.  HAB-list subscriptions are
-//              created with the bionet_subscribe_hab_list() function
+//              leaves (respectively) the network.  HAB-list subscriptions
+//              are created with the bionet_subscribe_hab_list() function
 //              declared below.  The bionet_hab_t argument is the property
 //              of the Bionet Client library, and must not be deallocated
 //              by the callback functions.  The new-hab callback function
@@ -145,11 +93,11 @@ int bionet_is_connected(void);
 //              callback MUST properly unset and deallocate the 'user_data'
 //              member or the application will leak memory.
 //
-//              The 'cb_resource_value' function gets called when a
-//              Resource matching a Resource subscription changes value.
-//              Resource subscriptions are created with the
-//              bionet_subscribe_resource() function declared below.
-//              The bionet_resource_t argument to the callback function is
+//              The 'cb_datapoint' function gets called when a Resource
+//              matching a Datapoint subscription gets a new value.
+//              Datapoint subscriptions are created with the
+//              bionet_subscribe_datapoint() function declared below.
+//              The bionet_datapoint_t argument to the callback function is
 //              the property of the Bionet Client library, and MUST not be
 //              deallocated by the callback function.
 //
@@ -167,7 +115,81 @@ void bionet_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab));
 void bionet_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node));
 void bionet_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node));
 
-void bionet_register_callback_resource_value(void (*cb_resource_value)(bionet_resource_t *resource));
+void bionet_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint));
+
+
+
+
+//
+//
+//       NAME:  bionet_connect()
+//
+//
+//   FUNCTION:  Connects to the Bionet network.  Calling this function from
+//              the Client is optional, it will be called implicitly when
+//              needed by other Bionet library functions.
+//
+//              If the connection is already opened, the function does
+//              nothing and just returns the file descriptor.
+//
+//
+//  ARGUMENTS:  None.
+//
+//
+//    RETURNS:  On success, returns a file descriptor associated with the
+//              Bionet network.  The file descriptor should not be accessed
+//              directly by the Client, it's only made available so the
+//              Client can select(2) on it, to know when it should call
+//              bionet_read(). 
+//
+//              On failure, returns -1.
+//
+//
+
+int bionet_connect(void);
+
+
+
+
+//
+//
+//       NAME:  bionet_read()
+//
+//   FUNCTION:  When the Bionet file descriptor returned from
+//              bionet_connect() is readable, the Client application should
+//              call this function.  It will read any pending messages from
+//              Bionet and call the appropriate registered callback
+//              functions (by calling bionet_handle_queued_nag_messages()).
+//
+//  ARGUMENTS:  None.
+//
+//    RETURNS:  True (non-zero) on success, False (zero) on failure.
+//
+//
+
+int bionet_read(void);
+
+
+
+
+#if 0
+
+//
+//
+//       NAME:  bionet_is_connected()
+//
+//   FUNCTION:  Checks to see if the Bionet library is connected to the
+//              NAG.
+//
+//  ARGUMENTS:  None.
+//
+//    RETURNS:  Returns false (0) if the library is NOT connected to the
+//              NAG, returns true (non-zero) if the library IS connected to
+//              the NAG.
+//
+//
+
+int bionet_is_connected(void);
 
 
 
@@ -331,27 +353,6 @@ int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  co
 
 int bionet_subscribe_resource_by_name_pattern(const char *resource_name_pattern);
 int bionet_subscribe_resource_by_habtype_habid_nodeid_resourceid(const char *hab_type,  const char *hab_id, const char *node_id, const char *resource_id);
-
-
-
-
-//
-//
-//       NAME:  bionet_read_from_nag()
-//
-//   FUNCTION:  When the NAG socket returned from bionet_connect_to_nag()
-//              is readable, the Client application should call this
-//              function.  It will read any pending messages from the NAG
-//              and call the appropriate registered callback functions (by
-//              calling bionet_handle_queued_nag_messages()).
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  Nothing.
-//
-//
-
-void bionet_read_from_nag(void);
 
 
 
@@ -596,6 +597,8 @@ int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const
 //
 //
 // int bionet_read_from_string_but_dont_handle_messages(char* nxio_message, int length);
+
+#endif
 
 
 #endif // __BIONET_H

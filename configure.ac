@@ -89,6 +89,8 @@ AC_CONFIG_FILES([Makefile
 		 cal/examples/Makefile
                  util/Makefile
                  client/Makefile
-                 client/libbionet/Makefile])
+                 client/libbionet/Makefile
+                 client/watcher/Makefile
+                 ])
 
 AC_OUTPUT
