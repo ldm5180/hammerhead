@@ -28,6 +28,9 @@ void (*libbionet_callback_datapoint)(bionet_datapoint_t *datapoint) = NULL;
 int libbionet_cal_fd = -1;
 
 
+GSList *bionet_habs = NULL;
+
+
 #if 0
 // each item on this list is a bionet_message_t *
 GSList *libbionet_queued_messages_from_nag = NULL;
@@ -40,7 +43,6 @@ int libbionet_nag_timeout = 5;
 
 char *libbionet_nag_error = NULL;
 
-GSList *bionet_habs = NULL;
 #endif
 
 

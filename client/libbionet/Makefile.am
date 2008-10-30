@@ -8,6 +8,11 @@ libbionet_la_SOURCES =   \
     read.c               \
     register-callback.c  \
     cal-callback.c       \
+    cache-internal.c          \
+    cache-lookup-hab.c        \
+    cache-lookup-node.c       \
+    cache-lookup-resource.c   \
+    cache-lookup-stream.c     \
     global.c
 
 libbionet_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../../cal -I ../../cal/util -I../../util

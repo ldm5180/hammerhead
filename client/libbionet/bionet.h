@@ -172,31 +172,10 @@ int bionet_read(void);
 
 
 
-#if 0
-
-//
-//
-//       NAME:  bionet_is_connected()
-//
-//   FUNCTION:  Checks to see if the Bionet library is connected to the
-//              NAG.
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  Returns false (0) if the library is NOT connected to the
-//              NAG, returns true (non-zero) if the library IS connected to
-//              the NAG.
-//
-//
-
-int bionet_is_connected(void);
-
-
-
-
 //
 // This is a list of HABs, the data of each is a bionet_hab_t*.  It is
-// updated when the NAG sends subscribed information.
+// updated whenever the Bionet Client library notices HABs joining and
+// leaving.
 //
 
 extern GSList *bionet_habs;
@@ -264,6 +243,28 @@ bionet_resource_t *bionet_cache_lookup_resource(const char *hab_type, const char
 //
 
 bionet_stream_t *bionet_cache_lookup_stream(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
+
+
+
+
+#if 0
+
+//
+//
+//       NAME:  bionet_is_connected()
+//
+//   FUNCTION:  Checks to see if the Bionet library is connected to the
+//              NAG.
+//
+//  ARGUMENTS:  None.
+//
+//    RETURNS:  Returns false (0) if the library is NOT connected to the
+//              NAG, returns true (non-zero) if the library IS connected to
+//              the NAG.
+//
+//
+
+int bionet_is_connected(void);
 
 
 

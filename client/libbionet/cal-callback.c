@@ -11,12 +11,37 @@
 void libbionet_cal_callback(const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_JOIN: {
+            bionet_hab_t *hab;
+
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Join event from '%s'\n", event->peer_name);
+
+            hab = bionet_hab_new("type", "id");
+            libbionet_cache_add_hab(hab);
+
+            if (libbionet_callback_new_hab != NULL) {
+                libbionet_callback_new_hab(hab);
+            }
+
             break;
         }
 
         case CAL_EVENT_LEAVE: {
+            bionet_hab_t *hab;
+
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Leave event from '%s'\n", event->peer_name);
+
+            hab = bionet_cache_lookup_hab("type", "id");
+            if (hab == NULL) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "CAL Leave event from unknown HAB type.id\n");
+                break;
+            }
+
+            if (libbionet_callback_lost_hab != NULL) {
+                libbionet_callback_lost_hab(hab);
+            }
+
+            libbionet_cache_remove_hab(hab);
+
             break;
         }
 
