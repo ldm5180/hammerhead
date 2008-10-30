@@ -1,2 +1,2 @@
-AM_CFLAGS=-Wall -Werror -g
+AM_CFLAGS=-Wall -Werror -g -DLINUX
 CFLAGS=$(AM_CFLAGS)
