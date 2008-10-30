@@ -10,6 +10,7 @@ libbionet_util_la_SOURCES =    \
     node-new.c                 \
     node-add-resource.c        \
     node-get-resource.c        \
+    node-get-stream.c          \
     resource-new.c             \
     resource-free.c            \
     resource-data-type.c       \

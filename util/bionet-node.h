@@ -46,6 +46,10 @@ int bionet_node_get_num_resources(bionet_node_t *node);
 bionet_resource_t *bionet_node_get_resource_by_index(const bionet_node_t *node, unsigned int index);
 bionet_resource_t *bionet_node_get_resource_by_id(const bionet_node_t *node, const char *resource_id);
 
+int bionet_node_get_num_streams(bionet_node_t *node);
+bionet_stream_t *bionet_node_get_stream_by_index(const bionet_node_t *node, unsigned int index);
+bionet_stream_t *bionet_node_get_stream_by_id(const bionet_node_t *node, const char *stream_id);
+
 
 
 
