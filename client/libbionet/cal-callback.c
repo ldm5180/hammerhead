@@ -12,10 +12,19 @@ void libbionet_cal_callback(const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_JOIN: {
             bionet_hab_t *hab;
+            char *type;
+            char *id;
+            int r;
 
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Join event from '%s'\n", event->peer_name);
 
-            hab = bionet_hab_new("type", "id");
+            r = bionet_split_hab_name(event->peer_name, &type, &id);
+            if (r != 0) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "CAL peer name '%s' is not a valid Bionet HAB name, ignoring\n", event->peer_name);
+                break;
+            }
+
+            hab = bionet_hab_new(type, id);
             libbionet_cache_add_hab(hab);
 
             if (libbionet_callback_new_hab != NULL) {
@@ -27,12 +36,21 @@ void libbionet_cal_callback(const cal_event_t *event) {
 
         case CAL_EVENT_LEAVE: {
             bionet_hab_t *hab;
+            char *type;
+            char *id;
+            int r;
 
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Leave event from '%s'\n", event->peer_name);
 
-            hab = bionet_cache_lookup_hab("type", "id");
+            r = bionet_split_hab_name(event->peer_name, &type, &id);
+            if (r != 0) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "CAL peer name '%s' is not a valid Bionet HAB name, ignoring\n", event->peer_name);
+                break;
+            }
+
+            hab = bionet_cache_lookup_hab(type, id);
             if (hab == NULL) {
-                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "CAL Leave event from unknown HAB type.id\n");
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "CAL Leave event from unknown HAB '%s'\n", event->peer_name);
                 break;
             }
 
