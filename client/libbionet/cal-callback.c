@@ -13,7 +13,7 @@ void libbionet_cal_callback(const cal_event_t *event) {
         case CAL_EVENT_JOIN: {
             bionet_hab_t *hab;
 
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Join event from '%s'\n", event->peer_name);
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Join event from '%s'\n", event->peer_name);
 
             hab = bionet_hab_new("type", "id");
             libbionet_cache_add_hab(hab);
@@ -28,7 +28,7 @@ void libbionet_cal_callback(const cal_event_t *event) {
         case CAL_EVENT_LEAVE: {
             bionet_hab_t *hab;
 
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Leave event from '%s'\n", event->peer_name);
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Leave event from '%s'\n", event->peer_name);
 
             hab = bionet_cache_lookup_hab("type", "id");
             if (hab == NULL) {
@@ -46,19 +46,19 @@ void libbionet_cal_callback(const cal_event_t *event) {
         }
 
         case CAL_EVENT_MESSAGE: {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Message event from '%s'\n", event->peer_name);
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Message event from '%s'\n", event->peer_name);
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    %s\n", event->msg.buffer);  // FIXME: prolly not a NULL-terminated ASCII string...
             break;
         }
 
         case CAL_EVENT_PUBLISH: {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Publish event from '%s'\n", event->peer_name);
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Publish event from '%s'\n", event->peer_name);
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    %s\n", event->msg.buffer);  // FIXME: prolly not a NULL-terminated ASCII string...
             break;
         }
 
         default: {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "unknown event type %d\n", event->type);
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL unknown event type %d\n", event->type);
             break;
         }
     }
