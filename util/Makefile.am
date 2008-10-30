@@ -19,7 +19,18 @@ libbionet_util_la_SOURCES =    \
     datapoint-new.c            \
     datapoint-value.c          \
     datapoint-timestamp.c      \
+    stream-accept.c                     \
+    stream-connect.c                    \
+    stream-direction.c                  \
+    stream-free.c                       \
+    stream-listen.c                     \
+    stream-new.c                        \
+    stream-port.c                       \
+    stream-set-habtype-habid-nodeid.c   \
+    stream-set-host.c                   \
     is-valid-name-component.c  \
+    glib-log-handler.c                  \
+    network-error.c                     \
     split-names.c
 
 libbionet_util_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS)

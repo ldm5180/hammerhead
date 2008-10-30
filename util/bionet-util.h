@@ -65,11 +65,46 @@ typedef struct bionet_datapoint bionet_datapoint_t;
 
 
 // 
+// OS convergence layer for error reporting
+//
+
+int bionet_get_network_error(void);
+const char *bionet_get_network_error_string(void);
+
+
+
+
+// 
 // misc helpers
 //
 
 int bionet_is_valid_name_component_or_wildcard(const char *str);
 int bionet_is_valid_name_component(const char *str);
+
+
+
+
+//
+// puts the glib log messages where you want them
+//
+
+typedef struct {
+    enum {
+        BIONET_LOG_TO_STDOUT = 0,
+        BIONET_LOG_TO_SYSLOG = 1
+    } destination;
+
+    // messages with log_level *below* log_limit are logged, all others are dropped
+    // FIXME: really we want a default log_limit and then optional per-domain limits
+    GLogLevelFlags log_limit;
+} bionet_log_context_t;
+
+void bionet_glib_log_handler(
+    const gchar *log_domain,
+    GLogLevelFlags log_level,
+    const gchar *message,
+    gpointer log_context
+);
 
 
 

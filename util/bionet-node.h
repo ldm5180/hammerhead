@@ -26,7 +26,7 @@ struct bionet_node {
     char *id;
 
     GSList *resources;
-    // GSList *streams;
+    GSList *streams;
 
     void *user_data;
 };
