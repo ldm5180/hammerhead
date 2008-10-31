@@ -68,7 +68,8 @@ struct bionet_datapoint {
 //
 //              value: The value of the new datapoint, as an ASCII string.
 //
-//              timestamp: The timestamp of the new datapoint.
+//              timestamp: The timestamp of the new datapoint (NULL means
+//                  "now").
 //
 //    RETURNS:  The new Datapoint if all went well, NULL on error.
 //
@@ -119,6 +120,22 @@ const char *bionet_datapoint_value_to_string_isolated(bionet_resource_data_type_
 //
 
 const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datapoint);
+
+
+
+
+//
+//       NAME:  bionet_datapoint_set_timestamp()
+//
+//   FUNCTION:  Sets the Datapoint Timestamp as specified.
+//
+//  ARGUMENTS:  The Datapoint to set the Timestamp of, and the timestamp to
+//              set it to (NULL means "now").
+//
+//    RETURNS:  Nothing.
+//
+
+void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint, const struct timeval *new_timestamp);
 
 
 

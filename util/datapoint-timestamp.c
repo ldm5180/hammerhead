@@ -65,6 +65,33 @@ const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datap
 
 
 
+void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint, const struct timeval *new_timestamp) {
+    if (datapoint == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_timestamp(): NULL datapoint passed in");
+        return;
+    }
+
+    if (new_timestamp == NULL) {
+        int r;
+
+        r = gettimeofday(&datapoint->timestamp, NULL);
+        if (r < 0) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_timestamp(): error getting time: %s", strerror(errno));
+            return;
+        }
+    } else {
+        datapoint->timestamp.tv_sec  = new_timestamp->tv_sec;
+        datapoint->timestamp.tv_usec = new_timestamp->tv_usec;
+    }
+
+    // datapoint->dirty = 1;
+
+    return;
+}
+
+
+
+
 #if 0
 // FIXME: better error handling here - return NULL and set errno if there are problems
 const char *bionet_resource_time_to_string(const bionet_resource_t *resource) {
@@ -130,36 +157,6 @@ int bionet_resource_time_decode(bionet_resource_t *resource, const void *p, int 
     resource->time.tv_usec = (int)g_ntohl(((uint32_t *)p)[1]);
 
     return 8;
-}
-
-
-int bionet_resource_time_from_timeval(const struct timeval *tv, bionet_resource_t *resource) {
-    if (resource == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_set_resource_time_from_timeval(): NULL resource passed in");
-        errno = EINVAL;
-        return -1;
-    }
-
-    if (tv == NULL) {
-        int r;
-
-        r = gettimeofday(&resource->time, NULL);
-        if (r < 0) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_set_resource_time_from_timeval(): error getting time: %s", strerror(errno));
-            return -1;
-        }
-
-        resource->dirty = 1;
-
-        return 0;
-    }
-
-    resource->time.tv_sec  = tv->tv_sec;
-    resource->time.tv_usec = tv->tv_usec;
-
-    resource->dirty = 1;
-
-    return 0;
 }
 
 
