@@ -45,6 +45,8 @@ bionet_node_t *bionet_hab_get_node_by_index(bionet_hab_t *hab, unsigned int inde
 
 int bionet_hab_add_node(bionet_hab_t *hab, bionet_node_t *node);
 
+int bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node_id);
+
 
 
 

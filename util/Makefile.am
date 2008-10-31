@@ -5,12 +5,14 @@ lib_LTLIBRARIES = libbionet-util.la
 
 libbionet_util_la_SOURCES =    \
     hab-add-node.c             \
+    hab-remove-node.c          \
     hab-new.c                  \
     hab-get-node.c             \
     node-new.c                 \
     node-add-resource.c        \
     node-get-resource.c        \
     node-get-stream.c          \
+    node-free.c                \
     resource-new.c             \
     resource-free.c            \
     resource-data-type.c       \
