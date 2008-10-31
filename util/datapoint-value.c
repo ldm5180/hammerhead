@@ -21,6 +21,7 @@
 
 
 const char *bionet_datapoint_value_to_string(const bionet_datapoint_t *datapoint) {
+    if (datapoint == NULL) return "(null datapoint)";
     return bionet_datapoint_value_to_string_isolated(datapoint->resource->data_type, &datapoint->value);
 }
 
@@ -29,6 +30,7 @@ const char *bionet_datapoint_value_to_string_isolated(bionet_resource_data_type_
     int r;
     static char val_str[512];
 
+    if (value == NULL) return "(null value)";
 
     switch (data_type) {
 
