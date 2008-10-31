@@ -28,10 +28,6 @@ bionet_datapoint_t *bionet_datapoint_new(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_new(): NULL value passed in");
         return NULL;
     }
-    if (timestamp == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_new(): NULL timestamp passed in");
-        return NULL;
-    }
 
 
     if (
@@ -58,7 +54,7 @@ bionet_datapoint_t *bionet_datapoint_new(
         return NULL;
     }
 
-    d->timestamp = *timestamp;
+    bionet_datapoint_set_timestamp(d, timestamp);
 
     return d;
 }
