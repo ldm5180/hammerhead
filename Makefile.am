@@ -7,7 +7,7 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = cal util client . 
+SUBDIRS = cal util client hab . 
 
 
 

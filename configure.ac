@@ -91,6 +91,9 @@ AC_CONFIG_FILES([Makefile
                  client/Makefile
                  client/libbionet/Makefile
                  client/watcher/Makefile
+                 hab/Makefile
+                 hab/libhab/Makefile
+                 hab/random/Makefile
                  ])
 
 AC_OUTPUT
