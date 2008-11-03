@@ -173,9 +173,11 @@ int bionet_read(void);
 
 
 //
-// This is a list of HABs, the data of each is a bionet_hab_t*.  It is
-// updated whenever the Bionet Client library notices HABs joining and
-// leaving.
+// This is a list of HABs that has been reported to the user via their HAB
+// callback.  The data of each is a bionet_hab_t*.
+//
+// This list is updated whenever the Bionet Client library reports (to the
+// user) a HAB joining or leaving.
 //
 
 extern GSList *bionet_habs;
