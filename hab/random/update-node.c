@@ -52,7 +52,6 @@ void update_node(bionet_hab_t* random_hab) {
         bionet_datapoint_t *datapoint;
 
         resource = (bionet_resource_t *)resource_cursor->data;
-        datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
 
         printf(
             "    %s %s %s = ",
@@ -69,6 +68,7 @@ void update_node(bionet_hab_t* random_hab) {
 
         set_random_resource_value(resource);
 
+        datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
         printf("%s\n", bionet_datapoint_value_to_string(datapoint));
     }
 
