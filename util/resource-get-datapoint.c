@@ -28,7 +28,7 @@ bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource
         errno = EINVAL;
         return NULL;
     }
-    if (resource->datapoints->len >= index) return NULL;
+    if (resource->datapoints->len <= index) return NULL;
     return g_ptr_array_index(resource->datapoints, index);
 }
 
