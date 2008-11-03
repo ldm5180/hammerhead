@@ -58,32 +58,24 @@ void add_resource(bionet_node_t *node) {
         printf("Error adding Resource\n");
     }
 
-    // half of the resources start out without a datapoint
-    if ((rand() % 2) == 0) {
-        printf(
-            "    %s %s %s = (no value)\n",
-            resource_id,
-            bionet_resource_data_type_to_string(data_type),
-            bionet_resource_flavor_to_string(flavor)
-        );
-        return;
-    }
-
-
-    //
-    // the other half of the resources get an initial datapoint
-    //
-
-    set_random_resource_value(resource);
-
-    datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
     printf(
-        "    %s %s %s = %s\n",
+        "    %s %s %s = ",
         resource_id,
         bionet_resource_data_type_to_string(data_type),
-        bionet_resource_flavor_to_string(flavor),
-        bionet_datapoint_value_to_string(datapoint)
+        bionet_resource_flavor_to_string(flavor)
     );
+
+    //
+    // half of the resources start out without a datapoint
+    // the other half of the resources get an initial datapoint
+    //
+    if ((rand() % 2) == 0) {
+        printf("(starts with no value)\n");
+    } else {
+        set_random_resource_value(resource);
+        datapoint = bionet_resource_get_datapoint_by_index(resource, 0);  // there's only one datapoint
+        printf("%s\n", bionet_datapoint_value_to_string(datapoint));
+    }
 }
 
 
