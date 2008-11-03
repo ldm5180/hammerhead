@@ -7,6 +7,9 @@ libbionet_la_SOURCES =   \
     connect.c            \
     read.c               \
     register-callback.c  \
+    subscribe-datapoints.c    \
+    subscribe-hab-list.c      \
+    subscribe-node-list.c     \
     cal-callback.c       \
     cache-internal.c          \
     cache-lookup-hab.c        \

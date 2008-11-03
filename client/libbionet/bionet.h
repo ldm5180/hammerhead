@@ -247,6 +247,94 @@ bionet_stream_t *bionet_cache_lookup_stream(const char *hab_type, const char *ha
 
 
 
+//
+//       NAME: bionet_subscribe_hab_list()
+//
+//
+//   FUNCTION:  Subscribes the client to the Nag's list of HABs matching
+//              the specified pattern.  When HABs matching the specified
+//              pattern join or leave the NAG, the NAG will report the
+//              fact to the Client.
+//
+//
+//  ARGUMENTS:  'hab_name' is a string of the form "<HAB-Type>.<HAB-ID>",
+//              where any component may be the wildcard "*".
+//
+//              'hab_type' and 'hab_id' are strings containing the
+//              individual components of the name, not joined by ".".
+//              Again "*" is the wildcard.
+//
+//
+//    RETURNS:  0 on success, -1 on error
+//
+//
+
+int bionet_subscribe_hab_list_by_name(const char *hab_name);
+int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char *hab_id);
+
+
+
+
+//
+//
+//       NAME: bionet_subscribe_node_list()
+//
+//
+//   FUNCTION:  Subscribes the client to the Nag's list of Nodes matching
+//              the specified pattern.  When Nodes matching the specified
+//              pattern join or leave a network, the NAG will report the
+//              fact to the Client.
+//
+//
+//  ARGUMENTS:  'node_name' is a string of the form
+//              "<HAB-Type>.<HAB-ID>.<Node-ID>", where any component may be
+//              the wildcard "*".
+//
+//              'hab_type', 'hab_id', and 'node_id' are strings containing
+//              the individual components of the name, not joined by ".".
+//              Again "*" is the wildcard.
+//
+//
+//    RETURNS:  0 on success, -1 on error
+//
+//
+
+int bionet_subscribe_node_list_by_name(const char *node_name);
+int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  const char *hab_id, const char *node_id);
+
+
+
+
+//
+//
+//       NAME: bionet_subscribe_datapoints()
+//
+//
+//   FUNCTION:  Subscribes the client to the values of Resources matching
+//              the specified pattern.  When Resource matching the
+//              specified pattern changes, the NAG will report the
+//              fact to the Client.
+//
+//
+//  ARGUMENTS:  'resource_name' is a string of the form
+//              "<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>", where any
+//              component may be the wildcard "*".
+//
+//              'hab_type', 'hab_id', 'node_id', and 'resource_id' are
+//              strings containing the individual components of the name,
+//              not joined by ".".  Again "*" is the wildcard.
+//
+//
+//    RETURNS:  0 on success, -1 on error
+//
+//
+
+int bionet_subscribe_datapoints_by_name(const char *resource_name);
+int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *hab_type,  const char *hab_id, const char *node_id, const char *resource_id);
+
+
+
+
 #if 0
 
 //
@@ -265,95 +353,6 @@ bionet_stream_t *bionet_cache_lookup_stream(const char *hab_type, const char *ha
 //
 
 int bionet_is_connected(void);
-
-
-
-
-//
-//       NAME: bionet_subscribe_hab_list()
-//
-//
-//   FUNCTION:  Subscribes the client to the Nag's list of HABs matching
-//              the specified pattern.  When HABs matching the specified
-//              pattern join or leave the NAG, the NAG will report the
-//              fact to the Client.
-//
-//
-//  ARGUMENTS:  'hab_name_pattern' is a string of the form
-//              "<HAB-Type>.<HAB-ID>", where any component may be the
-//              wildcard "*".
-//
-//              'hab_type' and 'hab_id' are strings containing the
-//              individual components of the name, not joined by ".".
-//              Again "*" is the wildcard.
-//
-//
-//    RETURNS:  0 on success, -1 on error
-//
-//
-
-int bionet_subscribe_hab_list_by_name_pattern(const char *hab_name_pattern);
-int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char *hab_id);
-
-
-
-
-//
-//
-//       NAME: bionet_subscribe_node_list()
-//
-//
-//   FUNCTION:  Subscribes the client to the Nag's list of Nodes matching
-//              the specified pattern.  When Nodes matching the specified
-//              pattern join or leave a network, the NAG will report the
-//              fact to the Client.
-//
-//
-//  ARGUMENTS:  'node_name_pattern' is a string of the form
-//              "<HAB-Type>.<HAB-ID>.<Node-ID>", where any component may be
-//              the wildcard "*".
-//
-//              'hab_type', 'hab_id', and 'node_id' are strings containing
-//              the individual components of the name, not joined by ".".
-//              Again "*" is the wildcard.
-//
-//
-//    RETURNS:  0 on success, -1 on error
-//
-//
-
-int bionet_subscribe_node_list_by_name_pattern(const char *node_name_pattern);
-int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  const char *hab_id, const char *node_id);
-
-
-
-
-//
-//
-//       NAME: bionet_subscribe_resource()
-//
-//
-//   FUNCTION:  Subscribes the client to the values of Resources matching
-//              the specified pattern.  When Resource matching the
-//              specified pattern changes, the NAG will report the
-//              fact to the Client.
-//
-//
-//  ARGUMENTS:  'resource_name_pattern' is a string of the form
-//              "<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>", where any
-//              component may be the wildcard "*".
-//
-//              'hab_type', 'hab_id', 'node_id', and 'resource_id' are
-//              strings containing the individual components of the name,
-//              not joined by ".".  Again "*" is the wildcard.
-//
-//
-//    RETURNS:  0 on success, -1 on error
-//
-//
-
-int bionet_subscribe_resource_by_name_pattern(const char *resource_name_pattern);
-int bionet_subscribe_resource_by_habtype_habid_nodeid_resourceid(const char *hab_type,  const char *hab_id, const char *node_id, const char *resource_id);
 
 
 
