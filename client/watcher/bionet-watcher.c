@@ -188,14 +188,7 @@ OPTIONS:\n\
 
 
 int main(int argc, char *argv[]) {
-    int hab_list_index = 0;
-    char *hab_list_name_patterns[100];
-
-    int node_list_index = 0;
-    char *node_list_name_patterns[100];
-
-    int resource_index = 0;
-    char *resource_name_patterns[100];
+    int subscribed_to_something = 0;
 
 
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
@@ -214,31 +207,39 @@ int main(int argc, char *argv[]) {
     // parse command-line arguments
     //
 
-    {
-        argv ++;
+    argv ++;
 
-        for ( ; *argv != NULL; argv ++) {
-            if (strcmp(*argv, "--habs") == 0) {
-                argv ++;
-                hab_list_name_patterns[hab_list_index] = *argv;
-                hab_list_index ++;
+    for ( ; *argv != NULL; argv ++) {
+        if (strcmp(*argv, "--habs") == 0) {
+            argv ++;
+            bionet_subscribe_hab_list_by_name(*argv);
+            subscribed_to_something = 1;;
 
-            } else if (strcmp(*argv, "--nodes") == 0) {
-                argv ++;
-                node_list_name_patterns[node_list_index] = *argv;
-                node_list_index ++;
+        } else if (strcmp(*argv, "--nodes") == 0) {
+            argv ++;
+            bionet_subscribe_node_list_by_name(*argv);
+            subscribed_to_something = 1;;
 
-            } else if ((strcmp(*argv, "-r") == 0) || (strcmp(*argv, "--resource") == 0) || (strcmp(*argv, "--resources") == 0)) {
-                argv ++;
-                resource_name_patterns[resource_index] = *argv;
-                resource_index ++;
+        } else if ((strcmp(*argv, "-r") == 0) || (strcmp(*argv, "--resource") == 0) || (strcmp(*argv, "--resources") == 0)) {
+            argv ++;
+            bionet_subscribe_datapoints_by_name(*argv);
+            subscribed_to_something = 1;;
 
-            } else {
-                usage();
-                exit(1);
-            }
+        } else {
+            usage();
+            exit(1);
         }
     }
+
+    if (!subscribed_to_something) {
+        bionet_subscribe_hab_list_by_name("*.*");
+        bionet_subscribe_node_list_by_name("*.*.*");
+        bionet_subscribe_datapoints_by_name("*.*.*:*");
+    }
+
+
+    // subscriptions are complete, handle all the info we got
+    // bionet_handle_queued_nag_messages();
 
 
 #ifdef LINUX
@@ -258,36 +259,6 @@ int main(int argc, char *argv[]) {
         g_log("", G_LOG_LEVEL_INFO, "connected to Bionet");
 
 
-#if 0
-        {
-            int i;
-
-            if (
-                (hab_list_index == 0) &&
-                (node_list_index == 0) &&
-                (resource_index == 0)
-            ) {
-                bionet_subscribe_hab_list_by_name_pattern("*.*");
-                bionet_subscribe_node_list_by_name_pattern("*.*.*");
-                bionet_subscribe_resource_by_name_pattern("*.*.*:*");
-            } else {
-                for (i = 0; i < hab_list_index; i ++) {
-                    bionet_subscribe_hab_list_by_name_pattern(hab_list_name_patterns[i]);
-                }
-
-                for (i = 0; i < node_list_index; i ++) {
-                    bionet_subscribe_node_list_by_name_pattern(node_list_name_patterns[i]);
-                }
-
-                for (i = 0; i < resource_index; i ++) {
-                    bionet_subscribe_resource_by_name_pattern(resource_name_patterns[i]);
-                }
-            }
-
-            // subscriptions are complete, handle all the info we got
-            bionet_handle_queued_nag_messages();
-        }
-#endif
 
 
         while (1) {
