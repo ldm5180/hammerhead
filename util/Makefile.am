@@ -6,18 +6,21 @@ lib_LTLIBRARIES = libbionet-util.la
 libbionet_util_la_SOURCES =    \
     hab-add-node.c             \
     hab-remove-node.c          \
+    hab-matches.c              \
     hab-new.c                  \
     hab-get-node.c             \
     node-new.c                 \
     node-add-resource.c        \
     node-get-resource.c        \
     node-get-stream.c          \
+    node-matches.c             \
     node-free.c                \
     resource-new.c             \
     resource-free.c            \
     resource-data-type.c       \
     resource-flavor.c          \
     resource-datapoint.c       \
+    resource-matches.c         \
     resource-get-datapoint.c   \
     datapoint-new.c            \
     datapoint-value.c          \

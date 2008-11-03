@@ -50,5 +50,21 @@ int bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node_id);
 
 
 
+//
+//       NAME: bionet_hab_matches_type_and_id()
+//
+//   FUNCTION: Checks if a HAB matches a HAB-Type and HAB-ID pair.  The
+//             wildcard "*" matches any string.
+//
+//  ARGUMENTS: The HAB to test, and the HAB-Type and HAB-ID to compare to.
+//
+//    RETURNS: TRUE (1) if the HAB matches, FALSE (0) if not.
+//
+
+int bionet_hab_matches_type_and_id(const bionet_hab_t *hab, const char *type, const char *id);
+
+
+
+
 #endif //  BIONET_HAB_H
 

@@ -55,5 +55,26 @@ void bionet_node_free(bionet_node_t *node);
 
 
 
+//
+//       NAME:  bionet_node_matches_id()
+//              bionet_node_matches_habtype_habid_nodeid()
+//
+//   FUNCTION:  Checks if a Node matches a name specification.  The Node
+//              name can be specified as just a Node-ID (in which case the
+//              Node's HAB-Type and HAB-ID are considered matching no
+//              matter what) or as a HAB-Type, HAB-ID, and Node-ID (in
+//              which case all must match).  The wildcard "*" matches all
+//              strings.
+//
+//  ARGUMENTS:  The Node to test for match, optionally the HAB-Type and
+//              HAB-ID, and the Node-ID.
+//
+
+int bionet_node_matches_id(const bionet_node_t *node, const char *id);
+int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node, const char *hab_type, const char *hab_id, const char *node_id);
+
+
+
+
 #endif //  BIONET_NODE_H
 

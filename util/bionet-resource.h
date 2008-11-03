@@ -209,6 +209,35 @@ bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource
 
 
 
+//
+//       NAME:  bionet_resource_matches_id()
+//              bionet_resource_matches_habtype_habid_nodeid_resourceid()
+//
+//   FUNCTION:  Checks if a Resource matches a name specification.  The
+//              Resource name can be specified as just a Resource-ID (in
+//              which case the Resource's HAB-Type, HAB-ID, and Node-ID are
+//              considered matching no matter what), or as a HAB-Type,
+//              HAB-ID, Node-ID, and Resource-ID (in which case all must
+//              match).  The wildcard "*" matches all strings.
+//
+//  ARGUMENTS:  The Resource to test for match, and the relevant Resource
+//              name components.
+//
+//    RETURNS:  TRUE (1) if it matches, FALSE (0) if not.
+//
+
+int bionet_resource_matches_id(const bionet_resource_t *resource, const char *id);
+int bionet_resource_matches_habtype_habid_nodeid_resourceid(
+    const bionet_resource_t *resource,
+    const char *hab_type,
+    const char *hab_id,
+    const char *node_id,
+    const char *resource_id
+);
+
+
+
+
 #if 0
 
 //
@@ -450,35 +479,6 @@ int bionet_resource_time_encode(const bionet_resource_t *resource, void **p, int
 //
 
 int bionet_resource_time_decode(bionet_resource_t *resource, const void *p, int size);
-
-
-
-
-//
-//       NAME:  bionet_resource_matches_id()
-//              bionet_resource_matches_habtype_habid_nodeid_resourceid()
-//
-//   FUNCTION:  Checks if a Resource matches a name specification.  The
-//              Resource name can be specified as just a Resource-ID (in
-//              which case the Resource's HAB-Type, HAB-ID, and Node-ID are
-//              considered matching no matter what), or as a HAB-Type,
-//              HAB-ID, Node-ID, and Resource-ID (in which case all must
-//              match).  The wildcard "*" matches all strings.
-//
-//  ARGUMENTS:  The Resource to test for match, and the relevant Resource
-//              name components.
-//
-//    RETURNS:  TRUE (1) if it matches, FALSE (0) if not.
-//
-
-int bionet_resource_matches_id(const bionet_resource_t *resource, const char *id);
-int bionet_resource_matches_habtype_habid_nodeid_resourceid(
-    const bionet_resource_t *resource,
-    const char *hab_type,
-    const char *hab_id,
-    const char *node_id,
-    const char *resource_id
-);
 
 #endif
 
