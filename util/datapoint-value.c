@@ -111,7 +111,7 @@ const char *bionet_datapoint_value_to_string_isolated(bionet_resource_data_type_
         }
 
         case BIONET_RESOURCE_DATA_TYPE_FLOAT: {
-            r = snprintf(val_str, sizeof(val_str), "%.7f", value->float_v);
+            r = snprintf(val_str, sizeof(val_str), "%.7g", value->float_v);
             if (r >= sizeof(val_str)) {
                 g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_value_to_string_isolated(): value of datapoint is too big to fit in output string!");
                 return NULL;
@@ -120,7 +120,7 @@ const char *bionet_datapoint_value_to_string_isolated(bionet_resource_data_type_
         }
 
         case BIONET_RESOURCE_DATA_TYPE_DOUBLE: {
-            r = snprintf(val_str, sizeof(val_str), "%.15f", value->double_v);
+            r = snprintf(val_str, sizeof(val_str), "%.15g", value->double_v);
             if (r >= sizeof(val_str)) {
                 g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_value_to_string_isolated(): value of datapoint is too big to fit in output string!");
                 return NULL;
