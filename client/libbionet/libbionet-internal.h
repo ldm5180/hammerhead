@@ -27,9 +27,6 @@ extern void (*libbionet_callback_datapoint)(bionet_datapoint_t *datapoint);
 extern int libbionet_cal_fd;
 
 
-extern GSList *bionet_habs;
-
-
 void libbionet_cal_callback(const cal_event_t *event);
 
 
