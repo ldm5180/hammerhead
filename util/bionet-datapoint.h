@@ -66,7 +66,9 @@ struct bionet_datapoint {
 //
 //              resource: The Resource that the new datapoint is for.
 //
-//              value: The value of the new datapoint, as an ASCII string.
+//              value: The value of the new datapoint.
+//
+//              value_str: The value of the new datapoint, as an ASCII string.
 //
 //              timestamp: The timestamp of the new datapoint (NULL means
 //                  "now").
@@ -77,13 +79,20 @@ struct bionet_datapoint {
 
 bionet_datapoint_t *bionet_datapoint_new(
     bionet_resource_t *resource,
-    const char *value,
+    const bionet_datapoint_value_t *value,
+    const struct timeval *timestamp
+);
+
+bionet_datapoint_t *bionet_datapoint_new_with_valuestr(
+    bionet_resource_t *resource,
+    const char *value_str,
     const struct timeval *timestamp
 );
 
 
 
 
+void bionet_datapoint_set_value(bionet_datapoint_t *d, const bionet_datapoint_value_t *value);
 int bionet_datapoint_value_from_string(bionet_datapoint_t *d, const char *value_string);
 int bionet_datapoint_value_from_string_isolated(bionet_resource_data_type_t data_type, bionet_datapoint_value_t *value, const char *value_string);
 

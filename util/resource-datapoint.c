@@ -21,7 +21,7 @@ bionet_datapoint_t *bionet_resource_add_datapoint(
 ) {
     bionet_datapoint_t *d;
 
-    d = bionet_datapoint_new(resource, value_str, timestamp);
+    d = bionet_datapoint_new_with_valuestr(resource, value_str, timestamp);
     if (d == NULL) return NULL;
 
     g_ptr_array_add(resource->datapoints, d);

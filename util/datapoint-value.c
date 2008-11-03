@@ -20,6 +20,19 @@
 
 
 
+void bionet_datapoint_set_value(bionet_datapoint_t *d, const bionet_datapoint_value_t *value) {
+    if (d == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_value(): NULL datapoint passed in");
+        return;
+    }
+    if (value == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_value(): NULL value passed in");
+        return;
+    }
+    d->value = *value;
+}
+
+
 const char *bionet_datapoint_value_to_string(const bionet_datapoint_t *datapoint) {
     if (datapoint == NULL) return "(null datapoint)";
     return bionet_datapoint_value_to_string_isolated(datapoint->resource->data_type, &datapoint->value);
