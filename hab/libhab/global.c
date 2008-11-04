@@ -15,8 +15,6 @@
 
 int libhab_cal_fd = -1;
 
-void (*libhab_cal_callback)(const cal_event_t *event) = NULL;
-
 
 
 

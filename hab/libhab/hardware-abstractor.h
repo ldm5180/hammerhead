@@ -113,6 +113,27 @@ int hab_report_lost_node(const char *node_id);
 
 
 
+//
+//
+//       NAME:  hab_read()
+//
+//   FUNCTION:  When the Bionet file descriptor returned from hab_connect()
+//              is readable, the HAB should call this function.  It will
+//              read any pending messages and call the appropriate
+//              registered callback function.
+//              See hab_register_callback_set_resource().
+//
+//  ARGUMENTS:  None.
+//
+//    RETURNS:  Nothing.
+//
+//
+
+void hab_read(void);
+
+
+
+
 #if 0
 
 //
@@ -259,27 +280,6 @@ const char *hab_get_nag_error(void);
 //
 
 void hab_register_callback_set_resource(void (*cb_set_resource)(const char *node_id, const char *resource_id, const char *value));
-
-
-
-
-//
-//
-//       NAME:  hab_read_from_nag()
-//
-//   FUNCTION:  When the NAG socket returned from hab_connect_to_nag()
-//              is readable, the HAB should call this function.  It will
-//              read any pending messages from the NAG and call the
-//              appropriate registered callback function.
-//              See hab_register_callback_set_resource().
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  Nothing.
-//
-//
-
-void hab_read_from_nag(void);
 
 
 

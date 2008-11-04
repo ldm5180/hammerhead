@@ -20,10 +20,11 @@
 
 extern int libhab_cal_fd;
 
-extern void (*libhab_cal_callback)(const cal_event_t *event);
-
 
 int libhab_cal_topic_matches(const char *topic, const char *subscription);
+
+void libhab_cal_callback(const cal_event_t *event);
+
 
 
 
