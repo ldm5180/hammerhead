@@ -16,6 +16,9 @@
 #include "H2C-Message.h"
 
 
+#include "bionet-util.h"
+
+
 
 
 // maximum supported on-the-wire message size
@@ -30,12 +33,15 @@ typedef struct {
     void *buf;
 } bionet_asn_buffer_t;
 
+// useful as the "buffer acceptor" of der_encoder()
+int bionet_accumulate_asn_buffer(const void *new_buffer, size_t new_size, void *buffer_as_voidp);
+
 
 
 
 // 
 // helper functions for dealing with ASN.1
-// FIXME: some of this should probably be offered to the asn1c project as patches
+// these ones here should probably be offered to the asn1c project as patches
 //
 
 // converts an ASN.1 GeneralizedTime variable to a struct timeval
@@ -48,8 +54,24 @@ int bionet_GeneralizedTime_to_timeval(const GeneralizedTime_t *gt, struct timeva
 int bionet_timeval_to_GeneralizedTime(const struct timeval *tv, GeneralizedTime_t *gt);
 
 
-// useful as the "buffer acceptor" of der_encoder()
-int bionet_accumulate_asn_buffer(const void *new_buffer, size_t new_size, void *buffer);
+
+
+// 
+// helper functions for dealing with ASN.1
+// these ones here are probably only useful to Bionet
+//
+
+int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf);
+
+#if 0
+ResourceFlavor_t bionet_flavor_to_asn(bionet_resource_flavor_t flavor);
+ResourceDataType_t bionet_datatype_to_asn(bionet_resource_data_type_t datatype);
+int bionet_datapoint_to_asn(bionet_datapoint_t *d, bionet_resource_data_type_t datatype, Datapoint_t *asn_datapoint);
+
+bionet_resource_flavor_t bionet_asn_to_flavor(ResourceFlavor_t asn_flavor);
+bionet_resource_data_type_t bionet_asn_to_datatype(ResourceDataType_t asn_datatype);
+int bionet_asn_to_datapoint(Datapoint_t *asn_datapoint, bionet_datapoint_t *d, bionet_resource_data_type_t datatype);
+#endif
 
 
 

@@ -95,7 +95,7 @@ SRC = $(ASN_MODULE_SOURCES) bionet-asn-helpers.c
 lib_LTLIBRARIES=libbionet-asn.la
 libbionet_asn_la_SOURCES=$(SRC) $(ASN_MODULE_HEADS)
 
-libbionet_asn_la_CFLAGS = $(AM_CFLAGS)
+libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util
 
 libbionet_asn_la_LIBADD = $(AM_LDADD)
 
