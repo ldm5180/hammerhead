@@ -243,22 +243,21 @@ int bionet_node_to_asnbuf(bionet_node_t *node, bionet_asn_buffer_t *buf) {
     r = OCTET_STRING_fromString(&newnode->id, node->id);
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_to_asnbuf(): error making OCTET_STRING for Node-ID %s", node->id);
-        goto fail1;
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
+        return -1;
     }
 
     asn_r = der_encode(&asn_DEF_H2C_Message, &m, bionet_accumulate_asn_buffer, &buf);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
     if (asn_r.encoded == -1) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_to_asnbuf(): error with der_encode(): %s", strerror(errno));
-        goto fail0;
+        if (buf->buf != NULL) {
+            free(buf->buf);
+            buf->buf = NULL;
+        }
+        return -1;
     }
 
     return 0;
-
-fail1:
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
-
-fail0:
-    return -1;
 }
 
