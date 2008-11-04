@@ -38,6 +38,9 @@ struct bionet_hab {
 
 bionet_hab_t *bionet_hab_new(const char *type, const char *id);
 
+int bionet_hab_set_type(bionet_hab_t *hab, const char *type);
+int bionet_hab_set_id(bionet_hab_t *hab, const char *id);
+
 bionet_node_t *bionet_hab_get_node_by_id(bionet_hab_t *hab, const char *node_id);
 
 int bionet_hab_get_num_nodes(const bionet_hab_t *hab);
@@ -46,6 +49,9 @@ bionet_node_t *bionet_hab_get_node_by_index(bionet_hab_t *hab, unsigned int inde
 int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node);
 
 int bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node_id);
+int bionet_hab_remove_all_nodes(bionet_hab_t *hab);
+
+void bionet_hab_free(bionet_hab_t *hab);
 
 
 

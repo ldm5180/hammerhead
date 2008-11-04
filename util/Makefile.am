@@ -8,6 +8,7 @@ libbionet_util_la_SOURCES =    \
     hab-remove-node.c          \
     hab-matches.c              \
     hab-new.c                  \
+    hab-free.c                 \
     hab-get-node.c             \
     node-new.c                 \
     node-add-resource.c        \
