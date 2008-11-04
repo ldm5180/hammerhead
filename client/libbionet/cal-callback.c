@@ -32,8 +32,6 @@ static void handle_server_message(const cal_event_t *event) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained junk at end of message (consumed %d of %d)", event->peer_name, (int)rval.consumed, event->msg.size);
     }
 
-    xer_fprint(stdout, &asn_DEF_H2C_Message, m);
-
 
     switch (m->present) {
 
@@ -119,6 +117,7 @@ static void handle_server_message(const cal_event_t *event) {
 
         default: {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dont know what to do with H2C message type %d from %s", m->present, event->peer_name);
+            xer_fprint(stdout, &asn_DEF_H2C_Message, m);
             break;
         }
 
@@ -137,8 +136,6 @@ void libbionet_cal_callback(const cal_event_t *event) {
             char *type;
             char *id;
             int r;
-
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Join event from '%s'", event->peer_name);
 
             r = bionet_split_hab_name(event->peer_name, &type, &id);
             if (r != 0) {
@@ -177,8 +174,6 @@ void libbionet_cal_callback(const cal_event_t *event) {
             char *id;
             int r;
 
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Leave event from '%s'", event->peer_name);
-
             r = bionet_split_hab_name(event->peer_name, &type, &id);
             if (r != 0) {
                 g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "CAL peer name '%s' is not a valid Bionet HAB name, ignoring", event->peer_name);
@@ -211,13 +206,11 @@ void libbionet_cal_callback(const cal_event_t *event) {
         }
 
         case CAL_EVENT_MESSAGE: {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Message event from '%s'", event->peer_name);
             handle_server_message(event);
             break;
         }
 
         case CAL_EVENT_PUBLISH: {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Publish event from '%s'", event->peer_name);
             handle_server_message(event);
             break;
         }

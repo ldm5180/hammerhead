@@ -235,8 +235,6 @@ static int libbionet_cal_peer_matches(const char *peer_name, const char *pattern
     int r;
 
 
-    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "libbionet_cal_peer_matches: does peer '%s' match pattern '%s'?", peer_name, pattern);
-
     r = bionet_split_hab_name_r(peer_name, peer_type, peer_id);
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "libbionet_cal_peer_matches: cannot parse peer name '%s'", peer_name);
