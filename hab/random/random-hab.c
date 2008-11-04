@@ -165,8 +165,8 @@ void destroy_node(bionet_hab_t* random_hab) {
 
     printf("removing Node %s\n", node->id);
 
-    hab_report_lost_node(node->id);
     bionet_hab_remove_node_by_id(random_hab, node->id);
+    hab_report_lost_node(node->id);
     bionet_node_free(node);
 }
 

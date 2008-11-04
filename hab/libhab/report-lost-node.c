@@ -4,14 +4,25 @@
 //
 
 
+#include <errno.h>
+#include <string.h>
+
 #include <glib.h>
 
 #include "hardware-abstractor.h"
 
 #include "libhab-internal.h"
+#include "bionet-asn.h"
 
 
 int hab_report_lost_node(const char *node_id) {
+    H2C_Message_t m;
+    PrintableString_t *lostnode;
+    asn_enc_rval_t asn_r;
+    int r;
+
+    bionet_asn_buffer_t buf;
+
 
     //
     // sanity checks
@@ -27,35 +38,37 @@ int hab_report_lost_node(const char *node_id) {
         goto fail0;
     }
 
-#if 0
-    int r;
-    bionet_message_t m;
 
+    memset(&buf, 0x00, sizeof(bionet_asn_buffer_t));
 
-    if (hab_connect_to_nag() < 0) return -1;
+    memset(&m, 0x00, sizeof(H2C_Message_t));
+    m.present = H2C_Message_PR_lostNode;
+    lostnode = &m.choice.lostNode;
 
-
-    if (!bionet_is_valid_name_component(node_id)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_lost_node(): invalid Node-ID '%s'", node_id);
-        return -1;
+    r = OCTET_STRING_fromString(lostnode, node_id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_lost_node(): error making OCTET_STRING for Node-ID %s", node_id);
+        goto fail1;
     }
 
-    m.type = Bionet_Message_H2N_Lost_Node;
-    m.body.h2n_lost_node.id = (char *)node_id;
-    r = bionet_nxio_send_message(libhab_nag_nxio, &m);
-    if (r < 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_lost_node(): error reporting lost node");
-        return -1;
+    // publish the message to any connected subscribers
+    asn_r = der_encode(&asn_DEF_H2C_Message, &m, bionet_accumulate_asn_buffer, &buf);
+    if (asn_r.encoded == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_lost_node(): error with der_encode(): %s", strerror(errno));
+        goto fail1;
     }
 
-    r = libhab_read_ok_from_nag();
-    if (r < 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_lost_node(): error reading response from NAG");
-        return -1;
-    }
-#endif
+    cal_server.publish(node_id, buf.buf, buf.size);
 
+    // FIXME: cal_server.publish should take the buf
+    free(buf.buf);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
     return 0;
+
+
+fail1:
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
 
 fail0:
     return -1;
