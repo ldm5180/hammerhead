@@ -22,56 +22,77 @@
 
 
 
-int cal_client_mdnssd_bip_init(void (*callback)(const cal_event_t *event)) {
+int cal_client_mdnssd_bip_init(
+    void (*callback)(const cal_event_t *event),
+    int (*peer_matches)(const char *peer_name, const char *subscription)
+) {
     int r;
 
+    cal_client_mdnssd_bip_t *this;
+
+
+    // set up the context
+    this = (cal_client_mdnssd_bip_t *)calloc(1, sizeof(cal_client_mdnssd_bip_t));
+    if (this == NULL) {
+        fprintf(stderr, "cal_client_mdnssd_bip_init: out of memory!\n");
+        goto fail0;
+    }
+
+    if (peer_matches == NULL) {
+        this->peer_matches = strcmp;
+    } else {
+        this->peer_matches = peer_matches;
+    }
 
     // create the pipe for passing events back to the user thread
     r = pipe(cal_client_mdnssd_bip_fds_to_user);
     if (r < 0) {
         printf(ID "init(): error making to-user pipe: %s\n", strerror(errno));
-        goto fail0;
+        goto fail1;
     }
 
     // create the pipe for getting subscription requests from the user
     r = pipe(cal_client_mdnssd_bip_fds_from_user);
     if (r < 0) {
         printf(ID "init(): error making from-user pipe: %s\n", strerror(errno));
-        goto fail1;
+        goto fail2;
     }
 
     cal_client_mdnssd_bip_thread = (pthread_t *)malloc(sizeof(pthread_t));
     if (cal_client_mdnssd_bip_thread == NULL) {
         printf(ID "init(): cannot allocate memory for thread: %s\n", strerror(errno));
-        goto fail2;
+        goto fail3;
     }
 
     // record the user's callback function
     cal_client.callback = callback;
 
     // start the Client thread
-    r = pthread_create(cal_client_mdnssd_bip_thread, NULL, cal_client_mdnssd_bip_function, NULL);
+    r = pthread_create(cal_client_mdnssd_bip_thread, NULL, cal_client_mdnssd_bip_function, this);
     if (r != 0) {
         printf(ID "init(): cannot create thread: %s\n", strerror(errno));
-        goto fail3;
+        goto fail4;
     }
 
 
     return cal_client_mdnssd_bip_fds_to_user[0];
 
 
-fail3:
+fail4:
     free(cal_client_mdnssd_bip_thread);
     cal_client_mdnssd_bip_thread = NULL;
     cal_client.callback = NULL;
 
-fail2:
+fail3:
     close(cal_client_mdnssd_bip_fds_from_user[0]);
     close(cal_client_mdnssd_bip_fds_from_user[1]);
 
-fail1:
+fail2:
     close(cal_client_mdnssd_bip_fds_to_user[0]);
     close(cal_client_mdnssd_bip_fds_to_user[1]);
+
+fail1:
+    free(this);
 
 fail0:
     return -1;

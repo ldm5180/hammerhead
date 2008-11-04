@@ -16,6 +16,15 @@
 #define ID "CAL Client mDNS-SD/BIP "
 
 
+
+
+typedef struct {
+    int (*peer_matches)(const char *peer_name, const char *subscription);
+} cal_client_mdnssd_bip_t;
+
+
+
+
 extern void (*cal_client_mdnssd_bip_callback)(cal_event_t *event);
 
 // pipes between CAL Client thread and user thread

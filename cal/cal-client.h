@@ -43,6 +43,14 @@ typedef struct {
     //! \param callback The callback function to be called by the CAL
     //!     library when events happen to this peer.
     //!
+    //! \param peer_matches This function is called to evaluate whether a
+    //!     peer matches the peer name of a subscription.  The function
+    //!     should return 0 if the peer name matches, and non-zero if the
+    //!     topic does not match.  Thus strcmp() is a valid option, and
+    //!     results in only exact peer name matches being accepted.  This
+    //!     is also the default if NULL is passed in for peer_matches.
+    //!     peer_matches must be reenstrant.
+    //!
     //! \return On success, returns a file descriptor which should be
     //!     monitored by the caller.  When the fd is readable, the caller
     //!     should call the .read() function.  The caller must never read
@@ -50,7 +58,10 @@ typedef struct {
     //!     returns -1.
     //!
 
-    int (*init)(void (*callback)(const cal_event_t *event));
+    int (*init)(
+        void (*callback)(const cal_event_t *event),
+        int (*peer_matches)(const char *peer_name, const char *subscription)
+    );
 
 
     void (*shutdown)(void);

@@ -32,7 +32,7 @@ typedef struct {
 
 typedef struct {
     bip_peer_network_info_t *net;  // NULL if the peer is not currently on the network
-    GSList *subscriptions;         // each is a dynamically allocated string of the topic
+    GSList *subscriptions;         // each is a dynamically allocated string of the topic  (FIXME: only the server uses this)
 } bip_peer_t;
 
 

@@ -225,6 +225,39 @@ static const char *libbionet_get_id(void) {
 
 
 
+static int libbionet_cal_peer_matches(const char *peer_name, const char *pattern) {
+    char peer_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char peer_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+    char pattern_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char pattern_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+    int r;
+
+
+    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "libbionet_cal_peer_matches: does peer '%s' match pattern '%s'?", peer_name, pattern);
+
+    r = bionet_split_hab_name_r(peer_name, peer_type, peer_id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "libbionet_cal_peer_matches: cannot parse peer name '%s'", peer_name);
+        return -1;
+    }
+
+    r = bionet_split_hab_name_r(pattern, pattern_type, pattern_id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "libbionet_cal_peer_matches: cannot parse pattern '%s'", pattern);
+        return -1;
+    }
+
+    if (!bionet_name_component_matches(peer_type, pattern_type)) return 1;
+    if (!bionet_name_component_matches(peer_id, pattern_id)) return 1;
+
+    return 0;
+}
+
+
+
+
 // 
 // Opens a connection to the Bionet network.
 //
@@ -242,7 +275,7 @@ int bionet_connect(void) {
     //
 
 
-    libbionet_cal_fd = cal_client.init(libbionet_cal_callback);
+    libbionet_cal_fd = cal_client.init(libbionet_cal_callback, libbionet_cal_peer_matches);
     if (libbionet_cal_fd == -1) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_connect(): error initializing CAL");
         return -1;

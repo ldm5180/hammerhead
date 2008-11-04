@@ -24,6 +24,11 @@
 
 
 
+static cal_client_mdnssd_bip_t *this = NULL;
+
+
+
+
 // 
 // this is a linked list, each payload is a (struct cal_client_mdnssd_bip_service_context *)
 // we add the first one when we start the mDNS-SD browse running, then we add one each time we start a resolve
@@ -43,6 +48,16 @@ static GSList *service_list = NULL;
 // the key is a peer name
 // the value is a bip_peer_t pointer if the peer is known, NULL if it's unknown
 static GHashTable *peers = NULL;
+
+
+
+
+typedef struct {
+    char *peer_name;
+    char *topic;
+} cal_client_mdnssd_bip_subscription_t;
+
+static GPtrArray *subscriptions = NULL;
 
 
 
@@ -182,25 +197,46 @@ static void read_from_user(void) {
 
 
         case CAL_EVENT_SUBSCRIBE: {
-            bip_peer_t *peer;
+            cal_client_mdnssd_bip_subscription_t *s;
             char *topic;
 
-            peer = get_peer_by_name(event->peer_name);
-            if (peer == NULL) return;
+            s = (cal_client_mdnssd_bip_subscription_t *)calloc(1, sizeof(cal_client_mdnssd_bip_subscription_t));
+            if (s == NULL) {
+                fprintf(stderr, ID "read_from_user: out of memory\n");
+                return;
+            }
 
-            // steal this topic
-            topic = event->topic;
+            s->peer_name = event->peer_name;
+            event->peer_name = NULL;
+
+            s->topic = event->topic;
             event->topic = NULL;
 
-            peer->subscriptions = g_slist_prepend(peer->subscriptions, topic);
+            g_ptr_array_add(subscriptions, s);
 
-            if (peer->net == NULL) break;
 
-            r = connect_to_peer(event->peer_name, peer);
-            if (r < 0) return;
+            // walk the list of known peers, and send this subscription to any that match
+            {
+                GHashTableIter iter;
+                const char *name;
+                bip_peer_t *peer;
 
-            bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_SUBSCRIBE, topic, strlen(topic) + 1);
-            // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
+                g_hash_table_iter_init (&iter, peers);
+                while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
+                    if (peer->net == NULL) {
+                        fprintf(stderr, ID "read_from_user: peer has NULL bip_peer_t!\n");
+                        continue;
+                    }
+
+                    if (this->peer_matches(name, s->peer_name) != 0) continue;
+
+                    r = connect_to_peer(name, peer);
+                    if (r < 0) return;
+
+                    bip_send_message(name, peer, BIP_MSG_TYPE_SUBSCRIBE, topic, strlen(topic) + 1);
+                    // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
+                }
+            }
 
             break;
         }
@@ -334,6 +370,7 @@ static void resolve_callback(
     int r;
     struct cal_client_mdnssd_bip_service_context *sc = context;
     cal_event_t *event = sc->event;
+    int i;
 
     char *peer_name;
     bip_peer_t *peer;
@@ -357,6 +394,7 @@ static void resolve_callback(
     }
 
     if (peer->net != NULL) {
+        // FIXME: just add another net
         fprintf(stderr, ID "resolve_callback: new peer collides with existing peer '%s'\n", event->peer_name);
         return;
     }
@@ -387,10 +425,14 @@ static void resolve_callback(
         return;
     }
 
+    // walk the list of subscriptions, and send any that match to this peer
+    for (i = 0; i < subscriptions->len; i ++) {
+        cal_client_mdnssd_bip_subscription_t *s;
 
-    // send any subscriptions we have for this peer
-    if (peer->subscriptions != NULL) {
-        GSList *si;
+        s = (cal_client_mdnssd_bip_subscription_t *)g_ptr_array_index(subscriptions, i);
+        if (s == NULL) continue;
+
+        if (this->peer_matches(peer_name, s->peer_name) != 0) continue;
 
         r = connect_to_peer(peer_name, peer);
         if (r < 0) {
@@ -401,13 +443,9 @@ static void resolve_callback(
             return;
         }
 
-        for (si = peer->subscriptions; si != NULL; si = si->next) {
-            char *topic = si->data;
-            bip_send_message(peer_name, peer, BIP_MSG_TYPE_SUBSCRIBE, topic, strlen(topic) + 1);
-            // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
-        }
+        bip_send_message(peer_name, peer, BIP_MSG_TYPE_SUBSCRIBE, s->topic, strlen(s->topic) + 1);
+        // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
     }
-
 
     // the event becomes the responsibility of the callback now, so they might leak memory but we're not
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
@@ -552,6 +590,22 @@ void cleanup_peers(void *unused) {
 }
 
 
+// clean up the subscriptions list
+void cleanup_subscriptions(void *unused) {
+    int i;
+
+    for (i = 0; i < subscriptions->len; i ++) {
+        cal_client_mdnssd_bip_subscription_t *s = g_ptr_array_index(subscriptions, i);
+        if (s == NULL) continue;
+        if (s->peer_name != NULL) free(s->peer_name);
+        if (s->topic != NULL) free(s->topic);
+        free(s);
+    }
+
+    g_ptr_array_free(subscriptions, 1);
+}
+
+
 void free_peer(void *peer_as_void) {
     bip_peer_t *peer = peer_as_void;
 
@@ -570,6 +624,11 @@ void free_peer(void *peer_as_void) {
 void *cal_client_mdnssd_bip_function(void *arg) {
     struct cal_client_mdnssd_bip_service_context *browse;
     DNSServiceErrorType error;
+
+    this = (cal_client_mdnssd_bip_t *)arg;
+
+    subscriptions = g_ptr_array_new();
+    pthread_cleanup_push(cleanup_subscriptions, NULL);
 
     // Shutup annoying nag message on Linux.
     setenv("AVAHI_COMPAT_NOWARN", "1", 1);
@@ -701,5 +760,6 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
     pthread_cleanup_pop(0);  // don't execute cleanup_peers
     pthread_cleanup_pop(0);  // don't execute cleanup_service_list
+    pthread_cleanup_pop(0);  // don't execute cleanup_subscriptions
 }
 
