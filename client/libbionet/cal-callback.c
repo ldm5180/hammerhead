@@ -80,7 +80,39 @@ static void handle_server_message(const cal_event_t *event) {
 
 
         case H2C_Message_PR_lostNode: {
-            // FIXME: remove the node from the cache and call the bionet callback
+            char *hab_type;
+            char *hab_id;
+
+            bionet_hab_t *hab;
+            bionet_node_t *node;
+
+            int r;
+
+            r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
+            if (r != 0) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error parsing HAB name from CAL peer name '%s'", event->peer_name);
+                break;
+            }
+
+            hab = bionet_cache_lookup_hab(hab_type, hab_id);
+            if (hab == NULL) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got lost-node message for Node '%s.%s', but that HAB doesn appear in the cache", event->peer_name, (char*)m->choice.lostNode.buf);
+                break;
+            }
+
+            node = bionet_cache_lookup_node(hab_type, hab_id, (const char *)m->choice.lostNode.buf);
+            if (node == NULL) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got lost-node message for Node '%s.%s', which doesnt appear in the cache", event->peer_name, (char*)m->choice.lostNode.buf);
+                break;
+            }
+
+            if (libbionet_callback_lost_node != NULL) {
+                libbionet_callback_lost_node(node);
+            }
+
+            bionet_hab_remove_node_by_id(hab, node->id);
+            bionet_node_free(node);
+
             break;
         }
 
