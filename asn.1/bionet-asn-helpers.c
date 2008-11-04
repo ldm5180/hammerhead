@@ -317,3 +317,14 @@ int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf) {
     return 0;
 }
 
+
+bionet_node_t *bionet_asn_to_node(const Node_t *asn_node) {
+    bionet_node_t *node;
+
+    node = bionet_node_new(NULL, (char *)asn_node->id.buf);
+
+    // FIXME: decode the rest of the asn Node_t
+
+    return node;
+}
+

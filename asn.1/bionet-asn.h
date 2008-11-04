@@ -63,6 +63,9 @@ int bionet_timeval_to_GeneralizedTime(const struct timeval *tv, GeneralizedTime_
 
 int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf);
 
+bionet_node_t *bionet_asn_to_node(const Node_t *asn_node);
+
+
 #if 0
 ResourceFlavor_t bionet_flavor_to_asn(bionet_resource_flavor_t flavor);
 ResourceDataType_t bionet_datatype_to_asn(bionet_resource_data_type_t datatype);
