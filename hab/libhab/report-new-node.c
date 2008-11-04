@@ -16,12 +16,8 @@
 
 
 int hab_report_new_node(const bionet_node_t *node) {
-    H2C_Message_t m;
-    Node_t *newnode;
-    asn_enc_rval_t asn_r;
-    int r;
-
     bionet_asn_buffer_t buf;
+    int r;
 
 
     //
@@ -52,36 +48,22 @@ int hab_report_new_node(const bionet_node_t *node) {
     }
 
 
-    memset(&buf, 0x00, sizeof(bionet_asn_buffer_t));
-
-    memset(&m, 0x00, sizeof(H2C_Message_t));
-    m.present = H2C_Message_PR_newNode;
-    newnode = &m.choice.newNode;
-
-
-    r = OCTET_STRING_fromString(&newnode->id, node->id);
+    r = bionet_node_to_asnbuf(node, &buf);
     if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_new_node(): error making OCTET_STRING for Node-ID %s", node->id);
+        // an error has already been logged
         goto fail1;
     }
 
     // publish the message to any connected subscribers
-    asn_r = der_encode(&asn_DEF_H2C_Message, &m, bionet_accumulate_asn_buffer, &buf);
-    if (asn_r.encoded == -1) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_new_node(): error with der_encode(): %s", strerror(errno));
-        goto fail1;
-    }
-
     cal_server.publish(node->id, buf.buf, buf.size);
 
     // FIXME: cal_server.publish should take the buf
     free(buf.buf);
 
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
     return 0;
 
 fail1:
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
+    if (buf.buf != NULL) free(buf.buf);
 
 fail0:
     return -1;

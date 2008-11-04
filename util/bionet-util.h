@@ -25,7 +25,7 @@ typedef struct bionet_resource  bionet_resource_t;
 typedef struct bionet_datapoint bionet_datapoint_t;
 
 
-// #include "bionet-asn.h"
+#include "bionet-asn.h"
 
 #include "bionet-hab.h"
 #include "bionet-node.h"
@@ -151,6 +151,8 @@ int bionet_split_hab_name_r(
 // 
 // helper functions for translating between bionet objects and ASN.1 (asn1c) objects
 //
+
+int bionet_node_to_asnbuf(bionet_node_t *node, bionet_asn_buffer_t *buf);
 
 #if 0
 ResourceFlavor_t bionet_flavor_to_asn(bionet_resource_flavor_t flavor);
