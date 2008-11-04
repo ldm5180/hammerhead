@@ -35,7 +35,7 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
             fprintf(stderr, "bip_read_from_peer(): error reading from peer %s: %s\n", peer_name, strerror(errno));
             return -1;
         } else if (r == 0) {
-            fprintf(stderr, "bip_read_from_peer(): peer %s disconnects\n", peer_name);
+            // peer disconnects
             return - 1;
         }
 
@@ -53,7 +53,7 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
             fprintf(stderr, "bip_read_from_peer(): error reading from peer %s: %s\n", peer_name, strerror(errno));
             return -1;
         } else if (r == 0) {
-            fprintf(stderr, "bip_read_from_peer(): peer %s disconnects\n", peer_name);
+            // peer disconnects
             return - 1;
         }
 
