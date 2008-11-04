@@ -188,10 +188,20 @@ OPTIONS:\n\
 
 
 int main(int argc, char *argv[]) {
+    int bionet_fd;
     int subscribed_to_something = 0;
 
 
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
+
+
+    // this must happen before anything else
+    bionet_fd = bionet_connect();
+    if (bionet_fd < 0) {
+        g_log("", G_LOG_LEVEL_WARNING, "error connecting to Bionet");
+        exit(1);
+    }
+    g_log("", G_LOG_LEVEL_INFO, "connected to Bionet");
 
 
     bionet_register_callback_new_hab(cb_new_hab);
@@ -248,15 +258,6 @@ int main(int argc, char *argv[]) {
 
 
     while (1) {
-        int bionet_fd;
-
-        bionet_fd = bionet_connect();
-        if (bionet_fd < 0) {
-            g_log("", G_LOG_LEVEL_WARNING, "error connecting to Bionet");
-            g_usleep(2*1000*1000);
-            continue;
-        }
-        g_log("", G_LOG_LEVEL_INFO, "connected to Bionet");
 
 
 

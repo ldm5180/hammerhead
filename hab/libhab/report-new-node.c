@@ -4,6 +4,7 @@
 //
 
 
+#include <errno.h>
 #include <string.h>
 
 #include <glib.h>
@@ -11,9 +12,52 @@
 #include "hardware-abstractor.h"
 
 #include "libhab-internal.h"
+#include "bionet-asn.h"
 
 
 int hab_report_new_node(const bionet_node_t *node) {
+    H2C_Message_t m;
+    Node_t *newnode;
+    asn_enc_rval_t asn_r;
+    int r;
+
+    bionet_asn_buffer_t buf;
+
+
+    memset(&buf, 0x00, sizeof(bionet_asn_buffer_t));
+
+    memset(&m, 0x00, sizeof(H2C_Message_t));
+    m.present = H2C_Message_PR_newNode;
+    newnode = &m.choice.newNode;
+
+    r = OCTET_STRING_fromString(&newnode->id, node->id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_new_node(): error making OCTET_STRING for Node-ID %s", node->id);
+        goto fail0;
+    }
+
+    // publish the message to any connected subscribers
+    asn_r = der_encode(&asn_DEF_H2C_Message, &m, bionet_accumulate_asn_buffer, &buf);
+    if (asn_r.encoded == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_new_node(): error with der_encode(): %s", strerror(errno));
+        goto fail0;
+    }
+
+    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_new_node(): encoded %d bytes\n", (int)asn_r.encoded);
+
+    cal_server.publish(node->id, buf.buf, buf.size);
+
+    // FIXME: cal_server.publish should take the buf
+    free(buf.buf);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
+    return 0;
+
+fail0:
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
+    return -1;
+
+
 #if 0
     int r;
     GSList *i;
@@ -79,7 +123,5 @@ int hab_report_new_node(const bionet_node_t *node) {
 
     return -1;
 #endif
-
-    return 0;
 }
 

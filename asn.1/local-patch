@@ -1,0 +1,142 @@
+This file contains the local patches against the C code produced by
+the asn1c compiler.  This should get pushed upstream to Lev Walkin
+<vlm@lionet.info>
+
+
+=== modified file 'generic-sw/src/bionet-data-manager/asn.1/OCTET_STRING.c'
+--- generic-sw/src/bionet-data-manager/asn.1/OCTET_STRING.c	2008-08-14 21:26:15 +0000
++++ generic-sw/src/bionet-data-manager/asn.1/OCTET_STRING.c	2008-09-23 17:22:46 +0000
+@@ -1319,6 +1319,9 @@
+ 	const uint8_t *buf;
+ 	int ret;
+ 
++	// FIXME: this is wrong, but I dont use this function and it fools the compiler into running
++	er.encoded = 0;
++
+ 	if(!st || !st->buf)
+ 		_ASN_ENCODE_FAILED;
+ 
+
+=== modified file 'generic-sw/src/bionet-data-manager/asn.1/constr_SET_OF.c'
+--- generic-sw/src/bionet-data-manager/asn.1/constr_SET_OF.c	2008-08-14 21:26:15 +0000
++++ generic-sw/src/bionet-data-manager/asn.1/constr_SET_OF.c	2008-09-23 17:21:58 +0000
+@@ -904,7 +904,7 @@
+ 			nelems = uper_get_length(pd,
+ 				ct ? ct->effective_bits : -1, &repeat);
+ 			ASN_DEBUG("Got to decode %d elements (eff %d)",
+-				(int)nelems, (int)ct ? ct->effective_bits : -1);
++				(int)nelems, ((ct == NULL) ? -1 : ct->effective_bits));
+ 			if(nelems < 0) _ASN_DECODE_STARVED;
+ 		}
+ 
+@@ -921,7 +921,7 @@
+ 				ASN_DEBUG("Failed to add element into %s",
+ 					td->name);
+ 				/* Fall through */
+-				rv.code == RC_FAIL;
++				rv.code = RC_FAIL;
+ 			} else {
+ 				ASN_DEBUG("Failed decoding %s of %s (SET OF)",
+ 					elm->type->name, td->name);
+
+=== modified file 'generic-sw/src/bionet-data-manager/asn.1/converter-sample.c'
+--- generic-sw/src/bionet-data-manager/asn.1/converter-sample.c	2008-08-14 21:26:15 +0000
++++ generic-sw/src/bionet-data-manager/asn.1/converter-sample.c	2008-09-23 17:26:46 +0000
+@@ -343,9 +343,9 @@
+ 		for(shift = 7; shift >= DynamicBuffer.unbits; shift--)
+ 			fprintf(stderr, "%c", ((*p >> shift) & 1) ? '1' : '0');
+ 		fprintf(stderr, " %d:%d\n",
+-			DynamicBuffer.length - 1, 8 - DynamicBuffer.unbits);
++			(int)(DynamicBuffer.length - 1), (int)(8 - DynamicBuffer.unbits));
+ 	} else {
+-		fprintf(stderr, " %d\n", DynamicBuffer.length);
++		fprintf(stderr, " %d\n", (int)DynamicBuffer.length);
+ 	}
+ }
+ 
+@@ -482,7 +482,7 @@
+ 			DynamicBuffer.data + DynamicBuffer.offset,
+ 			DynamicBuffer.length);
+ 		FREEMEM(DynamicBuffer.data);
+-		DynamicBuffer.data = (char *)p;
++		DynamicBuffer.data = (unsigned char *)p;
+ 		DynamicBuffer.offset = 0;
+ 		DynamicBuffer.allocated = newsize;
+ 		DynamicBuffer.nreallocs++;
+@@ -510,7 +510,7 @@
+ 
+ static void *
+ data_decode_from_file(asn_TYPE_descriptor_t *pduType, FILE *file, const char *name, ssize_t suggested_bufsize, int on_first_pdu) {
+-	static uint8_t *fbuf;
++	static unsigned char *fbuf;
+ 	static ssize_t fbuf_size;
+ 	static asn_codec_ctx_t s_codec_ctx;
+ 	asn_codec_ctx_t *opt_codec_ctx = 0;
+@@ -536,7 +536,7 @@
+ 
+ 	/* prepare the file buffer */
+ 	if(fbuf_size != suggested_bufsize) {
+-		fbuf = (char *)REALLOC(fbuf, suggested_bufsize);
++		fbuf = (unsigned char *)REALLOC(fbuf, suggested_bufsize);
+ 		if(!fbuf) {
+ 			perror("realloc()");
+ 			exit(EX_OSERR);
+@@ -565,7 +565,7 @@
+ 		|| (tolerate_eof && DynamicBuffer.length)
+ 	    ;) {
+ 		int    ecbits = 0;	/* Extra consumed bits in case of PER */
+-		char  *i_bptr;
++		unsigned char  *i_bptr;
+ 		size_t i_size;
+ 
+ 		/*
+
+=== modified file 'generic-sw/src/bionet-data-manager/asn.1/BOOLEAN.c'
+--- generic-sw/src/bionet-data-manager/asn.1/BOOLEAN.c   2008-09-23 20:44:53.000000000 -0600
++++ generic-sw/src/bionet-data-manager/asn.1/BOOLEAN.c   2008-09-23 20:43:27.000000000 -0600
+@@ -274,6 +274,9 @@
+	const BOOLEAN_t *st = (const BOOLEAN_t *)sptr;
+	asn_enc_rval_t er;
+
++	// FIXME: this is wrong, but I dont use this function and it fools the compiler into running
++	er.encoded = 0;
++
+	(void)constraints;
+
+	if(!st) _ASN_ENCODE_FAILED;
+=== modified file 'generic-sw/src/bionet-data-manager/asn.1/Value.c'
+--- generic-sw/src/bionet-data-manager/asn.1/Value.c	2008-09-25 03:58:56 +0000
++++ generic-sw/src/bionet-data-manager/asn.1/Value.c	2008-09-25 04:20:57 +0000
+@@ -129,7 +129,7 @@
+ 		return -1;
+ 	}
+ 	
+-	if((value >= 0 && value <= 4294967295)) {
++	if((value >= 0 && value <= UINT32_MAX)) {
+ 		/* Constraint check succeeded */
+ 		return 0;
+ 	} else {
+@@ -154,7 +154,7 @@
+ 	
+ 	value = *(const long *)sptr;
+ 	
+-	if((value >= -2147483648 && value <= 2147483647)) {
++	if((value >= INT32_MIN && value <= INT32_MAX)) {
+ 		/* Constraint check succeeded */
+ 		return 0;
+ 	} else {
+@@ -182,11 +182,11 @@
+ 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
+ };
+ static asn_per_constraints_t asn_PER_memb_uint32_v_constr_7 = {
+-	{ APC_CONSTRAINED,	 32, -1,  0,  4294967295 }	/* (0..4294967295) */,
++	{ APC_CONSTRAINED,	 32, -1,  0,  UINT32_MAX }	/* (0..4294967295) */,
+ 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
+ };
+ static asn_per_constraints_t asn_PER_memb_int32_v_constr_8 = {
+-	{ APC_CONSTRAINED,	 32, -1, -2147483648,  2147483647 }	/* (-2147483648..2147483647) */,
++	{ APC_CONSTRAINED,	 32, -1, INT32_MIN,  INT32_MAX }	/* (-2147483648..2147483647) */,
+ 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
+ };
+ static asn_TYPE_member_t asn_MBR_Value_1[] = {
+

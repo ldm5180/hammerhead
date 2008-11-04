@@ -6,6 +6,7 @@
 
 #include "cal-client.h"
 #include "libbionet-internal.h"
+#include "bionet-asn.h"
 
 
 void libbionet_cal_callback(const cal_event_t *event) {
@@ -95,8 +96,39 @@ void libbionet_cal_callback(const cal_event_t *event) {
         }
 
         case CAL_EVENT_PUBLISH: {
+            H2C_Message_t *m = NULL;
+            asn_dec_rval_t rval;
+
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL Publish event from '%s'", event->peer_name);
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    %s", event->msg.buffer);  // FIXME: prolly not a NULL-terminated ASCII string...
+
+            rval = ber_decode(NULL, &asn_DEF_H2C_Message, (void **)&m, event->msg.buffer, event->msg.size);
+            if (rval.code == RC_WMORE) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "CAL Publish event from '%s' contained an incomplete ASN.1 message", event->peer_name);
+                break;
+            } else if (rval.code == RC_FAIL) {
+                // received invalid junk
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "CAL Publish event from '%s' contained an invalid ASN.1 message", event->peer_name);
+                break;
+            } else if (rval.code != RC_OK) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "unknown error (code=%d) decoding CAL Publish event from '%s'", rval.code, event->peer_name);
+                break;
+            }
+
+            if (rval.consumed != event->msg.size) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "CAL Publish event from '%s' contained junk at end of message, dropping (consumed %d of %d)", event->peer_name, (int)rval.consumed, event->msg.size);
+                // break;
+            }
+
+            xer_fprint(stdout, &asn_DEF_H2C_Message, m);
+
+            asn_DEF_H2C_Message.free_struct(&asn_DEF_H2C_Message, m, 0);
+
+#if 0
+            switch (m->present) {
+                case H2C_Message_PR_newNode: {
+                    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    new-node:", event->msg.buffer);  // FIXME: prolly not a NULL-terminated ASCII string...
+#endif
+
             break;
         }
 

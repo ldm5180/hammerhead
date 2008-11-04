@@ -37,9 +37,10 @@ libbionet_util_la_SOURCES =    \
     is-valid-name-component.c  \
     glib-log-handler.c                  \
     network-error.c                     \
+    bionet-asn-helpers.c                \
     split-names.c
 
-libbionet_util_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS)
+libbionet_util_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I ../asn.1
 
 libbionet_util_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS)
 

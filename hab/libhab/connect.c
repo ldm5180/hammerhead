@@ -153,7 +153,7 @@ int hab_connect(char *hab_type, char *hab_id) {
 
     sprintf(cal_name, "%s.%s", hab_type, hab_id);
 
-    libhab_cal_fd = cal_server.init(cal_name, libhab_cal_callback, bionet_name_component_matches);
+    libhab_cal_fd = cal_server.init(cal_name, libhab_cal_callback, libhab_cal_topic_matches);
     if (libhab_cal_fd == -1) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): error initializing CAL");
         return -1;

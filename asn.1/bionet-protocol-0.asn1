@@ -1,0 +1,79 @@
+
+BionetProtocol0
+DEFINITIONS AUTOMATIC TAGS
+::=
+BEGIN
+
+    -- 
+    -- these are the fundamental data types of Bionet
+    -- 
+
+    ResourceFlavor ::= ENUMERATED {
+        sensor(0),
+        actuator,
+        parameter
+    }
+
+    ResourceDataType ::= ENUMERATED {
+        binary(0),
+        uint8,
+        int8,
+        uint16,
+        int16,
+        uint32,
+        int32,
+        float,
+        double,
+        string
+    }
+
+    Value ::= CHOICE {
+        binary-v   BOOLEAN,
+        uint8-v    INTEGER (0..255),
+        int8-v     INTEGER (-128..127),
+        uint16-v   INTEGER (0..65535),
+        int16-v    INTEGER (-32768..32767),
+        uint32-v   INTEGER (0..4294967295),
+        int32-v    INTEGER (-2147483648..2147483647),
+        real       REAL,   -- this is used for both datatype "float" and "double"
+        string     PrintableString
+    }
+
+    Datapoint ::= SEQUENCE {
+        value       Value,
+        timestamp   GeneralizedTime
+    }
+
+    Resource ::= SEQUENCE {
+        id           PrintableString,
+        flavor       ResourceFlavor,
+        datatype     ResourceDataType,
+        datapoints   SEQUENCE OF Datapoint
+    }
+
+    Node ::= SEQUENCE {
+        id          PrintableString,
+        resources   SEQUENCE OF Resource
+    }
+
+
+    -- 
+    -- C2H-Message is a Client-to-Hab message
+    -- 
+
+    C2H-Message ::= CHOICE {
+        subscribeNode   PrintableString
+    }
+
+
+    -- 
+    -- H2C-Message is a Hab-to-Client message
+    -- 
+
+    H2C-Message ::= CHOICE {
+        newNode    Node,
+        lostNode   PrintableString
+    }
+
+END
+
