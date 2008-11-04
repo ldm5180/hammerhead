@@ -25,10 +25,25 @@ void libbionet_cal_callback(const cal_event_t *event) {
             }
 
             hab = bionet_hab_new(type, id);
-            libbionet_cache_add_hab(hab);
 
-            if (libbionet_callback_new_hab != NULL) {
-                libbionet_callback_new_hab(hab);
+            // add the hab to the bionet library's list of known habs
+            libbionet_habs = g_slist_prepend(libbionet_habs, hab);
+
+            // see if we need to publish this to the user
+            {
+                GSList *i;
+
+                for (i = libbionet_hab_subscriptions; i != NULL; i = i->next) {
+                    libbionet_hab_subscription_t *sub = i->data;
+
+                    if (bionet_hab_matches_type_and_id(hab, sub->hab_type, sub->hab_id)) {
+                        libbionet_cache_add_hab(hab);
+                        if (libbionet_callback_new_hab != NULL) {
+                            libbionet_callback_new_hab(hab);
+                        }
+                        break;
+                    }
+                }
             }
 
             break;
@@ -48,17 +63,27 @@ void libbionet_cal_callback(const cal_event_t *event) {
                 break;
             }
 
+            // remove this hab from the internal list of known habs
+            {
+                GSList *i;
+
+                for (i = libbionet_habs; i != NULL; i = i->next) {
+                    bionet_hab_t *hab = i->data;
+
+                    if (bionet_hab_matches_type_and_id(hab, type, id)) {
+                        libbionet_habs = g_slist_remove(libbionet_habs, hab);
+                        break;
+                    }
+                }
+            }
+
             hab = bionet_cache_lookup_hab(type, id);
-            if (hab == NULL) {
-                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "CAL Leave event from unknown HAB '%s'", event->peer_name);
-                break;
+            if (hab != NULL) {
+                if (libbionet_callback_lost_hab != NULL) {
+                    libbionet_callback_lost_hab(hab);
+                }
+                libbionet_cache_remove_hab(hab);
             }
-
-            if (libbionet_callback_lost_hab != NULL) {
-                libbionet_callback_lost_hab(hab);
-            }
-
-            libbionet_cache_remove_hab(hab);
 
             break;
         }

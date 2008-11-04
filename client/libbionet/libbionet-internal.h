@@ -32,6 +32,52 @@ void libbionet_cal_callback(const cal_event_t *event);
 
 
 
+// 
+// This is the list of all HABs known to the Bionet Client library, which
+// is the same as the list of CAL Servers known to the underlying CAL
+// Client library.
+//
+// Compare to bionet_habs, from bionet.h
+//
+
+extern GSList *libbionet_habs;
+
+
+
+
+// 
+// these data structures track the client's registered subscriptions
+//
+
+typedef struct {
+    char *hab_type;
+    char *hab_id;
+} libbionet_hab_subscription_t;
+
+extern GSList *libbionet_hab_subscriptions;
+
+
+typedef struct {
+    char *hab_type;
+    char *hab_id;
+    char *node_id;
+} libbionet_node_subscription_t;
+
+extern GSList *libbionet_node_subscriptions;
+
+
+typedef struct {
+    char *hab_type;
+    char *hab_id;
+    char *node_id;
+    char *resource_id;
+} libbionet_datapoint_subscription_t;
+
+extern GSList *libbionet_datapoint_subscriptions;
+
+
+
+
 //
 // functions for dealing with the cache
 //

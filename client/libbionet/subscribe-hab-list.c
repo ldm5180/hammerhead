@@ -4,6 +4,7 @@
 //
 
 
+#include <stdlib.h>
 #include <string.h>
 
 #include <glib.h>
@@ -13,7 +14,55 @@
 
 
 int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char *hab_id) {
+    libbionet_hab_subscription_t *new_hab_sub;
+
+    new_hab_sub = calloc(1, sizeof(libbionet_hab_subscription_t));
+    if (new_hab_sub == NULL) {
+        goto fail0;
+    }
+
+    new_hab_sub->hab_type = strdup(hab_type);
+    if (new_hab_sub->hab_type == NULL) {
+        goto fail1;
+    }
+
+    new_hab_sub->hab_id = strdup(hab_id);
+    if (new_hab_sub->hab_id == NULL) {
+        goto fail2;
+    }
+
+    libbionet_hab_subscriptions = g_slist_prepend(libbionet_hab_subscriptions, new_hab_sub);
+
+    // see if this subscriptions reveals any new habs
+    {
+        GSList *i;
+
+        for (i = libbionet_habs; i != NULL; i = i->next) {
+            bionet_hab_t *hab = i->data;
+
+            if (bionet_hab_matches_type_and_id(hab, new_hab_sub->hab_type, new_hab_sub->hab_id)) {
+                if (bionet_cache_lookup_hab(hab->type, hab->id) == NULL) {
+                    libbionet_cache_add_hab(hab);
+                    if (libbionet_callback_new_hab != NULL) {
+                        libbionet_callback_new_hab(hab);
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+
+fail2:
+    free(new_hab_sub->hab_type);
+
+fail1:
+    free(new_hab_sub);
+
+fail0:
+    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_hab_list(): out of memory");
     return -1;
+
 
 #if 0
     int r;

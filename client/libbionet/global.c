@@ -29,6 +29,11 @@ int libbionet_cal_fd = -1;
 
 
 GSList *bionet_habs = NULL;
+GSList *libbionet_habs = NULL;
+
+GSList *libbionet_hab_subscriptions = NULL;
+GSList *libbionet_node_subscriptions = NULL;
+GSList *libbionet_datapoint_subscriptions = NULL;
 
 
 #if 0
