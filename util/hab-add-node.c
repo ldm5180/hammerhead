@@ -27,7 +27,6 @@ int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node) {
         return -1;
     }
 
-
     // ok, add the node to the hab's node-list
     hab->nodes = g_slist_append(hab->nodes, (gpointer)node);
     return 0;
