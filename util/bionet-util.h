@@ -139,6 +139,12 @@ int bionet_split_hab_name(
     char **hab_id
 );
 
+int bionet_split_hab_name_r(
+    const char *hab_name,
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN]
+);
+
 
 
 

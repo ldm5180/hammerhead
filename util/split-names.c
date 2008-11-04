@@ -342,3 +342,75 @@ int bionet_split_hab_name(
     return 0;
 }
 
+
+int bionet_split_hab_name_r(
+    const char *hab_name,
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN]
+) {
+    const char *p;
+    int size;
+    char *separator;
+
+    int max_size = (BIONET_NAME_COMPONENT_MAX_LEN - 1);
+
+
+    //
+    // sanity checks
+    //
+
+    if (hab_name == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name_r(): NULL HAB Name passed in");
+        return -1;
+    }
+
+    if (hab_type == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name_r(): NULL hab_type passed in");
+        return -1;
+    }
+
+    if (hab_id == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name_r(): NULL hab_id passed in");
+        return -1;
+    }
+
+
+    p = hab_name;
+
+    // get the HAB-Type
+    separator = strchr(p, '.');
+    if (separator == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name_r(): error parsing HAB Name '%s'", hab_name);
+        return -1;
+    }
+    size = separator - p;
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name_r(): HAB-Type of HAB Name '%s' has zero length", hab_name);
+        return -1;
+    }
+    if (size > max_size) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name_r(): HAB-Type of HAB Name '%s' is too long (%d, max %d)", hab_name, size, max_size);
+        return -1;
+    }
+    memcpy(hab_type, p, size);
+    hab_type[size] = '\0';
+
+
+    // get the HAB-ID
+    p = separator + 1;
+    size = strlen(p);
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name_r(): HAB-ID of HAB Name '%s' has zero length", hab_name);
+        return -1;
+    }
+    if (size > max_size) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name_r(): HAB-ID of HAB Name pattern '%s' is too long (%d, max %d)", hab_name, size, max_size);
+        return -1;
+    }
+    memcpy(hab_id, p, size);
+    hab_id[size] = '\0';
+
+
+    return 0;
+}
+
