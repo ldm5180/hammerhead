@@ -81,6 +81,8 @@ const char *bionet_get_network_error_string(void);
 int bionet_is_valid_name_component_or_wildcard(const char *str);
 int bionet_is_valid_name_component(const char *str);
 
+int bionet_name_component_matches(const char *name_component, const char *pattern);
+
 
 
 

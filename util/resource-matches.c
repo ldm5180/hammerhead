@@ -40,18 +40,8 @@ int bionet_resource_matches_habtype_habid_nodeid_resourceid(
         return 0;
     }
 
-    if (resource->id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_matches_habtype_habid_nodeid_resourceid(): resource with NULL id passed in!");
-        return 0;
-    }
-
     if (resource->node == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_matches_habtype_habid_nodeid_resourceid(): resource with NULL node passed in!");
-        return 0;
-    }
-
-    if (resource->node->id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_matches_habtype_habid_nodeid_resourceid(): resource with NULL node_id passed in!");
         return 0;
     }
 
@@ -60,57 +50,11 @@ int bionet_resource_matches_habtype_habid_nodeid_resourceid(
         return 0;
     }
 
-    if (resource->node->hab->type == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_matches_habtype_habid_nodeid_resourceid(): resource with NULL hab_type passed in!");
-        return 0;
-    }
+    if (!bionet_name_component_matches(resource->node->hab->type, hab_type)) return 0;
+    if (!bionet_name_component_matches(resource->node->hab->id, hab_id)) return 0;
+    if (!bionet_name_component_matches(resource->node->id, node_id)) return 0;
+    if (!bionet_name_component_matches(resource->id, resource_id)) return 0;
 
-    if (resource->node->hab->id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_matches_habtype_habid_nodeid_resourceid(): resource with NULL hab_id passed in!");
-        return 0;
-    }
-
-    if (hab_type == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_matches_habtype_habid_nodeid_resourceid(): NULL hab_type passed in!");
-        return 0;
-    }
-
-    if (hab_id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_matches_habtype_habid_nodeid_resourceid(): NULL hab_id passed in!");
-        return 0;
-    }
-
-    if (node_id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_matches_habtype_habid_nodeid_resourceid(): NULL node_id passed in!");
-        return 0;
-    }
-
-    if (resource_id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_matches_habtype_habid_nodeid_resourceid(): NULL resource_id passed in!");
-        return 0;
-    }
-
-    if (
-        (
-            (strcmp(hab_type, "*") == 0) ||
-            (strcmp(hab_type, resource->node->hab->type) == 0) 
-        ) &&
-        (
-            (strcmp(hab_id, "*") == 0) ||
-            (strcmp(hab_id, resource->node->hab->id) == 0) 
-        ) &&
-        (
-            (strcmp(node_id, "*") == 0) ||
-            (strcmp(node_id, resource->node->id) == 0)
-        ) &&
-        (
-            (strcmp(resource_id, "*") == 0) ||
-            (strcmp(resource_id, resource->id) == 0)
-        )
-    ) {
-        return 1;
-    } 
-
-    return 0;
+    return 1;
 }
 

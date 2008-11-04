@@ -10,20 +10,15 @@
 
 
 int bionet_hab_matches_type_and_id(const bionet_hab_t *hab, const char *type, const char *id) {
-    if (
-        (
-            (strcmp(type, "*") == 0) ||
-            (strcmp(type, hab->type) == 0) 
-        ) &&
-        (
-            (strcmp(id, "*") == 0) ||
-            (strcmp(id, hab->id) == 0) 
-        )
-    ) {
-        return 1;
+    if (hab == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_matches_type_and_id: NULL hab passed in!\n");
+        return 0;
     }
 
-    return 0;
+    if (!bionet_name_component_matches(hab->type, type)) return 0;
+    if (!bionet_name_component_matches(hab->id, id)) return 0;
+
+    return 1;
 }
 
 

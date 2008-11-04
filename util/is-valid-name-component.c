@@ -61,3 +61,20 @@ int bionet_is_valid_name_component_or_wildcard(const char *str) {
 }
 
 
+int bionet_name_component_matches(const char *name_component, const char *pattern) {
+    if (!bionet_is_valid_name_component(name_component)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_name_component_matches(): invalid name-component passed in!");
+        return 0;
+    }
+
+    if (!bionet_is_valid_name_component_or_wildcard(pattern)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_name_component_matches(): invalid pattern passed in!");
+        return 0;
+    }
+
+    if (strcmp(pattern, "*") == 0) return 1;
+    if (strcmp(pattern, name_component) == 0) return 1;
+
+    return 0;
+}
+
