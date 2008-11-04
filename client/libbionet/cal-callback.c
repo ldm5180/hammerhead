@@ -30,18 +30,69 @@ static void handle_server_message(const cal_event_t *event) {
 
     if (rval.consumed != event->msg.size) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained junk at end of message (consumed %d of %d)", event->peer_name, (int)rval.consumed, event->msg.size);
-        // break;
     }
 
     xer_fprint(stdout, &asn_DEF_H2C_Message, m);
 
-    asn_DEF_H2C_Message.free_struct(&asn_DEF_H2C_Message, m, 0);
 
-#if 0
-            switch (m->present) {
-                case H2C_Message_PR_newNode: {
-                    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    new-node:", event->msg.buffer);  // FIXME: prolly not a NULL-terminated ASCII string...
-#endif
+    switch (m->present) {
+
+        case H2C_Message_PR_newNode: {
+            char *hab_type;
+            char *hab_id;
+
+            bionet_node_t *node;
+            bionet_hab_t *hab;
+
+            int r;
+
+            r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
+            if (r != 0) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error parsing HAB name from CAL peer name '%s'", event->peer_name);
+                break;
+            }
+
+            hab = bionet_cache_lookup_hab(hab_type, hab_id);
+            if (hab == NULL) {
+                hab = bionet_hab_new(hab_type, hab_id);
+                if (hab == NULL) {
+                    // an error has been logged already
+                    break;
+                }
+                libbionet_cache_add_hab(hab);
+            }
+
+            node = bionet_asn_to_node(&m->choice.newNode);
+            if (node == NULL) {
+                // an error has been logged
+                break;
+            }
+            node->hab = hab;
+
+            bionet_hab_add_node(hab, node);
+
+            if (libbionet_callback_new_node != NULL) {
+                libbionet_callback_new_node(node);
+            }
+
+            break;
+        }
+
+
+        case H2C_Message_PR_lostNode: {
+            // FIXME: remove the node from the cache and call the bionet callback
+            break;
+        }
+
+
+        default: {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dont know what to do with H2C message type %d from %s", m->present, event->peer_name);
+            break;
+        }
+
+    }
+
+    asn_DEF_H2C_Message.free_struct(&asn_DEF_H2C_Message, m, 0);
 }
 
 
