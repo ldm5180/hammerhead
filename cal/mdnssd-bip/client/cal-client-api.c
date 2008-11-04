@@ -81,18 +81,21 @@ fail0:
 
 
 void cal_client_mdnssd_bip_shutdown(void) {
-    if (cal_client_mdnssd_bip_thread != NULL) {
-        int r;
+    int r;
 
-        r = pthread_cancel(*cal_client_mdnssd_bip_thread);
-        if (r != 0) {
-            fprintf(stderr, ID "shutdown(): error canceling client thread: %s\n", strerror(errno));
-            return;
-        } else {
-            pthread_join(*cal_client_mdnssd_bip_thread, NULL);
-            free(cal_client_mdnssd_bip_thread);
-            cal_client_mdnssd_bip_thread = NULL;
-        }
+    if (cal_client_mdnssd_bip_thread == NULL) {
+        fprintf(stderr, "cal_client_mdnssd_bip_shutdown(): called before init()!\n");
+        return;
+    }
+
+    r = pthread_cancel(*cal_client_mdnssd_bip_thread);
+    if (r != 0) {
+        fprintf(stderr, ID "shutdown(): error canceling client thread: %s\n", strerror(errno));
+        return;
+    } else {
+        pthread_join(*cal_client_mdnssd_bip_thread, NULL);
+        free(cal_client_mdnssd_bip_thread);
+        cal_client_mdnssd_bip_thread = NULL;
     }
 
     close(cal_client_mdnssd_bip_fds_to_user[0]);
@@ -109,6 +112,11 @@ void cal_client_mdnssd_bip_shutdown(void) {
 int cal_client_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
     int r;
     cal_event_t *event;
+
+    if (cal_client_mdnssd_bip_thread == NULL) {
+        fprintf(stderr, "cal_client_mdnssd_bip_subscribe(): called before init()!\n");
+        return 0;
+    }
 
     event = cal_event_new(CAL_EVENT_SUBSCRIBE);
     if (event == NULL) {
@@ -147,6 +155,11 @@ int cal_client_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
 int cal_client_mdnssd_bip_read(void) {
     cal_event_t *event;
     int r;
+
+    if (cal_client_mdnssd_bip_thread == NULL) {
+        fprintf(stderr, "cal_client_mdnssd_bip_read(): called before init()!\n");
+        return 0;
+    }
 
     r = read(cal_client_mdnssd_bip_fds_to_user[0], &event, sizeof(event));
     if (r < 0) {
@@ -199,6 +212,11 @@ int cal_client_mdnssd_bip_read(void) {
 int cal_client_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
     int r;
     cal_event_t *event;
+
+    if (cal_client_mdnssd_bip_thread == NULL) {
+        fprintf(stderr, "cal_client_mdnssd_bip_sendto(): called before init()!\n");
+        return 0;
+    }
 
     event = cal_event_new(CAL_EVENT_MESSAGE);
     if (event == NULL) {
