@@ -90,8 +90,8 @@ int main (int argc, char *argv[]) {
 
     bionet_fd = hab_connect(hab_type, hab_id);
     if (bionet_fd < 0) {
-	printf("problem connecting to Bionet, exiting\n");
-	return 1;
+        printf("problem connecting to Bionet, exiting\n");
+        return 1;
     }
 
 
@@ -104,14 +104,18 @@ int main (int argc, char *argv[]) {
     //
 
     while (1) {
+        fd_set readers;
+        struct timeval timeout;
         int rnd;
+        uint32_t ms_delay;
+        int r;
 
-	while (bionet_hab_get_num_nodes(hab) < min_nodes) {
-	    add_node(hab);
+        while (bionet_hab_get_num_nodes(hab) < min_nodes) {
+            add_node(hab);
         }
 
-	while (bionet_hab_get_num_nodes(hab) > (2 * min_nodes)) {
-	    destroy_node(hab);
+        while (bionet_hab_get_num_nodes(hab) > (2 * min_nodes)) {
+            destroy_node(hab);
         }
 
         rnd = rand() % 100;
@@ -123,7 +127,21 @@ int main (int argc, char *argv[]) {
             update_node(hab);
         }
 
-	g_usleep((rand() % max_delay * 1000) * 1000);
+        FD_ZERO(&readers);
+        FD_SET(bionet_fd, &readers);
+
+        ms_delay = rand() % (max_delay * 1000);
+        timeout.tv_sec = ms_delay / 1000;
+        timeout.tv_usec = (ms_delay % 1000) * 1000;
+
+        r = select(bionet_fd + 1, &readers, NULL, NULL, &timeout);
+        if ((r < 0) && (errno != EINTR)) {
+            g_log("", G_LOG_LEVEL_WARNING, "error from select: %s", strerror(errno));
+            g_usleep(1000*1000);
+            continue;
+        }
+
+        hab_read();
     }
 
     return 0;
