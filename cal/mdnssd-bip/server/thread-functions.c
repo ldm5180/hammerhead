@@ -96,8 +96,7 @@ static void read_from_user(void) {
                 for (si = client->subscriptions; si != NULL; si = si->next) {
                     const char *sub_topic = si->data;
 
-                    // FIXME: let user provide a topic-matching function
-                    if (this->topic_matches(sub_topic, event->topic) == 0) {
+                    if (this->topic_matches(event->topic, sub_topic) == 0) {
                         bip_send_message(name, client, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
                         break;
                     }
