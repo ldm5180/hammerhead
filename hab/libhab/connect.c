@@ -97,9 +97,18 @@ static const char *libhab_get_program_name(void) {
 
 
 
-int hab_connect(char *hab_type, char *hab_id) {
+int hab_connect(bionet_hab_t *hab) {
     char cal_name[BIONET_NAME_COMPONENT_MAX_LEN * 2];
-    char hostname[256];
+
+
+    // 
+    // sanity checks
+    //
+
+    if (hab == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): no HAB specified");
+        return -1;
+    }
 
 
     //
@@ -119,10 +128,22 @@ int hab_connect(char *hab_type, char *hab_id) {
     // warning and fall back to using the program name.
     //
 
-    if (hab_type == NULL) {
+    if (hab->type == NULL) {
         // get the program name
-        hab_type = (char *)libhab_get_program_name();
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "hab_connect_to_nag(): no HAB-Type specified, using program name '%s'", hab_type);
+        const char *hab_type;
+
+        hab_type = libhab_get_program_name();
+        if (hab_type == NULL) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): the passed-in HAB has no HAB-Type, and cannot get program name");
+            return -1;
+        }
+
+        if (bionet_hab_set_type(hab, hab_type) != 0) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): the passed-in HAB has no HAB-Type, and cannot set HAB Type to the program name '%s'", hab_type);
+            return -1;
+        }
+
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "hab_connect(): the passed-in HAB has no HAB-Type, using program name '%s'", hab->type);
     }
 
 
@@ -131,27 +152,35 @@ int hab_connect(char *hab_type, char *hab_id) {
     // and fall back to using the hostname.
     //
 
-    if (hab_id == NULL) {
+    if (hab->id == NULL) {
+        char hostname[256];
         char *p;
         int r;
 
         r = gethostname(hostname, sizeof(hostname));
         if (r < 0) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect_to_nag(): no HAB-ID specified and could not get hostname: %s", strerror(errno));
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): the passed-in HAB has no HAB-ID, and could not get hostname: %s", strerror(errno));
             return -1;
         }
 
-        hab_id = hostname;
-
-        for (p = hab_id; *p != '\0'; p++) {
+        for (p = hostname; *p != '\0'; p++) {
             if (!isalnum(*p) && (*p != '-')) *p = '-';
         }
 
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "hab_connect_to_nag(): no HAB-ID specified, using hostname '%s'", hab_id);
+        if (bionet_hab_set_id(hab, hostname) != 0) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): the passed-in HAB has no HAB-ID, and cannot set HAB ID to the hostname '%s'", hostname);
+            return -1;
+        }
+
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "hab_connect(): the passed-in HAB has no HAB-ID, using hostname '%s'", hab->id);
     }
 
 
-    sprintf(cal_name, "%s.%s", hab_type, hab_id);
+    // record this hab
+    libhab_this = hab;
+
+
+    sprintf(cal_name, "%s.%s", libhab_this->type, libhab_this->id);
 
     libhab_cal_fd = cal_server.init(cal_name, libhab_cal_callback, libhab_cal_topic_matches);
     if (libhab_cal_fd == -1) {

@@ -15,6 +15,8 @@
 
 int libhab_cal_fd = -1;
 
+bionet_hab_t *libhab_this = NULL;
+
 
 
 

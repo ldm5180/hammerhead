@@ -12,6 +12,21 @@
 
 
 int hab_report_lost_node(const char *node_id) {
+
+    //
+    // sanity checks
+    //
+
+    if (node_id == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_lost_node(): NULL Node-ID passed in");
+        goto fail0;
+    }
+
+    if (bionet_hab_get_node_by_id(libhab_this, node_id) != NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_lost_node(): passed-in Node still exists in this HAB");
+        goto fail0;
+    }
+
 #if 0
     int r;
     bionet_message_t m;
@@ -41,6 +56,9 @@ int hab_report_lost_node(const char *node_id) {
 #endif
 
     return 0;
+
+fail0:
+    return -1;
 }
 
 

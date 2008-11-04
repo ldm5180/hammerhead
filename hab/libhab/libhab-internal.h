@@ -20,6 +20,10 @@
 
 extern int libhab_cal_fd;
 
+extern bionet_hab_t *libhab_this;
+
+
+
 
 int libhab_cal_topic_matches(const char *topic, const char *subscription);
 

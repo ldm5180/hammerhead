@@ -88,7 +88,7 @@ int main (int argc, char *argv[]) {
     //  Connecting to Bionet 
     //
 
-    bionet_fd = hab_connect(hab_type, hab_id);
+    bionet_fd = hab_connect(hab);
     if (bionet_fd < 0) {
         printf("problem connecting to Bionet, exiting\n");
         return 1;
@@ -135,7 +135,14 @@ int main (int argc, char *argv[]) {
         timeout.tv_usec = (ms_delay % 1000) * 1000;
 
         r = select(bionet_fd + 1, &readers, NULL, NULL, &timeout);
-        if ((r < 0) && (errno != EINTR)) {
+        if (
+            (r == 0)
+            || ((r < 0) && (errno == EINTR))
+        ) {
+            // timeout or signal
+            continue;
+        }
+        if (r < 0) {
             g_log("", G_LOG_LEVEL_WARNING, "error from select: %s", strerror(errno));
             g_usleep(1000*1000);
             continue;

@@ -29,7 +29,20 @@
 //              any other HAB library functions.
 //
 //
-//  ARGUMENTS:  The HAB-Type and HAB-ID to use.
+//  ARGUMENTS:  A HAB structure to represent this process to the Bionet
+//              network.
+//              
+//              The HAB-Type and HAB-ID may be set to indicate the name
+//              that the HAB will use on the Bionet network.
+//              If unspecified the HAB library will update the HAB
+//              structure with the program name for HAB-Type and the
+//              hostname for HAB-ID.
+//
+//              The HAB library makes a copy of the passed-in HAB, and
+//              reads from it as needed to satisfy subscription requests
+//              from Clients.  The HAB library never modifies the HAB
+//              (except for possibly setting the HAB-Type and HAB-ID, if
+//              the user chose not to).
 //
 //
 //    RETURNS:  The Bionet file descriptor on success, -1 on failure.
@@ -40,7 +53,7 @@
 //
 //
 
-int hab_connect(char *hab_type, char *hab_id);
+int hab_connect(bionet_hab_t *hab);
 
 
 
