@@ -22,7 +22,11 @@
 
 
 
-int cal_server_mdnssd_bip_init(const char *name, void (*callback)(const cal_event_t *event)) {
+int cal_server_mdnssd_bip_init(
+    const char *name,
+    void (*callback)(const cal_event_t *event),
+    int (*topic_matches)(const char *a, const char *b)
+) {
     int r;
 
     struct sockaddr_in my_address;
@@ -35,6 +39,12 @@ int cal_server_mdnssd_bip_init(const char *name, void (*callback)(const cal_even
     if (this == NULL) {
         fprintf(stderr, ID "init: out of memory\n");
         return -1;
+    }
+
+    if (topic_matches == NULL) {
+        this->topic_matches = strcmp;
+    } else {
+        this->topic_matches = topic_matches;
     }
 
     this->name = strdup(name);

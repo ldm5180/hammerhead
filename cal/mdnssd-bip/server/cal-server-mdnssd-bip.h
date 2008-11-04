@@ -23,6 +23,7 @@ typedef struct {
     char *name;
     uint16_t port;
     int socket;
+    int (*topic_matches)(const char *a, const char *b);
 } cal_server_mdnssd_bip_t;
 
 

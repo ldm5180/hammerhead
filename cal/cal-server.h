@@ -45,6 +45,15 @@ typedef struct {
     //! \param callback The callback function to be called by the CAL
     //!     library when events happen to this peer.
     //!
+    //! \param topic_matches The topic_matches function will be called by
+    //!     the CAL Server library to check if the topic of a published
+    //!     message matches a CAL Client's subscription.  The function
+    //!     should return 0 if the topic matches, and non-zero if the topic
+    //!     does not match.  Thus strcmp() is a valid option, and results
+    //!     in only exact topic matches being accepted.  This is also the
+    //!     default if NULL is passed in for topic_matches.  topic_matches
+    //!     must be reentrant.
+    //!
     //! \return On success, returns a file descriptor which should be
     //!     monitored by the caller.  When the fd is readable, the caller
     //!     should call the .read() function.  The caller must never read
@@ -52,7 +61,11 @@ typedef struct {
     //!     returns -1.
     //!
 
-    int (*init)(const char *name, void (*callback)(const cal_event_t *event));
+    int (*init)(
+        const char *name,
+        void (*callback)(const cal_event_t *event),
+        int (*topic_matches)(const char *topic, const char *subscription)
+    );
 
 
     //!

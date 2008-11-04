@@ -29,6 +29,8 @@ static GHashTable *clients = NULL;
 
 static DNSServiceRef *advertisedRef = NULL;
 
+cal_server_mdnssd_bip_t *this = NULL;
+
 
 
 
@@ -95,7 +97,7 @@ static void read_from_user(void) {
                     const char *sub_topic = si->data;
 
                     // FIXME: let user provide a topic-matching function
-                    if (strcmp(sub_topic, event->topic) == 0) {
+                    if (this->topic_matches(sub_topic, event->topic) == 0) {
                         bip_send_message(name, client, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
                         break;
                     }
@@ -381,7 +383,7 @@ void cleanup_clients(void *unused) {
 
 
 void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
-    cal_server_mdnssd_bip_t *this = this_as_voidp;
+    this = this_as_voidp;
 
     TXTRecordRef txt_ref;
     DNSServiceErrorType error;
