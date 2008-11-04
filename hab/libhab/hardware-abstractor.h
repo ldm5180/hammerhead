@@ -65,8 +65,10 @@ int hab_connect(bionet_hab_t *hab);
 //
 //   FUNCTION:  Called to report the addition of a new Node to the network.
 //
-//              The node passed in may be freed or overwritten after the
-//              function returns.
+//              The Node passed in must have been added to the HAB before
+//              calling this function.  The Node must remain part of the
+//              HAB until the user is ready to call hab_report_lost_node()
+//              (see below).
 //
 //
 //  ARGUMENTS:  The Node to report.
@@ -110,8 +112,9 @@ int hab_report_datapoints(const bionet_node_t *node);
 //   FUNCTION:  Called to report that a Node has been dropped from the
 //              network.
 //
-//              The node_id string passed in may be freed or overwritten
-//              after the function returns.
+//              The node_id string passed in must correspond to a node that
+//              has been removed from the HAB.  It may be freed or
+//              overwritten after the function returns.
 //
 //
 //  ARGUMENTS:  The Node ID string.
