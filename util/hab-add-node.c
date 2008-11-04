@@ -11,7 +11,7 @@
 
 
 
-int bionet_hab_add_node(bionet_hab_t *hab, bionet_node_t *node) {
+int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node) {
     if (hab == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_add_node(): NULL HAB passed in");
         return -1;
@@ -29,7 +29,7 @@ int bionet_hab_add_node(bionet_hab_t *hab, bionet_node_t *node) {
 
 
     // ok, add the node to the hab's node-list
-    hab->nodes = g_slist_append(hab->nodes, node);
+    hab->nodes = g_slist_append(hab->nodes, (gpointer)node);
     return 0;
 }
 
