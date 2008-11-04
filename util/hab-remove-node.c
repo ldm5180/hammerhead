@@ -35,6 +35,7 @@ int bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node_id) {
         }
     }
 
+    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_remove_node_by_id(): Node '%s' not found in HAB", node_id);
     return -1;
 }
 
