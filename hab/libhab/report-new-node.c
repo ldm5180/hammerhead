@@ -72,8 +72,6 @@ int hab_report_new_node(const bionet_node_t *node) {
         goto fail1;
     }
 
-    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_new_node(): encoded %d bytes\n", (int)asn_r.encoded);
-
     cal_server.publish(node->id, buf.buf, buf.size);
 
     // FIXME: cal_server.publish should take the buf
