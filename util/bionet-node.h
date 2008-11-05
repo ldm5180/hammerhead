@@ -42,7 +42,7 @@ bionet_node_t* bionet_node_new(const bionet_hab_t *hab, const char* node_id);
 
 int bionet_node_add_resource(bionet_node_t *node, bionet_resource_t *resource);
 
-int bionet_node_get_num_resources(bionet_node_t *node);
+int bionet_node_get_num_resources(const bionet_node_t *node);
 bionet_resource_t *bionet_node_get_resource_by_index(const bionet_node_t *node, unsigned int index);
 bionet_resource_t *bionet_node_get_resource_by_id(const bionet_node_t *node, const char *resource_id);
 
