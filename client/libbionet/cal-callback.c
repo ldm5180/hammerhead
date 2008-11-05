@@ -11,6 +11,220 @@
 
 
 
+static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
+    char *hab_type;
+    char *hab_id;
+
+    bionet_node_t *node;
+    bionet_hab_t *hab;
+
+    int r;
+
+    r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error parsing HAB name from CAL peer name '%s'", event->peer_name);
+        return;
+    }
+
+    hab = bionet_cache_lookup_hab(hab_type, hab_id);
+    if (hab == NULL) {
+        hab = bionet_hab_new(hab_type, hab_id);
+        if (hab == NULL) {
+            // an error has been logged already
+            return;
+        }
+        libbionet_cache_add_hab(hab);
+    }
+
+    node = bionet_asn_to_node(newNode);
+    if (node == NULL) {
+        // an error has been logged
+        return;
+    }
+    node->hab = hab;
+
+    bionet_hab_add_node(hab, node);
+
+    if (libbionet_callback_new_node != NULL) {
+        libbionet_callback_new_node(node);
+    }
+}
+
+
+
+
+// FIXME: these should go in the internal cache
+static void handle_resource_metadata(const cal_event_t *event, const ResourceMetadata_t *rm) {
+    char *hab_type;
+    char *hab_id;
+
+    bionet_hab_t *hab;
+    bionet_node_t *node;
+    bionet_resource_t *resource;
+
+    int r;
+
+    r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error parsing HAB name from CAL peer name '%s'", event->peer_name);
+        return;
+    }
+
+    hab = bionet_cache_lookup_hab(hab_type, hab_id);
+    if (hab == NULL) {
+        hab = bionet_hab_new(hab_type, hab_id);
+        if (hab == NULL) {
+            // an error has been logged already
+            return;
+        }
+        libbionet_cache_add_hab(hab);
+    }
+
+    node = bionet_cache_lookup_node(
+        hab_type,
+        hab_id,
+        (const char *)rm->nodeId.buf
+    );
+    if (node == NULL) {
+        node = bionet_node_new(hab, (const char *)rm->nodeId.buf);
+        if (node == NULL) {
+            // an error has been logged already
+            return;
+        }
+        libbionet_cache_add_node(node);
+    }
+
+    resource = bionet_cache_lookup_resource(
+        hab_type,
+        hab_id,
+        (const char *)rm->nodeId.buf,
+        (const char *)rm->resourceId.buf
+    );
+    if (resource == NULL) {
+        bionet_resource_data_type_t data_type;
+        bionet_resource_flavor_t flavor;
+
+        data_type = bionet_asn_to_datatype(rm->datatype);
+        if (data_type == BIONET_RESOURCE_DATA_TYPE_INVALID) {
+            // an error has been logged already;
+            return;
+        }
+
+        flavor = bionet_asn_to_flavor(rm->flavor);
+        if (flavor == BIONET_RESOURCE_FLAVOR_INVALID) {
+            // an error has been logged already;
+            return;
+        }
+
+        resource = bionet_resource_new(
+            node,
+            data_type,
+            flavor,
+            (const char *)rm->resourceId.buf
+        );
+        if (resource == NULL) {
+            // an error has been logged already
+            return;
+        }
+        libbionet_cache_add_resource(resource);
+    }
+}
+
+
+
+
+
+
+static void handle_lost_node(const cal_event_t *event, const PrintableString_t *nodeId) {
+    char *hab_type;
+    char *hab_id;
+
+    bionet_hab_t *hab;
+    bionet_node_t *node;
+
+    int r;
+
+    r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error parsing HAB name from CAL peer name '%s'", event->peer_name);
+        return;
+    }
+
+    hab = bionet_cache_lookup_hab(hab_type, hab_id);
+    if (hab == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got lost-node message for Node '%s.%s', but that HAB doesn appear in the cache", event->peer_name, (char*)nodeId->buf);
+        return;
+    }
+
+    node = bionet_cache_lookup_node(hab_type, hab_id, (const char *)nodeId->buf);
+    if (node == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got lost-node message for Node '%s.%s', which doesnt appear in the cache", event->peer_name, (char*)nodeId->buf);
+        return;
+    }
+
+    if (libbionet_callback_lost_node != NULL) {
+        libbionet_callback_lost_node(node);
+    }
+
+    bionet_hab_remove_node_by_id(hab, node->id);
+    bionet_node_free(node);
+}
+
+
+
+
+static void handle_resource_datapoints(const cal_event_t *event, ResourceDatapoints_t *rd) {
+    char *hab_type;
+    char *hab_id;
+
+    bionet_resource_t *resource;
+
+    int i;
+
+    int r;
+
+
+    r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error parsing HAB name from CAL peer name '%s'", event->peer_name);
+        return;
+    }
+
+    resource = bionet_cache_lookup_resource(
+        hab_type,
+        hab_id,
+        (const char *)rd->nodeId.buf,
+        (const char *)rd->resourceId.buf
+    );
+    if (resource == NULL) {
+        g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "got a Datapoint for unknown Resource %s.%s.%s:%s",
+            hab_type,
+            hab_id,
+            (const char *)rd->nodeId.buf,
+            (const char *)rd->resourceId.buf
+        );
+        return;
+    }
+
+
+    for (i = 0; i < rd->newDatapoints.list.count; i ++) {
+        Datapoint_t *asn_d = rd->newDatapoints.list.array[i];
+        bionet_datapoint_t *d = bionet_asn_to_datapoint(asn_d, resource);
+
+        if (libbionet_callback_datapoint != NULL) {
+            libbionet_callback_datapoint(d);
+        }
+
+        // FIXME: replace resource's datapoints with this one
+    }
+}
+
+
+
+
 static void handle_server_message(const cal_event_t *event) {
     H2C_Message_t *m = NULL;
     asn_dec_rval_t rval;
@@ -36,84 +250,24 @@ static void handle_server_message(const cal_event_t *event) {
     switch (m->present) {
 
         case H2C_Message_PR_newNode: {
-            char *hab_type;
-            char *hab_id;
-
-            bionet_node_t *node;
-            bionet_hab_t *hab;
-
-            int r;
-
-            r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
-            if (r != 0) {
-                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error parsing HAB name from CAL peer name '%s'", event->peer_name);
-                break;
-            }
-
-            hab = bionet_cache_lookup_hab(hab_type, hab_id);
-            if (hab == NULL) {
-                hab = bionet_hab_new(hab_type, hab_id);
-                if (hab == NULL) {
-                    // an error has been logged already
-                    break;
-                }
-                libbionet_cache_add_hab(hab);
-            }
-
-            node = bionet_asn_to_node(&m->choice.newNode);
-            if (node == NULL) {
-                // an error has been logged
-                break;
-            }
-            node->hab = hab;
-
-            bionet_hab_add_node(hab, node);
-
-            if (libbionet_callback_new_node != NULL) {
-                libbionet_callback_new_node(node);
-            }
-
+            handle_new_node(event, &m->choice.newNode);
             break;
         }
-
 
         case H2C_Message_PR_lostNode: {
-            char *hab_type;
-            char *hab_id;
-
-            bionet_hab_t *hab;
-            bionet_node_t *node;
-
-            int r;
-
-            r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
-            if (r != 0) {
-                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error parsing HAB name from CAL peer name '%s'", event->peer_name);
-                break;
-            }
-
-            hab = bionet_cache_lookup_hab(hab_type, hab_id);
-            if (hab == NULL) {
-                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got lost-node message for Node '%s.%s', but that HAB doesn appear in the cache", event->peer_name, (char*)m->choice.lostNode.buf);
-                break;
-            }
-
-            node = bionet_cache_lookup_node(hab_type, hab_id, (const char *)m->choice.lostNode.buf);
-            if (node == NULL) {
-                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got lost-node message for Node '%s.%s', which doesnt appear in the cache", event->peer_name, (char*)m->choice.lostNode.buf);
-                break;
-            }
-
-            if (libbionet_callback_lost_node != NULL) {
-                libbionet_callback_lost_node(node);
-            }
-
-            bionet_hab_remove_node_by_id(hab, node->id);
-            bionet_node_free(node);
-
+            handle_lost_node(event, &m->choice.lostNode);
             break;
         }
 
+        case H2C_Message_PR_resourceMetadata: {
+            handle_resource_metadata(event, &m->choice.resourceMetadata);
+            break;
+        }
+
+        case H2C_Message_PR_datapointsUpdate: {
+            handle_resource_datapoints(event, &m->choice.datapointsUpdate);
+            break;
+        }
 
         default: {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dont know what to do with H2C message type %d from %s", m->present, event->peer_name);
