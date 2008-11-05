@@ -6,12 +6,12 @@
 
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <glib.h>
 
 #include "bionet.h"
 #include "libbionet-internal.h"
-#include "bionet-asn.h"
 
 
 int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  const char *hab_id, const char *node_id) {
