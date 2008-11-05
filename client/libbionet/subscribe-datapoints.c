@@ -4,6 +4,8 @@
 //
 
 
+#include <errno.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <glib.h>
@@ -13,48 +15,27 @@
 
 
 int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *hab_type,  const char *hab_id, const char *node_id, const char *resource_id) {
-    return -1;
-
-#if 0
     int r;
+    char publisher[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 2];  // the +2 is one for the '.' and one for the '\0'
+    char topic[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 2];  // the +2 is one for the ':' and one for the '\0'
 
-    bionet_message_t m;
-
-
-    if (hab_type     == NULL) hab_type = "*";
-    if (hab_id       == NULL) hab_id   = "*";
-    if (node_id      == NULL) node_id  = "*";
-    if (resource_id  == NULL) resource_id  = "*";
-
-    // FIXME: here check the strings for validity ([-a-zA-Z0-9])
-
-
-    if (bionet_connect_to_nag() < 0) {
+    r = snprintf(publisher, sizeof(publisher), "%s.%s", hab_type, hab_id);
+    if (r >= sizeof(publisher)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(): HAB name '%s.%s' too long", hab_type, hab_id);
         return -1;
     }
 
-
-    m.type = Bionet_Message_C2N_Subscribe_Resource;
-    m.body.c2n_subscribe_resource.hab_type = (char *)hab_type;
-    m.body.c2n_subscribe_resource.hab_id = (char *)hab_id;
-    m.body.c2n_subscribe_resource.node_id = (char *)node_id;
-    m.body.c2n_subscribe_resource.resource_id = (char *)resource_id;
-
-    r = bionet_nxio_send_message(libbionet_nag_nxio, &m);
-    if (r < 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_resource(): error sending request to NAG");
+    r = snprintf(topic, sizeof(topic), "%s:%s", node_id, resource_id);
+    if (r >= sizeof(topic)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(): topic '%sS%s' too long", node_id, resource_id);
         return -1;
     }
 
-    r = libbionet_read_ok_from_nag();
-    if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_resource(): error reading reply from NAG");
-        libbionet_kill_nag_connection();
-        return -1;
-    }
+    // send the subscription request to the HAB
+    r = cal_client.subscribe(publisher, topic);
+    if (!r) return -1;
 
     return 0;
-#endif
 }
 
 
