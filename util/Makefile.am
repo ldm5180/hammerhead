@@ -23,11 +23,13 @@ libbionet_util_la_SOURCES =    \
     resource-datapoint.c       \
     resource-matches.c         \
     resource-is-dirty.c        \
+    resource-make-clean.c      \
     resource-get-datapoint.c   \
     datapoint-new.c            \
     datapoint-value.c          \
     datapoint-timestamp.c      \
     datapoint-is-dirty.c       \
+    datapoint-make-clean.c     \
     stream-accept.c                     \
     stream-connect.c                    \
     stream-direction.c                  \

@@ -170,6 +170,22 @@ int bionet_datapoint_is_dirty(const bionet_datapoint_t *datapoint);
 
 
 //
+//       NAME:  bionet_datapoint_make_clean()
+//
+//   FUNCTION:  Makes a Datapoint clean.
+//
+//  ARGUMENTS:  The Datapoint to make clean.
+//
+//    RETURNS:  Nothing.
+//
+//
+
+void bionet_datapoint_make_clean(bionet_datapoint_t *datapoint);
+
+
+
+
+//
 //       NAME:  bionet_datapoint_free()
 //
 //   FUNCTION:  Frees a Datapoint created with bionet_datapoint_new().

@@ -255,6 +255,21 @@ int bionet_resource_is_dirty(const bionet_resource_t *resource);
 
 
 
+//
+//       NAME:  bionet_resource_make_clean()
+//
+//   FUNCTION:  Makes a Resource clean, by making all its Datapoints clean.
+//
+//  ARGUMENTS:  The Resource to clean.
+//
+//    RETURNS:  Nothing.
+//
+
+void bionet_resource_make_clean(bionet_resource_t *resource);
+
+
+
+
 #if 0
 
 //
