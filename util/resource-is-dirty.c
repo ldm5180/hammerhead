@@ -17,6 +17,6 @@ int bionet_resource_is_dirty(const bionet_resource_t *resource) {
         if (bionet_datapoint_is_dirty(d)) return 1;
     }
 
-    return -1;
+    return 0;  // not dirty
 }
 
