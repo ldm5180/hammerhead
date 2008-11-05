@@ -143,6 +143,12 @@ int bionet_split_hab_name_r(
     char hab_id[BIONET_NAME_COMPONENT_MAX_LEN]
 );
 
+int bionet_split_nodeid_resourceid_r(
+    const char *node_and_resource,
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN],
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN]
+); 
+
 
 
 

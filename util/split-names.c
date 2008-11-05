@@ -157,6 +157,69 @@ int bionet_split_resource_name(
 
 
 
+int bionet_split_nodeid_resourceid_r(
+    const char *node_and_resource,
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN],
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN]
+) {
+    const char *p;
+    int size;
+    char *separator;
+
+
+    //
+    // sanity checks
+    //
+
+    if (node_and_resource == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_nodeid_resourceid_r(): NULL input string passed in");
+        return -1;
+    }
+
+
+    p = node_and_resource;
+
+
+    // get the Node-ID
+    separator = strchr(p, ':');
+    if (separator == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_nodeid_resourceid_r(): error parsing input string '%s'", node_and_resource);
+        return -1;
+    }
+    size = separator - p;
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_nodeid_resourceid_r(): Node-ID of input-string '%s' has zero length", node_and_resource);
+        return -1;
+    }
+    if (size > (BIONET_NAME_COMPONENT_MAX_LEN - 1)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_nodeid_resourceid_r(): Node-ID of input-string '%s' is too long (%d bytes, max %d)", node_and_resource, size, (BIONET_NAME_COMPONENT_MAX_LEN - 1));
+        return -1;
+    }
+    memcpy(node_id, p, size);
+    node_id[size] = '\0';
+
+
+    // get the Resource-ID
+    p = separator + 1;
+    size = strlen(p);
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_nodeid_resourceid_r(): Resource-ID of input-string '%s' has zero length", node_and_resource);
+        return -1;
+    }
+    if (size > (BIONET_NAME_COMPONENT_MAX_LEN - 1)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_nodeid_resourceid_r(): Resource-ID of input-string '%s' is too long (%d bytes, max %d)", node_and_resource, size, (BIONET_NAME_COMPONENT_MAX_LEN - 1));
+        return -1;
+    }
+    memcpy(resource_id, p, size);
+    resource_id[size] = '\0';
+
+
+    return 0;
+}
+
+
+
+
 int bionet_split_node_name(
     const char *node_name,
     char **hab_type,
