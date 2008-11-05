@@ -79,7 +79,56 @@ void libhab_cal_callback(const cal_event_t *event) {
                     break;
                 }
 
-                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "client '%s' requests valid datapoint subscription topic '%s'", event->peer_name, event->topic);
+                // send all matching resource metadata and datapoints
+                for (i = libhab_this->nodes; i != NULL; i = i->next) {
+                    bionet_node_t *node = i->data;
+                    int ri;
+
+                    if (!bionet_name_component_matches(node->id, topic_node_id)) {
+                        continue;
+                    }
+
+                    for (ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
+                        bionet_resource_t *resource = bionet_node_get_resource_by_index(node, ri);
+                        bionet_asn_buffer_t buf;
+                        int r;
+
+                        if (!bionet_name_component_matches(resource->id, topic_resource_id)) {
+                            continue;
+                        }
+
+
+                        //
+                        // first send the metadata for this matching resource
+                        //
+
+                        r = bionet_resource_metadata_to_asnbuf(resource, &buf);
+                        if (r != 0) {
+                            // an error has already been logged, and the buffer has been freed
+                            continue;
+                        }
+
+                        // "publish" the message to the newly connected subscriber (via sendto)
+                        // cal_server.sendto takes the buf so we dont need to free it
+                        cal_server.sendto(event->peer_name, buf.buf, buf.size);
+
+
+                        //
+                        // then send the datapoints (if there are any)
+                        //
+
+                        r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 0);
+                        if (r != 0) {
+                            // an error has already been logged, and the buffer has been freed
+                            continue;
+                        }
+
+                        // "publish" the message to the newly connected subscriber (via sendto)
+                        // cal_server.sendto takes the buf so we dont need to free it
+                        cal_server.sendto(event->peer_name, buf.buf, buf.size);
+
+                    }
+                }
             }
 
             break;
