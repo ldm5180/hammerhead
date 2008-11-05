@@ -6,7 +6,7 @@ libhab_la_SOURCES =      \
     connect.c            \
     report-new-node.c    \
     report-lost-node.c   \
-    report-datapoint.c   \
+    report-datapoints.c  \
     read.c               \
     cal-callback.c       \
     cal-topic-matches.c  \
