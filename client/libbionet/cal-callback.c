@@ -194,8 +194,19 @@ void libbionet_cal_callback(const cal_event_t *event) {
                 }
             }
 
+            // if the client's been told about this HAB or any of its nodes, report them as lost now
             hab = bionet_cache_lookup_hab(type, id);
             if (hab != NULL) {
+                if (libbionet_callback_lost_node != NULL) {
+                    GSList *i;
+                    for (i = hab->nodes; i != NULL; i = i->next) {
+                        bionet_node_t *node = i->data;
+                        libbionet_callback_lost_node(node);
+                    }
+                }
+
+                bionet_hab_remove_all_nodes(hab);
+
                 if (libbionet_callback_lost_hab != NULL) {
                     libbionet_callback_lost_hab(hab);
                 }
