@@ -243,7 +243,6 @@ static void send_disconnect_event(const char *peer_name) {
 // returns 0 on success, -1 on failure (in which case the peer has been disconnected and removed from the clients hash)
 static int read_from_client(const char *peer_name, bip_peer_t *peer) {
     int r;
-    int payload_size;
     cal_event_t *event;
 
     r = bip_read_from_peer(peer_name, peer);
@@ -262,32 +261,22 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer) {
     //
 
 
-    payload_size = ntohl(*(uint32_t*)&peer->net->buffer[BIP_MSG_HEADER_SIZE_OFFSET]);
-
     // the actual event type will be set below
     event = cal_event_new(CAL_EVENT_NONE);
     if (event == NULL) {
         fprintf(stderr, ID "read_from_client: out of memory!\n");
-        peer->net->index = 0;
+        bip_net_clear(peer->net);
         return -1;
     }
 
-    switch (peer->net->buffer[BIP_MSG_HEADER_TYPE_OFFSET]) {
+    switch (peer->net->header[BIP_MSG_HEADER_TYPE_OFFSET]) {
         case BIP_MSG_TYPE_MESSAGE: {
             event->type = CAL_EVENT_MESSAGE;
 
-            event->msg.buffer = malloc(payload_size);
-            if (event->msg.buffer == NULL) {
-                cal_event_free(event);
-                fprintf(stderr, ID "read_from_client: out of memory!\n");
-                peer->net->index = 0;
-                return -1;
-            }
-
-            memcpy(event->msg.buffer, &peer->net->buffer[BIP_MSG_HEADER_SIZE], payload_size);
-            event->msg.size = payload_size;
-
-            peer->net->index = 0;
+            // the event steals the BIP message buffer 
+            event->msg.size = peer->net->msg_size;
+            event->msg.buffer = peer->net->buffer;
+            peer->net->buffer = NULL;
 
             break;
         }
@@ -297,36 +286,33 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer) {
 
             event->type = CAL_EVENT_SUBSCRIBE;
 
-            event->topic = malloc(payload_size);
-            if (event->topic == NULL) {
-                cal_event_free(event);
-                fprintf(stderr, ID "read_from_client: out of memory!\n");
-                peer->net->index = 0;
-                return -1;
-            }
+            // FIXME: verify that the topic is a NULL-terminated ASCII string
 
-            memcpy(event->topic, &peer->net->buffer[BIP_MSG_HEADER_SIZE], payload_size);
+            // the event steals the BIP message buffer as the topic
+            event->topic = peer->net->buffer;
+            peer->net->buffer = NULL;
 
             topic = strdup(event->topic);
             if (topic == NULL) {
                 cal_event_free(event);
                 fprintf(stderr, ID "read_from_client: out of memory!\n");
-                peer->net->index = 0;
+                bip_net_clear(peer->net);
                 return -1;
             }
-
             peer->subscriptions = g_slist_prepend(peer->subscriptions, topic);
 
-            peer->net->index = 0;
             break;
         }
 
         default: {
-            fprintf(stderr, ID "read_from_client: dont know what to do with message type %d\n", peer->net->buffer[BIP_MSG_HEADER_TYPE_OFFSET]);
+            fprintf(stderr, ID "read_from_client: dont know what to do with message type %d\n", peer->net->header[BIP_MSG_HEADER_TYPE_OFFSET]);
             cal_event_free(event);
+            bip_net_clear(peer->net);
             return -1;
         }
     }
+
+    bip_net_clear(peer->net);
 
     event->peer_name = strdup(peer_name);
     if (event->peer_name == NULL) {

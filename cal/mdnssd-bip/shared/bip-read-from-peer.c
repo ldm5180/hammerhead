@@ -25,12 +25,11 @@
 int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
     int r;
     int max_bytes_to_read;
-    int payload_size;
 
 
-    if (peer->net->index < BIP_MSG_HEADER_SIZE) {
-        max_bytes_to_read = BIP_MSG_HEADER_SIZE - peer->net->index;
-        r = read(peer->net->socket, &peer->net->buffer[peer->net->index], max_bytes_to_read);
+    if (peer->net->header_index < BIP_MSG_HEADER_SIZE) {
+        max_bytes_to_read = BIP_MSG_HEADER_SIZE - peer->net->header_index;
+        r = read(peer->net->socket, &peer->net->header[peer->net->header_index], max_bytes_to_read);
         if (r < 0) {
             fprintf(stderr, "bip_read_from_peer(): error reading from peer %s: %s\n", peer_name, strerror(errno));
             return -1;
@@ -39,14 +38,41 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
             return - 1;
         }
 
-        peer->net->index += r;
+        peer->net->header_index += r;
 
-        if (peer->net->index < BIP_MSG_HEADER_SIZE) return 0;
+        if (peer->net->header_index < BIP_MSG_HEADER_SIZE) return 0;
+
+        // packet too big?
+        peer->net->msg_size = ntohl(*(uint32_t *)&peer->net->header[BIP_MSG_HEADER_SIZE_OFFSET]);
+        if (peer->net->msg_size > BIP_MSG_MAX_SIZE) {
+            fprintf(stderr, "bip_read_from_peer: incoming messages is %d bytes, max message size is %d bytes, dropping client\n", peer->net->msg_size, BIP_MSG_MAX_SIZE);
+            return -1;
+        }
+
+        peer->net->buffer = malloc(peer->net->msg_size);
+        if (peer->net->buffer == NULL) {
+            fprintf(stderr, "bip_read_from_peer: out of memory!\n");
+            return -1;
+        }
+        peer->net->index = 0;
     }
 
-    payload_size = ntohl(*(uint32_t *)&peer->net->buffer[BIP_MSG_HEADER_SIZE_OFFSET]);
 
-    max_bytes_to_read = (payload_size + BIP_MSG_HEADER_SIZE) - peer->net->index;
+    //
+    // if we get here, the following things are true:
+    //
+    //     * we have the whole header
+    //
+    //     * msg_size is the expected size of the incoming packet payload
+    //
+    //     * buffer has been allocated to hold the whole payload
+    //
+    //     * the message index has the number of bytes currently in the
+    //       message buffer (so it points to where the next byte should go)
+    //
+
+
+    max_bytes_to_read = peer->net->msg_size - peer->net->index;
     if (max_bytes_to_read > 0) {
         r = read(peer->net->socket, &peer->net->buffer[peer->net->index], max_bytes_to_read);
         if (r < 0) {

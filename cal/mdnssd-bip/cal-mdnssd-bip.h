@@ -17,15 +17,34 @@
 
 
 
+#define BIP_MSG_MAX_SIZE (1024 * 1024)
+
+#define BIP_MSG_HEADER_SIZE (5)
+
+#define BIP_MSG_HEADER_TYPE_OFFSET (0)
+#define BIP_MSG_HEADER_SIZE_OFFSET (1)
+
+#define BIP_MSG_TYPE_MESSAGE   (0)
+#define BIP_MSG_TYPE_SUBSCRIBE (1)
+#define BIP_MSG_TYPE_PUBLISH   (2)
+
+
+
+
 typedef struct {
     char *hostname;  //!< DNS hostname, or IP address as a dotted quad ascii string
     uint16_t port;   //!< in host byte order
 
     int socket;      //!< the socket connected to this peer, or -1 if we're not currently connected
 
-    //! incoming buffer
-    // FIXME: probably should be dynamically allocated & sized...
-    char buffer[1024];
+    //! the header of the packet we're currently receiving
+    char header[BIP_MSG_HEADER_SIZE];
+    int header_index;
+
+    //! the payload of the packet we're currently receiving
+    //! (dynamically allocated)
+    int msg_size;
+    char *buffer;
     int index;
 } bip_peer_network_info_t;
 
@@ -40,23 +59,11 @@ typedef struct {
 
 #define Max(a, b) ((a) > (b) ? (a) : (b))
 
-#define BIP_MSG_BUFFER_SIZE (1024)
-
 
 // FIXME: if the cal users (clients & servers) could somehow pass in the
 //     first part of this string, cal could be used by different
 //     applications on the same physical network
 #define CAL_MDNSSD_BIP_SERVICE_NAME "_bionet._tcp"
-
-
-#define BIP_MSG_HEADER_SIZE (5)
-
-#define BIP_MSG_HEADER_TYPE_OFFSET (0)
-#define BIP_MSG_HEADER_SIZE_OFFSET (1)
-
-#define BIP_MSG_TYPE_MESSAGE   (0)
-#define BIP_MSG_TYPE_SUBSCRIBE (1)
-#define BIP_MSG_TYPE_PUBLISH   (2)
 
 
 
@@ -103,6 +110,17 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
 //!
 
 int bip_read_from_peer(const char *peer_name, bip_peer_t *peer);
+
+
+//! 
+//! \brief Drops whatever packet (or partial packet) is in the net struct.
+//!
+//! \param net The network into to clear.
+//!
+//! \return Nothing.
+//!
+
+void bip_net_clear(bip_peer_network_info_t *net);
 
 
 

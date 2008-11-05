@@ -257,7 +257,6 @@ static void read_from_user(void) {
 static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
     cal_event_t *event;
     int r;
-    int payload_size;
 
     r = bip_read_from_peer(peer_name, peer);
     if (r < 0) {
@@ -274,14 +273,12 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
     //
 
 
-    payload_size = ntohl(*(uint32_t*)&peer->net->buffer[BIP_MSG_HEADER_SIZE_OFFSET]);
-
-    switch (peer->net->buffer[BIP_MSG_HEADER_TYPE_OFFSET]) {
+    switch (peer->net->header[BIP_MSG_HEADER_TYPE_OFFSET]) {
         case BIP_MSG_TYPE_MESSAGE: {
             event = cal_event_new(CAL_EVENT_MESSAGE);
             if (event == NULL) {
                 fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
-                peer->net->index = 0;
+                bip_net_clear(peer->net);
                 return;
             }
 
@@ -289,21 +286,14 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
             if (event->peer_name == NULL) {
                 cal_event_free(event);
                 fprintf(stderr, ID "read_from_publisher: out of memory!\n");
-                peer->net->index = 0;
+                bip_net_clear(peer->net);
                 return;
             }
 
-            event->msg.buffer = malloc(payload_size);
-            if (event->msg.buffer == NULL) {
-                cal_event_free(event);
-                fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
-                peer->net->index = 0;
-                return;
-            }
-
-            memcpy(event->msg.buffer, &peer->net->buffer[BIP_MSG_HEADER_SIZE], payload_size);
-
-            event->msg.size = payload_size;
+            // the event steals the BIP message buffer 
+            event->msg.size = peer->net->msg_size;
+            event->msg.buffer = peer->net->buffer;
+            peer->net->buffer = NULL;
 
             break;
         }
@@ -312,7 +302,7 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
             event = cal_event_new(CAL_EVENT_PUBLISH);
             if (event == NULL) {
                 fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
-                peer->net->index = 0;
+                bip_net_clear(peer->net);
                 return;
             }
 
@@ -320,28 +310,26 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
             if (event->peer_name == NULL) {
                 cal_event_free(event);
                 fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
-                peer->net->index = 0;
+                bip_net_clear(peer->net);
                 return;
             }
 
-            event->msg.buffer = malloc(payload_size);
-            if (event->msg.buffer == NULL) {
-                cal_event_free(event);
-                fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
-                peer->net->index = 0;
-                return;
-            }
-
-            memcpy(event->msg.buffer, &peer->net->buffer[BIP_MSG_HEADER_SIZE], payload_size);
-
-            event->msg.size = payload_size;
+            // the event steals the BIP message buffer 
+            event->msg.size = peer->net->msg_size;
+            event->msg.buffer = peer->net->buffer;
+            peer->net->buffer = NULL;
 
             break;
         }
+
+        default: {
+            fprintf(stderr, ID "read_from_publisher(): invalid BIP message type %d!\n", peer->net->header[BIP_MSG_HEADER_TYPE_OFFSET]);
+            bip_net_clear(peer->net);
+            return;
+        }
     }
 
-
-    peer->net->index = 0;
+    bip_net_clear(peer->net);
 
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {

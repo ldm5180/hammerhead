@@ -1,7 +1,7 @@
 include $(top_srcdir)/common.am
 
 LIBCAL_EVENT_SOURCES=../../util/event-free.c ../../util/event-new.c
-LIBCAL_MDNSSD_BIP_SHARED_SOURCES=../shared/bip-read-from-peer.c ../shared/bip-send-message.c ../shared/bip-peer-free.c ../shared/bip-net-free.c
+LIBCAL_MDNSSD_BIP_SHARED_SOURCES=../shared/bip-read-from-peer.c ../shared/bip-send-message.c ../shared/bip-peer-free.c ../shared/bip-net-free.c ../shared/bip-net-clear.c
 
 lib_LTLIBRARIES = libcal-mdnssd-bip-client.la
 
