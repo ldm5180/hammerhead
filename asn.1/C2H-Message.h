@@ -22,7 +22,8 @@ extern "C" {
 /* Dependencies */
 typedef enum C2H_Message_PR {
 	C2H_Message_PR_NOTHING,	/* No components present */
-	C2H_Message_PR_subscribeNode
+	C2H_Message_PR_subscribeNode,
+	C2H_Message_PR_subscribeDatapoints
 } C2H_Message_PR;
 
 /* C2H-Message */
@@ -30,6 +31,7 @@ typedef struct C2H_Message {
 	C2H_Message_PR present;
 	union C2H_Message_u {
 		PrintableString_t	 subscribeNode;
+		PrintableString_t	 subscribeDatapoints;
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */

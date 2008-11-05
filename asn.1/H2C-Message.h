@@ -24,7 +24,8 @@ extern "C" {
 typedef enum H2C_Message_PR {
 	H2C_Message_PR_NOTHING,	/* No components present */
 	H2C_Message_PR_newNode,
-	H2C_Message_PR_lostNode
+	H2C_Message_PR_lostNode,
+	H2C_Message_PR_datapointsUpdate
 } H2C_Message_PR;
 
 /* H2C-Message */
@@ -33,6 +34,7 @@ typedef struct H2C_Message {
 	union H2C_Message_u {
 		Node_t	 newNode;
 		PrintableString_t	 lostNode;
+		Node_t	 datapointsUpdate;
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */

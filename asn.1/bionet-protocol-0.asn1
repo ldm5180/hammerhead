@@ -62,7 +62,8 @@ BEGIN
     -- 
 
     C2H-Message ::= CHOICE {
-        subscribeNode   PrintableString
+        subscribeNode         PrintableString,
+        subscribeDatapoints   PrintableString
     }
 
 
@@ -71,8 +72,9 @@ BEGIN
     -- 
 
     H2C-Message ::= CHOICE {
-        newNode    Node,
-        lostNode   PrintableString
+        newNode            Node,
+        lostNode           PrintableString,
+        datapointsUpdate   Node
     }
 
 END
