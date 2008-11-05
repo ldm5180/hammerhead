@@ -5,6 +5,8 @@
 
 #include <sys/time.h>
 
+#include "Datapoint.h"
+
 #include "ResourceFlavor.h"
 #include "ResourceDataType.h"
 #include "Resource.h"
@@ -66,15 +68,13 @@ int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf);
 bionet_node_t *bionet_asn_to_node(const Node_t *asn_node);
 
 
-#if 0
 ResourceFlavor_t bionet_flavor_to_asn(bionet_resource_flavor_t flavor);
 ResourceDataType_t bionet_datatype_to_asn(bionet_resource_data_type_t datatype);
-int bionet_datapoint_to_asn(bionet_datapoint_t *d, bionet_resource_data_type_t datatype, Datapoint_t *asn_datapoint);
+Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d);
 
 bionet_resource_flavor_t bionet_asn_to_flavor(ResourceFlavor_t asn_flavor);
 bionet_resource_data_type_t bionet_asn_to_datatype(ResourceDataType_t asn_datatype);
-int bionet_asn_to_datapoint(Datapoint_t *asn_datapoint, bionet_datapoint_t *d, bionet_resource_data_type_t datatype);
-#endif
+bionet_datapoint_t *bionet_asn_to_datapoint(Datapoint_t *asn_datapoint, bionet_resource_t *resource);
 
 
 

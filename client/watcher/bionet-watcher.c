@@ -112,7 +112,7 @@ void cb_new_node(bionet_node_t *node) {
 
         for (i = node->resources; i != NULL; i = i->next) {
             bionet_resource_t *resource = i->data;
-            bionet_datapoint_t *datapoint = g_ptr_array_index(resource->datapoints, 0);
+            bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
 
             if (datapoint == NULL) {
                 g_log(
