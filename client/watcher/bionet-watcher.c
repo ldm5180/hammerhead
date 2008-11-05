@@ -174,10 +174,13 @@ void usage(void) {
 \n\
 OPTIONS:\n\
 \n\
-    --habs HAB-Type.Hab-ID\n\
+    --help\n\
+        Show this help.\n\
+\n\
+    -h, --hab, --habs HAB-Type.Hab-ID\n\
         Subscribe to a HAB list.\n\
 \n\
-    --nodes HAB-Type.HAB-ID.Node-ID\n\
+    -n, --node, --nodes HAB-Type.HAB-ID.Node-ID\n\
         Subscribe to a Node list.\n\
 \n\
     -r, --resource, --resources HAB-Type.HAB-ID.Node-ID:Resource-ID\n\
@@ -220,12 +223,12 @@ int main(int argc, char *argv[]) {
     argv ++;
 
     for ( ; *argv != NULL; argv ++) {
-        if (strcmp(*argv, "--habs") == 0) {
+        if ((strcmp(*argv, "-h") == 0) || (strcmp(*argv, "--hab") == 0) || (strcmp(*argv, "--habs") == 0)) {
             argv ++;
             bionet_subscribe_hab_list_by_name(*argv);
             subscribed_to_something = 1;;
 
-        } else if (strcmp(*argv, "--nodes") == 0) {
+        } else if ((strcmp(*argv, "-n") == 0) || (strcmp(*argv, "--node") == 0) || (strcmp(*argv, "--nodes") == 0)) {
             argv ++;
             bionet_subscribe_node_list_by_name(*argv);
             subscribed_to_something = 1;;
@@ -234,6 +237,10 @@ int main(int argc, char *argv[]) {
             argv ++;
             bionet_subscribe_datapoints_by_name(*argv);
             subscribed_to_something = 1;;
+
+        } else if (strcmp(*argv, "--help") == 0) {
+            usage();
+            exit(0);
 
         } else {
             usage();
