@@ -48,6 +48,8 @@ struct bionet_datapoint {
 
     bionet_datapoint_value_t value;
     struct timeval timestamp;
+
+    int dirty;  // zero if the datapoint has been reported to Bionet, 1 if it has not
 };
 
 
@@ -145,6 +147,24 @@ const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datap
 //
 
 void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint, const struct timeval *new_timestamp);
+
+
+
+
+//
+//       NAME:  bionet_datapoint_is_dirty()
+//
+//   FUNCTION:  Checks if a Datapoint is dirty or not.  A Datapoint is
+//              dirty if it has not been reported to Bionet yet.
+//
+//  ARGUMENTS:  The Datapoint to check.
+//
+//    RETURNS:  True (non-zero) if the Datapoint is dirty, False (zero) if
+//              not.
+//
+//
+
+int bionet_datapoint_is_dirty(const bionet_datapoint_t *datapoint);
 
 
 

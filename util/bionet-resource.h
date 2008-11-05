@@ -238,6 +238,23 @@ int bionet_resource_matches_habtype_habid_nodeid_resourceid(
 
 
 
+//
+//       NAME:  bionet_resource_is_dirty()
+//
+//   FUNCTION:  Checks if a Resource has any dirty Datapoints.
+//              Dirty Datapoints are ones that haven't been reported to
+//              Bionet yet.
+//
+//  ARGUMENTS:  The Resource to test for dirtiness.
+//
+//    RETURNS:  True (non-zero) if it is dirty, False (zero) if not.
+//
+
+int bionet_resource_is_dirty(const bionet_resource_t *resource);
+
+
+
+
 #if 0
 
 //

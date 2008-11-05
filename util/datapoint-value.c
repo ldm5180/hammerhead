@@ -30,6 +30,8 @@ void bionet_datapoint_set_value(bionet_datapoint_t *d, const bionet_datapoint_va
         return;
     }
     d->value = *value;
+
+    d->dirty = 1;
 }
 
 
@@ -245,6 +247,8 @@ int bionet_resource_value_from_pointer(const void *value, bionet_resource_t *des
 
 
 int bionet_datapoint_value_from_string(bionet_datapoint_t *d, const char *value_string) {
+    int r;
+
     if (d == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_value_from_string(): NULL datapoint passed in!");
         errno = EINVAL;
@@ -257,7 +261,11 @@ int bionet_datapoint_value_from_string(bionet_datapoint_t *d, const char *value_
         return -1;
     }
 
-    return bionet_datapoint_value_from_string_isolated(d->resource->data_type, &d->value, value_string);
+    r = bionet_datapoint_value_from_string_isolated(d->resource->data_type, &d->value, value_string);
+    if (r != 0) return 1;
+
+    d->dirty = 1;
+    return 0;
 }
 
 

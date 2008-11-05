@@ -58,6 +58,8 @@ bionet_datapoint_t *bionet_datapoint_new(
 
     bionet_datapoint_set_timestamp(d, timestamp);
 
+    d->dirty = 1;
+
     return d;
 }
 
@@ -114,6 +116,8 @@ bionet_datapoint_t *bionet_datapoint_new_with_valuestr(
     }
 
     bionet_datapoint_set_timestamp(d, timestamp);
+
+    d->dirty = 1;
 
     return d;
 }

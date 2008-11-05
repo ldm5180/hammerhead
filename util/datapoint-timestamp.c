@@ -84,7 +84,7 @@ void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint, const struct 
         datapoint->timestamp.tv_usec = new_timestamp->tv_usec;
     }
 
-    // datapoint->dirty = 1;
+    datapoint->dirty = 1;
 
     return;
 }
