@@ -1,0 +1,22 @@
+
+Bionet 2
+~~~~~~~~
+
+
+To compile:
+
+    ./configure
+    make
+
+
+To see it do something:
+
+    # in one shell:
+    cd client/watcher
+    ./bionet-watcher
+
+    # in another shell:
+    cd hab/random
+    ./random-hab
+
+
