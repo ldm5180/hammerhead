@@ -55,8 +55,37 @@ int bionet_timeval_to_GeneralizedTime(const struct timeval *tv, GeneralizedTime_
 // helper functions for dealing with ASN.1
 // these ones here are probably only useful to Bionet
 //
+// FIXME: some of these allocate a new object and return it, some take a pointer in and fill it int
+//
 
 int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf);
+
+
+//!
+//! \brief Makes an asn1c Node_t from a bionet_node_t
+//!
+//! \param node The Bionet Node to use as the source.
+//!
+//! \param asn_node The asn1c Node_t to use as the destination.
+//!     The asn_node must be allocated but not initialized.  It does not
+//!     have to be zeroed.
+//!
+//! \return 0 on success, -1 on failure.
+//!
+
+int bionet_node_to_asn(const bionet_node_t *node, Node_t *asn_node);
+
+
+//!
+//! \brief Makes an asn1c Resource_t from a bionet_resource_t
+//!
+//! \param node The Bionet Resource to use as the source.
+//!
+//! \return A pointer to the Resource_t on success, NULL on failure.
+//!
+
+Resource_t *bionet_resource_to_asn(const bionet_resource_t *resource);
+
 
 bionet_node_t *bionet_asn_to_node(const Node_t *asn_node);
 

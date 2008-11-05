@@ -335,8 +335,8 @@ Resource_t *bionet_resource_to_asn(const bionet_resource_t *resource) {
 
 
     for (di = 0; di < bionet_resource_get_num_datapoints(resource); di ++) {
-        bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, di);
         Datapoint_t *asn_datapoint;
+        bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, di);
 
         asn_datapoint = bionet_datapoint_to_asn(d);
         if (asn_datapoint == NULL) {
@@ -401,20 +401,12 @@ bionet_resource_t *bionet_asn_to_resource(const Resource_t *asn_resource) {
 
 
 
-int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf) {
-    H2C_Message_t m;
-    Node_t *asn_node;
-    asn_enc_rval_t asn_r;
+int bionet_node_to_asn(const bionet_node_t *node, Node_t *asn_node) {
     int r;
     int ri;  // "resource index"
 
 
-    buf->buf = NULL;
-    buf->size = 0;
-
-    memset(&m, 0x00, sizeof(H2C_Message_t));
-    m.present = H2C_Message_PR_newNode;
-    asn_node = &m.choice.newNode;
+    memset(asn_node, 0x00, sizeof(Node_t));
 
 
     // 
@@ -423,9 +415,8 @@ int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf) {
 
     r = OCTET_STRING_fromString(&asn_node->id, node->id);
     if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_to_asnbuf(): error making OCTET_STRING for Node-ID %s", node->id);
-        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
-        return -1;
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_to_asn(): error making OCTET_STRING for Node-ID %s", node->id);
+        goto cleanup;
     }
 
 
@@ -445,10 +436,43 @@ int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf) {
 
         r = asn_sequence_add(&asn_node->resources.list, asn_resource);
         if (r != 0) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_to_asnbuf(): error adding Resource to newNode H2C-Message: %s", strerror(errno));
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_to_asn(): error adding Resource to newNode H2C-Message: %s", strerror(errno));
             ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_Resource, asn_resource);
             goto cleanup;
         }
+    }
+
+
+    return 0;
+
+
+cleanup:
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_Node, asn_node);
+    return -1;
+}
+
+
+
+
+int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf) {
+    H2C_Message_t m;
+    Node_t *asn_node;
+    asn_enc_rval_t asn_r;
+    int r;
+
+
+    buf->buf = NULL;
+    buf->size = 0;
+
+    memset(&m, 0x00, sizeof(H2C_Message_t));
+    m.present = H2C_Message_PR_newNode;
+    asn_node = &m.choice.newNode;
+
+
+    r = bionet_node_to_asn(node, asn_node);
+    if (r != 0) {
+        // an error has been logged
+        return -1;
     }
 
 
@@ -464,7 +488,7 @@ int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf) {
             free(buf->buf);
             buf->buf = NULL;
         }
-        return -1;
+        goto cleanup;
     }
 
     return 0;
