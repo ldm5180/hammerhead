@@ -58,7 +58,38 @@ int bionet_timeval_to_GeneralizedTime(const struct timeval *tv, GeneralizedTime_
 // FIXME: some of these allocate a new object and return it, some take a pointer in and fill it int
 //
 
+
 int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf);
+
+
+//!
+//! \brief Makes a buffer containing a DER-encoded asn1c
+//!     ResourceMetadata_t, from a bionet_resource_t
+//!
+//! \param resource The Bionet Resource to use as the source.
+//!
+//! \param buf The buffer to deposit the resulting ASN.1 message into.
+//!
+//! \return 0 on success, -1 on failure.
+//!
+
+int bionet_resource_metadata_to_asnbuf(const bionet_resource_t *resource, bionet_asn_buffer_t *buf);
+
+
+//!
+//! \brief Makes a buffer containing a DER-encoded asn1c
+//!     ResourceDatapoints_t, from a bionet_resource_t
+//!
+//! \param resource The Bionet Resource to use as the source.
+//!
+//! \param buf The buffer to deposit the resulting ASN.1 message into.
+//!
+//! \param dirty_only If true, send only dirty datapoints.
+//!
+//! \return 0 on success, -1 on failure.
+//!
+
+int bionet_resource_datapoints_to_asnbuf(const bionet_resource_t *resource, bionet_asn_buffer_t *buf, int dirty_only);
 
 
 //!

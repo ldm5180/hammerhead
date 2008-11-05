@@ -12,6 +12,8 @@ ASN_MODULE_SOURCES=	\
 	Datapoint.c	\
 	Resource.c	\
 	Node.c	\
+	ResourceMetadata.c \
+	ResourceDatapoints.c \
 	C2H-Message.c   \
 	H2C-Message.c
 
@@ -23,6 +25,8 @@ ASN_MODULE_HEADS=	\
 	Datapoint.h	\
 	Resource.h	\
 	Node.h	\
+	ResourceMetadata.h \
+	ResourceDatapoints.h \
 	C2H-Message.h   \
 	H2C-Message.h
 

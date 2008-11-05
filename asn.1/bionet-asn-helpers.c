@@ -549,3 +549,169 @@ cleanup:
     return NULL;
 }
 
+
+int bionet_resource_metadata_to_asnbuf(const bionet_resource_t *resource, bionet_asn_buffer_t *buf) {
+    H2C_Message_t m;
+    ResourceMetadata_t *rm;
+    asn_enc_rval_t asn_r;
+    int r;
+
+
+    buf->buf = NULL;
+    buf->size = 0;
+
+    memset(&m, 0x00, sizeof(H2C_Message_t));
+    m.present = H2C_Message_PR_resourceMetadata;
+    rm = &m.choice.resourceMetadata;
+
+
+    // 
+    // node id
+    //
+
+    r = OCTET_STRING_fromString(&rm->nodeId, resource->node->id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_metadata_to_asn(): error making OCTET_STRING for Node-ID %s", resource->node->id);
+        goto cleanup;
+    }
+
+
+    // 
+    // resource id
+    //
+
+    r = OCTET_STRING_fromString(&rm->resourceId, resource->id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_metadata_to_asn(): error making OCTET_STRING for Resource-ID %s", resource->id);
+        goto cleanup;
+    }
+
+
+    // 
+    // resource flavor
+    //
+
+    rm->flavor = bionet_flavor_to_asn(resource->flavor);
+    if (rm->flavor == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_metadata_to_asn(): error making ResourceFlavor from Resource Flavor %d", resource->flavor);
+        goto cleanup;
+    }
+
+
+    // 
+    // resource data type
+    //
+
+    rm->datatype = bionet_datatype_to_asn(resource->data_type);
+    if (rm->datatype == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_metadata_to_asn(): error making ResourceDatatype from Resource Datatype %d", resource->data_type);
+        goto cleanup;
+    }
+
+
+    // 
+    // serialize the H2C-Message
+    //
+
+    asn_r = der_encode(&asn_DEF_H2C_Message, &m, bionet_accumulate_asn_buffer, buf);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
+    if (asn_r.encoded == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_metadata_to_asnbuf(): error with der_encode(): %s", strerror(errno));
+        if (buf->buf != NULL) {
+            free(buf->buf);
+            buf->buf = NULL;
+        }
+        goto cleanup;
+    }
+
+    return 0;
+
+
+cleanup:
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
+    return -1;
+}
+
+
+
+
+int bionet_resource_datapoints_to_asnbuf(const bionet_resource_t *resource, bionet_asn_buffer_t *buf, int dirty_only) {
+    H2C_Message_t m;
+    ResourceDatapoints_t *rd;
+    asn_enc_rval_t asn_r;
+    int r;
+    int di;
+
+
+    buf->buf = NULL;
+    buf->size = 0;
+
+    memset(&m, 0x00, sizeof(H2C_Message_t));
+    m.present = H2C_Message_PR_datapointsUpdate;
+    rd = &m.choice.datapointsUpdate;
+
+
+    // 
+    // node id
+    //
+
+    r = OCTET_STRING_fromString(&rd->nodeId, resource->node->id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_datapoints_to_asn(): error making OCTET_STRING for Node-ID %s", resource->node->id);
+        goto cleanup;
+    }
+
+
+    // 
+    // resource id
+    //
+
+    r = OCTET_STRING_fromString(&rd->resourceId, resource->id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_datapoints_to_asn(): error making OCTET_STRING for Resource-ID %s", resource->id);
+        goto cleanup;
+    }
+
+
+    // 
+    // all the dirty datapoints
+    //
+
+    for (di = 0; di < bionet_resource_get_num_datapoints(resource); di ++) {
+        bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, di);
+        Datapoint_t *asn_d;
+
+        if (dirty_only && (!bionet_datapoint_is_dirty(d))) continue;
+
+        asn_d = bionet_datapoint_to_asn(d);
+        r = asn_sequence_add(&rd->newDatapoints.list, asn_d);
+        if (r != 0) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_datapoints_to_asn(): error adding Datapoint to Resource: %s", strerror(errno));
+            goto cleanup;
+        }
+    }
+
+
+    // 
+    // serialize the H2C-Message
+    //
+
+    asn_r = der_encode(&asn_DEF_H2C_Message, &m, bionet_accumulate_asn_buffer, buf);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
+    if (asn_r.encoded == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_datapoints_to_asnbuf(): error with der_encode(): %s", strerror(errno));
+        if (buf->buf != NULL) {
+            free(buf->buf);
+            buf->buf = NULL;
+        }
+        goto cleanup;
+    }
+
+    return 0;
+
+
+cleanup:
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_H2C_Message, &m);
+    return -1;
+}
+

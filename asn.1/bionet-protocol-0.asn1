@@ -58,6 +58,24 @@ BEGIN
 
 
     -- 
+    -- Helper structs
+    -- 
+
+    ResourceMetadata ::= SEQUENCE {
+        nodeId       PrintableString,
+        resourceId   PrintableString,
+        flavor       ResourceFlavor,
+        datatype     ResourceDataType
+    }
+
+    ResourceDatapoints ::= SEQUENCE {
+        nodeId          PrintableString,
+        resourceId      PrintableString,
+        newDatapoints   SEQUENCE OF Datapoint
+    }
+
+
+    -- 
     -- C2H-Message is a Client-to-Hab message
     -- 
 
@@ -74,7 +92,8 @@ BEGIN
     H2C-Message ::= CHOICE {
         newNode            Node,
         lostNode           PrintableString,
-        datapointsUpdate   Node
+        resourceMetadata   ResourceMetadata,
+        datapointsUpdate   ResourceDatapoints
     }
 
 END
