@@ -27,7 +27,7 @@
 //  
 //  pick a random node
 //  change some of its resources
-//  publish to the nag
+//  publish to bionet
 //
 
 void update_node(bionet_hab_t* random_hab) {
