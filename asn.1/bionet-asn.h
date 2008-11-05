@@ -23,13 +23,6 @@
 
 
 
-// maximum supported on-the-wire message size
-// FIXME: it'd be nice if asn1c could tell me this, instead i'll just make a number up
-#define BIONET_MSG_MAX_LEN (1024)
-
-
-
-
 typedef struct {
     size_t size;
     void *buf;
