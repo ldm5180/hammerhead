@@ -1,4 +1,4 @@
 include $(top_srcdir)/common.am
 
-SUBDIRS = libbionet watcher
+SUBDIRS = libbionet watcher py-libbionet
 
