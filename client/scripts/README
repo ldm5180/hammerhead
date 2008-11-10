@@ -1,0 +1,6 @@
+In order to use the Python scripts with Bionet2 you need to know where to
+find the module. Either modify your enviroment variables to find _bionet.so
+and bionet.py or create symlinks from this directory to them:
+
+# ln -s ../py-libbionet/.libs/libbionet-py.so _bionet.so
+# ln -s ../py-libbionet/bionet.py .

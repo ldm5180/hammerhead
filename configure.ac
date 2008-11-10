@@ -73,6 +73,12 @@ PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
 AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
 AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)
 
+AC_ARG_ENABLE(python, AC_HELP_STRING([--disable-python],
+      [disable python dependent parts]),
+      [ENABLE_PYTHON=$enableval],
+      [ENABLE_PYTHON=yes])
+AM_CONDITIONAL(ENABLE_PYTHON, test "x$ENABLE_PYTHON" = "xyes")
+			      
 # Checks for library functions.
 AC_FUNC_MALLOC
 

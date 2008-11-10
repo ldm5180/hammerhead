@@ -1,4 +1,5 @@
 include $(top_srcdir)/common.am
-
-SUBDIRS = libbionet watcher py-libbionet
-
+SUBDIRS = libbionet watcher 
+if ENABLE_PYTHON
+SUBDIRS += py-libbionet
+endif
