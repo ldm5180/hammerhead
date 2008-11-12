@@ -12,7 +12,7 @@
 
 int bionet_hab_set_type(bionet_hab_t *hab, const char *type) {
     if (hab == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "bionet_hab_set_type(): NULL HAB passed in!");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_set_type(): NULL HAB passed in!");
         return -1;
     }
 
@@ -35,7 +35,7 @@ int bionet_hab_set_type(bionet_hab_t *hab, const char *type) {
 
 int bionet_hab_set_id(bionet_hab_t *hab, const char *id) {
     if (hab == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "bionet_hab_set_id(): NULL HAB passed in!");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_set_id(): NULL HAB passed in!");
         return -1;
     }
 
