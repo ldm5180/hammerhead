@@ -31,7 +31,7 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
         max_bytes_to_read = BIP_MSG_HEADER_SIZE - peer->net->header_index;
         r = read(peer->net->socket, &peer->net->header[peer->net->header_index], max_bytes_to_read);
         if (r < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s\n", peer_name, strerror(errno));
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s", peer_name, strerror(errno));
             return -1;
         } else if (r == 0) {
             // peer disconnects
@@ -45,13 +45,13 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
         // packet too big?
         peer->net->msg_size = ntohl(*(uint32_t *)&peer->net->header[BIP_MSG_HEADER_SIZE_OFFSET]);
         if (peer->net->msg_size > BIP_MSG_MAX_SIZE) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer: incoming messages is %d bytes, max message size is %d bytes, dropping client\n", peer->net->msg_size, BIP_MSG_MAX_SIZE);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer: incoming messages is %d bytes, max message size is %d bytes, dropping client", peer->net->msg_size, BIP_MSG_MAX_SIZE);
             return -1;
         }
 
         peer->net->buffer = malloc(peer->net->msg_size);
         if (peer->net->buffer == NULL) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "bip_read_from_peer: out of memory!\n");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "bip_read_from_peer: out of memory!");
             return -1;
         }
         peer->net->index = 0;
@@ -76,7 +76,7 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
     if (max_bytes_to_read > 0) {
         r = read(peer->net->socket, &peer->net->buffer[peer->net->index], max_bytes_to_read);
         if (r < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s\n", peer_name, strerror(errno));
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s", peer_name, strerror(errno));
             return -1;
         } else if (r == 0) {
             // peer disconnects

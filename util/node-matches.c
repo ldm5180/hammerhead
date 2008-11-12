@@ -11,7 +11,7 @@
 
 int bionet_node_matches_id(const bionet_node_t *node, const char *id) {
     if (node == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_matches_id: NULL node passed in!\n");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_matches_id: NULL node passed in!");
         return 0;
     }
 
@@ -23,12 +23,12 @@ int bionet_node_matches_id(const bionet_node_t *node, const char *id) {
 
 int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node, const char *hab_type, const char *hab_id, const char *node_id) {
     if (node == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_matches_habtype_habid_nodeid: NULL node passed in!\n");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_matches_habtype_habid_nodeid: NULL node passed in!");
         return 0;
     }
 
     if (node->hab == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_matches_habtype_habid_nodeid: passed-in node has NULL hab!\n");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_matches_habtype_habid_nodeid: passed-in node has NULL hab!");
         return 0;
     }
 

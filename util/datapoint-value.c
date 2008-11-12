@@ -584,12 +584,12 @@ int bionet_resource_value_decode(bionet_resource_t *resource, const void *p, int
     //
 
     if (resource == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_value_decode(): NULL Resource passed in\n");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_value_decode(): NULL Resource passed in");
         return -1;
     }
 
     if (p == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_value_decode(): NULL input string\n");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_value_decode(): NULL input string");
         return -1;
     }
 

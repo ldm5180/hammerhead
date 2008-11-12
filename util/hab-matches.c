@@ -11,7 +11,7 @@
 
 int bionet_hab_matches_type_and_id(const bionet_hab_t *hab, const char *type, const char *id) {
     if (hab == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_matches_type_and_id: NULL hab passed in!\n");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_matches_type_and_id: NULL hab passed in!");
         return 0;
     }
 
