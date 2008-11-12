@@ -15,7 +15,7 @@
 
 
 
-#define ID "CAL Server mDNS-SD/BIP "
+#define ID "mDNS-SD/BIP "
 
 
 // describes "this" server

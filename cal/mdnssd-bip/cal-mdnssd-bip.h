@@ -12,7 +12,7 @@
 
 #include <glib.h>
 
-#include "cal-event.h"
+#include "cal-util.h"
 
 
 

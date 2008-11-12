@@ -71,13 +71,13 @@ bip_peer_t *get_peer_by_name(const char *peer_name) {
 
     peer = calloc(1, sizeof(bip_peer_t));
     if (peer == NULL) {
-        fprintf(stderr, ID "get_peer_by_name: out of memory\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "get_peer_by_name: out of memory\n");
         return NULL;
     };
 
     hash_key = strdup(peer_name);
     if (hash_key == NULL) {
-        fprintf(stderr, ID "get_peer_by_name: out of memory\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "get_peer_by_name: out of memory\n");
         free(peer);
         return NULL;
     };
@@ -114,7 +114,7 @@ static int connect_to_peer(const char *peer_name, bip_peer_t *peer) {
 
 
     if (peer->net == NULL) {
-        fprintf(stderr, ID "connect_to_peer: peer '%s' has no known network address\n", peer_name);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "connect_to_peer: peer '%s' has no known network address\n", peer_name);
         return -1;
     }
 
@@ -122,7 +122,7 @@ static int connect_to_peer(const char *peer_name, bip_peer_t *peer) {
 
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0) {
-        fprintf(stderr, ID "connect_to_peer(): error making socket: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "connect_to_peer: error making socket: %s\n", strerror(errno));
         return -1;
     }
 
@@ -131,11 +131,11 @@ static int connect_to_peer(const char *peer_name, bip_peer_t *peer) {
     ai_hints.ai_socktype = SOCK_STREAM;  // TCP
     r = getaddrinfo(peer->net->hostname, NULL, &ai_hints, &ai);
     if (r != 0) {
-        fprintf(stderr, ID "connect_to_peer(): error with getaddrinfo(\"%s\", ...): %s", peer->net->hostname, gai_strerror(r));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "connect_to_peer: error with getaddrinfo(\"%s\", ...): %s", peer->net->hostname, gai_strerror(r));
         return -1;
     }
     if (ai == NULL) {
-        fprintf(stderr, ID "connect_to_peer(): no results from getaddrinfo(\"%s\", ...)", peer->net->hostname);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "connect_to_peer: no results from getaddrinfo(\"%s\", ...)", peer->net->hostname);
         return -1;
     }
 
@@ -144,10 +144,11 @@ static int connect_to_peer(const char *peer_name, bip_peer_t *peer) {
     r = connect(s, ai->ai_addr, ai->ai_addrlen);
     if (r != 0) {
         struct sockaddr_in *sin = (struct sockaddr_in *)ai->ai_addr;
-        fprintf(
-            stderr,
+        g_log(
+            CAL_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
             ID
-            "connect_to_peer(): error connecting to peer '%s' at %s:%hu (%s): %s\n",
+            "connect_to_peer: error connecting to peer '%s' at %s:%hu (%s): %s\n",
             peer_name,
             peer->net->hostname,
             peer->net->port,
@@ -172,10 +173,10 @@ static void read_from_user(void) {
 
     r = read(cal_client_mdnssd_bip_fds_from_user[0], &event, sizeof(event));
     if (r < 0) {
-        fprintf(stderr, ID "read_from_user(): error reading from user: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_user: error reading from user: %s\n", strerror(errno));
         return;
     } else if (r != sizeof(event)) {
-        fprintf(stderr, ID "read_from_user(): short read from user\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_user: short read from user\n");
         return;
     }
 
@@ -202,7 +203,7 @@ static void read_from_user(void) {
 
             s = (cal_client_mdnssd_bip_subscription_t *)calloc(1, sizeof(cal_client_mdnssd_bip_subscription_t));
             if (s == NULL) {
-                fprintf(stderr, ID "read_from_user: out of memory\n");
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_user: out of memory\n");
                 return;
             }
 
@@ -224,7 +225,7 @@ static void read_from_user(void) {
                 g_hash_table_iter_init (&iter, peers);
                 while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
                     if (peer->net == NULL) {
-                        fprintf(stderr, ID "read_from_user: peer has NULL bip_peer_t!\n");
+                        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_user: peer has NULL bip_peer_t!\n");
                         continue;
                     }
 
@@ -242,7 +243,7 @@ static void read_from_user(void) {
         }
 
         default: {
-            fprintf(stderr, ID "read_from_user(): unknown event %d from user\n", event->type);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_user: unknown event %d from user\n", event->type);
             return;
         }
     }
@@ -277,7 +278,7 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
         case BIP_MSG_TYPE_MESSAGE: {
             event = cal_event_new(CAL_EVENT_MESSAGE);
             if (event == NULL) {
-                fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_publisher: out of memory!\n");
                 bip_net_clear(peer->net);
                 return;
             }
@@ -285,7 +286,7 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
             event->peer_name = strdup(peer_name);
             if (event->peer_name == NULL) {
                 cal_event_free(event);
-                fprintf(stderr, ID "read_from_publisher: out of memory!\n");
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_publisher: out of memory!\n");
                 bip_net_clear(peer->net);
                 return;
             }
@@ -301,7 +302,7 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
         case BIP_MSG_TYPE_PUBLISH: {
             event = cal_event_new(CAL_EVENT_PUBLISH);
             if (event == NULL) {
-                fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_publisher: out of memory!\n");
                 bip_net_clear(peer->net);
                 return;
             }
@@ -309,7 +310,7 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
             event->peer_name = strdup(peer_name);
             if (event->peer_name == NULL) {
                 cal_event_free(event);
-                fprintf(stderr, ID "read_from_publisher(): out of memory!\n");
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_publisher: out of memory!\n");
                 bip_net_clear(peer->net);
                 return;
             }
@@ -323,7 +324,7 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
         }
 
         default: {
-            fprintf(stderr, ID "read_from_publisher(): invalid BIP message type %d!\n", peer->net->header[BIP_MSG_HEADER_TYPE_OFFSET]);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_publisher: invalid BIP message type %d!\n", peer->net->header[BIP_MSG_HEADER_TYPE_OFFSET]);
             bip_net_clear(peer->net);
             return;
         }
@@ -333,9 +334,9 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer) {
 
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
-        fprintf(stderr, ID "read_from_publisher(): error writing to user thread!!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_publisher: error writing to user thread!!");
     } else if (r < sizeof(event)) {
-        fprintf(stderr, ID "read_from_publisher(): short write to user thread!!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_publisher: short write to user thread!!");
     }
 }
 
@@ -370,32 +371,32 @@ static void resolve_callback(
     free(sc);
 
     if (errorCode != kDNSServiceErr_NoError) {
-        fprintf(stderr, ID "resolve_callback: Error returned from resolve: %d\n", errorCode);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: Error returned from resolve: %d\n", errorCode);
         cal_event_free(event);
         return;
     }
 
     peer = get_peer_by_name(event->peer_name);
     if (peer == NULL) {
-        fprintf(stderr, ID "resolve_callback: out of memory\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: out of memory\n");
         return;
     }
 
     if (peer->net != NULL) {
         // FIXME: just add another net
-        fprintf(stderr, ID "resolve_callback: new peer collides with existing peer '%s'\n", event->peer_name);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: new peer collides with existing peer '%s'\n", event->peer_name);
         return;
     }
 
     peer_name = strdup(event->peer_name);
     if (peer_name == NULL) {
-        fprintf(stderr, ID "resolve_callback: out of memory\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: out of memory\n");
         return;
     }
 
     peer->net = calloc(1, sizeof(bip_peer_network_info_t));
     if (peer->net == NULL) {
-        fprintf(stderr, ID "resolve_callback: out of memory\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: out of memory\n");
         free(peer_name);
         cal_event_free(event);
         return;
@@ -406,7 +407,7 @@ static void resolve_callback(
 
     peer->net->hostname = strdup(hosttarget);
     if (peer->net->hostname == NULL) {
-        fprintf(stderr, ID "resolve_callback: out of memory\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: out of memory\n");
         cal_event_free(event);
         free(peer_name);
         free(peer->net);
@@ -424,7 +425,7 @@ static void resolve_callback(
 
         r = connect_to_peer(peer_name, peer);
         if (r < 0) {
-            fprintf(stderr, ID "resolve_callback: error connecting to peer '%s' to subscribe\n", peer_name);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: error connecting to peer '%s' to subscribe\n", peer_name);
             cal_event_free(event);
             free(peer_name);
             free(peer->net);
@@ -438,9 +439,9 @@ static void resolve_callback(
     // the event becomes the responsibility of the callback now, so they might leak memory but we're not
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
     if (r < 0) {
-        fprintf(stderr, ID "resolve_callback: error writing event: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: error writing event: %s\n", strerror(errno));
     } else if (r != sizeof(event)) {
-        fprintf(stderr, ID "resolve_callback: short write while writing event\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: short write while writing event\n");
     }
 } 
 
@@ -462,7 +463,7 @@ static void browse_callback(
     void *context
 ) {
     if (errorCode != kDNSServiceErr_NoError) {
-        fprintf(stderr, ID "browse_callback: Error returned from browse: %d\n", errorCode);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "browse_callback: Error returned from browse: %d\n", errorCode);
         return;
     }
 
@@ -474,13 +475,13 @@ static void browse_callback(
 
         event = cal_event_new(CAL_EVENT_JOIN);
         if (event == NULL) {
-            fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "browse_callback: out of memory!  dropping this event!\n");
             return;
         }
 
         event->peer_name = strdup(name);
         if (event->peer_name == NULL) {
-            fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "browse_callback: out of memory!  dropping this event!\n");
             cal_event_free(event);
             return;
         }
@@ -488,7 +489,7 @@ static void browse_callback(
 
         sc = malloc(sizeof(struct cal_client_mdnssd_bip_service_context));
         if (sc == NULL) {
-            fprintf(stderr, ID "browse_callback: out of memory!  dropping this joining peer!\n");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "browse_callback: out of memory!  dropping this joining peer!\n");
             cal_event_free(event);
             return;
         }
@@ -507,14 +508,13 @@ static void browse_callback(
             (void*)sc
         );
         if (error != kDNSServiceErr_NoError) {
-            fprintf(stderr, ID "browse_callabck: failed to start resolv service, dropping this joining peer\n");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "browse_callabck: failed to start resolv service, dropping this joining peer\n");
             cal_event_free(event);
             free(sc);
             return;
         }
 
         // add this new service ref to the list
-        // printf("adding this resolve from service ref list\n");
         service_list = g_slist_prepend(service_list, sc);
     } else {
         int r;
@@ -529,13 +529,13 @@ static void browse_callback(
 
         event = cal_event_new(CAL_EVENT_LEAVE);
         if (event == NULL) {
-            fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "browse_callback: out of memory!  dropping this event!\n");
             return;
         }
 
         event->peer_name = strdup(name);
         if (event->peer_name == NULL) {
-            fprintf(stderr, ID "browse_callback: out of memory!  dropping this event!\n");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "browse_callback: out of memory!  dropping this event!\n");
             cal_event_free(event);
             return;
         }
@@ -543,9 +543,9 @@ static void browse_callback(
         // the event and the peer become the responsibility of the callback now, so they might leak memory but we're not
         r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
         if (r < 0) {
-            fprintf(stderr, ID "browser_callback: error writing event: %s\n", strerror(errno));
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "browser_callback: error writing event: %s\n", strerror(errno));
         } else if (r != sizeof(event)) {
-            fprintf(stderr, ID "browser_callback: short write while writing event\n");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "browser_callback: short write while writing event\n");
         }
     }
 }
@@ -556,8 +556,6 @@ static void browse_callback(
 // cancel all pending mDNS-SD service requests
 void cleanup_service_list(void *unused) {
     GSList *ptr;
-
-    printf("cleaning up\n");
 
     ptr = service_list;
     while (ptr != NULL) {
@@ -626,7 +624,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
     browse = malloc(sizeof(struct cal_client_mdnssd_bip_service_context));
     if (browse == NULL) {
-        fprintf(stderr, ID "client thread: out of memory!\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "client thread: out of memory!\n");
         return NULL;
     }
 
@@ -642,7 +640,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
     if (error != kDNSServiceErr_NoError) {
         free(browse);
-	fprintf(stderr, ID "client thread: Error browsing for service: %d\n", error);
+	g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "client thread: Error browsing for service: %d\n", error);
 	return NULL;
     }
 
@@ -709,7 +707,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
                 // connected_publishers)
                 err = DNSServiceProcessResult(sc->service_ref);
                 if (err != kDNSServiceErr_NoError) {
-                    fprintf(stderr, ID "client thread: Error processing service reference result: %d.\n", err);
+                    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "client thread: Error processing service reference result: %d.\n", err);
                     sleep(1);
                 }
 

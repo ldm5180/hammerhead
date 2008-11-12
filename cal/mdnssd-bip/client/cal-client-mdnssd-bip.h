@@ -13,7 +13,7 @@
 
 
 
-#define ID "CAL Client mDNS-SD/BIP "
+#define ID "mDNS-SD/BIP Client "
 
 
 
