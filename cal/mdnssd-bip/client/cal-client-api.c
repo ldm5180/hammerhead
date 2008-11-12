@@ -47,20 +47,20 @@ int cal_client_mdnssd_bip_init(
     // create the pipe for passing events back to the user thread
     r = pipe(cal_client_mdnssd_bip_fds_to_user);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: error making to-user pipe: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error making to-user pipe: %s\n", strerror(errno));
         goto fail1;
     }
 
     // create the pipe for getting subscription requests from the user
     r = pipe(cal_client_mdnssd_bip_fds_from_user);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: error making from-user pipe: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error making from-user pipe: %s\n", strerror(errno));
         goto fail2;
     }
 
     cal_client_mdnssd_bip_thread = (pthread_t *)malloc(sizeof(pthread_t));
     if (cal_client_mdnssd_bip_thread == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: cannot allocate memory for thread: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot allocate memory for thread: %s\n", strerror(errno));
         goto fail3;
     }
 
@@ -70,7 +70,7 @@ int cal_client_mdnssd_bip_init(
     // start the Client thread
     r = pthread_create(cal_client_mdnssd_bip_thread, NULL, cal_client_mdnssd_bip_function, this);
     if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: cannot create thread: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot create thread: %s\n", strerror(errno));
         goto fail4;
     }
 
@@ -105,13 +105,13 @@ void cal_client_mdnssd_bip_shutdown(void) {
     int r;
 
     if (cal_client_mdnssd_bip_thread == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "shutdown: called before init()!\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: called before init()!\n");
         return;
     }
 
     r = pthread_cancel(*cal_client_mdnssd_bip_thread);
     if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "shutdown: error canceling client thread: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: error canceling client thread: %s\n", strerror(errno));
         return;
     } else {
         pthread_join(*cal_client_mdnssd_bip_thread, NULL);
@@ -135,7 +135,7 @@ int cal_client_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
     cal_event_t *event;
 
     if (cal_client_mdnssd_bip_thread == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "subscribe: called before init()!\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: called before init()!\n");
         return 0;
     }
 
@@ -159,11 +159,11 @@ int cal_client_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
 
     r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "subscribe: error writing to client thread: %s", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: error writing to client thread: %s", strerror(errno));
         return 0;
     }
     if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "subscribe: short write to client thread!!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: short write to client thread!!");
         return 0;
     }
 
@@ -178,19 +178,19 @@ int cal_client_mdnssd_bip_read(void) {
     int r;
 
     if (cal_client_mdnssd_bip_thread == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read: called before init()!\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: called before init()!\n");
         return 0;
     }
 
     r = read(cal_client_mdnssd_bip_fds_to_user[0], &event, sizeof(event));
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read: error: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: error: %s\n", strerror(errno));
         return 0;
     } else if (r != sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read: short read from client thread\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: short read from client thread\n");
         return 0;
     } else if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read: got NULL event!\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got NULL event!\n");
         return 0;
     }
 
@@ -217,7 +217,7 @@ int cal_client_mdnssd_bip_read(void) {
         }
 
         default: {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read: got unhandled event type %d\n", event->type);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got unhandled event type %d\n", event->type);
             return 1;  // dont free events we dont understand
         }
     }
@@ -235,7 +235,7 @@ int cal_client_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
     cal_event_t *event;
 
     if (cal_client_mdnssd_bip_thread == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "sendto: called before init()!\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: called before init()!\n");
         return 0;
     }
 
@@ -257,7 +257,7 @@ int cal_client_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
 
     r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "sendto: error writing to client thread: %s", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: error writing to client thread: %s", strerror(errno));
         return 0;
     }
     if (r < sizeof(event)) {

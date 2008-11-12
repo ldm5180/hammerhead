@@ -44,7 +44,7 @@ static void register_callback(
     void *context
 ) {
     if (errorCode != kDNSServiceErr_NoError) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "register_callback: Register callback returned %d\n", errorCode);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "register_callback: Register callback returned %d\n", errorCode);
     }
 }
 
@@ -57,10 +57,10 @@ static void read_from_user(void) {
 
     r = read(cal_server_mdnssd_bip_fds_from_user[0], &event, sizeof(event));
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_user: error reading from user: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: error reading from user: %s\n", strerror(errno));
         return;
     } else if (r != sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_user: short read from user\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: short read from user\n");
         return;
     }
 
@@ -71,7 +71,7 @@ static void read_from_user(void) {
 
             peer = g_hash_table_lookup(clients, event->peer_name);
             if (peer == NULL) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_user: unknown peer name '%s' passed in, dropping outgoing Message event\n", event->peer_name);
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping outgoing Message event\n", event->peer_name);
                 return;
             }
             bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
@@ -106,7 +106,7 @@ static void read_from_user(void) {
         }
 
         default: {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_user(): unknown event %d from user\n", event->type);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user(): unknown event %d from user\n", event->type);
             return;  // dont free events we dont understand
         }
     }
@@ -141,7 +141,7 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
     sin_len = sizeof(struct sockaddr_in);
     client->net->socket = accept(this->socket, (struct sockaddr *)&sin, &sin_len);
     if (client->net->socket < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: error accepting a connection: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: error accepting a connection: %s\n", strerror(errno));
         goto fail1;
     }
 
@@ -159,7 +159,7 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
 
         r = snprintf(name, sizeof(name), "bip://%s:%hu", inet_ntoa(sin.sin_addr), ntohs(sin.sin_port));
         if (r >= sizeof(name)) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: peer name too long\n");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: peer name too long\n");
             goto fail3;
         }
 
@@ -185,9 +185,9 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
 
     r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection(): error writing Connect event: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection(): error writing Connect event: %s\n", strerror(errno));
     } else if (r != sizeof(cal_event_t*)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection(): short write of Connect event!\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection(): short write of Connect event!\n");
     }
 
     return;
@@ -228,10 +228,10 @@ static void send_disconnect_event(const char *peer_name) {
 
     r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "send_disconnect_event: error writing Disconnect event: %s\n", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "send_disconnect_event: error writing Disconnect event: %s\n", strerror(errno));
         cal_event_free(event);
     } else if (r != sizeof(cal_event_t*)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "send_disconnect_event: short write of Disconnect event!\n");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "send_disconnect_event: short write of Disconnect event!\n");
         cal_event_free(event);
     }
 }
@@ -305,7 +305,7 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer) {
         }
 
         default: {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_client: dont know what to do with message type %d\n", peer->net->header[BIP_MSG_HEADER_TYPE_OFFSET]);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: dont know what to do with message type %d\n", peer->net->header[BIP_MSG_HEADER_TYPE_OFFSET]);
             cal_event_free(event);
             bip_net_clear(peer->net);
             return -1;
@@ -323,10 +323,10 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer) {
 
     r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_client: error writing to user thread!!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: error writing to user thread!!");
         return -1;
     } else if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_client: short write to user thread!!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: short write to user thread!!");
         return -1;
     }
 
@@ -409,7 +409,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
             free(advertisedRef);
             advertisedRef = NULL;
             TXTRecordDeallocate(&txt_ref);
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "dnssd: Error registering service: %d\n", error);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dnssd: Error registering service: %d\n", error);
             return 0;
         }
     }
@@ -433,7 +433,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     if (error != kDNSServiceErr_NoError) {
         free(advertisedRef);
         advertisedRef = NULL;
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: Error registering service: %d\n", error);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: Error registering service: %d\n", error);
         return NULL;
     }
 
