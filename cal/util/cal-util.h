@@ -6,5 +6,8 @@
 #include "cal-event.h"
 
 
+#define  CAL_LOG_DOMAIN  "CAL"
+
+
 #endif //  __CAL_UTIL_H
 
