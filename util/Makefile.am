@@ -25,6 +25,7 @@ libbionet_util_la_SOURCES =    \
     resource-is-dirty.c        \
     resource-make-clean.c      \
     resource-get-datapoint.c   \
+    resource-set.c             \
     datapoint-new.c            \
     datapoint-value.c          \
     datapoint-timestamp.c      \

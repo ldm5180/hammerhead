@@ -235,6 +235,24 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
 
 
 
+//
+//       NAME:  bionet_resource_set()
+//
+//   FUNCTION:  If the Resource has no Datapoint, one will be created.
+//              Then, the value and timestamp of the Resource's first
+//              Datapoint is sets as specified.
+//
+//  ARGUMENTS:  The Resource, Value, and Timestamp.
+//
+//    RETURNS:  0 on success, -1 on failure.
+//
+
+int bionet_resource_set(bionet_resource_t *resource, const bionet_datapoint_value_t *value, const struct timeval *timestamp);
+int bionet_resource_set_with_valuestr(bionet_resource_t *resource, const char *value_str, const struct timeval *timestamp);
+
+
+
+
 bionet_datapoint_t *bionet_resource_add_datapoint(bionet_resource_t *resource, const char *value_str, const struct timeval *timestamp);
 void bionet_resource_add_existing_datapoint(bionet_resource_t *resource, bionet_datapoint_t *new_datapoint);
 
