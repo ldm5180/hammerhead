@@ -21,7 +21,7 @@
 
 
 //
-//  bionet_datapoint_value_t should always be initialized (zero is valid)
+//  bionet_datapoint_value_t should always be initialized (all-bits-zero is valid)
 //
 
 typedef union {
