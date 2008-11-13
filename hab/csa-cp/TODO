@@ -1,0 +1,19 @@
+TODO:
+
+If you tell it a device file that does not exist (for example a USB
+serial dongle that's not plugged in yet), it doesnt pick it up when you
+plug it in later.
+
+
+Wednesday:
+Fix one connection bug (only connects once, and doesn't allow you to re-connect)
+Clean the files on the device once they've been downloaded.
+Clean up all the prints, change to G_LOG debug/warnings/error.
+
+
+When we know more info:
+Store/Report all the data on the device to Bionet
+
+----
+
+Issues: 

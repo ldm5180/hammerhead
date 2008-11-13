@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# Copyright (C) 2004-2008, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of GNU General Public License version 2, as
+# published by the Free Software Foundation.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+#
+
+
+#ID=$(hostname)
+DEVICE=/dev/ttyUSB0
+NAG=bionet-basestation.colorado.edu
+
+[ -f $EXP_DIR/etc/bionet.conf ]     && source $EXP_DIR/etc/bionet.conf
+[ -f $EXP_DIR/etc/csa-cp-hab.conf ] && source $EXP_DIR/etc/csa-cp-hab.conf
+
+[ -f $EXP_DIR/var/etc/bionet.conf ]     && source $EXP_DIR/var/etc/bionet.conf
+[ -f $EXP_DIR/var/etc/csa-cp-hab.conf ] && source $EXP_DIR/var/etc/csa-cp-hab.conf
+
+PIDFILE=/tmp/csa-cp-hab.pid
+
+
+case "$1" in
+
+    start)
+        echo -n "Starting CSA-CP HAB: "
+
+        SET_ID=""
+        [ ! -z "$ID" ] && SET_ID="--id $ID"
+
+	csa-cp-hab $SET_ID --device-file $DEVICE --nag-hostname $NAG < /dev/null > /dev/null 2> /dev/null &
+        echo $! >| $PIDFILE
+
+        echo ok
+        ;;
+
+    stop)
+        echo -n "Stopping CSA-CP HAB: "
+        kill $(cat $PIDFILE)
+        echo ok
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+
+esac
+
+exit 0
+

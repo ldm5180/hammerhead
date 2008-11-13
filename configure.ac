@@ -102,6 +102,7 @@ AC_CONFIG_FILES([Makefile
                  hab/Makefile
                  hab/libhab/Makefile
                  hab/random/Makefile
+                 hab/csa-cp/Makefile
                  ])
 
 AC_OUTPUT

@@ -1,0 +1,77 @@
+
+Copyright (C) 2004-2008, Regents of the University of Colorado.
+This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
+
+
+
+
+To change batteries
+~~~~~~~~~~~~~~~~~~~
+
+If nothing happens when you push the MODE button, the batteries are
+probably drained.
+
+1.  Open the big hatch on the back.
+
+2.  Remove the battery pack.
+
+3.  Measure the voltage between the two conductors on the connector.
+    If it's less than 8.75 Volts or so, you need new batteries.
+
+4.  Unscrew the two small screws furthest from the connectors (don't
+    unscrew the two small screws close to the connector).
+
+5.  Lift the two 9V batteries out by pushing up on the bottoms.
+
+6.  Put two fresh batteries in.  The "-" pole of the battery (the larger
+    of the two connectors on the top of the 9V battery) goes in the
+    larger of the two holes in the battery holder.
+
+7.  Screw the lid back on the battery holder.
+
+8.  Insert the battery holder into the CSA-CP device by lowering it
+    straight down.  You will have to apply some force to mate the
+    connectors.
+
+9.  Close the hatch.
+
+
+
+
+To make the CSA-CP record data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Just turn on the CSA-CP device.  Hold down the MODE button for about
+5 seconds.  It'll start recording data automatically.
+
+
+
+
+How to make the CSA-CP HAB read data from the CSA-CP device
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1.  Run "csa-cp-hab --nag NAG-HOSTNAME --device-file SERIALPORT".
+
+    SERIALPORT specifies the serial port.  On Linux this could be
+    "/dev/ttyS0" for the first on-board port, or "/dev/ttyUSB2" for the
+    third USB-to-RS232 dongle, or something else. In Windows, it could
+    be something like "COM1".
+
+    It will start trying to open that device file.  If the device does
+    not exist (for example because the USB dongle is not plugged in),
+    it will keep retrying.
+
+    Once it's opened the port it will continuously poll for a CSA-CP
+    device, and you're ready for step 2.
+
+2.  Turn on the CSA-CP device by pushing the button labeled "MODE", and
+    holding it down until the display says "RELEASE", about 1 second.
+    The CSA-CP device will beep.  The MODE button is located on the
+    small face of the device below the display.
+
+    The CSA-CP HAB will detect the device and connect to it, and the
+    CSA-CP display will say "CONNECT".
+
+    Data will start flowing into Bionet.
+
+
