@@ -29,7 +29,6 @@ typedef struct bionet_datapoint bionet_datapoint_t;
 #include "bionet-node.h"
 #include "bionet-stream.h"
 #include "bionet-resource.h"
-#include "bionet-datapoint.h"
 
 
 
