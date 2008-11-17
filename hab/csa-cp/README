@@ -50,7 +50,7 @@ Just turn on the CSA-CP device.  Hold down the MODE button for about
 How to make the CSA-CP HAB read data from the CSA-CP device
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1.  Run "csa-cp-hab --nag NAG-HOSTNAME --device-file SERIALPORT".
+1.  Run "csa-cp-hab --device-file SERIALPORT".
 
     SERIALPORT specifies the serial port.  On Linux this could be
     "/dev/ttyS0" for the first on-board port, or "/dev/ttyUSB2" for the

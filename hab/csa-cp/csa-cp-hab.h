@@ -87,7 +87,7 @@ int get_num_files(serial_handle_t serial_handle);
 
 
 // 
-//  FUNCTION:  Downloads a session from the CSA-CP, reports it to the NAG,
+//  FUNCTION:  Downloads a session from the CSA-CP, reports it to Bionet,
 //             and optionally saves the raw data to a file on disk.
 //
 // ARGUMENTS:  'serial_handle' is the serial handle connected to the

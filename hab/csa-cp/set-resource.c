@@ -21,10 +21,6 @@
 #include <glib.h>
 
 
-//
-//  Nag sets resources through this.
-//
-
 void cb_set_resource(const char *node_id, const char *resource_id, const char *value) {
     g_log("", G_LOG_LEVEL_WARNING, "unable to set resource");
     return;
