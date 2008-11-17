@@ -121,6 +121,12 @@ static void parse_line(char* line) {
                 return;
             }
 
+            r = bionet_node_add_resource(node, resource);
+            if (r != 0) {
+                g_warning("error adding new Resource to new Node!");
+                return;
+            }
+
             val.float_v = o2;
             r = bionet_resource_set(resource, &val, NULL);
             if (r != 0) {
@@ -312,7 +318,10 @@ int download_session(serial_handle_t serial_handle, int session_number, int reco
 
     g_debug("finished downloading session");
 
+    bionet_hab_remove_node_by_id(this_hab, node->id);
+    
     hab_report_lost_node("csa-cp");
+
     bionet_node_free(node);
     node = NULL;
 
