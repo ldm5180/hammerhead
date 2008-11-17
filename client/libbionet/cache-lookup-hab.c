@@ -10,6 +10,7 @@
 
 #include "bionet.h"
 
+extern GSList *bionet_habs;
 
 typedef struct {
     const char *hab_type;

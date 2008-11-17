@@ -77,8 +77,19 @@ AC_ARG_ENABLE(python, AC_HELP_STRING([--disable-python],
       [disable python dependent parts]),
       [ENABLE_PYTHON=$enableval],
       [ENABLE_PYTHON=yes])
+if test "x$ENABLE_PYTHON" = "xyes" ; then
+   AC_PATH_PROG(PYTHON, python, no)
+   AC_PATH_PROG(SWIG, swig, no)
+   if test "x$PYTHON" = xno; then
+      AC_MSG_ERROR([could not find python])
+   fi
+   if test "x$SWIG" = xno; then
+      AC_MSG_ERROR([could not find swig])
+   fi
+fi
 AM_CONDITIONAL(ENABLE_PYTHON, test "x$ENABLE_PYTHON" = "xyes")
-			      
+
+ 		      
 # Checks for library functions.
 AC_FUNC_MALLOC
 

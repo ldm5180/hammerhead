@@ -8,6 +8,7 @@
 #include "bionet.h"
 
 
+extern GSList *bionet_habs;
 
 
 void libbionet_cache_add_hab(bionet_hab_t *hab) {

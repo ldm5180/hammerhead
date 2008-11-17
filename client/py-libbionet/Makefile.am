@@ -9,5 +9,10 @@ libbionet_py_la_LDFLAGS = -L../libbionet -L../../cal/mdnssd-bip/client -L../../a
 libbionet_py_la_LIBADD = -lbionet -lcal-mdnssd-bip-client -lbionet-asn -lbionet-util
 
 bionet_wrap.c: bionet.i
-	swig -python ${SWIG_INCDIR} bionet.i 
+	swig -w302 -python ${SWIG_INCDIR} bionet.i 
 	ln -sf .libs/libbionet-py.so _bionet.so
+
+clean-local:
+	rm -f bionet.py _bionet.so bionet_wrap.c libbionet*
+
+EXTRA_DIST = bionet.py .libs/libbionet-py.so* libbionet-py.a

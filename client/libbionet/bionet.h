@@ -170,19 +170,24 @@ int bionet_connect(void);
 int bionet_read(void);
 
 
+/**
+ * @brief Get the number of HABs available
+ * 
+ * @return Number of available HABs
+ */
+unsigned int bionet_cache_get_num_habs(void);
 
 
-//
-// This is a list of HABs that has been reported to the user via their HAB
-// callback.  The data of each is a bionet_hab_t*.
-//
-// This list is updated whenever the Bionet Client library reports (to the
-// user) a HAB joining or leaving.
-//
-
-extern GSList *bionet_habs;
-
-
+/**
+ * @brief Get a HAB by its index
+ *
+ * Used for iterating over all known HABs
+ *
+ * @param[in] index Index of the HAB requested
+ *
+ * @return Pointer to the HAB requested or NULL if no HAB exists at index
+ */
+bionet_node_t *bionet_cache_get_hab_by_index(unsigned int index);
 
 
 //

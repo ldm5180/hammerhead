@@ -2,15 +2,16 @@ include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libbionet.la
 
-libbionet_la_SOURCES =   \
-    set-id.c             \
-    connect.c            \
-    read.c               \
-    register-callback.c  \
+libbionet_la_SOURCES =        \
+    set-id.c                  \
+    connect.c                 \
+    read.c                    \
+    register-callback.c       \
     subscribe-datapoints.c    \
     subscribe-hab-list.c      \
     subscribe-node-list.c     \
-    cal-callback.c       \
+    cal-callback.c            \
+    cache-get-hab.c           \
     cache-internal.c          \
     cache-lookup-hab.c        \
     cache-lookup-node.c       \

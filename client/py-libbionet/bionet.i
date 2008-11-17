@@ -7,6 +7,7 @@
 %include "bionet.h"
 %include "bionet-util.h"
 
+
 %constant void cb_datapoint(bionet_datapoint_t *datapoint);
 %constant void cb_lost_node(bionet_node_t *node);
 %constant void cb_new_node(bionet_node_t *node);
@@ -32,7 +33,7 @@ void cb_datapoint(bionet_datapoint_t *datapoint) {
 }
 
 
-void cb_lost_node(bionet_node_t *node) {
+ void cb_lost_node(bionet_node_t *node) {
     g_log("", G_LOG_LEVEL_INFO, "lost node: %s.%s.%s", node->hab->type, node->hab->id, node->id);
 }
 
