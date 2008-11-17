@@ -17,6 +17,16 @@
 int bionet_resource_set(bionet_resource_t *resource, const bionet_datapoint_value_t *value, const struct timeval *timestamp) {
     bionet_datapoint_t *d;
 
+    if (resource == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_set(): NULL Resource passed in");
+        return -1;
+    }
+
+    if (value == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_set(): NULL Value passed in");
+        return -1;
+    }
+
     d = bionet_resource_get_datapoint_by_index(resource, 0);
     if (d == NULL) {
         d = bionet_datapoint_new(resource, value, timestamp);
