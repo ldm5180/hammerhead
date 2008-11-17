@@ -110,14 +110,25 @@ static void parse_line(char* line) {
 
         if (node == NULL) {
             node = bionet_node_new(this_hab, "csa-cp");
+            if (node == NULL) {
+                g_warning("error creating new Node!");
+                return;
+            }
 
             resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "O2");
+            if (resource == NULL) {
+                g_warning("error creating new Resource!");
+                return;
+            }
 
             val.float_v = o2;
             r = bionet_resource_set(resource, &val, NULL);
             if (r != 0) {
                 g_warning("error setting O2\n");
+                return;
             }
+
+            bionet_hab_add_node(this_hab, node);
 
             hab_report_new_node(node);
             return;

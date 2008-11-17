@@ -24,7 +24,7 @@ int bionet_resource_get_num_datapoints(const bionet_resource_t *resource) {
 
 bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource_t *resource, unsigned int index) {
     if (resource == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_get_datapointby_inidex(): NULL Resource passed in");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_get_datapointby_index(): NULL Resource passed in");
         errno = EINVAL;
         return NULL;
     }

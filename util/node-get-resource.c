@@ -24,7 +24,7 @@ int bionet_node_get_num_resources(const bionet_node_t *node) {
 
 bionet_resource_t *bionet_node_get_resource_by_index(const bionet_node_t *node, unsigned int index) {
     if (node == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_get_resource_by_inidex(): NULL Node passed in");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_get_resource_by_index(): NULL Node passed in");
         errno = EINVAL;
         return NULL;
     }
