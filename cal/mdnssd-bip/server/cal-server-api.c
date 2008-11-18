@@ -51,8 +51,7 @@ int cal_server_mdnssd_bip_init(
     this->name = strdup(name);
     if (this->name == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: out of memory");
-        free(this);
-        return -1;
+        goto fail0;
     }
 
 
@@ -63,7 +62,7 @@ int cal_server_mdnssd_bip_init(
     this->socket = socket(PF_INET, SOCK_STREAM, 0);
     if (this->socket == -1) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot create TCP socket: %s", strerror(errno));
-        return -1;
+        goto fail1;
     }
 
 
@@ -82,7 +81,7 @@ int cal_server_mdnssd_bip_init(
     r = listen(this->socket, 20);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot listen on port: %s", strerror(errno));
-        goto fail0;
+        goto fail2;
     }
 
     memset(&my_address, 0, sizeof(my_address));
@@ -90,7 +89,7 @@ int cal_server_mdnssd_bip_init(
     r = getsockname(this->socket, (struct sockaddr *)&my_address, &my_address_len);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot get socket port: %s", strerror(errno));
-        goto fail0;
+        goto fail2;
     }
 
     this->port = ntohs(my_address.sin_port);
@@ -105,20 +104,20 @@ int cal_server_mdnssd_bip_init(
     r = pipe(cal_server_mdnssd_bip_fds_to_user);
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error making to-user pipe: %s", strerror(errno));
-        goto fail0;
+        goto fail2;
     }
 
     // create the pipe for getting subscription requests from the user
     r = pipe(cal_server_mdnssd_bip_fds_from_user);
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error making from-user pipe: %s", strerror(errno));
-        goto fail1;
+        goto fail3;
     }
 
     cal_server_mdnssd_bip_thread = (pthread_t *)malloc(sizeof(pthread_t));
     if (cal_server_mdnssd_bip_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: cannot allocate memory for publisher thread: %s", strerror(errno));
-        goto fail2;
+        goto fail4;
     }
 
     // record the user's callback function
@@ -129,7 +128,7 @@ int cal_server_mdnssd_bip_init(
     r = pthread_create(cal_server_mdnssd_bip_thread, NULL, cal_server_mdnssd_bip_function, this);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot start publisher thread: %s", strerror(errno));
-        goto fail3;
+        goto fail5;
     }
 
 
@@ -137,14 +136,14 @@ int cal_server_mdnssd_bip_init(
     r = fcntl(cal_server_mdnssd_bip_fds_to_user[0], F_SETFL, O_NONBLOCK);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot make cal_fd nonblocking: %s", strerror(errno));
-        goto fail4;
+        goto fail6;
     }
 
 
     return cal_server_mdnssd_bip_fds_to_user[0];
 
 
-fail4: 
+fail6: 
     r = pthread_cancel(*cal_server_mdnssd_bip_thread);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error canceling server thread: %s", strerror(errno));
@@ -154,20 +153,26 @@ fail4:
         cal_server_mdnssd_bip_thread = NULL;
     }
 
-fail3:
+fail5:
     free(cal_server_mdnssd_bip_thread);
     cal_server_mdnssd_bip_thread = NULL;
 
-fail2:
+fail4:
     close(cal_server_mdnssd_bip_fds_from_user[0]);
     close(cal_server_mdnssd_bip_fds_from_user[1]);
 
-fail1:
+fail3:
     close(cal_server_mdnssd_bip_fds_to_user[0]);
     close(cal_server_mdnssd_bip_fds_to_user[1]);
 
-fail0:
+fail2:
     close(this->socket);
+
+fail1:
+    free(this->name);
+
+fail0: 
+    free(this);
     return -1;
 }
 
