@@ -93,6 +93,22 @@ typedef struct {
 
 
     //!
+    //! \brief Add a subscription for a client.
+    //!
+    //! \param peer_name The name of the client that is subscribing.
+    //!     The peer_name should have been the subject of a previous
+    //!     Connect event, and not the subject of a Disconnect event since
+    //!     then.
+    //!
+    //! \param topic The subscription topic to add.
+    //!
+    //! \returns True (non-zero) on success.  False (zero) on failure.
+    //!
+
+    int (*subscribe)(const char *peer_name, const char *topic);
+
+
+    //!
     //! \brief Send a message to a connected client.
     //!
     //! This function sends a message (just an array of bytes) to a

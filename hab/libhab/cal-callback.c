@@ -131,6 +131,8 @@ void libhab_cal_callback(const cal_event_t *event) {
                 }
             }
 
+            cal_server.subscribe(event->peer_name, event->topic);
+
             break;
         }
 

@@ -243,6 +243,48 @@ int cal_server_mdnssd_bip_read(void) {
 
 
 
+int cal_server_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
+    int r;
+    cal_event_t *event;
+
+    if (cal_server_mdnssd_bip_thread == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: called before init!");
+        return 0;
+    }
+
+    event = cal_event_new(CAL_EVENT_SUBSCRIBE);
+    if (event == NULL) {
+        return 0;
+    }
+
+    event->peer_name = strdup(peer_name);
+    if (event->peer_name == NULL) {
+        cal_event_free(event);
+        return 0;
+    }
+
+    event->topic = strdup(topic);
+    if (event->topic == NULL) {
+        cal_event_free(event);
+        return 0;
+    }
+
+    r = write(cal_server_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    if (r < 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: error writing to server thread: %s", strerror(errno));
+        return 0;
+    }
+    if (r < sizeof(event)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: short write to server thread!!");
+        return 0;
+    }
+
+    return 1;
+}
+
+
+
+
 int cal_server_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
     int r;
     cal_event_t *event;
@@ -332,6 +374,7 @@ cal_server_t cal_server = {
     .shutdown = cal_server_mdnssd_bip_shutdown,
 
     .read = cal_server_mdnssd_bip_read,
+    .subscribe = cal_server_mdnssd_bip_subscribe,
     .sendto = cal_server_mdnssd_bip_sendto,
     .publish = cal_server_mdnssd_bip_publish
 };

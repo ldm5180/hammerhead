@@ -65,8 +65,20 @@ typedef enum {
     //! responsibility to free it when appropriate.
     CAL_EVENT_MESSAGE,
 
-    //! This event indicates that a client has registered a new
-    //! subscription with us.
+    //! This event means different things in the client and the server.
+    //!
+    //! In the client, when the user calls cal_client.subscribe() this
+    //! event is sent to the CAL client thread, which records it and sends
+    //! it to the appropriate server.
+    //!
+    //! In the server, the user thread gets this event from the CAL thread
+    //! when a client has requested a new subscription.  The user thread
+    //! decides whether to accept the subscription request or not.  If the
+    //! user wants to accept the subscription, it sends a new event with
+    //! the same peer name and topic back to the CAL thread (optionally
+    //! stealing those fields from the original event).  If the user wants
+    //! to drop (ignore) the subscription request, it simply does not send
+    //! a subscribe event back to the CAL thread.
     CAL_EVENT_SUBSCRIBE,
 
     //! This event indicates that a server has published new information to

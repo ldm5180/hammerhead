@@ -80,6 +80,21 @@ static void read_from_user(void) {
             break;
         }
 
+        case CAL_EVENT_SUBSCRIBE: {
+            bip_peer_t *peer;
+
+            peer = g_hash_table_lookup(clients, event->peer_name);
+            if (peer == NULL) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping Subscribe event", event->peer_name);
+                return;
+            }
+
+            peer->subscriptions = g_slist_prepend(peer->subscriptions, event->topic);
+            event->topic = NULL;
+
+            break;
+        }
+
         case CAL_EVENT_PUBLISH: {
             // each client that's connected to us might be subscribed to this topic
             GHashTableIter iter;
@@ -282,24 +297,50 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer) {
         }
 
         case BIP_MSG_TYPE_SUBSCRIBE: {
-            char *topic;
+            int i;
+
+            // 
+            // sanity-check the requested subscription
+            //
+
+            for (i = 0; i < (peer->net->msg_size-1); i ++) {
+                if (!isprint(peer->net->buffer[i])) {
+                    g_log(
+                        CAL_LOG_DOMAIN,
+                        G_LOG_LEVEL_WARNING,
+                        ID "read_from_client: peer %s requested subscription topic with nonprintable character, ignoring request",
+                        peer_name
+                    );
+
+                    cal_event_free(event);
+                    bip_net_clear(peer->net);
+                    return -1;
+                }
+            }
+            if (peer->net->buffer[peer->net->msg_size-1] != (char)0) {
+                g_log(
+                    CAL_LOG_DOMAIN,
+                    G_LOG_LEVEL_WARNING,
+                    ID "read_from_client: peer %s requested subscription topic without terminating NULL, ignoring request",
+                    peer_name
+                );
+
+                cal_event_free(event);
+                bip_net_clear(peer->net);
+                return -1;
+            }
+
+
+            //
+            // looks like a valid subscription request, pass it up to the user thread
+            //
+
 
             event->type = CAL_EVENT_SUBSCRIBE;
-
-            // FIXME: verify that the topic is a NULL-terminated ASCII string
 
             // the event steals the BIP message buffer as the topic
             event->topic = peer->net->buffer;
             peer->net->buffer = NULL;
-
-            topic = strdup(event->topic);
-            if (topic == NULL) {
-                cal_event_free(event);
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_client: out of memory!");
-                bip_net_clear(peer->net);
-                return -1;
-            }
-            peer->subscriptions = g_slist_prepend(peer->subscriptions, topic);
 
             break;
         }
