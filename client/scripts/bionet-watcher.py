@@ -3,6 +3,7 @@
 import sys
 import optparse
 import logging
+from select import select
 
 # parse options 
 parser = optparse.OptionParser()
@@ -64,4 +65,7 @@ if (0 == subscribed_to_something):
     bionet_subscribe_datapoints_by_name("*.*.*:*");
 
 while(1):
-    bionet_read()
+     (rr, wr, er) = select([bionet_fd], [], [])
+     for fd in rr:
+         bionet_read()
+    

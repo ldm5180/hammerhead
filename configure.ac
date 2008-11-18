@@ -112,8 +112,9 @@ AC_CONFIG_FILES([Makefile
                  client/watcher/Makefile
                  hab/Makefile
                  hab/libhab/Makefile
-                 hab/random/Makefile
                  hab/csa-cp/Makefile
+		 hab/mmod/Makefile
+                 hab/random/Makefile
                  ])
 
 AC_OUTPUT
