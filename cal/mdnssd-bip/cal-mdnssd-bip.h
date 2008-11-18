@@ -43,9 +43,9 @@ typedef struct {
 
     //! the payload of the packet we're currently receiving
     //! (dynamically allocated)
-    int msg_size;
-    char *buffer;
-    int index;
+    int msg_size;  //!< size of message we're receiving (we get this from the header)
+    char *buffer;  //!< buffer holding the message payload we're receiving
+    int index;     //!< number of bytes of payload received so far
 } bip_peer_network_info_t;
 
 
