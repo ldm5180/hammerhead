@@ -30,6 +30,9 @@ int libhab_cal_topic_matches(const char *topic, const char *subscription);
 void libhab_cal_callback(const cal_event_t *event);
 
 
+extern void (*libhab_callback_set_resource)(const char *node_id, const char *resource_id, const char *value);
+
+
 
 
 #if 0
@@ -42,11 +45,6 @@ extern char *libhab_type;
 extern char *libhab_id;
 
 extern char *libhab_nag_error;
-
-
-
-
-extern void (*libhab_callback_set_resource)(const char *node_id, const char *resource_id, const char *value);
 
 
 

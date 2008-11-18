@@ -8,6 +8,7 @@ libhab_la_SOURCES =      \
     report-lost-node.c   \
     report-datapoints.c  \
     read.c               \
+    register-callback.c  \
     cal-callback.c       \
     cal-topic-matches.c  \
     global.c

@@ -150,6 +150,30 @@ void hab_read(void);
 
 
 
+//
+//
+//       NAME:  hab_register_callback_set_resource()
+//
+//   FUNCTION:  Registers the callback function with the Hardware
+//              Abstractor library.  This function will be called when
+//              a Bionet Client sends a set-resource command.
+//
+//              The callback function is responsible for getting the
+//              commanded value out to the physical node, and (if
+//              appropriate here) updating the Resource value and
+//              timestamp, and calling hab_report_resource_update().
+//
+//  ARGUMENTS:  The new callback function.
+//
+//    RETURNS:  Nothing.
+//
+//
+
+void hab_register_callback_set_resource(void (*cb_set_resource)(const char *node_id, const char *resource_id, const char *value));
+
+
+
+
 #if 0
 
 //
@@ -272,30 +296,6 @@ int hab_is_connected(void);
 //
 
 const char *hab_get_nag_error(void);
-
-
-
-
-//
-//
-//       NAME:  hab_register_callback_set_resource()
-//
-//   FUNCTION:  Registers the callback function with the Hardware
-//              Abstractor library.  This function will be called when
-//              the NAG sends a set-resource command from a Client.
-//
-//              The callback function is responsible for getting the
-//              commanded value out to the physical node, and (if
-//              appropriate here) updating the Resource value and
-//              timestamp, and calling hab_report_resource_update().
-//
-//  ARGUMENTS:  The new callback function.
-//
-//    RETURNS:  Nothing.
-//
-//
-
-void hab_register_callback_set_resource(void (*cb_set_resource)(const char *node_id, const char *resource_id, const char *value));
 
 
 
