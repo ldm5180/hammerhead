@@ -1,4 +1,25 @@
 
+Bionet 2.0.1, SVN rev 262
+
+    * Added Python bindings for Bionet 2 Clients.  Wrote a bionet-watcher.py
+      to demonstrate.  This requires swig to build.  Disable building the
+      python bindings by giving configure the --disable-python flag.
+
+    * Made bionet_read() and hab_read() non-blocking.
+
+    * Ported the CSA-CP HAB from Bionet 0.5.
+
+    * Ported the MMOD HAB from Bionet 0.5.
+
+    * Started working on a document describing how to port software from
+      Bionet 0.5.  So far it only discusses HABs.
+
+    * Added some accessor functions for finding HABs in the Bionet Client
+      cache.
+
+    * Better logging, better sanity checking, misc bug fixes.
+
+
 Bionet 2.0.0, SVN rev 228
 
     * A first crude attempt at a peer-to-peer Bionet.  If it breaks you
