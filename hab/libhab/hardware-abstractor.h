@@ -48,8 +48,8 @@
 //    RETURNS:  The Bionet file descriptor on success, -1 on failure.
 //              Note: The Bionet file descriptor must not be read or
 //              written directly by the HAB.  Only the HAB library may read
-//              and write it.  The HAB may select on the file descriptor,
-//              when it's readable the HAB should call hab_read().
+//              and write it.  The HAB should call hab_read() whenever the
+//              file descriptor is readable, or if it wants to poll it.
 //
 //
 
@@ -133,11 +133,11 @@ int hab_report_lost_node(const char *node_id);
 //
 //       NAME:  hab_read()
 //
-//   FUNCTION:  When the Bionet file descriptor returned from hab_connect()
-//              is readable, the HAB should call this function.  It will
-//              read any pending messages and call the appropriate
-//              registered callback function.
-//              See hab_register_callback_set_resource().
+//   FUNCTION:  The HAB should call this function when the Bionet file
+//              descriptor returned from hab_connect() is readable, or when
+//              the HAB wants to poll the fd.  The function will read any
+//              pending messages and if appropriate call the callback
+//              function.  See hab_register_callback_set_resource().
 //
 //  ARGUMENTS:  None.
 //

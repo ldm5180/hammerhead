@@ -51,11 +51,12 @@ typedef struct {
     //!     is also the default if NULL is passed in for peer_matches.
     //!     peer_matches must be reenstrant.
     //!
-    //! \return On success, returns a file descriptor which should be
-    //!     monitored by the caller.  When the fd is readable, the caller
-    //!     should call the .read() function.  The caller must never read
-    //!     or write the returned file descriptor directly.  On failure,
-    //!     returns -1.
+    //! \return On success, returns a non-blocking file descriptor which
+    //!     should be monitored by the caller.  When the fd is readable,
+    //!     or if the caller wants to poll it, the caller should call the
+    //!     .read() function.  The caller must never read or write the
+    //!     returned file descriptor directly.
+    //!     On failure, returns -1.
     //!
 
     int (*init)(
@@ -85,7 +86,8 @@ typedef struct {
     //! \brief Service the CAL-Client file descriptor.
     //!
     //! This function should be called whenever the file descriptor
-    //! returned from .init() is readable.  It will service the file
+    //! returned from .init() is readable, or whenever the caller wants to
+    //! poll the file descriptor.  This function will service the file
     //! descriptor and may call the callback with an appropriate event.
     //!
     //! \return True (non-zero) on success.  False (zero) on failure,

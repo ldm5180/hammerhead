@@ -1,6 +1,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -132,8 +133,26 @@ int cal_server_mdnssd_bip_init(
     }
 
 
+    // make the cal_fd non-blocking
+    r = fcntl(cal_server_mdnssd_bip_fds_to_user[0], F_SETFL, O_NONBLOCK);
+    if (r != 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot make cal_fd nonblocking: %s", strerror(errno));
+        goto fail4;
+    }
+
+
     return cal_server_mdnssd_bip_fds_to_user[0];
 
+
+fail4: 
+    r = pthread_cancel(*cal_server_mdnssd_bip_thread);
+    if (r != 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error canceling server thread: %s", strerror(errno));
+    } else {
+        pthread_join(*cal_server_mdnssd_bip_thread, NULL);
+        free(cal_server_mdnssd_bip_thread);
+        cal_server_mdnssd_bip_thread = NULL;
+    }
 
 fail3:
     free(cal_server_mdnssd_bip_thread);
@@ -196,6 +215,7 @@ int cal_server_mdnssd_bip_read(void) {
 
     r = read(cal_server_mdnssd_bip_fds_to_user[0], &event, sizeof(cal_event_t*));
     if (r < 0) {
+        if (errno == EAGAIN) return 1;
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: error: %s", strerror(errno));
         return 0;
     } else if (r != sizeof(cal_event_t*)) {

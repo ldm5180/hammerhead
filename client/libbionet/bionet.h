@@ -136,11 +136,14 @@ void bionet_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t 
 //  ARGUMENTS:  None.
 //
 //
-//    RETURNS:  On success, returns a file descriptor associated with the
-//              Bionet network.  The file descriptor should not be accessed
-//              directly by the Client, it's only made available so the
-//              Client can select(2) on it, to know when it should call
-//              bionet_read(). 
+//    RETURNS:  On success, returns a non-blocking file descriptor
+//              associated with the Bionet network.  The file descriptor
+//              should not be read or written directly by the Client.
+//              If the file descriptor is readable, the Client should call
+//              bionet_read() to service it.  Since the fd is non-blocking,
+//              the client may also call bionet_read() in a polling way,
+//              though this is less efficient than using select() or poll()
+//              on the fd.
 //
 //              On failure, returns -1.
 //
@@ -155,11 +158,11 @@ int bionet_connect(void);
 //
 //       NAME:  bionet_read()
 //
-//   FUNCTION:  When the Bionet file descriptor returned from
-//              bionet_connect() is readable, the Client application should
-//              call this function.  It will read any pending messages from
-//              Bionet and call the appropriate registered callback
-//              functions (by calling bionet_handle_queued_nag_messages()).
+//   FUNCTION:  This function should be called whenever the Bionet file
+//              descriptor returned from bionet_connect() is readable, or
+//              if the Client application wants to poll the file descriptor.
+//              The function will read any pending messages from Bionet and
+//              if appropriate call the callback functions.
 //
 //  ARGUMENTS:  None.
 //

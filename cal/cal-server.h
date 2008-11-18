@@ -55,10 +55,10 @@ typedef struct {
     //!     must be reentrant.
     //!
     //! \return On success, returns a file descriptor which should be
-    //!     monitored by the caller.  When the fd is readable, the caller
-    //!     should call the .read() function.  The caller must never read
-    //!     or write the returned file descriptor directly.  On failure,
-    //!     returns -1.
+    //!     monitored by the caller.  When the fd is readable, or when the
+    //!     caller wants to poll it, the caller should call the .read()
+    //!     function.  The caller must never read or write the returned
+    //!     file descriptor directly.  On failure, returns -1.
     //!
 
     int (*init)(
@@ -79,8 +79,9 @@ typedef struct {
     //! \brief Service the CAL file descriptor.
     //!
     //! This function should be called whenever the file descriptor
-    //! returned from .init() is readable.  It will service the file
-    //! descriptor and may call the callback with an appropriate event.
+    //! returned from .init() is readable, or whenever the user wants to
+    //! poll the file descriptor.  It will service the file descriptor and
+    //! may call the callback with an appropriate event.
     //!
     //! \return True (non-zero) on success.  False (zero) on failure,
     //!     indicating that the file descriptor returned from
