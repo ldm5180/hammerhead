@@ -89,7 +89,9 @@ if test "x$ENABLE_PYTHON" = "xyes" ; then
 fi
 AM_CONDITIONAL(ENABLE_PYTHON, test "x$ENABLE_PYTHON" = "xyes")
 
- 		      
+AC_PATH_PROG(TINYOSMIG, mig, no)
+AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TINYOSMIG" = "xno"])
+		      
 # Checks for library functions.
 AC_FUNC_MALLOC
 
