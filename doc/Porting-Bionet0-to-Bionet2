@@ -1,0 +1,102 @@
+
+Hardware Abstractors:
+
+    HAB app and HAB library now share a bionet_hab_t* representing the
+    current HAB.  So the HAB app needs to add this.  Think of it as the
+    internal representation of what bionet should see.  The HAB program
+    should modify it, then tell the HAB lib to show the modification
+    to bionet.
+
+    The new API is smaller and more orthogonal than the old API.
+    Some convenience wrapper functions that did a lot of stuff have been
+    replaced with a few new functions that each do one thing.
+
+    Example HAB skeleton (most error checking has been omitted for
+    clarity):
+
+        bionet_hab_t *this;
+        int bionet_fd;
+
+        FIXME: register set-resource callback
+
+        this = bionet_hab_new(THIS_TYPE, THIS_ID);
+        if (this == NULL) {
+            // oh noes! error!
+            exit(1);
+        }
+
+        // call bionet_hab_set_type() and bionet_hab_set_id() here
+        // if you want to change anything (from command-line arguments
+        // or config-files, say)
+
+        // once you're happy that *this is how you want to be seen,
+        // connect to bionet
+        bionet_fd = hab_connect(this);
+        if (bionet_fd < 0) {
+            printf("problem connecting to Bionet, exiting\n");
+            return 1;
+        }
+
+        // now this hab is visible to the bionet clients
+        // but it doesnt have any nodes or resources or datapoints yet
+
+
+        // main loop:
+        while (keep_it_up) {
+            // This part services the bionet library and calls the
+            // set-resource callback as appropriate.  This code is needed
+            // even if this hab doesnt have a callback.
+
+            // there's a choice here:
+            // 1.  select() or poll() on bionet_fd, if it's readable call hab_read()
+            // -or-
+            // 2.  periodically call hab_read(), it'll poll for you
+        } 
+
+
+    void hardware_found_new_node(void) {
+        // make a bionet_node_t to represent the new node:
+        bionet_node_new(this, new_node_id)
+
+        // add the node to this:
+        bionet_hab_add_node(this, node)
+
+        // set up the node's resources (note that they dont have any
+        // datapoints yet):
+        for each resource that the new node has {
+            bionet_resource_new(
+                node,
+                BIONET_RESOURCE_FLAVOR_SENSOR /* or whatever */,
+                BIONET_RESOURCE_DATA_TYPE_FLOAT /* or whatever */,
+                new_resource_id
+            );
+            bionet_node_add_resource(node, resource);
+        }
+        
+        // at this point, the node metadata is set up
+
+        // If you have datapoints for the resources, you can set them
+        // now (but it's optional):
+        for each resource that we know the value of {
+            bionet_resource_set(resource, value, timestamp)
+        }
+
+        // once the node is how you like, report it to bionet:
+        hab_report_new_node(node)
+    }
+
+
+    void hardware_made_new_data(void) {
+        // find the node
+        //     bionet_hab_get_node_by_id(this, node_id)
+
+        for each new datapoint from the hardware {
+            // find the resource
+            bionet_node_get_resource_by_id(node, resource_id)
+            bionet_resource_set(resource, value, timestamp)
+        }
+
+        // report the new data to bionet:
+        hab_report_datapoints(node)
+    }
+
