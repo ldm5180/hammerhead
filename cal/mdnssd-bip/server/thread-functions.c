@@ -29,7 +29,7 @@ static GHashTable *clients = NULL;
 
 static DNSServiceRef *advertisedRef = NULL;
 
-cal_server_mdnssd_bip_t *this = NULL;
+static cal_server_mdnssd_bip_t *this = NULL;
 
 
 

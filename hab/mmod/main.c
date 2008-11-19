@@ -27,6 +27,8 @@
  * NAG clients
  */
 
+#define DEBUG 0
+
 #include <sys/types.h>
 #include <errno.h>
 #include <glib.h>
@@ -53,7 +55,7 @@ static char * usb_dev = DEFAULT_USB_DEV;
 
 uint16_t heartbeat_time = DEFAULT_HEARTBEAT_TIME;
 serial_source gw_src;
-bionet_hab_t * this;
+bionet_hab_t * mmod_hab;
 
 
 int main(int argc, char** argv)
@@ -62,8 +64,8 @@ int main(int argc, char** argv)
     int bionet_fd;
 
     /* do some HAB setup */
-    this = bionet_hab_new(MMOD_HAB_TYPE, NULL);
-    if (NULL == this)
+    mmod_hab = bionet_hab_new(MMOD_HAB_TYPE, NULL);
+    if (NULL == mmod_hab)
     {
 	fprintf(stderr, "Failed to get a new hab\n");
 	return(1);
@@ -77,14 +79,13 @@ int main(int argc, char** argv)
 	daemonize(&verbose);
     }
 
-    bionet_fd = hab_connect(this);
+    bionet_fd = hab_connect(mmod_hab);
     if (0 > bionet_fd)
     {
 	fprintf(stderr, "Failed to connect HAB to Bionet\n");
 	return(bionet_fd);
     }
 
-    pause();
     /* connect to the gateway mote */
     gw_src = gateway_open(usb_dev);
     if (NULL == gw_src)
@@ -180,7 +181,7 @@ static void parse_cmdline(int argc, char** argv)
 	    break;
 
 	case 'i':
-	    bionet_hab_set_id(this, optarg);
+	    bionet_hab_set_id(mmod_hab, optarg);
 	    break;
 	    
 	case 't':

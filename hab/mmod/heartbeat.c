@@ -29,7 +29,7 @@
 
 #define MAX_MISSED_HEARTBEATS 3
 
-extern bionet_hab_t *this;
+extern bionet_hab_t *mmod_hab;
 
 
 int timeval_subtract (struct timeval *result, 
@@ -47,7 +47,7 @@ void heartbeat_check(void)
     uint16_t hb_time;
     int num_dps;
     bionet_datapoint_t * value;
-    if (NULL == this)
+    if (NULL == mmod_hab)
     {
 	return;
     }
@@ -57,11 +57,11 @@ void heartbeat_check(void)
 	g_warning("error with gettimeofday: %s", strerror(errno));
     }
 
-    num_nodes = bionet_hab_get_num_nodes(this);
+    num_nodes = bionet_hab_get_num_nodes(mmod_hab);
     
     for (i = 0; i < num_nodes; i++)
     {
-	node = bionet_hab_get_node_by_index(this, i);
+	node = bionet_hab_get_node_by_index(mmod_hab, i);
 	if(NULL == node)
 	{
 	    continue;
@@ -105,7 +105,7 @@ void heartbeat_check(void)
 	if (diff.tv_sec > (MAX_MISSED_HEARTBEATS*hb_time))
 	{
 	    /* this node has been lost! */
-	    if (bionet_hab_remove_node_by_id(this, node->id))
+	    if (bionet_hab_remove_node_by_id(mmod_hab, node->id))
 	    {
 		g_warning("Failed to remove node %s\n", node->id);
 	    }

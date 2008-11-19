@@ -17,8 +17,6 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 //
 
-#define DEBUG 0
-
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,7 +35,7 @@
 #include "serialsource.h"
 #include "message.h"
 
-extern bionet_hab_t * this;
+extern bionet_hab_t * mmod_hab;
 
 
 extern uint16_t heartbeat_time;
@@ -63,7 +61,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 #endif /* DEBUG */
 
     snprintf(&node_id[0], 8, "%04u", MMODGENMSG_node_id_get(&t));
-    node = bionet_hab_get_node_by_id(this, &node_id[0]);
+    node = bionet_hab_get_node_by_id(mmod_hab, &node_id[0]);
 
     if (0 > gettimeofday(&tv, NULL))
     {
@@ -73,18 +71,21 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     /* if this node doesn't exist yet, create it */
     if (NULL == node)
     {
-	node = bionet_node_new(this, &node_id[0]);
+#if DEBUG
+	fprintf(stderr, "Creating new node %s\n", &node_id[0]);
+#endif
+	node = bionet_node_new(mmod_hab, &node_id[0]);
 	if (NULL == node)
 	{
 	    fprintf(stderr, "Failed to create new node\n");
 	    return 1;
 	}
-	bionet_hab_add_node(this, node);
+	bionet_hab_add_node(mmod_hab, node);
 
 	/* create voltage resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT32,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       "Voltage");
 	if (NULL == resource)
 	{
@@ -104,8 +105,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	}
         /* create raw voltage resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       "RawVoltage");
 	if (NULL == resource)
 	{
@@ -126,8 +127,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create temperature resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       BIONET_RESOURCE_DATA_TYPE_FLOAT,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       "Temperature");
 	if (NULL == resource)
 	{
@@ -149,8 +150,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create raw temperature resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       "RawTemperature");
 	if (NULL == resource)
 	{
@@ -171,8 +172,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create photo resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       "Photo");
 	if (NULL == resource)
 	{
@@ -193,8 +194,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create raw photo resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       "RawPhoto");
 	if (NULL == resource)
 	{
@@ -215,8 +216,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create accel-x resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       BIONET_RESOURCE_DATA_TYPE_FLOAT,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       "Accel-X");
 	if (NULL == resource)
 	{
@@ -239,8 +240,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create raw accel-x resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       "RawAccel-X");
 	if (NULL == resource)
 	{
@@ -261,8 +262,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create accel-y resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       BIONET_RESOURCE_DATA_TYPE_FLOAT,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       "Accel-Y");
 	if (NULL == resource)
 	{
@@ -285,8 +286,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create raw accel-y resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
 				       "RawAccel-Y");
 	if (NULL == resource)
 	{
@@ -307,8 +308,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create Sample Interval resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
 				       "SampleInterval");
 	if (NULL == resource)
 	{
@@ -329,8 +330,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create Num of Accel Samples resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
 				       "NumAccelSamples");
 	if (NULL == resource)
 	{
@@ -351,8 +352,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create Accel Sample Interval resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
 				       "AccelSampleInterval");
 	if (NULL == resource)
 	{
@@ -375,8 +376,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 
 	/* create Heartbeat Time resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
 				       "HeartbeatTime");
 	if (NULL == resource)
 	{
@@ -398,8 +399,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	/* create  Accel Axis resource */
 	/* create Heartbeat Time resource */
 	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
 				       BIONET_RESOURCE_DATA_TYPE_STRING,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
 				       "AccelAxis");
 	if (NULL == resource)
 	{
@@ -596,13 +597,13 @@ int msg_accel_process(uint8_t *msg, ssize_t len)
 #endif /* DEBUG */
 
     /* if self is NULL then we haven't added any nodes yet, so return success */
-    if (NULL == this)
+    if (NULL == mmod_hab)
     {
 	return 0;
     }
 
     snprintf(&node_id[0], 8, "%04u", MMODACCELMSG_node_id_get(&t));
-    node = bionet_hab_get_node_by_id(this, &node_id[0]);
+    node = bionet_hab_get_node_by_id(mmod_hab, &node_id[0]);
     if (NULL == node)
     {
 	/* node has not yet been found via general messages so ignore it */
@@ -684,13 +685,13 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
     struct timeval tv;
     bionet_datapoint_value_t value;
 
-    if (NULL == this)
+    if (NULL == mmod_hab)
     {
 	return 0;
     }
 
     snprintf(&node_id[0], 8, "%04u", MMODSETTINGSMSG_node_id_get(&t));
-    node = bionet_hab_get_node_by_id(this, &node_id[0]);
+    node = bionet_hab_get_node_by_id(mmod_hab, &node_id[0]);
 
     if (0 > gettimeofday(&tv, NULL))
     {
@@ -788,3 +789,10 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
     hab_report_datapoints(node);
     return 0;
 } /* msg_settings_process() */
+
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

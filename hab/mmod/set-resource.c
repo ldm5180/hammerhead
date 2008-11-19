@@ -30,7 +30,7 @@
 #include "mmod_message.h"
 
 extern serial_source gw_src;
-extern bionet_hab_t * this;
+extern bionet_hab_t * mmod_hab;
 
 void cb_set_resource(const char *node_id, 
 		     const char *resource_id, 
@@ -54,11 +54,11 @@ void cb_set_resource(const char *node_id,
     pkt[7] = MMODSETTINGSMSG_AM_TYPE;
 
     /* get the node we are referring to */
-    if (NULL == this)
+    if (NULL == mmod_hab)
     {
 	return;
     }
-    node = bionet_hab_get_node_by_id(this, node_id);
+    node = bionet_hab_get_node_by_id(mmod_hab, node_id);
     if (NULL == node)
     {
 	return;
