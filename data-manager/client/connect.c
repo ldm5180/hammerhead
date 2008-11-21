@@ -23,50 +23,19 @@
     #include <sys/socket.h>
 #endif
 
-#ifdef WINDOWS
-    #include <winsock2.h>
-#endif
-
 #include <glib.h>
 
-#include "cal-client.h"
-
-#include "libbionet-internal.h"
-#include "bionet.h"
+#include "bdm-client.h"
 
 
+int bdm_fd = -1;
 
 
-#if 0
-static void libbionet_clear_cache(void) {
-    bionet_hab_t *hab;
-
-
-    while ((hab = g_slist_nth_data(bionet_habs, 0)) != NULL) {
-        bionet_node_t *node;
-
-        while ((node = g_slist_nth_data(hab->nodes, 0)) != NULL) {
-            if (libbionet_callback_lost_node != NULL) {
-                libbionet_callback_lost_node(node);
-            }
-
-            libbionet_cache_remove_node(node);
-        }
-
-        if (libbionet_callback_lost_hab != NULL) {
-            libbionet_callback_lost_hab(hab);
-        }
-
-        libbionet_cache_remove_hab(hab);
+int bdm_is_connected() {
+    if (bdm_fd < 0) {
+        return 0;
     }
-}
-#endif
 
-
-
-
-int bionet_is_connected(void) {
-    if (libbionet_cal_fd < 0) return 0;
     return 1;
 }
 
@@ -75,7 +44,6 @@ int bionet_is_connected(void) {
 
 #if 0
 static const char *libbionet_get_id(void) {
-#if defined(LINUX) || defined(MAC_OSX)
     struct passwd *passwd;
     struct hostent *host;
     struct sockaddr_in local_socket;
@@ -189,96 +157,143 @@ static const char *libbionet_get_id(void) {
     id[sizeof(id)-1] = '\0';
 
     return id;
-#endif
-
-#ifdef WINDOWS
-
-    // see http://msdn2.microsoft.com/en-us/library/ms724426.aspx
-    // and http://msdn2.microsoft.com/en-us/library/ms724953.aspx
-
-    // this one's like getpwuid
-    // address of name buffer
-    // address of size of name buffer
-    // http://msdn2.microsoft.com/en-us/library/ms724432.aspx
-//     BOOL GetUserName(
-//         LPTSTR lpBuffer,
-//         LPDWORD nSize
-//     );
-
-    // FIXME: do something more real here
-    return "a windows user";
-
-#endif
-
 }
 #endif
-
-
-
-
-static int libbionet_cal_peer_matches(const char *peer_name, const char *pattern) {
-    char peer_type[BIONET_NAME_COMPONENT_MAX_LEN];
-    char peer_id[BIONET_NAME_COMPONENT_MAX_LEN];
-
-    char pattern_type[BIONET_NAME_COMPONENT_MAX_LEN];
-    char pattern_id[BIONET_NAME_COMPONENT_MAX_LEN];
-
-    int r;
-
-
-    r = bionet_split_hab_name_r(peer_name, peer_type, peer_id);
-    if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "libbionet_cal_peer_matches: cannot parse peer name '%s'", peer_name);
-        return -1;
-    }
-
-    r = bionet_split_hab_name_r(pattern, pattern_type, pattern_id);
-    if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "libbionet_cal_peer_matches: cannot parse pattern '%s'", pattern);
-        return -1;
-    }
-
-    if (!bionet_name_component_matches(peer_type, pattern_type)) return 1;
-    if (!bionet_name_component_matches(peer_id, pattern_id)) return 1;
-
-    return 0;
-}
 
 
 
 
 // 
-// Opens a connection to the Bionet network.
+// Opens a TCP connection to the BDM server specified by
+// bdm_hostname and bdm_port.
 //
-// Returns the fd if the connection is open, -1 if there's a problem.
+// if port == 0, BDM_PORT will be used
+//
+// Returns the socket fd if the connection is open, -1 if there's a problem.
 //
 
-int bionet_connect(void) {
+int bdm_connect(char *hostname, uint16_t port) {
+    struct sockaddr_in server_address;
+    struct hostent *server_host;
+
 
     // if the connection is already open we just return it's fd
-    if (libbionet_cal_fd > -1) return libbionet_cal_fd;
+    if (bdm_fd > -1) return bdm_fd;
+
+    if (port == 0)
+    {
+	port = BDM_PORT;
+    }
+
+    if (hostname == NULL) {
+        hostname = "localhost";
+    }
 
 
     //
-    // If we get here we need to actually open the connection.
+    // If the server dies or the connection is lost somehow, writes will
+    // cause us to receive SIGPIPE, and the default SIGPIPE handler
+    // terminates the process.  So we need to change the handler to ignore
+    // the signal, unless the process has explicitly changed the action.
     //
 
+    {
+        int r;
+        struct sigaction sa;
 
-    libbionet_cal_fd = cal_client.init(libbionet_cal_callback, libbionet_cal_peer_matches);
-    if (libbionet_cal_fd == -1) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_connect(): error initializing CAL");
+        r = sigaction(SIGPIPE, NULL, &sa);
+        if (r < 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect(): error getting old SIGPIPE sigaction: %s", strerror(errno));
+            return -1;
+        }
+
+        if (sa.sa_handler == SIG_DFL) {
+            sa.sa_handler = SIG_IGN;
+            r = sigaction(SIGPIPE, &sa, NULL);
+            if (r < 0) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect(): error setting SIGPIPE sigaction to SIG_IGN: %s", strerror(errno));
+                return -1;
+            }
+        }
+    }
+
+
+    // get the hostent for the server
+    server_host = gethostbyname(hostname);
+
+    if (server_host == NULL) {
+	const char *error_string;
+	error_string = hstrerror(h_errno);
+
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bdm_connect(): gethostbyname(\"%s\"): %s",
+            hostname,
+            error_string
+        );
         return -1;
     }
 
 
-#if 0
+    // create the socket
+    if ((bdm_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bdm_connect(): cannot create local socket: %s",
+            strerror(errno)
+        );
+        return -1;
+    }
 
+
+    //  This makes it to the underlying networking code tries to send any
+    //  buffered data, even after we've closed the socket.
+    {
+        struct linger linger;
+
+        linger.l_onoff = 1;
+        linger.l_linger = 60;
+        if (setsockopt(bdm_fd, SOL_SOCKET, SO_LINGER, (char *)&linger, sizeof(linger)) != 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect(): WARNING: cannot make socket linger: %s", strerror(errno));
+        }
+    }
+
+
+    // prepare the server address
+    memset((char *)&server_address, '\0', sizeof(server_address));
+    server_address.sin_family = AF_INET;
+    server_address.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)(*server_host->h_addr_list)));
+    server_address.sin_port = g_htons(port);
+
+
+    // connect to the server
+    if (connect(bdm_fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) {
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bdm_connect(): failed to connect to server %s:%d: %s",
+            server_host->h_name,
+            port,
+            strerror(errno)
+        );
+
+        bdm_disconnect();
+
+        return -1;
+    }
+
+
+
+
+#if 0
     //
     // Send our ident string to the server, it's useful for keeping
     // statistics and for debugging.
     //
     // If the client app did not specifically set the ID by calling
-    // bionet_set_id(), we use the default: "user@host:port (program [pid])"
+    // bdm_set_id(), we use the default: "user@host:port (program [pid])"
     //
 
     if (libbionet_client_id != NULL) {
@@ -316,13 +331,10 @@ int bionet_connect(void) {
         libbionet_kill_nag_connection();
         return -1;
     }
-
-
-    libbionet_clear_cache();
 #endif
 
 
-    return libbionet_cal_fd;
+    return bdm_fd;
 }
 
 

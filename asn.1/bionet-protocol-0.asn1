@@ -56,6 +56,12 @@ BEGIN
         resources   SEQUENCE OF Resource
     }
 
+    HardwareAbstractor ::= SEQUENCE {
+        type     PrintableString,
+        id       PrintableString,
+        nodes    SEQUENCE OF Node
+    }
+
 
     -- 
     -- Helper structs
@@ -73,6 +79,26 @@ BEGIN
         resourceId      PrintableString,
         newDatapoints   SEQUENCE OF Datapoint
     }
+
+
+    -- 
+    -- ResourceDatapointsQuery: request from a client to the bdm server to
+    --     list Resource Datapoints within a time window
+    --
+    -- ResourceDatapointsReply: reply from the bdm server to a client
+    --     providing all available, matching information
+    -- 
+
+    ResourceDatapointsQuery ::= SEQUENCE {
+        habType     PrintableString,
+        habId       PrintableString,
+        nodeId      PrintableString,
+        resourceId  PrintableString,
+        startTime   GeneralizedTime,
+        endTime     GeneralizedTime
+    }
+
+    ResourceDatapointsReply ::= SEQUENCE OF HardwareAbstractor
 
 
     -- 
@@ -94,6 +120,24 @@ BEGIN
         lostNode           PrintableString,
         resourceMetadata   ResourceMetadata,
         datapointsUpdate   ResourceDatapoints
+    }
+
+
+    --
+    -- BDM Client-to-Server messages
+    --
+
+    BDM-C2S-Message ::= CHOICE {
+        resourceDatapointsQuery ResourceDatapointsQuery
+    }
+
+
+    --
+    -- BDM Server-to-Client messages
+    --
+
+    BDM-S2C-Message ::= CHOICE {
+        resourceDatapointsReply ResourceDatapointsReply
     }
 
 END

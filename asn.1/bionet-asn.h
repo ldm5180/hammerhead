@@ -13,9 +13,16 @@
 
 #include "Node.h"
 
+#include "HardwareAbstractor.h"
+
+#include "ResourceDatapointsQuery.h"
+#include "ResourceDatapointsReply.h"
 
 #include "C2H-Message.h"
 #include "H2C-Message.h"
+
+#include "BDM-C2S-Message.h"
+#include "BDM-S2C-Message.h"
 
 
 #include "bionet-util.h"

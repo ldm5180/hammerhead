@@ -51,6 +51,10 @@ PKG_CHECK_MODULES(GLIB20, [ glib-2.0 >= 2.4.0 ])
 AC_SUBST(GLIB20_CFLAGS)
 AC_SUBST(GLIB20_LIBS)
 
+PKG_CHECK_MODULES(OPENSSL, [ openssl >= 0.9.8 ])
+AC_SUBST(OPENSSL_CFLAGS)
+AC_SUBST(OPENSSL_LIBS)
+
 DBUS_VERSION="Disabled"
 DBUS_SYS_DIR="Disabled"
 DBUS_SYSTEM_BUS_DEFAULT_ADDRESS="Disabled"
@@ -117,6 +121,9 @@ AC_CONFIG_FILES([Makefile
                  hab/csa-cp/Makefile
 		 hab/mmod/Makefile
                  hab/random/Makefile
+                 data-manager/Makefile
+                 data-manager/server/Makefile
+                 data-manager/client/Makefile
                  ])
 
 AC_OUTPUT

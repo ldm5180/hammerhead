@@ -1,0 +1,126 @@
+
+BDM - the Bionet Data Manager
+
+
+BDM is a service that stores historical Bionet data.  You can test it
+out by running something like this:
+
+    make
+    ./make-db.sh
+    ./bionet-data-manager --nag bionet.colorado.edu
+
+That will start it recording into bdm.db.  It shows (on stdout) what
+it's recording.  While bionet-data-manager is running, run dump-db to
+show what it has recorded so far.
+
+As of r11885, it only records HABs seen, Nodes seen, and Resources seen.
+It does not record Resource Values, or Node or HAB coming and going
+events.
+
+
+
+
+features:
+
+    should work on linux and windows, vxworks would be nice
+
+    minimal outside dependencies (glib, some kind of db)
+
+
+interface: 
+
+    let client change subscription time-window boundaries
+
+
+learn about:
+
+    sqlite <www.sqlite.org>
+
+        public domain
+
+        windows & linux
+
+
+    odbc (Open Database Connectivity)
+
+
+    berkeley db
+
+        dual licensed
+
+        not sql, just key/value pairs
+
+
+    mysql
+
+
+    postgres
+
+
+    libsql
+
+        cross-platform (win32, linux, osx) interface to multiple database
+        backends
+
+        seems dead
+
+        not in Hardy...
+
+
+-------------------------------------------------------------------------------
+
+
+udm:
+
+    With Bionet, we can have some nodes (eg, CSA-CP etc) that store
+    data on board, and transmit a big log later.  So the UDM is not an
+    "append-only" store - it needs to be able to do "store more OLD data".
+    This makes syncing (playback) harder.  And it makes hfiles dangerous
+    and useless.
+
+    So give each datum a unique id.  Something like a sequence number.
+
+    Data gets sent to GSE using two streams: realtime & playback.
+
+        Realtime stream waits until >X seconds since last update, or >Y
+        datums since last update.  update message:
+
+            resource_id_t may be a name (like bionet resource names),
+            or a hash of the resource metadata, or a unique identified
+            (uint16, say, sequentially chosen)
+
+            datum_t:
+                resource_id_t ID
+                value_t Value
+                timeval Timestamp
+
+            uint8 Num_Datums
+            uint64 First_Datum_Sequence_Number
+            datum_t datum[Num_Datums]
+
+        The realtime receiver can nack if the sequence number skips.
+
+
+        "Playback" periodically goes back and looks for sequence number
+        skips, and requests retransmissions.  It keeps track of most
+        recent retransmit request, and doesnt flood the channel (needs
+        rtt information)
+
+
+    From:    Florian Weimer <fw@deneb.enyo.de>
+    Date:    Sat, 20 Aug 2005 20:46:04 +0200
+    Subject: Re: arch, svn, cvs
+    To:      debian-devel@lists.debian.org
+
+    * Roland Mas:
+
+    >   The Berkeley DB storage backend was an enormously stupid thing, but
+    > that's been fixed (phew).
+
+    Keep in mind that Berkeley DB is a limtus test, both for developers
+    and system administrators.  Those who don't read manuals fail it.
+
+    I'm storing hundreds of millions of rows in Berkeley DB tables and
+    have yet to encounter data loss because of bugs in Berkeley DB code.
+    My own stupidity resulted in a few problems, though.
+

@@ -1,0 +1,219 @@
+#!/bin/bash
+#set -x
+
+SQL="sqlite3 bdm.db"
+
+HAB_TYPE=$1
+HAB_ID=$2
+NODE_ID=$3
+RESOURCE_ID=$4
+
+
+function list_habs {
+    HAB_TYPE=$1
+    HAB_ID=$2
+
+    if [ "$HAB_TYPE" = "*" ]; then 
+        HAB_TYPE=""
+    fi
+
+    if [ "$HAB_ID" = "*" ]; then 
+        HAB_ID=""
+    fi
+
+    CMD="SELECT HAB_TYPE, HAB_ID FROM Hardware_Abstractors"
+
+    if [ ! -z "$HAB_TYPE" -o ! -z "$HAB_ID" ]; then
+        CMD="$CMD WHERE"
+    fi
+
+    if [ ! -z "$HAB_TYPE" -a "$HAB_TYPE" != "*" ]; then
+        CMD="$CMD Hardware_Abstractors.HAB_Type='$HAB_TYPE'"
+        if [ ! -z "$HAB_ID" ]; then
+            CMD="$CMD AND Hardware_Abstractors.HAB_ID='$HAB_ID'"
+        fi
+    elif [ ! -z "$HAB_ID" ]; then
+        CMD="$CMD Hardware_Abstractors.HAB_ID='$HAB_ID'"
+    fi
+
+    CMD="$CMD;"
+    $SQL "$CMD"
+}
+
+
+function list_nodes {
+    HAB_TYPE=$1
+    HAB_ID=$2
+    NODE_ID=$3
+
+    if [ "$HAB_TYPE" = "*" ]; then 
+        HAB_TYPE=""
+    fi
+
+    if [ "$HAB_ID" = "*" ]; then 
+        HAB_ID=""
+    fi
+
+    if [ "$NODE_ID" = "*" ]; then 
+        NODE_ID=""
+    fi
+
+    CMD="
+        SELECT
+            Hardware_Abstractors.HAB_TYPE, Hardware_Abstractors.HAB_ID, Nodes.Node_ID
+        FROM
+            Hardware_Abstractors, Nodes
+        WHERE
+            Nodes.HAB_Key=Hardware_Abstractors.Key
+    "
+
+    if [ ! -z "$HAB_TYPE" ]; then
+        CMD="$CMD AND Hardware_Abstractors.HAB_Type='$HAB_TYPE'"
+    fi
+
+    if [ ! -z "$HAB_ID" ]; then
+        CMD="$CMD AND Hardware_Abstractors.HAB_ID='$HAB_ID'"
+    fi
+
+    if [ ! -z "$NODE_ID" ]; then
+        CMD="$CMD AND Nodes.Node_ID='$NODE_ID'"
+    fi
+
+    CMD="$CMD;"
+    $SQL "$CMD"
+}
+
+
+function list_resources {
+    HAB_TYPE=$1
+    HAB_ID=$2
+    NODE_ID=$3
+    RESOURCE_ID=$4
+
+    if [ "$HAB_TYPE" = "*" ]; then 
+        HAB_TYPE=""
+    fi
+
+    if [ "$HAB_ID" = "*" ]; then 
+        HAB_ID=""
+    fi
+
+    if [ "$NODE_ID" = "*" ]; then 
+        NODE_ID=""
+    fi
+
+    if [ "$RESOURCE_ID" = "*" ]; then 
+        RESOURCE_ID=""
+    fi
+
+    CMD="
+        SELECT
+            Hardware_Abstractors.HAB_TYPE, Hardware_Abstractors.HAB_ID, Nodes.Node_ID, Resources.Resource_ID
+        FROM
+            Hardware_Abstractors, Nodes, Resources
+        WHERE
+            Nodes.HAB_Key=Hardware_Abstractors.Key
+            AND Resources.Node_Key=Nodes.Key
+    "
+
+    if [ ! -z "$HAB_TYPE" ]; then
+        CMD="$CMD AND Hardware_Abstractors.HAB_Type='$HAB_TYPE'"
+    fi
+
+    if [ ! -z "$HAB_ID" ]; then
+        CMD="$CMD AND Hardware_Abstractors.HAB_ID='$HAB_ID'"
+    fi
+
+    if [ ! -z "$NODE_ID" ]; then
+        CMD="$CMD AND Nodes.Node_ID='$NODE_ID'"
+    fi
+
+    if [ ! -z "$RESOURCE_ID" ]; then
+        CMD="$CMD AND Resources.Resource_ID='$RESOURCE_ID'"
+    fi
+
+    CMD="$CMD;"
+    $SQL "$CMD"
+}
+
+
+function list_resource_datapoints {
+    HAB_TYPE=$1
+    HAB_ID=$2
+    NODE_ID=$3
+    RESOURCE_ID=$4
+
+    if [ "$HAB_TYPE" = "*" ]; then 
+        HAB_TYPE=""
+    fi
+
+    if [ "$HAB_ID" = "*" ]; then 
+        HAB_ID=""
+    fi
+
+    if [ "$NODE_ID" = "*" ]; then 
+        NODE_ID=""
+    fi
+
+    if [ "$RESOURCE_ID" = "*" ]; then 
+        RESOURCE_ID=""
+    fi
+
+    CMD="
+        SELECT
+            Hardware_Abstractors.HAB_TYPE, Hardware_Abstractors.HAB_ID, Nodes.Node_ID, Resources.Resource_ID,
+            Resource_Values.Value, Resource_Values.Timestamp_Sec, Resource_Values.Timestamp_Usec
+        FROM
+            Hardware_Abstractors, Nodes, Resources, Resource_Values
+        WHERE
+            Nodes.HAB_Key=Hardware_Abstractors.Key
+            AND Resources.Node_Key=Nodes.Key
+            AND Resource_Values.Resource_Key=Resources.Key
+    "
+
+    if [ ! -z "$HAB_TYPE" ]; then
+        CMD="$CMD AND Hardware_Abstractors.HAB_Type='$HAB_TYPE'"
+    fi
+
+    if [ ! -z "$HAB_ID" ]; then
+        CMD="$CMD AND Hardware_Abstractors.HAB_ID='$HAB_ID'"
+    fi
+
+    if [ ! -z "$NODE_ID" ]; then
+        CMD="$CMD AND Nodes.Node_ID='$NODE_ID'"
+    fi
+
+    if [ ! -z "$RESOURCE_ID" ]; then
+        CMD="$CMD AND Resources.Resource_ID='$RESOURCE_ID'"
+    fi
+
+    CMD="$CMD;"
+    $SQL "$CMD"
+}
+
+
+if [ -z "$HAB_TYPE" ]; then 
+    list_habs "*" "*"
+    exit 0
+fi
+
+
+if [ -z "$HAB_ID" ]; then 
+    list_habs "$HAB_TYPE" "*"
+    exit 0
+fi
+
+
+if [ -z "$NODE_ID" ]; then 
+    list_nodes "$HAB_TYPE" "$HAB_ID" "*"
+    exit 0
+fi
+
+
+if [ -z "$RESOURCE_ID" ]; then 
+    list_resources "$HAB_TYPE" "$HAB_ID" "$NODE_ID" "*"
+    exit 0
+fi
+
+list_resource_datapoints "$HAB_TYPE" "$HAB_ID" "$NODE_ID" "$RESOURCE_ID"
+

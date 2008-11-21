@@ -1,0 +1,135 @@
+
+Write a client that spits out a plot, like webplots...
+
+
+Gary's comments:
+
+    Resource_Values_HAB_Name (to not make Resource_Values so huge,
+    for performance)
+
+    insert multiple rows into Resource_Values at once for performance
+    (when getting BDM sync stuff over DTN)
+
+
+
+About the only thing we have that uses historical data is webplots, so
+for starters i'll model the BDM client api on what webplots would want.
+There are two basic modes of operation:
+
+    "regular" webplots: a webpage that updates every few minutes or so,
+        showing some defined window stretching from "now" some time into
+        the past ("the past hour" or "the past 24 hours" etc)
+
+    interactive webplots: a user selects some arbitrary window of history
+
+
+Another mode, i guess, is for replication of data to ground over BCS.
+Here we'd like a BDM on the ground to receive data from orbit (somehow)
+and serve it out to local clients (such as gstaci and egse maybe).
+Here the subscription is slightly different: Start by sending me the
+newest thing you have.  As new data comes in, keep sending me the newest
+thing you have but dont send me anything older than what I have.
+
+
+Maybe there's something to that.  Data in chronological order might be
+easier for the client to digest (for example to add to a running plot)
+than data that modifies the client's view of history (filling in gaps
+in the data).
+
+
+The datapoint array should probably be sorted by time increasing.  Maybe
+give the callback a flag arg that says if the new data is purely
+appended or if history has changed.
+
+
+
+
+It'd be nice if the bdm library gave the data to the client in a way
+that was easy to plot.
+
+    plplot takes a pair of arrays of PLFLT (double), seems like it can be interpreted as time 
+
+    qwt
+
+
+
+
+I needs me a network protocol now.  Two actually: one for getting
+historical data to clients and for syncing to other BDMs.  Do the client
+one first.
+
+It'd be nice not to hand-hack the network protocol.  Some alternatives:
+
+    ASN.1 (ITU-T X.208/ISO 8824)
+
+        ITU specs here: <http://www.itu.int/ITU-T/studygroups/com17/languages/>
+
+        http://en.wikipedia.org/wiki/ASN.1
+
+        asn1c.deb
+
+            clumsy build, symlinks or copies a pile of C into your working dir
+
+            Doesnt compile cleanly on 64-bit with -Werror or -O1.
+            Submitteded some patches to the author, Lev Walkin, but
+            never heard back.
+
+            http://lionet.info/asn1c/basics.html
+
+            http://luca.ntop.org/Teaching/Appunti/asn1.html
+
+
+        libasn1-8-heimdal
+
+
+        snacc
+
+            Snacc supports a subset of ASN.1 1988.  If you need features
+            of ASN.1 1992 or later, snacc is not for you.
+
+
+        libtasn1
+
+            GnuTLS' ASN.1 library
+
+            read in and parse an ASN.1 file at the start, the library uses
+            that to parse the data, returns the data as an array (i think)
+
+            doesnt support the ASN.1 REAL data type
+
+            doesnt support SIZE constraint checking
+
+
+        dumpasn1
+
+
+    XDR
+
+        RFC 4506: http://tools.ietf.org/html/rfc4506
+        RFC 1832: http://www.ietf.org/rfc/rfc1832.txt
+
+
+    HDF
+
+        http://en.wikipedia.org/wiki/Hierarchical_Data_Format
+
+        more of an alternative to SQL databases
+
+
+    other Formal Description Techniques: MSC, SDL, TTCN-3
+
+
+
+
+I think we need a stable handshake protocol that lets the client &
+server agree on a version of the "main" protocol, then the main protocol
+is free to evolve over time.
+
+
+
+
+Database issues:
+
+    The datapoint time is terribly inconvenient
+
+

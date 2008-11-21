@@ -5,30 +5,41 @@ include $(top_srcdir)/common.am
 ASN_SOURCE = bionet-protocol-0.asn1
 
 
-ASN_MODULE_SOURCES=	\
-	ResourceFlavor.c	\
-	ResourceDataType.c	\
-	Value.c	\
-	Datapoint.c	\
-	Resource.c	\
-	Node.c	\
-	ResourceMetadata.c \
-	ResourceDatapoints.c \
-	C2H-Message.c   \
-	H2C-Message.c
+ASN_MODULE_SOURCES =            \
+    ResourceFlavor.c            \
+    ResourceDataType.c          \
+    Value.c                     \
+    Datapoint.c                 \
+    Resource.c                  \
+    Node.c                      \
+    HardwareAbstractor.c        \
+    ResourceMetadata.c          \
+    ResourceDatapoints.c        \
+    ResourceDatapointsQuery.c   \
+    ResourceDatapointsReply.c   \
+    C2H-Message.c               \
+    H2C-Message.c               \
+    BDM-C2S-Message.c           \
+    BDM-S2C-Message.c
 
 # FIXME: autoreconf doesnt work if this variable is called ASN_MODULE_HEADS
-ASN_MODULE_HEADS=	\
-	ResourceFlavor.h	\
-	ResourceDataType.h	\
-	Value.h	\
-	Datapoint.h	\
-	Resource.h	\
-	Node.h	\
-	ResourceMetadata.h \
-	ResourceDatapoints.h \
-	C2H-Message.h   \
-	H2C-Message.h
+ASN_MODULE_HEADS =              \
+    ResourceFlavor.h            \
+    ResourceDataType.h          \
+    Value.h                     \
+    Datapoint.h                 \
+    Resource.h                  \
+    Node.h                      \
+    HardwareAbstractor.h        \
+    ResourceMetadata.h          \
+    ResourceDatapoints.h        \
+    ResourceDatapointsQuery.h   \
+    ResourceDatapointsReply.h   \
+    C2H-Message.h               \
+    H2C-Message.h               \
+    BDM-C2S-Message.h           \
+    BDM-S2C-Message.h
+
 
 ASN_MODULE_HEADS+=BOOLEAN.h
 ASN_MODULE_SOURCES+=BOOLEAN.c
@@ -104,10 +115,31 @@ libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util
 libbionet_asn_la_LIBADD = $(AM_LDADD)
 
 
-# FIXME: automakify this
-test-asn: converter-sample.c pdu_collection.c $(SRC)
-	$(CC) $(CFLAGS) -I. -DASN_PDU_COLLECTION -DPDU=H2C_Message -o test-asn-h2c $(LDFLAGS) $(LDLIBS) $^ -lm
-	$(CC) $(CFLAGS) -I. -DASN_PDU_COLLECTION -DPDU=C2H_Message -o test-asn-c2h $(LDFLAGS) $(LDLIBS) $^ -lm
+
+
+bin_PROGRAMS = test-asn-h2c test-asn-c2h test-asn-bdm-c2s test-asn-bdm-s2c
+
+test_asn_h2c_SOURCES = converter-sample.c pdu_collection.c
+test_asn_h2c_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util -DASN_PDU_COLLECTION -DPDU=H2C_Message 
+test_asn_h2c_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../util
+test_asn_h2c_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lm
+
+test_asn_c2h_SOURCES = converter-sample.c pdu_collection.c
+test_asn_c2h_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util -DASN_PDU_COLLECTION -DPDU=C2H_Message 
+test_asn_c2h_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../util
+test_asn_c2h_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lm
+
+test_asn_bdm_c2s_SOURCES = converter-sample.c pdu_collection.c
+test_asn_bdm_c2s_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util -DASN_PDU_COLLECTION -DPDU=BDM_C2S_Message 
+test_asn_bdm_c2s_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../util
+test_asn_bdm_c2s_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lm
+
+test_asn_bdm_s2c_SOURCES = converter-sample.c pdu_collection.c
+test_asn_bdm_s2c_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util -DASN_PDU_COLLECTION -DPDU=BDM_S2C_Message 
+test_asn_bdm_s2c_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../util
+test_asn_bdm_s2c_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lm
+
+
 
 
 # 

@@ -156,6 +156,25 @@ int bionet_connect(void);
 
 //
 //
+//       NAME:  bionet_is_connected()
+//
+//   FUNCTION:  Checks to see if the Bionet library is connected to Bionet.
+//
+//  ARGUMENTS:  None.
+//
+//    RETURNS:  Returns True (non-zero) if the library IS connected to
+//              Bionet, returns False (0) if the library is NOT connected
+//              to Bionet.
+//
+//
+
+int bionet_is_connected(void);
+
+
+
+
+//
+//
 //       NAME:  bionet_read()
 //
 //   FUNCTION:  This function should be called whenever the Bionet file
@@ -346,23 +365,6 @@ int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *h
 
 
 #if 0
-
-//
-//
-//       NAME:  bionet_is_connected()
-//
-//   FUNCTION:  Checks to see if the Bionet library is connected to the
-//              NAG.
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  Returns false (0) if the library is NOT connected to the
-//              NAG, returns true (non-zero) if the library IS connected to
-//              the NAG.
-//
-//
-
-int bionet_is_connected(void);
 
 
 

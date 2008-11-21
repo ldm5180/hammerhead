@@ -1,0 +1,92 @@
+
+
+-- 
+-- Note: This validates rows for uniqueness as appropriate, but does no
+--       validation of column contents beyond that.  For example, it'll
+--       happily let you insert a node named "$!@##$%///\\\"
+-- 
+
+
+-- this table has one row for each distinct HAB we've ever seen
+CREATE TABLE Hardware_Abstractors (
+    Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
+    HAB_Type VARCHAR(255) NOT NULL,       
+    HAB_ID VARCHAR(255) NOT NULL,
+    UNIQUE (HAB_Type, HAB_ID)
+);
+CREATE INDEX HAB_Type_Index ON Hardware_Abstractors(HAB_Type);
+CREATE INDEX HAB_ID_Index ON Hardware_Abstractors(HAB_ID);
+
+
+-- this table has one row for each distinct Node we've ever seen
+CREATE TABLE Nodes (
+    Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
+    HAB_Key INTEGER NOT NULL,                        -- the row index in the Hardware_Abstractors table of the HAB that this Node belongs to
+    Node_ID VARCHAR(255) NOT NULL,
+    UNIQUE (HAB_Key, Node_ID)
+);
+CREATE INDEX HAB_Key_Index ON Nodes(HAB_Key);
+CREATE INDEX Node_ID_Index ON Nodes(Node_ID);
+
+
+-- this table has one row for each Data Type we support
+CREATE TABLE Resource_Data_Types (
+    Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
+    Data_Type VARCHAR(255) NOT NULL,
+    UNIQUE (Data_Type)
+);
+CREATE INDEX Data_Type_Index ON Resource_Data_Types(Data_Type);
+INSERT INTO Resource_Data_Types VALUES (NULL, 'binary');
+INSERT INTO Resource_Data_Types VALUES (NULL, 'uint8');
+INSERT INTO Resource_Data_Types VALUES (NULL, 'int8');
+INSERT INTO Resource_Data_Types VALUES (NULL, 'uint16');
+INSERT INTO Resource_Data_Types VALUES (NULL, 'int16');
+INSERT INTO Resource_Data_Types VALUES (NULL, 'uint32');
+INSERT INTO Resource_Data_Types VALUES (NULL, 'int32');
+INSERT INTO Resource_Data_Types VALUES (NULL, 'float');
+INSERT INTO Resource_Data_Types VALUES (NULL, 'double');
+INSERT INTO Resource_Data_Types VALUES (NULL, 'string');
+
+
+-- this table has one row for each Flavor we support
+CREATE TABLE Resource_Flavors (
+    Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
+    Flavor VARCHAR(255) NOT NULL,
+    UNIQUE (Flavor)
+);
+CREATE INDEX Flavor_Index ON Resource_Flavors(Flavor);
+INSERT INTO Resource_Flavors VALUES (NULL, 'sensor');
+INSERT INTO Resource_Flavors VALUES (NULL, 'actuator');
+INSERT INTO Resource_Flavors VALUES (NULL, 'parameter');
+
+
+-- this table has one row for each distinct resource we've ever seen
+-- this is the resource metadata
+CREATE TABLE Resources (
+    Key BLOB PRIMARY KEY NOT NULL,                   -- bottom 64 bits of SHA1 of metadata
+    Node_Key INTEGER NOT NULL,                       -- the row index in the Nodes table of the Node that this Resource belongs to
+    Resource_ID VARCHAR(255) NOT NULL,
+    Data_Type_Key INTEGER NOT NULL,
+    Flavor_Key INTEGER NOT NULL,
+    UNIQUE (Key),
+    UNIQUE (Node_Key, Resource_ID, Data_Type_Key, Flavor_Key)
+);
+CREATE INDEX Node_Key_Index ON Resources(Node_Key);
+CREATE INDEX Resource_ID_Index ON Resources(Resource_ID);
+
+
+
+
+-- one row for each Datapoint we've ever seen
+-- this is the resource data
+CREATE TABLE Datapoints (
+    Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
+    Resource_Key INTEGER NOT NULL,                   -- the row index in the Resources table of the Resource that this Datapoint belongs to
+    Value INTEGER NOT NULL,                          -- taking advantage of sqlite's manifest typing
+    Timestamp_Sec  INTEGER NOT NULL,
+    Timestamp_Usec INTEGER NOT NULL,
+    UNIQUE (Resource_Key, Value, Timestamp_Sec, Timestamp_Usec)
+);
+CREATE INDEX Resource_Key_Index ON Datapoints(Resource_Key);
+CREATE INDEX Timestamp_Sec_Index ON Datapoints(Timestamp_Sec);
+

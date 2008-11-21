@@ -1,0 +1,25 @@
+#!/bin/sh
+
+
+case "$1" in
+
+    start)
+        echo -n "Starting Bionet Data Manager: "
+        bionet-data-manager
+        echo ok
+        ;;
+
+    stop)
+        echo -n "Stopping Bionet Data Manager: "
+        bionet-data-manager -k
+        echo ok
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+
+esac
+
+exit 0
+
