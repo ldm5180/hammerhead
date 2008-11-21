@@ -24,6 +24,7 @@
 
 
 int cal_server_mdnssd_bip_init(
+    const char *network_type,
     const char *name,
     void (*callback)(const cal_event_t *event),
     int (*topic_matches)(const char *a, const char *b)
@@ -34,6 +35,18 @@ int cal_server_mdnssd_bip_init(
     socklen_t my_address_len;
 
     cal_server_mdnssd_bip_t *this;
+
+
+    if (network_type == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: NULL network_type passed in");
+        return -1;
+    }
+
+    cal_server_mdnssd_bip_network_type = strdup(network_type);
+    if (cal_server_mdnssd_bip_network_type == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: out of memory");
+        return -1;
+    }
 
 
     this = (cal_server_mdnssd_bip_t *)calloc(1, sizeof(cal_server_mdnssd_bip_t));

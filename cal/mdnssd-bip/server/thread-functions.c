@@ -409,10 +409,21 @@ void cleanup_clients(void *unused) {
 
 
 void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
-    this = this_as_voidp;
+    char mdnssd_service_name[100];
+    int r;
 
     TXTRecordRef txt_ref;
     DNSServiceErrorType error;
+
+
+    this = this_as_voidp;
+
+
+    r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", cal_server_mdnssd_bip_network_type);
+    if (r >= sizeof(mdnssd_service_name)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: network type '%s' is too long!", cal_server_mdnssd_bip_network_type);
+        return NULL;
+    }
 
 
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
@@ -461,7 +472,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
         0,                                    // DNSServiceFlags flags
         0,                                    // uint32_t interfaceIndex
         this->name,                           // const char *name
-        CAL_MDNSSD_BIP_SERVICE_NAME,          // const char *regtype
+        mdnssd_service_name,                  // const char *regtype
         "",                                   // const char *domain
         NULL,                                 // const char *host
         htons(this->port),                    // uint16_t port (in network byte order)

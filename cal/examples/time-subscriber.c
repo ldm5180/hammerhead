@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
     make_shutdowns_clean();
 
 
-    cal_fd = cal_client.init(cal_callback, NULL);
+    cal_fd = cal_client.init("time", cal_callback, NULL);
     if (cal_fd < 0) exit(1);
 
     cal_client.subscribe("time-publisher", "time");

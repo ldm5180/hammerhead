@@ -24,6 +24,7 @@
 
 
 int cal_client_mdnssd_bip_init(
+    const char *network_type,
     void (*callback)(const cal_event_t *event),
     int (*peer_matches)(const char *peer_name, const char *subscription)
 ) {
@@ -32,11 +33,23 @@ int cal_client_mdnssd_bip_init(
     cal_client_mdnssd_bip_t *this;
 
 
+    if (network_type == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: NULL network_type specified!");
+        goto fail0;
+    }
+
+    cal_client_mdnssd_bip_network_type = strdup(network_type);
+    if (cal_client_mdnssd_bip_network_type == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: out of memory!");
+        goto fail0;
+    }
+
+
     // set up the context
     this = (cal_client_mdnssd_bip_t *)calloc(1, sizeof(cal_client_mdnssd_bip_t));
     if (this == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: out of memory!");
-        goto fail0;
+        goto fail1;
     }
 
     if (peer_matches == NULL) {
@@ -49,20 +62,20 @@ int cal_client_mdnssd_bip_init(
     r = pipe(cal_client_mdnssd_bip_fds_to_user);
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error making to-user pipe: %s", strerror(errno));
-        goto fail1;
+        goto fail2;
     }
 
     // create the pipe for getting subscription requests from the user
     r = pipe(cal_client_mdnssd_bip_fds_from_user);
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error making from-user pipe: %s", strerror(errno));
-        goto fail2;
+        goto fail3;
     }
 
     cal_client_mdnssd_bip_thread = (pthread_t *)malloc(sizeof(pthread_t));
     if (cal_client_mdnssd_bip_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot allocate memory for thread: %s", strerror(errno));
-        goto fail3;
+        goto fail4;
     }
 
     // record the user's callback function
@@ -72,7 +85,7 @@ int cal_client_mdnssd_bip_init(
     r = pthread_create(cal_client_mdnssd_bip_thread, NULL, cal_client_mdnssd_bip_function, this);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot create thread: %s", strerror(errno));
-        goto fail4;
+        goto fail5;
     }
 
 
@@ -80,14 +93,14 @@ int cal_client_mdnssd_bip_init(
     r = fcntl(cal_client_mdnssd_bip_fds_to_user[0], F_SETFL, O_NONBLOCK);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot make cal_fd nonblocking: %s", strerror(errno));
-        goto fail5;
+        goto fail6;
     }
 
 
     return cal_client_mdnssd_bip_fds_to_user[0];
 
 
-fail5: 
+fail6: 
     r = pthread_cancel(*cal_client_mdnssd_bip_thread);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error canceling client thread: %s", strerror(errno));
@@ -97,21 +110,25 @@ fail5:
         cal_client_mdnssd_bip_thread = NULL;
     }
 
-fail4:
+fail5:
     free(cal_client_mdnssd_bip_thread);
     cal_client_mdnssd_bip_thread = NULL;
     cal_client.callback = NULL;
 
-fail3:
+fail4:
     close(cal_client_mdnssd_bip_fds_from_user[0]);
     close(cal_client_mdnssd_bip_fds_from_user[1]);
 
-fail2:
+fail3:
     close(cal_client_mdnssd_bip_fds_to_user[0]);
     close(cal_client_mdnssd_bip_fds_to_user[1]);
 
-fail1:
+fail2:
     free(this);
+
+fail1:
+    free(cal_client_mdnssd_bip_network_type);
+    cal_client_mdnssd_bip_network_type = NULL;
 
 fail0:
     return -1;

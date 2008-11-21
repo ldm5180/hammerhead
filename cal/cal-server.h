@@ -40,6 +40,9 @@ typedef struct {
     //!
     //! \brief Make this peer available for connections.
     //!
+    //! \param network_type A NULL-terminated ASCII string containing the
+    //!     name of the CAL network to join.
+    //!
     //! \param name The name to announce this CAL server as on the network.
     //!
     //! \param callback The callback function to be called by the CAL
@@ -62,6 +65,7 @@ typedef struct {
     //!
 
     int (*init)(
+        const char *network_name,
         const char *name,
         void (*callback)(const cal_event_t *event),
         int (*topic_matches)(const char *topic, const char *subscription)

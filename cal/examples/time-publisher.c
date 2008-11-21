@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
     make_shutdowns_clean();
 
 
-    cal_fd = cal_server.init("time-publisher", cal_callback, NULL);
+    cal_fd = cal_server.init("time", "time-publisher", cal_callback, NULL);
     if (cal_fd < 0) {
         printf("failed to init server\n");
         exit(1);

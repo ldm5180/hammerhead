@@ -24,6 +24,7 @@ typedef struct {
 
 
 
+extern char *cal_client_mdnssd_bip_network_type;
 
 extern void (*cal_client_mdnssd_bip_callback)(cal_event_t *event);
 

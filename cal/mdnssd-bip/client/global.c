@@ -2,6 +2,8 @@
 #include "cal-client-mdnssd-bip.h"
 
 
+char *cal_client_mdnssd_bip_network_type = NULL;
+
 void (*cal_client_mdnssd_bip_callback)(cal_event_t *event) = NULL;
 
 int cal_client_mdnssd_bip_fds_to_user[2] = { -1, -1 };

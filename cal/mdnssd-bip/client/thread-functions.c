@@ -449,7 +449,7 @@ static void resolve_callback(
 
 
 // 
-// this function gets called whenever a service of our type, "_bionet._tcp", comes or goes
+// this function gets called whenever a service of our type, for example "_bionet._tcp", comes or goes
 //
 
 static void browse_callback(
@@ -611,7 +611,16 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     struct cal_client_mdnssd_bip_service_context *browse;
     DNSServiceErrorType error;
 
+    char mdnssd_service_name[100];
+    int r;
+
     this = (cal_client_mdnssd_bip_t *)arg;
+
+    r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", cal_client_mdnssd_bip_network_type);
+    if (r >= sizeof(mdnssd_service_name)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "client thread: network type '%s' too long!", cal_client_mdnssd_bip_network_type);
+        return NULL;
+    }
 
     subscriptions = g_ptr_array_new();
     pthread_cleanup_push(cleanup_subscriptions, NULL);
@@ -632,7 +641,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
         &browse->service_ref,
         0,
         0,
-	CAL_MDNSSD_BIP_SERVICE_NAME,
+	mdnssd_service_name,
         NULL,  
         browse_callback,
         NULL

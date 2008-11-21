@@ -264,7 +264,7 @@ int bionet_connect(void) {
     //
 
 
-    libbionet_cal_fd = cal_client.init(libbionet_cal_callback, libbionet_cal_peer_matches);
+    libbionet_cal_fd = cal_client.init("bionet", libbionet_cal_callback, libbionet_cal_peer_matches);
     if (libbionet_cal_fd == -1) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_connect(): error initializing CAL");
         return -1;
