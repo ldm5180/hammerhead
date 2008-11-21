@@ -1,4 +1,13 @@
 
+Bionet 2.0.2, SVN rev 268
+
+    * Added BDM, the Bionet Data Manager.
+
+    * MMOD-HAB is now functional.
+
+    * Misc minor bug fixes.
+
+
 Bionet 2.0.1, SVN rev 262
 
     * Added Python bindings for Bionet 2 Clients.  Wrote a bionet-watcher.py
