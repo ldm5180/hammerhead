@@ -60,12 +60,6 @@ typedef struct {
 #define Max(a, b) ((a) > (b) ? (a) : (b))
 
 
-// FIXME: if the cal users (clients & servers) could somehow pass in the
-//     first part of this string, cal could be used by different
-//     applications on the same physical network
-#define CAL_MDNSSD_BIP_SERVICE_NAME "_bionet._tcp"
-
-
 
 
 // 
