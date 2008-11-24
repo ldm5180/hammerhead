@@ -219,6 +219,6 @@ static void print_usage(FILE* fout)
 	    "    -h -?  display this help\n"
 	    "    -i     HAB ID (mmod)\n"
 	    "    -t     seconds between required mote heartbeats\n"
-	    "    -u     USB serial device (/dev/ttyUSB1)"
+	    "    -u     USB serial device (/dev/ttyUSB1)\n"
 	    "    -v     verbose logging\n");
 } /* print_usage() */
