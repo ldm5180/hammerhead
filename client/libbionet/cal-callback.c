@@ -209,16 +209,24 @@ static void handle_resource_datapoints(const cal_event_t *event, ResourceDatapoi
         return;
     }
 
-
     for (i = 0; i < rd->newDatapoints.list.count; i ++) {
         Datapoint_t *asn_d = rd->newDatapoints.list.array[i];
-        bionet_datapoint_t *d = bionet_asn_to_datapoint(asn_d, resource);
+        bionet_datapoint_t *d;
+        bionet_datapoint_t *new_d = bionet_asn_to_datapoint(asn_d, resource);
+
+        d = bionet_resource_get_datapoint_by_index(resource, 0);
+        if (d == NULL) {
+            bionet_resource_add_existing_datapoint(resource, new_d);
+            d = new_d;
+        } else {
+            bionet_datapoint_set_value(d, &new_d->value);
+            bionet_datapoint_set_timestamp(d, &new_d->timestamp);
+            bionet_datapoint_free(new_d);
+        }
 
         if (libbionet_callback_datapoint != NULL) {
             libbionet_callback_datapoint(d);
         }
-
-        // FIXME: replace resource's datapoints with this one
     }
 }
 
