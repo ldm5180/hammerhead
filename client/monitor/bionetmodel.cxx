@@ -194,17 +194,12 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
     const bionet_resource_t* resource = datapoint->resource;
     const bionet_node_t *node = resource->node;
     const bionet_hab_t *hab = node->hab;
-
-    /*
-     * FIXME: DATA POINTS not resources...
-     */
     
     QString id = QString("%1.%2.%3:%4").arg(hab->type).arg(hab->id).arg(node->id).arg(resource->id);
     
     QModelIndexList resourceList = match(index(0, 0, invisibleRootItem()->index()), 
             Qt::UserRole, QVariant(id), 1, 
             Qt::MatchExactly | Qt::MatchRecursive);
-
     
     if ( resourceList.isEmpty() ) {
         cout << "Cannot update (unable to find resource:" << qPrintable(id) << ")" << endl;
@@ -212,7 +207,7 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
     }
 
     res = resourceList.first();
-
+    
     //cout << "wanted to update resource " << qPrintable(id) << endl;
     //cout << "going to update resource " << qPrintable(res.data(Qt::UserRole).toString()) << endl;
 

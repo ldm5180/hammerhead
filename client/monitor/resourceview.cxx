@@ -91,23 +91,6 @@ ResourceView :: ResourceView (QWidget* parent) : QGridLayout(parent) {
 void ResourceView::updatePanel(bionet_resource_t* resource) {
     bionet_datapoint *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
 
-    if ((resource->flavor == BIONET_RESOURCE_FLAVOR_PARAMETER) ||
-        (resource->flavor == BIONET_RESOURCE_FLAVOR_ACTUATOR)) {
-        removeWidget(plotButton);
-        addWidget(submitResourceValue, 8, 0);
-        addWidget(valueEditor, 8, 1);
-        submitResourceValue->show();
-        valueEditor->show();
-        addWidget(plotButton, 9, 0, 1, 2, Qt::AlignCenter);
-
-        plotButton->setFocusPolicy(Qt::NoFocus);
-        submitResourceValue->setFocusPolicy(Qt::ClickFocus);
-        valueEditor->setFocusPolicy(Qt::StrongFocus);
-    } else if (rowCount() == 10) {
-        removeSubmitableRows();
-        plotButton->setFocusPolicy(Qt::StrongFocus);
-    }
-
     if (datapoint != NULL) {
         QString exactValue(bionet_datapoint_value_to_string(datapoint));
 
@@ -122,6 +105,34 @@ void ResourceView::updatePanel(bionet_resource_t* resource) {
         timestamp->setText("N/A");
         value->setText("(no known value)");
     }
+    
+    if ((resource->flavor == BIONET_RESOURCE_FLAVOR_PARAMETER) ||
+        (resource->flavor == BIONET_RESOURCE_FLAVOR_ACTUATOR)) {
+        removeWidget(plotButton);
+        addWidget(submitResourceValue, 8, 0);
+        addWidget(valueEditor, 8, 1);
+        submitResourceValue->show();
+        valueEditor->show();
+        addWidget(plotButton, 9, 0, 1, 2, Qt::AlignCenter);
+
+        plotButton->setFocusPolicy(Qt::NoFocus);
+        submitResourceValue->setFocusPolicy(Qt::ClickFocus);
+        valueEditor->setFocusPolicy(Qt::StrongFocus);
+
+        // FIXME: when we can set resource values, enable them
+        submitResourceValue->setEnabled(false);
+        valueEditor->setEnabled(false);
+            
+
+    } else if (rowCount() == 10) {
+        removeSubmitableRows();
+        plotButton->setFocusPolicy(Qt::StrongFocus);
+    }
+
+    if (resource->data_type == BIONET_RESOURCE_DATA_TYPE_STRING)
+        plotButton->setEnabled(false);
+    else
+        plotButton->setEnabled(true);
 
     return;
 }
@@ -254,7 +265,7 @@ bool ResourceView::resourceInPanel(bionet_resource_t* resource) {
 }
 
 void ResourceView::removeSubmitableRows() {
-    removeWidget(plotButton);
+    //removeWidget(plotButton);
     removeWidget(submitResourceValue);
     submitResourceValue->hide();
     removeWidget(valueEditor);
@@ -268,6 +279,16 @@ void ResourceView::plotClicked() {
         (habId->text() == NULL) ||
         (nodeId->text() == NULL) ||
         (resourceId->text() == NULL))
+        return;
+
+    bionet_resource_t* res = bionet_cache_lookup_resource(
+        qPrintable(habType->text()),
+        qPrintable(habId->text()),
+        qPrintable(nodeId->text()),
+        qPrintable(resourceId->text()));
+
+    // can't plot strings
+    if (res->data_type == BIONET_RESOURCE_DATA_TYPE_STRING)
         return;
 
     QString id = QString("%1.%2.%3:%4").arg(habType->text()).arg(habId->text()).arg(nodeId->text()).arg(resourceId->text());

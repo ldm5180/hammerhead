@@ -341,8 +341,7 @@ void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
     PlotWindow* p = plots.value(key);
 
     if ( p != NULL ) {
-        // FIXME: this function needs to be fixed //
-        //p->updatePlot(history->getTimes(key), history->getValues(key), history->getSize(key));
+        p->updatePlot(history->getTimes(key), history->getValues(key), history->getSize(key));
     }
 }
 
