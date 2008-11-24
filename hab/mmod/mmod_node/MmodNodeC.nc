@@ -291,6 +291,7 @@ implementation
 	    tmp_general_msg.accel_x = 0; /* reset me */
 	    tmp_general_msg.accel_y = 0;
 	    general_msg->photo = tmp_general_msg.photo;
+	    general_msg->accel_flags = settings.accel_flags;
 
 	    call GeneralRoot.send(&general_msgbuf, sizeof(*general_msg));
 	    call Leds.led1Off();

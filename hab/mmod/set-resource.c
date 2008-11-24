@@ -182,6 +182,10 @@ void cb_set_resource(const char *node_id,
     {
 	switch (value[0])
 	{
+	case 'n':
+	case 'N':
+	    uiVal = 0;
+	    break;
 	case 'x':
 	case 'X':
 	    uiVal = ACCEL_FLAG_X;
@@ -216,6 +220,9 @@ void cb_set_resource(const char *node_id,
 
 	    switch (dp->value.string_v[0])
 	    {
+	    case 'N':
+		uiVal = 0;
+		break;
 	    case 'X':
 		uiVal = ACCEL_FLAG_X;
 		break;

@@ -3,8 +3,8 @@ include $(top_srcdir)/common.am
 if TINYOSMIG_DISABLED
 ADD =
 else
-ADD = mmodaccelmsg.c mmodgenmsg.c mmodsettingsmsg.c
-rm -f mmodaccelmsg.c mmodgenmsg.c mmodsettingsmsg.c
+ADD = mmodaccelmsg.c mmodgenmsg.c mmodsettingsmsg.c 
+BUILT_SOURCES = mmodaccelmsg.c mmodgenmsg.c mmodsettingsmsg.c 
 endif
 
 bin_PROGRAMS = mmod-hab
@@ -31,14 +31,15 @@ mmod_hab_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $
 
 mmod_hab_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lpthread -lm
 
+
 mmodaccelmsg.c: mmod_node/mmod_msg.h
-	touch $@
+	touch mmodaccelmsg.c
 	mig -o mmodaccelmsg.h -c-prefix=MMODACCELMSG c mmod_node/mmod_msg.h mmod_accel_msg
 
 mmodgenmsg.c: mmod_node/mmod_msg.h
-	touch $@
+	touch mmodgenmsg.c
 	mig -o mmodgenmsg.h -c-prefix=MMODGENMSG c mmod_node/mmod_msg.h mmod_general_msg
 
 mmodsettingsmsg.c: mmod_node/mmod_msg.h
-	touch $@
+	touch mmodsettingsmsg.c
 	mig -o mmodsettingsmsg.h -c-prefix=MMODSETTINGSMSG c mmod_node/mmod_msg.h mmod_settings_msg

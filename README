@@ -5,6 +5,8 @@ Bionet 2
 
 To compile:
 
+    aclocal
+    autoreconf --install --force
     ./configure
     make
 

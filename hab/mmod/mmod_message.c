@@ -568,6 +568,10 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    {
 		value.string_v = "Y-Axis";
 	    }
+	    else
+	    {
+		value.string_v = "None";
+	    }
 	    bionet_resource_set(resource, &value, &tv);
 	}
 
@@ -770,20 +774,21 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	    if (flags & ACCEL_FLAG_Y)
 	    {
 		value.string_v = "both";
-		bionet_resource_set(resource, &value, &tv);
 	    }
 	    else
 	    {
 		value.string_v = "X-Axis";
-		bionet_resource_set(resource, &value, &tv);
 	    }
 	}
 	else if (flags & ACCEL_FLAG_Y)
 	{
 	    value.string_v = "Y-Axis";
-	    bionet_resource_set(resource, &value, &tv);
 	}
-	
+	else
+	{
+	    value.string_v = "None";
+	}
+	bionet_resource_set(resource, &value, &tv);
     }
 
     hab_report_datapoints(node);
