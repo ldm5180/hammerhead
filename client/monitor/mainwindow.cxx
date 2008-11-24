@@ -267,9 +267,6 @@ void MainWindow::usage(void) {
 \n\
 OPTIONS:\n\
 \n\
-    --nag HOSTNAME\n\
-        Connect to the NAG on HOSTNAME.\n\
-\n\
     --sample-size\n\
         Set the number of samples to store for plotting (default: 10,000)\n\
 \n\
@@ -292,9 +289,6 @@ For command line options run \n\
 \n\
 Use the keyboard, mouse, or arrow keys to\n\
 nagivate the Node Hierarchy on the left.\n\
-\n\
-The BioNet Monitor connects to the BioNet\n\
-NAG (selected on startup).\n\
 \n\
 To plot resources, select a resource and\n\
 click on either plot button.  Only\n\
