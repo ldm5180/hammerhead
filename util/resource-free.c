@@ -24,8 +24,8 @@ void bionet_resource_free(bionet_resource_t *resource) {
     }
 
     // free all the datapoints
-    while (bionet_resource_get_num_datapoints(resource) > 0) {
-        bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, 0);
+    while(resource->datapoints->len > 0) {
+        bionet_datapoint_t *d = g_ptr_array_remove_index_fast(resource->datapoints, 0);
         bionet_datapoint_free(d);
     }
     g_ptr_array_free(resource->datapoints, TRUE);
@@ -40,5 +40,6 @@ void bionet_datapoint_free(bionet_datapoint_t *d) {
             free(d->value.string_v);
         }
     }
+    free(d);
 }
 
