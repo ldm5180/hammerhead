@@ -29,7 +29,18 @@ void bionet_datapoint_set_value(bionet_datapoint_t *d, const bionet_datapoint_va
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_value(): NULL value passed in");
         return;
     }
-    d->value = *value;
+
+    if (d->resource->data_type == BIONET_RESOURCE_DATA_TYPE_STRING) {
+        free(d->value.string_v);
+        d->value.string_v = strdup(value->string_v);
+        if (d->value.string_v == NULL) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_value(): out of memory");
+            return;
+        }
+    } else {
+        d->value = *value;
+    }
+
 
     d->dirty = 1;
 }

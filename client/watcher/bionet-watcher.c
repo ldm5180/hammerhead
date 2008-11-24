@@ -25,36 +25,47 @@
 #include <signal.h>
 
 void signal_handler(int signo) {
-#if 0
     int hi;
 
     g_log("", G_LOG_LEVEL_INFO, "cache:");
 
-    for (hi = 0; hi < g_slist_length(bionet_habs); hi ++) {
+    for (hi = 0; hi < bionet_cache_get_num_habs(); hi ++) {
         int ni;
-        bionet_hab_t *hab = g_slist_nth_data(bionet_habs, hi);
+        bionet_hab_t *hab = bionet_cache_get_hab_by_index(hi);
 
         g_log("", G_LOG_LEVEL_INFO, "    %s.%s", hab->type, hab->id);
 
-        for (ni = 0; ni < g_slist_length(hab->nodes); ni ++) {
+        for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
             int i;
-            bionet_node_t *node = g_slist_nth_data(hab->nodes, ni);
+            bionet_node_t *node = bionet_hab_get_node_by_index(hab, ni);
 
             g_log("", G_LOG_LEVEL_INFO, "        %s", node->id);
 
-            for (i = 0; i < g_slist_length(node->resources); i ++) {
-                bionet_resource_t *resource = g_slist_nth_data(node->resources, i);
+            for (i = 0; i < bionet_node_get_num_resources(node); i ++) {
+                bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
+                bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, 0);
 
-                g_log(
-                    "",
-                    G_LOG_LEVEL_INFO,
-                    "            %s = %s %s %s @ %s",
-                    resource->id,
-                    bionet_resource_data_type_to_string(resource->data_type),
-                    bionet_resource_flavor_to_string(resource->flavor),
-                    bionet_resource_value_to_string(resource),
-                    bionet_resource_time_to_string_human_readable(resource)
-                );
+                if (d == NULL) {
+                    g_log(
+                        "",
+                        G_LOG_LEVEL_INFO,
+                        "            %s (%s %s): (no value)",
+                        resource->id,
+                        bionet_resource_data_type_to_string(resource->data_type),
+                        bionet_resource_flavor_to_string(resource->flavor)
+                    );
+                } else {
+                    g_log(
+                        "",
+                        G_LOG_LEVEL_INFO,
+                        "            %s (%s %s):  %s @ %s",
+                        resource->id,
+                        bionet_resource_data_type_to_string(resource->data_type),
+                        bionet_resource_flavor_to_string(resource->flavor),
+                        bionet_datapoint_value_to_string(d),
+                        bionet_datapoint_timestamp_to_string(d)
+                    );
+                }
             }
 
             for (i = 0; i < g_slist_length(node->streams); i ++) {
@@ -72,7 +83,6 @@ void signal_handler(int signo) {
 
         }
     }
-#endif
 }
 
 #endif
@@ -255,13 +265,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    // subscriptions are complete, handle all the info we got
-    // bionet_handle_queued_nag_messages();
-
-
-#ifdef LINUX
     signal(SIGUSR1, signal_handler);
-#endif
 
 
     while (1) {
