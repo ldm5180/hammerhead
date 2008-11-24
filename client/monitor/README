@@ -1,0 +1,57 @@
+
+Copyright (C) 2004-2008, Regents of the University of Colorado.
+This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
+
+
+
+
+The bionet-monitor program is a graphical user interface client for viewing
+and setting BioNet sensors, parameters, and actuators.
+
+
+Starting the BioNet Monitor
+===========================
+
+To start the BioNet Monitor, run:
+
+./bionet-monitor
+
+
+Navigating the BioNet Monitor
+=============================
+
+The BioNet Monitor only grants visibility into Nodes and Resources that 
+are currently on the local ethernet.
+
+The user can use the mouse to expand and collapse the hierarchical listings 
+of HABs and Nodes by clicking in the boxes to the left of the various HABs
+and Nodes. 
+
+The user can type in the name of the HAB or Node with the keyboard and the 
+cursor/highlighter will jump to that HAB or Node. 
+
+The user can expand, collapse, and navigate HABs and Nodes by using the arrow
+keys. To move the highlighting towards the bottom of the screen, use the down 
+arrow. To expand a HAB or Node, use the right arrow. To Collapse a Node or 
+HAB, use the left arrow. 
+
+To select a Resource, highlight it. This will display the information 
+about that resource in the Frame on the right side of the screen. You must 
+select a Resource in order to change its value.  
+
+To Plot a Resource, you must select that resource first. You can then click 
+on the Plot button on the Frame on the right side of the screen. You can also 
+use TAB to select the Plot button, and then hit the spacebar to plot. If a 
+Resource or Node disconnects, you will not be able to view it or plot data
+from that Resource or Node.
+
+To Update a Resource (parameters or actuators only), you must select the 
+Resource first. Once the information for that resource is shown in the 
+Frame on the right side of the screen, you can click in the box showing the 
+value. Or, you can TAB over to the box. To set the Resource value, click on 
+the Update Value button, or hit the space bar when the button is selected. 
+
+
+
+
+
