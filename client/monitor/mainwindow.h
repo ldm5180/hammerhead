@@ -70,6 +70,7 @@ class MainWindow : public QWidget {
         void updatePlot(bionet_datapoint_t* datapoint);
         void lostPlot(QString key);
         void destroyPlot(QObject* obj);
+        void updateMenus();
 
     private:
         QHBoxLayout* layout;

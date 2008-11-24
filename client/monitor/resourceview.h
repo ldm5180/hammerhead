@@ -52,6 +52,7 @@ class ResourceView  : public QGridLayout {
         void newStreamSelected(bionet_stream_t* stream);
         void textEntered();
         void plotClicked();
+        bionet_resource_t* resourceInView();
 
     signals:
         void sendResourceUpdate(bionet_resource_t* res);

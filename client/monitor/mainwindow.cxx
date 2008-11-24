@@ -259,7 +259,22 @@ void MainWindow::createMenus() {
     helpMenu = menuBar->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAction);
     helpMenu->addAction(shortcuts);
+
+    connect(fileMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
 } 
+
+
+void MainWindow::updateMenus() {
+    bionet_resource_t* resource;
+
+    resource = resourceView->resourceInView();
+    if (resource == NULL)
+        plotAction->setEnabled(false);
+    else if (resource->data_type == BIONET_RESOURCE_DATA_TYPE_STRING)
+        plotAction->setEnabled(false);
+    else
+        plotAction->setEnabled(true);
+}
 
 
 void MainWindow::usage(void) {

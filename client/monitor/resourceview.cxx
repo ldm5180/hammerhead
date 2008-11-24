@@ -281,13 +281,9 @@ void ResourceView::plotClicked() {
         (resourceId->text() == NULL))
         return;
 
-    bionet_resource_t* res = bionet_cache_lookup_resource(
-        qPrintable(habType->text()),
-        qPrintable(habId->text()),
-        qPrintable(nodeId->text()),
-        qPrintable(resourceId->text()));
-
-    // can't plot strings
+    bionet_resource_t* res = resourceInView();
+    if (res == NULL)
+        return;
     if (res->data_type == BIONET_RESOURCE_DATA_TYPE_STRING)
         return;
 
@@ -296,4 +292,17 @@ void ResourceView::plotClicked() {
     //cout << "Sending " << qPrintable(id) << endl;
     
     emit(plotResource(id));
+}
+
+
+bionet_resource_t* ResourceView::resourceInView() {
+    bionet_resource_t * resource;
+    
+    resource = bionet_cache_lookup_resource(
+        qPrintable(habType->text()),
+        qPrintable(habId->text()),
+        qPrintable(nodeId->text()),
+        qPrintable(resourceId->text()));
+
+    return resource;
 }
