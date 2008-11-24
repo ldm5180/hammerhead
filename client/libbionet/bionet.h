@@ -209,7 +209,7 @@ unsigned int bionet_cache_get_num_habs(void);
  *
  * @return Pointer to the HAB requested or NULL if no HAB exists at index
  */
-bionet_node_t *bionet_cache_get_hab_by_index(unsigned int index);
+bionet_hab_t *bionet_cache_get_hab_by_index(unsigned int index);
 
 
 //

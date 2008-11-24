@@ -21,7 +21,7 @@ unsigned int bionet_cache_get_num_habs(void)
 } /* bionet_cache_get_num_habs() */
 
 
-bionet_node_t *bionet_cache_get_hab_by_index(unsigned int index)
+bionet_hab_t *bionet_cache_get_hab_by_index(unsigned int index)
 {
     if ((NULL == bionet_habs) || (index >= g_slist_length(bionet_habs)))
     {
