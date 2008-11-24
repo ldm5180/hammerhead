@@ -24,15 +24,21 @@ void bionet_resource_free(bionet_resource_t *resource) {
     }
 
     // free all the datapoints
-    // FIXME
-#if 0
-    for (i = 0; i < resource->datapoints.len; i ++) {
-        bionet_datapoint_t *d = g_ptr_array_index(resource->datapoints, i);
+    while (bionet_resource_get_num_datapoints(resource) > 0) {
+        bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, 0);
         bionet_datapoint_free(d);
     }
     g_ptr_array_free(resource->datapoints, TRUE);
-#endif
 
     free(resource);
+}
+
+
+void bionet_datapoint_free(bionet_datapoint_t *d) {
+    if (d->resource->data_type == BIONET_RESOURCE_DATA_TYPE_STRING) {
+        if (d->value.string_v != NULL) {
+            free(d->value.string_v);
+        }
+    }
 }
 
