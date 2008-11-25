@@ -119,21 +119,25 @@ libbionet_asn_la_LIBADD = $(AM_LDADD)
 
 bin_PROGRAMS = test-asn-h2c test-asn-c2h test-asn-bdm-c2s test-asn-bdm-s2c
 
+test_asn_h2c_DEPENDENCIES = libbionet-asn.la
 test_asn_h2c_SOURCES = converter-sample.c pdu_collection.c
 test_asn_h2c_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util -DASN_PDU_COLLECTION -DPDU=H2C_Message 
 test_asn_h2c_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../util
 test_asn_h2c_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lm
 
+test_asn_c2h_DEPENDENCIES = libbionet-asn.la
 test_asn_c2h_SOURCES = converter-sample.c pdu_collection.c
 test_asn_c2h_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util -DASN_PDU_COLLECTION -DPDU=C2H_Message 
 test_asn_c2h_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../util
 test_asn_c2h_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lm
 
+test_asn_bdm_c2s_DEPENDENCIES = libbionet-asn.la
 test_asn_bdm_c2s_SOURCES = converter-sample.c pdu_collection.c
 test_asn_bdm_c2s_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util -DASN_PDU_COLLECTION -DPDU=BDM_C2S_Message 
 test_asn_bdm_c2s_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../util
 test_asn_bdm_c2s_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lm
 
+test_asn_bdm_s2c_DEPENDENCIES = libbionet-asn.la
 test_asn_bdm_s2c_SOURCES = converter-sample.c pdu_collection.c
 test_asn_bdm_s2c_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util -DASN_PDU_COLLECTION -DPDU=BDM_S2C_Message 
 test_asn_bdm_s2c_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../util
