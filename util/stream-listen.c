@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     #include <netinet/in.h>
     #include <sys/socket.h>
 #endif

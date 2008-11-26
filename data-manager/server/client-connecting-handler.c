@@ -10,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifdef LINUX
+#if defined(LINUX) || defined(MACOSX)
     #include <arpa/inet.h>
     #include <netinet/in.h>
     #include <sys/types.h>
@@ -90,7 +90,7 @@ int client_connecting_handler(GIOChannel *listening_ch, GIOCondition condition, 
 #endif
 
 
-#ifdef LINUX
+#if defined(LINUX) || defined(MACOSX)
     new_client->ch = g_io_channel_unix_new(new_client->fd);
 #endif
 

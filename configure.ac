@@ -31,7 +31,23 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-
+uname=`uname`
+case $uname in
+     Linux)
+     AC_MSG_RESULT(checking OS... Linux)
+     HAVE_LINUX=yes
+     HAVE_DARWIN=no
+     ;;
+     Darwin)
+     AC_MSG_RESULT(checking OS... Darwin/OSX)
+     HAVE_DARWIN=yes
+     HAVE_LINUX=no
+     ;;
+     *)
+     echo "[!] Your system architecture is not supported by Bionet v2"
+     exit 0
+     ;;
+esac
 
 # User Selected features template
 #AC_ARG_ENABLE([featureX],
@@ -69,13 +85,15 @@ LIBS="$LIBS $DBUS_LIBS"
 AC_CHECK_FUNCS([dbus_connection_close dbus_bus_get_private])
 LIBS="$SAVED_LIBS"
 
-#PKG_CHECK_MODULES(AVAHI_GLIB, [ avahi-glib >= 0.6.16 ])
-#AC_SUBST(AVAHI_GLIB_CFLAGS)
-#AC_SUBST(AVAHI_GLIB_LIBS)
+if test "x$HAVE_DARWIN" = "xno"; then
+    PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
+    AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
+    AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)
+fi
 
-PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
-AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
-AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)
+AM_CONDITIONAL(ENABLE_DARWIN, test "x$HAVE_DARWIN" = "xyes")
+AM_CONDITIONAL(ENABLE_LINUX, test "x$HAVE_LINUX" = "xyes")
+
 
 AC_ARG_ENABLE(python, AC_HELP_STRING([--disable-python],
       [disable python dependent parts]),

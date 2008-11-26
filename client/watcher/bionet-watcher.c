@@ -21,7 +21,7 @@
 
 
 
-#ifdef LINUX
+#if defined(LINUX) || defined(MACOSX)
 #include <signal.h>
 
 void signal_handler(int signo) {
@@ -85,7 +85,7 @@ void signal_handler(int signo) {
     }
 }
 
-#endif
+#endif /* defined(LINUX) || defined(MACOSX) */
 
 
 

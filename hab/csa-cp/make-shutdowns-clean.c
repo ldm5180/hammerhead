@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     #include <signal.h>
 #endif
 
@@ -18,7 +18,7 @@
 
 
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
 static void exit_signal_handler(int signal_number) {
     exit(0);
 }
@@ -27,7 +27,7 @@ static void exit_signal_handler(int signal_number) {
 
 void make_shutdowns_clean(void) {
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     struct sigaction sa;
 
     sa.sa_handler = exit_signal_handler;

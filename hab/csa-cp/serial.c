@@ -15,7 +15,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#if  defined(LINUX) || defined(MAC_OSX)
+#if  defined(LINUX) || defined(MACOSX)
     #include <termios.h>
 #endif
 
@@ -33,7 +33,7 @@
 serial_handle_t serial_open(const char *device) {
     serial_handle_t serial_handle;
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     struct termios tio;
     int r;
 
@@ -168,7 +168,7 @@ serial_handle_t serial_open(const char *device) {
 
 int serial_flush(serial_handle_t serial_handle) {
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     int r;
 
     r = tcflush(serial_handle, TCIOFLUSH);
@@ -208,7 +208,7 @@ int serial_flush(serial_handle_t serial_handle) {
 
 int serial_read(serial_handle_t serial_handle, void *buffer, int count, int usec_timeout) {
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     int r;
     int bytes_read = 0;
     struct timeval start;
@@ -350,7 +350,7 @@ int serial_read(serial_handle_t serial_handle, void *buffer, int count, int usec
 
 int serial_write(serial_handle_t serial_handle, const void *buffer, int count) {
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     return write(serial_handle, buffer, count);
 #endif
 
@@ -387,7 +387,7 @@ int serial_write_byte(serial_handle_t serial_handle, char c) {
 
 
 void serial_close(serial_handle_t serial_handle) {
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     close(serial_handle);
 #endif
 

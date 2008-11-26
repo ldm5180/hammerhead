@@ -13,7 +13,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     #include <netdb.h>
     #include <pwd.h>
     #include <arpa/inet.h>
@@ -39,7 +39,7 @@
 
 
 static const char *libhab_get_program_name(void) {
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     static char program_name[500];
 
     int r;
@@ -200,7 +200,7 @@ int hab_connect(bionet_hab_t *hab) {
     // FIXME: how to deal with this in Windows?
     //
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     {
         int r;
         struct sigaction sa;
@@ -271,7 +271,7 @@ int hab_connect(bionet_hab_t *hab) {
     server_host = gethostbyname(hostname);
 
     if (server_host == NULL) {
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
         const char *error_string;
         error_string = hstrerror(h_errno);
 #endif
@@ -298,7 +298,7 @@ int hab_connect(bionet_hab_t *hab) {
 
     libhab_nag_nxio->socket = socket(AF_INET, SOCK_STREAM, 0);
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     if (libhab_nag_nxio->socket < 0) {
         g_log(
             BIONET_LOG_DOMAIN,

@@ -18,7 +18,7 @@
 
 int bionet_get_network_error(void) {
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     return errno;
 #endif
 
@@ -38,7 +38,7 @@ int bionet_get_network_error(void) {
 
 const char *bionet_get_network_error_string(void) {
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     return strerror(errno);
 #endif
 

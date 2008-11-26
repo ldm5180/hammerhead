@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef LINUX
+#if defined(LINUX) || defined(MACOSX)
     #include <netinet/in.h>
     #include <sys/socket.h>
 #endif

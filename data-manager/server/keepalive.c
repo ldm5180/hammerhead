@@ -7,7 +7,9 @@
 #include <errno.h>
 #include <string.h>
 
-#ifdef LINUX
+
+
+#if defined(LINUX) || defined(MACOSX)
     #include <netdb.h>
     #include <netinet/tcp.h>
 #endif
@@ -70,6 +72,6 @@ void keepalive(int socket, int idle, int count, int interval) {
     if (r < 0) {
         g_warning("error getting socket keepalive probe interval: %s", strerror(errno));
     }
-#endif
+#endif /* LINUX */
 }
 

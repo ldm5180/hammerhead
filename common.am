@@ -1,2 +1,11 @@
-AM_CFLAGS=-Wall -Werror -g -DLINUX
+AM_CFLAGS=-Wall -Werror -g 
+
+if ENABLE_DARWIN
+    AM_CFLAGS += -DMACOSX
+endif
+
+if ENABLE_LINUX
+    AM_CFLAGS += -DLINUX
+endif
+ 
 CFLAGS=$(AM_CFLAGS)

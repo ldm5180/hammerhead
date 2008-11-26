@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <string.h>
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     #include <netdb.h>
     #include <arpa/inet.h>
 #endif

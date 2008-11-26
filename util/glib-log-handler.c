@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     #include <syslog.h>
 #endif
 
@@ -40,7 +40,7 @@ void bionet_glib_log_handler(
 
     switch (lc->destination) {
         case BIONET_LOG_TO_SYSLOG: {
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
             if ((log_domain == NULL) || (log_domain[0] == '\0')) {
                 syslog(LOG_INFO, "%s", message);
             } else {

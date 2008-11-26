@@ -19,7 +19,7 @@
 
 
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     typedef int serial_handle_t;
     #define INVALID_HANDLE_VALUE (-1)
 #endif

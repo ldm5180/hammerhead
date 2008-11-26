@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     #include <sys/socket.h>
 #endif
 
@@ -36,7 +36,7 @@ int bionet_stream_accept(bionet_stream_t *stream, int listening_socket) {
         return -1;
     }
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     // FIXME
     // this makes the socket non-blocking, but it only works on Linux
     {

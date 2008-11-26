@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     #include <netdb.h>
     #include <pwd.h>
     #include <arpa/inet.h>
@@ -75,7 +75,7 @@ int bionet_is_connected(void) {
 
 #if 0
 static const char *libbionet_get_id(void) {
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     struct passwd *passwd;
     struct hostent *host;
     struct sockaddr_in local_socket;
@@ -169,7 +169,7 @@ static const char *libbionet_get_id(void) {
     }
 #endif
 
-#ifdef MAC_OSX
+#ifdef MACOSX
     {
         char * name = (char *)getprogname();
     	strncpy(program_name, name, 512);

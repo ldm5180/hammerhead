@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#if defined(LINUX) || defined(MAC_OSX)
+#if defined(LINUX) || defined(MACOSX)
     #include <netdb.h>
     #include <pwd.h>
     #include <arpa/inet.h>
@@ -137,7 +137,7 @@ static const char *libbionet_get_id(void) {
     }
 #endif
 
-#ifdef MAC_OSX
+#ifdef MACOSX
     {
         char * name = (char *)getprogname();
     	strncpy(program_name, name, 512);
