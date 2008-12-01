@@ -1,5 +1,11 @@
 include $(top_srcdir)/common.am
-SUBDIRS = libbionet watcher 
+SUBDIRS = libbionet watcher
+
+if ENABLE_QT4
+SUBDIRS += monitor
+endif
+
 if ENABLE_PYTHON
 SUBDIRS += py-libbionet
 endif
+

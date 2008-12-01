@@ -111,6 +111,20 @@ if test "x$ENABLE_PYTHON" = "xyes" ; then
 fi
 AM_CONDITIONAL(ENABLE_PYTHON, test "x$ENABLE_PYTHON" = "xyes")
 
+
+AC_ARG_ENABLE(qt4, AC_HELP_STRING([--disable-qt4],
+      [disable QT4 dependent parts]),
+      [ENABLE_QT4=$enableval],
+      [ENABLE_QT4=yes])
+if test "x$ENABLE_QT4" = "xyes" ; then
+   AC_PATH_PROG(QT4_PATH, qmake-qt4, no)
+   if test "x$QT4_PATH" = xno; then
+      AC_MSG_ERROR([could not find QT4 executables])
+   fi
+fi
+AM_CONDITIONAL(ENABLE_QT4, test "x$ENABLE_QT4" = "xyes")
+
+
 AC_PATH_PROG(TINYOSMIG, mig, no)
 AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TINYOSMIG" = "xno"])
 		      
@@ -132,6 +146,7 @@ AC_CONFIG_FILES([Makefile
                  util/Makefile
                  client/Makefile
                  client/libbionet/Makefile
+		 client/monitor/Makefile
                  client/py-libbionet/Makefile
                  client/watcher/Makefile
                  hab/Makefile

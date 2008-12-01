@@ -29,7 +29,6 @@
 #include <QString>
 #include <QPointer>
 
-#include <glib.h>
 #include <iostream>
 
 extern "C" {
