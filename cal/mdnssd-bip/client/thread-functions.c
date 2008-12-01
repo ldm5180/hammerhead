@@ -650,6 +650,9 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     if (error != kDNSServiceErr_NoError) {
         free(browse);
 	g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "client thread: Error browsing for service: %d", error);
+        if (error == kDNSServiceErr_Unknown) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "client thread: make sure the avahi-daemon is running");
+        }
 	return NULL;
     }
 

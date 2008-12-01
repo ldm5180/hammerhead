@@ -483,9 +483,13 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     );
 
     if (error != kDNSServiceErr_NoError) {
+        // the dns_sd api astonishingly lacks a strerror() function
         free(advertisedRef);
         advertisedRef = NULL;
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: Error registering service: %d", error);
+        if (error == kDNSServiceErr_Unknown) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: make sure the avahi-daemon is running");
+        }
         return NULL;
     }
 
