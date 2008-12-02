@@ -22,99 +22,123 @@
 
 
 
-//
-//
-//       NAME:  bionet_set_id()
-//
-//
-//   FUNCTION:  The Client ID is used by the Network Aggregator when
-//              logging information.  It exists only for convenience.
-//
-//              These functions may be called by the Client before
-//              connecting to the NAG, ie before calling
-//              bionet_connect_to_nag() and before calling any function
-//              that needs to communicate with the NAG.
-//
-//              If this function is not called before connecting to the
-//              NAG, the default value of 'user@host:port (program-name
-//              [pid])' will be used.
-//
-//              The string passed in is copied into private memory within
-//              the Bionet library and may be freed or overwritten after
-//              the function returns.
-//
-//
-//  ARGUMENTS:  The new Client ID string.
-//
-//
-//    RETURNS:  0 on success, -1 on failure.
-//
-//
-
+/**
+ * @brief The Client ID is used by the Network Aggregator.
+ *        It exists only for convenience when logging information
+ *
+ * @note If this function is not called before connecting to bionet
+ *       the default value of 'user@host:port (program-name[pid])' will be used.
+ *
+ * @note The string passed in is copied into private memory within
+ *       the Bionet library and may be freed or overwritten after
+ *       the function returns.
+ *
+ * @param[in] new_id The new Client ID string.
+ *
+ * @return 0 success
+ * @return -1 failure.
+ */
 int bionet_set_id(const char *new_id);
 
 
-
-
-//
-//
-//       NAME:  bionet_register_callback_new_hab()
-//              bionet_register_callback_lost_hab()
-//
-//              bionet_register_callback_new_node()
-//              bionet_register_callback_lost_node()
-//
-//              bionet_register_callback_datapoint()
-//
-//
-//   FUNCTION:  Registers callback functions with the Bionet library.
-//              These functions will be called when information is
-//              published that the Client has subscribed to.
-//
-//              The 'cb_new_hab' and 'cb_lost_hab' functions get called
-//              when a HAB that matches a HAB-list subscription joins and
-//              leaves (respectively) the network.  HAB-list subscriptions
-//              are created with the bionet_subscribe_hab_list() function
-//              declared below.  The bionet_hab_t argument is the property
-//              of the Bionet Client library, and must not be deallocated
-//              by the callback functions.  The new-hab callback function
-//              may set the bionet_hab_t's 'user_data' member.  The lost-hab
-//              callback MUST properly unset and deallocate the 'user_data'
-//              member or the application will leak memory.
-//
-//              The 'cb_new_node' and 'cb_lost_node' functions get called
-//              when a Node that matches a Node-list subscription joins and
-//              leaves (respectively) a HAB.  Node-list subscriptions are
-//              created with the bionet_subscribe_node_list() function
-//              declared below.  The bionet_node_t argument is the property
-//              of the Bionet Client library, and must not be deallocated
-//              by the callback functions.  The new-node callback may set
-//              the bionet_node_t's 'user_data' member.  The lost-node
-//              callback MUST properly unset and deallocate the 'user_data'
-//              member or the application will leak memory.
-//
-//              The 'cb_datapoint' function gets called when a Resource
-//              matching a Datapoint subscription gets a new value.
-//              Datapoint subscriptions are created with the
-//              bionet_subscribe_datapoint() function declared below.
-//              The bionet_datapoint_t argument to the callback function is
-//              the property of the Bionet Client library, and MUST not be
-//              deallocated by the callback function.
-//
-//
-//  ARGUMENTS:  The new callback function.
-//
-//
-//    RETURNS:  Nothing.
-//
-//
-
+/**
+ * @brief Registers new hab callback function with the Bionet library.
+ *         
+ * This will be called when information is published that the Client has 
+ * subscribed to.
+ *
+ * @note The "lost hab callback" MUST properly unset and deallocate the 
+ * 'user_data' member or the application will leak memory.
+ * 
+ * @note The "lost hab callback" is called when a HAB that matches a HAB-list
+ * subscription leaves the network. 
+ *
+ * @param[in] cb_new_hab The "new hab" callback function.
+ */
 void bionet_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab));
+
+
+/**
+ * @brief Registers lost hab callback function with the Bionet library.
+ *         
+ * This will be called when information is published that the Client has 
+ * subscribed to.
+ *
+ * The "new hab callback" is called when a HAB that matches a HAB-list
+ * subscription joins the network. HAB-list subscriptions are created with
+ * the bionet_subscribe_hab_list() function. 
+
+ * @note The bionet_hab_t argument is the property of the Bionet Client 
+ * library, and must not be deallocated by the callback functions.  
+ *
+ * @note The new-hab callback function may set the bionet_hab_t's 'user_data'
+ * member.   
+ *
+ * @param[in] cb_lost_hab The "lost hab" callback function.
+ */
 void bionet_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab));
 
+
+/**
+ * @brief Registers new node callback function with the Bionet library.
+ *         
+ * This will be called when information is published that the Client has 
+ * subscribed to.
+ *
+ * The 'cb_new_node' function is called when a Node that matches a 
+ * Node-list subscription joins a HAB.  Node-list subscriptions are
+ * created with bionet_subscribe_node_list().  
+ *
+ * @note The bionet_node_t argument is the property
+ * of the Bionet Client library, and must not be deallocated
+ * by the callback functions.  
+ *
+ * @note The new-node callback may set
+ * the bionet_node_t's 'user_data' member.
+ *
+ * @param[in] cb_new_node The "new node" callback function.
+ */
 void bionet_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node));
+
+
+/**
+ * @brief Registers new node callback function with the Bionet library.
+ *         
+ * This will be called when information is published that the Client has 
+ * subscribed to.
+ *
+ * The 'cb_lost_node' function is called when a Node that matches a 
+ * Node-list subscription leaves a HAB.  Node-list subscriptions are
+ * created with bionet_subscribe_node_list().  
+ *
+ * @note The bionet_node_t argument is the property
+ * of the Bionet Client library, and must not be deallocated
+ * by the callback functions.  
+ *
+ * @note The lost-node callback MUST properly unset and deallocate the
+ * 'user_data'  member or the application will leak memory.
+ *
+ * @param[in] cb_lost_node The "lost node" callback function.
+ */
 void bionet_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node));
 
+
+/**
+ * @brief Registers datapoint callback function with the Bionet library.
+ *         
+ * This will be called when information is published that the Client has 
+ * subscribed to.
+ *
+ * The 'cb_datapoint' function gets called when a Resource
+ * matching a Datapoint subscription gets a new value.
+ * Datapoint subscriptions are created with bionet_subscribe_datapoint().
+ *
+ * @note The bionet_datapoint_t argument to the callback function is the
+ * property of the Bionet Client library, and MUST not be deallocated by the
+ * callback function.
+ *
+ * @param[in] cb_new_node The "new node" callback function.
+ */
 void bionet_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint));
 
 
