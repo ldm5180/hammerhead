@@ -23,6 +23,13 @@
 
 
 
+void cb_set_resource(const char *node_id, const char *resource_id, const char *value) {
+    printf("callback: should set %s:%s to '%s'\n", node_id, resource_id, value);
+}
+
+
+
+
 int main (int argc, char *argv[]) {
     bionet_hab_t* hab;
     int bionet_fd;
@@ -87,6 +94,8 @@ int main (int argc, char *argv[]) {
     //
     //  Connecting to Bionet 
     //
+
+    hab_register_callback_set_resource(cb_set_resource);
 
     bionet_fd = hab_connect(hab);
     if (bionet_fd < 0) {
