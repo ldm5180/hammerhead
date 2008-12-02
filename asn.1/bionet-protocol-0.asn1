@@ -102,12 +102,27 @@ BEGIN
 
 
     -- 
+    -- SetResourceValue sets the value of a Resource, duh
+    -- 
+    -- Note: the value is a string, not a Value, because the sender of the
+    --     message might not know the ResourceDataType
+    --
+
+    SetResourceValue ::= SEQUENCE {
+        nodeId      PrintableString,
+        resourceId  PrintableString,
+        value       PrintableString
+    }
+
+
+    -- 
     -- C2H-Message is a Client-to-Hab message
     -- 
 
     C2H-Message ::= CHOICE {
         subscribeNode         PrintableString,
-        subscribeDatapoints   PrintableString
+        subscribeDatapoints   PrintableString,
+        setResourceValue      SetResourceValue
     }
 
 

@@ -364,6 +364,38 @@ int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *h
 
 
 
+//
+//
+//       NAME:  bionet_set_resource()
+//              bionet_set_resource_by_habtype_habid_nodeid_resourceid()
+//
+//   FUNCTION:  Sends a message to the NAG requesting that the specified
+//              Resource be set to the specified value.
+//
+//  ARGUMENTS:  The Resource to set, and it's new value (as a string).
+//
+//    RETURNS:  0 if the message was successfully sent to the NAG, -1 if it
+//              was not.  Note that a return value of 0 does NOT mean that
+//              the Resource was actually updated out on the Node, just
+//              that the NAG accepted the request.
+//
+//
+
+int bionet_set_resource(const bionet_resource_t *resource, const char *value);
+
+int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
+    const char *hab_type,
+    const char *hab_id,
+    const char *node_id,
+    const char *resource_id,
+    const char *value
+);
+
+int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const char *value);
+
+
+
+
 #if 0
 
 
@@ -542,38 +574,6 @@ int bionet_list_all_habs(GSList **habs);
 int bionet_list_nodes_by_name_pattern(GSList **nodes, const char *node_name_pattern);
 int bionet_list_nodes_by_habtype_habid_nodeid(GSList **nodes, const char *hab_type,  const char *hab_id, const char *node_id);
 int bionet_list_all_nodes(GSList **nodes);
-
-
-
-
-//
-//
-//       NAME:  bionet_set_resource()
-//              bionet_set_resource_by_habtype_habid_nodeid_resourceid()
-//
-//   FUNCTION:  Sends a message to the NAG requesting that the specified
-//              Resource be set to the specified value.
-//
-//  ARGUMENTS:  The Resource to set, and it's new value (as a string).
-//
-//    RETURNS:  0 if the message was successfully sent to the NAG, -1 if it
-//              was not.  Note that a return value of 0 does NOT mean that
-//              the Resource was actually updated out on the Node, just
-//              that the NAG accepted the request.
-//
-//
-
-int bionet_set_resource(const bionet_resource_t *resource, const char *value);
-
-int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
-    const char *hab_type,
-    const char *hab_id,
-    const char *node_id,
-    const char *resource_id,
-    const char *value
-);
-
-int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const char *value);
 
 
 //

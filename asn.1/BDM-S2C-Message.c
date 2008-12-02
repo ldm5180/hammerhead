@@ -21,7 +21,7 @@ static asn_TYPE_member_t asn_MBR_BDM_S2C_Message_1[] = {
 		},
 };
 static asn_TYPE_tag2member_t asn_MAP_BDM_S2C_Message_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 } /* resourceDatapointsReply at 141 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 } /* resourceDatapointsReply at 156 */
 };
 static asn_CHOICE_specifics_t asn_SPC_BDM_S2C_Message_specs_1 = {
 	sizeof(struct BDM_S2C_Message),

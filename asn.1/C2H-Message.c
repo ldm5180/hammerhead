@@ -28,10 +28,20 @@ static asn_TYPE_member_t asn_MBR_C2H_Message_1[] = {
 		0,
 		"subscribeDatapoints"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct C2H_Message, choice.setResourceValue),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_SetResourceValue,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		"setResourceValue"
+		},
 };
 static asn_TYPE_tag2member_t asn_MAP_C2H_Message_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* subscribeNode at 109 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* subscribeDatapoints at 110 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* subscribeNode at 123 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* subscribeDatapoints at 124 */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* setResourceValue at 126 */
 };
 static asn_CHOICE_specifics_t asn_SPC_C2H_Message_specs_1 = {
 	sizeof(struct C2H_Message),
@@ -39,12 +49,12 @@ static asn_CHOICE_specifics_t asn_SPC_C2H_Message_specs_1 = {
 	offsetof(struct C2H_Message, present),
 	sizeof(((struct C2H_Message *)0)->present),
 	asn_MAP_C2H_Message_tag2el_1,
-	2,	/* Count of tags in the map */
+	3,	/* Count of tags in the map */
 	0,
 	-1	/* Extensions start */
 };
 static asn_per_constraints_t asn_PER_C2H_Message_constr_1 = {
-	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
+	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
 };
 asn_TYPE_descriptor_t asn_DEF_C2H_Message = {
@@ -66,7 +76,7 @@ asn_TYPE_descriptor_t asn_DEF_C2H_Message = {
 	0,	/* No tags (count) */
 	&asn_PER_C2H_Message_constr_1,
 	asn_MBR_C2H_Message_1,
-	2,	/* Elements count */
+	3,	/* Elements count */
 	&asn_SPC_C2H_Message_specs_1	/* Additional specs */
 };
 
