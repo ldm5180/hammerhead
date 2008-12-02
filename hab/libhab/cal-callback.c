@@ -23,10 +23,50 @@ void libhab_cal_callback(const cal_event_t *event) {
             break;
         }
 
+
         case CAL_EVENT_MESSAGE: {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Got unexpected CAL Message event from '%s'", event->peer_name);
+            C2H_Message_t *m = NULL;
+            asn_dec_rval_t rval;
+
+            rval = ber_decode(NULL, &asn_DEF_C2H_Message, (void **)&m, event->msg.buffer, event->msg.size);
+            if (rval.code == RC_WMORE) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained an incomplete ASN.1 message", event->peer_name);
+                asn_DEF_C2H_Message.free_struct(&asn_DEF_C2H_Message, m, 0);
+                return;
+            } else if (rval.code == RC_FAIL) {
+                // received invalid junk
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained an invalid ASN.1 message", event->peer_name);
+                asn_DEF_C2H_Message.free_struct(&asn_DEF_C2H_Message, m, 0);
+                return;
+            } else if (rval.code != RC_OK) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "unknown error (code=%d) decoding server message from '%s'", rval.code, event->peer_name);
+                asn_DEF_C2H_Message.free_struct(&asn_DEF_C2H_Message, m, 0);
+                return;
+            }
+
+            if (rval.consumed != event->msg.size) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained junk at end of message (consumed %d of %d)", event->peer_name, (int)rval.consumed, event->msg.size);
+            }
+
+            if (m->present != C2H_Message_PR_setResourceValue) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Got unknown message %d from '%s'", m->present, event->peer_name);
+                asn_DEF_C2H_Message.free_struct(&asn_DEF_C2H_Message, m, 0);
+                break;
+            }
+
+            if (libhab_callback_set_resource != NULL) {
+                libhab_callback_set_resource(
+                    (char *)m->choice.setResourceValue.nodeId.buf,
+                    (char *)m->choice.setResourceValue.resourceId.buf,
+                    (char *)m->choice.setResourceValue.value.buf
+                );
+            }
+
+            asn_DEF_C2H_Message.free_struct(&asn_DEF_C2H_Message, m, 0);
+
             break;
         }
+
 
         case CAL_EVENT_SUBSCRIBE: {
             GSList *i;
