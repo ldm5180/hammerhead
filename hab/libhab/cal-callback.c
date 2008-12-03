@@ -11,6 +11,49 @@
 #include "bionet-asn.h"
 
 
+
+static void libhab_set_resource(const char *peer_name, SetResourceValue_t *set_resource_value) {
+    int ni;
+
+    for (ni = 0; ni < bionet_hab_get_num_nodes(libhab_this); ni ++) {
+        bionet_node_t *node;
+        int ri;
+
+        node = bionet_hab_get_node_by_index(libhab_this, ni);
+        if (! bionet_node_matches_id(node, (char *)set_resource_value->nodeId.buf)) continue;
+
+        for (ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
+            bionet_resource_t *resource;
+            bionet_datapoint_t *datapoint;
+
+            resource = bionet_node_get_resource_by_index(node, ri);
+            if (! bionet_resource_matches_id(resource, (char *)set_resource_value->resourceId.buf)) continue;
+
+            datapoint = bionet_datapoint_new_with_valuestr(resource, (char *)set_resource_value->value.buf, NULL);
+            if (datapoint == NULL) {
+                g_log(
+                    BIONET_LOG_DOMAIN,
+                    G_LOG_LEVEL_WARNING,
+                    "set-resource request from '%s' %s:%s = '%s' cannot parse value to data type %s of %s:%s",
+                    peer_name,
+                    (char *)set_resource_value->nodeId.buf,
+                    (char *)set_resource_value->resourceId.buf,
+                    (char *)set_resource_value->value.buf,
+                    bionet_resource_data_type_to_string(resource->data_type),
+                    node->id,
+                    resource->id
+                );
+                continue;
+            }
+
+            libhab_callback_set_resource(resource, &datapoint->value);
+
+            bionet_datapoint_free(datapoint);
+        }
+    }
+}
+
+
 void libhab_cal_callback(const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
@@ -55,11 +98,7 @@ void libhab_cal_callback(const cal_event_t *event) {
             }
 
             if (libhab_callback_set_resource != NULL) {
-                libhab_callback_set_resource(
-                    (char *)m->choice.setResourceValue.nodeId.buf,
-                    (char *)m->choice.setResourceValue.resourceId.buf,
-                    (char *)m->choice.setResourceValue.value.buf
-                );
+                libhab_set_resource(event->peer_name, &m->choice.setResourceValue);
             }
 
             asn_DEF_C2H_Message.free_struct(&asn_DEF_C2H_Message, m, 0);

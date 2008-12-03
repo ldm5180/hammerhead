@@ -9,7 +9,7 @@
 #include "libhab-internal.h"
 
 
-void hab_register_callback_set_resource(void (*cb_set_resource)(const char *node_id, const char *resource_id, const char *value)) {
+void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_t *resource, const bionet_datapoint_value_t *value)) {
     libhab_callback_set_resource = cb_set_resource;
 }
 

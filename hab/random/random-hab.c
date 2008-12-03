@@ -23,8 +23,13 @@
 
 
 
-void cb_set_resource(const char *node_id, const char *resource_id, const char *value) {
-    printf("callback: should set %s:%s to '%s'\n", node_id, resource_id, value);
+void cb_set_resource(bionet_resource_t *resource, const bionet_datapoint_value_t *value) {
+    printf(
+        "callback: should set %s:%s to '%s'\n",
+        resource->node->id,
+        resource->id,
+        bionet_datapoint_value_to_string_isolated(resource->data_type, value)
+    );
 }
 
 

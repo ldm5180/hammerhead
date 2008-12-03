@@ -18,7 +18,7 @@ int libhab_cal_fd = -1;
 bionet_hab_t *libhab_this = NULL;
 
 
-void (*libhab_callback_set_resource)(const char *node_id, const char *resource_id, const char *value) = NULL;
+void (*libhab_callback_set_resource)(bionet_resource_t *resource, const bionet_datapoint_value_t *value) = NULL;
 
 
 

@@ -23,7 +23,7 @@
 #include "bionet-resource.h"
 #include "bionet-node.h"
 #include "bionet-hab.h"
-#include "set-resource.h"
+#include "mmod.h"
 #include "serialsource.h"
 #include "mmodsettingsmsg.h"
 #include "message.h"
@@ -32,14 +32,12 @@
 extern serial_source gw_src;
 extern bionet_hab_t * mmod_hab;
 
-void cb_set_resource(const char *node_id, 
-		     const char *resource_id, 
-		     const char *value)
+void cb_set_resource(bionet_resource_t *resource,
+		     const bionet_datapoint_value_t *value)
 {
     uint8_t pkt[MMODSETTINGSMSG_SIZE + 8] = { 0 };
     uint16_t uiVal;
-    bionet_node_t *node;
-    bionet_resource_t *resource;
+    const bionet_node_t *node;
     tmsg_t new_settings;
     bionet_datapoint_t * dp;
 
@@ -58,21 +56,21 @@ void cb_set_resource(const char *node_id,
     {
 	return;
     }
-    node = bionet_hab_get_node_by_id(mmod_hab, node_id);
+    node = resource->node;
     if (NULL == node)
     {
 	return;
     }
 
     /* set the correct node id */
-    uiVal = strtoul(node_id, NULL, 10);
+    uiVal = strtoul(node->id, NULL, 10);
     MMODSETTINGSMSG_node_id_set(&new_settings, uiVal);
 
     /* update resource requested */
-    if (0 == strncmp(resource_id, "SampleInterval", 
+    if (0 == strncmp(resource->id, "SampleInterval", 
 			  strlen("SampleInterval")))
     {
-	uiVal = strtoul(value, NULL, 0);
+	uiVal = value->uint16_v;
     }
     else
     {
@@ -96,10 +94,10 @@ void cb_set_resource(const char *node_id,
     }
     MMODSETTINGSMSG_sample_interval_set(&new_settings, uiVal);
     
-    if (0 == strncmp(resource_id, "NumAccelSamples", 
+    if (0 == strncmp(resource->id, "NumAccelSamples", 
 			  strlen("NumAccelSamples")))
     {
-	uiVal = strtoul(value, NULL, 0);
+	uiVal = value->uint16_v;
     }
     else
     {
@@ -123,10 +121,10 @@ void cb_set_resource(const char *node_id,
     }
     MMODSETTINGSMSG_num_accel_samples_set(&new_settings, uiVal);
     
-    if (0 == strncmp(resource_id, "AccelSampleInterval", 
+    if (0 == strncmp(resource->id, "AccelSampleInterval", 
 			  strlen("AccelSampleInterval")))
     {
-	uiVal = strtoul(value, NULL, 0);
+	uiVal = value->uint16_v;
     }
     else
     {
@@ -150,10 +148,10 @@ void cb_set_resource(const char *node_id,
     }
     MMODSETTINGSMSG_accel_sample_interval_set(&new_settings, uiVal);
     
-    if (0 == strncmp(resource_id, "HeartbeatTime", 
+    if (0 == strncmp(resource->id, "HeartbeatTime", 
 			  strlen("HeartbeatTime")))
     {
-	uiVal = strtoul(value, NULL, 0);
+	uiVal = value->uint16_v;
     }
     else
     {
@@ -177,10 +175,10 @@ void cb_set_resource(const char *node_id,
     }
     MMODSETTINGSMSG_heartbeat_time_set(&new_settings, uiVal);
 
-    if (0 == strncmp(resource_id, "AccelAxis", 
+    if (0 == strncmp(resource->id, "AccelAxis", 
 			  strlen("AccelAxis")))
     {
-	switch (value[0])
+	switch (value->string_v[0])
 	{
 	case 'n':
 	case 'N':

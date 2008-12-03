@@ -150,26 +150,33 @@ void hab_read(void);
 
 
 
-//
-//
-//       NAME:  hab_register_callback_set_resource()
-//
-//   FUNCTION:  Registers the callback function with the Hardware
-//              Abstractor library.  This function will be called when
-//              a Bionet Client sends a set-resource command.
-//
-//              The callback function is responsible for getting the
-//              commanded value out to the physical node, and (if
-//              appropriate here) updating the Resource value and
-//              timestamp, and calling hab_report_resource_update().
-//
-//  ARGUMENTS:  The new callback function.
-//
-//    RETURNS:  Nothing.
-//
-//
+/**
+ * @brief Registers the HAB's Set-Resource callback function.
+ *
+ * The Hardware Abstractor library will call the callback whenever
+ * a Bionet Client sends a Set-Resource command.
+ *
+ * The callback function is responsible for getting the commanded value out
+ * to the physical node, and (if appropriate here) updating the Resource
+ * value and timestamp, and calling hab_report_resource_update().
+ *
+ * @param cb_set_resource  The new callback function.
+ *
+ * The callback function gets two arguments: the Resource that is being
+ * commanded, and the new value.
+ *
+ * The Resource is one that the HAB application has previously reported
+ * with hab_report_new_node(), and that has not been removed with
+ * hab_report_lost_node().
+ *
+ * The value is the new value requested by the Client.  It is of the
+ * appropriate data type for the Resource.  It will be freed by the HAB
+ * library when the callback returns.
+ *
+ * @return Nothing.
+ */
 
-void hab_register_callback_set_resource(void (*cb_set_resource)(const char *node_id, const char *resource_id, const char *value));
+void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_t *resource, const bionet_datapoint_value_t *value));
 
 
 
