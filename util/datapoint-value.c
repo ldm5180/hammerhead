@@ -273,7 +273,7 @@ int bionet_datapoint_value_from_string(bionet_datapoint_t *d, const char *value_
     }
 
     r = bionet_datapoint_value_from_string_isolated(d->resource->data_type, &d->value, value_string);
-    if (r != 0) return 1;
+    if (r != 0) return -1;
 
     d->dirty = 1;
     return 0;
