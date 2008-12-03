@@ -55,22 +55,47 @@ void bionet_node_free(bionet_node_t *node);
 
 
 
-//
-//       NAME:  bionet_node_matches_id()
-//              bionet_node_matches_habtype_habid_nodeid()
-//
-//   FUNCTION:  Checks if a Node matches a name specification.  The Node
-//              name can be specified as just a Node-ID (in which case the
-//              Node's HAB-Type and HAB-ID are considered matching no
-//              matter what) or as a HAB-Type, HAB-ID, and Node-ID (in
-//              which case all must match).  The wildcard "*" matches all
-//              strings.
-//
-//  ARGUMENTS:  The Node to test for match, optionally the HAB-Type and
-//              HAB-ID, and the Node-ID.
-//
+/**
+ * @brief Checks if a Node matches a name specification.
+ *
+ * @note Also see the bionet_node_matches_habtype_habid_nodeid() function.
+ *
+ * @param node The Node to check.
+ *
+ * @param id The Node-ID to check against.  id may be a regular Node-ID, or
+ *     it may be the wildcard "*" that matches all Node-IDs.
+ *
+ * @return FALSE (zero) if the Node does not match the ID, TRUE (non-zero)
+ *     if it matches.
+ */
 
 int bionet_node_matches_id(const bionet_node_t *node, const char *id);
+
+
+
+
+/**
+ * @brief Checks if a Node matches a name specification.
+ *
+ * @note Also see the bionet_node_matches_id() function.
+ *
+ * @param node  The Node to check.
+ *
+ * @param hab_type  The HAB-Type to check against.  It may be a regular
+ *     HAB-Type string, or it may be the wildcard "*" that matches all
+ *     HAB-Types.
+ *
+ * @param hab_id  The HAB-ID to check against.  It may be a regular HAB-ID
+ *     string, or it may be the wildcard "*" that matches all HAB-IDs.
+ *
+ * @param node_id  The Node-ID to check against.  It may be a regular
+ *     Node-ID string, or it may be the wildcard "*" that matches all
+ *     Node-IDs.
+ *
+ * @return FALSE (zero) if the Node does not match the ID, TRUE (non-zero)
+ *     if it matches.
+ */
+
 int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node, const char *hab_type, const char *hab_id, const char *node_id);
 
 

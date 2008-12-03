@@ -235,19 +235,26 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
 
 
 
-//
-//       NAME:  bionet_resource_set()
-//
-//   FUNCTION:  If the Resource has no Datapoint, one will be created.
-//              Then, the value and timestamp of the Resource's first
-//              Datapoint is sets as specified.
-//
-//  ARGUMENTS:  The Resource, Value, and Timestamp.
-//
-//    RETURNS:  0 on success, -1 on failure.
-//
+/**
+ * @brief Sets the value of a Resource.
+ *
+ * If the Resource has no Datapoint, one will be created.  Then the
+ * passed-in value and timestamp are copied to the Resource's first
+ * Datapoint, and the Datapoint is marked dirty.
+ *
+ * @param resource  The Resource to set.
+ *
+ * @param value The new Value.
+ *
+ * @param timestamp The new Timestamp (if NULL, the current time will be
+ * used).
+ *
+ * @return 0 on success, -1 on failure.
+ */
 
 int bionet_resource_set(bionet_resource_t *resource, const bionet_datapoint_value_t *value, const struct timeval *timestamp);
+
+
 int bionet_resource_set_with_valuestr(bionet_resource_t *resource, const char *value_str, const struct timeval *timestamp);
 
 
@@ -262,24 +269,52 @@ bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource
 
 
 
-//
-//       NAME:  bionet_resource_matches_id()
-//              bionet_resource_matches_habtype_habid_nodeid_resourceid()
-//
-//   FUNCTION:  Checks if a Resource matches a name specification.  The
-//              Resource name can be specified as just a Resource-ID (in
-//              which case the Resource's HAB-Type, HAB-ID, and Node-ID are
-//              considered matching no matter what), or as a HAB-Type,
-//              HAB-ID, Node-ID, and Resource-ID (in which case all must
-//              match).  The wildcard "*" matches all strings.
-//
-//  ARGUMENTS:  The Resource to test for match, and the relevant Resource
-//              name components.
-//
-//    RETURNS:  TRUE (1) if it matches, FALSE (0) if not.
-//
+/**
+ * @brief Checks if a Resource matches a name specification.
+ *
+ * @note Also see the bionet_resource_matches_habtype_habid_nodeid_resourceid() function.
+ *
+ * @param resource The Resource to check.
+ *
+ * @param id The Resource-ID to check against.  id may be a regular
+ *     Resource-ID, or it may be the wildcard "*" that matches all
+ *     Resource-IDs.
+ *
+ * @return FALSE (zero) if the Resource does not match the ID, TRUE
+ *     (non-zero) if it matches.
+ */
 
 int bionet_resource_matches_id(const bionet_resource_t *resource, const char *id);
+
+
+
+
+/**
+ * @brief Checks if a Resource matches a name specification.
+ *
+ * @note Also see the bionet_resource_matches_id() function.
+ *
+ * @param resource  The Resource to check.
+ *
+ * @param hab_type  The HAB-Type to check against.  It may be a regular
+ *     HAB-Type string, or it may be the wildcard "*" that matches all
+ *     HAB-Types.
+ *
+ * @param hab_id  The HAB-ID to check against.  It may be a regular HAB-ID
+ *     string, or it may be the wildcard "*" that matches all HAB-IDs.
+ *
+ * @param node_id  The Node-ID to check against.  It may be a regular
+ *     Node-ID string, or it may be the wildcard "*" that matches all
+ *     Node-IDs.
+ *
+ * @param resource_id  The Resource-ID to check against.  It may be a
+ *     regular Resource-ID string, or it may be the wildcard "*" that
+ *     matches all Resource-IDs.
+ *
+ * @return FALSE (zero) if the Resource does not match the ID, TRUE
+ *     (non-zero) if it matches.
+ */
+
 int bionet_resource_matches_habtype_habid_nodeid_resourceid(
     const bionet_resource_t *resource,
     const char *hab_type,
@@ -364,6 +399,24 @@ bionet_datapoint_t *bionet_datapoint_new_with_valuestr(
 
 void bionet_datapoint_set_value(bionet_datapoint_t *d, const bionet_datapoint_value_t *value);
 int bionet_datapoint_value_from_string(bionet_datapoint_t *d, const char *value_string);
+
+
+
+
+/**
+ * @brief Sets a bionet_datapoint_value_t variable from a string.
+ *
+ * @param data_type  The data type to interpret the string as.
+ *
+ * @param value  A pointer to the variable to receive the value parsed from
+ *     the string.  value must point to a valid, initialized
+ *     bionet_datapoint_value_t variable (all bits zero is valid).
+ *
+ * @param value_string  The string containing the new value.
+ *
+ * @return 0 on success, -1 on error.
+ */
+
 int bionet_datapoint_value_from_string_isolated(bionet_resource_data_type_t data_type, bionet_datapoint_value_t *value, const char *value_string);
 
 
