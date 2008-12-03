@@ -412,8 +412,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: AccelAxis\n");
 	    }
-	    value.string_v = "X-Axis";
-	    if (bionet_resource_set(resource, &value, &tv))
+	    if (bionet_resource_set_with_valuestr(resource, "X-Axis", &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 
 	    }
@@ -437,7 +436,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	}
 	else
 	{
-	    value.uint16_v = mv;
+	    value.uint32_v = mv;
 	    bionet_resource_set(resource, &value, &tv);
 	}
 
@@ -541,37 +540,6 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	else
 	{
 	    value.uint16_v = MMODGENMSG_accel_y_get(&t);
-	    bionet_resource_set(resource, &value, &tv);
-	}
-
-	uint16_t tmp;
-	resource = bionet_node_get_resource_by_id(node, "RawAccel-Y");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get resource: RawAccel-Y\n");
-	}
-	else
-	{
-	    tmp = MMODGENMSG_accel_flags_get(&t);
-	    if (tmp & ACCEL_FLAG_X)
-	    {
-		if (tmp & ACCEL_FLAG_Y)
-		{
-		    value.string_v = "both";
-		}
-		else
-		{
-		    value.string_v = "X-Axis";
-		}
-	    }
-	    else if (tmp & ACCEL_FLAG_Y)
-	    {
-		value.string_v = "Y-Axis";
-	    }
-	    else
-	    {
-		value.string_v = "None";
-	    }
 	    bionet_resource_set(resource, &value, &tv);
 	}
 
@@ -773,22 +741,21 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	{
 	    if (flags & ACCEL_FLAG_Y)
 	    {
-		value.string_v = "both";
+		bionet_resource_set_with_valuestr(resource, "both", &tv);
 	    }
 	    else
 	    {
-		value.string_v = "X-Axis";
+		bionet_resource_set_with_valuestr(resource, "X-Axis", &tv);
 	    }
 	}
 	else if (flags & ACCEL_FLAG_Y)
 	{
-	    value.string_v = "Y-Axis";
+	    bionet_resource_set_with_valuestr(resource, "Y-Axis", &tv);
 	}
 	else
 	{
-	    value.string_v = "None";
+	    bionet_resource_set_with_valuestr(resource, "None", &tv);
 	}
-	bionet_resource_set(resource, &value, &tv);
     }
 
     hab_report_datapoints(node);
