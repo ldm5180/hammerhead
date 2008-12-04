@@ -221,6 +221,17 @@ implementation
 	settings.num_accel_samples = new_settings->num_accel_samples;
 	settings.accel_sample_interval = new_settings->accel_sample_interval;
 	settings.heartbeat_time = new_settings->heartbeat_time;
+	if (settings.accel_flags != new_settings->accel_flags)
+	{
+	    mmod_general_msg_t* general_msg;
+	    general_msg = 
+		call GeneralRoot.getPayload(&general_msgbuf,
+					    sizeof(mmod_general_msg_t));
+	    general_msg->accel_x = 0;
+	    general_msg->accel_y = 0;
+	    tmp_general_msg.accel_x = 0;
+	    tmp_general_msg.accel_y = 0;
+	}
 	settings.accel_flags = new_settings->accel_flags;
 
 	/* ensure the sample period timer is correct */
@@ -286,10 +297,29 @@ implementation
 	    general_msg->node_id = TOS_NODE_ID;
 	    general_msg->volt = tmp_general_msg.volt;
 	    general_msg->temp = tmp_general_msg.temp;
-	    general_msg->accel_x = tmp_general_msg.accel_x;
-	    general_msg->accel_y = tmp_general_msg.accel_y;
-	    tmp_general_msg.accel_x = 0; /* reset me */
-	    tmp_general_msg.accel_y = 0;
+
+	    if (ACCEL_FLAG_X & settings.accel_flags)
+	    {
+		general_msg->accel_x = tmp_general_msg.accel_x;
+		tmp_general_msg.accel_x = 0; /* reset me */
+	    }
+	    else
+	    {
+		tmp_general_msg.accel_x++;
+		general_msg->accel_x = tmp_general_msg.accel_x;
+	    }
+
+	    if ((ACCEL_FLAG_X & settings.accel_flags)
+		&& (0 == (ACCEL_FLAG_Y & settings.accel_flags)))
+	    {
+		tmp_general_msg.accel_y++;
+		general_msg->accel_y = tmp_general_msg.accel_y;
+	    }
+	    else
+	    {
+		general_msg->accel_y = tmp_general_msg.accel_y;
+		tmp_general_msg.accel_y = 0;
+	    }
 	    general_msg->photo = tmp_general_msg.photo;
 	    general_msg->accel_flags = settings.accel_flags;
 

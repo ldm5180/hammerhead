@@ -39,7 +39,10 @@ extern bionet_hab_t * mmod_hab;
 
 
 extern uint16_t heartbeat_time;
+static uint16_t flags = ACCEL_FLAG_X;
 
+static uint16_t last = 0;
+static uint16_t missed = 0;
 
 int msg_gen_process(uint8_t *msg, ssize_t len)
 {
@@ -71,6 +74,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     /* if this node doesn't exist yet, create it */
     if (NULL == node)
     {
+
+	last = MMODGENMSG_accel_y_get(&t);
 #if DEBUG
 	fprintf(stderr, "Creating new node %s\n", &node_id[0]);
 #endif
@@ -229,9 +234,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: Accel-X\n");
 	    }
-	    value.float_v = mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
-					       X_AXIS, 
-					       MMODGENMSG_accel_x_get(&t));
+	    value.float_v = 0;
 	    if (bionet_resource_set(resource, &value, &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 
@@ -253,7 +256,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: RawAccel-X\n");
 	    }
-	    value.uint16_v = MMODGENMSG_accel_x_get(&t);
+	    value.uint16_v = 0;
 	    if (bionet_resource_set(resource, &value, &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 
@@ -275,9 +278,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: Accel-Y\n");
 	    }
-	    value.float_v = mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
-					       Y_AXIS, 
-					       MMODGENMSG_accel_y_get(&t));
+	    value.float_v = 0;
 	    if (bionet_resource_set(resource, &value, &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 
@@ -299,7 +300,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: RawAccel-Y\n");
 	    }
-	    value.uint16_v = MMODGENMSG_accel_y_get(&t);
+	    value.uint16_v = 0;
 	    if (bionet_resource_set(resource, &value, &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 
@@ -397,7 +398,6 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	}
 
 	/* create  Accel Axis resource */
-	/* create Heartbeat Time resource */
 	resource = bionet_resource_new(node, 
 				       BIONET_RESOURCE_DATA_TYPE_STRING,
 				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
@@ -418,6 +418,50 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    }
 	}
 
+
+	/* create counter resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "MsgCounter");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: MsgCounter\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: MsgCounter\n");
+	    }
+	    value.uint16_v = last;
+	    if (bionet_resource_set(resource, &value, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource: MsgCounter\n"); 
+	    }
+	}
+
+	/* create counter resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "MissedMsgs");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: MissedMsgs\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: MissedMsgs\n");
+	    }
+	    value.uint16_v = 0;
+	    if (bionet_resource_set(resource, &value, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource: MissedMsgs\n"); 
+	    }
+	}
 
 	/* add node for real */
 	if (hab_report_new_node(node))
@@ -495,51 +539,109 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    bionet_resource_set(resource, &value, &tv);
 	}
 
-	resource = bionet_node_get_resource_by_id(node, "Accel-X");
-	if (NULL == resource)
+	if (0 == (ACCEL_FLAG_X & flags))
 	{
-	    fprintf(stderr, "Failed to get resource: Accel-X\n");
+	    /* using accel-x as a counter */
+	    resource = bionet_node_get_resource_by_id(node, "MsgCounter");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: MsgCounter\n");
+	    }
+	    else
+	    {
+		/* set the latest msg count */
+		value.uint16_v = MMODGENMSG_accel_x_get(&t);
+		bionet_resource_set(resource, &value, &tv);
+
+		if ((last != 0) && (last + 1 != value.uint16_v))
+		{
+		    missed++;
+		}
+		last = value.uint16_v;
+	    }
 	}
 	else
 	{
-	    value.float_v = mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
-					      X_AXIS,
-					      MMODGENMSG_accel_x_get(&t));
-	    bionet_resource_set(resource, &value, &tv);
+	    resource = bionet_node_get_resource_by_id(node, "Accel-X");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: Accel-X\n");
+	    }
+	    else
+	    {
+		value.float_v = mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
+						  X_AXIS,
+						  MMODGENMSG_accel_x_get(&t));
+		bionet_resource_set(resource, &value, &tv);
+	    }
+	
+	    resource = bionet_node_get_resource_by_id(node, "RawAccel-X");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: RawAccel-X\n");
+	    }
+	    else
+	    {
+		value.uint16_v = MMODGENMSG_accel_x_get(&t);
+		bionet_resource_set(resource, &value, &tv);
+	    }
 	}
 
-	resource = bionet_node_get_resource_by_id(node, "RawAccel-X");
-	if (NULL == resource)
+	if ((ACCEL_FLAG_X & flags) && (0 == (ACCEL_FLAG_Y & flags)))
 	{
-	    fprintf(stderr, "Failed to get resource: RawAccel-X\n");
+	    /* using accel-y as a counter */
+	    resource = bionet_node_get_resource_by_id(node, "MsgCounter");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: MsgCounter\n");
+	    }
+	    else
+	    {
+		/* set the latest msg count */
+		value.uint16_v = MMODGENMSG_accel_y_get(&t);
+		bionet_resource_set(resource, &value, &tv);
+
+		if ((last != 0) && (last + 1 != value.uint16_v))
+		{
+		    missed++;
+		    /* bump the missed message counter */
+		    /* will be set in bionet later */
+		}
+		last = value.uint16_v;
+	    }
 	}
 	else
 	{
-	    value.uint16_v = MMODGENMSG_accel_x_get(&t);
-	    bionet_resource_set(resource, &value, &tv);
+	    resource = bionet_node_get_resource_by_id(node, "Accel-Y");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: Accel-Y\n");
+	    }
+	    else
+	    {
+		value.float_v = mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
+						  Y_AXIS,
+						  MMODGENMSG_accel_y_get(&t));
+		bionet_resource_set(resource, &value, &tv);
+	    }
+	    
+	    resource = bionet_node_get_resource_by_id(node, "RawAccel-Y");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: RawAccel-Y\n");
+	    }
+	    else
+	    {
+		value.uint16_v = MMODGENMSG_accel_y_get(&t);
+		bionet_resource_set(resource, &value, &tv);
+	    }
 	}
 
-	resource = bionet_node_get_resource_by_id(node, "Accel-Y");
-	if (NULL == resource)
+	resource = bionet_node_get_resource_by_id(node,
+						  "MissedMsgs");
+	if (NULL != resource)
 	{
-	    fprintf(stderr, "Failed to get resource: Accel-Y\n");
-	}
-	else
-	{
-	    value.float_v = mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
-					      Y_AXIS,
-					      MMODGENMSG_accel_y_get(&t));
-	    bionet_resource_set(resource, &value, &tv);
-	}
-
-	resource = bionet_node_get_resource_by_id(node, "RawAccel-Y");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get resource: RawAccel-Y\n");
-	}
-	else
-	{
-	    value.uint16_v = MMODGENMSG_accel_y_get(&t);
+	    value.uint16_v = missed;
 	    bionet_resource_set(resource, &value, &tv);
 	}
 
@@ -736,7 +838,7 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	}
 
 	resource = bionet_node_get_resource_by_id(node, "AccelAxis");
-	uint16_t flags = MMODSETTINGSMSG_accel_flags_get(&t);
+	flags = MMODSETTINGSMSG_accel_flags_get(&t);
 	if (flags & ACCEL_FLAG_X)
 	{
 	    if (flags & ACCEL_FLAG_Y)

@@ -20,24 +20,9 @@
 #ifndef MMOD_H
 #define MMOD_H
 
-
-#include "hardware-abstractor.h"
-
-
 #define MMOD_HAB_TYPE          "MMOD"
 #define DEFAULT_HEARTBEAT_TIME 2
 #define DEFAULT_USB_DEV        "/dev/ttyUSB1"
-
-
-/**
- * Callback for sending message (settings) to the gateway
- *
- * @param[in] node_id ID of the node to send it to
- * @param[in] resource_id ID of the resource for which the value is to be set
- * @param[in] value Value to set to node_id.resource_id
- */
-void cb_set_resource(bionet_resource_t *resource,
-		     const bionet_datapoint_value_t *value);
 
 
 #endif /* MMOD_H */
