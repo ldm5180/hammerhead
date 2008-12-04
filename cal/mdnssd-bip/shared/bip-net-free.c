@@ -5,7 +5,10 @@
 
 
 void bip_net_free(bip_peer_network_info_t *net) {
-    if (net == NULL) return;
+    if (net == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_net_free: NULL net passed in");
+        return;
+    }
     if (net->hostname != NULL) free(net->hostname);
     if (net->buffer != NULL) free(net->buffer);
     free(net);
