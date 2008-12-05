@@ -27,7 +27,7 @@
  *        It exists only for convenience when logging information
  *
  * @note If this function is not called before connecting to bionet
- *       the default value of 'user@host:port (program-name[pid])' will be used.
+ *       the default value of "user@host:port (program-name[pid])" will be used.
  *
  * @note The string passed in is copied into private memory within
  *       the Bionet library and may be freed or overwritten after
