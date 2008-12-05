@@ -27,29 +27,44 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
 
     uint32_t msg_size;
 
-    if (peer == NULL) return -1;
-    if (peer->net == NULL) return -1;
-    if (peer->net->socket == -1) return -1;
+    bip_peer_network_info_t *net = NULL;
 
-    msg_type = msg_type;
+
+    if (peer_name == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: NULL peer_name passed in");
+        return -1;
+    }
+
+    if (peer == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: NULL peer passed in");
+        return -1;
+    }
+
+    net = bip_peer_get_connected_net(peer);
+    if (net == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: no connection to peer '%s'", peer_name);
+        return -1;
+    }
+
+
     msg_size = htonl(size);
 
     // FIXME: this should be one write
 
-    r = write(peer->net->socket, &msg_type, sizeof(msg_type));
+    r = write(net->socket, &msg_type, sizeof(msg_type));
     if (r != sizeof(msg_type)) {
         return -1;
     }
 
-    r = write(peer->net->socket, &msg_size, sizeof(msg_size));
+    r = write(net->socket, &msg_size, sizeof(msg_size));
     if (r != sizeof(msg_size)) {
         return -1;
     }
 
     if (size == 0) return 0;
 
-    r = write(peer->net->socket, msg, size);
-    if (r != sizeof(msg_size)) {
+    r = write(net->socket, msg, size);
+    if (r != size) {
         return -1;
     }
 

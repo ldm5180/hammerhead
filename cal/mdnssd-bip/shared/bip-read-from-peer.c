@@ -26,35 +26,53 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
     int r;
     int max_bytes_to_read;
 
+    bip_peer_network_info_t *net;
 
-    if (peer->net->header_index < BIP_MSG_HEADER_SIZE) {
-        max_bytes_to_read = BIP_MSG_HEADER_SIZE - peer->net->header_index;
-        r = read(peer->net->socket, &peer->net->header[peer->net->header_index], max_bytes_to_read);
+
+    if (peer_name == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer: NULL peer_name passed in");
+        return -1;
+    }
+
+    if (peer == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer: NULL peer passed in");
+        return -1;
+    }
+
+    net = bip_peer_get_connected_net(peer);
+    if (net == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer: peer '%s' is not connected", peer_name);
+        return -1;
+    }
+
+    if (net->header_index < BIP_MSG_HEADER_SIZE) {
+        max_bytes_to_read = BIP_MSG_HEADER_SIZE - net->header_index;
+        r = read(net->socket, &net->header[net->header_index], max_bytes_to_read);
         if (r < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s", peer_name, strerror(errno));
+            // g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s", peer_name, strerror(errno));
             return -1;
         } else if (r == 0) {
             // peer disconnects
             return - 1;
         }
 
-        peer->net->header_index += r;
+        net->header_index += r;
 
-        if (peer->net->header_index < BIP_MSG_HEADER_SIZE) return 0;
+        if (net->header_index < BIP_MSG_HEADER_SIZE) return 0;
 
         // packet too big?
-        peer->net->msg_size = ntohl(*(uint32_t *)&peer->net->header[BIP_MSG_HEADER_SIZE_OFFSET]);
-        if (peer->net->msg_size > BIP_MSG_MAX_SIZE) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer: incoming messages is %d bytes, max message size is %d bytes, dropping client", peer->net->msg_size, BIP_MSG_MAX_SIZE);
+        net->msg_size = ntohl(*(uint32_t *)&net->header[BIP_MSG_HEADER_SIZE_OFFSET]);
+        if (net->msg_size > BIP_MSG_MAX_SIZE) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer: incoming messages is %d bytes, max message size is %d bytes, dropping peer", net->msg_size, BIP_MSG_MAX_SIZE);
             return -1;
         }
 
-        peer->net->buffer = malloc(peer->net->msg_size);
-        if (peer->net->buffer == NULL) {
+        net->buffer = malloc(net->msg_size);
+        if (net->buffer == NULL) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "bip_read_from_peer: out of memory!");
             return -1;
         }
-        peer->net->index = 0;
+        net->index = 0;
     }
 
 
@@ -72,9 +90,9 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
     //
 
 
-    max_bytes_to_read = peer->net->msg_size - peer->net->index;
+    max_bytes_to_read = net->msg_size - net->index;
     if (max_bytes_to_read > 0) {
-        r = read(peer->net->socket, &peer->net->buffer[peer->net->index], max_bytes_to_read);
+        r = read(net->socket, &net->buffer[net->index], max_bytes_to_read);
         if (r < 0) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s", peer_name, strerror(errno));
             return -1;
@@ -83,7 +101,7 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
             return - 1;
         }
 
-        peer->net->index += r;
+        net->index += r;
 
         if (r != max_bytes_to_read) return 0;
     }
