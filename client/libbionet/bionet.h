@@ -23,7 +23,7 @@
 
 
 /**
- * @brief The Client ID is used by the Network Aggregator.
+ * @brief The Client ID is used by Bionet.
  *        It exists only for convenience when logging information
  *
  * @note If this function is not called before connecting to bionet
@@ -137,7 +137,7 @@ void bionet_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node
  * property of the Bionet Client library, and MUST not be deallocated by the
  * callback function.
  *
- * @param[in] cb_new_node The "new node" callback function.
+ * @param[in] cb_datapoint The "datapoint" callback function.
  */
 void bionet_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint));
 
@@ -165,7 +165,7 @@ int bionet_connect(void);
 
 
 /**
- * @bried Checks to see if the Bionet library is connected to Bionet.
+ * @brief Checks to see if the Bionet library is connected to Bionet.
  *
  * @return TRUE (non-zero) the library IS connected to Bionet 
  * @return FALSE (0) if the library is NOT connected to Bionet.
@@ -296,206 +296,132 @@ int bionet_subscribe_hab_list_by_name(const char *hab_name);
 int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char *hab_id);
 
 
-//
-//
-//       NAME: bionet_subscribe_node_list()
-//
-//
-//   FUNCTION:  Subscribes the client to the Nag's list of Nodes matching
-//              the specified pattern.  When Nodes matching the specified
-//              pattern join or leave a network, the NAG will report the
-//              fact to the Client.
-//
-//
-//  ARGUMENTS:  'node_name' is a string of the form
-//              "<HAB-Type>.<HAB-ID>.<Node-ID>", where any component may be
-//              the wildcard "*".
-//
-//              'hab_type', 'hab_id', and 'node_id' are strings containing
-//              the individual components of the name, not joined by ".".
-//              Again "*" is the wildcard.
-//
-//
-//    RETURNS:  0 on success, -1 on error
-//
-//
-
+/**
+ * @brief Subscribes the client to Bionet's list of Nodes matching
+ * the specified pattern.  
+ *
+ * When Nodes matching the specified pattern join or leave a network, Bionet
+ * will report the fact to the Client.
+ *
+ * @param 'node_name' A string in the form "<HAB-Type>.<HAB-ID>.<Node-ID>"
+ * where any component may be the wildcard "*".
+ *
+ * @return 0 Success
+ * @return -1 Error
+ */
 int bionet_subscribe_node_list_by_name(const char *node_name);
+
+/**
+ * @brief Subscribes the client to Bionet's list of Nodes matching
+ * the specified pattern.  
+ *
+ * When Nodes matching the specified pattern join or leave a network, Bionet
+ * will report the fact to the Client.
+ *
+ * @param[in] hab_type string of the form "<HAB-Type>" or the wildcard "*"
+ * @param[in] hab_id string of the form "<HAB-ID>" or the wildcard "*"
+ * @param[in] node_id string of the form "<Node-ID>" or the wildcard "*"
+ *
+ * @return 0 Success
+ * @return -1 Error
+ */
 int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  const char *hab_id, const char *node_id);
 
 
-
-
-//
-//
-//       NAME: bionet_subscribe_datapoints()
-//
-//
-//   FUNCTION:  Subscribes the client to the values of Resources matching
-//              the specified pattern.  When Resource matching the
-//              specified pattern changes, the NAG will report the
-//              fact to the Client.
-//
-//
-//  ARGUMENTS:  'resource_name' is a string of the form
-//              "<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>", where any
-//              component may be the wildcard "*".
-//
-//              'hab_type', 'hab_id', 'node_id', and 'resource_id' are
-//              strings containing the individual components of the name,
-//              not joined by ".".  Again "*" is the wildcard.
-//
-//
-//    RETURNS:  0 on success, -1 on error
-//
-//
-
+/**
+ * @brief  Subscribes the client to the values of Resources matching
+ * the specified pattern.  
+ *
+ * When Resource matching the specified pattern changes Bionet will report
+ * the fact to the Client.
+ *
+ * @param resource_name A string in the form 
+ *"<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>" where any component may be
+ * the wildcard "*".
+ *
+ * @return 0 Success
+ * @return -1 Error
+ */
 int bionet_subscribe_datapoints_by_name(const char *resource_name);
+
+
+/**
+ * @brief  Subscribes the client to the values of Resources matching
+ * the specified pattern.  
+ *
+ * When Resource matching the specified pattern changes Bionet will report
+ * the fact to the Client.
+ *
+ * @param[in] hab_type string of the form "<HAB-Type>" or the wildcard "*"
+ * @param[in] hab_id string of the form "<HAB-ID>" or the wildcard "*"
+ * @param[in] node_id string of the form "<Node-ID>" or the wildcard "*"
+ * @param[in] resource_id string of the form "<Resource-ID>" or the wildcard "*"
+ *
+ * @return 0 Success
+ * @return -1 Error
+ */
 int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *hab_type,  const char *hab_id, const char *node_id, const char *resource_id);
 
 
-
-
-//
-//
-//       NAME:  bionet_set_resource()
-//              bionet_set_resource_by_habtype_habid_nodeid_resourceid()
-//
-//   FUNCTION:  Sends a message to the NAG requesting that the specified
-//              Resource be set to the specified value.
-//
-//  ARGUMENTS:  The Resource to set, and it's new value (as a string).
-//
-//    RETURNS:  0 if the message was successfully sent to the NAG, -1 if it
-//              was not.  Note that a return value of 0 does NOT mean that
-//              the Resource was actually updated out on the Node, just
-//              that the NAG accepted the request.
-//
-//
-
+/**
+ * @brief  Sends a message to Bionet requesting that the specified
+ * Resource be set to the specified value.
+ *
+ * @param[in] resource Resource to set
+ * @param[in] value New value as a string
+ *
+ * @return 0 Successfully sent to HAB associated with the resource
+ * @return -1 Failed to send to the HAB associated with the resource
+ *
+ * @note A return value of 0 does NOT mean that the Resource was actually
+ * updated on the Node, just that the HAB accepted the request.
+ */
 int bionet_set_resource(const bionet_resource_t *resource, const char *value);
 
+
+/**
+ * @brief  Sends a message to Bionet requesting that the specified
+ * Resource be set to the specified value.
+ *
+ * @param[in] hab_type string of the form "<HAB-Type>" or the wildcard "*"
+ * @param[in] hab_id string of the form "<HAB-ID>" or the wildcard "*"
+ * @param[in] node_id string of the form "<Node-ID>" or the wildcard "*"
+ * @param[in] resource_id string of the form "<Resource-ID>" or the wildcard "*"
+ * @param[in] value New value as a string
+ *
+ * @return 0 Successfully sent to HAB associated with the resource
+ * @return -1 Failed to send to the HAB associated with the resource
+ *
+ * @note A return value of 0 does NOT mean that the Resource was actually
+ * updated on the Node, just that the HAB accepted the request.
+ */
 int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
     const char *hab_type,
     const char *hab_id,
     const char *node_id,
     const char *resource_id,
-    const char *value
-);
+    const char *value);
 
+
+/**
+ * @brief  Sends a message to Bionet requesting that the specified
+ * Resource be set to the specified value.
+ *
+ * @param[in] resource_name_pattern A string in the form 
+ *"<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>" where any component may be
+ * the wildcard "*".
+ * @param[in] value New value as a string
+ *
+ * @return 0 Successfully sent to HAB associated with the resource
+ * @return -1 Failed to send to the HAB associated with the resource
+ *
+ * @note A return value of 0 does NOT mean that the Resource was actually
+ * updated on the Node, just that the HAB accepted the request.
+ */
 int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const char *value);
 
 
-
-
 #if 0
-
-
-
-
-
-//
-//
-//       NAME:  bionet_nag_message_queue_is_empty()
-//
-//   FUNCTION:  This function checks to see if the library has any queued
-//              NAG messages.
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  TRUE (1) if the queue is empty, FALSE (0) if there are
-//              messages in the queue.
-//
-//
-
-int bionet_nag_message_queue_is_empty(void);
-
-
-
-
-//
-//
-//       NAME:  bionet_read_from_nag_but_dont_handle_messages()
-//
-//   FUNCTION:  This function is just like bionet_read_from_nag(), except
-//              that it does _not_ call bionet_handle_queued_nag_messages().
-//              It just reads any pending messages and puts them in the
-//              queue for later.
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  Nothing.
-//
-//
-
-void bionet_read_from_nag_but_dont_handle_messages(void);
-
-
-
-
-//
-//
-//       NAME:  bionet_handle_one_queued_nag_message()
-//
-//   FUNCTION:  The NAG may send messages containing subscribed information
-//              to the Client at any time.  If these messages arrive while
-//              the Client is waiting for a reply to a message it has sent,
-//              the library will queue them for later processing.  This
-//              function takes one message from the queue and processes
-//              it by calling the appropriate registered callback.
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  Nothing.
-//
-//
-
-void bionet_handle_one_queued_nag_message(void);
-
-
-
-
-//
-//
-//       NAME:  bionet_handle_queued_nag_messages()
-//
-//   FUNCTION:  This function handles all queued message from the NAG, by
-//              calling bionet_handle_one_queued_nag_message() repeatedly
-//              until it returns -1.
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  Nothing.
-//
-//
-
-void bionet_handle_queued_nag_messages(void);
-
-
-
-
-//
-//
-//       NAME:  bionet_get_nag_error()
-//
-//   FUNCTION:  Returns the most recent error message from the NAG, if any.
-//
-//  ARGUMENTS:  None
-//
-//    RETURNS:  If the most recent request to the NAG resulted in an error,
-//              the function returns a pointer to the error message string.
-//              If the most recent request succeeded, or if no request has
-//              been made, it returns NULL.
-//
-//              The error string is valid until the next NAG request is
-//              made.  Do not free or modify the string.
-//
-//
-
-const char *bionet_get_nag_error(void);
-
-
-
 
 //
 //
@@ -608,3 +534,8 @@ int bionet_list_all_nodes(GSList **nodes);
 #endif // __BIONET_H
 
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
