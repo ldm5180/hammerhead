@@ -130,3 +130,9 @@ void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_
 #endif // __HARDWARE_ABSTRACTOR_H
 
 
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

@@ -151,6 +151,7 @@ AC_CONFIG_FILES([Makefile
                  client/watcher/Makefile
                  hab/Makefile
                  hab/libhab/Makefile
+		 hab/py-libhab/Makefile
                  hab/csa-cp/Makefile
 		 hab/mmod/Makefile
                  hab/random/Makefile
