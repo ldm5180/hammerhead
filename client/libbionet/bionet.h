@@ -423,112 +423,111 @@ int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const
 
 #if 0
 
-//
-//
-//       NAME:  bionet_list_habs_by_name_pattern()
-//              bionet_list_habs_by_type_and_id()
-//              bionet_list_all_habs()
-//
-//
-//   FUNCTION:  Returns all matching HABs the NAG knows about.
-//
-//
-//  ARGUMENTS:  'habs' is a pointer to the GSList to receive the list of
-//              HABs.  This list will have an entry for each matching HAB
-//              the NAG knows about.  The data of each entry is a
-//              bionet_hab_t pointer.  The list will be NULL if no matching
-//              HABs are known.
-//
-//              'hab_name_pattern' is a string of the form
-//              "<HAB-Type>.<HAB-ID>", where either or both of HAB-Type and
-//              HAB-ID may be "*".
-//
-//              'hab_type' and 'hab_id' is just the HAB-Type and HAB-ID
-//              strings individually, not joined by a ".".
-//
-//
-//    RETURNS:  0 on success (*habs is valid, possibly NULL), -1 on error
-//              (*habs is undefined).
-//
-//
-
+/**
+ * @brief Returns all matching HABs the NAG knows about.
+ *
+ * @param[out] habs Pointer to the GSList to receive the list of HABs.  This
+ * list will have an entry for each matching HAB Bionet knows about. The data
+ * of each entry is a bionet_hab_t pointer. The list will be NULL if no
+ * matching HABs are known.
+ * @param[in] hab_name_pattern String of the form "<HAB-Type>.<HAB-ID>", where
+ * either or both of HAB-Type and HAB-ID may be the wildcard "*".
+ *
+ * @return 0 Success (*habs is valid, possibly NULL)
+ * @return -1 Error (*habs is undefined)
+ *
+ * @note Not yet implemented
+ */
 int bionet_list_habs_by_name_pattern(GSList **habs, const char *hab_name_pattern);
+
+
+/**
+ * @brief Returns all matching HABs the NAG knows about.
+ *
+ * @param[out] habs Pointer to the GSList to receive the list of HABs.  This
+ * list will have an entry for each matching HAB Bionet knows about. The data
+ * of each entry is a bionet_hab_t pointer. The list will be NULL if no
+ * matching HABs are known.
+ * @param[in] hab_type HAB-Type string or the wildcard "*"
+ * @param[in] hab_id HAB-ID string or the wildcard "*"
+ *
+ * @return 0 Success (*habs is valid, possibly NULL)
+ * @return -1 Error (*habs is undefined)
+ *
+ * @note Not yet implemented
+ */
 int bionet_list_habs_by_type_and_id(GSList **habs, const char *hab_type, const char *hab_id);
+
+
+/**
+ * @brief Returns all matching HABs the NAG knows about.
+ *
+ * @param[out] habs Pointer to the GSList to receive the list of HABs.  This
+ * list will have an entry for each matching HAB Bionet knows about. The data
+ * of each entry is a bionet_hab_t pointer. The list will be NULL if no
+ * matching HABs are known.
+ *
+ * @return 0 Success (*habs is valid, possibly NULL)
+ * @return -1 Error (*habs is undefined)
+ *
+ * @note Not yet implemented
+ */
 int bionet_list_all_habs(GSList **habs);
 
 
-
-
-//
-//
-//       NAME:  bionet_list_nodes_by_name_pattern()
-//              bionet_list_nodes_by_habtype_habid_nodeid()
-//              bionet_list_all_nodes()
-//
-//
-//   FUNCTION:  Gets the list of Nodes that the NAG knows about.  
-//
-//
-//  ARGUMENTS:  'nodes' is a pointer to the GSList to receive the list of
-//              Nodes.  This list will have an entry for each matching Node
-//              the NAG knows about.  The data of each entry is a
-//              bionet_node_t pointer.  The list will be NULL if no
-//              matching Nodes are known.
-//
-//              'node_name_pattern' is a string of the form
-//              "<HAB-Type>.<HAB-ID>.<Node-ID>", where any component may be
-//              the wildcard "*".
-//
-//              'hab_type', 'hab_id', and 'node_id' are strings containing
-//              the individual components of the name, not joined by ".".
-//              Again "*" is the wildcard.
-//
-//
-//    RETURNS:  0 on success (*nodes is valid, possibly NULL), -1 on error
-//              (*nodes is undefined).
-//
-//
-
+/**
+ * @brief Gets the list of Nodes that Bionet knows about.  
+ *
+ * @param[out] nodes Pointer to the GSList to receive the list of Nodes. This
+ * list will have an entry for each matching Node Bionet knows about. The data
+ * of each entry is a bionet_node_t pointer. The list will be NULL if no
+ * matching Nodes are known.
+ * @param[in] node_name_pattern String of the form
+ * "<HAB-Type>.<HAB-ID>.<Node-ID>" where any component may be the wildcard "*".
+ *
+ * @return 0 Success (*nodes is valid, possibly NULL)
+ * @return -1 Error (*nodes is undefined).
+ *
+ * @note Not yet implemented
+ */
 int bionet_list_nodes_by_name_pattern(GSList **nodes, const char *node_name_pattern);
+
+
+/**
+ * @brief Gets the list of Nodes that Bionet knows about.  
+ *
+ * @param[out] nodes Pointer to the GSList to receive the list of Nodes. This
+ * list will have an entry for each matching Node Bionet knows about. The data
+ * of each entry is a bionet_node_t pointer. The list will be NULL if no
+ * matching Nodes are known.
+ * @param[in] hab_type HAB-Type string or the wildcard "*"
+ * @param[in] hab_id HAB-ID string or the wildcard "*"
+ * @param[in] node_id Node-ID string or the wildcard "*"
+ *
+ * @return 0 Success (*nodes is valid, possibly NULL)
+ * @return -1 Error (*nodes is undefined).
+ *
+ * @note Not yet implemented
+ */
 int bionet_list_nodes_by_habtype_habid_nodeid(GSList **nodes, const char *hab_type,  const char *hab_id, const char *node_id);
+
+
+/**
+ * @brief Gets the list of Nodes that Bionet knows about.  
+ *
+ * @param[out] nodes Pointer to the GSList to receive the list of Nodes. This
+ * list will have an entry for each matching Node Bionet knows about. The data
+ * of each entry is a bionet_node_t pointer. The list will be NULL if no
+ * matching Nodes are known.
+ *
+ * @return 0 Success (*nodes is valid, possibly NULL)
+ * @return -1 Error (*nodes is undefined).
+ *
+ * @note Not yet implemented
+ */
 int bionet_list_all_nodes(GSList **nodes);
 
-
-//
-//       NAME:  bionet_read_from_string()
-//
-//   FUNCTION:  When the NAG socket returned from bionet_connect_to_nag()
-//              is readable, the Client application can call this
-//              function.  It will read any pending messages from the 
-//              given message and call the appropriate registered 
-//              callback functions (by calling 
-//              bionet_handle_queued_nag_messages()).
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  The number of bytes that were read/used.
-//
-//
-//
-//
-// int bionet_read_from_string(char* message, int length);
-//
-//
-//       NAME:  bionet_read_from_string_but_dont_handle_messages()
-//
-//   FUNCTION:  This function is just like bionet_read_from_string(), except
-//              that it does _not_ call bionet_handle_queued_nag_messages().
-//              It just reads any pending messages and puts them in the
-//              queue for later.
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  The number of bytes that were read/used.
-//
-//
-// int bionet_read_from_string_but_dont_handle_messages(char* nxio_message, int length);
-
-#endif
+#endif /* 0 */
 
 
 #endif // __BIONET_H
