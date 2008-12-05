@@ -142,77 +142,49 @@ void bionet_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node
 void bionet_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint));
 
 
-
-
-//
-//
-//       NAME:  bionet_connect()
-//
-//
-//   FUNCTION:  Connects to the Bionet network.  Calling this function from
-//              the Client is optional, it will be called implicitly when
-//              needed by other Bionet library functions.
-//
-//              If the connection is already opened, the function does
-//              nothing and just returns the file descriptor.
-//
-//
-//  ARGUMENTS:  None.
-//
-//
-//    RETURNS:  On success, returns a non-blocking file descriptor
-//              associated with the Bionet network.  The file descriptor
-//              should not be read or written directly by the Client.
-//              If the file descriptor is readable, the Client should call
-//              bionet_read() to service it.  Since the fd is non-blocking,
-//              the client may also call bionet_read() in a polling way,
-//              though this is less efficient than using select() or poll()
-//              on the fd.
-//
-//              On failure, returns -1.
-//
-//
-
+/**
+ * @brief Connects to the Bionet network.  
+ *
+ * Calling this function from the Client is optional, it will be called
+ * implicitly when needed by other Bionet library functions.
+ *
+ * @note If the connection is already opened, the function does
+ * nothing and just returns the file descriptor.
+ *
+ * @return >0 success, a non-blocking file descriptor.
+ * @return -1 failure, check errno.
+ *
+ * @note file descriptor is associated with the Bionet network.  The file 
+ * descriptor should not be read or written directly by the Client.
+ * If the file descriptor is readable, the Client should call bionet_read()
+ * to service it.  Since the fd is non-blocking, the client may also call
+ * bionet_read() in a polling way, though this is less efficient than using
+ * select() or poll() on the fd.
+ */
 int bionet_connect(void);
 
 
-
-
-//
-//
-//       NAME:  bionet_is_connected()
-//
-//   FUNCTION:  Checks to see if the Bionet library is connected to Bionet.
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  Returns True (non-zero) if the library IS connected to
-//              Bionet, returns False (0) if the library is NOT connected
-//              to Bionet.
-//
-//
-
+/**
+ * @bried Checks to see if the Bionet library is connected to Bionet.
+ *
+ * @return TRUE (non-zero) the library IS connected to Bionet 
+ * @return FALSE (0) if the library is NOT connected to Bionet.
+ */
 int bionet_is_connected(void);
 
 
-
-
-//
-//
-//       NAME:  bionet_read()
-//
-//   FUNCTION:  This function should be called whenever the Bionet file
-//              descriptor returned from bionet_connect() is readable, or
-//              if the Client application wants to poll the file descriptor.
-//              The function will read any pending messages from Bionet and
-//              if appropriate call the callback functions.
-//
-//  ARGUMENTS:  None.
-//
-//    RETURNS:  True (non-zero) on success, False (zero) on failure.
-//
-//
-
+/**
+ * @brief Reads the bionet file descriptor returned from bionet_read()
+ *
+ * This function should be called whenever the Bionet file
+ * descriptor returned from bionet_connect() is readable, or
+ * if the Client application wants to poll the file descriptor.
+ * The function will read any pending messages from Bionet and
+ * if appropriate call the callback functions.
+ *
+ * @return TRUE (non-zero) on success
+ * @return FALSE (zero) on failure.
+ */
 int bionet_read(void);
 
 
@@ -236,96 +208,92 @@ unsigned int bionet_cache_get_num_habs(void);
 bionet_hab_t *bionet_cache_get_hab_by_index(unsigned int index);
 
 
-//
-//       NAME:  bionet_cache_lookup_hab()
-//
-//   FUNCTION:  Looks through the locally cached information for a specific
-//              HAB.
-//
-//  ARGUMENTS:  The HAB-Type and HAB-ID to look up.
-//
-//    RETURNS:  The HAB if found, NULL if it was not found.
-//
-
+/**
+ * @brief Looks through the locally cached information for a specific HAB.
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ *
+ * @return Pointer to the HAB if found
+ * @return NULL if it was not found
+ */
 bionet_hab_t *bionet_cache_lookup_hab(const char *hab_type, const char *hab_id);
 
 
-
-
-//
-//       NAME:  bionet_cache_lookup_node()
-//
-//   FUNCTION:  Looks through the locally cached information for a specific
-//              Node.
-//
-//  ARGUMENTS:  The HAB-Type, HAB-ID, and Node-ID to look up.
-//
-//    RETURNS:  The Node if found, NULL if it was not found.
-//
-
+/**
+ * @brief Looks through the locally cached information for a specific Node.
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ * @param[in] node_id The Node-ID to look up
+ *
+ * @return Pointer to the Node if found
+ * @return NULL if it was not found
+ */
 bionet_node_t *bionet_cache_lookup_node(const char *hab_type, const char *hab_id, const char *node_id);
 
 
-
-
-//
-//       NAME:  bionet_cache_lookup_resource()
-//
-//   FUNCTION:  Looks through the locally cached information for a specific
-//              Resource.
-//
-//  ARGUMENTS:  The HAB-Type, HAB-ID, Node-ID, and Resource-ID to look up.
-//
-//    RETURNS:  The Resource if found, NULL if it was not found.
-//
-
+/**
+ * @brief Looks through the locally cached information for a specific Resource
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ * @param[in] node_id The Node-ID to look up
+ * @param[in] resource_id The Resource-ID to look up
+ *
+ * @return Pointer to the Resource if found
+ * @return NULL if it was not found
+ */
 bionet_resource_t *bionet_cache_lookup_resource(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
 
 
-
-
-//
-//       NAME:  bionet_cache_lookup_stream()
-//
-//   FUNCTION:  Looks through the locally cached information for a specific
-//              Stream.
-//
-//  ARGUMENTS:  The HAB-Type, HAB-ID, Node-ID, and Stream-ID to look up.
-//
-//    RETURNS:  The stream if found, NULL if it was not found.
-//
-
+/**
+ * @brief Looks through the locally cached information for a specific Stream.
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ * @param[in] node_id The Node-ID to look up
+ * @param[in] resource_id The Resource-ID to look up
+ *
+ * @return Pointer to the stream if found
+ * @return NULL if it was not found
+ */
 bionet_stream_t *bionet_cache_lookup_stream(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
 
 
-
-
-//
-//       NAME: bionet_subscribe_hab_list()
-//
-//
-//   FUNCTION:  Subscribes the client to the Nag's list of HABs matching
-//              the specified pattern.  When HABs matching the specified
-//              pattern join or leave the NAG, the NAG will report the
-//              fact to the Client.
-//
-//
-//  ARGUMENTS:  'hab_name' is a string of the form "<HAB-Type>.<HAB-ID>",
-//              where any component may be the wildcard "*".
-//
-//              'hab_type' and 'hab_id' are strings containing the
-//              individual components of the name, not joined by ".".
-//              Again "*" is the wildcard.
-//
-//
-//    RETURNS:  0 on success, -1 on error
-//
-//
+/**
+ * @brief Subscribes the client to Bionet's list of HABs matching the
+ * specified pattern.  
+ *
+ * When HABs matching the specified pattern join or leave Bionet, that fact 
+ * will be reported to the Client.
+ *
+ * @param[in] hab_name A string in the form "<HAB-Type>.<HAB-ID>" where any 
+ * component may be the wildcard "*"
+ *
+ * @return 0 Success
+ * @return 1 Error
+ */
 
 int bionet_subscribe_hab_list_by_name(const char *hab_name);
+
+
+/**
+ * @brief Subscribes the client to Bionet's list of HABs matching the
+ * specified pattern.  
+ *
+ * When HABs matching the specified pattern join or leave Bionet, that fact 
+ * will be reported to the Client.
+ *
+ * @param[in] hab_type A string in the form "<HAB-Type>" or the wildcard "*"
+ * @param[in] hab_id A string in the form "<HAB-ID>" or the wildcard "*"
+ *
+ * @note hab_type and hab_id are joined using the "." character to get hab_name
+ *
+ * @return 0 Success
+ * @return 1 Error
+ */
 int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char *hab_id);
-
-
 
 
 //
