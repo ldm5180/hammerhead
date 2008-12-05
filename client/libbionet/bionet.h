@@ -292,6 +292,9 @@ int bionet_subscribe_hab_list_by_name(const char *hab_name);
  *
  * @return 0 Success
  * @return 1 Error
+ *
+ * @deprecated This function will be removed in Bionet v2.1
+ * Concatentate parameters and use bionet_subscribe_hab_list_by_name()
  */
 int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char *hab_id);
 
@@ -324,6 +327,9 @@ int bionet_subscribe_node_list_by_name(const char *node_name);
  *
  * @return 0 Success
  * @return -1 Error
+ *
+ * @deprecated This function will be removed in Bionet v2.1
+ * Concatentate parameters and use bionet_subscribe_node_list_by_name()
  */
 int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  const char *hab_id, const char *node_id);
 
@@ -341,6 +347,9 @@ int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  co
  *
  * @return 0 Success
  * @return -1 Error
+ * 
+ * @deprecated This function will be removed in Bionet v2.1
+ * Instead use bionet_subscribe_resource_by_name()
  */
 int bionet_subscribe_datapoints_by_name(const char *resource_name);
 
@@ -359,6 +368,9 @@ int bionet_subscribe_datapoints_by_name(const char *resource_name);
  *
  * @return 0 Success
  * @return -1 Error
+ *
+ * @deprecated This function will be removed in Bionet v2.1
+ * Concatentate parameters and use bionet_subscribe_datapoints_by_name()
  */
 int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *hab_type,  const char *hab_id, const char *node_id, const char *resource_id);
 
@@ -393,7 +405,11 @@ int bionet_set_resource(const bionet_resource_t *resource, const char *value);
  * @return -1 Failed to send to the HAB associated with the resource
  *
  * @note A return value of 0 does NOT mean that the Resource was actually
- * updated on the Node, just that the HAB accepted the request.
+ * updated on the Node, just that it was sent to the HAB 
+ *
+ * @deprecated This function will be removed in Bionet v2.1
+ * Concatentate parameters, obtain a bionet_resource_t and use 
+ * bionet_set_resource()
  */
 int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
     const char *hab_type,
@@ -417,117 +433,11 @@ int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
  *
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that the HAB accepted the request.
+ *
+ * @deprecated This function will be removed in Bionet v2.1
+ * In 2.1 and later use bionet_set_reource_by_name()
  */
 int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const char *value);
-
-
-#if 0
-
-/**
- * @brief Returns all matching HABs the NAG knows about.
- *
- * @param[out] habs Pointer to the GSList to receive the list of HABs.  This
- * list will have an entry for each matching HAB Bionet knows about. The data
- * of each entry is a bionet_hab_t pointer. The list will be NULL if no
- * matching HABs are known.
- * @param[in] hab_name_pattern String of the form "<HAB-Type>.<HAB-ID>", where
- * either or both of HAB-Type and HAB-ID may be the wildcard "*".
- *
- * @return 0 Success (*habs is valid, possibly NULL)
- * @return -1 Error (*habs is undefined)
- *
- * @note Not yet implemented
- */
-int bionet_list_habs_by_name_pattern(GSList **habs, const char *hab_name_pattern);
-
-
-/**
- * @brief Returns all matching HABs the NAG knows about.
- *
- * @param[out] habs Pointer to the GSList to receive the list of HABs.  This
- * list will have an entry for each matching HAB Bionet knows about. The data
- * of each entry is a bionet_hab_t pointer. The list will be NULL if no
- * matching HABs are known.
- * @param[in] hab_type HAB-Type string or the wildcard "*"
- * @param[in] hab_id HAB-ID string or the wildcard "*"
- *
- * @return 0 Success (*habs is valid, possibly NULL)
- * @return -1 Error (*habs is undefined)
- *
- * @note Not yet implemented
- */
-int bionet_list_habs_by_type_and_id(GSList **habs, const char *hab_type, const char *hab_id);
-
-
-/**
- * @brief Returns all matching HABs the NAG knows about.
- *
- * @param[out] habs Pointer to the GSList to receive the list of HABs.  This
- * list will have an entry for each matching HAB Bionet knows about. The data
- * of each entry is a bionet_hab_t pointer. The list will be NULL if no
- * matching HABs are known.
- *
- * @return 0 Success (*habs is valid, possibly NULL)
- * @return -1 Error (*habs is undefined)
- *
- * @note Not yet implemented
- */
-int bionet_list_all_habs(GSList **habs);
-
-
-/**
- * @brief Gets the list of Nodes that Bionet knows about.  
- *
- * @param[out] nodes Pointer to the GSList to receive the list of Nodes. This
- * list will have an entry for each matching Node Bionet knows about. The data
- * of each entry is a bionet_node_t pointer. The list will be NULL if no
- * matching Nodes are known.
- * @param[in] node_name_pattern String of the form
- * "<HAB-Type>.<HAB-ID>.<Node-ID>" where any component may be the wildcard "*".
- *
- * @return 0 Success (*nodes is valid, possibly NULL)
- * @return -1 Error (*nodes is undefined).
- *
- * @note Not yet implemented
- */
-int bionet_list_nodes_by_name_pattern(GSList **nodes, const char *node_name_pattern);
-
-
-/**
- * @brief Gets the list of Nodes that Bionet knows about.  
- *
- * @param[out] nodes Pointer to the GSList to receive the list of Nodes. This
- * list will have an entry for each matching Node Bionet knows about. The data
- * of each entry is a bionet_node_t pointer. The list will be NULL if no
- * matching Nodes are known.
- * @param[in] hab_type HAB-Type string or the wildcard "*"
- * @param[in] hab_id HAB-ID string or the wildcard "*"
- * @param[in] node_id Node-ID string or the wildcard "*"
- *
- * @return 0 Success (*nodes is valid, possibly NULL)
- * @return -1 Error (*nodes is undefined).
- *
- * @note Not yet implemented
- */
-int bionet_list_nodes_by_habtype_habid_nodeid(GSList **nodes, const char *hab_type,  const char *hab_id, const char *node_id);
-
-
-/**
- * @brief Gets the list of Nodes that Bionet knows about.  
- *
- * @param[out] nodes Pointer to the GSList to receive the list of Nodes. This
- * list will have an entry for each matching Node Bionet knows about. The data
- * of each entry is a bionet_node_t pointer. The list will be NULL if no
- * matching Nodes are known.
- *
- * @return 0 Success (*nodes is valid, possibly NULL)
- * @return -1 Error (*nodes is undefined).
- *
- * @note Not yet implemented
- */
-int bionet_list_all_nodes(GSList **nodes);
-
-#endif /* 0 */
 
 
 #endif // __BIONET_H
