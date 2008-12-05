@@ -242,7 +242,8 @@ bionet_datapoint_t *bionet_asn_to_datapoint(Datapoint_t *asn_datapoint, bionet_r
 
     switch (resource->data_type) {
         case BIONET_RESOURCE_DATA_TYPE_BINARY: {
-            value.binary_v = asn_datapoint->value.choice.binary_v;
+            if (asn_datapoint->value.choice.binary_v == 0) value.binary_v = 0;
+            else value.binary_v = 1;
             break;
         }
         case BIONET_RESOURCE_DATA_TYPE_UINT8: {
