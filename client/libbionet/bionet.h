@@ -19,8 +19,10 @@
 
 #include "bionet-util.h"
 
-
-
+/**
+ * @file bionet.h
+ * Describes the Bionet Client API
+ */
 
 /**
  * @brief The Client ID is used by Bionet.

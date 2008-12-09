@@ -5,7 +5,8 @@
 
 
 /**
- * @file Describes the Bionet Hardware-Abstractor (HAB) API.
+ * @file hardware-abstractor.h
+ * Describes the Bionet Hardware-Abstractor (HAB) API.
  */
 
 

@@ -54,6 +54,12 @@ bionet_node_t *bionet_hab_get_node_by_index(bionet_hab_t *hab, unsigned int inde
         return NULL;
     }
 
+    if (index > bionet_hab_get_num_nodes(hab)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_hab_get_num_nodes(): Index is greater than number of nodes available.");
+	return NULL;
+    }
+
     return g_slist_nth_data(hab->nodes, index);
 }
 

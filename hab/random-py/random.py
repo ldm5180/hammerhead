@@ -5,7 +5,7 @@ import optparse
 import logging
 import time
 import random
-import add_node
+#import add_node
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--id", dest="hab_id", default="python",
@@ -31,7 +31,7 @@ logger.addHandler(ch)
 from hab import *
 
 #connect to bionet
-hab = bionet_hab_new("random", options.hab_id)
+hab = bionet_hab_new(None, options.hab_id)
 hab_register_callback_set_resource(cb_set_resource);
 bionet_fd = hab_connect(hab)
 if (0 > bionet_fd):
@@ -39,21 +39,21 @@ if (0 > bionet_fd):
     exit(1)
 
 #make nodes
-while(1):
-    while(bionet_hab_get_num_nodes(hab) < options.min_nodes):
-        add_node.Add(hab)
+#while(1):
+#    while(bionet_hab_get_num_nodes(hab) < options.min_nodes):
+#        add_node.Add(hab)
 
-    while(bionet_get_num_nodes(hab) > (2 * options.min_nodes)):
-        destroy_node.Destroy(hab)
+#    while(bionet_get_num_nodes(hab) > (2 * options.min_nodes)):
+#        destroy_node.Destroy(hab)
 
-    rnd = random.randint(0,100)
-    print rnd
+#    rnd = random.randint(0,100)
+#    print rnd
 
-    if (rnd < 10):
-        destroy_node(hab)
-    elif (rnd < 20):
-        add_node(hab)
-    else:
-        update_node(hab)
+#    if (rnd < 10):
+#        destroy_node(hab)
+#    elif (rnd < 20):
+#        add_node(hab)
+#    else:
+#        update_node(hab)
 
     
