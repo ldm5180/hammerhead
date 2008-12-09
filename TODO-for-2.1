@@ -1,0 +1,24 @@
+
+make opaque: habs, nodes, resources, datapoints
+
+
+add functions:
+
+    bionet_hab_get_type()
+    bionet_hab_get_id()
+
+    bionet_node_get_id()
+    bionet_node_get_hab()
+
+    bionet_resource_get_id()
+    bionet_resource_get_node()
+    bionet_resource_get_flavor()
+    bionet_resource_get_datatype()
+
+
+set errno consistently on function failure
+
+
+have the "remove" functions return the object that was removed, so the
+caller can free it ("remove_all" functions can't do this)
+
