@@ -1,4 +1,20 @@
 
+Bionet 2.0.3, SVN rev 311, release 2008 December 5
+
+    * Commanding of Resources now works, using the bionet_set_resource()
+      functions.
+
+    * MMOD-HAB now reports the number of missed messages from the Motes.
+
+    * Now builds on Mac OS X.
+
+    * Improved handling of multiple network endpoints reported by mDNS-SD.
+
+    * Started moving to Doxygen documentation.
+
+    * Misc bug fixes and cleanups all over.
+
+
 Bionet 2.0.2, SVN rev 268
 
     * Added BDM, the Bionet Data Manager.
