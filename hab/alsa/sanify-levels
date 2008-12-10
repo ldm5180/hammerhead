@@ -1,0 +1,116 @@
+#!/bin/bash
+#
+# Copyright (C) 2004-2008, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of GNU General Public License version 2, as
+# published by the Free Software Foundation.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+#
+
+
+#
+# This script knows many common mixer elements, and sets them _all_ to sane
+# values, even the ones that dont exist.
+#
+# This script is based on Debian Etch's /etc/init.d/alsa-utils.
+#
+
+
+if [ -z "$1" ]; then
+    echo "usage: $0 CARD"
+    exit 1
+fi
+
+CARDOPT="-c $1"
+
+filter_amixer_output()
+{
+	sed \
+		-e '/Unable to find simple control/d' \
+		-e '/Unknown playback setup/d' \
+		-e '/^$/d'
+}
+
+# The following functions try to set many controls.
+# No card has all the controls and so some of the attempts are bound to fail.
+# Because of this, the functions can't return useful status values.
+
+# $1 <control>
+# $2 <level>
+# $CARDOPT
+unmute_and_set_level()
+{
+	{ [ "$2" ] && [ "$CARDOPT" ] ; } || bugout
+	amixer $CARDOPT -q set "$1" "$2" unmute 2>&1 | filter_amixer_output || :
+	return 0
+}
+
+# $1 <control>
+# $CARDOPT
+mute_and_zero_level()
+{
+	{ [ "$1" ] && [ "$CARDOPT" ] ; } || bugout
+	amixer $CARDOPT -q set "$1" "0%" mute 2>&1 | filter_amixer_output || :
+	return 0
+}
+
+# $1 <control>
+# $2 "on" | "off"
+# $CARDOPT
+switch_control()
+{
+	{ [ "$2" ] && [ "$CARDOPT" ] ; } || bugout
+	amixer $CARDOPT -q set "$1" "$2" 2>&1 | filter_amixer_output || :
+	return 0
+}
+
+
+
+
+unmute_and_set_level  "Master"         "80%"
+unmute_and_set_level  "Master Digital" "80%"   # E.g., cs4237B
+unmute_and_set_level  "Playback"       "80%"
+unmute_and_set_level  "Headphone"      "70%"
+unmute_and_set_level  "PCM"            "80%"
+unmute_and_set_level  "PCM,1"          "80%"   # E.g., ess1969
+unmute_and_set_level  "DAC"            "80%"     # E.g., envy24, cs46xx
+unmute_and_set_level  "DAC,0"          "80%"   # E.g., envy24
+unmute_and_set_level  "DAC,1"          "80%"   # E.g., envy24
+unmute_and_set_level  "Synth"          "80%"
+unmute_and_set_level  "CD"             "80%"
+
+unmute_and_set_level   "Mic"           "80%"
+
+# Some machines need this to be on; others need it to be off:
+# switch_control "External Amplifier" on
+
+# Trident/YMFPCI/emu10k1:
+unmute_and_set_level  "Wave"   "80%"
+unmute_and_set_level  "Music"  "80%"
+unmute_and_set_level  "AC97"   "80%"
+
+# DRC:
+unmute_and_set_level "Dynamic Range Compression" "80%"
+
+# Digital switches on Audigy and SB Live:
+switch_control "Audigy Analog/Digital Output Jack" on
+# What about  "SB Live Analog/Digital Output Jack" ?
+
+# Required at least for Via 823x hardware on DFI K8M800-MLVF Motherboard with kernels 2.6.10-3/4 (see ubuntu #7286):
+switch_control "IEC958 Capture Monitor" off
+
+# Required on some notebooks with ICH4:
+switch_control "Headphone Jack Sense" off
+switch_control "Line Jack Sense" off
+
+

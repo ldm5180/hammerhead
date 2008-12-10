@@ -1,0 +1,24 @@
+
+Copyright (C) 2004-2008, Regents of the University of Colorado.
+This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
+
+
+
+
+Exports each sound device as a node, and each subdevice as a stream.
+Detects and handles new sound devices coming and old sound devices going
+(for example, USB sound devices being plugged and unplugged).
+
+
+Consumer Streams:
+
+    Each client that connects to a consumer gets its own Playback PCM
+    handle, going through dmix.
+
+
+Producer Streams:
+
+    Each client that connects to a producer gets its own Capture PCM
+    handle, going through dsnoop.
+
+

@@ -95,6 +95,30 @@ AM_CONDITIONAL(ENABLE_DARWIN, test "x$HAVE_DARWIN" = "xyes")
 AM_CONDITIONAL(ENABLE_LINUX, test "x$HAVE_LINUX" = "xyes")
 
 
+###
+#
+# see if the user wants ALSA stuff, and if so if it's available
+#
+###
+
+AC_ARG_ENABLE(
+    alsa,
+    AC_HELP_STRING([--disable-alsa], [disable ALSA dependent parts]),
+    [ENABLE_ALSA=$enableval],
+    [ENABLE_ALSA=yes]
+)
+
+if test "x$ENABLE_ALSA" = "xyes" ; then
+    PKG_CHECK_MODULES(ALSA, [ alsa >= 1.0.15 ])
+    AC_SUBST(ALSA_CFLAGS)
+    AC_SUBST(ALSA_LIBS)
+fi
+
+AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
+
+
+
+
 AC_ARG_ENABLE(python, AC_HELP_STRING([--disable-python],
       [disable python dependent parts]),
       [ENABLE_PYTHON=$enableval],
@@ -155,6 +179,7 @@ AC_CONFIG_FILES([Makefile
                  hab/csa-cp/Makefile
 		 hab/mmod/Makefile
                  hab/random/Makefile
+                 hab/alsa/Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile

@@ -1,0 +1,71 @@
+#!/bin/bash
+#
+# Copyright (C) 2004-2008, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of GNU General Public License version 2, as
+# published by the Free Software Foundation.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+#
+
+
+function usage {
+    echo "audio-stream-consumer"
+    echo "Connects to a Bionet audio Stream producer and plays it out the speakers."
+    echo "usage: audio-stream-consumer OPTIONS STREAM"
+    echo ""
+    echo "OPTIONS:"
+    echo "    --nag NAG-HOSTNAME"
+    echo ""
+}
+
+
+BSTREAM="../../client/stream/bionet-stream"
+
+
+if [ -z "$BIONET_NAG" ]; then
+    BIONET_NAG="bionet.colorado.edu"
+fi
+
+if [ "$1" = "--nag" ]; then
+    shift
+    BIONET_NAG="$1"
+    shift
+fi
+
+STREAM="$1"
+if [ -z "$STREAM" ]; then
+    echo "no stream name specified, pick one:\n"
+    $BSTREAM --nag $BIONET_NAG
+    echo
+    usage
+    exit 1
+fi
+
+
+# for sox
+BIOSERVE_AUDIO_FORMAT_SOX="-t raw -r 9600 -c 1 -s -w"
+
+
+# for aplay
+BIOSERVE_AUDIO_FORMAT_APLAY="-t raw -r 9600 -c 1 -f S16_LE"
+
+
+
+
+# save via sox
+#$BSTREAM --nag $NAG "$1" | sox $BIOSERVE_AUDIO_FORMAT_SOX - "$2"
+
+
+# play via aplay
+$BSTREAM --nag $BIONET_NAG "$1" | aplay -D plug:dmix $BIOSERVE_AUDIO_FORMAT_APLAY
+

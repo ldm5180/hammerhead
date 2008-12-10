@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+# Copyright (C) 2004-2008, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of GNU General Public License version 2, as
+# published by the Free Software Foundation.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+# 
+
+
+function usage {
+    echo "audio-stream-producer"
+    echo "Sends an audio file to a Bionet audio Stream consumer."
+    echo "usage: audio-stream-producer [OPTIONS] SOUND-FILE STREAM"
+    echo ""
+    echo "OPTIONS:"
+    echo ""
+    echo "    --nag NAG-HOSTNAME"
+    echo ""
+}
+
+
+if [ -z "$BIONET_NAG" ]; then
+    BIONET_NAG="bionet.colorado.edu"
+fi
+
+# for sox
+BIOSERVE_AUDIO_FORMAT="-t raw -r 9600 -c 1 -s -w"
+
+BSTREAM="../../client/stream/bionet-stream"
+
+
+if [ "$1" = "--nag" ]; then
+    shift
+    BIONET_NAG="$1"
+    shift
+fi
+
+
+SOUND_FILE="$1"
+shift
+if [ -z "$SOUND_FILE" ]; then 
+    echo "no sound file specified!"
+    echo 
+    usage
+    exit 1
+fi
+
+IN_TYPE=$(file "$SOUND_FILE") 
+
+
+STREAM=$1
+shift
+if [ -z "$STREAM" ]; then 
+    echo "no target stream specified, pick one:"
+    $BSTREAM --nag $BIONET_NAG
+    echo 
+    usage
+    exit 1
+fi
+
+
+if echo $IN_TYPE | egrep -q '(WAVE audio)|(Sun/NeXT audio data)'; then
+    sox "$SOUND_FILE" $BIOSERVE_AUDIO_FORMAT - | $BSTREAM --nag $BIONET_NAG "$STREAM"
+
+elif echo $IN_TYPE | egrep -q '(MPEG.*layer III)|(MP3)'; then
+    mpg123 --au - "$SOUND_FILE" | sox -t au - $BIOSERVE_AUDIO_FORMAT - | $BSTREAM --nag $BIONET_NAG "$STREAM"
+
+else
+    echo "unknown sound file format: $IN_TYPE"
+fi
+
+

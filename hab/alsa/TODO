@@ -1,0 +1,27 @@
+
+
+Mixer controls should be exported as Resources (Parameters).
+
+
+
+
+use dbus & hotplug
+
+
+
+
+auto-set mixer elems when finding a new sound device
+
+
+
+
+to record with the mic-in:
+
+    use gnome-alsamixer
+
+    turn up mic gain, turn off mic mute, enable mic record
+
+    turn up capture gain, enable capture record
+
+    arecord -D hw:0,0 -f S16_LE -c 2 test.wav
+
