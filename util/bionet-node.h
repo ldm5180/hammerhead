@@ -34,9 +34,10 @@ struct bionet_node {
 
 
 
-// 
-// functions for dealing with nodes
-//
+/**
+ * @file bionet-node.h 
+ * Functions for dealing with nodes
+ */
 
 bionet_node_t* bionet_node_new(const bionet_hab_t *hab, const char* node_id);
 
