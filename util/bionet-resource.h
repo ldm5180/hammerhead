@@ -9,7 +9,7 @@
 
 /**
  * @file bionet-resource.h
- * Functions for dealing with Bionet Hardware-Abstractor (HABs).
+ * Functions for dealing with Bionet Resources.
  */
 
 
