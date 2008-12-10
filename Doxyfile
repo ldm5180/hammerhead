@@ -555,6 +555,7 @@ WARN_LOGFILE           =
 INPUT                  = client/libbionet/bionet.h \
                          hab/libhab/hardware-abstractor.h \
                          util/bionet-hab.h \
+			 util/bionet-node.h \
                          util/bionet-resource.h
 
 # This tag can be used to specify the character encoding of the source files 

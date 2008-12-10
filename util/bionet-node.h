@@ -7,6 +7,10 @@
 #ifndef BIONET_NODE_H
 #define BIONET_NODE_H
 
+/**
+ * @file bionet-node.h 
+ * Functions for dealing with nodes
+ */
 
 #include <stdint.h>
 #include <time.h>
@@ -16,8 +20,6 @@
 #include <glib.h>
 
 #include "bionet-util.h"
-
-
 
 
 struct bionet_node {
@@ -32,15 +34,27 @@ struct bionet_node {
 };
 
 
+/**
+ * @brief Create a new node
+ *
+ * @param[in] hab The HAB which the node shall belong to
+ * @param[in] node_id ID of the new node 
+ *
+ * @return Pointer to the new node
+ * @retval NULL Failure
+ */
+bionet_node_t* bionet_node_new(const bionet_hab_t *hab, const char* node_id);
 
 
 /**
- * @file bionet-node.h 
- * Functions for dealing with nodes
+ * @brief Add a resource to a node
+ *
+ * @param[in] node The node to add the resource to
+ * @param[in] resource The resource to add
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
  */
-
-bionet_node_t* bionet_node_new(const bionet_hab_t *hab, const char* node_id);
-
 int bionet_node_add_resource(bionet_node_t *node, bionet_resource_t *resource);
 
 int bionet_node_get_num_resources(const bionet_node_t *node);
