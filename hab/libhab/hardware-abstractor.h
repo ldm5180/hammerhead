@@ -35,7 +35,8 @@
  * if the user choses not to).
  *
  * @return The Bionet file descriptor on success
- * @return -1 on failure.
+ * @retval >= 0 Success
+ * @retval -1 Failure
  *              
  * @note The Bionet file descriptor must not be read or written directly by
  * the HAB. Only the HAB library may read and write it. The HAB should call 
@@ -50,8 +51,8 @@ int hab_connect(bionet_hab_t *hab);
  *
  * @param[in] node The Node to report.
  *
- * @return 0 Success
- * @return -1 Failure
+ * @retval 0 Success
+ * @retval -1 Failure
  *
  * @note The Node passed in must have been added to the HAB before calling this
  * function. The Node must remain part of the HAB until the user is ready to
@@ -67,8 +68,8 @@ int hab_report_new_node(const bionet_node_t *node);
  *
  * @param[in] node The Node to report.
  *
- * @return 0 Success
- * @return -1 Failure
+ * @retval 0 Success
+ * @retval -1 Failure
  */
 int hab_report_datapoints(const bionet_node_t *node);
 
@@ -82,8 +83,8 @@ int hab_report_datapoints(const bionet_node_t *node);
  *
  * @param[in] node_id The Node ID string.
  *
- * @return 0 Success
- * @return -1 Failure
+ * @retval 0 Success
+ * @retval -1 Failure
  */
 int hab_report_lost_node(const char *node_id);
 

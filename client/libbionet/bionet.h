@@ -37,8 +37,8 @@
  *
  * @param[in] new_id The new Client ID string.
  *
- * @return 0 success
- * @return -1 failure.
+ * @retval 0 success
+ * @retval -1 failure.
  */
 int bionet_set_id(const char *new_id);
 
@@ -153,8 +153,8 @@ void bionet_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t 
  * @note If the connection is already opened, the function does
  * nothing and just returns the file descriptor.
  *
- * @return >0 success, a non-blocking file descriptor.
- * @return -1 failure, check errno.
+ * @retval >=0 success, a non-blocking file descriptor.
+ * @retval -1 failure, check errno.
  *
  * @note file descriptor is associated with the Bionet network.  The file 
  * descriptor should not be read or written directly by the Client.
@@ -169,8 +169,8 @@ int bionet_connect(void);
 /**
  * @brief Checks to see if the Bionet library is connected to Bionet.
  *
- * @return TRUE (non-zero) the library IS connected to Bionet 
- * @return FALSE (0) if the library is NOT connected to Bionet.
+ * @retval TRUE (non-zero) - the library IS connected to Bionet 
+ * @retval FALSE (0) - if the library is NOT connected to Bionet.
  */
 int bionet_is_connected(void);
 
@@ -184,8 +184,8 @@ int bionet_is_connected(void);
  * The function will read any pending messages from Bionet and
  * if appropriate call the callback functions.
  *
- * @return TRUE (non-zero) on success
- * @return FALSE (zero) on failure.
+ * @retval TRUE (non-zero) - success
+ * @retval FALSE (zero) - failure.
  */
 int bionet_read(void);
 
@@ -217,7 +217,7 @@ bionet_hab_t *bionet_cache_get_hab_by_index(unsigned int index);
  * @param[in] hab_id The HAB-ID to look up
  *
  * @return Pointer to the HAB if found
- * @return NULL if it was not found
+ * @retval NULL Not found
  */
 bionet_hab_t *bionet_cache_lookup_hab(const char *hab_type, const char *hab_id);
 
@@ -230,7 +230,7 @@ bionet_hab_t *bionet_cache_lookup_hab(const char *hab_type, const char *hab_id);
  * @param[in] node_id The Node-ID to look up
  *
  * @return Pointer to the Node if found
- * @return NULL if it was not found
+ * @retval NULL Not found
  */
 bionet_node_t *bionet_cache_lookup_node(const char *hab_type, const char *hab_id, const char *node_id);
 
@@ -244,7 +244,7 @@ bionet_node_t *bionet_cache_lookup_node(const char *hab_type, const char *hab_id
  * @param[in] resource_id The Resource-ID to look up
  *
  * @return Pointer to the Resource if found
- * @return NULL if it was not found
+ * @retval NULL Not found
  */
 bionet_resource_t *bionet_cache_lookup_resource(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
 
@@ -258,7 +258,7 @@ bionet_resource_t *bionet_cache_lookup_resource(const char *hab_type, const char
  * @param[in] resource_id The Resource-ID to look up
  *
  * @return Pointer to the stream if found
- * @return NULL if it was not found
+ * @retval NULL Not found
  */
 bionet_stream_t *bionet_cache_lookup_stream(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
 
@@ -273,10 +273,9 @@ bionet_stream_t *bionet_cache_lookup_stream(const char *hab_type, const char *ha
  * @param[in] hab_name A string in the form "<HAB-Type>.<HAB-ID>" where any 
  * component may be the wildcard "*"
  *
- * @return 0 Success
- * @return 1 Error
+ * @retval 0 Success
+ * @retval -1 Failure
  */
-
 int bionet_subscribe_hab_list_by_name(const char *hab_name);
 
 
@@ -292,8 +291,8 @@ int bionet_subscribe_hab_list_by_name(const char *hab_name);
  *
  * @note hab_type and hab_id are joined using the "." character to get hab_name
  *
- * @return 0 Success
- * @return 1 Error
+ * @retval 0 Success
+ * @retval -1 Error
  *
  * @deprecated This function will be removed in Bionet v2.1
  * Concatentate parameters and use bionet_subscribe_hab_list_by_name()
@@ -311,8 +310,8 @@ int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char
  * @param 'node_name' A string in the form "<HAB-Type>.<HAB-ID>.<Node-ID>"
  * where any component may be the wildcard "*".
  *
- * @return 0 Success
- * @return -1 Error
+ * @retval 0 Success
+ * @retval -1 Error
  */
 int bionet_subscribe_node_list_by_name(const char *node_name);
 
@@ -327,8 +326,8 @@ int bionet_subscribe_node_list_by_name(const char *node_name);
  * @param[in] hab_id string of the form "<HAB-ID>" or the wildcard "*"
  * @param[in] node_id string of the form "<Node-ID>" or the wildcard "*"
  *
- * @return 0 Success
- * @return -1 Error
+ * @retval 0 Success
+ * @retval -1 Error
  *
  * @deprecated This function will be removed in Bionet v2.1
  * Concatentate parameters and use bionet_subscribe_node_list_by_name()
@@ -347,8 +346,8 @@ int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  co
  *"<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>" where any component may be
  * the wildcard "*".
  *
- * @return 0 Success
- * @return -1 Error
+ * @retval 0 Success
+ * @retval -1 Error
  * 
  * @deprecated This function will be removed in Bionet v2.1
  * Instead use bionet_subscribe_resource_by_name()
@@ -368,8 +367,8 @@ int bionet_subscribe_datapoints_by_name(const char *resource_name);
  * @param[in] node_id string of the form "<Node-ID>" or the wildcard "*"
  * @param[in] resource_id string of the form "<Resource-ID>" or the wildcard "*"
  *
- * @return 0 Success
- * @return -1 Error
+ * @retval 0 Success
+ * @retval -1 Error
  *
  * @deprecated This function will be removed in Bionet v2.1
  * Concatentate parameters and use bionet_subscribe_datapoints_by_name()
@@ -384,8 +383,8 @@ int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *h
  * @param[in] resource Resource to set
  * @param[in] value New value as a string
  *
- * @return 0 Successfully sent to HAB associated with the resource
- * @return -1 Failed to send to the HAB associated with the resource
+ * @retval 0 Successfully sent to HAB associated with the resource
+ * @retval -1 Failed to send to the HAB associated with the resource
  *
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that the HAB accepted the request.
@@ -403,8 +402,8 @@ int bionet_set_resource(const bionet_resource_t *resource, const char *value);
  * @param[in] resource_id string of the form "<Resource-ID>" or the wildcard "*"
  * @param[in] value New value as a string
  *
- * @return 0 Successfully sent to HAB associated with the resource
- * @return -1 Failed to send to the HAB associated with the resource
+ * @retval 0 Successfully sent to HAB associated with the resource
+ * @retval -1 Failed to send to the HAB associated with the resource
  *
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that it was sent to the HAB 
@@ -430,8 +429,8 @@ int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
  * the wildcard "*".
  * @param[in] value New value as a string
  *
- * @return 0 Successfully sent to HAB associated with the resource
- * @return -1 Failed to send to the HAB associated with the resource
+ * @retval 0 Successfully sent to HAB associated with the resource
+ * @retval -1 Failed to send to the HAB associated with the resource
  *
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that the HAB accepted the request.

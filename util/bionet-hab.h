@@ -53,8 +53,8 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
  * @param[in] hab Pointer to a HAB
  * @param[in] type Type of HAB
  * 
- * @return 0 Success
- * @return -1 Failure
+ * @retval 0 Success
+ * @retval -1 Failure
  */
 int bionet_hab_set_type(bionet_hab_t *hab, const char *type);
 
@@ -65,8 +65,8 @@ int bionet_hab_set_type(bionet_hab_t *hab, const char *type);
  * @param[in] hab Pointer to a HAB
  * @param[in] id ID of HAB
  * 
- * @return 0 Success
- * @return -1 Failure
+ * @retval 0 Success
+ * @retval -1 Failure
  */
 int bionet_hab_set_id(bionet_hab_t *hab, const char *id);
 
@@ -77,8 +77,8 @@ int bionet_hab_set_id(bionet_hab_t *hab, const char *id);
  * @param[in] hab Pointer to a HAB
  * @param[in] node_id ID of the node requested 
  *
- * @return Valid node pointer on success
- * @return NULL if node with that ID does not exist
+ * @retval Valid node pointer on success
+ * @retval NULL if node with that ID does not exist
  */
 bionet_node_t *bionet_hab_get_node_by_id(bionet_hab_t *hab, 
 					 const char *node_id);
@@ -89,8 +89,8 @@ bionet_node_t *bionet_hab_get_node_by_id(bionet_hab_t *hab,
  * 
  * @param[in] hab Pointer to a HAB
  * 
- * @return -1 Invalid HAB pointer
- * @return Number of nodes in the HAB on success
+ * @retval -1 Invalid HAB pointer
+ * @retval Number of nodes in the HAB on success
  */
 int bionet_hab_get_num_nodes(const bionet_hab_t *hab);
 
@@ -103,8 +103,8 @@ int bionet_hab_get_num_nodes(const bionet_hab_t *hab);
  * @param[in] hab Pointer to a HAB
  * @param[in] index Index of the node desired
  *
- * @return NULL Invalid HAB pointer or index is greater than number of nodes
- * @return Valid node pointer on success
+ * @retval NULL Invalid HAB pointer or index is greater than number of nodes
+ * @retval Valid node pointer on success
  */
 bionet_node_t *bionet_hab_get_node_by_index(bionet_hab_t *hab, 
 					    unsigned int index);
@@ -116,8 +116,8 @@ bionet_node_t *bionet_hab_get_node_by_index(bionet_hab_t *hab,
  * @param[in] hab Pointer to a HAB
  * @param[in] node Pointer to a node
  *
- * @return 0 Success
- * @return -1 Failure
+ * @retval 0 Success
+ * @retval -1 Failure
  */
 int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node);
 
