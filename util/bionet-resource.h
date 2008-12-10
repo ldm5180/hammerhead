@@ -362,70 +362,66 @@ int bionet_resource_matches_habtype_habid_nodeid_resourceid(
 );
 
 
-
-
-//
-//       NAME:  bionet_resource_is_dirty()
-//
-//   FUNCTION:  Checks if a Resource has any dirty Datapoints.
-//              Dirty Datapoints are ones that haven't been reported to
-//              Bionet yet.
-//
-//  ARGUMENTS:  The Resource to test for dirtiness.
-//
-//    RETURNS:  True (non-zero) if it is dirty, False (zero) if not.
-//
-
+/**
+ * @brief Checks if a Resource has any dirty Datapoints.
+ *
+ * Dirty Datapoints are ones that have data which hasn't been reported to
+ * Bionet yet.
+ *
+ * @param[in] resource The Resource to test for dirtiness.
+ *
+ * @retval True (non-zero) - Dirty
+ * @retval False (zero) - Not dirty
+ */
 int bionet_resource_is_dirty(const bionet_resource_t *resource);
 
 
-
-
-//
-//       NAME:  bionet_resource_make_clean()
-//
-//   FUNCTION:  Makes a Resource clean, by making all its Datapoints clean.
-//
-//  ARGUMENTS:  The Resource to clean.
-//
-//    RETURNS:  Nothing.
-//
-
+/**
+ * @brief Makes a Resource clean, by making all its Datapoints clean.
+ *
+ * @param[in] resource The Resource to clean.
+ */
 void bionet_resource_make_clean(bionet_resource_t *resource);
 
 
-
-
-//
-//
-//       NAME:  bionet_datapoint_new()
-//
-//   FUNCTION:  Allocates and initializes a new datapoint.  Does *not* add
-//              it to the Resource's list of data points.
-//
-//  ARGUMENTS:  All passed-in strings are considered the property of the
-//              caller.  The caller is free to overwrite or free the
-//              strings on return from this function.
-//
-//              resource: The Resource that the new datapoint is for.
-//
-//              value: The value of the new datapoint.
-//
-//              value_str: The value of the new datapoint, as an ASCII string.
-//
-//              timestamp: The timestamp of the new datapoint (NULL means
-//                  "now").
-//
-//    RETURNS:  The new Datapoint if all went well, NULL on error.
-//
-//
-
+/**
+ * @brief Allocates and initializes a new datapoint.  
+ *
+ * Does NOT add it to the Resource's list of data points.
+ *
+ * @param[in] resource The Resource that the new datapoint is for
+ * @param[in] value The value of the new datapoint
+ * @param[in] timestamp The timestamp of the new datapoint (NULL means "now")
+ *
+ * @return The new Datapoint 
+ * @retval NULL Error
+ *
+ * @note All passed-in strings are considered the property of the
+ *       caller.  The caller is free to overwrite or free the
+ *       strings on return from this function.
+ */
 bionet_datapoint_t *bionet_datapoint_new(
     bionet_resource_t *resource,
     const bionet_datapoint_value_t *value,
     const struct timeval *timestamp
 );
 
+/**
+ * @brief Allocates and initializes a new datapoint.  
+ *
+ * Does NOT add it to the Resource's list of data points.
+ *
+ * @param[in] resource The Resource that the new datapoint is for
+ * @param[in] value_str The value of the new datapoint, as an ASCII string.
+ * @param[in] timestamp The timestamp of the new datapoint (NULL means "now")
+ *
+ * @return The new Datapoint 
+ * @retval NULL Failure
+ *
+ * @note All passed-in strings are considered the property of the
+ *       caller.  The caller is free to overwrite or free the
+ *       strings on return from this function.
+ */
 bionet_datapoint_t *bionet_datapoint_new_with_valuestr(
     bionet_resource_t *resource,
     const char *value_str,
@@ -433,131 +429,121 @@ bionet_datapoint_t *bionet_datapoint_new_with_valuestr(
 );
 
 
+/**
+ * @brief Set the value of a datapoint
+ *
+ * @param[in] d Datapoint to set
+ * @param[in] value Value to set in the datapoint
+ */
+void bionet_datapoint_set_value(bionet_datapoint_t *d, 
+				const bionet_datapoint_value_t *value);
 
 
-void bionet_datapoint_set_value(bionet_datapoint_t *d, const bionet_datapoint_value_t *value);
-int bionet_datapoint_value_from_string(bionet_datapoint_t *d, const char *value_string);
-
-
+/**
+ * @brief Set the value of a datapoint
+ *
+ * @param[in] d Datapoint to set
+ * @param[in] value_string Value to set in the datapoint, as an ASCII string
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_datapoint_value_from_string(bionet_datapoint_t *d, 
+				       const char *value_string);
 
 
 /**
  * @brief Sets a bionet_datapoint_value_t variable from a string.
  *
- * @param data_type  The data type to interpret the string as.
- *
- * @param value  A pointer to the variable to receive the value parsed from
- *     the string.  value must point to a valid, initialized
+ * @param[in] data_type The data type to interpret the string as.
+ * @param[in] value A pointer to the variable to receive the value parsed from
+ *     the string. value must point to a valid, initialized
  *     bionet_datapoint_value_t variable (all bits zero is valid).
+ * @param[in] value_string The string containing the new value.
  *
- * @param value_string  The string containing the new value.
- *
- * @return 0 on success, -1 on error.
+ * @retval 0 Success
+ * @retval -1 Failure
  */
 
-int bionet_datapoint_value_from_string_isolated(bionet_resource_data_type_t data_type, bionet_datapoint_value_t *value, const char *value_string);
+int bionet_datapoint_value_from_string_isolated(bionet_resource_data_type_t data_type, 
+						bionet_datapoint_value_t *value,
+						const char *value_string);
 
 
-
-
-//
-//       NAME:  bionet_datapoint_value_to_string()
-//
-//   FUNCTION:  Renders a Datapoint's Value as an ASCII string.
-//
-//  ARGUMENTS:  The Datapoint to get the Value from.
-//
-//    RETURNS:  A statically allocated string containing an ASCII
-//              representation of the Datapoint Value, or NULL on error.
-//
-
+/**
+ * @brief Renders a Datapoint's Value as an ASCII string.
+ *
+ * @param[in] datapoint The Datapoint to get the Value from.
+ *
+ * @return A statically allocated string containing an ASCII
+ *         representation of the Datapoint Value
+ * @retval NULL Failure
+ */
 const char *bionet_datapoint_value_to_string(const bionet_datapoint_t *datapoint);
+
+
+/**
+ * @brief Renders a Value as an ASCII string.
+ *
+ * @param[in] data_type Datatype of the value
+ * @param[in] value The Datapoint to get the Value from.
+ *
+ * @return A statically allocated string containing an ASCII
+ *         representation of the Value
+ * @retval NULL Failure
+ */
 const char *bionet_datapoint_value_to_string_isolated(bionet_resource_data_type_t data_type, const bionet_datapoint_value_t *value);
 
 
-
-
-//
-//       NAME:  bionet_datapoint_timestamp_to_string()
-//
-//   FUNCTION:  Renders the Datapoint Timestamp as an ASCII string of the
-//              form "YYYY-MM-DD HH:MM:SS.microseconds".
-//
-//  ARGUMENTS:  The Datapoint to get the Timestamp of.
-//
-//    RETURNS:  A pointer to the statically allocated string on success,
-//              NULL on failure.
-//
-
+/**
+ * @brief Renders the Datapoint Timestamp as an ASCII string of the
+ *        form "YYYY-MM-DD HH:MM:SS.microseconds".
+ *
+ * @param[in] datapoint The Datapoint to get the Timestamp of.
+ *
+ * @return A pointer to the statically allocated string on success
+ * @retval NULL Failure
+ */
 const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datapoint);
 
 
+/**
+ * @brief Sets the Datapoint Timestamp as specified.
+ *
+ * @param[in] datapoint The Datapoint to set the Timestamp of
+ * @param[in] new_timestamp Timestamp to set it to (NULL means "now").
+ */
+void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint, 
+				    const struct timeval *new_timestamp);
 
 
-//
-//       NAME:  bionet_datapoint_set_timestamp()
-//
-//   FUNCTION:  Sets the Datapoint Timestamp as specified.
-//
-//  ARGUMENTS:  The Datapoint to set the Timestamp of, and the timestamp to
-//              set it to (NULL means "now").
-//
-//    RETURNS:  Nothing.
-//
-
-void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint, const struct timeval *new_timestamp);
-
-
-
-
-//
-//       NAME:  bionet_datapoint_is_dirty()
-//
-//   FUNCTION:  Checks if a Datapoint is dirty or not.  A Datapoint is
-//              dirty if it has not been reported to Bionet yet.
-//
-//  ARGUMENTS:  The Datapoint to check.
-//
-//    RETURNS:  True (non-zero) if the Datapoint is dirty, False (zero) if
-//              not.
-//
-//
-
+/**
+ * @brief Checks if a Datapoint is dirty or not.  
+ *
+ * A Datapoint is dirty if it has not been reported to Bionet yet.
+ *
+ * @param[in] datapoint The Datapoint to check.
+ *
+ * @retval TRUE (non-zero) - Datapoint is dirty
+ * @retval FALSE (zero) - Datapoint is not dirty
+ */
 int bionet_datapoint_is_dirty(const bionet_datapoint_t *datapoint);
 
 
-
-
-//
-//       NAME:  bionet_datapoint_make_clean()
-//
-//   FUNCTION:  Makes a Datapoint clean.
-//
-//  ARGUMENTS:  The Datapoint to make clean.
-//
-//    RETURNS:  Nothing.
-//
-//
-
+/**
+ * @brief Makes a Datapoint clean.
+ *
+ * @param datapoint The Datapoint to make clean.
+ */
 void bionet_datapoint_make_clean(bionet_datapoint_t *datapoint);
 
 
-
-
-//
-//       NAME:  bionet_datapoint_free()
-//
-//   FUNCTION:  Frees a Datapoint created with bionet_datapoint_new().
-//
-//  ARGUMENTS:  The Datapoint to free.
-//
-//    RETURNS:  Nothing.
-//
-//
-
+/**
+ * @brief Frees a Datapoint created with bionet_datapoint_new()
+ *
+ * @param[in] datapoint The Datapoint to free.
+ */
 void bionet_datapoint_free(bionet_datapoint_t *datapoint);
-
-
 
 
 #endif // __BIONET_RESOURCE_H

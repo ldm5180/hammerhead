@@ -103,3 +103,8 @@ int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node, const ch
 
 #endif //  BIONET_NODE_H
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
