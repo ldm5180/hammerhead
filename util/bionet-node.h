@@ -69,62 +69,116 @@ int bionet_node_add_resource(bionet_node_t *node, bionet_resource_t *resource);
 int bionet_node_get_num_resources(const bionet_node_t *node);
 
 
-bionet_resource_t *bionet_node_get_resource_by_index(const bionet_node_t *node, unsigned int index);
-bionet_resource_t *bionet_node_get_resource_by_id(const bionet_node_t *node, const char *resource_id);
+/**
+ * @brief Get a resource by its index in the node's list
+ *
+ * This can be used to iterate through all the resources for a node
+ *
+ * @param[in] node Node to query
+ * @param[in] index Index of the resource desired
+ *
+ * @return Pointer to a resource
+ * @retval NULL Failure
+ */
+bionet_resource_t *bionet_node_get_resource_by_index(const bionet_node_t *node,
+						     unsigned int index);
 
+
+/**
+ * @brief Get a resource by ID
+ *
+ * @param[in] node Node to query
+ * @param[in] resource_id ID of resource desired
+ *
+ * @return Pointer to a resource
+ * @retval NULL resource does not exist or Failure
+ */
+bionet_resource_t *bionet_node_get_resource_by_id(const bionet_node_t *node,
+						  const char *resource_id);
+
+
+/**
+ * @brief Get the number of streams for a node
+ * 
+ * @param[in] node Node to query
+ *
+ * @retval -1 Failure
+ * @retval >=0 Number of streams
+ */
 int bionet_node_get_num_streams(bionet_node_t *node);
+
+
+/**
+ * @brief Get a stream by its index in the node's list
+ *
+ * This can be used to iterate through all the streams for a node
+ *
+ * @param[in] node Node to query
+ * @param[in] index Index of the stream desired
+ *
+ * @return Pointer to a stream
+ * @retval NULL Failure
+ */
 bionet_stream_t *bionet_node_get_stream_by_index(const bionet_node_t *node, unsigned int index);
+
+
+/**
+ * @brief Get a stream by ID
+ *
+ * @param[in] node Node to query
+ * @param[in] stream_id ID of stream desired
+ *
+ * @return Pointer to a stream
+ * @retval NULL stream does not exist or Failure
+ */
 bionet_stream_t *bionet_node_get_stream_by_id(const bionet_node_t *node, const char *stream_id);
 
+
+/**
+ * @brief Free a node
+ *
+ * As a side-effect all resources and streams will also be free'd
+ *
+ * @param[in] node Node to free
+ */
 void bionet_node_free(bionet_node_t *node);
 
 
-
-
 /**
  * @brief Checks if a Node matches a name specification.
  *
- * @note Also see the bionet_node_matches_habtype_habid_nodeid() function.
+ * @see bionet_node_matches_habtype_habid_nodeid()
  *
- * @param node The Node to check.
+ * @param[in] node The Node to check.
+ * @param[in] id The Node-ID to check against.  
  *
- * @param id The Node-ID to check against.  id may be a regular Node-ID, or
- *     it may be the wildcard "*" that matches all Node-IDs.
+ * @retval FALSE (zero) - The Node does not match the ID 
+ * @retval TRUE (non-zero) - The node matches the ID
  *
- * @return FALSE (zero) if the Node does not match the ID, TRUE (non-zero)
- *     if it matches.
+ * @note Any string may be replaced by the wildcard "*" to match all
  */
-
 int bionet_node_matches_id(const bionet_node_t *node, const char *id);
 
 
-
-
 /**
  * @brief Checks if a Node matches a name specification.
  *
- * @note Also see the bionet_node_matches_id() function.
+ * @see bionet_node_matches_id()
  *
- * @param node  The Node to check.
+ * @param[in] node  The Node to check.
+ * @param[in] hab_type  The HAB-Type to check against.  
+ * @param[in] hab_id The HAB-ID to check against. 
+ * @param[in] node_id The Node-ID to check against.
  *
- * @param hab_type  The HAB-Type to check against.  It may be a regular
- *     HAB-Type string, or it may be the wildcard "*" that matches all
- *     HAB-Types.
+ * @retval FALSE (zero) - The Node does not match the ID 
+ * @retval TRUE (non-zero) - The node matches the ID
  *
- * @param hab_id  The HAB-ID to check against.  It may be a regular HAB-ID
- *     string, or it may be the wildcard "*" that matches all HAB-IDs.
- *
- * @param node_id  The Node-ID to check against.  It may be a regular
- *     Node-ID string, or it may be the wildcard "*" that matches all
- *     Node-IDs.
- *
- * @return FALSE (zero) if the Node does not match the ID, TRUE (non-zero)
- *     if it matches.
+ * @note Any string may be replaced by the wildcard "*" to match all
  */
-
-int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node, const char *hab_type, const char *hab_id, const char *node_id);
-
-
+int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node, 
+					     const char *hab_type, 
+					     const char *hab_id, 
+					     const char *node_id);
 
 
 #endif //  BIONET_NODE_H
