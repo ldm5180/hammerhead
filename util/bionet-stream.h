@@ -4,9 +4,11 @@
 //
 
 
-// 
-// FIXME: bionet streams needs some serious Tender Loving Care
-//
+/**
+ * @file bionet-stream.h
+ * Functions for dealing with Bionet Streams (such as they are).
+ * FIXME: bionet streams needs some serious Tender Loving Care
+ */
 
 
 #ifndef __BIONET_STREAM_H
@@ -31,6 +33,8 @@ typedef enum {
 
 
 struct bionet_stream {
+    const bionet_node_t *node;
+
     // this describes the stream
     char *id;
     bionet_stream_direction_t direction;
@@ -40,44 +44,37 @@ struct bionet_stream {
     char *host;
     uint16_t port;
 
-    // which Node does this Stream belong to?
-    char *hab_type;
-    char *hab_id;
-    char *node_id;
-
     void *user_data;
 };
 
 
 
 
-//
-//
-//       NAME:  bionet_stream_new()
-//
-//
-//   FUNCTION:  Creates a new Stream.
-//
-//
-//  ARGUMENTS:  id - the ID of the new stream
-//
-//              direction - the direction of the new stream
-//
-//              type - the type of the stream (currently only "audio" is
-//              supported)
-//
-//              host - the host that the stream is available on (optional,
-//              defaults to the local host)
-//
-//              port - the port that the stream is available on
-//
-//
-//    RETURNS:  A pointer to the new Stream if all went well, and NULL if
-//              there was an error.
-//
-//
+/**
+ * @brief Allocates and initializes a new Stream.
+ *
+ * @param node The Node that this Stream belongs to, or NULL if there isn't
+ *            a Node.
+ *
+ * @param id The ID of this Stream.
+ *
+ * @param direction The direction of the new Stream.
+ *
+ * @param type The type of the Stream (currently only "audio" is supported).
+ *
+ * @param host The host that the Stream is available on (optional, defaults to the local host).
+ *
+ * @param port The port that the Stream is available on.
+ *
+ * @return Pointer to the new Stream.
+ *
+ * @retval NULL Error
+ *
+ * @retval >0 Success
+ */
 
 bionet_stream_t *bionet_stream_new(
+    const bionet_node_t *node,
     const char *id,
     bionet_stream_direction_t direction,
     const char *type,
@@ -86,6 +83,7 @@ bionet_stream_t *bionet_stream_new(
 );
 
 bionet_stream_t *bionet_stream_new_from_strings(
+    const bionet_node_t *node,
     const char *id,
     const char *direction_str,
     const char *type,
@@ -107,27 +105,6 @@ bionet_stream_t *bionet_stream_new_from_strings(
 //
 
 int bionet_stream_set_host(bionet_stream_t *stream, const char *host);
-
-
-
-
-//
-//
-//       NAME:  bionet_stream_set_hab_type()
-//              bionet_stream_set_hab_id()
-//              bionet_stream_set_node_id()
-//
-//   FUNCTION:  Updates the HAB-Type, HAB-ID, or Node-ID of a Stream.
-//
-//  ARGUMENTS:  The new HAB-Type, HAB-ID, or Node-ID.
-//
-//    RETURNS:  0 on success, -1 on failure.
-//
-//
-
-int bionet_stream_set_hab_type(bionet_stream_t *stream, const char *hab_type);
-int bionet_stream_set_hab_id(bionet_stream_t *stream, const char *hab_id);
-int bionet_stream_set_node_id(bionet_stream_t *stream, const char *node_id);
 
 
 

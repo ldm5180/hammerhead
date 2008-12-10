@@ -30,18 +30,6 @@ void bionet_stream_free(bionet_stream_t *stream) {
         free(stream->host);
     }
 
-    if (stream->hab_type != NULL) {
-        free(stream->hab_type);
-    }
-
-    if (stream->hab_id != NULL) {
-        free(stream->hab_id);
-    }
-
-    if (stream->node_id != NULL) {
-        free(stream->node_id);
-    }
-
     free(stream);
 }
 

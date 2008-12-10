@@ -38,7 +38,6 @@ libbionet_util_la_SOURCES =    \
     stream-listen.c                     \
     stream-new.c                        \
     stream-port.c                       \
-    stream-set-habtype-habid-nodeid.c   \
     stream-set-host.c                   \
     is-valid-name-component.c  \
     glib-log-handler.c                  \
