@@ -57,7 +57,18 @@ bionet_node_t* bionet_node_new(const bionet_hab_t *hab, const char* node_id);
  */
 int bionet_node_add_resource(bionet_node_t *node, bionet_resource_t *resource);
 
+
+/**
+ * @brief Get the number of resource on a node
+ *
+ * @param[in] node Node to query
+ *
+ * @retval -1 Failure
+ * @retval >=0 Number of nodes
+ */
 int bionet_node_get_num_resources(const bionet_node_t *node);
+
+
 bionet_resource_t *bionet_node_get_resource_by_index(const bionet_node_t *node, unsigned int index);
 bionet_resource_t *bionet_node_get_resource_by_id(const bionet_node_t *node, const char *resource_id);
 
