@@ -556,7 +556,9 @@ INPUT                  = client/libbionet/bionet.h \
                          hab/libhab/hardware-abstractor.h \
                          util/bionet-hab.h \
 			 util/bionet-node.h \
-                         util/bionet-resource.h
+                         util/bionet-resource.h \
+                         util/bionet-stream.h \
+                         util/bionet-util.h
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
