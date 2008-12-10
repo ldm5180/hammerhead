@@ -98,6 +98,18 @@ bionet_resource_t *bionet_node_get_resource_by_id(const bionet_node_t *node,
 
 
 /**
+ * @brief Add a Stream to a node
+ *
+ * @param[in] node The Node to add the Stream to
+ * @param[in] stream The Stream to add
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_node_add_stream(bionet_node_t *node, bionet_stream_t *stream);
+
+
+/**
  * @brief Get the number of streams for a node
  * 
  * @param[in] node Node to query
