@@ -9,8 +9,7 @@ running the avahi-daemon on each host that will run HABs or Clients.
 
 To compile:
 
-    aclocal
-    autoreconf --install --force
+    autogen.sh
     ./configure
     make
 
