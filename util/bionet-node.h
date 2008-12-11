@@ -117,7 +117,7 @@ int bionet_node_add_stream(bionet_node_t *node, bionet_stream_t *stream);
  * @retval -1 Failure
  * @retval >=0 Number of streams
  */
-int bionet_node_get_num_streams(bionet_node_t *node);
+int bionet_node_get_num_streams(const bionet_node_t *node);
 
 
 /**

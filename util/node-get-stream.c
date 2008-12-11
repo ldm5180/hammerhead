@@ -12,7 +12,7 @@
 #include "bionet-util.h"
 
 
-int bionet_node_get_num_streams(bionet_node_t *node) {
+int bionet_node_get_num_streams(const bionet_node_t *node) {
     if (node == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_get_num_streams(): NULL Node passed in");
         errno = EINVAL;
