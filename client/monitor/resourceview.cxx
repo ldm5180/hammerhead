@@ -199,9 +199,9 @@ void ResourceView::newStreamSelected(bionet_stream_t* stream) {
     timestampTitle->setText("Host");
     valueTitle->setText("Port");
     
-    habType->setText(stream->hab_type);
-    habId->setText(stream->hab_id);
-    nodeId->setText(stream->node_id);
+    habType->setText(stream->node->hab->type);
+    habId->setText(stream->node->hab->id);
+    nodeId->setText(stream->node->id);
     resourceId->setText(stream->id);
     flavor->setText(bionet_stream_direction_to_string(stream->direction));
     dataType->setText(stream->type);
