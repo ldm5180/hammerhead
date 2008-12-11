@@ -11,6 +11,9 @@
 #include "ResourceDataType.h"
 #include "Resource.h"
 
+#include "StreamDirection.h"
+#include "Stream.h"
+
 #include "Node.h"
 
 #include "HardwareAbstractor.h"
@@ -135,6 +138,11 @@ Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d);
 bionet_resource_flavor_t bionet_asn_to_flavor(ResourceFlavor_t asn_flavor);
 bionet_resource_data_type_t bionet_asn_to_datatype(ResourceDataType_t asn_datatype);
 bionet_datapoint_t *bionet_asn_to_datapoint(Datapoint_t *asn_datapoint, bionet_resource_t *resource);
+
+bionet_stream_direction_t bionet_asn_to_stream_direction(StreamDirection_t asn_direction);
+StreamDirection_t bionet_stream_direction_to_asn(bionet_stream_direction_t direction);
+Stream_t *bionet_stream_to_asn(const bionet_stream_t *stream);
+bionet_stream_t *bionet_asn_to_stream(const Stream_t *asn_stream);
 
 
 

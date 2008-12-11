@@ -23,6 +23,7 @@ extern "C" {
 
 /* Forward declarations */
 struct Resource;
+struct Stream;
 
 /* Node */
 typedef struct Node {
@@ -33,6 +34,12 @@ typedef struct Node {
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
 	} resources;
+	struct streams {
+		A_SEQUENCE_OF(struct Stream) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} streams;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -47,5 +54,6 @@ extern asn_TYPE_descriptor_t asn_DEF_Node;
 
 /* Referred external types */
 #include "Resource.h"
+#include "Stream.h"
 
 #endif	/* _Node_H_ */

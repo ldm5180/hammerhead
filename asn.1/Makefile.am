@@ -11,6 +11,8 @@ ASN_MODULE_SOURCES =            \
     Value.c                     \
     Datapoint.c                 \
     Resource.c                  \
+    StreamDirection.c           \
+    Stream.c                    \
     Node.c                      \
     HardwareAbstractor.c        \
     ResourceMetadata.c          \
@@ -30,6 +32,8 @@ ASN_MODULE_HEADS =              \
     Value.h                     \
     Datapoint.h                 \
     Resource.h                  \
+    StreamDirection.h           \
+    Stream.h                    \
     Node.h                      \
     HardwareAbstractor.h        \
     ResourceMetadata.h          \

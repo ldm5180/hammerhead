@@ -51,9 +51,22 @@ BEGIN
         datapoints   SEQUENCE OF Datapoint
     }
 
+    StreamDirection ::= ENUMERATED {
+        producer(0),
+        consumer
+    }
+
+    Stream ::= SEQUENCE {
+        id         PrintableString,
+        type       PrintableString,
+        direction  StreamDirection,
+        port       INTEGER (0..65535)
+    }
+
     Node ::= SEQUENCE {
         id          PrintableString,
-        resources   SEQUENCE OF Resource
+        resources   SEQUENCE OF Resource,
+        streams     SEQUENCE OF Stream
     }
 
     HardwareAbstractor ::= SEQUENCE {

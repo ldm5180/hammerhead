@@ -402,9 +402,96 @@ bionet_resource_t *bionet_asn_to_resource(const Resource_t *asn_resource) {
 
 
 
+bionet_stream_direction_t bionet_asn_to_stream_direction(StreamDirection_t asn_direction) {
+    switch (asn_direction) {
+        case StreamDirection_producer: return BIONET_STREAM_DIRECTION_PRODUCER;
+        case StreamDirection_consumer: return BIONET_STREAM_DIRECTION_CONSUMER;
+        default: {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_asn_to_stream_direction(): invalid asn StreamDirection %ld", asn_direction);
+            return BIONET_STREAM_DIRECTION_INVALID;
+        }
+    }
+}
+
+
+StreamDirection_t bionet_stream_direction_to_asn(bionet_stream_direction_t direction) {
+    switch (direction) {
+        case BIONET_STREAM_DIRECTION_PRODUCER:  return StreamDirection_producer;
+        case BIONET_STREAM_DIRECTION_CONSUMER:  return StreamDirection_consumer;
+        default: {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_direction_to_asn(): invalid stream_direction %d", direction);
+            return -1;
+        }
+    }
+}
+
+
+Stream_t *bionet_stream_to_asn(const bionet_stream_t *stream) {
+    Stream_t *asn_stream;
+    int r;
+
+    asn_stream = (Stream_t *)calloc(1, sizeof(Stream_t));
+    if (asn_stream == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): out of memory!");
+        return NULL;
+    }
+
+    r = OCTET_STRING_fromString(&asn_stream->id, stream->id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): error making OCTET_STRING for Stream-ID %s", stream->id);
+        goto cleanup;
+    }
+
+    asn_stream->direction = bionet_stream_direction_to_asn(stream->direction);
+    if (asn_stream->direction == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): invalid Stream Direction %d for Stream %s", stream->direction, stream->id);
+        goto cleanup;
+    }
+
+    r = OCTET_STRING_fromString(&asn_stream->type, stream->type);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): error making OCTET_STRING for Stream Type %s", stream->type);
+        goto cleanup;
+    }
+
+    asn_stream->port = stream->port;
+
+    return asn_stream;
+
+cleanup:
+    ASN_STRUCT_FREE(asn_DEF_Stream, asn_stream);
+    return NULL;
+}
+
+
+bionet_stream_t *bionet_asn_to_stream(const Stream_t *asn_stream) {
+    bionet_stream_t *stream;
+    bionet_stream_direction_t direction;
+
+    direction = bionet_asn_to_stream_direction(asn_stream->direction);
+    if (direction == BIONET_STREAM_DIRECTION_INVALID) {
+        // an error has been logged
+        return NULL;
+    }
+
+    stream = bionet_stream_new(
+        NULL,  // node
+        (const char *)asn_stream->id.buf,
+        direction,
+        (const char *)asn_stream->type.buf,
+        NULL,  // host
+        asn_stream->port
+    );
+
+    return stream;
+}
+
+
+
+
 int bionet_node_to_asn(const bionet_node_t *node, Node_t *asn_node) {
     int r;
-    int ri;  // "resource index"
+    int i;
 
 
     memset(asn_node, 0x00, sizeof(Node_t));
@@ -425,9 +512,9 @@ int bionet_node_to_asn(const bionet_node_t *node, Node_t *asn_node) {
     // the Node's Resources
     //
 
-    for (ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
+    for (i = 0; i < bionet_node_get_num_resources(node); i ++) {
         Resource_t *asn_resource;
-        bionet_resource_t *resource = bionet_node_get_resource_by_index(node, ri);
+        bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
 
         asn_resource = bionet_resource_to_asn(resource);
         if (asn_resource == NULL) {
@@ -437,8 +524,31 @@ int bionet_node_to_asn(const bionet_node_t *node, Node_t *asn_node) {
 
         r = asn_sequence_add(&asn_node->resources.list, asn_resource);
         if (r != 0) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_to_asn(): error adding Resource to newNode H2C-Message: %s", strerror(errno));
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_to_asn(): error adding ASN.1 Resource to ASN.1 Node structure: %s", strerror(errno));
             ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_Resource, asn_resource);
+            goto cleanup;
+        }
+    }
+
+
+    // 
+    // the Node's Streams
+    //
+
+    for (i = 0; i < bionet_node_get_num_streams(node); i ++) {
+        Stream_t *asn_stream;
+        bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
+
+        asn_stream = bionet_stream_to_asn(stream);
+        if (asn_stream == NULL) {
+            // an error has been logged already
+            goto cleanup;
+        }
+
+        r = asn_sequence_add(&asn_node->streams.list, asn_stream);
+        if (r != 0) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_to_asn(): error adding ASN.1 Stream to ASN.1 Node structure: %s", strerror(errno));
+            ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_Stream, asn_stream);
             goto cleanup;
         }
     }
@@ -504,7 +614,7 @@ cleanup:
 
 
 bionet_node_t *bionet_asn_to_node(const Node_t *asn_node) {
-    int ri;
+    int i;
     bionet_node_t *node;
 
 
@@ -523,9 +633,9 @@ bionet_node_t *bionet_asn_to_node(const Node_t *asn_node) {
     // the Node's Resources
     //
 
-    for (ri = 0; ri < asn_node->resources.list.count; ri ++) {
+    for (i = 0; i < asn_node->resources.list.count; i ++) {
         bionet_resource_t *resource;
-        Resource_t *asn_resource = asn_node->resources.list.array[ri];
+        Resource_t *asn_resource = asn_node->resources.list.array[i];
         int r;
 
         resource = bionet_asn_to_resource(asn_resource);
@@ -538,6 +648,30 @@ bionet_node_t *bionet_asn_to_node(const Node_t *asn_node) {
         if (r != 0) {
             // an error's been logged
             bionet_resource_free(resource);
+            goto cleanup;
+        }
+    }
+
+
+    // 
+    // the Node's Streams
+    //
+
+    for (i = 0; i < asn_node->streams.list.count; i ++) {
+        bionet_stream_t *stream;
+        Stream_t *asn_stream = asn_node->streams.list.array[i];
+        int r;
+
+        stream = bionet_asn_to_stream(asn_stream);
+        if (stream == NULL) {
+            // an error has been logged already
+            goto cleanup;
+        }
+
+        r = bionet_node_add_stream(node, stream);
+        if (r != 0) {
+            // an error's been logged
+            bionet_stream_free(stream);
             goto cleanup;
         }
     }
