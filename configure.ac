@@ -2,7 +2,7 @@
 
 # Prelude.
 AC_PREREQ([2.59])
-AC_INIT([bionet], [2.0], [lenny@colorado.edu])
+AC_INIT([Bionet], [2.0], [lenny@colorado.edu])
 
 # unique source file --- primitive safety check 
 AC_CONFIG_SRCDIR([cal/cal-server.h])
@@ -151,6 +151,10 @@ AM_CONDITIONAL(ENABLE_QT4, test "x$ENABLE_QT4" = "xyes")
 
 AC_PATH_PROG(TINYOSMIG, mig, no)
 AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TINYOSMIG" = "xno"])
+
+#doxygen
+AC_PATH_PROG(DOXYGEN, doxygen, no)
+AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
 		      
 # Checks for library functions.
 AC_FUNC_MALLOC
