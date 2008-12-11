@@ -1,5 +1,5 @@
 include $(top_srcdir)/common.am
-SUBDIRS = libbionet watcher
+SUBDIRS = libbionet watcher stream
 
 if ENABLE_QT4
 SUBDIRS += monitor
