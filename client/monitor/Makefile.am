@@ -22,7 +22,7 @@ bionet_monitor_LDADD = $(AM_LDADD) -lbionet -lbionet-util -lbionet-asn -lcal-mdn
 
 
 
-makefile.qt:
+makefile.qt: ../libbionet/libbionet.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la 
 	qmake-qt4 -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/qwt-qt4" "HEADERS+=bionetio.h bionetmodel.h mainwindow.h plotwindow.h resourceview.h samplehistory.h" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=app" "QT+=network" "CONFIG+=link_pkgconfig debug"
 	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects} 
 
