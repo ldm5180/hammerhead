@@ -14,7 +14,7 @@
  * Each of these APIs makes use of the Utility API (libutil) in their dealings 
  * with common datatypes.
  *
- * @if HAVE_DOT
+ * @if dotsec
  * @dot
  *  digraph example {
  *     node [shape=record, fontname=Helvetica, fontsize=10];
