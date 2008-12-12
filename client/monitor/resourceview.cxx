@@ -205,8 +205,8 @@ void ResourceView::newStreamSelected(bionet_stream_t* stream) {
     resourceId->setText(stream->id);
     flavor->setText(bionet_stream_direction_to_string(stream->direction));
     dataType->setText(stream->type);
-    timestamp->setText(stream->host);
-    value->setText(QString("%1").arg(stream->port));
+    // timestamp->setText(stream->host);
+    // value->setText(QString("%1").arg(stream->port));
 }
 
 void ResourceView::resourceValueChanged(bionet_datapoint_t* datapoint) {
