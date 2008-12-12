@@ -69,6 +69,13 @@ void tv_sub(struct timeval *t0, const struct timeval *t1) {
 
 
 
+void cb_lost_client(const char *client_id) {
+    printf("lost client '%s'\n", client_id);
+}
+
+
+
+
 int main(int argc, char *argv[]) {
     int r;
 
@@ -83,6 +90,8 @@ int main(int argc, char *argv[]) {
     //
     //  Initialize the HAB & connect to Bionet
     //
+
+    hab_register_callback_lost_client(cb_lost_client);
 
     this_hab = bionet_hab_new("Alsa", NULL);
 
@@ -154,6 +163,7 @@ int main(int argc, char *argv[]) {
         FD_SET(bionet_fd, &readers);
         max_fd = bionet_fd;
 
+#if 0
         // anyone new connecting to the streams?
         {
             GSList *ni;
@@ -200,6 +210,7 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
+#endif
 
 
 #if 0
@@ -224,6 +235,7 @@ int main(int argc, char *argv[]) {
         }
 
 
+#if 0
         //
         // any of the connected streams want attention?
         //
@@ -287,6 +299,7 @@ int main(int argc, char *argv[]) {
                 continue;
             }
         }
+#endif
 
     }
 
