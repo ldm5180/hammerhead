@@ -37,11 +37,13 @@ case $uname in
      AC_MSG_RESULT(checking OS... Linux)
      HAVE_LINUX=yes
      HAVE_DARWIN=no
+     ALSA_ABLE=yes
      ;;
      Darwin)
      AC_MSG_RESULT(checking OS... Darwin/OSX)
      HAVE_DARWIN=yes
      HAVE_LINUX=no
+     ALSA_ABLE=no
      ;;
      *)
      echo "[!] Your system architecture is not supported by Bionet v2"
@@ -83,16 +85,25 @@ AM_CONDITIONAL(ENABLE_LINUX, test "x$HAVE_LINUX" = "xyes")
 
 ###
 #
-# see if the user wants ALSA stuff, and if so if it's available
+# see if the user wants ALSA stuff, and if so if it's available, only on Linux
 #
 ###
-
+if test "x$ALSA_ABLE" = "xyes"; then
+AC_ARG_ENABLE(
+    alsa,
+    AC_HELP_STRING([--disable-alsa], [disable ALSA dependent parts]),
+    [ENABLE_ALSA=$enableval],
+    [ENABLE_ALSA=no]
+)
+fi
+if test "x$ALSA_ABLE" = "xyes"; then
 AC_ARG_ENABLE(
     alsa,
     AC_HELP_STRING([--disable-alsa], [disable ALSA dependent parts]),
     [ENABLE_ALSA=$enableval],
     [ENABLE_ALSA=yes]
 )
+fi
 
 if test "x$ENABLE_ALSA" = "xyes" ; then
     PKG_CHECK_MODULES(ALSA, [ alsa >= 1.0.15 ])
@@ -101,7 +112,6 @@ if test "x$ENABLE_ALSA" = "xyes" ; then
 fi
 
 AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
-
 
 
 
