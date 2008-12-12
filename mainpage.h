@@ -35,6 +35,9 @@
  * Full documentation:@n
  * @li bionet.h
  *
+ * @note Python bindings available in client/py-libbionet. Contains the entire
+ * Utility API within the module.
+ *
  * @section hab Hardware Abstractor "HAB" API (libhab)
  *
  * Used by HAB applications to publish data from real hardware to Bionet. 
