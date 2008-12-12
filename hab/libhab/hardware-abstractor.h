@@ -127,6 +127,21 @@ void hab_read(void);
 void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_t *resource, const bionet_datapoint_value_t *value));
 
 
+/**
+ * @brief Registers the HAB's Lost-Client callback function.
+ *
+ * The Hardware Abstractor library will call the callback whenever
+ * a Bionet Client disconnects.
+ *
+ * @param cb_lost_client  The new callback function.
+ *
+ * The callback function gets a single argumentx: the unique "id" of the
+ * disconnecting Client.
+ */
+
+void hab_register_callback_lost_client(void (*cb_lost_client)(const char *client_id));
+
+
 
 
 #endif // __HARDWARE_ABSTRACTOR_H

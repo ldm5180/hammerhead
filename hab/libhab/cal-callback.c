@@ -62,7 +62,9 @@ void libhab_cal_callback(const cal_event_t *event) {
         }
 
         case CAL_EVENT_DISCONNECT: {
-            // we don't do anything with this
+            if (libhab_callback_lost_client != NULL) {
+                libhab_callback_lost_client(event->peer_name);
+            }
             break;
         }
 

@@ -31,6 +31,7 @@ void libhab_cal_callback(const cal_event_t *event);
 
 
 extern void (*libhab_callback_set_resource)(bionet_resource_t *resource, const bionet_datapoint_value_t *value);
+extern void (*libhab_callback_lost_client)(const char *client_id);
 
 
 

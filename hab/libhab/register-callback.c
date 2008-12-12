@@ -13,3 +13,8 @@ void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_
     libhab_callback_set_resource = cb_set_resource;
 }
 
+
+void hab_register_callback_lost_client(void (*cb_lost_client)(const char *client_id)) {
+    libhab_callback_lost_client = cb_lost_client;
+}
+

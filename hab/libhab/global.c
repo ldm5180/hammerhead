@@ -19,6 +19,7 @@ bionet_hab_t *libhab_this = NULL;
 
 
 void (*libhab_callback_set_resource)(bionet_resource_t *resource, const bionet_datapoint_value_t *value) = NULL;
+void (*libhab_callback_lost_client)(const char *client_id) = NULL;
 
 
 
