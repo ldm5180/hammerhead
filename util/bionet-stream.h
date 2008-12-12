@@ -94,8 +94,6 @@ bionet_stream_t *bionet_stream_new_from_strings(
 );
 
 
-/*
-
 /**
  * @brief Binds the Stream to an ephemeral (random, unused) port and
  *        starts listening.  Sets the Stream's "port" member to
