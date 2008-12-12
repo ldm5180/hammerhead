@@ -14,7 +14,6 @@
 /* Including external dependencies */
 #include <PrintableString.h>
 #include "StreamDirection.h"
-#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -26,7 +25,6 @@ typedef struct Stream {
 	PrintableString_t	 id;
 	PrintableString_t	 type;
 	StreamDirection_t	 direction;
-	long	 port;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

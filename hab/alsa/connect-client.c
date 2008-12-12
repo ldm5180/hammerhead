@@ -23,6 +23,9 @@
 
 
 void connect_client(bionet_stream_t *stream) {
+    return;
+
+/*
     user_data_t *user_data;
     client_t *new_client;
     int r;
@@ -112,5 +115,6 @@ void connect_client(bionet_stream_t *stream) {
 
     // add the client to the streams list of clients
     user_data->clients = g_slist_prepend(user_data->clients, new_client);
+*/
 }
 

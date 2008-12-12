@@ -454,8 +454,6 @@ Stream_t *bionet_stream_to_asn(const bionet_stream_t *stream) {
         goto cleanup;
     }
 
-    asn_stream->port = stream->port;
-
     return asn_stream;
 
 cleanup:
@@ -478,9 +476,7 @@ bionet_stream_t *bionet_asn_to_stream(const Stream_t *asn_stream) {
         NULL,  // node
         (const char *)asn_stream->id.buf,
         direction,
-        (const char *)asn_stream->type.buf,
-        NULL,  // host
-        asn_stream->port
+        (const char *)asn_stream->type.buf
     );
 
     return stream;

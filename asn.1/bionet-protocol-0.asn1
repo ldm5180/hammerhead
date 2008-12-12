@@ -59,8 +59,7 @@ BEGIN
     Stream ::= SEQUENCE {
         id         PrintableString,
         type       PrintableString,
-        direction  StreamDirection,
-        port       INTEGER (0..65535)
+        direction  StreamDirection
     }
 
     Node ::= SEQUENCE {

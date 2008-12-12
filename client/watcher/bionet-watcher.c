@@ -72,12 +72,10 @@ void signal_handler(int signo) {
                 bionet_stream_t *stream = g_slist_nth_data(node->streams, i);
                 g_log(
                     "", G_LOG_LEVEL_INFO,
-                    "            %s %s %s @ %s:%s", 
+                    "            %s %s %s", 
                     stream->id,
                     stream->type,
-                    bionet_stream_direction_to_string(stream->direction),
-                    stream->host,
-                    bionet_stream_port_to_string(stream->port)
+                    bionet_stream_direction_to_string(stream->direction)
                 );
             }
 
@@ -154,12 +152,10 @@ void cb_new_node(bionet_node_t *node) {
             bionet_stream_t *stream = i->data;
             g_log(
                 "", G_LOG_LEVEL_INFO,
-                "        %s %s %s @ %s:%s", 
+                "        %s %s %s", 
                 stream->id,
                 stream->type,
-                bionet_stream_direction_to_string(stream->direction),
-                stream->host,
-                bionet_stream_port_to_string(stream->port)
+                bionet_stream_direction_to_string(stream->direction)
             );
         }
     }

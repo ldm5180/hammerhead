@@ -9,35 +9,6 @@
 
 #include "Stream.h"
 
-static int
-memb_port_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	long value;
-	
-	if(!sptr) {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-	
-	value = *(const long *)sptr;
-	
-	if((value >= 0 && value <= 65535)) {
-		/* Constraint check succeeded */
-		return 0;
-	} else {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: constraint failed (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-}
-
-static asn_per_constraints_t asn_PER_memb_port_constr_5 = {
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
-};
 static asn_TYPE_member_t asn_MBR_Stream_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Stream, id),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
@@ -66,15 +37,6 @@ static asn_TYPE_member_t asn_MBR_Stream_1[] = {
 		0,
 		"direction"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct Stream, port),
-		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
-		memb_port_constraint_1,
-		&asn_PER_memb_port_constr_5,
-		0,
-		"port"
-		},
 };
 static ber_tlv_tag_t asn_DEF_Stream_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
@@ -82,14 +44,13 @@ static ber_tlv_tag_t asn_DEF_Stream_tags_1[] = {
 static asn_TYPE_tag2member_t asn_MAP_Stream_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id at 60 */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* type at 61 */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* direction at 62 */
-    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 } /* port at 63 */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* direction at 63 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_Stream_specs_1 = {
 	sizeof(struct Stream),
 	offsetof(struct Stream, _asn_ctx),
 	asn_MAP_Stream_tag2el_1,
-	4,	/* Count of tags in the map */
+	3,	/* Count of tags in the map */
 	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* Start extensions */
 	-1	/* Stop extensions */
@@ -115,7 +76,7 @@ asn_TYPE_descriptor_t asn_DEF_Stream = {
 		/sizeof(asn_DEF_Stream_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
 	asn_MBR_Stream_1,
-	4,	/* Elements count */
+	3,	/* Elements count */
 	&asn_SPC_Stream_specs_1	/* Additional specs */
 };
 

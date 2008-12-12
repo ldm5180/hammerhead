@@ -80,7 +80,7 @@ static void try_add_stream(bionet_node_t *node, int card, int device, snd_ctl_t 
         return;
     }
 
-    stream = bionet_stream_new(node, id, dir, "audio", NULL, 0);
+    stream = bionet_stream_new(node, id, dir, "audio");
     if (stream == NULL) {
         printf("error creating new stream\n");
         exit(1);
@@ -106,6 +106,7 @@ static void try_add_stream(bionet_node_t *node, int card, int device, snd_ctl_t 
     }
 
 
+/*
     r = bionet_stream_listen(stream);
     if (r < 0) {
         printf("error starting Mic stream listening\n");
@@ -113,6 +114,7 @@ static void try_add_stream(bionet_node_t *node, int card, int device, snd_ctl_t 
     }
 
     ((user_data_t*)(stream->user_data))->socket = r;
+*/
 
     r = bionet_node_add_stream(node, stream);
     if (r < 0) {

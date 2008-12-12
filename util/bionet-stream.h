@@ -40,10 +40,6 @@ struct bionet_stream {
     bionet_stream_direction_t direction;
     char *type;
 
-    // where on the network can I access this stream?
-    char *host;
-    uint16_t port;
-
     void *user_data;
 };
 
@@ -70,9 +66,7 @@ bionet_stream_t *bionet_stream_new(
     const bionet_node_t *node,
     const char *id,
     bionet_stream_direction_t direction,
-    const char *type,
-    const char *host,
-    uint16_t port
+    const char *type
 );
 
 
@@ -96,23 +90,11 @@ bionet_stream_t *bionet_stream_new_from_strings(
     const bionet_node_t *node,
     const char *id,
     const char *direction_str,
-    const char *type,
-    const char *host,
-    const char *port_str
+    const char *type
 );
 
 
-/**
- * @brief Updates the Stream's host field.
- *
- * @param[in] stream Stream to change
- * @param[in] host The new host string.
- *
- * @retval 0 Success
- * @retval -1 Failure
- */
-int bionet_stream_set_host(bionet_stream_t *stream, const char *host);
-
+/*
 
 /**
  * @brief Binds the Stream to an ephemeral (random, unused) port and
@@ -152,6 +134,7 @@ int bionet_stream_accept(bionet_stream_t *stream, int listening_socket);
  */
 int bionet_stream_connect(bionet_stream_t *stream);
 
+*/
 
 /**
  * @brief Free a Stream
@@ -189,29 +172,6 @@ bionet_stream_direction_t bionet_stream_direction_from_string(const char *direct
 const char *bionet_stream_direction_to_string(bionet_stream_direction_t direction);
 
 
-/**
- * @brief Converts a text string describing a Stream port into the 
- *        appropriate uint16_t.
- *
- * @param[in] port_string The string to convert.
- *
- * @return The port number as uint16_t
- * @retval >0 Success
- * @retval 0 Failure
- */
-uint16_t bionet_stream_port_from_string(const char *port_string);
-
-
-/**
- * @brief Converts a uint16_t representing a Stream port into a text string.
- *
- * @param[in] port The Stream port to convert.
- *
- * @return The string
- * @retval >0 Success
- * @retval NULL Failure
- */
-const char *bionet_stream_port_to_string(uint16_t port);
 
 
 #endif // __BIONET_STREAM_H

@@ -4,11 +4,8 @@
 //
 
 
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <glib.h>
 
 #include "bionet-util.h"
 
@@ -19,9 +16,7 @@ bionet_stream_t *bionet_stream_new(
     const bionet_node_t *node,
     const char *id,
     bionet_stream_direction_t direction,
-    const char *type,
-    const char *host,
-    uint16_t port
+    const char *type
 ) {
     bionet_stream_t *stream;
 
@@ -92,16 +87,6 @@ bionet_stream_t *bionet_stream_new(
         goto cleanup;
     }
 
-    if (host != NULL) {
-        stream->host = strdup(host);
-        if (stream->host == NULL) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "out of memory!");
-            goto cleanup;
-        }
-    }
-
-    stream->port = port;
-
     return stream;
 
 
@@ -119,9 +104,7 @@ bionet_stream_t *bionet_stream_new_from_strings(
     const bionet_node_t *node,
     const char *id,
     const char *direction_str,
-    const char *type,
-    const char *host,
-    const char *port_str
+    const char *type
 ) {
     bionet_stream_direction_t direction;
 
@@ -194,17 +177,6 @@ bionet_stream_t *bionet_stream_new_from_strings(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "out of memory!");
         goto cleanup;
     }
-
-    if (host != NULL) {
-        stream->host = strdup(host);
-        if (stream->host == NULL) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "out of memory!");
-            goto cleanup;
-        }
-    }
-
-    // FIXME: better error checking
-    stream->port = atoi(port_str);
 
     return stream;
 
