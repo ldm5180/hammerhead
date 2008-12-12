@@ -49,14 +49,11 @@ struct bionet_stream {
 /**
  * @brief Allocates and initializes a new Stream.
  *
- * @param node The Node that this Stream belongs to, or NULL if there isn't
+ * @param[in] node The Node that this Stream belongs to, or NULL if there isn't
  *            a Node.
- * @param id The ID of this Stream.
- * @param direction The direction of the new Stream.
- * @param type The type of the Stream (currently only "audio" is supported).
- * @param host The host that the Stream is available on (optional, defaults to
- *             the local host).
- * @param port The port that the Stream is available on.
+ * @param[in] id The ID of this Stream.
+ * @param[in] direction The direction of the new Stream.
+ * @param[in] type The type of the Stream (currently only "audio" is supported).
  *
  * @return Pointer to the new Stream.
  * @retval NULL Error
@@ -75,12 +72,9 @@ bionet_stream_t *bionet_stream_new(
  *
  * @param node The Node that this Stream belongs to, or NULL if there isn't
  *            a Node.
- * @param id The ID of this Stream.
- * @param direction_str The direction of the new Stream.
- * @param type The type of the Stream (currently only "audio" is supported).
- * @param host The host that the Stream is available on (optional, defaults to
- *             the local host).
- * @param port_str The port that the Stream is available on.
+ * @param[in] id The ID of this Stream.
+ * @param[in] direction_str The direction of the new Stream.
+ * @param[in] type The type of the Stream (currently only "audio" is supported).
  *
  * @return Pointer to the new Stream.
  * @retval NULL Error
