@@ -55,24 +55,17 @@ struct bionet_stream {
  *
  * @param node The Node that this Stream belongs to, or NULL if there isn't
  *            a Node.
- *
  * @param id The ID of this Stream.
- *
  * @param direction The direction of the new Stream.
- *
  * @param type The type of the Stream (currently only "audio" is supported).
- *
- * @param host The host that the Stream is available on (optional, defaults to the local host).
- *
+ * @param host The host that the Stream is available on (optional, defaults to
+ *             the local host).
  * @param port The port that the Stream is available on.
  *
  * @return Pointer to the new Stream.
- *
  * @retval NULL Error
- *
  * @retval >0 Success
  */
-
 bionet_stream_t *bionet_stream_new(
     const bionet_node_t *node,
     const char *id,
@@ -82,6 +75,23 @@ bionet_stream_t *bionet_stream_new(
     uint16_t port
 );
 
+
+/**
+ * @brief Allocates and initializes a new Stream.
+ *
+ * @param node The Node that this Stream belongs to, or NULL if there isn't
+ *            a Node.
+ * @param id The ID of this Stream.
+ * @param direction_str The direction of the new Stream.
+ * @param type The type of the Stream (currently only "audio" is supported).
+ * @param host The host that the Stream is available on (optional, defaults to
+ *             the local host).
+ * @param port_str The port that the Stream is available on.
+ *
+ * @return Pointer to the new Stream.
+ * @retval NULL Error
+ * @retval >0 Success
+ */
 bionet_stream_t *bionet_stream_new_from_strings(
     const bionet_node_t *node,
     const char *id,
@@ -92,153 +102,122 @@ bionet_stream_t *bionet_stream_new_from_strings(
 );
 
 
-
-
-//
-//       NAME:  bionet_stream_set_host_from_string()
-//
-//   FUNCTION:  Updates the Stream's host field.
-//
-//  ARGUMENTS:  Stream to change, and the new host string.
-//
-//    RETURNS:  0 on success, -1 on failure.
-//
-
+/**
+ * @brief Updates the Stream's host field.
+ *
+ * @param[in] stream Stream to change
+ * @param[in] host The new host string.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
 int bionet_stream_set_host(bionet_stream_t *stream, const char *host);
 
 
-
-
-//
-//       NAME:  bionet_stream_listen()
-//
-//   FUNCTION:  Binds the Stream to an ephemeral (random unused) port and
-//              starts listening.  Sets the Stream's "port" member to
-//              whatever port it got.
-//
-//  ARGUMENTS:  The Stream to listen on.
-//
-//    RETURNS:  The listening socket file descriptor on success, -1 on failure.
-//
-
+/**
+ * @brief Binds the Stream to an ephemeral (random, unused) port and
+ *        starts listening.  Sets the Stream's "port" member to
+ *        whatever port it got.
+ *
+ * @param[in] stream The Stream to listen on.
+ *
+ * @return The listening socket file descriptor
+ * @retval >=0 Success
+ * @retval -1 Failure
+ */
 int bionet_stream_listen(bionet_stream_t *stream);
 
 
-
-
-//
-//       NAME:  bionet_stream_accept()
-//
-//   FUNCTION:  Accepts a connection on a listening Stream.
-//
-//  ARGUMENTS:  The Stream to accept on and the listening socket file 
-//              descriptor.
-//
-//    RETURNS:  The new socket on success, -1 on failure.
-//
-
+/**
+ * @brief Accepts a connection on a listening Stream.
+ *
+ * @param[in] stream The Stream to accept on
+ * @param[in] listening_socket The listening socket file descriptor.
+ *
+ * @return The new socket file descriptor
+ * @retval >=0 Success
+ * @retval -1 Failure
+ */
 int bionet_stream_accept(bionet_stream_t *stream, int listening_socket);
 
 
-
-
-//
-//       NAME:  bionet_stream_connect()
-//
-//   FUNCTION:  Makes a connection to a Stream.
-//
-//  ARGUMENTS:  The Stream to connect to.
-//
-//    RETURNS:  The new socket on success, -1 on failure.
-//
-
+/**
+ * @brief Makes a connection to a Stream
+ *
+ * @param[in] stream The Stream to connect to.
+ *
+ * @return The new socket file descriptor
+ * @retval >=0 Success
+ * @retval -1 Failure
+ */
 int bionet_stream_connect(bionet_stream_t *stream);
 
 
-
-
-//
-//       NAME:  bionet_stream_free()
-//
-//   FUNCTION:  Frees a Stream.  The user_data field of the stream
-//              structure must be NULL on entry to this function, or it
-//              will leak memory.  All other dynamically allocated fields
-//              of the stream structure are freed (id, type, host,
-//              hab_type, hab_id, and node_id).
-//
-//  ARGUMENTS:  The Stream to free.
-//
-//    RETURNS:  Nothing.
-//
-
+/**
+ * @brief Free a Stream
+ *
+ * The user_data field of the stream structure must be NULL on entry to this
+ * function, or it will leak memory.  All other dynamically allocated fields
+ * of the stream structure are freed (id, type, host, hab_type, hab_id, 
+ * and node_id).
+ *
+ * @param[in] stream The Stream to free.
+ */
 void bionet_stream_free(bionet_stream_t *stream);
 
 
-
-
-// 
-//       NAME:  bionet_stream_direction_from_string()
-//
-//   FUNCTION:  Converts a text string describing a Stream direction into
-//              the appropriate bionet_stream_direction_t.
-//
-//  ARGUMENTS:  The string to convert.
-//
-//    RETURNS:  The bionet_stream_direction_t.
-//
-
+/**
+ * @brief Convert a text string describing a Stream direction into
+ *        the appropriate bionet_stream_direction_t.
+ *
+ * @param[in] direction_string The string to convert.
+ *
+ * @return The bionet_stream_direction_t.
+ */
 bionet_stream_direction_t bionet_stream_direction_from_string(const char *direction_string);
 
 
-
-
-// 
-//       NAME:  bionet_stream_direction_to_string()
-//
-//   FUNCTION:  Converts a bionet_stream_direction_t into a descriptive
-//              text string.
-//
-//  ARGUMENTS:  The bionet_stream_direction_t to convert.
-//
-//    RETURNS:  The string.
-//
-
+/**
+ * @brief Converts a bionet_stream_direction_t into a descriptive text string.
+ *
+ * @param[in] direction The bionet_stream_direction_t to convert.
+ *
+ * @return The string
+ * @retval >0 Success
+ * @retval NULL Failure
+ */
 const char *bionet_stream_direction_to_string(bionet_stream_direction_t direction);
 
 
-
-
-// 
-//       NAME:  bionet_stream_port_from_string()
-//
-//   FUNCTION:  Converts a text string describing a Stream port into
-//              the appropriate uint16_t.
-//
-//  ARGUMENTS:  The string to convert.
-//
-//    RETURNS:  The uint16_t (0 on error).
-//
-
+/**
+ * @brief Converts a text string describing a Stream port into the 
+ *        appropriate uint16_t.
+ *
+ * @param[in] port_string The string to convert.
+ *
+ * @return The port number as uint16_t
+ * @retval >0 Success
+ * @retval 0 Failure
+ */
 uint16_t bionet_stream_port_from_string(const char *port_string);
 
 
-
-
-// 
-//       NAME:  bionet_stream_port_to_string()
-//
-//   FUNCTION:  Converts a uint16_t representing a Stream port into a
-//              text string.
-//
-//  ARGUMENTS:  The Stream port to convert.
-//
-//    RETURNS:  The string.
-//
-
+/**
+ * @brief Converts a uint16_t representing a Stream port into a text string.
+ *
+ * @param[in] port The Stream port to convert.
+ *
+ * @return The string
+ * @retval >0 Success
+ * @retval NULL Failure
+ */
 const char *bionet_stream_port_to_string(uint16_t port);
-
-
 
 
 #endif // __BIONET_STREAM_H
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
