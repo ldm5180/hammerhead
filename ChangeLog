@@ -1,4 +1,9 @@
 
+Bionet 2.0.4
+
+    * Added Streams support (work in progress)
+
+
 Bionet 2.0.3, SVN rev 311, release 2008 December 5
 
     * Commanding of Resources now works, using the bionet_set_resource()
