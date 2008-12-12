@@ -553,9 +553,10 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 		value.uint16_v = MMODGENMSG_accel_x_get(&t);
 		bionet_resource_set(resource, &value, &tv);
 
-		if ((last != 0) && (last + 1 != value.uint16_v))
+		if ((last != 0) && (value.uint16_v > 1) 
+		    && (last + 1 != value.uint16_v))
 		{
-		    missed++;
+		    missed = last - value.uint16_v;
 		}
 		last = value.uint16_v;
 	    }
@@ -601,11 +602,10 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 		value.uint16_v = MMODGENMSG_accel_y_get(&t);
 		bionet_resource_set(resource, &value, &tv);
 
-		if ((last != 0) && (last + 1 != value.uint16_v))
+		if ((last != 0) && (value.uint16_v > 1) 
+		    && (last + 1 != value.uint16_v))
 		{
-		    missed++;
-		    /* bump the missed message counter */
-		    /* will be set in bionet later */
+		    missed = last - value.uint16_v;
 		}
 		last = value.uint16_v;
 	    }
