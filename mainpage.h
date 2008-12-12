@@ -27,7 +27,7 @@
  * @enddot
  * @endif
  *
- * @section client Bionet Client API
+ * @section client Bionet Client API (libbionet)
  *
  * Used by Client applications to subscribe to data in Bionet coming from 
  * Hardware Abstractors. 
@@ -35,7 +35,7 @@
  * Full documentation:@n
  * @li bionet.h
  *
- * @section hab Hardware Abstractor (HAB) API
+ * @section hab Hardware Abstractor "HAB" API (libhab)
  *
  * Used by HAB applications to publish data from real hardware to Bionet. 
  * 
