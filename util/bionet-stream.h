@@ -132,7 +132,6 @@ int bionet_stream_accept(bionet_stream_t *stream, int listening_socket);
  */
 int bionet_stream_connect(bionet_stream_t *stream);
 
-*/
 
 /**
  * @brief Free a Stream
