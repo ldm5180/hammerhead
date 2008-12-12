@@ -141,6 +141,9 @@ AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TINYOSMIG" = "xno"])
 #doxygen
 AC_PATH_PROG(DOXYGEN, doxygen, no)
 AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
+
+AC_PATH_PROG(DOT, dot, no)
+AM_CONDITIONAL([DISABLE_DOT], [test "x$DOT" = "xno"])
 		      
 # Checks for library functions.
 AC_FUNC_MALLOC

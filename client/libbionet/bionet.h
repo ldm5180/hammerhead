@@ -3,12 +3,6 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
-
-// 
-// This header file describes the Bionet Client API.
-//
-
-
 #ifndef __BIONET_H
 #define __BIONET_H
 

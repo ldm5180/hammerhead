@@ -12,12 +12,17 @@ SUBDIRS = cal util asn.1 client hab data-manager
 if ENABLE_DOXYGEN
 doc_DATA = doxygen/html/index.html
 DOXYGEN_INPUT = $(top_srcdir)/client/libbionet/bionet.h $(top_srcdir)/hab/libhab/hardware-abstractor.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-util.h
+DOXYFILE = Doxyfile
+endif
+
+if DISABLE_DOT
+DOXYFILE = Doxyfile.nodot
 endif
 
 all-local: $(DOXYGEN_INPUT) $(doc_DATA)
 
 doxygen/html/index.html:
-	doxygen
+	doxygen $(DOXYFILE)
 
 clean-local:
 	rm -rf doxygen
