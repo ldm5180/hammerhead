@@ -3,6 +3,11 @@ Bionet 2.0.4 (not at all released yet, not even close)
 
     * Added Streams support (work in progress)
 
+    * MMOD-HAB more correctly reports the number of missed messages from the
+      Motes.
+
+    * BDM has a Python interface for clients via 'import bdm_client'
+	
 
 Bionet 2.0.3, SVN rev 311, release 2008 December 5
 
