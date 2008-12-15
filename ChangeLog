@@ -7,7 +7,9 @@ Bionet 2.0.4 (not at all released yet, not even close)
       Motes.
 
     * BDM has a Python interface for clients via 'import bdm_client'
-	
+
+    * 'make install' target now works as expected and python modules can be
+      imported from all python scripts
 
 Bionet 2.0.3, SVN rev 311, release 2008 December 5
 
