@@ -78,6 +78,7 @@ void str_to_timeval(const char *str, struct timeval *tv) {
 
 void usage(void) {
     printf("usage: bdm-client [--server SERVER] ResourceName StartTime EndTime\n");
+    printf("       bdm-client --help\n");
     printf("\n");
     printf("    ResourceName is the Resource Name to retrieve.  May contain wildcards.\n");
     printf("\n");
@@ -107,6 +108,11 @@ int main(int argc, char *argv[]) {
         if (strcmp(argv[i], "--server") == 0) {
             i ++;
             bdm_hostname = argv[i];
+        } 
+
+        else if (strcmp(argv[i], "--help") == 0) {
+            usage();
+            exit(0);
         } 
 
         else {
