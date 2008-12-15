@@ -3,10 +3,9 @@
 #include "bdm-client.h"
 #include "bdm-client-interface.h"
 #include "bdm-util.h"
-#include "bdm-hab.h"
-#include "bdm-node.h"
-#include "bdm-resource.h"
-#include "bdm-datapoint.h"
+#include "bionet-hab.h"
+#include "bionet-node.h"
+#include "bionet-resource.h"
 %}
 
 typedef unsigned short uint16_t;
@@ -21,11 +20,10 @@ typedef struct timeval
 %include "bdm-client.h"
 %include "bdm-client-interface.h"
 %include "bdm-util.h"
-%include "bdm-asn.h"
-%include "bdm-hab.h"
-%include "bdm-node.h"
-%include "bdm-resource.h"
-%include "bdm-datapoint.h"
+%include "bionet-asn.h"
+%include "bionet-hab.h"
+%include "bionet-node.h"
+%include "bionet-resource.h"
 
 typedef unsigned int guint;
 typedef void* gpointer;

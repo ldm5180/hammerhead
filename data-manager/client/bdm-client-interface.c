@@ -9,7 +9,7 @@
 
 #include "bdm-client.h"
 
-bdm_hab_t * bdm_get_hab(GPtrArray *hab_list, int index)
+bionet_hab_t * bionet_get_hab(GPtrArray *hab_list, int index)
 {
     if (hab_list->len <= index)
     {

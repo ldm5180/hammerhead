@@ -7,7 +7,7 @@
  *
  * @return Ptr to a bdm_hab_t or NULL if the index is beyond the bounds of array
  */
-bdm_hab_t * bdm_get_hab(GPtrArray *hab_list, int index);
+bionet_hab_t * bionet_get_hab(GPtrArray *hab_list, int index);
 
 // Local Variables:
 // mode: C

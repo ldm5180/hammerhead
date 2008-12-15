@@ -23,7 +23,7 @@ start_time = sys.argv[argv_offset+1]
 end_time = sys.argv[argv_offset+2]    
 
 
-import gobject_wrapper
+import gobject
 import time
 from bdm_client import *
 import calendar
