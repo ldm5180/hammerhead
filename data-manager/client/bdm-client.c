@@ -76,6 +76,14 @@ void str_to_timeval(const char *str, struct timeval *tv) {
 
 
 
+void usage(void) {
+    printf("usage: bdm-client [--server SERVER] ResourceNamePattern StartTime EndTime\n");
+    printf("    StartTime and EndTime are given in this format: \"YYYY-MM-DD HH:MM:SS\"\n");
+}
+
+
+
+
 int main(int argc, char *argv[]) {
     char *bdm_hostname = NULL;
     uint16_t bdm_port = BDM_PORT;
@@ -100,7 +108,7 @@ int main(int argc, char *argv[]) {
     }
 
     if ((argc - i) != 3) {
-        printf("usage: bdm-client [--server SERVER] ResourceNamePattern StartTime EndTime\n");
+        usage();
         exit(1);
     }
 
