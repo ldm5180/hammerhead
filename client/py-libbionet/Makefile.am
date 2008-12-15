@@ -1,5 +1,9 @@
 SWIG_INCDIR = -I../libbionet -I../../util -I../../cal -I../../cal/util
 
+if ENABLE_LINUX
+LDCONFIG_EXE = /sbin/ldconfig
+endif
+
 lib_LTLIBRARIES = libbionet-py.la
 
 libbionet_py_la_SOURCES = bionet_wrap.c
@@ -11,6 +15,11 @@ libbionet_py_la_LIBADD = -lbionet -lcal-mdnssd-bip-client -lbionet-asn -lbionet-
 bionet_wrap.c: bionet.i ../libbionet/libbionet.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la ../../asn.1/libbionet-asn.la ../../util/libbionet-util.la
 	swig -w302 -python ${SWIG_INCDIR} bionet.i 
 	ln -sf .libs/libbionet-py.so _bionet.so
+
+install-exec-hook:
+	ln -sf $(exec_prefix)/lib/libbionet-py.so $(exec_prefix)/lib/_bionet.so
+	$(LDCONFIG_EXE)
+	python setup.py install
 
 clean-local:
 	rm -f bionet.py _bionet.so bionet_wrap.c libbionet*

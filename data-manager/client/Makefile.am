@@ -32,7 +32,7 @@ libbdm_la_LIBADD = -lbionet-util -lbionet-asn $(GLIB20_LIBS)
 
 libbdm_la_CFLAGS = -I../../util -I/usr/include/python2.5 -I../../asn.1 -I../include $(GLIB20_CFLAGS) -L../../util -L../../asn.1
 
-install-exec-hook:
+install-exec-hook: setup.py
 	ln -sf $(exec_prefix)/lib/libbdm.so $(exec_prefix)/lib/_bdm_client.so
 	$(LDCONFIG_EXE)
 	python setup.py install
