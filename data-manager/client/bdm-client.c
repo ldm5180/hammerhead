@@ -77,12 +77,16 @@ void str_to_timeval(const char *str, struct timeval *tv) {
 
 
 void usage(void) {
-    printf("usage: bdm-client [--server SERVER] ResourceNamePattern StartTime EndTime\n");
+    printf("usage: bdm-client [--server SERVER] ResourceName StartTime EndTime\n");
+    printf("\n");
+    printf("    ResourceName is the Resource Name to retrieve.  May contain wildcards.\n");
+    printf("\n");
     printf("    StartTime and EndTime are given in this format: \"YYYY-MM-DD hh:mm:ss\"\n");
     printf("        YYYY is the four-digit year, for example 2008\n");
     printf("        MM is the two-digit month, with 01 meaning January and 12 meaning December\n");
     printf("        DD is the two-digit day-of-the-month, with 01 meaning the first day\n");
     printf("        hh:mm:ss is the 24-hour time\n");
+    printf("\n");
 }
 
 
