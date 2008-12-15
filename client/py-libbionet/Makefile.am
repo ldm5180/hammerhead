@@ -4,6 +4,8 @@ if ENABLE_LINUX
 LDCONFIG_EXE = /sbin/ldconfig
 endif
 
+LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.version_info[0]) + \".\" + str(sys.version_info[1])" | python`
+
 lib_LTLIBRARIES = libbionet-py.la
 
 libbionet_py_la_SOURCES = bionet_wrap.c
@@ -17,9 +19,9 @@ bionet_wrap.c: bionet.i ../libbionet/libbionet.la ../../cal/mdnssd-bip/client/li
 	ln -sf .libs/libbionet-py.so _bionet.so
 
 install-exec-hook:
-	ln -sf $(exec_prefix)/lib/libbionet-py.so $(exec_prefix)/lib/_bionet.so
-	$(LDCONFIG_EXE)
 	python setup.py install
+	cp _bionet.so $(LIB_INST_DIR)/.
+	$(LDCONFIG_EXE)
 
 clean-local:
 	rm -f bionet.py _bionet.so bionet_wrap.c libbionet*
