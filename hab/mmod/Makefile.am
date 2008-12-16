@@ -1,15 +1,15 @@
 include $(top_srcdir)/common.am
 
 if TINYOSMIG_DISABLED
-ADD =
 else
-ADD = mmodaccelmsg mmodgenmsg mmodsettingsmsg
-BUILT_SOURCES = mmodaccelmsg.c mmodgenmsg.c mmodsettingsmsg.c 
+BUILT_SOURCES = mmodaccelmsg.c mmodgenmsg.c mmodsettingsmsg.c mmodaccelmsg.h mmodgenmsg.h mmodsettingsmsg.h
+clean-local:
+	rm -f mmodaccelmsg.* mmodgenmsg.* mmodsettingsmsg.*
 endif
 
 bin_PROGRAMS = mmod-hab
 
-mmod_hab_DEPENDENCIES = $(ADD)
+mmod_hab_DEPENDENCIES = $(BUILT_SOURCES)
 
 mmod_hab_SOURCES =    \
     daemonize.c       \
@@ -32,14 +32,26 @@ mmod_hab_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $
 mmod_hab_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lpthread -lm
 
 
-mmodaccelmsg: mmod_node/mmod_msg.h
+mmodaccelmsg.c: mmod_node/mmod_msg.h
 	touch mmodaccelmsg.c
 	mig -o mmodaccelmsg.h -c-prefix=MMODACCELMSG c mmod_node/mmod_msg.h mmod_accel_msg
 
-mmodgenmsg: mmod_node/mmod_msg.h
+mmodgenmsg.c: mmod_node/mmod_msg.h
 	touch mmodgenmsg.c
 	mig -o mmodgenmsg.h -c-prefix=MMODGENMSG c mmod_node/mmod_msg.h mmod_general_msg
 
-mmodsettingsmsg: mmod_node/mmod_msg.h
+mmodsettingsmsg.c: mmod_node/mmod_msg.h
+	touch mmodsettingsmsg.c
+	mig -o mmodsettingsmsg.h -c-prefix=MMODSETTINGSMSG c mmod_node/mmod_msg.h mmod_settings_msg
+
+mmodaccelmsg.h: mmod_node/mmod_msg.h
+	touch mmodaccelmsg.c
+	mig -o mmodaccelmsg.h -c-prefix=MMODACCELMSG c mmod_node/mmod_msg.h mmod_accel_msg
+
+mmodgenmsg.h: mmod_node/mmod_msg.h
+	touch mmodgenmsg.c
+	mig -o mmodgenmsg.h -c-prefix=MMODGENMSG c mmod_node/mmod_msg.h mmod_general_msg
+
+mmodsettingsmsg.h: mmod_node/mmod_msg.h
 	touch mmodsettingsmsg.c
 	mig -o mmodsettingsmsg.h -c-prefix=MMODSETTINGSMSG c mmod_node/mmod_msg.h mmod_settings_msg
