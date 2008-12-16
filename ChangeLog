@@ -11,6 +11,9 @@ Bionet 2.0.4 (not at all released yet, not even close)
     * 'make install' target now works as expected and python modules can be
       imported from all python scripts
 
+    * Python bdm-client which outputs CSV or MATLAB (tab-delimited) format
+
+
 Bionet 2.0.3, SVN rev 311, release 2008 December 5
 
     * Commanding of Resources now works, using the bionet_set_resource()
