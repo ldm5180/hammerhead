@@ -187,6 +187,7 @@ AC_CONFIG_FILES([Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
+                 data-manager/py-client/Makefile
                  ])
 
 AC_OUTPUT
