@@ -16,7 +16,6 @@ typedef struct timeval
 	long int tv_usec;
 };
 
-
 %include "bdm-client.h"
 %include "bdm-client-interface.h"
 %include "bdm-util.h"
@@ -33,5 +32,27 @@ typedef struct
   guint     len;
 } GPtrArray;
 
+%inline
+{
 
+char * bionet_hab_get_type(bionet_hab_t * hab)
+{
+    return hab->type;
+}
 
+char * bionet_hab_get_id(bionet_hab_t * hab)
+{
+    return hab->id;
+}
+
+char * bionet_node_get_id(bionet_node_t * node)
+{
+    return node->id;
+}
+
+char * bionet_resource_get_id(bionet_resource_t * resource)
+{
+    return resource->id;
+}
+
+}

@@ -1,0 +1,2 @@
+Python scripts require the Python modules to be installed. Please run 
+'make install' as root user prior to trying to run these scripts.
