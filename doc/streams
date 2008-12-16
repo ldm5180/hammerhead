@@ -1,0 +1,45 @@
+
+Some random notes about Stream internals.  Probably only useful for
+people developing the Bionet libraries.
+
+
+When a Bionet Driver reports a new node with Streams, that automatically
+advertises its readiness to serve those streams.
+
+There are two kinds of Streams, sort of like how there are three kinds
+of Resources.  Streams can be Producer or Consumer, like Resources can
+be Sensor, Actuator, or Parameter.  On a Producer Stream, the Bionet
+Driver emits information and all the connected Bionet Apps each get a
+copy (just like a Resource Datapoint update).  On a Consumer Stream, the
+Bionet Driver accepts information from all the connected Bionet Apps,
+and they all get mixed together in the Bionet Driver as appropriate.
+The Bionet Driver knows which App said what (prolly should in the
+set-resource callback too).  This prolly means the Bionet Driver needs
+to have a representation of the Apps...
+
+When a Bionet Application wants to talk to a stream, it's different for
+Producer Streams and Consumer Streams.
+
+Producer Streams:
+
+    The Bionet App calls bionet_subscribe_stream(stream);.  The BA
+    library subscribes to a special topic (from the BD) that identifies
+    the Stream.
+
+    The BD library gets the Subscribe event from CAL-Server, and calls
+    the BD's stream-subscription callback.
+
+    When the BD gets some information to publish to the stream it calls
+    hab_publish_stream(stream, void *buf, int size); This uses the normal
+    publish path to the CAL-Client, to the BA library, which calls the
+    BA's stream callback(stream, void *buf, int size);
+
+Consumer Streams:
+
+    This is connection-less.  The BA calls bionet_stream_write(stream,
+    void *buf, int size);.  The BA library sends a message (sendto) to
+    the BD library, which calls the BD's stream-write callback(const
+    char *client_id, stream, buf, size); The BD may keep multiple
+    contexts for different clients (ie multiple ALSA fds into dmix).
+    There needs to be notification of the BA leaving.
+
