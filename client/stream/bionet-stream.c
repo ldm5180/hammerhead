@@ -18,8 +18,12 @@
 void usage(void) {
     fprintf(stderr, "usage: bionet-stream OPTIONS [STREAM]\n\
 \n\
-If STREAM is specified, it connects to the named stream.  If STREAM is not\n\
-specified, it prints a continuously updating list of the available streams.\n\
+If STREAM is specified, it connects to the named stream.  For Producer\n\
+Streams, the stream data is printed to stdout.  For Consumer Streams, the\n\
+data is read from stdin.\n\
+\n\
+If STREAM is not specified, it prints a continuously updating list of the\n\
+available streams.\n\
 \n\
 OPTIONS:\n\
 \n\
