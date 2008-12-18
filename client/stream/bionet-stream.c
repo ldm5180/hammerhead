@@ -77,50 +77,6 @@ void cb_new_node(bionet_node_t *node) {
 
 
 
-void list_streams(void) {
-    int bionet_fd;
-
-
-    g_log_set_default_handler(bionet_glib_log_handler, NULL);
-
-
-    // this must happen before anything else
-    bionet_fd = bionet_connect();
-    if (bionet_fd < 0) {
-        g_log("", G_LOG_LEVEL_WARNING, "error connecting to Bionet");
-        exit(1);
-    }
-    g_log("", G_LOG_LEVEL_INFO, "connected to Bionet");
-
-
-    bionet_register_callback_new_node(cb_new_node);
-    bionet_register_callback_lost_node(cb_lost_node);
-
-    bionet_subscribe_node_list_by_name("*.*.*");
-
-
-    while (1) {
-        int r;
-        fd_set readers;
-
-        FD_ZERO(&readers);
-        FD_SET(bionet_fd, &readers);
-
-        r = select(bionet_fd + 1, &readers, NULL, NULL, NULL);
-
-        if ((r < 0) && (errno != EINTR)) {
-            g_log("", G_LOG_LEVEL_WARNING, "error from select: %s", strerror(errno));
-            g_usleep(1000*1000);
-            continue;
-        }
-
-        bionet_read();
-    } 
-}
-
-
-
-
 void read_from_stream(bionet_stream_t *stream) {
     int fd;
 
@@ -217,7 +173,8 @@ void write_to_stream(bionet_stream_t *stream) {
 
 
 
-void connect_to_stream(const char *stream_name) {
+void connect_to_stream(const bionet_stream_t *stream) {
+
 #if 0
     int r;
     GSList *nodes;
@@ -293,6 +250,16 @@ void connect_to_stream(const char *stream_name) {
 int main(int argc, char *argv[]) {
     int i;
     char *stream_name = NULL;
+    int bionet_fd;
+
+    char *hab_type;
+    char *hab_id;
+    char *node_id;
+    char *stream_id;
+
+
+    g_log_set_default_handler(bionet_glib_log_handler, NULL);
+
 
     for (i = 1; argv[i] != NULL; i ++) {
 
@@ -313,13 +280,57 @@ int main(int argc, char *argv[]) {
     }
 
 
+    bionet_fd = bionet_connect();
+    if (bionet_fd < 0) {
+        g_log("", G_LOG_LEVEL_WARNING, "error connecting to Bionet");
+        exit(1);
+    }
+    g_log("", G_LOG_LEVEL_INFO, "connected to Bionet");
+
+
     if (stream_name == NULL) {
-        list_streams();
-        exit(0);
+        bionet_register_callback_new_node(cb_new_node);
+        bionet_register_callback_lost_node(cb_lost_node);
+    } else {
+        int r;
+
+        r = bionet_split_resource_name(stream_name, &hab_type, &hab_id, &node_id, &stream_id);
+        if (r != 0) {
+            g_log("", G_LOG_LEVEL_WARNING, "error splitting stream name '%s'", stream_name);
+            exit(1);
+        }
     }
 
 
-    connect_to_stream(stream_name);
+    bionet_subscribe_node_list_by_name("*.*.*");
+
+
+    while (1) {
+        int r;
+        fd_set readers;
+        bionet_stream_t *stream;
+
+        FD_ZERO(&readers);
+        FD_SET(bionet_fd, &readers);
+
+        r = select(bionet_fd + 1, &readers, NULL, NULL, NULL);
+
+        if ((r < 0) && (errno != EINTR)) {
+            g_log("", G_LOG_LEVEL_WARNING, "error from select: %s", strerror(errno));
+            g_usleep(1000*1000);
+            continue;
+        }
+
+        bionet_read();
+
+        if (stream_name == NULL) continue;
+
+        stream = bionet_cache_lookup_stream(hab_type, hab_id, node_id, stream_id);
+        if (stream == NULL) continue;
+
+        printf("found stream %s!\n", stream_name);
+        connect_to_stream(stream);
+    } 
 
     exit(0);
 }
