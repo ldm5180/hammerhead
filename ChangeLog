@@ -1,17 +1,23 @@
 
-Bionet 2.0.4 (not at all released yet, not even close)
+Bionet 2.0.4, 2008 December 18
 
-    * Added Streams support (work in progress)
+    * Added bionet-monitor.
 
-    * MMOD-HAB more correctly reports the number of missed messages from the
-      Motes.
+    * MMOD-HAB more correctly reports the number of missed messages from
+      the Motes.
 
-    * BDM has a Python interface for clients via 'import bdm_client'
+    * Added a --help argument to the bdm-client, which describes how to
+      use it.
 
-    * 'make install' target now works as expected and python modules can be
-      imported from all python scripts
+    * Added a Python bdm-client which supports CSV and MATLAB
+      (tab-delimited) output formats
 
-    * Python bdm-client which outputs CSV or MATLAB (tab-delimited) format
+    * More complete API documentation via Doxygen.
+
+    * 'make install' target now works as expected and python modules
+      can be imported from all python scripts
+
+    * Some work on Streams, but it's not yet ready for use.
 
 
 Bionet 2.0.3, SVN rev 311, release 2008 December 5
