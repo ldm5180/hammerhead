@@ -185,6 +185,8 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @todo implement me
  */
 int bionet_resource_set_binary(bionet_resource_t *resource, 
 			       const int content, 
@@ -204,10 +206,12 @@ int bionet_resource_set_binary(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @todo implement me
  */
-int bionet_resource_set_binary_uint8(bionet_resource_t *resource, 
-				     const uint8_t content, 
-				     const struct timeval *timestamp);
+int bionet_resource_set_uint8(bionet_resource_t *resource, 
+			      const uint8_t content, 
+			      const struct timeval *timestamp);
 
 
 /**
@@ -223,10 +227,12 @@ int bionet_resource_set_binary_uint8(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @todo implement me
  */
-int bionet_resource_set_binary_int8(bionet_resource_t *resource, 
-				    const int8_t content, 
-				    const struct timeval *timestamp);
+int bionet_resource_set_int8(bionet_resource_t *resource, 
+			     const int8_t content, 
+			     const struct timeval *timestamp);
 
 
 /**
@@ -242,10 +248,12 @@ int bionet_resource_set_binary_int8(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @todo implement me
  */
-int bionet_resource_set_binary_uint16(bionet_resource_t *resource, 
-				      const uint16_t content, 
-				      const struct timeval *timestamp);
+int bionet_resource_set_uint16(bionet_resource_t *resource, 
+			       const uint16_t content, 
+			       const struct timeval *timestamp);
 
 
 /**
@@ -261,10 +269,12 @@ int bionet_resource_set_binary_uint16(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @todo implement me
  */
-int bionet_resource_set_binary_int16(bionet_resource_t *resource, 
-				     const int16_t content, 
-				     const struct timeval *timestamp);
+int bionet_resource_set_int16(bionet_resource_t *resource, 
+			      const int16_t content, 
+			      const struct timeval *timestamp);
 
 
 /**
@@ -280,10 +290,12 @@ int bionet_resource_set_binary_int16(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @todo implement me
  */
-int bionet_resource_set_binary_uint32(bionet_resource_t *resource, 
-				      const uint32_t content, 
-				      const struct timeval *timestamp);
+int bionet_resource_set_uint32(bionet_resource_t *resource, 
+			       const uint32_t content, 
+			       const struct timeval *timestamp);
 
 
 /**
@@ -299,10 +311,12 @@ int bionet_resource_set_binary_uint32(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @todo implement me
  */
-int bionet_resource_set_binary_int32(bionet_resource_t *resource, 
-				     const int32_t content, 
-				     const struct timeval *timestamp);
+int bionet_resource_set_int32(bionet_resource_t *resource, 
+			      const int32_t content, 
+			      const struct timeval *timestamp);
 
 
 /**
@@ -318,10 +332,12 @@ int bionet_resource_set_binary_int32(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @todo implement me
  */
-int bionet_resource_set_binary_float(bionet_resource_t *resource, 
-				     const float content, 
-				     const struct timeval *timestamp);
+int bionet_resource_set_float(bionet_resource_t *resource, 
+			      const float content, 
+			      const struct timeval *timestamp);
 
 
 /**
@@ -337,10 +353,12 @@ int bionet_resource_set_binary_float(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @todo implement me
  */
-int bionet_resource_set_binary_double(bionet_resource_t *resource, 
-				      const double content, 
-				      const struct timeval *timestamp);
+int bionet_resource_set_double(bionet_resource_t *resource, 
+			       const double content, 
+			       const struct timeval *timestamp);
 
 
 /**
@@ -356,10 +374,12 @@ int bionet_resource_set_binary_double(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @todo implement me
  */
-int bionet_resource_set_binary_str(bionet_resource_t *resource, 
-				   const char * content, 
-				   const struct timeval *timestamp);
+int bionet_resource_set_str(bionet_resource_t *resource, 
+			    const char * content, 
+			    const struct timeval *timestamp);
 
 
 /**

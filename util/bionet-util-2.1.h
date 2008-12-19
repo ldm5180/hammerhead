@@ -19,7 +19,9 @@
 
 #include <glib.h>
 
-
+/**
+ * @todo Comment the typedefs to opaque types
+ */
 typedef struct bionet_hab_opaque_t       bionet_hab_t;
 typedef struct bionet_node_opaque_t      bionet_node_t;
 typedef struct bionet_stream_opaque_t    bionet_stream_t;

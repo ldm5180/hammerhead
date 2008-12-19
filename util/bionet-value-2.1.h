@@ -31,6 +31,8 @@
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_new_binary(bionet_resource_t *resource,
 					const int content);
@@ -46,6 +48,8 @@ bionet_value_t *bionet_value_new_binary(bionet_resource_t *resource,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_new_uint8(bionet_resource_t *resource,
 				       const uint8_t content);
@@ -61,6 +65,8 @@ bionet_value_t *bionet_value_new_uint8(bionet_resource_t *resource,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_new_int8(bionet_resource_t *resource,
 				      const int8_t content);
@@ -76,6 +82,8 @@ bionet_value_t *bionet_value_new_int8(bionet_resource_t *resource,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_new_uint16(bionet_resource_t *resource,
 					const uint16_t content);
@@ -91,6 +99,8 @@ bionet_value_t *bionet_value_new_uint16(bionet_resource_t *resource,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_new_int16(bionet_resource_t *resource,
 				       const int16_t content);
@@ -106,6 +116,8 @@ bionet_value_t *bionet_value_new_int16(bionet_resource_t *resource,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_new_uint32(bionet_resource_t *resource,
 					const uint32_t content);
@@ -122,6 +134,8 @@ bionet_value_t *bionet_value_new_uint32(bionet_resource_t *resource,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_new_int32(bionet_resource_t *resource,
 				       const int32_t content);
@@ -137,6 +151,8 @@ bionet_value_t *bionet_value_new_int32(bionet_resource_t *resource,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_new_float(bionet_resource_t *resource,
 				       const float content);
@@ -152,6 +168,8 @@ bionet_value_t *bionet_value_new_float(bionet_resource_t *resource,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_new_double(bionet_resource_t *resource,
 					const double content);
@@ -167,6 +185,8 @@ bionet_value_t *bionet_value_new_double(bionet_resource_t *resource,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_new_str(bionet_resource_t *resource,
 				     const char * content);
@@ -183,6 +203,8 @@ bionet_value_t *bionet_value_new_str(bionet_resource_t *resource,
  * bionet_value_new_float() or bionet_value_new_double() 
  *
  * @param[in] value The Value to free.
+ *
+ * @todo implement me
  */
 void bionet_value_free(bionet_value_t *value);
 
@@ -199,6 +221,8 @@ void bionet_value_free(bionet_value_t *value);
  * @note All passed-in strings are considered the property of the
  *       caller.  The caller is free to overwrite or free the
  *       strings on return from this function.
+ *
+ * @todo implement me
  */
 const char *bionet_value_to_string(const bionet_value_t *value);
 
@@ -213,6 +237,8 @@ const char *bionet_value_to_string(const bionet_value_t *value);
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_set_binary(bionet_value_t *value,
 					const int content);
@@ -228,6 +254,8 @@ bionet_value_t *bionet_value_set_binary(bionet_value_t *value,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_set_uint8(bionet_value_t *value,
 				       const uint8_t content);
@@ -243,6 +271,8 @@ bionet_value_t *bionet_value_set_uint8(bionet_value_t *value,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_set_int8(bionet_value_t *value,
 				      const int8_t content);
@@ -258,6 +288,8 @@ bionet_value_t *bionet_value_set_int8(bionet_value_t *value,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_set_uint16(bionet_value_t *value,
 					const uint16_t content);
@@ -273,6 +305,8 @@ bionet_value_t *bionet_value_set_uint16(bionet_value_t *value,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_set_int16(bionet_value_t *value,
 				       const int16_t content);
@@ -288,6 +322,8 @@ bionet_value_t *bionet_value_set_int16(bionet_value_t *value,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_set_uint32(bionet_value_t *value,
 					const uint32_t content);
@@ -303,6 +339,8 @@ bionet_value_t *bionet_value_set_uint32(bionet_value_t *value,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_set_int32(bionet_value_t *value,
 				       const int32_t content);
@@ -318,6 +356,8 @@ bionet_value_t *bionet_value_set_int32(bionet_value_t *value,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_set_float(bionet_value_t *value,
 				       const float content);
@@ -333,6 +373,8 @@ bionet_value_t *bionet_value_set_float(bionet_value_t *value,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_set_double(bionet_value_t *value,
 					const double content);
@@ -352,6 +394,8 @@ bionet_value_t *bionet_value_set_double(bionet_value_t *value,
  * @note All passed-in strings are considered the property of the
  *       caller.  The caller is free to overwrite or free the
  *       strings on return from this function.
+ *
+ * @todo implement me
  */
 bionet_value_t *bionet_value_set_str(bionet_value_t *value,
 				     const char * content);
@@ -367,6 +411,8 @@ bionet_value_t *bionet_value_set_str(bionet_value_t *value,
  * @retval -1 Failure
  * 
  * @note content is undefined if a failure occurred.
+ *
+ * @todo implement me
  */
 int *bionet_value_get_binary(bionet_value_t *value,
 			     const int * content);
@@ -382,6 +428,8 @@ int *bionet_value_get_binary(bionet_value_t *value,
  * @retval -1 Failure
  * 
  * @note content is undefined if a failure occurred.
+ *
+ * @todo implement me
  */
 int *bionet_value_get_uint8(bionet_value_t *value,
 			    const uint8_t * content);
@@ -397,6 +445,8 @@ int *bionet_value_get_uint8(bionet_value_t *value,
  * @retval -1 Failure
  * 
  * @note content is undefined if a failure occurred.
+ *
+ * @todo implement me
  */
 int *bionet_value_get_int8(bionet_value_t *value,
 			   const int8_t * content);
@@ -412,6 +462,8 @@ int *bionet_value_get_int8(bionet_value_t *value,
  * @retval -1 Failure
  * 
  * @note content is undefined if a failure occurred.
+ *
+ * @todo implement me
  */
 int *bionet_value_get_uint16(bionet_value_t *value,
 			     const uint16_t * content);
@@ -427,6 +479,8 @@ int *bionet_value_get_uint16(bionet_value_t *value,
  * @retval -1 Failure
  * 
  * @note content is undefined if a failure occurred.
+ *
+ * @todo implement me
  */
 int *bionet_value_get_int16(bionet_value_t *value,
 			    const int16_t * content);
@@ -442,6 +496,8 @@ int *bionet_value_get_int16(bionet_value_t *value,
  * @retval -1 Failure
  * 
  * @note content is undefined if a failure occurred.
+ *
+ * @todo implement me
  */
 int *bionet_value_get_uint32(bionet_value_t *value,
 			     const uint32_t * content);
@@ -457,6 +513,8 @@ int *bionet_value_get_uint32(bionet_value_t *value,
  * @retval -1 Failure
  * 
  * @note content is undefined if a failure occurred.
+ *
+ * @todo implement me
  */
 int *bionet_value_get_int32(bionet_value_t *value,
 			    const int32_t * content);
@@ -472,6 +530,8 @@ int *bionet_value_get_int32(bionet_value_t *value,
  * @retval -1 Failure
  * 
  * @note content is undefined if a failure occurred.
+ *
+ * @todo implement me
  */
 int *bionet_value_get_float(bionet_value_t *value,
 			    const float * content);
@@ -487,6 +547,8 @@ int *bionet_value_get_float(bionet_value_t *value,
  * @retval -1 Failure
  * 
  * @note content is undefined if a failure occurred.
+ *
+ * @todo implement me
  */
 int *bionet_value_get_double(bionet_value_t *value,
 			     const double * content);
@@ -502,6 +564,8 @@ int *bionet_value_get_double(bionet_value_t *value,
  * @retval -1 Failure
  * 
  * @note content is undefined if a failure occurred.
+ *
+ * @todo implement me
  */
 int *bionet_value_get_str(bionet_value_t *value,
 			  const char ** content);
