@@ -9,6 +9,17 @@
 #include "bionet-util.h"
 
 
+bionet_stream_direction_t bionet_stream_get_direction(const bionet_stream_t *stream) {
+    if (stream == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_get_direction(): NULL Stream passed in");
+        return BIONET_STREAM_DIRECTION_INVALID;
+    }
+
+    return stream->direction;
+}
+
+
+
 const char *bionet_stream_direction_to_string(bionet_stream_direction_t direction) {
     switch (direction) {
 
