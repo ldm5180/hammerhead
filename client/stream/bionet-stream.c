@@ -78,6 +78,18 @@ void cb_new_node(bionet_node_t *node) {
 
 
 void read_from_stream(bionet_stream_t *stream) {
+    fprintf(
+        stderr,
+        "reading from %s.%s.%s:%s\n",
+        stream->node->hab->type,
+        stream->node->hab->id,
+        stream->node->id,
+        stream->id
+    );
+
+    pause();
+
+#if 0
     int fd;
 
     fprintf(stderr, "reading from %s\n", stream->id);
@@ -120,16 +132,27 @@ void read_from_stream(bionet_stream_t *stream) {
             bytes_remaining -= r;
         }
     }
+#endif
 }
 
 
 
 
 void write_to_stream(bionet_stream_t *stream) {
+    fprintf(
+        stderr,
+        "writing to %s.%s.%s:%s\n",
+        stream->node->hab->type,
+        stream->node->hab->id,
+        stream->node->id,
+        stream->id
+    );
+
+    pause();
+
+#if 0
     int fd;
 
-    fprintf(stderr, "writing to %s\n", stream->id);
-    
     // unbuffer stdin
     setvbuf(stdin, NULL, _IONBF, 0);
 
@@ -168,62 +191,41 @@ void write_to_stream(bionet_stream_t *stream) {
             bytes_remaining -= r;
         }
     }
+#endif
 }
 
 
 
 
-void connect_to_stream(const bionet_stream_t *stream) {
+void deal_with_stream(bionet_stream_t *stream) {
+    switch (bionet_stream_get_direction(stream)) {
+        case BIONET_STREAM_DIRECTION_PRODUCER: {
+            read_from_stream(stream);
+            fprintf(stderr, "read_from_stream() returned!\n");
+            exit(1);
+        }
+
+        case BIONET_STREAM_DIRECTION_CONSUMER: {
+            write_to_stream(stream);
+            fprintf(stderr, "write_to_stream() returned!\n");
+            exit(1);
+        }
+
+        default: {
+            fprintf(
+                stderr,
+                "stream %s.%s.%s:%s has unknown direction!\n",
+                stream->node->hab->type,
+                stream->node->hab->id,
+                stream->node->id,
+                stream->id
+            );
+            exit(1);
+        }
+    }
+
 
 #if 0
-    int r;
-    GSList *nodes;
-
-    char *node_name;
-    char *stream_id;
-
-    bionet_stream_t *stream;
-
-
-    if (stream_name == NULL) {
-        fprintf(stderr, "NULL stream name passed to connect_to_stream()\n");
-        exit(1);
-    }
-
-    node_name = strdup(stream_name);
-    if (node_name == NULL) {
-        fprintf(stderr, "out of memory in connect_to_stream()\n");
-        exit(1);
-    }
-
-    stream_id = strchr(node_name, ':');
-    if (stream_id == NULL) {
-        fprintf(stderr, "stream name '%s' has no ':'\n", stream_name);
-        exit(1);
-    }
-
-    *stream_id = (char)0;
-    stream_id ++;
-
-    r = bionet_list_nodes_by_name_pattern(&nodes, node_name);
-    if (r < 0) {
-        fprintf(stderr, "error getting node %s\n", node_name);
-        exit(1);
-    }
-
-    if (nodes == NULL) {
-        fprintf(stderr, "node %s not found\n", node_name);
-        exit(1);
-    }
-
-    stream = bionet_node_get_stream_by_id(nodes->data, stream_id);
-    if (stream == NULL) {
-        fprintf(stderr, "node %s has no stream %s\n", node_name, stream_id);
-        exit(1);
-    }
-
-    free(node_name);
-
     r = bionet_stream_connect(stream);
     if (r < 0) {
         fprintf(stderr, "error connecting to stream %s\n", stream_name);
@@ -329,7 +331,8 @@ int main(int argc, char *argv[]) {
         if (stream == NULL) continue;
 
         printf("found stream %s!\n", stream_name);
-        connect_to_stream(stream);
+        deal_with_stream(stream);
+        // wont return
     } 
 
     exit(0);
