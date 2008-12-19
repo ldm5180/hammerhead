@@ -26,43 +26,26 @@
 
 
 
+int bionet_read_with_timeout(struct timeval *timeout) {
+    int r;
+    fd_set readers;
+
+    if (!bionet_is_connected()) return -1;
+
+    FD_ZERO(&readers);
+    FD_SET(libbionet_cal_fd, &readers);
+
+    r = select(libbionet_cal_fd + 1, &readers, NULL, NULL, timeout);
+    if (r < 0) return r;
+
+    // FIXME: CAL return TRUE on success, FALSE on failure.
+    r = cal_client.read();
+    if (r) return 0;
+    return -1;
+}
+
+
 int bionet_read(void) {
     return cal_client.read();
 }
-
-
-
-
-#if 0
-
-void bionet_read_from_nag_but_dont_handle_messages(void) {
-    if (bionet_connect_to_nag() < 0) {
-        return;
-    }
-
-    do {
-        bionet_message_t *message;
-        int r;
-        struct timeval timeout;
-
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 0;
-
-        r = bionet_nxio_read(libbionet_nag_nxio, &timeout, &message);
-        if (r < 0) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error reading from NAG: %s", strerror(errno));
-            libbionet_kill_nag_connection();
-            return;
-        }
-
-        if (message == NULL) {
-            // nothing from the NAG
-            return;
-        }
-
-        libbionet_queued_messages_from_nag = g_slist_append(libbionet_queued_messages_from_nag, message);
-    } while(1);
-}
-
-#endif
 
