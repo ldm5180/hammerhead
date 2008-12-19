@@ -38,18 +38,6 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
 
 
 /**
- * @brief Set the type of an existing HAB 
- *
- * @param[in] hab Pointer to a HAB
- * @param[in] type Type of HAB
- * 
- * @retval 0 Success
- * @retval -1 Failure
- */
-int bionet_hab_set_type(bionet_hab_t *hab, const char *type);
-
-
-/**
  * @brief Get the type of an existing HAB 
  *
  * @param[in] hab Pointer to a HAB
@@ -61,18 +49,6 @@ int bionet_hab_set_type(bionet_hab_t *hab, const char *type);
  * @todo implement me
  */
 const char * bionet_hab_get_type(bionet_hab_t *hab);
-
-
-/**
- * @brief Set the ID of an existing HAB 
- *
- * @param[in] hab Pointer to a HAB
- * @param[in] id ID of HAB
- * 
- * @retval 0 Success
- * @retval -1 Failure
- */
-int bionet_hab_set_id(bionet_hab_t *hab, const char *id);
 
 
 /**

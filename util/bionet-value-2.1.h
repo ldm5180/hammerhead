@@ -22,6 +22,17 @@
 
 
 /**
+ * @brief Get the value's associated resource
+ *
+ * @param[in] value The value
+ *
+ * @return Pointer to a resource
+ * @return NULL on failure
+ */
+bionet_resource_t * bionet_value_get_resource(bionet_value_t * value);
+
+
+/**
  * @brief Allocates and initializes a new value.  
  *
  * Does NOT add it to the Resource's list of datapoints.
@@ -35,7 +46,7 @@
  * @todo implement me
  */
 bionet_value_t *bionet_value_new_binary(bionet_resource_t *resource,
-					const int content);
+					int content);
 
 
 /**
@@ -52,7 +63,7 @@ bionet_value_t *bionet_value_new_binary(bionet_resource_t *resource,
  * @todo implement me
  */
 bionet_value_t *bionet_value_new_uint8(bionet_resource_t *resource,
-				       const uint8_t content);
+				       uint8_t content);
 
 
 /**
@@ -69,7 +80,7 @@ bionet_value_t *bionet_value_new_uint8(bionet_resource_t *resource,
  * @todo implement me
  */
 bionet_value_t *bionet_value_new_int8(bionet_resource_t *resource,
-				      const int8_t content);
+				      int8_t content);
 
 
 /**
@@ -86,7 +97,7 @@ bionet_value_t *bionet_value_new_int8(bionet_resource_t *resource,
  * @todo implement me
  */
 bionet_value_t *bionet_value_new_uint16(bionet_resource_t *resource,
-					const uint16_t content);
+					uint16_t content);
 
 
 /**
@@ -103,7 +114,7 @@ bionet_value_t *bionet_value_new_uint16(bionet_resource_t *resource,
  * @todo implement me
  */
 bionet_value_t *bionet_value_new_int16(bionet_resource_t *resource,
-				       const int16_t content);
+				       int16_t content);
 
 
 /**
@@ -120,7 +131,7 @@ bionet_value_t *bionet_value_new_int16(bionet_resource_t *resource,
  * @todo implement me
  */
 bionet_value_t *bionet_value_new_uint32(bionet_resource_t *resource,
-					const uint32_t content);
+					uint32_t content);
 
 
 
@@ -138,7 +149,7 @@ bionet_value_t *bionet_value_new_uint32(bionet_resource_t *resource,
  * @todo implement me
  */
 bionet_value_t *bionet_value_new_int32(bionet_resource_t *resource,
-				       const int32_t content);
+				       int32_t content);
 
 
 /**
@@ -155,7 +166,7 @@ bionet_value_t *bionet_value_new_int32(bionet_resource_t *resource,
  * @todo implement me
  */
 bionet_value_t *bionet_value_new_float(bionet_resource_t *resource,
-				       const float content);
+				       float content);
 
 
 /**
@@ -172,7 +183,7 @@ bionet_value_t *bionet_value_new_float(bionet_resource_t *resource,
  * @todo implement me
  */
 bionet_value_t *bionet_value_new_double(bionet_resource_t *resource,
-					const double content);
+					double content);
 
 
 /**
@@ -414,8 +425,8 @@ bionet_value_t *bionet_value_set_str(bionet_value_t *value,
  *
  * @todo implement me
  */
-int *bionet_value_get_binary(bionet_value_t *value,
-			     const int * content);
+int bionet_value_get_binary(bionet_value_t *value,
+			    int * content);
 
 
 /**
@@ -431,8 +442,8 @@ int *bionet_value_get_binary(bionet_value_t *value,
  *
  * @todo implement me
  */
-int *bionet_value_get_uint8(bionet_value_t *value,
-			    const uint8_t * content);
+int bionet_value_get_uint8(bionet_value_t *value,
+			   uint8_t * content);
 
 
 /**
@@ -448,8 +459,8 @@ int *bionet_value_get_uint8(bionet_value_t *value,
  *
  * @todo implement me
  */
-int *bionet_value_get_int8(bionet_value_t *value,
-			   const int8_t * content);
+int bionet_value_get_int8(bionet_value_t *value,
+			  int8_t * content);
 
 
 /**
@@ -465,8 +476,8 @@ int *bionet_value_get_int8(bionet_value_t *value,
  *
  * @todo implement me
  */
-int *bionet_value_get_uint16(bionet_value_t *value,
-			     const uint16_t * content);
+int bionet_value_get_uint16(bionet_value_t *value,
+			    uint16_t * content);
 
 
 /**
@@ -482,8 +493,8 @@ int *bionet_value_get_uint16(bionet_value_t *value,
  *
  * @todo implement me
  */
-int *bionet_value_get_int16(bionet_value_t *value,
-			    const int16_t * content);
+int bionet_value_get_int16(bionet_value_t *value,
+			   int16_t * content);
 
 
 /**
@@ -499,8 +510,8 @@ int *bionet_value_get_int16(bionet_value_t *value,
  *
  * @todo implement me
  */
-int *bionet_value_get_uint32(bionet_value_t *value,
-			     const uint32_t * content);
+int bionet_value_get_uint32(bionet_value_t *value,
+			    uint32_t * content);
 
 
 /**
@@ -516,8 +527,8 @@ int *bionet_value_get_uint32(bionet_value_t *value,
  *
  * @todo implement me
  */
-int *bionet_value_get_int32(bionet_value_t *value,
-			    const int32_t * content);
+int bionet_value_get_int32(bionet_value_t *value,
+			   int32_t * content);
 
 
 /**
@@ -533,8 +544,8 @@ int *bionet_value_get_int32(bionet_value_t *value,
  *
  * @todo implement me
  */
-int *bionet_value_get_float(bionet_value_t *value,
-			    const float * content);
+int bionet_value_get_float(bionet_value_t *value,
+			   float * content);
 
 
 /**
@@ -550,8 +561,8 @@ int *bionet_value_get_float(bionet_value_t *value,
  *
  * @todo implement me
  */
-int *bionet_value_get_double(bionet_value_t *value,
-			     const double * content);
+int bionet_value_get_double(bionet_value_t *value,
+			    double * content);
 
 
 /**
@@ -567,8 +578,8 @@ int *bionet_value_get_double(bionet_value_t *value,
  *
  * @todo implement me
  */
-int *bionet_value_get_str(bionet_value_t *value,
-			  const char ** content);
+int bionet_value_get_str(bionet_value_t *value,
+			 char ** content);
 
 
 #endif /* __BIONET_VALUE_H */

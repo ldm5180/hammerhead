@@ -58,7 +58,7 @@ const char * bionet_node_get_id(const bionet_node_t *node);
  *
  * @todo implement me
  */
-bionet_hab_t * bionet_node_get_parent(const bionet_node_t *node);
+bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node);
 
 
 /**

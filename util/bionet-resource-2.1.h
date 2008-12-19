@@ -83,32 +83,6 @@ bionet_resource_t *bionet_resource_new(
 
 
 /**
- * @brief Allocates and initializes a new resource, from strings
- *        describing the resource.
- *
- * @param[in] node The Node that owns this Resource or NULL
- * @param[in] data_type_str The name of the data type of this Resource as a string.
- * @param[in] flavor_str The flavor of this Resource as a string.
- * @param[in] id The ID of this Resource.
- *
- * @return Pointer to a resource on success
- * @retval NULL Error
- * @retval >0 Success
- *
- * @note All passed-in strings are considered the property of the
- *       caller.  The function duplicates what it needs, the caller
- *       is free to overwrite or free the strings on return from
- *       this function.
- */
-bionet_resource_t *bionet_resource_new_from_str(
-    const bionet_node_t *node,
-    const char *data_type_str,
-    const char *flavor_str,
-    const char *id
-);
-
-
-/**
  * @brief Free a Resource created with bionet_resource_new().
  *
  * @param[in] resource The Resource to free.
@@ -189,7 +163,7 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
  * @todo implement me
  */
 int bionet_resource_set_binary(bionet_resource_t *resource, 
-			       const int content, 
+			       int content, 
 			       const struct timeval *timestamp);
 
 
@@ -210,7 +184,7 @@ int bionet_resource_set_binary(bionet_resource_t *resource,
  * @todo implement me
  */
 int bionet_resource_set_uint8(bionet_resource_t *resource, 
-			      const uint8_t content, 
+			      uint8_t content, 
 			      const struct timeval *timestamp);
 
 
@@ -231,7 +205,7 @@ int bionet_resource_set_uint8(bionet_resource_t *resource,
  * @todo implement me
  */
 int bionet_resource_set_int8(bionet_resource_t *resource, 
-			     const int8_t content, 
+			     int8_t content, 
 			     const struct timeval *timestamp);
 
 
@@ -252,7 +226,7 @@ int bionet_resource_set_int8(bionet_resource_t *resource,
  * @todo implement me
  */
 int bionet_resource_set_uint16(bionet_resource_t *resource, 
-			       const uint16_t content, 
+			       uint16_t content, 
 			       const struct timeval *timestamp);
 
 
@@ -273,7 +247,7 @@ int bionet_resource_set_uint16(bionet_resource_t *resource,
  * @todo implement me
  */
 int bionet_resource_set_int16(bionet_resource_t *resource, 
-			      const int16_t content, 
+			      int16_t content, 
 			      const struct timeval *timestamp);
 
 
@@ -294,7 +268,7 @@ int bionet_resource_set_int16(bionet_resource_t *resource,
  * @todo implement me
  */
 int bionet_resource_set_uint32(bionet_resource_t *resource, 
-			       const uint32_t content, 
+			       uint32_t content, 
 			       const struct timeval *timestamp);
 
 
@@ -315,7 +289,7 @@ int bionet_resource_set_uint32(bionet_resource_t *resource,
  * @todo implement me
  */
 int bionet_resource_set_int32(bionet_resource_t *resource, 
-			      const int32_t content, 
+			      int32_t content, 
 			      const struct timeval *timestamp);
 
 
@@ -336,7 +310,7 @@ int bionet_resource_set_int32(bionet_resource_t *resource,
  * @todo implement me
  */
 int bionet_resource_set_float(bionet_resource_t *resource, 
-			      const float content, 
+			      float content, 
 			      const struct timeval *timestamp);
 
 
@@ -357,7 +331,7 @@ int bionet_resource_set_float(bionet_resource_t *resource,
  * @todo implement me
  */
 int bionet_resource_set_double(bionet_resource_t *resource, 
-			       const double content, 
+			       double content, 
 			       const struct timeval *timestamp);
 
 
@@ -388,7 +362,7 @@ int bionet_resource_set_str(bionet_resource_t *resource,
  * @param[in] resource The resource to which the datapoint is added
  * @param[in] new_datapoint The datapoint to add
  */
-void bionet_resource_add_existing_datapoint(bionet_resource_t *resource, 
+void bionet_resource_add_datapoint(bionet_resource_t *resource, 
 					    bionet_datapoint_t *new_datapoint);
 
 

@@ -45,12 +45,6 @@ typedef struct bionet_value_opaque_t     bionet_value_t;
 
 
 /**
- * bionet server listens on this TCP port, clients connect
- */
-#define BIONET_PORT (11002)
-
-
-/**
  * name components are no more than this long (including the terminating NULL)
  */
 #define BIONET_NAME_COMPONENT_MAX_LEN (100)
