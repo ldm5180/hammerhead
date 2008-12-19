@@ -170,7 +170,7 @@ int bionet_is_connected(void);
 
 
 /**
- * @brief Reads the bionet file descriptor returned from bionet_read()
+ * @brief Reads the bionet file descriptor returned from bionet_connect()
  *
  * This function should be called whenever the Bionet file
  * descriptor returned from bionet_connect() is readable, or
