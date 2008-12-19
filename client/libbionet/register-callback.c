@@ -29,3 +29,8 @@ void bionet_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t 
     libbionet_callback_datapoint = cb_datapoint;
 }
 
+
+void bionet_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, void *buffer, int size)) {
+    libbionet_callback_stream = cb_stream;
+}
+

@@ -139,6 +139,18 @@ void bionet_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t 
 
 
 /**
+ * @brief Registers Stream callback function with the Bionet library.
+ *         
+ * The 'cb_stream' function gets called when information is published on a
+ * Stream matching a Stream subscription.  Stream subscriptions are created
+ * with bionet_subscribe_stream().
+ *
+ * @param[in] cb_stream The new callback function.
+ */
+void bionet_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, void *buffer, int size));
+
+
+/**
  * @brief Connects to the Bionet network.  
  *
  * Calling this function from the Client is optional, it will be called

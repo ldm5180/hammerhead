@@ -23,6 +23,8 @@ extern void (*libbionet_callback_lost_node)(bionet_node_t *node);
 
 extern void (*libbionet_callback_datapoint)(bionet_datapoint_t *datapoint);
 
+extern void (*libbionet_callback_stream)(bionet_stream_t *stream, void *buffer, int size);
+
 
 extern int libbionet_cal_fd;
 
