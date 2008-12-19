@@ -15,6 +15,11 @@
 
 
 
+int bionet_fd;
+
+
+
+
 void usage(void) {
     fprintf(stderr, "usage: bionet-stream OPTIONS [STREAM]\n\
 \n\
@@ -252,7 +257,6 @@ void deal_with_stream(bionet_stream_t *stream) {
 int main(int argc, char *argv[]) {
     int i;
     char *stream_name = NULL;
-    int bionet_fd;
 
     char *hab_type;
     char *hab_id;
