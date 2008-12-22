@@ -20,19 +20,18 @@
 
 
 
-#define DB_NAME "bdm.db"
 
 static sqlite3 *db = NULL;
 
-
+extern char * database_file;
 
 
 int db_init(void) {
     int r;
 
-    r = sqlite3_open(DB_NAME, &db);
+    r = sqlite3_open(database_file, &db);
     if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error opening database %s: %s\n", DB_NAME, sqlite3_errmsg(db));
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error opening database %s: %s\n", database_file, sqlite3_errmsg(db));
         sqlite3_close(db);
         return -1;
     }

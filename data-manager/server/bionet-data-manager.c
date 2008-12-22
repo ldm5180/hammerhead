@@ -20,7 +20,9 @@
 
 GMainLoop *bdm_main_loop = NULL;
 
+#define DB_NAME "bdm.db"
 
+char * database_file = DB_NAME;
 
 
 void usage(void) {
@@ -37,6 +39,8 @@ OPTIONS:\n\
     -r, --resource, --resources HAB-Type.HAB-ID.Node-ID:Resource-ID\n\
         Subscribe to Resource values.\n\
 \n\
+    -f, --file /Path/to/database/file.db\n\
+        Full path of database file (default: bdm.db)\n\
 ");
 }
 
@@ -79,7 +83,11 @@ int main(int argc, char *argv[]) {
                 resource_name_patterns[resource_index] = *argv;
                 resource_index ++;
 
-            } else {
+            } else if ((strcmp(*argv, "-f") == 0) 
+		       || (strcmp(*argv, "--file") == 0)) {
+		argv++;
+		database_file = *argv;
+	    } else {
                 usage();
                 exit(1);
             }
