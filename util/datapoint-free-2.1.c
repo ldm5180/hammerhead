@@ -12,7 +12,16 @@
 
 
 void bionet_datapoint_free(bionet_datapoint_t *d) {
-    if (d->resource->data_type == BIONET_RESOURCE_DATA_TYPE_STRING) {
+    if (NULL == d)
+    {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_free(): NULL Datapoint passed in");
+	errno = EINVAL;
+	return;
+    }
+
+    if ((d->resource) 
+	&& (d->resource->data_type == BIONET_RESOURCE_DATA_TYPE_STRING)) {
         if (d->value.string_v != NULL) {
             free(d->value.string_v);
         }

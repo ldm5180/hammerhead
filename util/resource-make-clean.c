@@ -18,3 +18,8 @@ void bionet_resource_make_clean(bionet_resource_t *resource) {
     }
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

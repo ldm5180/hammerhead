@@ -20,3 +20,8 @@ int bionet_resource_is_dirty(const bionet_resource_t *resource) {
     return 0;  // not dirty
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

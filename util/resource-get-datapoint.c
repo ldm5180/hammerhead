@@ -32,3 +32,8 @@ bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource
     return g_ptr_array_index(resource->datapoints, index);
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

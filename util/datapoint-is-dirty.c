@@ -5,9 +5,22 @@
 
 
 #include "bionet-util.h"
-
+#include "errno.h"
 
 int bionet_datapoint_is_dirty(const bionet_datapoint_t *datapoint) {
+    if (NULL == datapoint)
+    {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_is_dirty(): NULL datapoint passed in");
+	errno = EINVAL;
+	return -1;
+    }
+
     return datapoint->dirty;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

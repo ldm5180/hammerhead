@@ -58,3 +58,8 @@ int bionet_resource_matches_habtype_habid_nodeid_resourceid(
     return 1;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
