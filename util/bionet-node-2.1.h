@@ -43,7 +43,6 @@ bionet_node_t* bionet_node_new(const bionet_hab_t *hab, const char* node_id);
  * @return NULL on failure
  *
  * @note Do not free the returned pointer
- * @todo implement me
  */
 const char * bionet_node_get_id(const bionet_node_t *node);
 
@@ -55,8 +54,6 @@ const char * bionet_node_get_id(const bionet_node_t *node);
  * 
  * @return Pointer to a HAB
  * @return NULL on failure
- *
- * @todo implement me
  */
 bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node);
 

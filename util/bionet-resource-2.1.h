@@ -159,8 +159,6 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @todo implement me
  */
 int bionet_resource_set_binary(bionet_resource_t *resource, 
 			       int content, 
@@ -180,8 +178,6 @@ int bionet_resource_set_binary(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @todo implement me
  */
 int bionet_resource_set_uint8(bionet_resource_t *resource, 
 			      uint8_t content, 
@@ -201,8 +197,6 @@ int bionet_resource_set_uint8(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @todo implement me
  */
 int bionet_resource_set_int8(bionet_resource_t *resource, 
 			     int8_t content, 
@@ -222,8 +216,6 @@ int bionet_resource_set_int8(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @todo implement me
  */
 int bionet_resource_set_uint16(bionet_resource_t *resource, 
 			       uint16_t content, 
@@ -243,8 +235,6 @@ int bionet_resource_set_uint16(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @todo implement me
  */
 int bionet_resource_set_int16(bionet_resource_t *resource, 
 			      int16_t content, 
@@ -264,8 +254,6 @@ int bionet_resource_set_int16(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @todo implement me
  */
 int bionet_resource_set_uint32(bionet_resource_t *resource, 
 			       uint32_t content, 
@@ -285,8 +273,6 @@ int bionet_resource_set_uint32(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @todo implement me
  */
 int bionet_resource_set_int32(bionet_resource_t *resource, 
 			      int32_t content, 
@@ -306,8 +292,6 @@ int bionet_resource_set_int32(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @todo implement me
  */
 int bionet_resource_set_float(bionet_resource_t *resource, 
 			      float content, 
@@ -327,8 +311,6 @@ int bionet_resource_set_float(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @todo implement me
  */
 int bionet_resource_set_double(bionet_resource_t *resource, 
 			       double content, 
@@ -348,8 +330,6 @@ int bionet_resource_set_double(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @todo implement me
  */
 int bionet_resource_set_str(bionet_resource_t *resource, 
 			    const char * content, 

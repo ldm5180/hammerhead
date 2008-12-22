@@ -63,3 +63,8 @@ int bionet_resource_set_with_valuestr(bionet_resource_t *resource, const char *v
     return 0;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

@@ -46,7 +46,6 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
  * @return NULL on failure
  *
  * @note Do not free the returned pointer
- * @todo implement me
  */
 const char * bionet_hab_get_type(bionet_hab_t *hab);
 
@@ -60,7 +59,6 @@ const char * bionet_hab_get_type(bionet_hab_t *hab);
  * @return NULL on failure
  *
  * @note Do not free the returned pointer
- * @todo implement me
  */
 const char * bionet_hab_get_id(bionet_hab_t *hab);
 

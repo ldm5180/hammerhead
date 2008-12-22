@@ -45,3 +45,8 @@ bionet_resource_flavor_t bionet_resource_flavor_from_string(const char *flavor_s
     return BIONET_RESOURCE_FLAVOR_INVALID;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

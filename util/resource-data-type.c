@@ -76,3 +76,8 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
     return BIONET_RESOURCE_DATA_TYPE_INVALID;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
