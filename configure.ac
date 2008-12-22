@@ -190,6 +190,7 @@ AC_CONFIG_FILES([Makefile
                  util/Makefile
                  client/Makefile
                  client/libbionet/Makefile
+                 client/libbionet-qt4/Makefile
 		 client/monitor/Makefile
                  client/py-libbionet/Makefile
                  client/watcher/Makefile

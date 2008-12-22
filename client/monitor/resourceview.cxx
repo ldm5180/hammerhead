@@ -120,8 +120,8 @@ void ResourceView::updatePanel(bionet_resource_t* resource) {
         valueEditor->setFocusPolicy(Qt::StrongFocus);
 
         // FIXME: when we can set resource values, enable them
-        submitResourceValue->setEnabled(false);
-        valueEditor->setEnabled(false);
+        submitResourceValue->setEnabled(true);
+        valueEditor->setEnabled(true);
             
 
     } else if (rowCount() == 10) {
