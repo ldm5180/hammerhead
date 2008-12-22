@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <sys/file.h>
 #ifdef __CYGWIN__
 #include <windows.h>
 #include <io.h>
@@ -247,6 +248,13 @@ serial_source open_serial_source(const char *device, int baud_rate,
   fd = open(device, O_RDWR | O_NOCTTY | O_NONBLOCK);
   if (fd < 0)
     return NULL;
+
+  if (flock(fd, LOCK_EX | LOCK_NB))
+  {
+      close(fd);
+      fprintf(stderr, "Failed to obtain lock for %s\n", device);
+      return NULL;
+  }
 
 #ifdef __CYGWIN__
   /* For some very mysterious reason, this incantation is necessary to make
@@ -816,3 +824,9 @@ int platform_baud_rate(char *platform_name)
 
   return args.rate;
 }
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
