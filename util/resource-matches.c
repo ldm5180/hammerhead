@@ -6,8 +6,12 @@
 
 #include <string.h>
 
+#ifdef BIONET_21_API
+#include "internal.h"
+#include "bionet-util-2.1.h"
+#else
 #include "bionet-util.h"
-
+#endif
 
 int bionet_resource_matches_id(const bionet_resource_t *resource, const char *id) {
     if (resource == NULL) {

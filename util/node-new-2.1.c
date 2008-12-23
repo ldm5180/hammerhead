@@ -10,7 +10,8 @@
 
 #include <glib.h>
 
-#include "bionet-util.h"
+#include "internal.h"
+#include "bionet-util-2.1.h"
 
 
 
@@ -55,7 +56,7 @@ const char * bionet_node_get_id(const bionet_node_t *node)
 {
     if (NULL == node)
     {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WATNING, "bionet_node_get_id(): NULL node passed in");
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_get_id(): NULL node passed in");
 	errno = EINVAL;
 	return NULL;
     }
@@ -64,11 +65,11 @@ const char * bionet_node_get_id(const bionet_node_t *node)
 } /* bionet_node_get_id() */
 
 
-bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node)
+const bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node)
 {
     if (NULL == node)
     {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WATNING, "bionet_node_get_hab(): NULL node passed in");
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_get_hab(): NULL node passed in");
 	errno = EINVAL;
 	return NULL;
     }

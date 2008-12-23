@@ -8,8 +8,12 @@
 
 #include <glib.h>
 
+#ifdef BIONET_21_API
+#include "internal.h"
+#include "bionet-util-2.1.h"
+#else
 #include "bionet-util.h"
-
+#endif
 
 
 
@@ -37,3 +41,8 @@ void bionet_hab_free(bionet_hab_t *hab) {
 }
 
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

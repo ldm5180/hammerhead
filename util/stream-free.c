@@ -6,7 +6,12 @@
 
 #include <stdlib.h>
 
+#ifdef BIONET_21_API
+#include "internal.h"
+#include "bionet-util-2.1.h"
+#else
 #include "bionet-util.h"
+#endif
 
 
 void bionet_stream_free(bionet_stream_t *stream) {

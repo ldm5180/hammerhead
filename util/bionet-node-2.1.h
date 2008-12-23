@@ -55,7 +55,7 @@ const char * bionet_node_get_id(const bionet_node_t *node);
  * @return Pointer to a HAB
  * @return NULL on failure
  */
-bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node);
+const bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node);
 
 
 /**

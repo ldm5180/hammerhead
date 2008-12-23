@@ -9,8 +9,12 @@
 
 #include <glib.h>
 
+#ifdef BIONET_21_API
+#include "internal.h"
+#include "bionet-util-2.1.h"
+#else
 #include "bionet-util.h"
-
+#endif
 
 int bionet_resource_get_num_datapoints(const bionet_resource_t *resource) {
     if (resource == NULL) {

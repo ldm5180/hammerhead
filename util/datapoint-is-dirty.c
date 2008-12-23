@@ -4,8 +4,14 @@
 //
 
 
+#include <errno.h>
+
+#ifdef BIONET_21_API
+#include "internal.h"
+#include "bionet-util-2.1.h"
+#else
 #include "bionet-util.h"
-#include "errno.h"
+#endif
 
 int bionet_datapoint_is_dirty(const bionet_datapoint_t *datapoint) {
     if (NULL == datapoint)

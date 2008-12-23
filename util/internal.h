@@ -7,6 +7,7 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 
+#include "bionet-util-2.1.h"
 
 struct bionet_hab_opaque_t {
     char *type;
@@ -68,20 +69,6 @@ typedef union {
 } bionet_datapoint_value_t;
 
 
-struct bionet_datapoint_opaque_t {
-    bionet_value_t value;
-    struct timeval timestamp;
-
-    int dirty;  // 1 if the datapoint has new information that hasnt been reported to Bionet, 0 if the datapoint has nothing new
-};
-
-
-struct bionet_value_opaque_t {
-    const bionet_resource_t * resource;
-    bionet_datapoint_value_t content;
-};
-
-
 // 
 // This holds a resource.  'flavor', 'id', and 'data_type' are all used by
 // the system.  'user_data' is for the caller to do with as it pleases.
@@ -99,6 +86,18 @@ struct bionet_resource_opaque_t {
     void *user_data;
 };
 
+struct bionet_value_opaque_t {
+    const bionet_resource_t * resource;
+    bionet_datapoint_value_t content;
+};
+
+
+struct bionet_datapoint_opaque_t {
+    bionet_value_t value;
+    struct timeval timestamp;
+
+    int dirty;  // 1 if the datapoint has new information that hasnt been reported to Bionet, 0 if the datapoint has nothing new
+};
 
 
 #endif /* INTERNAL_H */
