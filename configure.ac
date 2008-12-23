@@ -195,6 +195,7 @@ AC_CONFIG_FILES([Makefile
                  client/py-libbionet/Makefile
                  client/watcher/Makefile
                  client/stream/Makefile
+		 client/stream-manager/Makefile
                  hab/Makefile
                  hab/libhab/Makefile
 		 hab/py-libhab/Makefile
