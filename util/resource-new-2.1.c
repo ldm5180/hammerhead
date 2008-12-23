@@ -10,7 +10,7 @@
 #include <glib.h>
 
 #include "bionet-util.h"
-
+#include "internal.h"
 
 
 
