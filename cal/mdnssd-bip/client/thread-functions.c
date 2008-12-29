@@ -268,7 +268,6 @@ static void read_from_user(void) {
 
         case CAL_EVENT_SUBSCRIBE: {
             cal_client_mdnssd_bip_subscription_t *s;
-            char *topic;
 
 
             //
@@ -311,7 +310,7 @@ static void read_from_user(void) {
                             break;
                         }
 
-                        r = bip_send_message(name, peer, BIP_MSG_TYPE_SUBSCRIBE, topic, strlen(topic) + 1);
+                        r = bip_send_message(name, peer, BIP_MSG_TYPE_SUBSCRIBE, s->topic, strlen(s->topic) + 1);
                         if (r == 0) break;
                     }
                 }
