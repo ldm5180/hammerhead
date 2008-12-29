@@ -162,7 +162,7 @@ void bionet_glib_log_handler(
  * @param[out] resource_id Resource-ID from resource name
  *
  * @retval 0 Success
- * @retval 1 Failure
+ * @retval -1 Failure
  */
 int bionet_split_resource_name(
     const char *resource_name,
@@ -185,7 +185,7 @@ int bionet_split_resource_name(
  * @param[out] node_id Node-ID
  *
  * @retval 0 Success
- * @retval 1 Failure
+ * @retval -1 Failure
  */
 int bionet_split_node_name(
     const char *node_name,
@@ -206,7 +206,7 @@ int bionet_split_node_name(
  * @param[out] hab_id HAB-ID
  *
  * @retval 0 Success
- * @retval 1 Failure
+ * @retval -1 Failure
  */
 int bionet_split_hab_name(
     const char *hab_name,
@@ -226,7 +226,7 @@ int bionet_split_hab_name(
  * @param[out] hab_id HAB-ID 
  *
  * @retval 0 Success
- * @retval 1 Failure
+ * @retval -1 Failure
  *
  * @note This function is re-entrant.
  */
@@ -249,7 +249,7 @@ int bionet_split_hab_name_r(
  * @param[out] resource_id Resource-ID
  *
  * @retval 0 Success
- * @retval 1 Failure
+ * @retval -1 Failure
  *
  * @note This function is re-entrant.
  */
