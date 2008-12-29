@@ -3,10 +3,13 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
-#include "bionet-util.h"
 #include "errno.h"
 
-bionet_resource_t * bionet_value_get_resource(bionet_value_t * value)
+#include "bionet-util-2.1.h"
+#include "internal.h"
+
+
+const bionet_resource_t * bionet_value_get_resource(bionet_value_t * value)
 {
     if (NULL == value)
     {

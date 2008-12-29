@@ -37,11 +37,9 @@
  *       caller.  The caller is free to overwrite or free the
  *       strings on return from this function.
  */
-bionet_datapoint_t *bionet_datapoint_new(
-    bionet_resource_t *resource,
-    const bionet_value_t *value,
-    const struct timeval *timestamp
-);
+bionet_datapoint_t *bionet_datapoint_new(bionet_resource_t *resource,
+					 bionet_value_t *value,
+					 const struct timeval *timestamp);
 
 
 /**
@@ -58,8 +56,7 @@ void bionet_datapoint_free(bionet_datapoint_t *datapoint);
  * @param[in] d Datapoint to set
  * @param[in] value Value to set in the datapoint
  */
-void bionet_datapoint_set_value(bionet_datapoint_t *d, 
-				const bionet_value_t *value);
+void bionet_datapoint_set_value(bionet_datapoint_t *d, bionet_value_t *value);
 
 
 /**

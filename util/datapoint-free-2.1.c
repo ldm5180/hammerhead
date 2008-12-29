@@ -5,11 +5,12 @@
 
 
 #include <stdlib.h>
+#include <errno.h>
 
 #include <glib.h>
 
-#include "bionet-util.h"
-
+#include "bionet-util-2.1.h"
+#include "internal.h"
 
 void bionet_datapoint_free(bionet_datapoint_t *d) {
     if (NULL == d)
@@ -20,11 +21,8 @@ void bionet_datapoint_free(bionet_datapoint_t *d) {
 	return;
     }
 
-    if ((d->resource) 
-	&& (d->resource->data_type == BIONET_RESOURCE_DATA_TYPE_STRING)) {
-        if (d->value.string_v != NULL) {
-            free(d->value.string_v);
-        }
+    if (NULL != d->value) { 
+	bionet_value_free(d->value);
     }
     free(d);
 }

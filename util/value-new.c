@@ -5,7 +5,7 @@
 
 #include <errno.h>
 
-#include "bionet-util.h"
+#include "bionet-util-2.1.h"
 #include "internal.h"
 
 
@@ -106,7 +106,7 @@ bionet_value_t *bionet_value_new_str(bionet_resource_t *resource,
 } /* bionet_value_new_float() */
 
 
-static bionet_value_t * bionet_value_new_internal(bionet_reosurce_t *resource,
+static bionet_value_t * bionet_value_new_internal(bionet_resource_t *resource,
 						  const void *content,
 						  bionet_resource_data_type_t datatype)
 {

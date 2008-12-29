@@ -82,9 +82,6 @@ libbionet_util_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS)
     datapoint-timestamp-2.1.c      \
     datapoint-is-dirty.c       \
     datapoint-make-clean.c     \
-    stream-direction.c                  \
-    stream-free.c                       \
-    stream-new.c                        \
     is-valid-name-component.c  \
     glib-log-handler.c                  \
     network-error.c                     \
@@ -97,6 +94,9 @@ libbionet_util_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS)
     value-to-string.c 
 
 
+#    stream-direction.c                  \
+#    stream-free.c                       \
+#    stream-new.c                        \
 #    stream-accept.c
 #    stream-connect.c
 #    stream-listen.c

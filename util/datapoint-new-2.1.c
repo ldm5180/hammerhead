@@ -9,14 +9,14 @@
 
 #include <glib.h>
 
-#include "bionet-util.h"
-
+#include "bionet-util-2.1.h"
+#include "internal.h"
 
 
 
 bionet_datapoint_t *bionet_datapoint_new(
     bionet_resource_t *resource,
-    const bionet_datapoint_value_t *value,
+    bionet_value_t *value,
     const struct timeval *timestamp
 ) {
     bionet_datapoint_t *d;
@@ -52,9 +52,7 @@ bionet_datapoint_t *bionet_datapoint_new(
         return NULL;
     }
 
-    d->resource = resource;
-
-    d->value = *value;
+    d->value = value;
 
     bionet_datapoint_set_timestamp(d, timestamp);
 

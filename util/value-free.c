@@ -3,9 +3,14 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <sys/time.h>
+#include <stdlib.h>
 #include <errno.h>
 
-#include "bionet-util.h"
+#include "bionet-util-2.1.h"
 #include "internal.h"
 
 

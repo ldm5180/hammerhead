@@ -12,8 +12,8 @@
 
 #include <glib.h>
 
-#include "bionet-util.h"
-
+#include "bionet-util-2.1.h"
+#include "internal.h"
 
 // FIXME: better error handling here - return NULL and set errno if there are problems
 const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datapoint) {
@@ -28,33 +28,40 @@ const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datap
     //
 
     if (datapoint == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_timestamp_to_string_human_readable(): NULL datapoint passed in");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_timestamp_to_string_human_readable(): NULL datapoint passed in");
         return "invalid time";
     }
 
 
     tm = gmtime((time_t *)&datapoint->timestamp.tv_sec);
     if (tm == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_timestamp_to_string_human_readable(): error with gmtime: %s", strerror(errno));
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_timestamp_to_string_human_readable(): error with gmtime: %s", 
+	      strerror(errno));
         return "invalid time";
     }
 
     r = strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", tm);
     if (r <= 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_timestamp_to_string_human_readable(): error with strftime: %s", strerror(errno));
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_timestamp_to_string_human_readable(): error with strftime: %s", 
+	      strerror(errno));
         return "invalid time";
     }
 
     r = snprintf(usec_str, sizeof(usec_str), ".%06ld", (long)datapoint->timestamp.tv_usec);
     if (r >= sizeof(usec_str)) {
         // this should never happen, but it keeps Coverity happy
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_timestamp_to_string_human_readable(): usec_str too small?!");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_timestamp_to_string_human_readable(): usec_str too small?!");
         return "invalid time";
     }
 
     // sanity check destination memory size available
     if ((strlen(usec_str) + 1 + strlen(time_str)) > sizeof(time_str)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_timestamp_to_string_human_readable(): time_str too small?!");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_timestamp_to_string_human_readable(): time_str too small?!");
         return "invalid time";
     }
     strncat(time_str, usec_str, strlen(usec_str));

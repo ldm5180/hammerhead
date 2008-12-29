@@ -29,7 +29,7 @@
  * @return Pointer to a resource
  * @return NULL on failure
  */
-bionet_resource_t * bionet_value_get_resource(bionet_value_t * value);
+const bionet_resource_t * bionet_value_get_resource(bionet_value_t * value);
 
 
 /**

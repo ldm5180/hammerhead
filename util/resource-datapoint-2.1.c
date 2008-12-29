@@ -6,11 +6,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <glib.h>
 
-#include "bionet-util.h"
-
+#include "bionet-util-2.1.h"
+#include "internal.h"
 
 void bionet_resource_add_datapoint(bionet_resource_t *resource,
 				   bionet_datapoint_t *new_datapoint) 

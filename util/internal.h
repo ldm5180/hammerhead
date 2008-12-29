@@ -93,7 +93,7 @@ struct bionet_value_opaque_t {
 
 
 struct bionet_datapoint_opaque_t {
-    bionet_value_t value;
+    bionet_value_t * value;
     struct timeval timestamp;
 
     int dirty;  // 1 if the datapoint has new information that hasnt been reported to Bionet, 0 if the datapoint has nothing new

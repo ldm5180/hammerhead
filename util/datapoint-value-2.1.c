@@ -15,12 +15,12 @@
 
 #include <glib.h>
 
-#include "bionet-util.h"
+#include "bionet-util-2.1.h"
+#include "internal.h"
 
 
 
-
-void bionet_datapoint_set_value(bionet_datapoint_t *d, const bionet_datapoint_value_t *value) {
+void bionet_datapoint_set_value(bionet_datapoint_t *d, bionet_value_t *value) {
     if (d == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_value(): NULL datapoint passed in");
         return;
@@ -30,15 +30,11 @@ void bionet_datapoint_set_value(bionet_datapoint_t *d, const bionet_datapoint_va
         return;
     }
 
-    if (d->resource->data_type == BIONET_RESOURCE_DATA_TYPE_STRING) {
-        free(d->value.string_v);
-        d->value.string_v = strdup(value->string_v);
-        if (d->value.string_v == NULL) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_value(): out of memory");
-            return;
-        }
+    if (d->value) {
+        free(d->value);
+	d->value = value;
     } else {
-        d->value = *value;
+        d->value = value;
     }
 
 

@@ -7,6 +7,10 @@
 #ifndef BIONET_UTIL_H
 #define BIONET_UTIL_H
 
+#ifdef BIONET_21_API
+#error Attempting to include 2.0 API header in 2.1 API
+#endif
+
 /**
  * @file bionet-util.h
  * Helper functions for dealing with Bionet datatypes
