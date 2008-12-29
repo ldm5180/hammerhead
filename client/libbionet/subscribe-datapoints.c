@@ -27,7 +27,7 @@ int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *h
 
     r = snprintf(topic, sizeof(topic), "%s:%s", node_id, resource_id);
     if (r >= sizeof(topic)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(): topic '%sS%s' too long", node_id, resource_id);
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(): topic '%s:%s' too long", node_id, resource_id);
         return -1;
     }
 
