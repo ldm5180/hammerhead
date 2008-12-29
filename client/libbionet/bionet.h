@@ -189,7 +189,7 @@ int bionet_is_connected(void);
  * Bionet and if appropriate call the callback functions.
  *
  * @param[in] timeout This is like the timeout argument to select(2).
- * If NULL, the function will block indefinately until something is read.
+ * If NULL, the function will block indefinitely until something is read.
  * If not NULL but the value is zero (0 seconds and 0 microseconds), then
  * the function will return immediately, whether or not anything was read.
  * If the timeout is greater than zero, then the function will block until
