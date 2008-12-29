@@ -410,6 +410,23 @@ int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *h
 
 
 /**
+ * @brief  Subscribes the client to the contents of the named Producer
+ * Stream.
+ *
+ * When data is published to the named Producer Stream, Bionet will report
+ * the data to the Client.
+ *
+ * @param stream_name A string in the form 
+ *"<HAB-Type>.<HAB-ID>.<Node-ID>:<Stream-ID>" where any component may be
+ * the wildcard "*".
+ *
+ * @retval 0 Success
+ * @retval -1 Error
+ */
+int bionet_subscribe_stream_by_name(const char *stream_name);
+
+
+/**
  * @brief  Sends a message to Bionet requesting that the specified
  * Resource be set to the specified value.
  *

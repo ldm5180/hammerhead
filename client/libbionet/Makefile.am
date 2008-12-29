@@ -10,6 +10,7 @@ libbionet_la_SOURCES =        \
     subscribe-datapoints.c    \
     subscribe-hab-list.c      \
     subscribe-node-list.c     \
+    subscribe-stream.c        \
     set-resource.c            \
     cal-callback.c            \
     cache-get-hab.c           \
