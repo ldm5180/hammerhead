@@ -35,6 +35,7 @@ libbionet_util_la_SOURCES =    \
     stream-direction.c                  \
     stream-free.c                       \
     stream-new.c                        \
+    stream-name.c                       \
     is-valid-name-component.c  \
     glib-log-handler.c                  \
     network-error.c                     \

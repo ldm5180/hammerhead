@@ -89,6 +89,18 @@ bionet_stream_t *bionet_stream_new_from_strings(
 
 
 /**
+ * @brief Returns a string containing the name of the Stream.
+ *
+ * @param[in] stream The Stream to get the name for.
+ *
+ * @return Pointer to the Stream name string.
+ * @retval NULL Error
+ * @retval String Success
+ */
+const char *bionet_stream_get_name(const bionet_stream_t *stream);
+
+
+/**
  * @brief Binds the Stream to an ephemeral (random, unused) port and
  *        starts listening.  Sets the Stream's "port" member to
  *        whatever port it got.
