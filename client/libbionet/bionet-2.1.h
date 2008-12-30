@@ -3,17 +3,15 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
-#ifndef __BIONET_H
-#define __BIONET_H
+#ifndef __BIONET_21_H
+#define __BIONET_21_H
+
+
 
 
 #include <glib.h>
 
-#include "bionet-util.h"
-
-#ifdef BIONET_21_API
-#include "bionet-2.1.h"
-#else
+#include "bionet-util-2.1.h"
 
 /**
  * @file bionet.h
@@ -440,8 +438,9 @@ int bionet_subscribe_stream_by_name(const char *stream_name);
  *
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that the HAB accepted the request.
+ * @todo implement me
  */
-int bionet_set_resource(const bionet_resource_t *resource, const char *value);
+int bionet_set_resource(bionet_resource_t *resource, const char *value);
 
 
 /**
@@ -492,7 +491,7 @@ int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
  */
 int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const char *value);
 
-#endif
+
 #endif // __BIONET_H
 
 

@@ -129,6 +129,7 @@ Resource_t *bionet_resource_to_asn(const bionet_resource_t *resource);
 
 
 bionet_node_t *bionet_asn_to_node(const Node_t *asn_node);
+bionet_node_t *bionet_asn_to_node_21(const Node_t *asn_node, bionet_hab_t *hab);
 
 
 ResourceFlavor_t bionet_flavor_to_asn(bionet_resource_flavor_t flavor);

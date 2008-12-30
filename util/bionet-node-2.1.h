@@ -31,7 +31,7 @@
  * @return Pointer to the new node
  * @retval NULL Failure
  */
-bionet_node_t* bionet_node_new(const bionet_hab_t *hab, const char* node_id);
+bionet_node_t* bionet_node_new(bionet_hab_t *hab, const char* node_id);
 
 
 /**
@@ -55,7 +55,7 @@ const char * bionet_node_get_id(const bionet_node_t *node);
  * @return Pointer to a HAB
  * @return NULL on failure
  */
-const bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node);
+bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node);
 
 
 /**

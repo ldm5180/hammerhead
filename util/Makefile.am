@@ -68,6 +68,7 @@ libbionet_util_21_la_SOURCES =    \
     node-free.c                \
     resource-new-2.1.c             \
     resource-free-2.1.c            \
+    resource-get.c             \
     resource-data-type.c       \
     resource-flavor.c          \
     resource-datapoint-2.1.c       \

@@ -14,7 +14,7 @@ static int bionet_hab_set_type(bionet_hab_t *hab, const char *type);
 static int bionet_hab_set_id(bionet_hab_t *hab, const char *id);
 
 
-const char * bionet_hab_get_type(bionet_hab_t *hab) {
+const char * bionet_hab_get_type(const bionet_hab_t *hab) {
 
     if (hab == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -26,7 +26,7 @@ const char * bionet_hab_get_type(bionet_hab_t *hab) {
 }
 
 
-const char * bionet_hab_get_id(bionet_hab_t *hab) {
+const char * bionet_hab_get_id(const bionet_hab_t *hab) {
 
     if (hab == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 

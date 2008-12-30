@@ -20,7 +20,7 @@ struct bionet_hab_opaque_t {
 
 
 struct bionet_node_opaque_t {
-    const bionet_hab_t *hab;
+    bionet_hab_t *hab;
 
     char *id;
 
@@ -32,7 +32,7 @@ struct bionet_node_opaque_t {
 
 
 struct bionet_stream_opaque_t {
-    const bionet_node_t *node;
+    bionet_node_t *node;
 
     // this describes the stream
     char *id;
@@ -74,7 +74,7 @@ typedef union {
 // the system.  'user_data' is for the caller to do with as it pleases.
 //
 struct bionet_resource_opaque_t {
-    const bionet_node_t *node;
+    bionet_node_t *node;
 
     char *id;
 

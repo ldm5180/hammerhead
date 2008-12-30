@@ -75,7 +75,7 @@ typedef enum {
  *       this function.
  */
 bionet_resource_t *bionet_resource_new(
-    const bionet_node_t *node,
+    bionet_node_t *node,
     bionet_resource_data_type_t data_type,
     bionet_resource_flavor_t flavor,
     const char *id
@@ -88,6 +88,38 @@ bionet_resource_t *bionet_resource_new(
  * @param[in] resource The Resource to free.
  */
 void bionet_resource_free(bionet_resource_t *resource);
+
+
+/**
+ * @brief Get ID of a resource
+ *
+ * @param[in] resource The resource
+ *
+ * @return ID of the resource
+ * @return NULL Error
+ */
+const char *bionet_resource_get_id(bionet_resource_t *resource);
+
+
+/**
+ * @brief Get the node this resource belongs to
+ *
+ * @param[in] resource The Resource
+ *
+ * @return Pointer to Node
+ * @return NULL Error
+ */
+bionet_node_t * bionet_resource_get_node(const bionet_resource_t *resource);
+
+
+/**
+ * @brief Get the data type of a resource
+ *
+ * @param[in] resource The resource
+ *
+ * @return Type of resource
+ */
+bionet_resource_data_type_t bionet_resource_get_data_type(const bionet_resource_t *resource);
 
 
 /**

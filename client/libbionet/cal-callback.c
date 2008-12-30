@@ -4,9 +4,11 @@
 //
 
 
+#include "bionet-util.h"
 #include "cal-client.h"
 #include "libbionet-internal.h"
 #include "bionet-asn.h"
+
 
 
 
@@ -36,12 +38,20 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
         libbionet_cache_add_hab(hab);
     }
 
+#ifdef BIONET_21_API
+    node = bionet_asn_to_node_21(newNode, hab);
+    if (node == NULL) {
+        // an error has been logged
+        return;
+    }
+#else
     node = bionet_asn_to_node(newNode);
     if (node == NULL) {
         // an error has been logged
         return;
     }
     node->hab = hab;
+#endif
 
     bionet_hab_add_node(hab, node);
 
@@ -166,7 +176,11 @@ static void handle_lost_node(const cal_event_t *event, const PrintableString_t *
         libbionet_callback_lost_node(node);
     }
 
+#ifdef BIONET_21_API
+    bionet_hab_remove_node_by_id(hab, bionet_node_get_id(node));
+#else
     bionet_hab_remove_node_by_id(hab, node->id);
+#endif
     bionet_node_free(node);
 }
 
@@ -216,11 +230,20 @@ static void handle_resource_datapoints(const cal_event_t *event, ResourceDatapoi
 
         d = bionet_resource_get_datapoint_by_index(resource, 0);
         if (d == NULL) {
-            bionet_resource_add_existing_datapoint(resource, new_d);
+#ifdef BIONET_21_API
+	    bionet_resource_add_datapoint(resource, new_d);
+#else
+	    bionet_resource_add_existing_datapoint(resource, new_d);
+#endif
             d = new_d;
         } else {
+#ifdef BIONET_21_API
+            bionet_datapoint_set_value(d, bionet_datapoint_get_value(new_d));
+            bionet_datapoint_set_timestamp(d, bionet_datapoint_get_timestamp(new_d));
+#else
             bionet_datapoint_set_value(d, &new_d->value);
             bionet_datapoint_set_timestamp(d, &new_d->timestamp);
+#endif
             bionet_datapoint_free(new_d);
         }
 
@@ -360,9 +383,15 @@ void libbionet_cal_callback(const cal_event_t *event) {
             hab = bionet_cache_lookup_hab(type, id);
             if (hab != NULL) {
                 if (libbionet_callback_lost_node != NULL) {
+#ifdef BIONET_21_API
+		    int i;
+                    for (i = 0; i < bionet_hab_get_num_nodes(hab); i++) {
+			bionet_node_t *node = bionet_hab_get_node_by_index(hab, i);
+#else
                     GSList *i;
                     for (i = hab->nodes; i != NULL; i = i->next) {
                         bionet_node_t *node = i->data;
+#endif
                         libbionet_callback_lost_node(node);
                     }
                 }
@@ -395,3 +424,9 @@ void libbionet_cal_callback(const cal_event_t *event) {
     }
 }
 
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

@@ -11,12 +11,12 @@
 #include <glib.h>
 
 #include "internal.h"
-#include "bionet-util-2.1.h"
+#include "bionet-util.h"
 
 
 
 bionet_node_t* bionet_node_new(
-        const bionet_hab_t *hab,
+        bionet_hab_t *hab,
 	const char* node_id
 ) {
     bionet_node_t* node;
@@ -65,7 +65,7 @@ const char * bionet_node_get_id(const bionet_node_t *node)
 } /* bionet_node_get_id() */
 
 
-const bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node)
+bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node)
 {
     if (NULL == node)
     {

@@ -68,3 +68,8 @@ bionet_node_t *bionet_hab_get_node_by_index(bionet_hab_t *hab, unsigned int inde
 }
 
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

@@ -8,8 +8,8 @@
 #define BIONET_UTIL_H
 
 #ifdef BIONET_21_API
-#error Attempting to include 2.0 API header in 2.1 API
-#endif
+#include "bionet-util-2.1.h"
+#else
 
 /**
  * @file bionet-util.h
@@ -263,7 +263,7 @@ int bionet_split_nodeid_resourceid_r(
     char resource_id[BIONET_NAME_COMPONENT_MAX_LEN]
 ); 
 
-
+#endif
 #endif //  BIONET_UTIL_H
 
 // Emacs cruft

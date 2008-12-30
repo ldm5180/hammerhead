@@ -47,7 +47,7 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
  *
  * @note Do not free the returned pointer
  */
-const char * bionet_hab_get_type(bionet_hab_t *hab);
+const char * bionet_hab_get_type(const bionet_hab_t *hab);
 
 
 /**
@@ -60,7 +60,7 @@ const char * bionet_hab_get_type(bionet_hab_t *hab);
  *
  * @note Do not free the returned pointer
  */
-const char * bionet_hab_get_id(bionet_hab_t *hab);
+const char * bionet_hab_get_id(const bionet_hab_t *hab);
 
 
 /**

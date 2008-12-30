@@ -681,6 +681,78 @@ cleanup:
 }
 
 
+bionet_node_t *bionet_asn_to_node_21(const Node_t *asn_node, bionet_hab_t *hab) {
+    int i;
+    bionet_node_t *node;
+
+
+    // 
+    // make the Node and grab the Node-ID
+    //
+
+    node = bionet_node_new(hab, (char *)asn_node->id.buf);
+    if (node == NULL) {
+        // an error has been logged
+        return NULL;
+    }
+
+
+    // 
+    // the Node's Resources
+    //
+
+    for (i = 0; i < asn_node->resources.list.count; i ++) {
+        bionet_resource_t *resource;
+        Resource_t *asn_resource = asn_node->resources.list.array[i];
+        int r;
+
+        resource = bionet_asn_to_resource(asn_resource);
+        if (resource == NULL) {
+            // an error has been logged already
+            goto cleanup;
+        }
+
+        r = bionet_node_add_resource(node, resource);
+        if (r != 0) {
+            // an error's been logged
+            bionet_resource_free(resource);
+            goto cleanup;
+        }
+    }
+
+
+    // 
+    // the Node's Streams
+    //
+
+    for (i = 0; i < asn_node->streams.list.count; i ++) {
+        bionet_stream_t *stream;
+        Stream_t *asn_stream = asn_node->streams.list.array[i];
+        int r;
+
+        stream = bionet_asn_to_stream(asn_stream);
+        if (stream == NULL) {
+            // an error has been logged already
+            goto cleanup;
+        }
+
+        r = bionet_node_add_stream(node, stream);
+        if (r != 0) {
+            // an error's been logged
+            bionet_stream_free(stream);
+            goto cleanup;
+        }
+    }
+
+    return node;
+
+
+cleanup:
+    bionet_node_free(node);
+    return NULL;
+}
+
+
 int bionet_resource_metadata_to_asnbuf(const bionet_resource_t *resource, bionet_asn_buffer_t *buf) {
     H2C_Message_t m;
     ResourceMetadata_t *rm;

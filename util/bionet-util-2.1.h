@@ -4,8 +4,8 @@
 //
 
 
-#ifndef BIONET_UTIL_H
-#define BIONET_UTIL_H
+#ifndef BIONET_UTIL_21_H
+#define BIONET_UTIL_21_H
 
 /**
  * @file bionet-util.h

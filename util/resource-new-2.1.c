@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <glib.h>
 
@@ -15,7 +16,7 @@
 
 
 bionet_resource_t *bionet_resource_new(
-    const bionet_node_t *node,
+    bionet_node_t *node,
     bionet_resource_data_type_t data_type,
     bionet_resource_flavor_t flavor,
     const char *id
@@ -80,6 +81,17 @@ cleanup:
     return NULL;
 }
 
+
+const char *bionet_resource_get_id(bionet_resource_t *resource)
+{
+    if (NULL == resource)
+    {
+	errno = EINVAL;
+	return NULL;
+    }
+
+    return resource->id;
+}
 
 // Emacs cruft
 // Local Variables:
