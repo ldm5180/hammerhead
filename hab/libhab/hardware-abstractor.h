@@ -135,7 +135,7 @@ void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_
  *
  * @param cb_lost_client  The new callback function.
  *
- * The callback function gets a single argumentx: the unique "id" of the
+ * The callback function gets a single argument: the unique "id" of the
  * disconnecting Client.
  */
 
