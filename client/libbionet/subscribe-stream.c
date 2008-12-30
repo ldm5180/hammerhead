@@ -18,7 +18,7 @@
 int bionet_subscribe_stream_by_habtype_habid_nodeid_streamid(const char *hab_type,  const char *hab_id, const char *node_id, const char *stream_id) {
     int r;
     char publisher[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 2];  // the +2 is one for the '.' and one for the '\0'
-    char topic[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 2];  // the +2 is one for the ':' and one for the '\0'
+    char topic[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 4];  // the +4 is for the starting "S ", the ':' in the name, and the '\0' at the end
 
     r = snprintf(publisher, sizeof(publisher), "%s.%s", hab_type, hab_id);
     if (r >= sizeof(publisher)) {
@@ -26,9 +26,9 @@ int bionet_subscribe_stream_by_habtype_habid_nodeid_streamid(const char *hab_typ
         return -1;
     }
 
-    r = snprintf(topic, sizeof(topic), "%s:%s", node_id, stream_id);
+    r = snprintf(topic, sizeof(topic), "S %s:%s", node_id, stream_id);
     if (r >= sizeof(topic)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_stream_by_habtype_habid_nodeid_streamid(): topic '%s:%s' too long", node_id, stream_id);
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_stream_by_habtype_habid_nodeid_streamid(): topic 'S %s:%s' too long", node_id, stream_id);
         return -1;
     }
 

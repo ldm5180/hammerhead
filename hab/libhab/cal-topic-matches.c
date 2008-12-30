@@ -12,12 +12,19 @@
 int libhab_cal_topic_matches(const char *topic, const char *subscription) {
 
     //
-    // There are two kinds of subscriptions: node subscriptions and
-    // datapoint subscriptions.
+    // There are three kinds of subscriptions: node subscriptions, stream
+    // subscriptions, and datapoint subscriptions.
     //
-    // Node subscriptions are of the form <NodeId>.
+    // Node subscriptions are of the form "<NodeId>"
     //
-    // Datapoint subscriptions are of the form <NodeID:ResourceID>
+    // Stream subscriptions are of the form "S <NodeID:StreamID>"
+    //
+    // Datapoint subscriptions are of the form "<NodeID:ResourceID>"
+    //
+
+
+    //
+    // If the subscription doesnt have a ':', then it's a Node subscription
     //
 
     if (strchr(subscription, ':') == NULL) {
@@ -31,13 +38,39 @@ int libhab_cal_topic_matches(const char *topic, const char *subscription) {
 
 
     //
-    // this is a Datapoint subscription
+    // If the subscription begins with "S ", then it's a Stream subscription
     //
 
+    if (strncmp(subscription, "S ", 2) == 0) {
+        char sub_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+        char sub_stream_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
-    // make sure it's a Datapoint topic too
-    if (strchr(topic, ':') == NULL) return -1;
+        char topic_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+        char topic_stream_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
+        int r;
+
+        if (strncmp(topic, "S ", 2) != 0) {
+            // not a Stream topic
+            return -1;
+        }
+
+        r = bionet_split_nodeid_resourceid_r(subscription, sub_node_id, sub_stream_id);
+        if (r != 0) return -1;
+
+        r = bionet_split_nodeid_resourceid_r(topic, topic_node_id, topic_stream_id);
+        if (r != 0) return -1;
+
+        if (!bionet_name_component_matches(topic_node_id, sub_node_id)) return -1;
+        if (!bionet_name_component_matches(topic_stream_id, sub_stream_id)) return -1;
+
+        return 0;
+    }
+
+
+    //
+    // this must be a Datapoint subscription then
+    //
 
     {
         char sub_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
