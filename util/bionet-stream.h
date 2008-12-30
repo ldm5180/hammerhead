@@ -155,7 +155,7 @@ void bionet_stream_free(bionet_stream_t *stream);
 /**
  * @brief Determine the direction of a Stream.
  *
- * @param[in] Stream The Stream to examine.
+ * @param[in] stream The Stream to examine.
  *
  * @return The bionet_stream_direction_t.
  */
