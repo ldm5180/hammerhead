@@ -1,7 +1,7 @@
 
 include $(top_srcdir)/common.am
 
-lib_LTLIBRARIES = libbionet-util.la #libbionet-util-21.la
+lib_LTLIBRARIES = libbionet-util.la libbionet-util-21.la
 
 libbionet_util_la_SOURCES =    \
     hab-add-node.c             \
@@ -52,7 +52,7 @@ libbionet_util_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS)
 
 
 
-#libbionet_util_21_la_SOURCES =    \
+libbionet_util_21_la_SOURCES =    \
     hab-add-node.c             \
     hab-remove-node.c          \
     hab-matches.c              \
@@ -101,7 +101,7 @@ libbionet_util_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS)
 #    stream-connect.c
 #    stream-listen.c
 
-#libbionet_util_21_la_CFLAGS = -DBIONET_21_API $(AM_CFLAGS) $(GLIB20_CFLAGS) -I ../asn.1
+libbionet_util_21_la_CFLAGS = -DBIONET_21_API $(AM_CFLAGS) $(GLIB20_CFLAGS) -I ../asn.1
 
-#libbionet_util_21_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS)
+libbionet_util_21_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS)
 

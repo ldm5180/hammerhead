@@ -3,9 +3,12 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <errno.h>
 
-#include "bionet-util.h"
+#include "bionet-util-2.1.h"
 #include "internal.h"
 
 #define BIONET_STR_MAX 512
@@ -20,7 +23,7 @@ const char *bionet_value_to_string(const bionet_value_t *value)
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_value_to_str(): NULL value passed in");
 	errno = EINVAL;
-	return -1;
+	return NULL;
     }
 
     if ((BIONET_RESOURCE_DATA_TYPE_STRING == value->resource->data_type)
@@ -29,7 +32,7 @@ const char *bionet_value_to_string(const bionet_value_t *value)
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_value_to_str(): NULL content in string value");
 	errno = EINVAL;
-	return -1;	
+	return NULL;	
     }
 
     str = malloc(BIONET_STR_MAX);
@@ -141,7 +144,7 @@ const char *bionet_value_to_string(const bionet_value_t *value)
 	}
 	break;
 
-    case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+    case BIONET_RESOURCE_DATA_TYPE_STRING:
 	free(str);
 	str = strdup(value->content.string_v);
 	if (NULL == str)

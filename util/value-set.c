@@ -3,9 +3,10 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
+#include <stdlib.h>
 #include <errno.h>
 
-#include "bionet-util.h"
+#include "bionet-util-2.1.h"
 #include "internal.h"
 
 
@@ -146,40 +147,69 @@ static int bionet_value_set_internal(bionet_value_t *value,
     switch (datatype)
     {
     case BIONET_RESOURCE_DATA_TYPE_BINARY:
-	value->content.binary_v = (int)*content;
+    {
+	int * pContent = (int *)content;
+	value->content.binary_v = *pContent;
 	break;
+    }
     case BIONET_RESOURCE_DATA_TYPE_UINT8:
-	value->content.uint8_v = (uint8_t)*content;
+    {
+	uint8_t * pContent = (uint8_t *)content;
+	value->content.uint8_v = *pContent;
 	break;
+    }
     case BIONET_RESOURCE_DATA_TYPE_INT8:
-	value->content.int8_v = (int8_t)*content;
+    {
+	int8_t * pContent = (int8_t *)content;
+	value->content.int8_v = *pContent;
 	break;
+    }
     case BIONET_RESOURCE_DATA_TYPE_UINT16:
-	value->content.uint16_v = (uint16_t)*content;
+    {
+	uint16_t * pContent = (uint16_t *)content;
+	value->content.uint16_v = *pContent;
 	break;
+    }
     case BIONET_RESOURCE_DATA_TYPE_INT16:
-	value->content.int16_v = (int16_t)*content;
+    {
+	int16_t * pContent = (int16_t *)content;
+	value->content.int16_v = *pContent;
 	break;
+    }
     case BIONET_RESOURCE_DATA_TYPE_UINT32:
-	value->content.uint32_v = (uint32_t)*content;
+    {
+	uint32_t * pContent = (uint32_t *)content;
+	value->content.uint32_v = *pContent;
 	break;
+    }
     case BIONET_RESOURCE_DATA_TYPE_INT32:
-	value->content.int32_v = (int32_t)*content;
+    {
+	int32_t * pContent = (int32_t *)content;
+	value->content.int32_v = *pContent;
 	break;
+    }
     case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-	value->content.float_v = (float)*content;
+    {
+	float * pContent = (float *)content;
+	value->content.float_v = *pContent;
 	break;
+    }
     case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-	value->content.double_v = (double)*content;
+    {
+	double * pContent = (double *)content;
+	value->content.double_v = *pContent;
 	break;
+    }
     case BIONET_RESOURCE_DATA_TYPE_STRING:
+    {
 	if (value->content.string_v)
 	{
             /* free the previous content */
 	    free(value->content.string_v); 
 	}
-	value->content.string_v = (const char *)content;
+	value->content.string_v = (char *)content;
 	break;	
+    }
     default:
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_value_get_*(): Invalid datatype");
