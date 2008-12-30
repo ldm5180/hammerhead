@@ -22,7 +22,7 @@ qtmake_moc_objects = moc_mainwindow.o moc_node.o moc_stream.o moc_streamview.o
 
 qtmake_headers = mainwindow.h node.h stream.h streamview.h
 
-qtmake_sources = mainwindow.cxx node.cxx stream.cxx streamview.cxx
+qtmake_sources = mainwindow.cxx node.cxx stream.cxx streamview.cxx main.cxx
 
 qtmake_objects = mainwindow.o node.o stream.o streamview.o main.o
 
