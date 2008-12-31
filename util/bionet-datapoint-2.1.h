@@ -100,7 +100,7 @@ void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint,
  * @return Pointer to timestamp
  * @return NULL on failure
  */
-const struct timeval * bionet_datapoint_get_timestamp(bionet_datapoint_t *datapoint);
+struct timeval * bionet_datapoint_get_timestamp(bionet_datapoint_t *datapoint);
 
 
 /**

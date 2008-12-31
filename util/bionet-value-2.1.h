@@ -29,7 +29,7 @@
  * @return Pointer to a resource
  * @return NULL on failure
  */
-const bionet_resource_t * bionet_value_get_resource(bionet_value_t * value);
+bionet_resource_t * bionet_value_get_resource(bionet_value_t * value);
 
 
 /**
@@ -213,7 +213,7 @@ void bionet_value_free(bionet_value_t *value);
  *
  * @note Caller must free this pointer returned.
  */
-const char *bionet_value_to_str(const bionet_value_t *value);
+char *bionet_value_to_str(const bionet_value_t *value);
 
 
 /**

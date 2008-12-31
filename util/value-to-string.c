@@ -13,7 +13,7 @@
 
 #define BIONET_STR_MAX 512
 
-const char *bionet_value_to_string(const bionet_value_t *value)
+char *bionet_value_to_str(const bionet_value_t *value)
 {
     char * str;
     int r;
@@ -164,7 +164,7 @@ const char *bionet_value_to_string(const bionet_value_t *value)
     }
 	
     return str;
-} /* bionet_value_to_string() */
+} /* bionet_value_to_str() */
 
 
 // Emacs cruft

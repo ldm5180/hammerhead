@@ -15,12 +15,19 @@
 #endif
 
 
-
+#ifdef BIONET_21_API
+bionet_stream_t *bionet_stream_new(
+    bionet_node_t *node,
+    const char *id,
+    bionet_stream_direction_t direction,
+    const char *type
+#else
 bionet_stream_t *bionet_stream_new(
     const bionet_node_t *node,
     const char *id,
     bionet_stream_direction_t direction,
     const char *type
+#endif
 ) {
     bionet_stream_t *stream;
 
@@ -103,12 +110,19 @@ cleanup:
 
 
 
-
+#ifdef BIONET_21_API
+bionet_stream_t *bionet_stream_new_from_strings(
+    bionet_node_t *node,
+    const char *id,
+    const char *direction_str,
+    const char *type
+#else
 bionet_stream_t *bionet_stream_new_from_strings(
     const bionet_node_t *node,
     const char *id,
     const char *direction_str,
     const char *type
+#endif
 ) {
     bionet_stream_direction_t direction;
 

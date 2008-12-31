@@ -136,7 +136,12 @@ bionet_resource_data_type_t bionet_asn_to_datatype(ResourceDataType_t asn_dataty
 
 Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d) {
     int r;
+#ifdef BIONET_21_API
+    bionet_resource_t * resource = bionet_value_get_resource(bionet_datapoint_get_value(d));
+    bionet_resource_data_type_t datatype = bionet_resource_get_data_type(resource);
+#else
     bionet_resource_data_type_t datatype = d->resource->data_type;
+#endif
     Datapoint_t *asn_datapoint;
 
     asn_datapoint = (Datapoint_t *)calloc(1, sizeof(Datapoint_t));
@@ -145,71 +150,133 @@ Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d) {
         return NULL;
     }
 
+#ifdef BIONET_21_API
+    r = bionet_timeval_to_GeneralizedTime(bionet_datapoint_get_timestamp(d), &asn_datapoint->timestamp);
+#else
     r = bionet_timeval_to_GeneralizedTime(&d->timestamp, &asn_datapoint->timestamp);
+#endif
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_to_asn(): error setting timestamp of Datapoint: %s", strerror(errno));
         goto cleanup;
     }
 
+#ifdef BIONET_21_API
+    bionet_value_t * value = bionet_datapoint_get_value(d);
+#endif
+
     switch (datatype) {
         case BIONET_RESOURCE_DATA_TYPE_BINARY: {
             asn_datapoint->value.present = Value_PR_binary_v;
+#ifdef BIONET_21_API
+            bionet_value_get_binary(value, (int *)&asn_datapoint->value.choice.binary_v);
+#else
             asn_datapoint->value.choice.binary_v = d->value.binary_v;
+#endif
             break;
         }
         case BIONET_RESOURCE_DATA_TYPE_UINT8: {
             asn_datapoint->value.present = Value_PR_uint8_v;
+#ifdef BIONET_21_API
+            bionet_value_get_uint8(value, (uint8_t *)&asn_datapoint->value.choice.uint8_v);
+#else
             asn_datapoint->value.choice.uint8_v = d->value.uint8_v;
+#endif
             break;
         }
         case BIONET_RESOURCE_DATA_TYPE_INT8: {
             asn_datapoint->value.present = Value_PR_int8_v;
+#ifdef BIONET_21_API
+            bionet_value_get_int8(value, (int8_t *)&asn_datapoint->value.choice.int8_v);
+#else
             asn_datapoint->value.choice.int8_v = d->value.int8_v;
+#endif
             break;
         }
         case BIONET_RESOURCE_DATA_TYPE_UINT16: {
             asn_datapoint->value.present = Value_PR_uint16_v;
+#ifdef BIONET_21_API
+            bionet_value_get_uint16(value, (uint16_t *)&asn_datapoint->value.choice.uint16_v);
+#else
             asn_datapoint->value.choice.uint16_v = d->value.uint16_v;
+#endif
             break;
         }
         case BIONET_RESOURCE_DATA_TYPE_INT16: {
             asn_datapoint->value.present = Value_PR_int16_v;
+#ifdef BIONET_21_API
+            bionet_value_get_int16(value, (int16_t *)&asn_datapoint->value.choice.int16_v);
+#else
             asn_datapoint->value.choice.int16_v = d->value.int16_v;
+#endif
             break;
         }
         case BIONET_RESOURCE_DATA_TYPE_UINT32: {
             int r;
             asn_datapoint->value.present = Value_PR_uint32_v;
-            r = asn_long2INTEGER(&asn_datapoint->value.choice.uint32_v, (long)d->value.uint32_v);
+#ifdef BIONET_21_API
+	    uint32_t content;
+	    bionet_value_get_uint32(value, &content);
+            r = asn_long2INTEGER(&asn_datapoint->value.choice.uint32_v, (long)content);
             if (r != 0) {
-                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_to_asn(): error making INTEGER for Datapoint value %u", d->value.uint32_v);
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_to_asn(): error making INTEGER for Datapoint value %u", content);
                 goto cleanup;
             }
+#else
+	    r = asn_long2INTEGER(&asn_datapoint->value.choice.uint32_v, (long)d->value.uint32_v);
+	    if (r != 0) {
+	      g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		    "bionet_datapoint_to_asn(): error making INTEGER for Datapoint value %u", 
+		    d->value.uint32_v);
+                goto cleanup;
+            }
+#endif
             break;
         }
         case BIONET_RESOURCE_DATA_TYPE_INT32: {
             asn_datapoint->value.present = Value_PR_int32_v;
+#ifdef BIONET_21_API
+            bionet_value_get_int32(value, (int32_t *)&asn_datapoint->value.choice.int32_v);
+#else
             asn_datapoint->value.choice.int32_v = d->value.int32_v;
+#endif
             break;
         }
         case BIONET_RESOURCE_DATA_TYPE_FLOAT: {
             asn_datapoint->value.present = Value_PR_real;
+#ifdef BIONET_21_API
+            bionet_value_get_float(value, (float *)&asn_datapoint->value.choice.real);
+#else
             asn_datapoint->value.choice.real = d->value.float_v;
+#endif
             break;
         }
         case BIONET_RESOURCE_DATA_TYPE_DOUBLE: {
             asn_datapoint->value.present = Value_PR_real;
+#ifdef BIONET_21_API
+            bionet_value_get_double(value, (double *)&asn_datapoint->value.choice.real);
+#else
             asn_datapoint->value.choice.real = d->value.double_v;
+#endif
             break;
         }
         case BIONET_RESOURCE_DATA_TYPE_STRING: {
             int r;
             asn_datapoint->value.present = Value_PR_string;
+#ifdef BIONET_21_API
+	    char * content;
+            bionet_value_get_str(value, &content);
+            r = OCTET_STRING_fromString(&asn_datapoint->value.choice.string, content);
+            if (r != 0) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_to_asn(): error making OCTET_STRING for Datapoint String value '%s'", content);
+                goto cleanup;
+            }
+#else
             r = OCTET_STRING_fromString(&asn_datapoint->value.choice.string, d->value.string_v);
             if (r != 0) {
                 g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_to_asn(): error making OCTET_STRING for Datapoint String value '%s'", d->value.string_v);
                 goto cleanup;
             }
+#endif
             break;
         }
         default: {
@@ -230,7 +297,11 @@ cleanup:
 
 
 bionet_datapoint_t *bionet_asn_to_datapoint(Datapoint_t *asn_datapoint, bionet_resource_t *resource) {
+#ifdef BIONET_21_API
+    bionet_value_t *value = NULL;
+#else
     bionet_datapoint_value_t value;
+#endif
     struct timeval timestamp;
     int r;
 
@@ -240,6 +311,75 @@ bionet_datapoint_t *bionet_asn_to_datapoint(Datapoint_t *asn_datapoint, bionet_r
         return NULL;
     }
 
+#ifdef BIONET_21_API
+    switch (bionet_resource_get_data_type(resource)) {
+    case BIONET_RESOURCE_DATA_TYPE_BINARY: {
+	if (asn_datapoint->value.choice.binary_v == 0) {
+	    value = bionet_value_new_binary(resource, 0);
+	} else {
+	    value = bionet_value_new_binary(resource, 1);
+	}
+	break;
+    }
+    case BIONET_RESOURCE_DATA_TYPE_UINT8: {
+	value = bionet_value_new_uint8(resource, (uint8_t)asn_datapoint->value.choice.uint8_v);
+	break;
+    }
+    case BIONET_RESOURCE_DATA_TYPE_INT8: {
+	value = bionet_value_new_int8(resource, (int8_t)asn_datapoint->value.choice.int8_v);
+	break;
+    }
+    case BIONET_RESOURCE_DATA_TYPE_UINT16: {
+	value = bionet_value_new_uint16(resource, (uint16_t)asn_datapoint->value.choice.uint16_v);
+	break;
+    }
+    case BIONET_RESOURCE_DATA_TYPE_INT16: {
+	value = bionet_value_new_int16(resource, (int16_t)asn_datapoint->value.choice.int16_v);
+	break;
+    }
+    case BIONET_RESOURCE_DATA_TYPE_UINT32: {
+	int r;
+	long l;
+	r = asn_INTEGER2long(&asn_datapoint->value.choice.uint32_v, &l);
+	if (r != 0) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bionet_asn_to_datapoint(): error converting ASN INTEGER to native Datapoint value");
+	    return NULL;
+	}
+	value = bionet_value_new_uint32(resource, (uint32_t)l);
+	break;
+    }
+    case BIONET_RESOURCE_DATA_TYPE_INT32: {
+	value = bionet_value_new_int32(resource, (int32_t)asn_datapoint->value.choice.int32_v);
+	break;
+    }
+    case BIONET_RESOURCE_DATA_TYPE_FLOAT: {
+	value = bionet_value_new_float(resource, (float)asn_datapoint->value.choice.real);
+	break;
+    }
+    case BIONET_RESOURCE_DATA_TYPE_DOUBLE: {
+	value = bionet_value_new_double(resource, (double)asn_datapoint->value.choice.real);
+	break;
+    }
+    case BIONET_RESOURCE_DATA_TYPE_STRING: {
+	const char * new_str = strdup((char *)asn_datapoint->value.choice.string.buf);
+	if (new_str == NULL) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bionet_asn_to_datapoint(): error making native string from ASN.1 OCTET_STRING '%s'",
+		  asn_datapoint->value.choice.string.buf);
+	    return NULL;
+	}
+	value = bionet_value_new_str(resource, new_str);
+	break;
+    }
+    default: {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_asn_to_datapoint(): invalid Resource datatype %d", 
+	      bionet_resource_get_data_type(resource));
+	return NULL;
+    }
+    }
+#else
     switch (resource->data_type) {
         case BIONET_RESOURCE_DATA_TYPE_BINARY: {
             if (asn_datapoint->value.choice.binary_v == 0) value.binary_v = 0;
@@ -298,14 +438,19 @@ bionet_datapoint_t *bionet_asn_to_datapoint(Datapoint_t *asn_datapoint, bionet_r
             return NULL;
         }
     }
+#endif
 
+#ifdef BIONET_21_API
+    return bionet_datapoint_new(resource, value, &timestamp);
+#else
     return bionet_datapoint_new(resource, &value, &timestamp);
+#endif
 }
 
 
 
 
-Resource_t *bionet_resource_to_asn(const bionet_resource_t *resource) {
+Resource_t *bionet_resource_to_asn(bionet_resource_t *resource) {
     Resource_t *asn_resource;
     int r;
     int di;  // "datapoint_index"
@@ -316,23 +461,53 @@ Resource_t *bionet_resource_to_asn(const bionet_resource_t *resource) {
         return NULL;
     }
 
+#ifdef BIONET_21_API
+    r = OCTET_STRING_fromString(&asn_resource->id, bionet_resource_get_id(resource));
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_to_asn(): error making OCTET_STRING for Resource-ID %s", 
+	      bionet_resource_get_id(resource));
+        goto cleanup;
+    }
+#else
     r = OCTET_STRING_fromString(&asn_resource->id, resource->id);
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_to_asn(): error making OCTET_STRING for Resource-ID %s", resource->id);
         goto cleanup;
     }
+#endif
 
+#ifdef BIONET_21_API
+    asn_resource->flavor = bionet_flavor_to_asn(bionet_resource_get_flavor(resource));
+    if (asn_resource->flavor == -1) {
+      g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	    "bionet_resource_to_asn(): invalid resource flavor %d for Resource %s", 
+	    bionet_resource_get_flavor(resource), bionet_resource_get_id(resource));
+        goto cleanup;
+    }
+#else
     asn_resource->flavor = bionet_flavor_to_asn(resource->flavor);
     if (asn_resource->flavor == -1) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_to_asn(): invalid resource flavor %d for Resource %s", resource->flavor, resource->id);
         goto cleanup;
     }
+#endif
 
+#ifdef BIONET_21_API
+    asn_resource->datatype = bionet_datatype_to_asn(bionet_resource_get_data_type(resource));
+    if (asn_resource->datatype == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_to_asn(): invalid Resource Datatype %d for Resource %s", 
+	      bionet_resource_get_data_type(resource), bionet_resource_get_id(resource));
+        goto cleanup;
+    }
+#else
     asn_resource->datatype = bionet_datatype_to_asn(resource->data_type);
     if (asn_resource->datatype == -1) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_to_asn(): invalid Resource Datatype %d for Resource %s", resource->data_type, resource->id);
         goto cleanup;
     }
+#endif
 
 
     for (di = 0; di < bionet_resource_get_num_datapoints(resource); di ++) {
@@ -393,7 +568,11 @@ bionet_resource_t *bionet_asn_to_resource(const Resource_t *asn_resource) {
     for (di = 0; di < asn_resource->datapoints.list.count; di ++) {
         Datapoint_t *asn_datapoint = asn_resource->datapoints.list.array[di];
         bionet_datapoint_t *d = bionet_asn_to_datapoint(asn_datapoint, resource);
+#ifdef BIONET_21_API
+        bionet_resource_add_datapoint(resource, d);
+#else
         bionet_resource_add_existing_datapoint(resource, d);
+#endif
     }
 
     return resource;
@@ -428,14 +607,40 @@ StreamDirection_t bionet_stream_direction_to_asn(bionet_stream_direction_t direc
 
 Stream_t *bionet_stream_to_asn(const bionet_stream_t *stream) {
     Stream_t *asn_stream;
-    int r;
-
+    //int r; //waiting for streams
+    
     asn_stream = (Stream_t *)calloc(1, sizeof(Stream_t));
     if (asn_stream == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): out of memory!");
         return NULL;
     }
 
+#if 0 //waiting for streams
+#ifdef BIONET_21_API
+    r = OCTET_STRING_fromString(&asn_stream->id, stream->id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_stream_to_asn(): error making OCTET_STRING for Stream-ID %s", 
+	      stream->id);
+        goto cleanup;
+    }
+
+    asn_stream->direction = bionet_stream_direction_to_asn(stream->direction);
+    if (asn_stream->direction == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_stream_to_asn(): invalid Stream Direction %d for Stream %s", 
+	      stream->direction, stream->id);
+        goto cleanup;
+    }
+
+    r = OCTET_STRING_fromString(&asn_stream->type, stream->type);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_stream_to_asn(): error making OCTET_STRING for Stream Type %s", 
+	      stream->type);
+        goto cleanup;
+    }
+#else
     r = OCTET_STRING_fromString(&asn_stream->id, stream->id);
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): error making OCTET_STRING for Stream-ID %s", stream->id);
@@ -453,10 +658,12 @@ Stream_t *bionet_stream_to_asn(const bionet_stream_t *stream) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): error making OCTET_STRING for Stream Type %s", stream->type);
         goto cleanup;
     }
+#endif
+#endif //waiting for streams
 
     return asn_stream;
 
-cleanup:
+//cleanup: //waiting for streams
     ASN_STRUCT_FREE(asn_DEF_Stream, asn_stream);
     return NULL;
 }
@@ -496,13 +703,21 @@ int bionet_node_to_asn(const bionet_node_t *node, Node_t *asn_node) {
     // 
     // node id
     //
-
+#ifdef BIONET_21_API
+    r = OCTET_STRING_fromString(&asn_node->id, bionet_node_get_id(node));
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_node_to_asn(): error making OCTET_STRING for Node-ID %s", 
+	      bionet_node_get_id(node));
+        goto cleanup;
+    }
+#else
     r = OCTET_STRING_fromString(&asn_node->id, node->id);
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_to_asn(): error making OCTET_STRING for Node-ID %s", node->id);
         goto cleanup;
     }
-
+#endif
 
     // 
     // the Node's Resources
@@ -753,7 +968,7 @@ cleanup:
 }
 
 
-int bionet_resource_metadata_to_asnbuf(const bionet_resource_t *resource, bionet_asn_buffer_t *buf) {
+int bionet_resource_metadata_to_asnbuf(bionet_resource_t *resource, bionet_asn_buffer_t *buf) {
     H2C_Message_t m;
     ResourceMetadata_t *rm;
     asn_enc_rval_t asn_r;
@@ -768,21 +983,56 @@ int bionet_resource_metadata_to_asnbuf(const bionet_resource_t *resource, bionet
     rm = &m.choice.resourceMetadata;
 
 
+#ifdef BIONET_21_API
+    // node id
+    r = OCTET_STRING_fromString(&rm->nodeId, bionet_node_get_id(bionet_resource_get_node(resource)));
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_metadata_to_asn(): error making OCTET_STRING for Node-ID %s", 
+	      bionet_node_get_id(bionet_resource_get_node(resource)));
+        goto cleanup;
+    }
+
+    // resource id
+    r = OCTET_STRING_fromString(&rm->resourceId, bionet_resource_get_id(resource));
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_metadata_to_asn(): error making OCTET_STRING for Resource-ID %s", 
+	      bionet_resource_get_id(resource));
+        goto cleanup;
+    }
+
+    // resource flavor
+    rm->flavor = bionet_flavor_to_asn(bionet_resource_get_flavor(resource));
+    if (rm->flavor == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_metadata_to_asn(): error making ResourceFlavor from Resource Flavor %d", 
+	      bionet_resource_get_flavor(resource));
+        goto cleanup;
+    }
+
+    // resource data type
+    rm->datatype = bionet_datatype_to_asn(bionet_resource_get_data_type(resource));
+    if (rm->datatype == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_metadata_to_asn(): error making ResourceDatatype from Resource Datatype %d", 
+	      bionet_resource_get_data_type(resource));
+        goto cleanup;
+    }
+
+#else
     // 
     // node id
     //
-
     r = OCTET_STRING_fromString(&rm->nodeId, resource->node->id);
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_metadata_to_asn(): error making OCTET_STRING for Node-ID %s", resource->node->id);
         goto cleanup;
     }
 
-
     // 
     // resource id
     //
-
     r = OCTET_STRING_fromString(&rm->resourceId, resource->id);
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_metadata_to_asn(): error making OCTET_STRING for Resource-ID %s", resource->id);
@@ -810,6 +1060,7 @@ int bionet_resource_metadata_to_asnbuf(const bionet_resource_t *resource, bionet
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_metadata_to_asn(): error making ResourceDatatype from Resource Datatype %d", resource->data_type);
         goto cleanup;
     }
+#endif /* BIONET_21_API */
 
 
     // 
@@ -836,9 +1087,7 @@ cleanup:
 }
 
 
-
-
-int bionet_resource_datapoints_to_asnbuf(const bionet_resource_t *resource, bionet_asn_buffer_t *buf, int dirty_only) {
+int bionet_resource_datapoints_to_asnbuf(bionet_resource_t *resource, bionet_asn_buffer_t *buf, int dirty_only) {
     H2C_Message_t m;
     ResourceDatapoints_t *rd;
     asn_enc_rval_t asn_r;
@@ -854,6 +1103,25 @@ int bionet_resource_datapoints_to_asnbuf(const bionet_resource_t *resource, bion
     rd = &m.choice.datapointsUpdate;
 
 
+#ifdef BIONET_21_API
+    // node id
+    r = OCTET_STRING_fromString(&rd->nodeId, bionet_node_get_id(bionet_resource_get_node(resource)));
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_datapoints_to_asn(): error making OCTET_STRING for Node-ID %s", 
+	      bionet_node_get_id(bionet_resource_get_node(resource)));
+        goto cleanup;
+    }
+
+    // resource id
+    r = OCTET_STRING_fromString(&rd->resourceId, bionet_resource_get_id(resource));
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_datapoints_to_asn(): error making OCTET_STRING for Resource-ID %s", 
+	      bionet_resource_get_id(resource));
+        goto cleanup;
+    }
+#else
     // 
     // node id
     //
@@ -874,7 +1142,7 @@ int bionet_resource_datapoints_to_asnbuf(const bionet_resource_t *resource, bion
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_datapoints_to_asn(): error making OCTET_STRING for Resource-ID %s", resource->id);
         goto cleanup;
     }
-
+#endif
 
     // 
     // all the dirty datapoints

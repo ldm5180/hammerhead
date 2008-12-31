@@ -42,7 +42,7 @@ typedef enum {
  * @retval >0 Success
  */
 bionet_stream_t *bionet_stream_new(
-    const bionet_node_t *node,
+    bionet_node_t *node,
     const char *id,
     bionet_stream_direction_t direction,
     const char *type
@@ -63,7 +63,7 @@ bionet_stream_t *bionet_stream_new(
  * @retval >0 Success
  */
 bionet_stream_t *bionet_stream_new_from_strings(
-    const bionet_node_t *node,
+    bionet_node_t *node,
     const char *id,
     const char *direction_str,
     const char *type

@@ -87,6 +87,9 @@ libbionet_util_21_la_SOURCES =    \
     glib-log-handler.c                  \
     network-error.c                     \
     split-names.c \
+    stream-direction.c                  \
+    stream-free.c                       \
+    stream-new.c                        \
     value-free.c \
     value-get.c \
     value-get-resource.c \
@@ -95,9 +98,6 @@ libbionet_util_21_la_SOURCES =    \
     value-to-string.c 
 
 
-#    stream-direction.c                  \
-#    stream-free.c                       \
-#    stream-new.c                        \
 #    stream-accept.c
 #    stream-connect.c
 #    stream-listen.c

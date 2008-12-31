@@ -243,10 +243,11 @@ static void handle_resource_datapoints(const cal_event_t *event, ResourceDatapoi
 #else
             bionet_datapoint_set_value(d, &new_d->value);
             bionet_datapoint_set_timestamp(d, &new_d->timestamp);
-#endif
             bionet_datapoint_free(new_d);
+#endif
         }
 
+        d = bionet_resource_get_datapoint_by_index(resource, 0);
         if (libbionet_callback_datapoint != NULL) {
             libbionet_callback_datapoint(d);
         }

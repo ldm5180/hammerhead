@@ -113,12 +113,20 @@ ASN_MODULE_SOURCES+=per_encoder.c
 
 SRC = $(ASN_MODULE_SOURCES) bionet-asn-helpers.c
 
-lib_LTLIBRARIES=libbionet-asn.la
+lib_LTLIBRARIES=libbionet-asn.la libbionet-asn-21.la
+
 libbionet_asn_la_SOURCES=$(SRC) $(ASN_MODULE_HEADS)
 
 libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util
 
 libbionet_asn_la_LIBADD = $(AM_LDADD)
+
+
+libbionet_asn_21_la_SOURCES=$(SRC) $(ASN_MODULE_HEADS)
+
+libbionet_asn_21_la_CFLAGS = -DBIONET_21_API $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util
+
+libbionet_asn_21_la_LIBADD = $(AM_LDADD)
 
 
 

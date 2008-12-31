@@ -9,7 +9,7 @@
 #include "internal.h"
 
 
-const bionet_resource_t * bionet_value_get_resource(bionet_value_t * value)
+bionet_resource_t * bionet_value_get_resource(bionet_value_t * value)
 {
     if (NULL == value)
     {

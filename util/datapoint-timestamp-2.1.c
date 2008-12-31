@@ -83,7 +83,9 @@ void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint, const struct 
 
         r = gettimeofday(&datapoint->timestamp, NULL);
         if (r < 0) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_timestamp(): error getting time: %s", strerror(errno));
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bionet_datapoint_set_timestamp(): error getting time: %s", 
+		  strerror(errno));
             return;
         }
     } else {
@@ -96,6 +98,19 @@ void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint, const struct 
     return;
 }
 
+
+struct timeval * bionet_datapoint_get_timestamp(bionet_datapoint_t *datapoint)
+{
+    if (NULL == datapoint)
+    {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_get_timestamp(): NULL datapoint passed in");
+	errno = EINVAL;
+	return NULL;
+    }
+
+    return &datapoint->timestamp;
+}
 
 // Emacs cruft
 // Local Variables:

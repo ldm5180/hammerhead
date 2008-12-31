@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+#include <assert.h>
 #include <glib.h>
 
 #include "bionet-util-2.1.h"
@@ -33,6 +33,7 @@ bionet_datapoint_t *bionet_datapoint_new(
 
     if (value == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_new(): NULL value passed in");
+	assert(0);
         return NULL;
     }
 

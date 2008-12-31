@@ -41,6 +41,20 @@ void bionet_datapoint_set_value(bionet_datapoint_t *d, bionet_value_t *value) {
     d->dirty = 1;
 }
 
+
+bionet_value_t * bionet_datapoint_get_value(bionet_datapoint_t *d)
+{
+    if (NULL == d)
+    {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_det_value(): NULL datapoint passed in");
+	errno = EINVAL;
+	return NULL;
+    }
+
+    return d->value;
+} /* bionet_datapoint_get_value() */
+
 // Emacs cruft
 // Local Variables:
 // mode: C

@@ -123,6 +123,16 @@ bionet_resource_data_type_t bionet_resource_get_data_type(const bionet_resource_
 
 
 /**
+ * @brief Get the flavor of a resource
+ *
+ * @param[in] resource
+ *
+ * @return Flavor of resource
+ */
+bionet_resource_flavor_t bionet_resource_get_flavor(const bionet_resource_t *resource);
+
+
+/**
  * @brief Renders a Resource-Flavor as an ASCII string.
  *
  * See @ref bionet_resource_flavor_t for the string values

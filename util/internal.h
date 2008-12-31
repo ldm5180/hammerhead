@@ -87,7 +87,7 @@ struct bionet_resource_opaque_t {
 };
 
 struct bionet_value_opaque_t {
-    const bionet_resource_t * resource;
+    bionet_resource_t * resource;
     bionet_datapoint_value_t content;
 };
 

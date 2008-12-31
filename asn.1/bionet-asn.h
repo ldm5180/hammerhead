@@ -83,7 +83,7 @@ int bionet_node_to_asnbuf(const bionet_node_t *node, bionet_asn_buffer_t *buf);
 //! \return 0 on success, -1 on failure.
 //!
 
-int bionet_resource_metadata_to_asnbuf(const bionet_resource_t *resource, bionet_asn_buffer_t *buf);
+int bionet_resource_metadata_to_asnbuf(bionet_resource_t *resource, bionet_asn_buffer_t *buf);
 
 
 //!
@@ -99,7 +99,7 @@ int bionet_resource_metadata_to_asnbuf(const bionet_resource_t *resource, bionet
 //! \return 0 on success, -1 on failure.
 //!
 
-int bionet_resource_datapoints_to_asnbuf(const bionet_resource_t *resource, bionet_asn_buffer_t *buf, int dirty_only);
+int bionet_resource_datapoints_to_asnbuf(bionet_resource_t *resource, bionet_asn_buffer_t *buf, int dirty_only);
 
 
 //!
@@ -125,7 +125,7 @@ int bionet_node_to_asn(const bionet_node_t *node, Node_t *asn_node);
 //! \return A pointer to the Resource_t on success, NULL on failure.
 //!
 
-Resource_t *bionet_resource_to_asn(const bionet_resource_t *resource);
+Resource_t *bionet_resource_to_asn(bionet_resource_t *resource);
 
 
 bionet_node_t *bionet_asn_to_node(const Node_t *asn_node);
