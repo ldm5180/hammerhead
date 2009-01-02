@@ -72,7 +72,7 @@ GPtrArray *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
                     asn_datapoint = asn_resource->datapoints.list.array[di];
 
                     d = bionet_asn_to_datapoint(asn_datapoint, resource);
-                    bionet_resource_add_existing_datapoint(resource, d);
+                    bionet_resource_add_datapoint(resource, d);
                 }
             }
         }

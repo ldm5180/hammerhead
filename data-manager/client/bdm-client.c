@@ -148,14 +148,14 @@ int main(int argc, char *argv[]) {
             int ni;
 
             hab = g_ptr_array_index(hab_list, hi);
-            printf("%s.%s\n", hab->type, hab->id);
+            printf("%s.%s\n", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
 
             for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
                 bionet_node_t *node;
                 int ri;
 
                 node = bionet_hab_get_node_by_index(hab, ni);
-                printf("    %s\n", node->id);
+                printf("    %s\n", bionet_node_get_id(node));
 
                 for (ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
                     bionet_resource_t *resource;
@@ -164,9 +164,9 @@ int main(int argc, char *argv[]) {
                     resource = bionet_node_get_resource_by_index(node, ri);
                     printf(
                         "        %s %s %s\n",
-                        bionet_resource_data_type_to_string(resource->data_type),
-                        bionet_resource_flavor_to_string(resource->flavor),
-                        resource->id
+                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                        bionet_resource_get_id(resource)
                     );
 
                     for (di = 0; di < bionet_resource_get_num_datapoints(resource); di ++) {
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
 
                         printf(
                             "            %s @ %s\n",
-                            bionet_datapoint_value_to_string(d),
+                            bionet_value_to_str(bionet_datapoint_get_value(d)),
                             bionet_datapoint_timestamp_to_string(d)
                         );
                     }
