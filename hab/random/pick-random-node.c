@@ -23,7 +23,6 @@
 
 
 bionet_node_t *pick_random_node(bionet_hab_t *random_hab) {
-    GSList *p;
     int num_nodes;
     int node_index;
 
@@ -32,8 +31,6 @@ bionet_node_t *pick_random_node(bionet_hab_t *random_hab) {
 
     node_index = rand() % num_nodes;
 
-    p = g_slist_nth(random_hab->nodes, node_index);
-    if (p == NULL) return NULL;
-    return p->data;
+    return bionet_hab_get_node_by_index(random_hab, node_index);
 }
 
