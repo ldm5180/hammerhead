@@ -23,12 +23,12 @@
 
 
 
-void cb_set_resource(bionet_resource_t *resource, const bionet_datapoint_value_t *value) {
+void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value) {
     printf(
         "callback: should set %s:%s to '%s'\n",
-        resource->node->id,
-        resource->id,
-        bionet_datapoint_value_to_string_isolated(resource->data_type, value)
+	bionet_node_get_id(bionet_resource_get_node(resource)),
+        bionet_resource_get_id(resource),
+        bionet_value_to_str(value)
     );
 }
 
@@ -177,10 +177,10 @@ void destroy_node(bionet_hab_t* random_hab) {
     node = pick_random_node(random_hab);
     if (node == NULL) return;
 
-    printf("removing Node %s\n", node->id);
+    printf("removing Node %s\n", bionet_node_get_id(node));
 
-    bionet_hab_remove_node_by_id(random_hab, node->id);
-    hab_report_lost_node(node->id);
+    bionet_hab_remove_node_by_id(random_hab, bionet_node_get_id(node));
+    hab_report_lost_node(bionet_node_get_id(node));
     bionet_node_free(node);
 }
 
