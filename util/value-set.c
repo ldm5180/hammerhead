@@ -3,6 +3,8 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
@@ -142,7 +144,6 @@ static int bionet_value_set_internal(bionet_value_t *value,
     {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_value_set_*(): resource/datatype mismatch");
-	assert(0);
 	errno = EINVAL;
 	return -1;
     }

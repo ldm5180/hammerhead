@@ -17,6 +17,6 @@
  * @param[in] value Value to set to node_id.resource_id
  */
 void cb_set_resource(bionet_resource_t *resource,
-		     const bionet_datapoint_value_t *value);
+		     bionet_value_t *value);
 
 #endif

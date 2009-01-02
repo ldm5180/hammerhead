@@ -50,10 +50,16 @@ mmod_hab_SOURCES =    \
     serialsource.c    \
     set-resource.c
 
-mmod_hab_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libhab -I../../util
+mmod_hab_CFLAGS = $(AM_CFLAGS) -DBIONET_21_API $(GLIB20_CFLAGS) -I../libhab -I../../util
 
 mmod_hab_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) -L../libhab -L../../asn.1 -L../../util -L../../cal/mdnssd-bip/server
 
-mmod_hab_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lpthread -lm
+mmod_hab_LDADD = $(AM_LDADD) -lhab-21 -lbionet-util-21 -lbionet-asn-21 -lcal-mdnssd-bip-server -lpthread -lm
+
+#mmod_hab_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libhab -I../../util
+
+#mmod_hab_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) -L../libhab -L../../asn.1 -L../../util -L../../cal/mdnssd-bip/server
+
+#mmod_hab_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lpthread -lm
 
 

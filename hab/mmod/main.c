@@ -42,6 +42,7 @@ static char * usb_dev = DEFAULT_USB_DEV;
 uint16_t heartbeat_time = DEFAULT_HEARTBEAT_TIME;
 serial_source gw_src;
 bionet_hab_t * mmod_hab;
+char * mmod_id = NULL;
 
 
 int main(int argc, char** argv)
@@ -49,15 +50,15 @@ int main(int argc, char** argv)
     int gw_fd;
     int bionet_fd;
 
+    parse_cmdline(argc, argv);
+
     /* do some HAB setup */
-    mmod_hab = bionet_hab_new(MMOD_HAB_TYPE, NULL);
+    mmod_hab = bionet_hab_new(MMOD_HAB_TYPE, mmod_id);
     if (NULL == mmod_hab)
     {
 	fprintf(stderr, "Failed to get a new hab\n");
 	return(1);
     }
-
-    parse_cmdline(argc, argv);
 
     /* daemonize if requested */
     if (daemon_mode)
@@ -167,7 +168,7 @@ static void parse_cmdline(int argc, char** argv)
 	    break;
 
 	case 'i':
-	    bionet_hab_set_id(mmod_hab, optarg);
+	    mmod_id = optarg;
 	    break;
 	    
 	case 't':
@@ -208,3 +209,10 @@ static void print_usage(FILE* fout)
 	    "    -u     USB serial device (/dev/ttyUSB1)\n"
 	    "    -v     verbose logging\n");
 } /* print_usage() */
+
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

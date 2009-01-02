@@ -40,20 +40,6 @@ int msg_gen_process(uint8_t *msg, ssize_t len);
 
 
 /**
- * Process the incoming "accel" message
- * 
- * Pull apart the message, ensure it is valid, and send it off to the NAG
- * 
- * @param[in] msg Ptr to start of the message
- * @param[in] len Length of the message
- *
- * @return 0 Success
- * @return 1 Failure (bad message. probably out of sync)
- */
-int msg_accel_process(uint8_t *msg, ssize_t len);
-
-
-/**
  * Process the incoming "settings" message
  * 
  * Pull apart the message, ensure it is valid, and send it off to the NAG

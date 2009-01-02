@@ -13,7 +13,7 @@
 
 #include <glib.h>
 
-
+#include "bionet-util.h"
 #include "hardware-abstractor.h"
 
 #include "libhab-internal.h"

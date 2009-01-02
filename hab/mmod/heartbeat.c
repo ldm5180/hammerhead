@@ -1,20 +1,6 @@
 
 //
-// Copyright (C) 2004-2008, Regents of the University of Colorado.
-// This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of GNU General Public License version 2, as
-// published by the Free Software Foundation.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+// Copyright (C) 2008, Regents of the University of Colorado.
 //
 
 #include "heartbeat.h"
@@ -46,7 +32,9 @@ void heartbeat_check(void)
     struct timeval diff;
     uint16_t hb_time;
     int num_dps;
-    bionet_datapoint_t * value;
+    bionet_value_t * value;
+    bionet_datapoint_t * datapoint;
+
     if (NULL == mmod_hab)
     {
 	return;
@@ -79,8 +67,12 @@ void heartbeat_check(void)
 	{
 	    continue;
 	}
-	value = bionet_resource_get_datapoint_by_index(res, num_dps-1);
-	hb_time = value->value.uint16_v;
+	datapoint = bionet_resource_get_datapoint_by_index(res, 0);
+	value = bionet_datapoint_get_value(datapoint);
+	if (bionet_value_get_uint16(value, &hb_time))
+	{
+	    g_warning("Failed to get heartbeat time from datapoint");
+	}
 	if (0 == hb_time)
 	{
 	    /* if this node hasn't yet published it's heartbeat, use the max */
@@ -95,23 +87,19 @@ void heartbeat_check(void)
 	    continue;
 	}
 
-	num_dps = bionet_resource_get_num_datapoints(res);
-	if (num_dps == 0)
-	{
-	    continue;
-	}
-	value = bionet_resource_get_datapoint_by_index(res, num_dps-1);
-	(void)timeval_subtract(&diff, &tv, &value->timestamp);
+	(void)timeval_subtract(&diff, 
+			       &tv, bionet_datapoint_get_timestamp(datapoint));
 	if (diff.tv_sec > (MAX_MISSED_HEARTBEATS*hb_time))
 	{
 	    /* this node has been lost! */
-	    if (bionet_hab_remove_node_by_id(mmod_hab, node->id))
+	    const char * node_id = bionet_node_get_id(node);
+	    if (bionet_hab_remove_node_by_id(mmod_hab, node_id))
 	    {
-		g_warning("Failed to remove node %s\n", node->id);
+		g_warning("Failed to remove node %s\n", node_id);
 	    }
-	    if (hab_report_lost_node(node->id))
+	    if (hab_report_lost_node(node_id))
 	    {
-		g_warning("Failed to report lost node %s\n", node->id);
+		g_warning("Failed to report lost node %s\n", node_id);
 	    }
 	}
     }
@@ -144,3 +132,10 @@ int timeval_subtract (struct timeval *result,
     /* Return 1 if result is negative. */
     return x->tv_sec < y->tv_sec;
 } /* timeval_subtract() */
+
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

@@ -245,7 +245,9 @@ Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d) {
         case BIONET_RESOURCE_DATA_TYPE_FLOAT: {
             asn_datapoint->value.present = Value_PR_real;
 #ifdef BIONET_21_API
-            bionet_value_get_float(value, (float *)&asn_datapoint->value.choice.real);
+	    float tmp;
+            bionet_value_get_float(value, &tmp);
+	    asn_datapoint->value.choice.real = tmp;
 #else
             asn_datapoint->value.choice.real = d->value.float_v;
 #endif
@@ -254,7 +256,9 @@ Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d) {
         case BIONET_RESOURCE_DATA_TYPE_DOUBLE: {
             asn_datapoint->value.present = Value_PR_real;
 #ifdef BIONET_21_API
-            bionet_value_get_double(value, (double *)&asn_datapoint->value.choice.real);
+	    double tmp;
+            bionet_value_get_double(value, &tmp);
+	    asn_datapoint->value.choice.real = tmp;
 #else
             asn_datapoint->value.choice.real = d->value.double_v;
 #endif

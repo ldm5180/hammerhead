@@ -57,11 +57,6 @@ int gateway_read(serial_source src)
     {
 	ret = msg_gen_process(&packet[AM_HEADER_LEN], MMODGENMSG_SIZE);
     }
-    else if ((MMODACCELMSG_SIZE == packet[AM_HEADER_DATALEN_LOC]) 
-	     && (MMODACCELMSG_AM_TYPE == packet[AM_HEADER_TYPE_LOC]))
-    {
-	ret = msg_accel_process(&packet[AM_HEADER_LEN], MMODACCELMSG_SIZE);
-    }
     else if ((MMODSETTINGSMSG_SIZE == packet[AM_HEADER_DATALEN_LOC]) 
 	     && (MMODSETTINGSMSG_AM_TYPE == packet[AM_HEADER_TYPE_LOC]))
     {

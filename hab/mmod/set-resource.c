@@ -6,9 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "bionet-resource.h"
-#include "bionet-node.h"
-#include "bionet-hab.h"
+#include "bionet-util.h"
 #include "mmod.h"
 #include "serialsource.h"
 #include "mmodsettingsmsg.h"
@@ -20,14 +18,14 @@ extern serial_source gw_src;
 extern bionet_hab_t * mmod_hab;
 
 void cb_set_resource(bionet_resource_t *resource,
-		     const bionet_datapoint_value_t *value)
+		     bionet_value_t *value)
 {
     uint8_t pkt[MMODSETTINGSMSG_SIZE + 8] = { 0 };
     uint16_t uiVal;
     const bionet_node_t *node;
     tmsg_t new_settings;
     bionet_datapoint_t * dp;
-
+    bionet_value_t *val;
     new_settings.data = malloc(MMODSETTINGSMSG_SIZE);
     new_settings.len = MMODSETTINGSMSG_SIZE;
 
@@ -43,21 +41,21 @@ void cb_set_resource(bionet_resource_t *resource,
     {
 	return;
     }
-    node = resource->node;
+    node = bionet_resource_get_node(resource);
     if (NULL == node)
     {
 	return;
     }
 
     /* set the correct node id */
-    uiVal = strtoul(node->id, NULL, 10);
+    uiVal = strtoul(bionet_node_get_id(node), NULL, 10);
     MMODSETTINGSMSG_node_id_set(&new_settings, uiVal);
 
     /* update resource requested */
-    if (0 == strncmp(resource->id, "SampleInterval", 
-			  strlen("SampleInterval")))
+    if (0 == strncmp(bionet_resource_get_id(resource), "SampleInterval", 
+		     strlen("SampleInterval")))
     {
-	uiVal = value->uint16_v;
+	bionet_value_get_uint16(value, &uiVal);
     }
     else
     {
@@ -69,22 +67,23 @@ void cb_set_resource(bionet_resource_t *resource,
 	else
 	{
 	    dp = bionet_resource_get_datapoint_by_index(resource, 0);
+	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
 		uiVal = 0;
 	    }
 	    else
 	    {
-		uiVal = dp->value.uint16_v;
+		bionet_value_get_uint16(val, &uiVal);
 	    }
 	}
     }
     MMODSETTINGSMSG_sample_interval_set(&new_settings, uiVal);
     
-    if (0 == strncmp(resource->id, "NumAccelSamples", 
+    if (0 == strncmp(bionet_resource_get_id(resource), "NumAccelSamples", 
 			  strlen("NumAccelSamples")))
     {
-	uiVal = value->uint16_v;
+	bionet_value_get_uint16(val, &uiVal);
     }
     else
     {
@@ -96,22 +95,23 @@ void cb_set_resource(bionet_resource_t *resource,
 	else
 	{
 	    dp = bionet_resource_get_datapoint_by_index(resource, 0);
+	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
 		uiVal = 0;
 	    }
 	    else
 	    {
-		uiVal = dp->value.uint16_v;
+		bionet_value_get_uint16(val, &uiVal);
 	    }
 	}
     }
     MMODSETTINGSMSG_num_accel_samples_set(&new_settings, uiVal);
     
-    if (0 == strncmp(resource->id, "AccelSampleInterval", 
+    if (0 == strncmp(bionet_resource_get_id(resource), "AccelSampleInterval", 
 			  strlen("AccelSampleInterval")))
     {
-	uiVal = value->uint16_v;
+	bionet_value_get_uint16(val, &uiVal);
     }
     else
     {
@@ -123,22 +123,23 @@ void cb_set_resource(bionet_resource_t *resource,
 	else
 	{
 	    dp = bionet_resource_get_datapoint_by_index(resource, 0);
+	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
 		uiVal = 0;
 	    }
 	    else
 	    {
-		uiVal = dp->value.uint16_v;
+		bionet_value_get_uint16(val, &uiVal);
 	    }
 	}
     }
     MMODSETTINGSMSG_accel_sample_interval_set(&new_settings, uiVal);
     
-    if (0 == strncmp(resource->id, "HeartbeatTime", 
+    if (0 == strncmp(bionet_resource_get_id(resource), "HeartbeatTime", 
 			  strlen("HeartbeatTime")))
     {
-	uiVal = value->uint16_v;
+	bionet_value_get_uint16(val, &uiVal);
     }
     else
     {
@@ -150,22 +151,25 @@ void cb_set_resource(bionet_resource_t *resource,
 	else
 	{
 	    dp = bionet_resource_get_datapoint_by_index(resource, 0);
+	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
 		uiVal = 0;
 	    }
 	    else
 	    {
-		uiVal = dp->value.uint16_v;
+		bionet_value_get_uint16(val, &uiVal);
 	    }
 	}
     }
     MMODSETTINGSMSG_heartbeat_time_set(&new_settings, uiVal);
 
-    if (0 == strncmp(resource->id, "AccelAxis", 
+    if (0 == strncmp(bionet_resource_get_id(resource), "AccelAxis", 
 			  strlen("AccelAxis")))
     {
-	switch (value->string_v[0])
+	char * tmp_str;
+	bionet_value_get_str(value, &tmp_str);
+	switch (tmp_str[0])
 	{
 	case 'n':
 	case 'N':
@@ -194,16 +198,19 @@ void cb_set_resource(bionet_resource_t *resource,
 	else
 	{
 	    dp = bionet_resource_get_datapoint_by_index(resource, 0);
+	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
 		uiVal = 0;
 	    }
 	    else
 	    {
-		uiVal = dp->value.uint16_v;
+		bionet_value_get_uint16(val, &uiVal);
 	    }
 
-	    switch (dp->value.string_v[0])
+	    char * tmp_str;
+	    bionet_value_get_str(val, &tmp_str);
+	    switch (tmp_str[0])
 	    {
 	    case 'N':
 		uiVal = 0;
@@ -230,3 +237,10 @@ void cb_set_resource(bionet_resource_t *resource,
 
     return;
 } /* cb_set_resource() */
+
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
