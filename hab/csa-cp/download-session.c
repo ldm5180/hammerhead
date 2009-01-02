@@ -74,7 +74,6 @@ static void parse_line(char* line) {
     } else if (s_success == 6) {
         int r;
         struct timeval resource_time;
-        bionet_datapoint_value_t val;
 
         memset(&csa_time, (char)0, sizeof(struct tm));
 
@@ -114,8 +113,7 @@ static void parse_line(char* line) {
                 return;
             }
 
-            val.float_v = o2;
-            r = bionet_resource_set(resource, &val, NULL);
+            r = bionet_resource_set_float(resource, o2, NULL);
             if (r != 0) {
                 g_warning("error setting O2\n");
                 return;
@@ -129,8 +127,7 @@ static void parse_line(char* line) {
 
         resource = bionet_node_get_resource_by_id(node, "O2");
 
-        val.float_v = o2;
-        r = bionet_resource_set(resource, &val, NULL);
+        r = bionet_resource_set_float(resource, o2, NULL);
         if (r != 0) {
             g_warning("error setting O2\n");
         }
@@ -305,7 +302,7 @@ int download_session(serial_handle_t serial_handle, int session_number, int reco
 
     g_debug("finished downloading session");
 
-    bionet_hab_remove_node_by_id(this_hab, node->id);
+    bionet_hab_remove_node_by_id(this_hab, bionet_node_get_id(node));
     
     hab_report_lost_node("csa-cp");
 
