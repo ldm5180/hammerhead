@@ -40,8 +40,11 @@ int hab_report_datapoints(const bionet_node_t *node) {
 
         bionet_resource_make_clean(resource);
 
+#ifdef BIONET_21_API
+        sprintf(topic, "%s:%s", bionet_node_get_id(node), bionet_resource_get_id(resource));
+#else
         sprintf(topic, "%s:%s", node->id, resource->id);
-
+#endif
         // publish the message to any connected subscribers
         cal_server.publish(topic, buf.buf, buf.size);
 

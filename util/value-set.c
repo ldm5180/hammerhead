@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "bionet-util-2.1.h"
 #include "internal.h"
@@ -25,7 +26,7 @@ int bionet_value_set_binary(bionet_value_t *value,
 
 
 int bionet_value_set_uint8(bionet_value_t *value,
-			    uint8_t content)
+			   uint8_t content)
 {
     return bionet_value_set_internal(value, 
 				     &content, 
@@ -52,7 +53,7 @@ int bionet_value_set_uint16(bionet_value_t *value,
 
 
 int bionet_value_set_int16(bionet_value_t *value,
-			  int16_t content)
+			   int16_t content)
 {
     return bionet_value_set_internal(value, 
 				     &content, 
@@ -70,7 +71,7 @@ int bionet_value_set_uint32(bionet_value_t *value,
 
 
 int bionet_value_set_int32(bionet_value_t *value,
-			  int32_t content)
+			   int32_t content)
 {
     return bionet_value_set_internal(value, 
 				     &content, 
@@ -79,7 +80,7 @@ int bionet_value_set_int32(bionet_value_t *value,
 
 
 int bionet_value_set_float(bionet_value_t *value,
-			  float content)
+			   float content)
 {
     return bionet_value_set_internal(value, 
 				     &content, 
@@ -88,7 +89,7 @@ int bionet_value_set_float(bionet_value_t *value,
 
 
 int bionet_value_set_double(bionet_value_t *value,
-			  double content)
+			    double content)
 {
     return bionet_value_set_internal(value, 
 				     &content, 
@@ -102,13 +103,15 @@ int bionet_value_set_str(bionet_value_t *value,
     return bionet_value_set_internal(value, 
 				     content, 
 				     BIONET_RESOURCE_DATA_TYPE_STRING);
-} /* bionet_value_set_str() */
-
+    /* bionet_value_set_str() */
+}
 
 static int bionet_value_set_internal(bionet_value_t *value,
 				     const void *content,
 				     bionet_resource_data_type_t datatype)
 {
+    bionet_datapoint_t *dp = NULL;
+
     /* sanity */
     if (NULL == value)
     {
@@ -139,6 +142,7 @@ static int bionet_value_set_internal(bionet_value_t *value,
     {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_value_set_*(): resource/datatype mismatch");
+	assert(0);
 	errno = EINVAL;
 	return -1;
     }
@@ -204,7 +208,7 @@ static int bionet_value_set_internal(bionet_value_t *value,
     {
 	if (value->content.string_v)
 	{
-            /* free the previous content */
+	    /* free the previous content */
 	    free(value->content.string_v); 
 	}
 	value->content.string_v = (char *)content;
@@ -216,6 +220,12 @@ static int bionet_value_set_internal(bionet_value_t *value,
 	errno = EINVAL;
 	free(value);
 	return -1;
+    }
+
+    dp = bionet_resource_get_datapoint_by_index(value->resource, 0);
+    if (dp)
+    {
+	dp->dirty = 1;
     }
 
     return 0;

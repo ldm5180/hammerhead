@@ -73,6 +73,9 @@ int libhab_cal_topic_matches(const char *topic, const char *subscription) {
     //
 
     {
+	// make sure it's a Datapoint topic too
+	if (strchr(topic, ':') == NULL) return -1;
+
         char sub_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
         char sub_resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
 

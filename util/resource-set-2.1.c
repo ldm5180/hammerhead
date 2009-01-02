@@ -3,7 +3,7 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -51,8 +51,6 @@ int bionet_resource_set_binary(bionet_resource_t *resource,
 	}
 
 	bionet_value_set_binary(value, content);
-
-	bionet_datapoint_set_value(d, value);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
 
@@ -97,8 +95,6 @@ int bionet_resource_set_uint8(bionet_resource_t *resource,
 	}
 
 	bionet_value_set_uint8(value, content);
-
-	bionet_datapoint_set_value(d, value);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
 
@@ -143,8 +139,6 @@ int bionet_resource_set_int8(bionet_resource_t *resource,
 	}
 
 	bionet_value_set_int8(value, content);
-
-	bionet_datapoint_set_value(d, value);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
 
@@ -189,8 +183,6 @@ int bionet_resource_set_uint16(bionet_resource_t *resource,
 	}
 
 	bionet_value_set_uint16(value, content);
-
-	bionet_datapoint_set_value(d, value);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
 
@@ -235,8 +227,6 @@ int bionet_resource_set_int16(bionet_resource_t *resource,
 	}
 
 	bionet_value_set_int16(value, content);
-
-	bionet_datapoint_set_value(d, value);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
 
@@ -281,8 +271,6 @@ int bionet_resource_set_uint32(bionet_resource_t *resource,
 	}
 
 	bionet_value_set_uint32(value, content);
-
-	bionet_datapoint_set_value(d, value);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
 
@@ -327,8 +315,6 @@ int bionet_resource_set_int32(bionet_resource_t *resource,
 	}
 
 	bionet_value_set_int32(value, content);
-
-	bionet_datapoint_set_value(d, value);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
 
@@ -373,8 +359,6 @@ int bionet_resource_set_float(bionet_resource_t *resource,
 	}
 
 	bionet_value_set_float(value, content);
-
-	bionet_datapoint_set_value(d, value);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
 
@@ -419,8 +403,6 @@ int bionet_resource_set_double(bionet_resource_t *resource,
 	}
 
 	bionet_value_set_double(value, content);
-
-	bionet_datapoint_set_value(d, value);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
 
@@ -465,8 +447,6 @@ int bionet_resource_set_str(bionet_resource_t *resource,
 	}
 
 	bionet_value_set_str(value, content);
-
-	bionet_datapoint_set_value(d, value);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
 

@@ -137,7 +137,8 @@ bionet_resource_data_type_t bionet_asn_to_datatype(ResourceDataType_t asn_dataty
 Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d) {
     int r;
 #ifdef BIONET_21_API
-    bionet_resource_t * resource = bionet_value_get_resource(bionet_datapoint_get_value(d));
+    bionet_value_t *dval = bionet_datapoint_get_value(d);
+    bionet_resource_t * resource = bionet_value_get_resource(dval);
     bionet_resource_data_type_t datatype = bionet_resource_get_data_type(resource);
 #else
     bionet_resource_data_type_t datatype = d->resource->data_type;
@@ -1148,7 +1149,7 @@ int bionet_resource_datapoints_to_asnbuf(bionet_resource_t *resource, bionet_asn
     // all the dirty datapoints
     //
 
-    for (di = 0; di < bionet_resource_get_num_datapoints(resource); di ++) {
+    for (di = 0; di < bionet_resource_get_num_datapoints(resource); di++) {
         bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, di);
         Datapoint_t *asn_d;
 

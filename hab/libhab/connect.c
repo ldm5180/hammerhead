@@ -35,9 +35,7 @@
 #include "libhab-internal.h"
 #include "hardware-abstractor.h"
 
-
-
-
+#ifndef BIONET_21_API
 static const char *libhab_get_program_name(void) {
 #if defined(LINUX) || defined(MACOSX)
     static char program_name[500];
@@ -93,8 +91,7 @@ static const char *libhab_get_program_name(void) {
     return "a-windows-program";
 #endif
 }
-
-
+#endif /* BIONET_21_API */
 
 
 int hab_connect(bionet_hab_t *hab) {
@@ -127,7 +124,7 @@ int hab_connect(bionet_hab_t *hab) {
     // If the HAB developer did not specify the HAB-Type using, we print a
     // warning and fall back to using the program name.
     //
-
+#ifndef BIONET_21_API
     if (hab->type == NULL) {
         // get the program name
         const char *hab_type;
@@ -145,7 +142,6 @@ int hab_connect(bionet_hab_t *hab) {
 
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "hab_connect(): the passed-in HAB has no HAB-Type, using program name '%s'", hab->type);
     }
-
 
     //
     // If the HAB developer did not specify the HAB-ID we print a warning
@@ -174,13 +170,17 @@ int hab_connect(bionet_hab_t *hab) {
 
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "hab_connect(): the passed-in HAB has no HAB-ID, using hostname '%s'", hab->id);
     }
+#endif
 
 
     // record this hab
     libhab_this = hab;
 
-
+#ifdef BIONET_21_API
+    sprintf(cal_name, "%s.%s", bionet_hab_get_type(libhab_this), bionet_hab_get_id(libhab_this));
+#else
     sprintf(cal_name, "%s.%s", libhab_this->type, libhab_this->id);
+#endif
 
     libhab_cal_fd = cal_server.init("bionet", cal_name, libhab_cal_callback, libhab_cal_topic_matches);
     if (libhab_cal_fd == -1) {

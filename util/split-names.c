@@ -9,7 +9,8 @@
 // Bionet objects and split the strings into the components of the names.
 //
 
-
+#include <stdio.h>
+#include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>

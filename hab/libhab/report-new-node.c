@@ -19,16 +19,31 @@ int hab_report_new_node(const bionet_node_t *node) {
     bionet_asn_buffer_t buf;
     int r;
 
-
     //
     // sanity checks
     //
-
     if (node == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_new_node(): NULL Node passed in");
         goto fail0;
     }
 
+#ifdef BIONET_21_API
+    bionet_hab_t * hab = bionet_node_get_hab(node);
+    
+    if (hab != libhab_this) {
+	if (NULL == hab)
+	{
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "hab_report_new_node(): passed-in Node does not belong to a HAB.");
+	} else {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "hab_report_new_node(): passed-in Node does not belong to this HAB (it belongs to %s.%s, this hab is %s.%s)",
+		  bionet_hab_get_type(hab),
+		  bionet_hab_get_id(hab),
+		  bionet_hab_get_type(libhab_this),
+		  bionet_hab_get_id(libhab_this));
+	}
+#else
     if (node->hab != libhab_this) {
         g_log(
             BIONET_LOG_DOMAIN,
@@ -39,10 +54,15 @@ int hab_report_new_node(const bionet_node_t *node) {
             libhab_this->type,
             libhab_this->id
         );
+#endif
         goto fail0;
     }
 
+#ifdef BIONET_21_API
+    if (bionet_hab_get_node_by_id(libhab_this, bionet_node_get_id(node)) != node) {
+#else
     if (bionet_hab_get_node_by_id(libhab_this, node->id) != node) {
+#endif
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_new_node(): passed-in Node not found in this HAB");
         goto fail0;
     }
@@ -59,8 +79,11 @@ int hab_report_new_node(const bionet_node_t *node) {
     }
 
     // publish the message to any connected subscribers
+#ifdef BIONET_21_API
+    cal_server.publish(bionet_node_get_id(node), buf.buf, buf.size);
+#else
     cal_server.publish(node->id, buf.buf, buf.size);
-
+#endif
     // FIXME: cal_server.publish should take the buf
     free(buf.buf);
 
@@ -77,8 +100,13 @@ int hab_report_new_node(const bionet_node_t *node) {
             bionet_resource_t *resource = bionet_node_get_resource_by_index(node, ri);
             int r;
 
+#ifdef BIONET_21_API
+            sprintf(resource_topic, "%s:%s", 
+		    bionet_node_get_id(node), bionet_resource_get_id(resource));
+#else
             sprintf(resource_topic, "%s:%s", node->id, resource->id);
 
+#endif
             r = bionet_resource_metadata_to_asnbuf(resource, &buf);
             if (r != 0) {
                 // an error has already been logged, and the buffer has been freed
@@ -116,3 +144,8 @@ fail0:
     return -1;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

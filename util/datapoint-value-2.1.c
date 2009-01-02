@@ -30,7 +30,14 @@ void bionet_datapoint_set_value(bionet_datapoint_t *d, bionet_value_t *value) {
         return;
     }
 
-    if (d->value) {
+    
+    if (value == d->value)
+    {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_value(): passed in value == d->value");
+	d->dirty = 1;
+	return;
+    }
+    else if (d->value) {
         free(d->value);
 	d->value = value;
     } else {
