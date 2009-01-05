@@ -3,7 +3,7 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
-
+#define _ISOC99_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -112,8 +112,8 @@ static int add_hab_to_db(const bionet_hab_t *hab) {
         " INTO Hardware_Abstractors"
         " VALUES ( NULL, '%s', '%s' )"
         ";",
-        hab->type,
-        hab->id
+        bionet_hab_get_type(hab),
+        bionet_hab_get_id(hab)
     );
     if (r >= sizeof(sql)) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL doesnt fit in buffer!\n");
@@ -158,9 +158,9 @@ static int add_node_to_db(const bionet_node_t *node) {
         "         HAB_Type='%s'"
         "         AND HAB_ID='%s'"
         ";",
-        node->id,
-        node->hab->type,
-        node->hab->id
+        bionet_node_get_id(node),
+	bionet_hab_get_type(bionet_node_get_hab(node)), 
+	bionet_hab_get_id(bionet_node_get_hab(node))
     );
     if (r >= sizeof(sql)) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL doesnt fit in buffer!\n");
@@ -198,7 +198,10 @@ static int add_resource_to_db(bionet_resource_t *resource) {
     // blob is "X'" followed by 64 bits (8 bytes) of data ASCII-encoded as
     // 16 characters in [0-9a-f], followed by "'" and the terminating NULL
     char blob[20];
-
+    const char * hab_type;
+    const char * hab_id;
+    const char * node_id;
+    const char * resource_id;
 
     r = SHA1_Init(&sha_ctx);
     if (r != 1) {
@@ -206,38 +209,42 @@ static int add_resource_to_db(bionet_resource_t *resource) {
         return -1;
     }
 
-    r = SHA1_Update(&sha_ctx, resource->node->hab->type, strlen(resource->node->hab->type));
+    hab_type = bionet_hab_get_type(bionet_node_get_hab(bionet_resource_get_node(resource)));
+    r = SHA1_Update(&sha_ctx, hab_type, strlen(hab_id));
     if (r != 1) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource HAB-Type\n");
-        return -1;
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource HAB-Type\n");
+	return -1;
+    }
+    
+    hab_id = bionet_hab_get_id(bionet_node_get_hab(bionet_resource_get_node(resource)));
+    r = SHA1_Update(&sha_ctx, hab_id, strlen(hab_id));
+    if (r != 1) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource HAB-ID\n");
+	return -1;
     }
 
-    r = SHA1_Update(&sha_ctx, resource->node->hab->id, strlen(resource->node->hab->id));
-    if (r != 1) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource HAB-ID\n");
-        return -1;
-    }
-
-    r = SHA1_Update(&sha_ctx, resource->node->id, strlen(resource->node->id));
+    node_id = bionet_node_get_id(bionet_resource_get_node(resource));
+    r = SHA1_Update(&sha_ctx, node_id, strlen(node_id));
     if (r != 1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource Node-ID\n");
         return -1;
     }
 
-    r = SHA1_Update(&sha_ctx, resource->id, strlen(resource->id));
+    resource_id = bionet_resource_get_id(resource);
+    r = SHA1_Update(&sha_ctx, resource_id, strlen(resource_id));
     if (r != 1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource ID\n");
         return -1;
     }
 
-    byte = resource->data_type;
+    byte = bionet_resource_get_data_type(resource);
     r = SHA1_Update(&sha_ctx, &byte, 1);
     if (r != 1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource Data Type\n");
         return -1;
     }
 
-    byte = resource->flavor;
+    byte = bionet_resource_get_flavor(resource);
     r = SHA1_Update(&sha_ctx, &byte, 1);
     if (r != 1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource Flavor\n");
@@ -282,12 +289,12 @@ static int add_resource_to_db(bionet_resource_t *resource) {
         "         AND Resource_Flavors.Flavor LIKE '%s'"
         ";",
         blob,
-        resource->id,
-        resource->node->hab->type,
-        resource->node->hab->id,
-        resource->node->id,
-        bionet_resource_data_type_to_string(resource->data_type),
-        bionet_resource_flavor_to_string(resource->flavor)
+	resource_id,
+        hab_type,
+        hab_id,
+        node_id,
+        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
     );
     if (r >= sizeof(sql)) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL doesnt fit in buffer!\n");
@@ -318,6 +325,7 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
     char sql[1024];
     char escaped_string[1024];
     char *zErrMsg = NULL;
+    bionet_value_t *value = bionet_datapoint_get_value(datapoint);
 
     // String values need to be escaped here to avoid an SQL injection
     // vulnerability.  Single-quote characters "'" need to be replaced with
@@ -329,7 +337,7 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
         int dest_index;
         int dest_size;
 
-        src_string = bionet_datapoint_value_to_string(datapoint);
+        src_string = bionet_value_to_str(value);
 
         dest_size = sizeof(escaped_string);
 
@@ -354,6 +362,11 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
 
 
     // FIXME: might be the wrong resource (might differ in data type or flavor)
+    struct timeval * timestamp = bionet_datapoint_get_timestamp(datapoint);
+    bionet_resource_t * resource = bionet_value_get_resource(value);
+    bionet_node_t * node = bionet_resource_get_node(resource);
+    bionet_hab_t * hab = bionet_node_get_hab(node);
+
     r = snprintf(
         sql,
         sizeof(sql),
@@ -372,12 +385,12 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
         "         AND Resources.Resource_ID = '%s'"
         ";",
         escaped_string,
-        (unsigned int)datapoint->timestamp.tv_sec,
-        (unsigned int)datapoint->timestamp.tv_usec,
-        datapoint->resource->node->hab->type,
-        datapoint->resource->node->hab->id,
-        datapoint->resource->node->id,
-        datapoint->resource->id
+        (unsigned int)timestamp->tv_sec,
+        (unsigned int)timestamp->tv_usec,
+        bionet_hab_get_type(hab),
+        bionet_hab_get_id(hab),
+	bionet_node_get_id(node),
+        bionet_resource_get_id(resource)
     );
     if (r >= sizeof(sql)) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL doesnt fit in buffer!\n");
@@ -410,7 +423,10 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
 int db_add_datapoint(bionet_datapoint_t *datapoint) {
     int r;
     char *zErrMsg = NULL;
-
+    bionet_value_t * value = NULL;
+    bionet_resource_t * resource = NULL;
+    bionet_node_t * node = NULL;
+    bionet_hab_t * hab = NULL;
 
     // start transaction
     r = sqlite3_exec(
@@ -428,13 +444,18 @@ int db_add_datapoint(bionet_datapoint_t *datapoint) {
 
 
     // add parent objects as needed
-    r = add_hab_to_db(datapoint->resource->node->hab);
+    value = bionet_datapoint_get_value(datapoint);
+    resource = bionet_value_get_resource(value);
+    node = bionet_resource_get_node(resource);
+    hab = bionet_node_get_hab(node);
+    
+    r = add_hab_to_db(hab);
     if (r != 0) goto fail;
 
-    r = add_node_to_db(datapoint->resource->node);
+    r = add_node_to_db(node);
     if (r != 0) goto fail;
 
-    r = add_resource_to_db(datapoint->resource);
+    r = add_resource_to_db(resource);
     if (r != 0) goto fail;
 
 
@@ -471,7 +492,7 @@ fail:
 
 
 int db_add_node(bionet_node_t *node) {
-    GSList *i;
+    int i;
 
     int r;
     char *zErrMsg = NULL;
@@ -493,7 +514,7 @@ int db_add_node(bionet_node_t *node) {
 
 
     // add parent hab
-    r = add_hab_to_db(node->hab);
+    r = add_hab_to_db(bionet_node_get_hab(node));
     if (r != 0) goto fail;
 
 
@@ -503,8 +524,8 @@ int db_add_node(bionet_node_t *node) {
 
 
     // add this node's resources
-    for (i = node->resources; i != NULL; i = i->next) {
-        bionet_resource_t *resource = i->data;
+    for (i = 0; i < bionet_node_get_num_resources(node); i++) {
+        bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
 
         r = add_resource_to_db(resource);
         if (r != 0) goto fail;
@@ -558,7 +579,8 @@ static bionet_hab_t *find_hab(GPtrArray *hab_list, const char *hab_type, const c
 
     for (i = 0; i < hab_list->len; i ++) {
         hab = g_ptr_array_index(hab_list, i);
-        if ((strcmp(hab->type, hab_type) == 0) && (strcmp(hab->id, hab_id) == 0)) {
+        if ((strcmp(bionet_hab_get_type(hab), hab_type) == 0) 
+	    && (strcmp(bionet_hab_get_id(hab), hab_id) == 0)) {
             return hab;
         }
     }
@@ -598,7 +620,10 @@ static bionet_resource_t *find_resource(bionet_node_t *node, const char *data_ty
     resource = bionet_node_get_resource_by_id(node, resource_id);
     if (resource != NULL) return resource;
 
-    resource = bionet_resource_new_from_str(node, data_type, flavor, resource_id);
+    resource = bionet_resource_new(node, 
+				   bionet_resource_data_type_from_string(data_type), 
+				   bionet_resource_flavor_from_string(flavor), 
+				   resource_id);
     if (resource == NULL) {
         return NULL;
     }
@@ -621,7 +646,9 @@ static int db_get_resource_datapoints_callback(
     bionet_resource_t *resource;
 
     struct timeval timestamp;
-
+    int err = 0;
+    bionet_value_t * value = NULL;
+    bionet_datapoint_t * datapoint = NULL;
 
     hab = find_hab(hab_list, argv[0], argv[1]);
     if (hab == NULL) {
@@ -631,24 +658,90 @@ static int db_get_resource_datapoints_callback(
 
     node = find_node(hab, argv[2]);
     if (node == NULL) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding node %s.%s.%s", hab->type, hab->id, argv[2]);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+	      "db_get_resource_datapoints_callback(): error finding node %s.%s.%s", 
+	      bionet_hab_get_type(hab), bionet_hab_get_id(hab), argv[2]);
         return -1;
     }
 
     resource = find_resource(node, argv[3], argv[4], argv[5]);
     if (resource == NULL) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding resource %s %s %s.%s.%s:%s", argv[3], argv[4], hab->type, hab->id, node->id, argv[5]);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+	      "db_get_resource_datapoints_callback(): error finding resource %s %s %s.%s.%s:%s", 
+	      argv[3], argv[4], 
+	      bionet_hab_get_type(hab), bionet_hab_get_id(hab), 
+	      bionet_node_get_id(node), argv[5]);
         return -1;
     }
 
     timestamp.tv_sec = atoi(argv[7]);
     timestamp.tv_usec = atoi(argv[8]);
 
-    if (bionet_resource_add_datapoint(resource, argv[6], &timestamp) == NULL) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error adding datapoint");
-        return -1;
+    switch(bionet_resource_get_data_type(resource))
+    {
+    case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	value = bionet_value_new_binary(resource, atoi(argv[6]));
+	break; 
+    case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	value = bionet_value_new_uint8(resource, (uint8_t)strtoul(argv[6], NULL, 0));
+	break; 
+    case BIONET_RESOURCE_DATA_TYPE_INT8:   
+	value = bionet_value_new_int8(resource, (int8_t)atoi(argv[6]));
+	break; 
+    case BIONET_RESOURCE_DATA_TYPE_UINT16: 
+	value = bionet_value_new_uint16(resource, (uint16_t)strtoul(argv[6], NULL, 0));
+	break; 
+    case BIONET_RESOURCE_DATA_TYPE_INT16:  
+	value = bionet_value_new_int16(resource, (int16_t)atoi(argv[6]));
+	break; 
+    case BIONET_RESOURCE_DATA_TYPE_UINT32: 
+	value = bionet_value_new_uint32(resource, (uint32_t)strtoul(argv[6], NULL, 0));
+	break; 
+    case BIONET_RESOURCE_DATA_TYPE_INT32:  
+	value = bionet_value_new_int32(resource, (int32_t)atoi(argv[6]));
+	break; 
+    case BIONET_RESOURCE_DATA_TYPE_FLOAT:  
+	value = bionet_value_new_float(resource, strtof(argv[6], NULL));
+	break; 
+    case BIONET_RESOURCE_DATA_TYPE_DOUBLE: 
+	value = bionet_value_new_double(resource, strtod(argv[6], NULL));
+	break; 
+    case BIONET_RESOURCE_DATA_TYPE_STRING:
+	value = bionet_value_new_str(resource, argv[6]);
+	break; 
+    case BIONET_RESOURCE_DATA_TYPE_INVALID:
+    default:
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "db_get_resource_datapoints_callback(): invalid data_type %d for %s.%s.%s:%s\n",
+	      bionet_resource_get_data_type(resource),
+	      bionet_hab_get_type(hab),
+	      bionet_hab_get_id(hab),
+	      bionet_node_get_id(node),
+	      bionet_resource_get_id(resource));
+	break; 
     }
 
+    if (value)
+    {
+	datapoint = bionet_datapoint_new(resource, value, &timestamp);
+	if (datapoint) {
+	    bionet_resource_add_datapoint(resource, datapoint);
+	} else {
+	    err++;
+	}
+    } else	{
+	err++;
+    }
+
+    if (err)
+    {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "db_get_resource_datapoints_callback(): error adding datapoint: %s.%s.%s:%s\n",
+	      bionet_hab_get_type(hab),
+	      bionet_hab_get_id(hab),
+	      bionet_node_get_id(node),
+	      bionet_resource_get_id(resource));
+    }
 
     return 0;
 }
@@ -845,3 +938,8 @@ GPtrArray *db_get_resource_datapoints(
 }
 
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

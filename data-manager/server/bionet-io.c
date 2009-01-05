@@ -38,23 +38,33 @@ static void cb_datapoint(bionet_datapoint_t *datapoint) {
 
 
 static void cb_lost_node(bionet_node_t *node) {
-    g_log("", G_LOG_LEVEL_INFO, "lost node: %s.%s.%s", node->hab->type, node->hab->id, node->id);
+    g_log("", G_LOG_LEVEL_INFO, "lost node: %s.%s.%s", 
+	  bionet_hab_get_type(bionet_node_get_hab(node)), 
+	  bionet_hab_get_id(bionet_node_get_hab(node)), 
+	  bionet_node_get_id(node));
 }
 
 
 static void cb_new_node(bionet_node_t *node) {
-    g_log("", G_LOG_LEVEL_INFO, "new node: %s.%s.%s", node->hab->type, node->hab->id, node->id);
+    g_log("", G_LOG_LEVEL_INFO, "new node: %s.%s.%s", 
+	  bionet_hab_get_type(bionet_node_get_hab(node)), 
+	  bionet_hab_get_id(bionet_node_get_hab(node)), 
+	  bionet_node_get_id(node));
     (void) db_add_node(node);
 }
 
 
 static void cb_lost_hab(bionet_hab_t *hab) {
-    g_log("", G_LOG_LEVEL_INFO, "lost hab: %s.%s", hab->type, hab->id);
+    g_log("", G_LOG_LEVEL_INFO, "lost hab: %s.%s", 
+	  bionet_hab_get_type(hab), 
+	  bionet_hab_get_id(hab));
 }
 
 
 static void cb_new_hab(bionet_hab_t *hab) {
-    g_log("", G_LOG_LEVEL_INFO, "new hab: %s.%s", hab->type, hab->id);
+    g_log("", G_LOG_LEVEL_INFO, "new hab: %s.%s", 
+	  bionet_hab_get_type(hab), 
+	  bionet_hab_get_id(hab));
     (void) db_add_hab(hab);
 }
 
@@ -120,7 +130,7 @@ int try_to_connect_to_bionet(void *unused) {
         (hab_list_index == 0) &&
         (node_list_index == 0) &&
         (resource_index == 0)
-    ) {
+	) {
         bionet_subscribe_hab_list_by_name("*.*");
         bionet_subscribe_node_list_by_name("*.*.*");
         bionet_subscribe_datapoints_by_name("*.*.*:*");
@@ -143,3 +153,8 @@ int try_to_connect_to_bionet(void *unused) {
     return FALSE;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

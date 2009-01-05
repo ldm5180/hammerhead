@@ -89,15 +89,15 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
                 goto cleanup;
             }
 
-            r = OCTET_STRING_fromString(&asn_hab->type, hab->type);
+            r = OCTET_STRING_fromString(&asn_hab->type, bionet_hab_get_type(hab));
             if (r != 0) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): error making OCTET_STRING for HAB-Type %s", hab->type);
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): error making OCTET_STRING for HAB-Type %s", bionet_hab_get_type(hab));
                 goto cleanup;
             }
 
-            r = OCTET_STRING_fromString(&asn_hab->id, hab->id);
+            r = OCTET_STRING_fromString(&asn_hab->id, bionet_hab_get_id(hab));
             if (r != 0) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): error making OCTET_STRING for HAB-ID %s", hab->id);
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): error making OCTET_STRING for HAB-ID %s", bionet_hab_get_id(hab));
                 goto cleanup;
             }
 
@@ -118,9 +118,9 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
                     goto cleanup;
                 }
 
-                r = OCTET_STRING_fromString(&asn_node->id, node->id);
+                r = OCTET_STRING_fromString(&asn_node->id, bionet_node_get_id(node));
                 if (r != 0) {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): error making OCTET_STRING for Node-ID %s", node->id);
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): error making OCTET_STRING for Node-ID %s", bionet_node_get_id(node));
                     goto cleanup;
                 }
 
@@ -141,19 +141,19 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
                         goto cleanup;
                     }
 
-                    r = OCTET_STRING_fromString(&asn_resource->id, resource->id);
+                    r = OCTET_STRING_fromString(&asn_resource->id, bionet_resource_get_id(resource));
                     if (r != 0) {
-                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): error making OCTET_STRING for Resource-ID %s", resource->id);
+                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): error making OCTET_STRING for Resource-ID %s", bionet_resource_get_id(resource));
                         goto cleanup;
                     }
 
-                    asn_resource->flavor = bionet_flavor_to_asn(resource->flavor);
+                    asn_resource->flavor = bionet_flavor_to_asn(bionet_resource_get_flavor(resource));
                     if (asn_resource->flavor == -1) {
                         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): resource has invalid flavor");
                         goto cleanup;
                     }
 
-                    asn_resource->datatype = bionet_datatype_to_asn(resource->data_type);
+                    asn_resource->datatype = bionet_datatype_to_asn(bionet_resource_get_data_type(resource));
                     if (asn_resource->datatype == -1) {
                         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): resource has invalid datatype");
                         goto cleanup;
@@ -210,3 +210,8 @@ void handle_client_message(client_t *client, BDM_C2S_Message_t *message) {
     }
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
