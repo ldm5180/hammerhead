@@ -7,6 +7,8 @@
 #include "bionet-hab-2.1.h"
 #include "bionet-node-2.1.h"
 #include "bionet-resource-2.1.h"
+#include "bionet-datapoint-2.1.h"
+#include "bionet-value-2.1.h"
 %}
 
 typedef unsigned short uint16_t;
@@ -25,4 +27,13 @@ typedef struct timeval
 %include "bionet-hab-2.1.h"
 %include "bionet-node-2.1.h"
 %include "bionet-resource-2.1.h"
+%include "bionet-datapoint-2.1.h"
+%include "bionet-value-2.1.h"
 
+typedef unsigned int guint;
+typedef void* gpointer;
+typedef struct 
+{
+  gpointer *pdata;
+  guint     len;
+} GPtrArray;
