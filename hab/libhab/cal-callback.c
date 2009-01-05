@@ -345,7 +345,7 @@ static void libhab_handle_node_list_subscription_request(const char *peer_name, 
 static void libhab_handle_subscription_request(const char *peer_name, const char *topic) {
     // stream subscription?
     if (strncmp(topic, "S ", 2) == 0) {
-        libhab_handle_stream_subscription_request(peer_name, topic);
+        libhab_handle_stream_subscription_request(peer_name, &topic[2]);
         return;
     }
 
