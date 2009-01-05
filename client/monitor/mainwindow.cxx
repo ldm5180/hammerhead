@@ -69,7 +69,7 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
 
 
 void MainWindow::setupBionetModel() {
-    model = new BionetModel(this, true, true);
+    model = new BionetModel(this);
 
     model->setColumnCount(5);
     model->setRowCount(0);
@@ -270,7 +270,7 @@ void MainWindow::updateMenus() {
     resource = resourceView->resourceInView();
     if (resource == NULL)
         plotAction->setEnabled(false);
-    else if (resource->data_type == BIONET_RESOURCE_DATA_TYPE_STRING)
+    else if (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_STRING)
         plotAction->setEnabled(false);
     else
         plotAction->setEnabled(true);
@@ -339,14 +339,21 @@ void MainWindow::makePlot(QString key) {
 
 void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
     bionet_resource_t* res;
+    bionet_node_t* node;
+    bionet_hab_t* hab;
 
-    res = datapoint->resource;
+    if (datapoint == NULL)
+        return;
 
-    QString key = QString("%1.%2.%3:%4").
-        arg(res->node->hab->type).
-        arg(res->node->hab->id).
-        arg(res->node->id).
-        arg(res->id);
+    res = bionet_value_get_resource(bionet_datapoint_get_value(datapoint));
+    node = bionet_resource_get_node(res);
+    hab = bionet_node_get_hab(node);
+
+    QString key = QString("%1.%2.%3:%4")
+        .arg(bionet_hab_get_type(hab))
+        .arg(bionet_hab_get_id(hab))
+        .arg(bionet_node_get_id(node))
+        .arg(bionet_resource_get_id(res));
     PlotWindow* p = plots.value(key);
 
     if ( p != NULL ) {

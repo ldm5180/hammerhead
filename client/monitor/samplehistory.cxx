@@ -53,14 +53,24 @@ void SampleHistory::recordSample(bionet_datapoint_t* datapoint) {
     double value;
     time_t time;
     sampleData* sample;
-    bionet_resource_t* resource = datapoint->resource;
+    bionet_value_t* bionet_value = bionet_datapoint_get_value(datapoint);
+    bionet_resource_t* resource = bionet_value_get_resource(bionet_value);
+    bionet_hab_t* hab;
+    bionet_node_t* node;
 
-    QString key = QString("%1.%2.%3:%4").arg(resource->node->hab->type).arg(resource->node->hab->id).arg(resource->node->id).arg(resource->id);
+    node = bionet_resource_get_node(resource);
+    hab = bionet_node_get_hab(node);
+
+    QString key = QString("%1.%2.%3:%4")
+        .arg(bionet_hab_get_type(hab))
+        .arg(bionet_hab_get_id(hab))
+        .arg(bionet_node_get_id(node))
+        .arg(bionet_resource_get_id(resource));
 
     sample = samples->value(key);
 
-    time = datapoint->timestamp.tv_sec;
-    value = QString(bionet_datapoint_value_to_string(datapoint)).toDouble();
+    time = bionet_datapoint_get_timestamp(datapoint)->tv_sec;
+    value = QString(bionet_value_to_str(bionet_value)).toDouble();
 
     sample->times->append(time);
     sample->values->append(value);

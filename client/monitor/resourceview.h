@@ -31,7 +31,8 @@
 #include <QErrorMessage>
 
 extern "C" {
-#include "bionet.h"
+#include "bionet-2.1.h"
+#include "bionet-util-2.1.h"
 };
 
 class ResourceView  : public QGridLayout {
@@ -50,7 +51,7 @@ class ResourceView  : public QGridLayout {
         void lostNode(bionet_node_t* node);
         void resourceValueChanged(bionet_datapoint_t* datapoint);
         void newResourceSelected(bionet_resource_t* resource);
-        void newStreamSelected(bionet_stream_t* stream);
+        void newStreamSelected(bionet_stream_t* /*stream*/) { }
         void textEntered();
         void plotClicked();
         bionet_resource_t* resourceInView();
@@ -62,8 +63,8 @@ class ResourceView  : public QGridLayout {
     private:
         void updatePanel(bionet_resource_t* res);
         bool resourceInPanel(bionet_resource_t* res);
-        bool habInPanel(char* habTypeComparison, char* habIdComparison);
-        bool nodeInPanel(char* habTypeComparison, char* habIdComparison, char* nodeIdComparison);
+        bool habInPanel(const char* habTypeComparison, const char* habIdComparison);
+        bool nodeInPanel(const char* habTypeComparison, const char* habIdComparison, const char* nodeIdComparison);
         void removeSubmitableRows();
         
         // For the panel, the stuff on the left (these never change)

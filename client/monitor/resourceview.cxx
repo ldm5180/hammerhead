@@ -90,10 +90,10 @@ ResourceView :: ResourceView (QWidget* parent) : QGridLayout(parent) {
 }
 
 void ResourceView::updatePanel(bionet_resource_t* resource) {
-    bionet_datapoint *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
+    bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
 
     if (datapoint != NULL) {
-        QString exactValue(bionet_datapoint_value_to_string(datapoint));
+        QString exactValue(bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
 
         // For all of the really large resources
         if (exactValue.toFloat() > 1e16)
@@ -107,8 +107,8 @@ void ResourceView::updatePanel(bionet_resource_t* resource) {
         value->setText("(no known value)");
     }
     
-    if ((resource->flavor == BIONET_RESOURCE_FLAVOR_PARAMETER) ||
-        (resource->flavor == BIONET_RESOURCE_FLAVOR_ACTUATOR)) {
+    if ((bionet_resource_get_flavor(resource) == BIONET_RESOURCE_FLAVOR_PARAMETER) ||
+        (bionet_resource_get_flavor(resource) == BIONET_RESOURCE_FLAVOR_ACTUATOR)) {
         removeWidget(plotButton);
         addWidget(submitResourceValue, 8, 0);
         addWidget(valueEditor, 8, 1);
@@ -130,7 +130,7 @@ void ResourceView::updatePanel(bionet_resource_t* resource) {
         plotButton->setFocusPolicy(Qt::StrongFocus);
     }
 
-    if (resource->data_type == BIONET_RESOURCE_DATA_TYPE_STRING)
+    if (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_STRING)
         plotButton->setEnabled(false);
     else
         plotButton->setEnabled(true);
@@ -158,29 +158,37 @@ void ResourceView::clearView() {
 }
 
 void ResourceView::lostHab(bionet_hab_t* hab) {
-    if (habInPanel(hab->type, hab->id))
+    if (habInPanel(bionet_hab_get_type(hab), bionet_hab_get_id(hab)))
         clearView();
 }
 
 void ResourceView::lostNode(bionet_node_t* node) {
-    if (nodeInPanel(node->hab->type, node->hab->id, node->id))
+    bionet_hab_t* hab = bionet_node_get_hab(node);
+
+    if (nodeInPanel(bionet_hab_get_type(hab), bionet_hab_get_id(hab), bionet_node_get_id(node)))
         clearView();
 }
 
 void ResourceView::newResourceSelected(bionet_resource_t* resource) {
+    bionet_hab_t *hab;
+    bionet_node_t *node;
+
+    node = bionet_resource_get_node(resource);
+    hab = bionet_node_get_hab(node);
+
     resourceIdTitle->setText("Resource");
     flavorTitle->setText("Flavor");
     dataTypeTitle->setText("Data Type");
     timestampTitle->setText("Timestamp");
     valueTitle->setText("Value");
 
-    habType->setText(resource->node->hab->type);
-    habId->setText(resource->node->hab->id);
-    nodeId->setText(resource->node->id);
-    resourceId->setText(resource->id);
-    flavor->setText(bionet_resource_flavor_to_string(resource->flavor));
-    dataType->setText(bionet_resource_data_type_to_string(resource->data_type));
-        
+    habType->setText(bionet_hab_get_type(hab));
+    habId->setText(bionet_hab_get_id(hab));
+    nodeId->setText(bionet_node_get_id(node));
+    resourceId->setText(bionet_resource_get_id(resource));
+    flavor->setText(bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)));
+    dataType->setText(bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)));
+
     plotButton->setDisabled(false);
 
 
@@ -189,7 +197,15 @@ void ResourceView::newResourceSelected(bionet_resource_t* resource) {
     return;
 }
 
+/*
+ * FIXME: when streams are working, re-enable this
 void ResourceView::newStreamSelected(bionet_stream_t* stream) {
+    bionet_hab_t *hab;
+    bionet_node_t *node;
+
+    node = bionet_resource_get_node(resource);
+    hab = bionet_resource_get_hab(node);
+
     if (rowCount() == 10) {
         removeSubmitableRows();
         plotButton->setDisabled(true);
@@ -199,7 +215,7 @@ void ResourceView::newStreamSelected(bionet_stream_t* stream) {
     dataTypeTitle->setText("Type");
     timestampTitle->setText("Host");
     valueTitle->setText("Port");
-    
+
     habType->setText(stream->node->hab->type);
     habId->setText(stream->node->hab->id);
     nodeId->setText(stream->node->id);
@@ -209,27 +225,34 @@ void ResourceView::newStreamSelected(bionet_stream_t* stream) {
     // timestamp->setText(stream->host);
     // value->setText(QString("%1").arg(stream->port));
 }
+*/
 
 void ResourceView::resourceValueChanged(bionet_datapoint_t* datapoint) {
-    if (resourceInPanel(datapoint->resource))
-        updatePanel(datapoint->resource);
+    bionet_resource_t *resource;
+
+    if (datapoint == NULL)
+        return;
+
+    resource = bionet_value_get_resource(bionet_datapoint_get_value(datapoint));
+
+    if (resourceInPanel(resource))
+        updatePanel(resource);
 }
 
 void ResourceView::textEntered() {
     int r = 0;
+    bionet_resource_t* resource;
 
     if (valueEditor->text() == NULL) {
         return;
     }
 
-    /*
     r = bionet_set_resource_by_habtype_habid_nodeid_resourceid( 
             qPrintable(habType->text()), 
             qPrintable(habId->text()), 
             qPrintable(nodeId->text()),
             qPrintable(resourceId->text()),
             qPrintable(valueEditor->text()));
-    */
     
     if (r < 0) {
         popupError->showMessage("Unable to set resource value");
@@ -238,7 +261,7 @@ void ResourceView::textEntered() {
     valueEditor->clear();
 }
 
-bool ResourceView::habInPanel(char* habTypeComparison, char* habIdComparison) {
+bool ResourceView::habInPanel(const char* habTypeComparison, const char* habIdComparison) {
 
     if ((habIdComparison == habId->text()) &&
         (habTypeComparison == habType->text()))
@@ -247,7 +270,7 @@ bool ResourceView::habInPanel(char* habTypeComparison, char* habIdComparison) {
     return FALSE;
 }
 
-bool ResourceView::nodeInPanel(char* habTypeComparison, char* habIdComparison, char* nodeIdComparison) {
+bool ResourceView::nodeInPanel(const char* habTypeComparison, const char* habIdComparison, const char* nodeIdComparison) {
 
     if ((habInPanel(habTypeComparison, habIdComparison)) &&
         (nodeIdComparison == nodeId->text()))
@@ -257,9 +280,14 @@ bool ResourceView::nodeInPanel(char* habTypeComparison, char* habIdComparison, c
 }
 
 bool ResourceView::resourceInPanel(bionet_resource_t* resource) {
+    bionet_hab_t* hab;
+    bionet_node_t* node;
 
-    if ((nodeInPanel(resource->node->hab->type, resource->node->hab->id, resource->node->id) &&
-        (resource->id == resourceId->text())))
+    node = bionet_resource_get_node(resource);
+    hab = bionet_node_get_hab(node);
+
+    if (nodeInPanel(bionet_hab_get_type(hab), bionet_hab_get_id(hab), bionet_node_get_id(node)) &&
+        (bionet_resource_get_id(resource) == resourceId->text()))
         return TRUE;
 
     return FALSE;
@@ -285,7 +313,7 @@ void ResourceView::plotClicked() {
     bionet_resource_t* res = resourceInView();
     if (res == NULL)
         return;
-    if (res->data_type == BIONET_RESOURCE_DATA_TYPE_STRING)
+    if (bionet_resource_get_data_type(res) == BIONET_RESOURCE_DATA_TYPE_STRING)
         return;
 
     QString id = QString("%1.%2.%3:%4").arg(habType->text()).arg(habId->text()).arg(nodeId->text()).arg(resourceId->text());

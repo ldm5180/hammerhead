@@ -48,7 +48,8 @@
 #include "plotwindow.h"
 
 extern "C" {
-#include "bionet.h"
+#include "bionet-2.1.h"
+#include "bionet-util-2.1.h"
 };
 
 using namespace std;
