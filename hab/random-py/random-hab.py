@@ -5,7 +5,6 @@ import optparse
 import logging
 import time
 import random
-#import add_node
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--id", dest="hab_id", default="python",
@@ -16,6 +15,7 @@ parser.add_option("-n", "--min-nodes", dest="min_nodes", default=5,
                   metavar="N")
 parser.add_option("-x", "--max-delay", dest="max_delay",
                   help="After taking each action (adding or removing a Node, or updating a Resource), the random-hab sleeps up to this long (seconds)",
+                  default=1,
                   metavar="X")
 
 (options, args) = parser.parse_args()
@@ -29,9 +29,12 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 from hab import *
+import add_node
+import destroy_node
+import update_node
 
 #connect to bionet
-hab = bionet_hab_new(None, options.hab_id)
+hab = bionet_hab_new("RANDOM-py", options.hab_id)
 hab_register_callback_set_resource(cb_set_resource);
 bionet_fd = hab_connect(hab)
 if (0 > bionet_fd):
@@ -39,21 +42,21 @@ if (0 > bionet_fd):
     exit(1)
 
 #make nodes
-#while(1):
-#    while(bionet_hab_get_num_nodes(hab) < options.min_nodes):
-#        add_node.Add(hab)
+while(1):
+    while(bionet_hab_get_num_nodes(hab) < options.min_nodes):
+        add_node.Add(hab)
 
-#    while(bionet_get_num_nodes(hab) > (2 * options.min_nodes)):
-#        destroy_node.Destroy(hab)
+    while(bionet_hab_get_num_nodes(hab) > (2 * options.min_nodes)):
+        destroy_node.Destroy(hab)
 
-#    rnd = random.randint(0,100)
-#    print rnd
+    rnd = random.randint(0,100)
 
-#    if (rnd < 10):
-#        destroy_node(hab)
-#    elif (rnd < 20):
-#        add_node(hab)
-#    else:
-#        update_node(hab)
-
+    if (rnd < 10):
+        destroy_node.Destroy(hab)
+    elif (rnd < 20):
+        add_node.Add(hab)
+    else:
+        update_node.Update(hab)
+        
+    time.sleep(options.max_delay)
     

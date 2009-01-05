@@ -1,5 +1,11 @@
 SWIG_INCDIR = -I../libhab -I../../util
 
+if ENABLE_LINUX
+LDCONFIG_EXE = /sbin/ldconfig
+endif
+
+LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.version_info[0]) + \".\" + str(sys.version_info[1])" | python`
+
 lib_LTLIBRARIES = libhab-py.la
 
 libhab_py_la_SOURCES = hab_wrap.c
@@ -14,5 +20,10 @@ hab_wrap.c: hab.i
 
 clean-local:
 	rm -f hab.py _hab.so hab_wrap.c libbionet*
+
+install-exec-hook:
+	python setup.py install
+	cp _hab.so $(LIB_INST_DIR)/.
+	$(LDCONFIG_EXE)
 
 EXTRA_DIST = hab.py .libs/libhab-py.so* libhab-py.a

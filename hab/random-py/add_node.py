@@ -31,7 +31,11 @@ def add_resource(node):
     else:
         set_random_resource_value.Set(resource)
         datapoint = bionet_resource_get_datapoint_by_index(resource, 0)
-        logger.info(resource_id + " " + bionet_resource_data_type_to_string(data_type) + " " + bionet_resource_flavor_to_string(flavor) + " = " + bionet_datapoint_value_to_string(datapoint))
+        value = bionet_datapoint_get_value(datapoint)
+        if (value):
+            logger.info(resource_id + " " + bionet_resource_data_type_to_string(data_type) + " " + bionet_resource_flavor_to_string(flavor) + " = " + bionet_value_to_str(value))
+        else:
+            logger.info(resource_id + " " + bionet_resource_data_type_to_string(data_type) + " " + bionet_resource_flavor_to_string(flavor) + " = " + "No Value")
 
 
 def Add(random_hab):
