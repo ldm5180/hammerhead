@@ -54,7 +54,7 @@ bionet_value_t * bionet_datapoint_get_value(bionet_datapoint_t *d)
     if (NULL == d)
     {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_datapoint_det_value(): NULL datapoint passed in");
+	      "bionet_datapoint_get_value(): NULL datapoint passed in");
 	errno = EINVAL;
 	return NULL;
     }
