@@ -1,29 +1,29 @@
 %module hab
 %{
-#include "hardware-abstractor.h"
-#include "bionet-util.h"
-#include "bionet-hab.h"
-#include "bionet-node.h"
-#include "bionet-resource.h"
+#include "hardware-abstractor-2.1.h"
+#include "bionet-util-2.1.h"
+#include "bionet-hab-2.1.h"
+#include "bionet-node-2.1.h"
+#include "bionet-resource-2.1.h"
 %}
 
 %include "hardware-abstractor.h"
-%include "bionet-util.h"
-%include "bionet-hab.h"
-%include "bionet-node.h"
-%include "bionet-resource.h"
+%include "bionet-util-2.1.h"
+%include "bionet-hab-2.1.h"
+%include "bionet-node-2.1.h"
+%include "bionet-resource-2.1.h"
 
-%constant void cb_set_resource(bionet_resource_t *resource, const bionet_datapoint_value_t *value);
+%constant void cb_set_resource(bionet_resource_t *resource, const bionet_value_t *value);
 
 
 %inline %{
 void cb_set_resource(bionet_resource_t *resource, 
-     const bionet_datapoint_value_t *value) {
+     const bionet_value_t *value) {
     printf(
         "callback: should set %s:%s to '%s'\n",
-        resource->node->id,
-        resource->id,
-        bionet_datapoint_value_to_string_isolated(resource->data_type, value)
+        bionet_node_get_id(bionet_resource_get_node(resource)),
+        bionet_resource_get_id(resource),
+        bionet_value_to_str(value)
     );
 }
 %}

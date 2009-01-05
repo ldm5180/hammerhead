@@ -12,7 +12,7 @@ libbionet_py_la_SOURCES = bionet_wrap.c
 
 libbionet_py_la_CFLAGS = -DBIONET_21_API `pkg-config --cflags glib-2.0` -I/usr/include/python2.5 ${SWIG_INCDIR}
 libbionet_py_la_LDFLAGS = -L../libbionet -L../../cal/mdnssd-bip/client -L../../asn.1 -L../../util
-libbionet_py_la_LIBADD = -lbionet -lcal-mdnssd-bip-client -lbionet-asn -lbionet-util
+libbionet_py_la_LIBADD = -lbionet-21 -lcal-mdnssd-bip-client -lbionet-asn-21 -lbionet-util-21
 
 CFLAGS += -DBIONET_21_API
 
