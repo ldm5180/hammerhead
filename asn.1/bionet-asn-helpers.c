@@ -611,44 +611,24 @@ StreamDirection_t bionet_stream_direction_to_asn(bionet_stream_direction_t direc
 
 
 Stream_t *bionet_stream_to_asn(const bionet_stream_t *stream) {
+#ifdef BIONET_21_API
+    return NULL;
+#else
+
     Stream_t *asn_stream;
-    //int r; //waiting for streams
-    
+    int r;
+
     asn_stream = (Stream_t *)calloc(1, sizeof(Stream_t));
     if (asn_stream == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): out of memory!");
         return NULL;
     }
 
-#if 0 //waiting for streams
-#ifdef BIONET_21_API
     r = OCTET_STRING_fromString(&asn_stream->id, stream->id);
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_stream_to_asn(): error making OCTET_STRING for Stream-ID %s", 
 	      stream->id);
-        goto cleanup;
-    }
-
-    asn_stream->direction = bionet_stream_direction_to_asn(stream->direction);
-    if (asn_stream->direction == -1) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_stream_to_asn(): invalid Stream Direction %d for Stream %s", 
-	      stream->direction, stream->id);
-        goto cleanup;
-    }
-
-    r = OCTET_STRING_fromString(&asn_stream->type, stream->type);
-    if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_stream_to_asn(): error making OCTET_STRING for Stream Type %s", 
-	      stream->type);
-        goto cleanup;
-    }
-#else
-    r = OCTET_STRING_fromString(&asn_stream->id, stream->id);
-    if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): error making OCTET_STRING for Stream-ID %s", stream->id);
         goto cleanup;
     }
 
@@ -663,14 +643,13 @@ Stream_t *bionet_stream_to_asn(const bionet_stream_t *stream) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): error making OCTET_STRING for Stream Type %s", stream->type);
         goto cleanup;
     }
-#endif
-#endif //waiting for streams
 
     return asn_stream;
 
-//cleanup: //waiting for streams
+cleanup:
     ASN_STRUCT_FREE(asn_DEF_Stream, asn_stream);
     return NULL;
+#endif
 }
 
 
