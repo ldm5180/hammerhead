@@ -55,7 +55,7 @@ static const char *make_id(const char *input) {
 
 
 static void try_add_stream(bionet_node_t *node, int card, int device, snd_ctl_t *handle, snd_pcm_info_t *pcminfo, bionet_stream_direction_t dir) {
-    char id[256];
+    char id[BIONET_NAME_COMPONENT_MAX_LEN];
     char alsa_device[256];
     int r;
 
