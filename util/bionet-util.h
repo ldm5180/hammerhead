@@ -105,7 +105,7 @@ int bionet_is_valid_name_component(const char *str);
  * @retval 0 Does not match
  * @retval 1 Match
  *
- * @note pattern may contain wildcards, "*"
+ * @note pattern may be the wildcard "*", which matches all name components
  */
 int bionet_name_component_matches(const char *name_component, const char *pattern);
 
