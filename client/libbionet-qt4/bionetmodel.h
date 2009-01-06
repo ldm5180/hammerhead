@@ -25,13 +25,18 @@
 #include <QRegExp>
 #include <QStandardItemModel>
 #include <QString>
+#include <QtDebug>
 
 #include <iostream>
 
-#define FULLNAMEROLE (Qt::UserRole)
+#define FULLNAMEROLE            (Qt::UserRole)
+#define HABNAMELENGTH           (2*BIONET_NAME_COMPONENT_MAX_LEN)
+#define NODENAMELENGTH          (3*BIONET_NAME_COMPONENT_MAX_LEN)
+#define RESOURCENAMELENGTH      (4*BIONET_NAME_COMPONENT_MAX_LEN)
 
 extern "C" {
-#include "bionet.h"
+#include "bionet-2.1.h"
+#include "bionet-util-2.1.h"
 };
 
 using namespace std;
@@ -40,10 +45,10 @@ class BionetModel : public QStandardItemModel {
     Q_OBJECT
 
     public:
-        BionetModel(QObject* parent=0, bool res=true, bool streams=false);
+        BionetModel(QObject* parent=0);
 
         QString getName(const QModelIndex &index) const;
-        QString getDisplayName(const QModelIndex &index) const;
+        QString getID(const QModelIndex &index) const;
 
     public slots:
         void newHab(bionet_hab_t* hab);
@@ -65,7 +70,6 @@ class BionetModel : public QStandardItemModel {
         void lostStream(QString stream);
 
     private:
-        bool resources, streams;
 };
 
 #endif

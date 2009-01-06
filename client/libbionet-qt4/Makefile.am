@@ -34,16 +34,16 @@ libbionet_qt4_la_DEPENDENCIES = makefile.qt ../libbionet/libbionet.la ../../util
 
 libbionet_qt4_la_SOURCES = makefile.qt 
 
-libbionet_qt4_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libbionet -I../../util -I/usr/include/qwt-qt4
+libbionet_qt4_la_CFLAGS = -DBIONET_21_API $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libbionet -I../../util -I/usr/include/qwt-qt4
 
 libbionet_qt4_la_LDFLAGS = $(AM_LDFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) -L../libbionet -L../../asn.1 -L../../util -L../../cal/mdnssd-bip/client
 
-libbionet_qt4_la_LIBADD = $(AM_LDADD) -lbionet -lbionet-util -lbionet-asn -lcal-mdnssd-bip-client -lpthread -lm ${qtmake_moc_objects} ${qtmake_objects} 
+libbionet_qt4_la_LIBADD = $(AM_LDADD) -lbionet-21 -lbionet-util-21 -lbionet-asn-21 -lcal-mdnssd-bip-client -lpthread -lm ${qtmake_moc_objects} ${qtmake_objects} 
 
 
 
 makefile.qt: ../libbionet/libbionet.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la
-	qmake-qt4 -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=lib" "QT+=network" "CONFIG+=link_pkgconfig debug"
+	qmake-qt4 -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=lib" "QT+=network" "CONFIG+=link_pkgconfig debug" "DEFINES*=BIONET_21_API"
 	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects} 
 
 clean-local:

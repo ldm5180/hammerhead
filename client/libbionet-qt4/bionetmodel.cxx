@@ -22,10 +22,7 @@
 
 
 
-BionetModel :: BionetModel(QObject* parent, bool res, bool streams) : QStandardItemModel(parent) {
-    this->resources = res;
-    this->streams = streams;
-}
+BionetModel :: BionetModel(QObject* parent) : QStandardItemModel(parent) { }
 
 
 QString BionetModel::getName(const QModelIndex &index) const {
@@ -33,22 +30,30 @@ QString BionetModel::getName(const QModelIndex &index) const {
 }
 
 
-QString BionetModel::getDisplayName(const QModelIndex &index) const {
+QString BionetModel::getID(const QModelIndex &index) const {
     return index.data(Qt::DisplayRole).toString();
 }
 
 
 void BionetModel::newHab(bionet_hab_t *hab) {
     QStandardItem *item = NULL;
+    char hab_name[HABNAMELENGTH];
+    int r;
 
-    QString id = QString("%1.%2").arg(hab->type).arg(hab->id);
-    QList<QStandardItem*> list = findItems(id);
+    r = bionet_hab_get_name(hab, hab_name, HABNAMELENGTH);
+    if (r < 0) {
+        qWarning() << "newHab(): unable to create hab name";
+        return;
+    }
+
+    QString name = QString(hab_name);
+    
+    QList<QStandardItem*> list = findItems(name);
 
     if ( list.isEmpty() ) {
-        item = new QStandardItem(id);
-        item->setData(id, Qt::UserRole);
-        if ( resources )
-            item->setColumnCount(5);
+        item = new QStandardItem(name);
+        item->setData(name, Qt::UserRole);
+        item->setColumnCount(5);
         invisibleRootItem()->appendRow(item);
     }
 }
@@ -56,84 +61,118 @@ void BionetModel::newHab(bionet_hab_t *hab) {
 
 void BionetModel::lostHab(bionet_hab_t* hab) {
     QStandardItem* habItem;
-    QString id = QString("%1.%2").arg(hab->type).arg(hab->id);
     QList<QStandardItem*> habList, rowList;
+    char hab_name[HABNAMELENGTH];
+    int r;
 
-    habList = findItems(id);
+    r = bionet_hab_get_name(hab, hab_name, HABNAMELENGTH);
+    if (r < 0) {
+        qWarning() << "lostHab(): unable to create hab name";
+        return;
+    }
+    
+    QString name = QString(hab_name);
+
+    habList = findItems(name);
     if ( habList.isEmpty() ) {
-        cout << "Unable to delete hab (" << qPrintable(id) << "): hab does not exist" << endl;
+        cout << "Unable to delete hab (" << qPrintable(name) << "): hab does not exist" << endl;
         return;
     }
 
     habItem = habList.first();
     if ( !removeRow(habItem->row(), indexFromItem(habItem->parent())) ) {
-        cout << "Unable to delete hab (" << qPrintable(id) << "): hab could not be removed" << endl;
+        cout << "Unable to delete hab (" << qPrintable(name) << "): hab could not be removed" << endl;
     }
 }
 
 
 void BionetModel::newNode(bionet_node_t* node) {
     QStandardItem *habItem, *nodeItem;
-    const bionet_hab_t *hab = node->hab;
+    const bionet_hab_t *hab = bionet_node_get_hab(node);
+    char hab_name[HABNAMELENGTH], node_name[NODENAMELENGTH];
+    int r;
 
-    QString nodeId = QString("%1.%2.%3").arg(hab->type).arg(hab->id).arg(node->id);
-    QString habId = QString("%1.%2").arg(hab->type).arg(hab->id);
+    r = bionet_hab_get_name(hab, hab_name, HABNAMELENGTH);
+    if (r < 0) {
+        qWarning() << "newNode(): unable to create hab name";
+        return;
+    }
+    r = bionet_node_get_name(node, node_name, NODENAMELENGTH);
+    if (r < 0) {
+        qWarning() << "newNode(): unable to create node name";
+        return;
+    }
+
+    QString habName = QString(hab_name);
+    QString nodeName = QString(node_name);
 
     QModelIndexList habs = match(index(0, 0, invisibleRootItem()->index()), Qt::UserRole, 
-            QVariant(habId), 1, Qt::MatchFixedString | Qt::MatchRecursive);
+            QVariant(habName), 1, Qt::MatchFixedString | Qt::MatchRecursive);
 
     //QList<QStandardItem*> list = findItems(id);
     if ( habs.isEmpty() ) {
-        cout << "Unable to insert node (" << qPrintable(nodeId) << 
-            "): could not find parent hab (" << qPrintable(habId) << ")" 
+        cout << "Unable to insert node (" << qPrintable(nodeName) << 
+            "): could not find parent hab (" << qPrintable(habName) << ")" 
             << endl;
         return;
     }
 
-    nodeItem = new QStandardItem(QString(node->id));
-    nodeItem->setData(nodeId, Qt::UserRole);
+    nodeItem = new QStandardItem(QString(bionet_node_get_id(node)));
+    nodeItem->setData(nodeName, Qt::UserRole);
 
     habItem = itemFromIndex(habs.first());
     habItem->appendRow(nodeItem);
     
     emit(layoutChanged());
 
-    if ( resources )
-        for (GSList* cursor = node->resources; cursor != NULL; cursor = cursor->next) {
-            QList<QStandardItem*> resList;
-            bionet_resource_t* resource = (bionet_resource_t*)(cursor->data);
-            bionet_datapoint *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
-            QStandardItem *name, *flavor, *type, *time, *value;
+    for (int i=0; i<bionet_node_get_num_resources(node); i++) {
+        QList<QStandardItem*> resList;
+        bionet_resource_t* resource = bionet_node_get_resource_by_index(node, i);
+        bionet_datapoint_t* datapoint;
+        bionet_value_t* bionet_value;
+        QStandardItem *name, *flavor, *type, *time, *value;
+        char resource_name[RESOURCENAMELENGTH];
 
-            QString rid = QString("%1.%2.%3:%4").arg(hab->type).arg(hab->id).arg(node->id).arg(resource->id);
-
-            name = new QStandardItem(resource->id);
-            flavor = new QStandardItem(bionet_resource_flavor_to_string(resource->flavor));
-            type = new QStandardItem(bionet_resource_data_type_to_string(resource->data_type));
-            if ( datapoint == NULL ) {
-                time = new QStandardItem(QString("N/A"));
-                value = new QStandardItem(QString("(no known value)"));
-            } else {
-                time = new QStandardItem(bionet_datapoint_timestamp_to_string(datapoint));
-                value = new QStandardItem(bionet_datapoint_value_to_string(datapoint));
-            }
-
-            name->setData(rid, Qt::UserRole);
-
-            resList << name << flavor << type << time << value;
-            nodeItem->appendRow(resList);
-
-            emit(newResource(rid));
+        r = bionet_resource_get_name(resource, resource_name, RESOURCENAMELENGTH);
+        if (r < 0) {
+            qWarning() << "newNode(): unable to create resource name";
+            return;
         }
 
+        QString rid = QString(resource_name);
+
+        name = new QStandardItem(bionet_resource_get_id(resource));
+        flavor = new QStandardItem(bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)));
+        type = new QStandardItem(bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)));
+
+        datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
+        if ( datapoint == NULL ) {
+            time = new QStandardItem(QString("N/A"));
+            value = new QStandardItem(QString("(no known value)"));
+        } else {
+            bionet_value = bionet_datapoint_get_value(datapoint);
+            time = new QStandardItem(bionet_datapoint_timestamp_to_string(datapoint));
+            value = new QStandardItem(bionet_value_to_str(bionet_value));
+        }
+
+        name->setData(rid, Qt::UserRole);
+
+        resList << name << flavor << type << time << value;
+        nodeItem->appendRow(resList);
+        
+        emit(newResource(rid));
+    }
+
+    /*
+     * FIXME: WHEN streams are working, re-add
     if ( streams )
         for (GSList* cursor = node->streams; cursor != NULL; cursor = cursor->next) {
             QList<QStandardItem*> streamList;
             
             bionet_stream_t* stream = ((bionet_stream_t*) (cursor->data));
-            QString sid = QString("%1.%2.%3:%4").arg(hab->type).arg(hab->id).arg(node->id).arg(stream->id);
+            QString sid = nodeId + QString(":%1").arg(bionet_stream_get_id(stream));
 
-            QStandardItem* streamItem = new QStandardItem(stream->id);
+            QStandardItem* streamItem = new QStandardItem(bionet_stream_get_id(stream));
             streamItem->setData(sid, Qt::UserRole);
 
             streamList << streamItem << new QStandardItem << new QStandardItem << new QStandardItem << new QStandardItem;
@@ -141,6 +180,7 @@ void BionetModel::newNode(bionet_node_t* node) {
 
             emit(newStream(sid));
         }
+    */
 
     //  Either I'm doing something wrong, or adding children to items (not the 
     //  model) does not update the model/layout.  Fix when one either Qt or 
@@ -150,29 +190,48 @@ void BionetModel::newNode(bionet_node_t* node) {
 
 
 void BionetModel::lostNode(bionet_node_t* node) {
-    const bionet_hab_t *hab = node->hab;
-    QString id = QString("%1.%2.%3").arg(hab->type).arg(hab->id).arg(node->id);
-    
-    if ( resources )
-        for (GSList* cursor = node->resources; cursor != NULL; cursor = cursor->next) {
-            bionet_resource_t* r = ((bionet_resource_t*) (cursor->data));
-            QString rid = QString("%1.%2.%3:%4").arg(hab->type).arg(hab->id).arg(node->id).arg(r->id);
-            emit(lostResource(rid));
-        }
-    if ( streams )
-        for (GSList* cursor = node->streams; cursor != NULL; cursor = cursor->next) {
-            bionet_stream_t* stream = ((bionet_stream_t*) (cursor->data));
-            QString sid = QString("%1.%2.%3:%4").arg(hab->type).arg(hab->id).arg(node->id).arg(stream->id);
+    char node_name[NODENAMELENGTH];
+    int r;
 
-            emit(lostStream(sid));
+    r = bionet_node_get_name(node, node_name, RESOURCENAMELENGTH);
+    if (r < 0) {
+        qWarning() << "lostNode(): unable to create resource name";
+        return;
+    }
+
+    QString nodeName = QString(node_name);
+    
+    for (int i=0; i<bionet_node_get_num_resources(node); i++) {
+        bionet_resource_t* resource = bionet_node_get_resource_by_index(node, i);
+        char resource_name[RESOURCENAMELENGTH];
+        QString resourceName;
+
+        r = bionet_resource_get_name(resource, resource_name, RESOURCENAMELENGTH);
+        if (r < 0) {
+            qWarning() << "lostNode(): unable to create resource name";
+            return;
         }
+
+        resourceName = QString(resource_name);
+
+        emit(lostResource(resourceName));
+    }
+    /*
+     * FIXME: when streams are working, re-add
+    for (GSList* cursor = node->streams; cursor != NULL; cursor = cursor->next) {
+        bionet_stream_t* stream = ((bionet_stream_t*) (cursor->data));
+        QString sid = id + QString(":%1").arg(bionet_stream_get_id(stream));
+
+        emit(lostStream(sid));
+    }
+    */
 
     QModelIndexList nodes = match(index(0, 0, invisibleRootItem()->index()), 
-            Qt::UserRole, QVariant(id), 1, 
+            Qt::UserRole, QVariant(nodeName), 1, 
             Qt::MatchExactly | Qt::MatchRecursive);
 
     if ( nodes.isEmpty() ) {
-        cout << "Unable to delete node (" << qPrintable(id) 
+        cout << "Unable to delete node (" << qPrintable(nodeName) 
             << "): " << "node was not found in model" << endl;
         return;
     }
@@ -191,28 +250,52 @@ void BionetModel::lostNode(bionet_node_t* node) {
 
 void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
     QModelIndex res;
-    const bionet_resource_t* resource = datapoint->resource;
-    const bionet_node_t *node = resource->node;
-    const bionet_hab_t *hab = node->hab;
+    bionet_resource_t *resource;
+    bionet_node_t *node;
+    bionet_hab_t *hab;
+    bionet_value_t *value;
+    char resource_name[RESOURCENAMELENGTH];
+    int r;
     
-    QString id = QString("%1.%2.%3:%4").arg(hab->type).arg(hab->id).arg(node->id).arg(resource->id);
+    if (datapoint == NULL) {
+        cout << "newDatapoint(): received NULL datapoint!?!" << endl;
+        return;
+    }
+
+    hab = bionet_datapoint_get_hab(datapoint);
+    node = bionet_datapoint_get_node(datapoint);
+    resource = bionet_datapoint_get_resource(datapoint);
+
+    r = bionet_resource_get_name(resource, resource_name, RESOURCENAMELENGTH);
+    if (r < 0) {
+        qWarning() << "newDatapoint(): unable to get resource name string";
+        return;
+    }
+
+    QString name = QString(resource_name);
     
     QModelIndexList resourceList = match(index(0, 0, invisibleRootItem()->index()), 
-            Qt::UserRole, QVariant(id), 1, 
+            Qt::UserRole, QVariant(name), 1, 
             Qt::MatchExactly | Qt::MatchRecursive);
     
     if ( resourceList.isEmpty() ) {
-        cout << "Cannot update (unable to find resource:" << qPrintable(id) << ")" << endl;
+        cout << "Cannot update (unable to find resource:" << qPrintable(name) << ")" << endl;
         return;
     }
 
     res = resourceList.first();
     
-    //cout << "wanted to update resource " << qPrintable(id) << endl;
+    //cout << "wanted to update resource " << qPrintable(name) << endl;
     //cout << "going to update resource " << qPrintable(res.data(Qt::UserRole).toString()) << endl;
 
+    value = bionet_datapoint_get_value(datapoint);
+    if (value == NULL) {
+        cout << "newDatapoint(): recieved good datapoint with NULL value?!?!" << endl;
+        return;
+    }
+
     setData(index(res.row(), 3, res.parent()), bionet_datapoint_timestamp_to_string(datapoint));
-    setData(index(res.row(), 4, res.parent()), bionet_datapoint_value_to_string(datapoint));
+    setData(index(res.row(), 4, res.parent()), bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
 }
 
 
@@ -231,7 +314,7 @@ void BionetModel::lineActivated(QModelIndex current) {
         realSelected = current;
 
     QString name = getName(realSelected);
-    QString id = getDisplayName(realSelected);
+    QString id = getID(realSelected);
 
     if ( resRX.exactMatch(name) ) {
 

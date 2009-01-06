@@ -32,7 +32,8 @@
 #include <iostream>
 
 extern "C" {
-#include "bionet.h"
+#include "bionet-2.1.h"
+#include "bionet-util-2.1.h"
 };
 
 
@@ -52,11 +53,6 @@ class BionetIO : public QObject {
         
         void setup();
         
-        //QString getNagHostname() { return nag; }
-        //void setNagHostname(QString newName);
-
-        //bool isNAGAlive() { return (bionet_connect_to_nag() >= 0); }
-
         void addHabSubscription(const char *pattern);
         void addNodeSubscription(const char *pattern);
         void addResourceSubscription(const char *pattern);
@@ -79,7 +75,6 @@ class BionetIO : public QObject {
         QPointer<QSocketNotifier> nagSocketReader;
         QByteArray* nxio_message;
         
-        //QString nag;
         QList<QString> habList;
         QList<QString> nodeList;
         QList<QString> resourceList;
