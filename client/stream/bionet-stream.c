@@ -10,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "bionet.h"
+#include "bionet-2.1.h"
 
 
 
@@ -41,54 +41,80 @@ OPTIONS:\n\
 
 
 void cb_lost_node(bionet_node_t *node) {
+    char name[3 * BIONET_NAME_COMPONENT_MAX_LEN];
+    int num_streams;
     int i;
+    int r;
 
-    if (node->streams) {
-        g_log("", G_LOG_LEVEL_INFO, "lost node: %s.%s.%s", node->hab->type, node->hab->id, node->id);
+    num_streams = bionet_node_get_num_streams(node);
+    if (num_streams <= 0) return;
 
-        for (i = 0; i < bionet_node_get_num_streams(node); i ++) {
-            bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
-            g_log(
-                "", G_LOG_LEVEL_INFO,
-                "    %s %s %s", 
-                stream->id,
-                stream->type,
-                bionet_stream_direction_to_string(stream->direction)
-            );
-        }
+    r = bionet_node_get_name(node, name, sizeof(name));
+    if (r >= sizeof(name)) {
+        g_warning("node name too long!");
+        return;
+    }
+
+    g_log("", G_LOG_LEVEL_INFO, "lost node: %s", name);
+
+    for (i = 0; i <num_streams; i ++) {
+        bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
+        g_log(
+            "", G_LOG_LEVEL_INFO,
+            "    %s %s %s", 
+            bionet_stream_get_id(stream),
+            bionet_stream_get_type(stream),
+            bionet_stream_direction_to_string(bionet_stream_get_direction(stream))
+        );
     }
 }
 
 
 void cb_new_node(bionet_node_t *node) {
+    char name[3 * BIONET_NAME_COMPONENT_MAX_LEN];
+    int num_streams;
     int i;
+    int r;
 
-    if (node->streams) {
-        g_log("", G_LOG_LEVEL_INFO, "new node: %s.%s.%s", node->hab->type, node->hab->id, node->id);
+    num_streams = bionet_node_get_num_streams(node);
+    if (num_streams <= 0) return;
 
-        for (i = 0; i < bionet_node_get_num_streams(node); i ++) {
-            bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
-            g_log(
-                "", G_LOG_LEVEL_INFO,
-                "    %s %s %s", 
-                stream->id,
-                stream->type,
-                bionet_stream_direction_to_string(stream->direction)
-            );
-        }
+    r = bionet_node_get_name(node, name, sizeof(name));
+    if (r >= sizeof(name)) {
+        g_warning("node name too long!");
+        return;
+    }
+
+    g_log("", G_LOG_LEVEL_INFO, "new node: %s", name);
+
+    for (i = 0; i < num_streams; i ++) {
+        bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
+        g_log(
+            "", G_LOG_LEVEL_INFO,
+            "    %s %s %s", 
+            bionet_stream_get_id(stream),
+            bionet_stream_get_type(stream),
+            bionet_stream_direction_to_string(bionet_stream_get_direction(stream))
+        );
     }
 }
 
 
 void cb_stream(bionet_stream_t *stream, void *buffer, int size) {
+    char name[4 * BIONET_NAME_COMPONENT_MAX_LEN];
+    int r;
+
+    r = bionet_stream_get_name(stream, name, sizeof(name));
+    if (r >= sizeof(name)) {
+        g_warning("Stream name too long!");
+        return;
+    }
+
     g_log(
         "",
         G_LOG_LEVEL_INFO,
-        "stream info: %s.%s.%s:%s got %d bytes",
-        stream->node->hab->type,
-        stream->node->hab->id,
-        stream->node->id,
-        stream->id,
+        "stream info: %s got %d bytes",
+        name,
         size
     );
 }
@@ -112,12 +138,13 @@ void list_streams(void) {
 
 
 void read_from_stream(bionet_stream_t *stream) {
-    const char *stream_name;
+    char stream_name[4 * BIONET_NAME_COMPONENT_MAX_LEN];
+    int r;
 
-    stream_name = bionet_stream_get_name(stream);
-    if (stream_name == NULL) {
-        // an error has already been logged
-        exit(1);
+    r = bionet_stream_get_name(stream, stream_name, sizeof(stream_name));
+    if (r >= sizeof(stream_name)) {
+        g_warning("Stream name too long!");
+        return;
     }
 
     fprintf(stderr, "reading from %s\n", stream_name);
@@ -178,14 +205,16 @@ void read_from_stream(bionet_stream_t *stream) {
 
 
 void write_to_stream(bionet_stream_t *stream) {
-    fprintf(
-        stderr,
-        "writing to %s.%s.%s:%s\n",
-        stream->node->hab->type,
-        stream->node->hab->id,
-        stream->node->id,
-        stream->id
-    );
+    char stream_name[4 * BIONET_NAME_COMPONENT_MAX_LEN];
+    int r;
+
+    r = bionet_stream_get_name(stream, stream_name, sizeof(stream_name));
+    if (r >= sizeof(stream_name)) {
+        g_warning("Stream name too long!");
+        return;
+    }
+
+    fprintf(stderr, "writing to %s\n", stream_name);
 
     pause();
 
@@ -251,14 +280,16 @@ void deal_with_stream(bionet_stream_t *stream) {
         }
 
         default: {
-            fprintf(
-                stderr,
-                "stream %s.%s.%s:%s has unknown direction!\n",
-                stream->node->hab->type,
-                stream->node->hab->id,
-                stream->node->id,
-                stream->id
-            );
+            char stream_name[4 * BIONET_NAME_COMPONENT_MAX_LEN];
+            int r;
+
+            r = bionet_stream_get_name(stream, stream_name, sizeof(stream_name));
+            if (r >= sizeof(stream_name)) {
+                g_warning("Stream name too long!");
+                return;
+            }
+
+            fprintf(stderr, "stream %s has unknown direction!\n", stream_name);
             exit(1);
         }
     }
