@@ -37,6 +37,8 @@
 #include <qwt_plot_curve.h>
 #include <qwt_symbol.h>
 
+#include "bionetmodel.h"
+
 extern "C" {
 #include "bionet.h"
 #include "bionet-util.h"

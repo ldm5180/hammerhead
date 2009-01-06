@@ -120,11 +120,8 @@ void ResourceView::updatePanel(bionet_resource_t* resource) {
         submitResourceValue->setFocusPolicy(Qt::ClickFocus);
         valueEditor->setFocusPolicy(Qt::StrongFocus);
 
-        // FIXME: when we can set resource values, enable them
         submitResourceValue->setEnabled(true);
         valueEditor->setEnabled(true);
-            
-
     } else if (rowCount() == 10) {
         removeSubmitableRows();
         plotButton->setFocusPolicy(Qt::StrongFocus);
@@ -174,7 +171,7 @@ void ResourceView::newResourceSelected(bionet_resource_t* resource) {
     bionet_node_t *node;
 
     node = bionet_resource_get_node(resource);
-    hab = bionet_node_get_hab(node);
+    hab = bionet_resource_get_hab(resource);
 
     resourceIdTitle->setText("Resource");
     flavorTitle->setText("Flavor");
@@ -233,7 +230,7 @@ void ResourceView::resourceValueChanged(bionet_datapoint_t* datapoint) {
     if (datapoint == NULL)
         return;
 
-    resource = bionet_value_get_resource(bionet_datapoint_get_value(datapoint));
+    resource = bionet_datapoint_get_resource(datapoint);
 
     if (resourceInPanel(resource))
         updatePanel(resource);
@@ -283,7 +280,7 @@ bool ResourceView::resourceInPanel(bionet_resource_t* resource) {
     bionet_node_t* node;
 
     node = bionet_resource_get_node(resource);
-    hab = bionet_node_get_hab(node);
+    hab = bionet_resource_get_hab(resource);
 
     if (nodeInPanel(bionet_hab_get_type(hab), bionet_hab_get_id(hab), bionet_node_get_id(node)) &&
         (bionet_resource_get_id(resource) == resourceId->text()))

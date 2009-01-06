@@ -338,22 +338,26 @@ void MainWindow::makePlot(QString key) {
 
 
 void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
-    bionet_resource_t* res;
+    bionet_resource_t* resource;
     bionet_node_t* node;
     bionet_hab_t* hab;
+    char resource_name[RESOURCENAMELENGTH];
+    int r;
 
     if (datapoint == NULL)
         return;
 
-    res = bionet_value_get_resource(bionet_datapoint_get_value(datapoint));
-    node = bionet_resource_get_node(res);
-    hab = bionet_node_get_hab(node);
+    resource = bionet_datapoint_get_resource(datapoint);
+    node = bionet_datapoint_get_node(datapoint);
+    hab = bionet_datapoint_get_hab(datapoint);
 
-    QString key = QString("%1.%2.%3:%4")
-        .arg(bionet_hab_get_type(hab))
-        .arg(bionet_hab_get_id(hab))
-        .arg(bionet_node_get_id(node))
-        .arg(bionet_resource_get_id(res));
+    r = bionet_resource_get_name(resource, resource_name, RESOURCENAMELENGTH);
+    if (r < 0) {
+        cout << "updatePlot(): unable to get resource name" << endl;
+        return;
+    }
+
+    QString key = QString(resource_name);
     PlotWindow* p = plots.value(key);
 
     if ( p != NULL ) {
