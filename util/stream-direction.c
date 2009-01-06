@@ -13,11 +13,7 @@
 #include "bionet-util.h"
 #endif
 
-#ifdef BIONET_21_API
-bionet_stream_direction_t bionet_stream_get_direction(bionet_stream_t *stream) {
-#else
 bionet_stream_direction_t bionet_stream_get_direction(const bionet_stream_t *stream) {
-#endif
     if (stream == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_get_direction(): NULL Stream passed in");
         return BIONET_STREAM_DIRECTION_INVALID;

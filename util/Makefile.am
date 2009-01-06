@@ -33,6 +33,8 @@ libbionet_util_la_SOURCES =    \
     datapoint-is-dirty.c       \
     datapoint-make-clean.c     \
     stream-direction.c                  \
+    stream-type.c                       \
+    stream-id.c                         \
     stream-free.c                       \
     stream-new.c                        \
     stream-name.c                       \
@@ -88,8 +90,11 @@ libbionet_util_21_la_SOURCES =    \
     network-error.c                     \
     split-names.c \
     stream-direction.c                  \
+    stream-type.c                       \
+    stream-id.c                         \
     stream-free.c                       \
     stream-new.c                        \
+    stream-name.c                       \
     value-free.c \
     value-get.c \
     value-get-resource.c \

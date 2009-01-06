@@ -15,19 +15,11 @@
 #endif
 
 
-#ifdef BIONET_21_API
-bionet_stream_t *bionet_stream_new(
-    bionet_node_t *node,
-    const char *id,
-    bionet_stream_direction_t direction,
-    const char *type
-#else
 bionet_stream_t *bionet_stream_new(
     const bionet_node_t *node,
     const char *id,
     bionet_stream_direction_t direction,
     const char *type
-#endif
 ) {
     bionet_stream_t *stream;
 
@@ -82,7 +74,7 @@ bionet_stream_t *bionet_stream_new(
     // throw caller's arguments in the stream
     //
 
-    stream->node = node;
+    stream->node = (bionet_node_t *)node;
 
     stream->id = strdup(id);
     if (stream->id == NULL) {
@@ -110,19 +102,12 @@ cleanup:
 
 
 
-#ifdef BIONET_21_API
-bionet_stream_t *bionet_stream_new_from_strings(
-    bionet_node_t *node,
-    const char *id,
-    const char *direction_str,
-    const char *type
-#else
+#ifndef BIONET_21_API
 bionet_stream_t *bionet_stream_new_from_strings(
     const bionet_node_t *node,
     const char *id,
     const char *direction_str,
     const char *type
-#endif
 ) {
     bionet_stream_direction_t direction;
 
@@ -205,4 +190,5 @@ cleanup:
     }
     return NULL;
 }
+#endif
 
