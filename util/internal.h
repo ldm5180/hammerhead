@@ -27,7 +27,7 @@ struct bionet_node_opaque_t {
     GSList *resources;
     GSList *streams;
 
-    void *user_data;
+    const void *user_data;  // const because the bionet library wont monkey with it
 };
 
 

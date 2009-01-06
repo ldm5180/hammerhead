@@ -227,6 +227,25 @@ int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node,
 					     const char *node_id);
 
 
+/**
+ * @brief Set the user-data annotation of a Node
+ *
+ * @param[in] node The Node
+ * @param[in] user_data The data to annotate the Node with.
+ */
+void bionet_node_set_user_data(bionet_node_t *node, const void *user_data);
+
+
+/**
+ * @brief Get the user-data annotation of a Node
+ *
+ * @param[in] node The Node
+ *
+ * @return The user_data pointer, or NULL if none has been set.
+ */
+void *bionet_node_get_user_data(const bionet_node_t *node);
+
+
 #endif //  BIONET_NODE_H
 
 // Emacs cruft

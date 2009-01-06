@@ -68,6 +68,7 @@ libbionet_util_21_la_SOURCES =    \
     node-get-stream.c          \
     node-matches.c             \
     node-free.c                \
+    node-user-data.c           \
     resource-new-2.1.c             \
     resource-free-2.1.c            \
     resource-get.c             \
