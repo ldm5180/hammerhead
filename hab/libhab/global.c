@@ -17,11 +17,7 @@ int libhab_cal_fd = -1;
 
 bionet_hab_t *libhab_this = NULL;
 
-#ifdef BIONET_21_API
 void (*libhab_callback_set_resource)(bionet_resource_t *resource, bionet_value_t *value) = NULL;
-#else
-void (*libhab_callback_set_resource)(bionet_resource_t *resource, const bionet_datapoint_value_t *value) = NULL;
-#endif
 void (*libhab_callback_lost_client)(const char *client_id) = NULL;
 
 

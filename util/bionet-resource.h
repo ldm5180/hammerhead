@@ -28,9 +28,9 @@
  */
 typedef enum {
     BIONET_RESOURCE_FLAVOR_INVALID = -1, /**< "Invalid" */
-    BIONET_RESOURCE_FLAVOR_SENSOR, /**< "Sensor" */
-    BIONET_RESOURCE_FLAVOR_ACTUATOR, /**< "Actuator" */
-    BIONET_RESOURCE_FLAVOR_PARAMETER /**< "Parameter" */
+    BIONET_RESOURCE_FLAVOR_SENSOR,       /**< "Sensor" */
+    BIONET_RESOURCE_FLAVOR_ACTUATOR,     /**< "Actuator" */
+    BIONET_RESOURCE_FLAVOR_PARAMETER     /**< "Parameter" */
 } bionet_resource_flavor_t;
 
 #define  BIONET_RESOURCE_FLAVOR_MIN  BIONET_RESOURCE_FLAVOR_SENSOR
@@ -41,79 +41,20 @@ typedef enum {
 
 typedef enum {
     BIONET_RESOURCE_DATA_TYPE_INVALID = -1,
-    BIONET_RESOURCE_DATA_TYPE_BINARY,
-    BIONET_RESOURCE_DATA_TYPE_UINT8,
-    BIONET_RESOURCE_DATA_TYPE_INT8,
-    BIONET_RESOURCE_DATA_TYPE_UINT16,
-    BIONET_RESOURCE_DATA_TYPE_INT16,
-    BIONET_RESOURCE_DATA_TYPE_UINT32,
-    BIONET_RESOURCE_DATA_TYPE_INT32,
-    BIONET_RESOURCE_DATA_TYPE_FLOAT,
-    BIONET_RESOURCE_DATA_TYPE_DOUBLE,
-    BIONET_RESOURCE_DATA_TYPE_STRING
+    BIONET_RESOURCE_DATA_TYPE_BINARY, /**< TRUE (1) or FALSE (0) */
+    BIONET_RESOURCE_DATA_TYPE_UINT8,  /**< 8 bit unsigned integer */
+    BIONET_RESOURCE_DATA_TYPE_INT8,   /**< 8 bit signed integer */
+    BIONET_RESOURCE_DATA_TYPE_UINT16, /**< 16 bit unsigned integer */
+    BIONET_RESOURCE_DATA_TYPE_INT16,  /**< 16 bit signed integer */
+    BIONET_RESOURCE_DATA_TYPE_UINT32, /**< 32 bit unsigned integer */
+    BIONET_RESOURCE_DATA_TYPE_INT32,  /**< 32 bit signed integer */
+    BIONET_RESOURCE_DATA_TYPE_FLOAT,  /**< floating point number */
+    BIONET_RESOURCE_DATA_TYPE_DOUBLE, /**< double */
+    BIONET_RESOURCE_DATA_TYPE_STRING  /**< NULL terminated C-string */
 } bionet_resource_data_type_t;
 
 #define  BIONET_RESOURCE_DATA_TYPE_MIN  BIONET_RESOURCE_DATA_TYPE_BINARY
 #define  BIONET_RESOURCE_DATA_TYPE_MAX  BIONET_RESOURCE_DATA_TYPE_STRING
-
-
-
-
-/**
- * @union bionet_datapoint_value_t
- * @brief Union to describe how to read a value 
- *
- * @note bionet_datapoint_value_t should always be initialized 
- * (all-bits-zero is valid)
- */
-typedef union {
-    int binary_v; /**< 0 or 1, TRUE or FALSE */
-
-    uint8_t  uint8_v; /**< 8-bit unsigned integer */
-    int8_t   int8_v; /**< 8-bit signed integer */
-
-    uint16_t uint16_v; /**< 16-bit unsigned integer */
-    int16_t  int16_v; /**< 16-bit signed integer */
-
-    uint32_t uint32_v; /**< 32-bit unsigned integer */
-    int32_t  int32_v; /**< 32-bit signed integer */
-
-    float float_v; /**< float */
-    double double_v; /**< double */
-
-    char *string_v; /**< NULL-terminated array of characters */
-} bionet_datapoint_value_t;
-
-
-struct bionet_datapoint {
-    bionet_resource_t *resource;  // the resource that this datapoint belongs to
-
-    bionet_datapoint_value_t value;
-    struct timeval timestamp;
-
-    int dirty;  // 1 if the datapoint has new information that hasnt been reported to Bionet, 0 if the datapoint has nothing new
-};
-
-
-
-
-// 
-// This holds a resource.  'flavor', 'id', and 'data_type' are all used by
-// the system.  'user_data' is for the caller to do with as it pleases.
-//
-
-struct bionet_resource {
-    const bionet_node_t *node;
-
-    char *id;
-
-    bionet_resource_flavor_t flavor;
-    bionet_resource_data_type_t data_type;
-
-    GPtrArray *datapoints;
-
-    void *user_data;
-};
 
 
 /**
@@ -134,35 +75,9 @@ struct bionet_resource {
  *       this function.
  */
 bionet_resource_t *bionet_resource_new(
-    const bionet_node_t *node,
+    bionet_node_t *node,
     bionet_resource_data_type_t data_type,
     bionet_resource_flavor_t flavor,
-    const char *id
-);
-
-
-/**
- * @brief Allocates and initializes a new resource, from strings
- *        describing the resource.
- *
- * @param[in] node The Node that owns this Resource or NULL
- * @param[in] data_type_str The name of the data type of this Resource as a string.
- * @param[in] flavor_str The flavor of this Resource as a string.
- * @param[in] id The ID of this Resource.
- *
- * @return Pointer to a resource on success
- * @retval NULL Error
- * @retval >0 Success
- *
- * @note All passed-in strings are considered the property of the
- *       caller.  The function duplicates what it needs, the caller
- *       is free to overwrite or free the strings on return from
- *       this function.
- */
-bionet_resource_t *bionet_resource_new_from_str(
-    const bionet_node_t *node,
-    const char *data_type_str,
-    const char *flavor_str,
     const char *id
 );
 
@@ -173,6 +88,84 @@ bionet_resource_t *bionet_resource_new_from_str(
  * @param[in] resource The Resource to free.
  */
 void bionet_resource_free(bionet_resource_t *resource);
+
+
+/**
+ * @brief Get the Bionet qualified name of the Resource
+ *
+ * Resource name is of the format <HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>
+ *
+ * @param[in] resource The Resource
+ * @param[out] name Pointer to the buffer the name shall be written into
+ * @param[in] name_len Length of the buffer pointed to by name
+ *
+ * @return Number of characters which would have been written to the buffer not 
+ * including the terinating NULL 
+ * @return -1 Error
+ *
+ * @note If the return value is greater than or equal to name_len the name has 
+ * been truncated. Suggested size for the buffer is 
+ * 4*BIONET_NAME_COMPONENT_MAX_LEN. Check snprintf utility for more information.
+ */
+int bionet_resource_get_name(const bionet_resource_t * resource,
+			     char * name,
+			     int name_len);
+
+
+/**
+ * @brief Get ID of a resource
+ *
+ * @param[in] resource The resource
+ *
+ * @return ID of the resource
+ * @return NULL Error
+ */
+const char *bionet_resource_get_id(bionet_resource_t *resource);
+
+
+/**
+ * @brief Get the node this resource belongs to
+ *
+ * @param[in] resource The Resource
+ *
+ * @return Pointer to Node
+ * @return NULL Error
+ */
+bionet_node_t * bionet_resource_get_node(const bionet_resource_t *resource);
+
+
+/**
+ * @brief Get the HAB this resource belongs to
+ *
+ * @param[in] resource The Resource
+ *
+ * @return Pointer to HAB
+ * @return NULL Error
+ *
+ * @note This is shorthand for obtaining the Node and then obtaining
+ * Node's HAB
+ */
+bionet_hab_t * bionet_resource_get_hab(const bionet_resource_t *resource);
+
+
+/**
+ * @brief Get the data type of a resource
+ *
+ * @param[in] resource The resource
+ *
+ * @return Type of resource
+ */
+bionet_resource_data_type_t bionet_resource_get_data_type(const bionet_resource_t *resource);
+
+
+/**
+ * @brief Get the flavor of a resource
+ *
+ * @param[in] resource
+ *
+ * @return Flavor of resource
+ */
+bionet_resource_flavor_t bionet_resource_get_flavor(const bionet_resource_t *resource);
 
 
 /**
@@ -239,50 +232,186 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
  * Datapoint, and the Datapoint is marked dirty.
  *
  * @param[in] resource The Resource to set.
- * @param[in] value The new Value.
+ * @param[in] content The new content.
  * @param[in] timestamp The Timestamp, if NULL the current time will be used
  *
  * @retval 0 Success
  * @retval -1 Failure
  */
-int bionet_resource_set(bionet_resource_t *resource, 
-			const bionet_datapoint_value_t *value, 
-			const struct timeval *timestamp);
+int bionet_resource_set_binary(bionet_resource_t *resource, 
+			       int content, 
+			       const struct timeval *timestamp);
 
 
 /**
- * @brief Sets the value of a Resource from a string
+ * @brief Sets the value of a Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
  * Datapoint, and the Datapoint is marked dirty.
  *
  * @param[in] resource The Resource to set.
- * @param[in] value_str The new Value.
+ * @param[in] content The new content.
  * @param[in] timestamp The Timestamp, if NULL the current time will be used
  *
  * @retval 0 Success
  * @retval -1 Failure
  */
-int bionet_resource_set_with_valuestr(bionet_resource_t *resource, 
-				      const char *value_str, 
-				      const struct timeval *timestamp);
+int bionet_resource_set_uint8(bionet_resource_t *resource, 
+			      uint8_t content, 
+			      const struct timeval *timestamp);
 
 
 /**
- * @brief Add a datapoint to a resource from a value string
+ * @brief Sets the value of a Resource.
  *
- * @param[in] resource The resource to which the datapoint is added
- * @param[in] value_str The value for the datapoint
+ * If the Resource has no Datapoint, one will be created.  Then the
+ * passed-in value and timestamp are copied to the Resource's first
+ * Datapoint, and the Datapoint is marked dirty.
+ *
+ * @param[in] resource The Resource to set.
+ * @param[in] content The new content.
  * @param[in] timestamp The Timestamp, if NULL the current time will be used
  *
- * @return Pointer to the new datapoint
- * @retval NULL Failure
+ * @retval 0 Success
+ * @retval -1 Failure
  */
-bionet_datapoint_t *bionet_resource_add_datapoint(bionet_resource_t *resource, 
-						  const char *value_str, 
-						  const struct timeval *timestamp);
+int bionet_resource_set_int8(bionet_resource_t *resource, 
+			     int8_t content, 
+			     const struct timeval *timestamp);
 
+
+/**
+ * @brief Sets the value of a Resource.
+ *
+ * If the Resource has no Datapoint, one will be created.  Then the
+ * passed-in value and timestamp are copied to the Resource's first
+ * Datapoint, and the Datapoint is marked dirty.
+ *
+ * @param[in] resource The Resource to set.
+ * @param[in] content The new content.
+ * @param[in] timestamp The Timestamp, if NULL the current time will be used
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_set_uint16(bionet_resource_t *resource, 
+			       uint16_t content, 
+			       const struct timeval *timestamp);
+
+
+/**
+ * @brief Sets the value of a Resource.
+ *
+ * If the Resource has no Datapoint, one will be created.  Then the
+ * passed-in value and timestamp are copied to the Resource's first
+ * Datapoint, and the Datapoint is marked dirty.
+ *
+ * @param[in] resource The Resource to set.
+ * @param[in] content The new content.
+ * @param[in] timestamp The Timestamp, if NULL the current time will be used
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_set_int16(bionet_resource_t *resource, 
+			      int16_t content, 
+			      const struct timeval *timestamp);
+
+
+/**
+ * @brief Sets the value of a Resource.
+ *
+ * If the Resource has no Datapoint, one will be created.  Then the
+ * passed-in value and timestamp are copied to the Resource's first
+ * Datapoint, and the Datapoint is marked dirty.
+ *
+ * @param[in] resource The Resource to set.
+ * @param[in] content The new content.
+ * @param[in] timestamp The Timestamp, if NULL the current time will be used
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_set_uint32(bionet_resource_t *resource, 
+			       uint32_t content, 
+			       const struct timeval *timestamp);
+
+
+/**
+ * @brief Sets the value of a Resource.
+ *
+ * If the Resource has no Datapoint, one will be created.  Then the
+ * passed-in value and timestamp are copied to the Resource's first
+ * Datapoint, and the Datapoint is marked dirty.
+ *
+ * @param[in] resource The Resource to set.
+ * @param[in] content The new content.
+ * @param[in] timestamp The Timestamp, if NULL the current time will be used
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_set_int32(bionet_resource_t *resource, 
+			      int32_t content, 
+			      const struct timeval *timestamp);
+
+
+/**
+ * @brief Sets the value of a Resource.
+ *
+ * If the Resource has no Datapoint, one will be created.  Then the
+ * passed-in value and timestamp are copied to the Resource's first
+ * Datapoint, and the Datapoint is marked dirty.
+ *
+ * @param[in] resource The Resource to set.
+ * @param[in] content The new content.
+ * @param[in] timestamp The Timestamp, if NULL the current time will be used
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_set_float(bionet_resource_t *resource, 
+			      float content, 
+			      const struct timeval *timestamp);
+
+
+/**
+ * @brief Sets the value of a Resource.
+ *
+ * If the Resource has no Datapoint, one will be created.  Then the
+ * passed-in value and timestamp are copied to the Resource's first
+ * Datapoint, and the Datapoint is marked dirty.
+ *
+ * @param[in] resource The Resource to set.
+ * @param[in] content The new content.
+ * @param[in] timestamp The Timestamp, if NULL the current time will be used
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_set_double(bionet_resource_t *resource, 
+			       double content, 
+			       const struct timeval *timestamp);
+
+
+/**
+ * @brief Sets the value of a Resource.
+ *
+ * If the Resource has no Datapoint, one will be created.  Then the
+ * passed-in value and timestamp are copied to the Resource's first
+ * Datapoint, and the Datapoint is marked dirty.
+ *
+ * @param[in] resource The Resource to set.
+ * @param[in] content The new content.
+ * @param[in] timestamp The Timestamp, if NULL the current time will be used
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_set_str(bionet_resource_t *resource, 
+			    const char * content, 
+			    const struct timeval *timestamp);
 
 
 /**
@@ -291,7 +420,7 @@ bionet_datapoint_t *bionet_resource_add_datapoint(bionet_resource_t *resource,
  * @param[in] resource The resource to which the datapoint is added
  * @param[in] new_datapoint The datapoint to add
  */
-void bionet_resource_add_existing_datapoint(bionet_resource_t *resource, 
+void bionet_resource_add_datapoint(bionet_resource_t *resource, 
 					    bionet_datapoint_t *new_datapoint);
 
 
@@ -382,168 +511,6 @@ int bionet_resource_is_dirty(const bionet_resource_t *resource);
  * @param[in] resource The Resource to clean.
  */
 void bionet_resource_make_clean(bionet_resource_t *resource);
-
-
-/**
- * @brief Allocates and initializes a new datapoint.  
- *
- * Does NOT add it to the Resource's list of data points.
- *
- * @param[in] resource The Resource that the new datapoint is for
- * @param[in] value The value of the new datapoint
- * @param[in] timestamp The timestamp of the new datapoint (NULL means "now")
- *
- * @return The new Datapoint 
- * @retval NULL Error
- *
- * @note All passed-in strings are considered the property of the
- *       caller.  The caller is free to overwrite or free the
- *       strings on return from this function.
- */
-bionet_datapoint_t *bionet_datapoint_new(
-    bionet_resource_t *resource,
-    const bionet_datapoint_value_t *value,
-    const struct timeval *timestamp
-);
-
-/**
- * @brief Allocates and initializes a new datapoint.  
- *
- * Does NOT add it to the Resource's list of data points.
- *
- * @param[in] resource The Resource that the new datapoint is for
- * @param[in] value_str The value of the new datapoint, as an ASCII string.
- * @param[in] timestamp The timestamp of the new datapoint (NULL means "now")
- *
- * @return The new Datapoint 
- * @retval NULL Failure
- *
- * @note All passed-in strings are considered the property of the
- *       caller.  The caller is free to overwrite or free the
- *       strings on return from this function.
- */
-bionet_datapoint_t *bionet_datapoint_new_with_valuestr(
-    bionet_resource_t *resource,
-    const char *value_str,
-    const struct timeval *timestamp
-);
-
-
-/**
- * @brief Set the value of a datapoint
- *
- * @param[in] d Datapoint to set
- * @param[in] value Value to set in the datapoint
- */
-void bionet_datapoint_set_value(bionet_datapoint_t *d, 
-				const bionet_datapoint_value_t *value);
-
-
-/**
- * @brief Set the value of a datapoint
- *
- * @param[in] d Datapoint to set
- * @param[in] value_string Value to set in the datapoint, as an ASCII string
- *
- * @retval 0 Success
- * @retval -1 Failure
- */
-int bionet_datapoint_value_from_string(bionet_datapoint_t *d, 
-				       const char *value_string);
-
-
-/**
- * @brief Sets a bionet_datapoint_value_t variable from a string.
- *
- * @param[in] data_type The data type to interpret the string as.
- * @param[in] value A pointer to the variable to receive the value parsed from
- *     the string. value must point to a valid, initialized
- *     bionet_datapoint_value_t variable (all bits zero is valid).
- * @param[in] value_string The string containing the new value.
- *
- * @retval 0 Success
- * @retval -1 Failure
- */
-
-int bionet_datapoint_value_from_string_isolated(bionet_resource_data_type_t data_type, 
-						bionet_datapoint_value_t *value,
-						const char *value_string);
-
-
-/**
- * @brief Renders a Datapoint's Value as an ASCII string.
- *
- * @param[in] datapoint The Datapoint to get the Value from.
- *
- * @return A statically allocated string containing an ASCII
- *         representation of the Datapoint Value
- * @retval NULL Failure
- */
-const char *bionet_datapoint_value_to_string(const bionet_datapoint_t *datapoint);
-
-
-/**
- * @brief Renders a Value as an ASCII string.
- *
- * @param[in] data_type Datatype of the value
- * @param[in] value The Datapoint to get the Value from.
- *
- * @return A statically allocated string containing an ASCII
- *         representation of the Value
- * @retval NULL Failure
- */
-const char *bionet_datapoint_value_to_string_isolated(bionet_resource_data_type_t data_type, const bionet_datapoint_value_t *value);
-
-
-/**
- * @brief Renders the Datapoint Timestamp as an ASCII string of the
- *        form "YYYY-MM-DD HH:MM:SS.microseconds".
- *
- * @param[in] datapoint The Datapoint to get the Timestamp of.
- *
- * @return A pointer to the statically allocated string on success
- * @retval NULL Failure
- */
-const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datapoint);
-
-
-/**
- * @brief Sets the Datapoint Timestamp as specified.
- *
- * @param[in] datapoint The Datapoint to set the Timestamp of
- * @param[in] new_timestamp Timestamp to set it to (NULL means "now").
- */
-void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint, 
-				    const struct timeval *new_timestamp);
-
-
-/**
- * @brief Checks if a Datapoint is dirty or not.  
- *
- * A Datapoint is dirty if it has not been reported to Bionet yet.
- *
- * @param[in] datapoint The Datapoint to check.
- *
- * @retval TRUE (non-zero) - Datapoint is dirty
- * @retval FALSE (zero) - Datapoint is not dirty
- */
-int bionet_datapoint_is_dirty(const bionet_datapoint_t *datapoint);
-
-
-/**
- * @brief Makes a Datapoint clean.
- *
- * @param datapoint The Datapoint to make clean.
- */
-void bionet_datapoint_make_clean(bionet_datapoint_t *datapoint);
-
-
-/**
- * @brief Frees a Datapoint created with bionet_datapoint_new()
- *
- * @param[in] datapoint The Datapoint to free.
- */
-void bionet_datapoint_free(bionet_datapoint_t *datapoint);
 
 
 #endif // __BIONET_RESOURCE_H

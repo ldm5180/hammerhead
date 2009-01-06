@@ -9,13 +9,10 @@
  * Describes the Bionet Hardware-Abstractor (HAB) API.
  */
 
-#ifdef BIONET_21_API
-#include "hardware-abstractor-2.1.h"
-#else
-
 
 #ifndef __HARDWARE_ABSTRACTOR_H
 #define __HARDWARE_ABSTRACTOR_H
+
 
 #include "bionet-util.h"
 
@@ -126,7 +123,7 @@ void hab_read(void);
  * appropriate data type for the Resource.  It will be freed by the HAB
  * library when the callback returns.
  */
-void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_t *resource, const bionet_datapoint_value_t *value));
+void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_t *resource, bionet_value_t *value));
 
 
 /**
@@ -140,12 +137,15 @@ void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_
  * The callback function gets a single argument: the unique "id" of the
  * disconnecting Client.
  */
+
 void hab_register_callback_lost_client(void (*cb_lost_client)(const char *client_id));
+
+
 
 
 #endif // __HARDWARE_ABSTRACTOR_H
 
-#endif
+
 
 // Emacs cruft
 // Local Variables:

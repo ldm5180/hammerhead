@@ -8,11 +8,7 @@
 #include "hardware-abstractor.h"
 #include "libhab-internal.h"
 
-#ifdef BIONET_21_API
 void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_t *resource, bionet_value_t *value)) {
-#else
-void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_t *resource, const bionet_datapoint_value_t *value)) {
-#endif
     libhab_callback_set_resource = cb_set_resource;
 }
 

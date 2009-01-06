@@ -35,64 +35,6 @@
 #include "libhab-internal.h"
 #include "hardware-abstractor.h"
 
-#ifndef BIONET_21_API
-static const char *libhab_get_program_name(void) {
-#if defined(LINUX) || defined(MACOSX)
-    static char program_name[500];
-
-    int r;
-    int fd;
-    char *tmp;
-
-    fd = open("/proc/self/cmdline", O_RDONLY);
-    if (fd < 0) {
-        g_log(
-            BIONET_LOG_DOMAIN,
-            G_LOG_LEVEL_WARNING,
-            "hab_connect_to_nag(): error opening /proc/self/cmdline (%s), oh well",
-            strerror(errno)
-        );
-        return "unknown";
-    }
-
-
-    r = read(fd, program_name, sizeof(program_name) - 1);
-    close(fd);
-
-    if (r <= 0) {
-        g_log(
-            BIONET_LOG_DOMAIN,
-            G_LOG_LEVEL_WARNING,
-            "hab_connect_to_nag(): error reading /proc/self/cmdline (%s), oh well",
-            strerror(errno)
-        );
-        return "unknown";
-    }
-
-    program_name[r] = '\0';  // this is redundant, because the /proc file already contains the NUL, but it makes Coverity happy
-
-    while ((tmp = memchr(program_name, '/', strlen(program_name))) != NULL) {
-        int new_len = strlen(tmp+1);
-        memmove(program_name, tmp+1, new_len);
-        program_name[new_len] = '\0';
-    }
-
-    for (tmp = program_name; *tmp != '\0'; tmp ++) {
-        if (!isalnum(*tmp) && *tmp != '-') {
-            *tmp = '-';
-        }
-    }
-
-    return program_name;
-#endif
-
-#ifdef WINDOWS
-    // FIXME
-    return "a-windows-program";
-#endif
-}
-#endif /* BIONET_21_API */
-
 
 int hab_connect(bionet_hab_t *hab) {
     char cal_name[BIONET_NAME_COMPONENT_MAX_LEN * 2];
@@ -119,68 +61,10 @@ int hab_connect(bionet_hab_t *hab) {
     // If we get here we need to actually open the connection.
     //
 
-
-    //
-    // If the HAB developer did not specify the HAB-Type using, we print a
-    // warning and fall back to using the program name.
-    //
-#ifndef BIONET_21_API
-    if (hab->type == NULL) {
-        // get the program name
-        const char *hab_type;
-
-        hab_type = libhab_get_program_name();
-        if (hab_type == NULL) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): the passed-in HAB has no HAB-Type, and cannot get program name");
-            return -1;
-        }
-
-        if (bionet_hab_set_type(hab, hab_type) != 0) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): the passed-in HAB has no HAB-Type, and cannot set HAB Type to the program name '%s'", hab_type);
-            return -1;
-        }
-
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "hab_connect(): the passed-in HAB has no HAB-Type, using program name '%s'", hab->type);
-    }
-
-    //
-    // If the HAB developer did not specify the HAB-ID we print a warning
-    // and fall back to using the hostname.
-    //
-
-    if (hab->id == NULL) {
-        char hostname[256];
-        char *p;
-        int r;
-
-        r = gethostname(hostname, sizeof(hostname));
-        if (r < 0) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): the passed-in HAB has no HAB-ID, and could not get hostname: %s", strerror(errno));
-            return -1;
-        }
-
-        for (p = hostname; *p != '\0'; p++) {
-            if (!isalnum(*p) && (*p != '-')) *p = '-';
-        }
-
-        if (bionet_hab_set_id(hab, hostname) != 0) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): the passed-in HAB has no HAB-ID, and cannot set HAB ID to the hostname '%s'", hostname);
-            return -1;
-        }
-
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "hab_connect(): the passed-in HAB has no HAB-ID, using hostname '%s'", hab->id);
-    }
-#endif
-
-
     // record this hab
     libhab_this = hab;
 
-#ifdef BIONET_21_API
     sprintf(cal_name, "%s.%s", bionet_hab_get_type(libhab_this), bionet_hab_get_id(libhab_this));
-#else
-    sprintf(cal_name, "%s.%s", libhab_this->type, libhab_this->id);
-#endif
 
     libhab_cal_fd = cal_server.init("bionet", cal_name, libhab_cal_callback, libhab_cal_topic_matches);
     if (libhab_cal_fd == -1) {

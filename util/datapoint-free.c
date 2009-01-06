@@ -9,8 +9,9 @@
 
 #include <glib.h>
 
-#include "bionet-util-2.1.h"
+#include "bionet-util.h"
 #include "internal.h"
+
 
 void bionet_datapoint_free(bionet_datapoint_t *d) {
     if (NULL == d)
@@ -26,6 +27,7 @@ void bionet_datapoint_free(bionet_datapoint_t *d) {
     }
     free(d);
 }
+
 
 // Emacs cruft
 // Local Variables:

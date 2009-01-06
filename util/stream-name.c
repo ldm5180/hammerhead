@@ -8,9 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
+#include "bionet-util.h"
 
 
 int bionet_stream_get_name(
@@ -78,4 +77,4 @@ int bionet_stream_get_name(
     );
 }
 
-#endif
+

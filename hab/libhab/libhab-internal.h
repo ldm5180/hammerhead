@@ -30,11 +30,7 @@ int libhab_cal_topic_matches(const char *topic, const char *subscription);
 void libhab_cal_callback(const cal_event_t *event);
 
 
-#ifdef BIONET_21_API
 extern void (*libhab_callback_set_resource)(bionet_resource_t *resource, bionet_value_t *value);
-#else
-extern void (*libhab_callback_set_resource)(bionet_resource_t *resource, const bionet_datapoint_value_t *value);
-#endif
 extern void (*libhab_callback_lost_client)(const char *client_id);
 
 

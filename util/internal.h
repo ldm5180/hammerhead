@@ -7,7 +7,7 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 
-#include "bionet-util-2.1.h"
+#include "bionet-util.h"
 
 struct bionet_hab_opaque_t {
     char *type;

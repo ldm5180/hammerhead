@@ -9,12 +9,9 @@
 
 #include <glib.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
-#else
 #include "bionet-util.h"
-#endif
+
 
 int bionet_node_get_num_streams(const bionet_node_t *node) {
     if (node == NULL) {

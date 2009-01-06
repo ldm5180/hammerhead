@@ -1,11 +1,11 @@
 %module bionet
 %{
-#include "bionet-2.1.h"
-#include "bionet-util-2.1.h"
+#include "bionet.h"
+#include "bionet-util.h"
 %}
 
-%include "bionet-2.1.h"
-%include "bionet-util-2.1.h"
+%include "bionet.h"
+%include "bionet-util.h"
 
 %constant void cb_lost_hab(bionet_hab_t *hab);
 %constant void cb_new_hab(bionet_hab_t *hab);

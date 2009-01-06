@@ -22,18 +22,6 @@
 #include "bionet-util.h"
 
 
-struct bionet_node {
-    const bionet_hab_t *hab;
-
-    char *id;
-
-    GSList *resources;
-    GSList *streams;
-
-    void *user_data;
-};
-
-
 /**
  * @brief Create a new node
  *
@@ -43,7 +31,53 @@ struct bionet_node {
  * @return Pointer to the new node
  * @retval NULL Failure
  */
-bionet_node_t* bionet_node_new(const bionet_hab_t *hab, const char* node_id);
+bionet_node_t* bionet_node_new(bionet_hab_t *hab, const char* node_id);
+
+
+/**
+ * @brief Get the Bionet qualified name of the Node
+ *
+ * Node name is of the format <HAB-Type>.<HAB-ID>.<Node-ID>
+ *
+ * @param[in] node The Node
+ * @param[out] name Pointer to the buffer the name shall be written into
+ * @param[in] name_len Length of the buffer pointed to by name
+ *
+ * @return Number of characters which would have been written to the buffer not 
+ * including the terinating NULL 
+ * @return -1 Error
+ *
+ * @note If the return value is greater than or equal to name_len the name has
+ * been truncated. Suggested size for the buffer is 
+ * 3*BIONET_NAME_COMPONENT_MAX_LEN. Check snprintf utility for more information.
+ */
+int bionet_node_get_name(const bionet_node_t * node,
+			 char * name,
+			 int name_len);
+
+
+/**
+ * @brief Get the ID of an existing Node 
+ *
+ * @param[in] node Pointer to a Node
+ * 
+ * @return Node-ID string
+ * @return NULL on failure
+ *
+ * @note Do not free the returned pointer
+ */
+const char * bionet_node_get_id(const bionet_node_t *node);
+
+
+/**
+ * @brief Get the parent HAB of a node
+ *
+ * @param[in] node Pointer to a Node
+ * 
+ * @return Pointer to a HAB
+ * @return NULL on failure
+ */
+bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node);
 
 
 /**
@@ -191,6 +225,25 @@ int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node,
 					     const char *hab_type, 
 					     const char *hab_id, 
 					     const char *node_id);
+
+
+/**
+ * @brief Set the user-data annotation of a Node
+ *
+ * @param[in] node The Node
+ * @param[in] user_data The data to annotate the Node with.
+ */
+void bionet_node_set_user_data(bionet_node_t *node, const void *user_data);
+
+
+/**
+ * @brief Get the user-data annotation of a Node
+ *
+ * @param[in] node The Node
+ *
+ * @return The user_data pointer, or NULL if none has been set.
+ */
+void *bionet_node_get_user_data(const bionet_node_t *node);
 
 
 #endif //  BIONET_NODE_H

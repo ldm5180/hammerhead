@@ -10,12 +10,9 @@
 
 #include <glib.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
-#else
 #include "bionet-util.h"
-#endif
+
 
 int bionet_node_add_resource(bionet_node_t *node, bionet_resource_t *resource) {
     if (node == NULL) {

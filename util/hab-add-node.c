@@ -6,13 +6,8 @@
 
 #include <glib.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
-#else
 #include "bionet-util.h"
-#endif
-
 
 
 int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node) {

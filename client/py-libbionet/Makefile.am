@@ -10,14 +10,12 @@ lib_LTLIBRARIES = libbionet-py.la
 
 libbionet_py_la_SOURCES = bionet_wrap.c
 
-libbionet_py_la_CFLAGS = -DBIONET_21_API `pkg-config --cflags glib-2.0` -I/usr/include/python2.5 ${SWIG_INCDIR}
+libbionet_py_la_CFLAGS = `pkg-config --cflags glib-2.0` -I/usr/include/python2.5 ${SWIG_INCDIR}
 libbionet_py_la_LDFLAGS = -L../libbionet -L../../cal/mdnssd-bip/client -L../../asn.1 -L../../util
-libbionet_py_la_LIBADD = -lbionet-21 -lcal-mdnssd-bip-client -lbionet-asn-21 -lbionet-util-21
+libbionet_py_la_LIBADD = -lbionet -lcal-mdnssd-bip-client -lbionet-asn -lbionet-util
 
-CFLAGS += -DBIONET_21_API
-
-bionet_wrap.c: bionet.i ../libbionet/libbionet-21.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la ../../asn.1/libbionet-asn-21.la ../../util/libbionet-util-21.la
-	swig -DBIONET_21_API -w302 -python ${SWIG_INCDIR} bionet.i 
+bionet_wrap.c: bionet.i ../libbionet/libbionet.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la ../../asn.1/libbionet-asn.la ../../util/libbionet-util.la
+	swig -w302 -python ${SWIG_INCDIR} bionet.i 
 	ln -sf .libs/libbionet-py.so _bionet.so
 
 install-exec-hook:

@@ -23,7 +23,6 @@ static int libbionet_find_hab_by_habtype_habid(const void *vp_hab, const void *v
     const libbionet_hab_finder_t *target = vp_target;
     const bionet_hab_t *hab = vp_hab;
 
-#ifdef BIONET_21_API
     if (strcmp(bionet_hab_get_type(hab), target->hab_type) != 0) {
         return -1;
     }
@@ -31,15 +30,7 @@ static int libbionet_find_hab_by_habtype_habid(const void *vp_hab, const void *v
     if (strcmp(bionet_hab_get_id(hab), target->hab_id) != 0) {
         return -1;
     }
-#else
-    if (strcmp(hab->type, target->hab_type) != 0) {
-        return -1;
-    }
 
-    if (strcmp(hab->id, target->hab_id) != 0) {
-        return -1;
-    }
-#endif
     return 0;
 }
 

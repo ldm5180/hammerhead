@@ -6,34 +6,37 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <glib.h>
 
 #include "bionet-util.h"
+#include "internal.h"
 
+void bionet_resource_add_datapoint(bionet_resource_t *resource,
+				   bionet_datapoint_t *new_datapoint) 
+{
+    if (NULL == resource)
+    {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_add_datapoint(): NULL Resource passed in");
+	errno = EINVAL;
+	return;
+    }
 
+    if (NULL == new_datapoint)
+    {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_add_datapoint(): NULL Datapoint passed in");
+	errno = EINVAL;
+	return;
+    }
 
-
-bionet_datapoint_t *bionet_resource_add_datapoint(
-    bionet_resource_t *resource,
-    const char *value_str,
-    const struct timeval *timestamp
-) {
-    bionet_datapoint_t *d;
-
-    d = bionet_datapoint_new_with_valuestr(resource, value_str, timestamp);
-    if (d == NULL) return NULL;
-
-    g_ptr_array_add(resource->datapoints, d);
-
-    return d;
-}
-
-
-void bionet_resource_add_existing_datapoint(
-    bionet_resource_t *resource,
-    bionet_datapoint_t *new_datapoint
-) {
     g_ptr_array_add(resource->datapoints, new_datapoint);
-}
+} 
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

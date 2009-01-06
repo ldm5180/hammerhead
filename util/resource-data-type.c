@@ -6,12 +6,9 @@
 
 #include <string.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
-#else
 #include "bionet-util.h"
-#endif
+
 
 const char *bionet_resource_data_type_to_string(bionet_resource_data_type_t data_type) {
     static char *resource_data_type_to_string_array[] = {

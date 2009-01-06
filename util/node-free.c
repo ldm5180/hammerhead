@@ -8,13 +8,8 @@
 
 #include <glib.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
-#else
 #include "bionet-util.h"
-#endif
-
 
 
 void bionet_node_free(bionet_node_t *node) {

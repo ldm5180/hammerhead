@@ -7,10 +7,6 @@
 #ifndef BIONET_UTIL_H
 #define BIONET_UTIL_H
 
-#ifdef BIONET_21_API
-#include "bionet-util-2.1.h"
-#else
-
 /**
  * @file bionet-util.h
  * Helper functions for dealing with Bionet datatypes
@@ -23,18 +19,19 @@
 
 #include <glib.h>
 
-
-typedef struct bionet_hab       bionet_hab_t;
-typedef struct bionet_node      bionet_node_t;
-typedef struct bionet_stream    bionet_stream_t;
-typedef struct bionet_resource  bionet_resource_t;
-typedef struct bionet_datapoint bionet_datapoint_t;
-
+typedef struct bionet_hab_opaque_t       bionet_hab_t;
+typedef struct bionet_node_opaque_t      bionet_node_t;
+typedef struct bionet_stream_opaque_t    bionet_stream_t;
+typedef struct bionet_resource_opaque_t  bionet_resource_t;
+typedef struct bionet_datapoint_opaque_t bionet_datapoint_t;
+typedef struct bionet_value_opaque_t     bionet_value_t;
 
 #include "bionet-hab.h"
 #include "bionet-node.h"
 #include "bionet-stream.h"
 #include "bionet-resource.h"
+#include "bionet-datapoint.h"
+#include "bionet-value.h"
 
 
 /**
@@ -42,12 +39,6 @@ typedef struct bionet_datapoint bionet_datapoint_t;
  * and this is the domain.
  */
 #define  BIONET_LOG_DOMAIN  "bionet"
-
-
-/**
- * bionet server listens on this TCP port, clients connect
- */
-#define BIONET_PORT (11002)
 
 
 /**
@@ -166,7 +157,7 @@ void bionet_glib_log_handler(
  * @param[out] resource_id Resource-ID from resource name
  *
  * @retval 0 Success
- * @retval -1 Failure
+ * @retval 1 Failure
  */
 int bionet_split_resource_name(
     const char *resource_name,
@@ -189,7 +180,7 @@ int bionet_split_resource_name(
  * @param[out] node_id Node-ID
  *
  * @retval 0 Success
- * @retval -1 Failure
+ * @retval 1 Failure
  */
 int bionet_split_node_name(
     const char *node_name,
@@ -210,7 +201,7 @@ int bionet_split_node_name(
  * @param[out] hab_id HAB-ID
  *
  * @retval 0 Success
- * @retval -1 Failure
+ * @retval 1 Failure
  */
 int bionet_split_hab_name(
     const char *hab_name,
@@ -230,7 +221,7 @@ int bionet_split_hab_name(
  * @param[out] hab_id HAB-ID 
  *
  * @retval 0 Success
- * @retval -1 Failure
+ * @retval 1 Failure
  *
  * @note This function is re-entrant.
  */
@@ -253,7 +244,7 @@ int bionet_split_hab_name_r(
  * @param[out] resource_id Resource-ID
  *
  * @retval 0 Success
- * @retval -1 Failure
+ * @retval 1 Failure
  *
  * @note This function is re-entrant.
  */
@@ -263,7 +254,7 @@ int bionet_split_nodeid_resourceid_r(
     char resource_id[BIONET_NAME_COMPONENT_MAX_LEN]
 ); 
 
-#endif
+
 #endif //  BIONET_UTIL_H
 
 // Emacs cruft

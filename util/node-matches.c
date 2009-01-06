@@ -6,12 +6,9 @@
 
 #include <string.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
-#else
 #include "bionet-util.h"
-#endif
+
 
 int bionet_node_matches_id(const bionet_node_t *node, const char *id) {
     if (node == NULL) {

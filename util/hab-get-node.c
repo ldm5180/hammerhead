@@ -6,13 +6,8 @@
 
 #include <string.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
-#else
 #include "bionet-util.h"
-#endif
-
 
 
 bionet_node_t *bionet_hab_get_node_by_id(bionet_hab_t *hab, const char *node_id) {

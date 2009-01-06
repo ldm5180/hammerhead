@@ -30,7 +30,6 @@ static void libhab_set_resource(const char *peer_name, SetResourceValue_t *set_r
             resource = bionet_node_get_resource_by_index(node, ri);
             if (! bionet_resource_matches_id(resource, (char *)set_resource_value->resourceId.buf)) continue;
 
-#ifdef BIONET_21_API
 	    bionet_value_t * value;
 	    switch (bionet_resource_get_data_type(resource))
 	    {
@@ -99,9 +98,7 @@ static void libhab_set_resource(const char *peer_name, SetResourceValue_t *set_r
 		break;
 	    }
 	    datapoint = bionet_datapoint_new(resource, value, NULL);
-#else
-            datapoint = bionet_datapoint_new_with_valuestr(resource, (char *)set_resource_value->value.buf, NULL);
-#endif
+
             if (datapoint == NULL) {
                 g_log(
                     BIONET_LOG_DOMAIN,
@@ -111,24 +108,14 @@ static void libhab_set_resource(const char *peer_name, SetResourceValue_t *set_r
                     (char *)set_resource_value->nodeId.buf,
                     (char *)set_resource_value->resourceId.buf,
                     (char *)set_resource_value->value.buf,
-#ifdef BIONET_21_API
                     bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
 		    bionet_node_get_id(node),
 		    bionet_resource_get_id(resource)
-#else
-                    bionet_resource_data_type_to_string(resource->data_type),
-                    node->id,
-                    resource->id
-#endif
                 );
                 continue;
             }
 
-#ifdef BIONET_21_API
             libhab_callback_set_resource(resource, value);
-#else
-            libhab_callback_set_resource(resource, &datapoint->value);
-#endif
 
             bionet_datapoint_free(datapoint);
         }
@@ -158,7 +145,6 @@ static void libhab_handle_datapoint_subscription_request(const char *peer_name, 
     }
 
     // send all matching resource metadata and datapoints
-#ifdef BIONET_21_API
     int i;
     for (i = 0; i < bionet_hab_get_num_nodes(libhab_this); i++) {
         bionet_node_t *node = bionet_hab_get_node_by_index(libhab_this, i);
@@ -209,58 +195,6 @@ static void libhab_handle_datapoint_subscription_request(const char *peer_name, 
 
         }
     }
-#else
-    GSList *i;
-    for (i = libhab_this->nodes; i != NULL; i = i->next) {
-        bionet_node_t *node = i->data;
-        int ri;
-
-        if (!bionet_name_component_matches(node->id, topic_node_id)) {
-            continue;
-        }
-
-        for (ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
-            bionet_resource_t *resource = bionet_node_get_resource_by_index(node, ri);
-            bionet_asn_buffer_t buf;
-            int r;
-
-            if (!bionet_name_component_matches(resource->id, topic_resource_id)) {
-                continue;
-            }
-
-
-            //
-            // first send the metadata for this matching resource
-            //
-
-            r = bionet_resource_metadata_to_asnbuf(resource, &buf);
-            if (r != 0) {
-                // an error has already been logged, and the buffer has been freed
-                continue;
-            }
-
-            // "publish" the message to the newly connected subscriber (via sendto)
-            // cal_server.sendto takes the buf so we dont need to free it
-            cal_server.sendto(peer_name, buf.buf, buf.size);
-
-
-            //
-            // then send the datapoints (if there are any)
-            //
-
-            r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 0);
-            if (r != 0) {
-                // an error has already been logged, and the buffer has been freed
-                continue;
-            }
-
-            // "publish" the message to the newly connected subscriber (via sendto)
-            // cal_server.sendto takes the buf so we dont need to free it
-            cal_server.sendto(peer_name, buf.buf, buf.size);
-
-        }
-    }
-#endif
 
     cal_server.subscribe(peer_name, topic);
 }
@@ -297,7 +231,6 @@ static void libhab_handle_node_list_subscription_request(const char *peer_name, 
     }
 
     // send all matching nodes
-#ifdef BIONET_21_API
     int i;
     for (i = 0; i < bionet_hab_get_num_nodes(libhab_this); i++) {
         bionet_asn_buffer_t buf;
@@ -316,26 +249,6 @@ static void libhab_handle_node_list_subscription_request(const char *peer_name, 
         // cal_server.sendto takes the buf so we dont need to free it
         cal_server.sendto(peer_name, buf.buf, buf.size);
     }
-#else
-    GSList *i;
-    for (i = libhab_this->nodes; i != NULL; i = i->next) {
-        bionet_asn_buffer_t buf;
-        bionet_node_t *node = i->data;
-        int r;
-
-        if (libhab_cal_topic_matches(node->id, topic) != 0) continue;
-
-        r = bionet_node_to_asnbuf(node, &buf);
-        if (r != 0) {
-            // an error has already been logged, and the buffer has been freed
-            continue;
-        }
-
-        // "publish" the message to the newly connected subscriber (via sendto)
-        // cal_server.sendto takes the buf so we dont need to free it
-        cal_server.sendto(peer_name, buf.buf, buf.size);
-    }
-#endif
 
     cal_server.subscribe(peer_name, topic);
 }

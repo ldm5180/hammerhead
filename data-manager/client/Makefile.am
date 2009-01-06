@@ -9,10 +9,10 @@ bdm_client_SOURCES =            \
     get-resource-datapoints.c   \
     send-asn.c
 
-bdm_client_CFLAGS = -DBIONET_21_API $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../include -I../../util -I../../asn.1
+bdm_client_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../include -I../../util -I../../asn.1
 
 bdm_client_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) -L../../asn.1 -L../../util
 
-bdm_client_LDADD = $(AM_LDADD) -lbionet-util-21 -lbionet-asn-21 -lpthread -lm
+bdm_client_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lpthread -lm
 
 

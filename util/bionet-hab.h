@@ -18,16 +18,6 @@
 #include "bionet-util.h"
 
 
-struct bionet_hab {
-    char *type;
-    char *id;
-
-    GSList *nodes;
-
-    void *user_data;
-};
-
-
 /**
  * @file bionet-hab.h 
  * Functions for dealing with Bionet Hardware-Abstractor (HABs).
@@ -48,27 +38,51 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
 
 
 /**
- * @brief Set the type of an existing HAB 
+ * @brief Get the Bionet qualified name of the HAB
  *
- * @param[in] hab Pointer to a HAB
- * @param[in] type Type of HAB
- * 
- * @retval 0 Success
- * @retval -1 Failure
+ * HAB name is of the format <HAB-Type>.<HAB-ID>
+ *
+ * @param[in] hab The HAB
+ * @param[out] name Pointer to the buffer the name shall be written into
+ * @param[in] name_len Length of the buffer pointed to by name
+ *
+ * @return Number of characters which would have been written to the buffer not 
+ * including the terinating NULL 
+ * @return -1 Error
+ *
+ * @note If the return value is greater than or equal to name_len the name has
+ * been truncated. Suggested size for the buffer is 
+ * 2*BIONET_NAME_COMPONENT_MAX_LEN. Check snprintf utility for more information.
  */
-int bionet_hab_set_type(bionet_hab_t *hab, const char *type);
+int bionet_hab_get_name(const bionet_hab_t * hab,
+			char * name,
+			int name_len);
 
 
 /**
- * @brief Set the ID of an existing HAB 
+ * @brief Get the type of an existing HAB 
  *
  * @param[in] hab Pointer to a HAB
- * @param[in] id ID of HAB
  * 
- * @retval 0 Success
- * @retval -1 Failure
+ * @return HAB-Type string
+ * @return NULL on failure
+ *
+ * @note Do not free the returned pointer
  */
-int bionet_hab_set_id(bionet_hab_t *hab, const char *id);
+const char * bionet_hab_get_type(const bionet_hab_t *hab);
+
+
+/**
+ * @brief Get the ID of an existing HAB 
+ *
+ * @param[in] hab Pointer to a HAB
+ * 
+ * @return HAB-ID string
+ * @return NULL on failure
+ *
+ * @note Do not free the returned pointer
+ */
+const char * bionet_hab_get_id(const bionet_hab_t *hab);
 
 
 /**
@@ -132,10 +146,8 @@ int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node);
  * @return -1 Failure
  *
  * @note Node is not free'd. The caller needs to free.
- *
- * @todo Node removed shall be returned instead of a success or failure code 
  */
-int bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node_id);
+bionet_node_t * bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node_id);
 
 
 /**

@@ -30,7 +30,6 @@ void libbionet_cache_add_node(bionet_node_t *node) {
 	errno = EINVAL;
 	return;
     }
-#ifdef BIONET_21_API
     bionet_hab_t *hab;
     bionet_hab_t *nhab = bionet_node_get_hab(node);
     if (NULL == nhab)
@@ -47,17 +46,6 @@ void libbionet_cache_add_node(bionet_node_t *node) {
     }
 
     bionet_hab_add_node(hab, node);
-#else
-    bionet_hab_t *hab;
-
-    hab = bionet_cache_lookup_hab(node->hab->type, node->hab->id);
-    if (hab == NULL) {
-        hab = bionet_hab_new(node->hab->type, node->hab->id);
-	libbionet_cache_add_hab(hab);
-    }
-
-    hab->nodes = g_slist_prepend(hab->nodes, node);
-#endif
 }
 
 
@@ -68,7 +56,6 @@ void libbionet_cache_remove_node(bionet_node_t *node) {
 	errno = EINVAL;
 	return;
     }
-#ifdef BIONET_21_API
     bionet_hab_t *hab;
     bionet_hab_t *nhab = bionet_node_get_hab(node);
     if (NULL == nhab)
@@ -87,19 +74,6 @@ void libbionet_cache_remove_node(bionet_node_t *node) {
     }
 
     bionet_hab_remove_node_by_id(hab, bionet_node_get_id(node));
-#else
-    bionet_hab_t *hab;
-
-    hab = bionet_cache_lookup_hab(node->hab->type, node->hab->id);
-    if (hab == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "cache tried to remove a node for a non-existent HAB (%s.%s.%s)", 
-	      node->hab->type, node->hab->id, node->id);
-        return;
-    }
-
-    hab->nodes = g_slist_remove(hab->nodes, node);
-#endif
 }
 
 
@@ -112,7 +86,6 @@ void libbionet_cache_add_resource(bionet_resource_t *resource) {
 	errno = EINVAL;
 	return;
     }
-#ifdef BIONET_21_API
     bionet_node_t * rnode = bionet_resource_get_node(resource);
     bionet_hab_t * rhab = bionet_node_get_hab(rnode);
     node = bionet_cache_lookup_node(bionet_hab_get_type(rhab),
@@ -124,15 +97,6 @@ void libbionet_cache_add_resource(bionet_resource_t *resource) {
     }
 
     bionet_node_add_resource(node, resource);    
-#else
-    node = bionet_cache_lookup_node(resource->node->hab->type, resource->node->hab->id, resource->node->id);
-    if (node == NULL) {
-        node = bionet_node_new(resource->node->hab, resource->node->id);
-        libbionet_cache_add_node(node);
-    }
-
-    node->resources = g_slist_prepend(node->resources, resource);
-#endif
 }
 
 

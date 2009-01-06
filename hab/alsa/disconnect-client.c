@@ -19,7 +19,7 @@
 
 #include <alsa/asoundlib.h>
 #include "alsa-hab.h"
-
+#include "bionet-util.h"
 
 void disconnect_client(bionet_stream_t *stream, client_t *client) {
     user_data_t *user_data;

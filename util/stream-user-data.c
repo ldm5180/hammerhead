@@ -6,9 +6,8 @@
 
 #include <string.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
+#include "bionet-util.h"
 
 
 void bionet_stream_set_user_data(bionet_stream_t *stream, const void *user_data) {
@@ -30,5 +29,4 @@ void *bionet_stream_get_user_data(const bionet_stream_t *stream) {
     return (void *)stream->user_data;
 }
 
-#endif
 

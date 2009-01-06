@@ -4,18 +4,20 @@
 //
 
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <glib.h>
 
 #include "bionet-util.h"
-
+#include "internal.h"
 
 
 
 bionet_resource_t *bionet_resource_new(
-    const bionet_node_t *node,
+    bionet_node_t *node,
     bionet_resource_data_type_t data_type,
     bionet_resource_flavor_t flavor,
     const char *id
@@ -81,38 +83,37 @@ cleanup:
 }
 
 
-bionet_resource_t *bionet_resource_new_from_str(
-    const bionet_node_t *node,
-    const char *data_type_str,
-    const char *flavor_str,
-    const char *id
-) {
-    bionet_resource_data_type_t data_type;
-    bionet_resource_flavor_t flavor;
-
-    // sanity checking
-    if (flavor_str == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_new_from_str(): NULL Resource-Flavor passed in");
-        return NULL;
-    }
-    if (data_type_str == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_new_from_str(): NULL Resource-Data-Type passed in");
-        return NULL;
+const char *bionet_resource_get_id(bionet_resource_t *resource)
+{
+    if (NULL == resource)
+    {
+	errno = EINVAL;
+	return NULL;
     }
 
-    // parse the Data Type and Flavor
-    data_type = bionet_resource_data_type_from_string(data_type_str);
-    if (data_type == BIONET_RESOURCE_DATA_TYPE_INVALID) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_new_from_str(): error parsing data type from '%s'", data_type_str);
-        return NULL;
-    }
-    flavor = bionet_resource_flavor_from_string(flavor_str);
-    if (flavor == BIONET_RESOURCE_FLAVOR_INVALID) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_new_from_str(): error parsing flavor from '%s'", flavor_str);
-        return NULL;
-    }
-
-    // looks good, make the resource & return it
-    return bionet_resource_new(node, data_type, flavor, id);
+    return resource->id;
 }
 
+
+int bionet_resource_get_name(const bionet_resource_t * resource,
+			     char * name,
+			     int name_len)
+{
+    if ((NULL == resource) || (NULL == resource->node) || (NULL == resource->node->hab))
+    {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_get_name(): NULL resource or node or hab passed in");
+	errno = EINVAL;
+	return -1;	
+    }
+
+    return snprintf(name, name_len, "%s.%s.%s:%s", 
+		    resource->node->hab->type, resource->node->hab->id, resource->node->id, resource->id);
+} /* bionet_node_get_name() */
+
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

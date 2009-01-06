@@ -3,14 +3,48 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+#include <ctype.h>
 
+#include "internal.h"
 #include "bionet-util.h"
 
+static char *hab_get_program_name(void);
+static int bionet_hab_set_type(bionet_hab_t *hab, const char *type);
+static int bionet_hab_set_id(bionet_hab_t *hab, const char *id);
 
-int bionet_hab_set_type(bionet_hab_t *hab, const char *type) {
+
+const char * bionet_hab_get_type(const bionet_hab_t *hab) {
+
+    if (hab == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_hab_get_type(): NULL HAB passed in!");
+        return NULL;
+    }
+
+    return hab->type;
+}
+
+
+const char * bionet_hab_get_id(const bionet_hab_t *hab) {
+
+    if (hab == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_hab_get_type(): NULL HAB passed in!");
+        return NULL;
+    }
+
+    return hab->id;
+}
+
+static int bionet_hab_set_type(bionet_hab_t *hab, const char *type) {
 
     // 
     // sanity checks
@@ -26,7 +60,6 @@ int bionet_hab_set_type(bionet_hab_t *hab, const char *type) {
         return -1;
     }
 
-
     if (hab->type != NULL) {
         free(hab->type);
         hab->type = NULL;
@@ -40,11 +73,28 @@ int bionet_hab_set_type(bionet_hab_t *hab, const char *type) {
         }
     }
 
+    if (NULL == type)
+    {
+	char * tmp_type;
+        tmp_type = hab_get_program_name();
+        if (type == NULL) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bionet_hab_set_type(): the passed-in HAB has no HAB-Type, and cannot get program name");
+            return -1;
+        }
+
+	hab->type = tmp_type;
+
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+	      "bionet_hab_set_type(): the passed-in HAB has no HAB-Type, using program name '%s'", 
+	      hab->type);
+    }
+
     return 0;
 }
 
 
-int bionet_hab_set_id(bionet_hab_t *hab, const char *id) {
+static int bionet_hab_set_id(bionet_hab_t *hab, const char *id) {
 
     // 
     // sanity checks
@@ -74,14 +124,38 @@ int bionet_hab_set_id(bionet_hab_t *hab, const char *id) {
         }
     }
 
+    if (NULL == id)
+    {
+        char hostname[256];
+        char *p;
+        int r;
+
+        r = gethostname(hostname, sizeof(hostname));
+        if (r < 0) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bionet_hab_set_id(): the passed-in HAB has no HAB-ID, and could not get hostname: %s", 
+		  strerror(errno));
+            return -1;
+        }
+
+        for (p = hostname; *p != '\0'; p++) {
+            if (!isalnum(*p) && (*p != '-')) *p = '-';
+        }
+
+	hab->id = strdup(hostname);
+
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+	      "bionet_hab_set_id(): the passed-in HAB has no HAB-ID, using hostname '%s'", 
+	      hab->id);
+
+    }
+
     return 0;
 }
 
 
-bionet_hab_t* bionet_hab_new(
-    const char* type,
-    const char* id
-) {
+bionet_hab_t* bionet_hab_new(const char* type, const char* id) {
+
     bionet_hab_t* hab;
 
     hab = calloc(1, sizeof(bionet_hab_t));
@@ -105,3 +179,83 @@ bionet_hab_t* bionet_hab_new(
     return hab;
 }
 
+static char *hab_get_program_name(void) {
+#if defined(LINUX) || defined(MACOSX)
+    static char program_name[500];
+
+    int r;
+    int fd;
+    char *tmp;
+
+    fd = open("/proc/self/cmdline", O_RDONLY);
+    if (fd < 0) {
+        g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "hab_get_program_name(): error opening /proc/self/cmdline (%s), oh well",
+            strerror(errno)
+        );
+        return "unknown";
+    }
+
+
+    r = read(fd, program_name, sizeof(program_name) - 1);
+    close(fd);
+
+    if (r <= 0) {
+        g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "hab_connect_to_nag(): error reading /proc/self/cmdline (%s), oh well",
+            strerror(errno)
+        );
+        return "unknown";
+    }
+
+    program_name[r] = '\0';  // this is redundant, because the /proc file already contains the NUL, but it makes Coverity happy
+
+    while ((tmp = memchr(program_name, '/', strlen(program_name))) != NULL) {
+        int new_len = strlen(tmp+1);
+        memmove(program_name, tmp+1, new_len);
+        program_name[new_len] = '\0';
+    }
+
+    for (tmp = program_name; *tmp != '\0'; tmp ++) {
+        if (!isalnum(*tmp) && *tmp != '-') {
+            *tmp = '-';
+        }
+    }
+
+    return program_name;
+#endif
+
+#ifdef WINDOWS
+    // FIXME
+    return "a-windows-program";
+#endif
+}
+
+
+int bionet_hab_get_name(const bionet_hab_t * hab,
+			char * name,
+			int name_len)
+{
+    if (NULL == hab)
+    {
+	errno = EINVAL;
+	g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bionet_hab_get_name(): NULL hab passed in");
+	return -1;
+    }
+
+    return snprintf(name, name_len, "%s.%s", hab->type, hab->id);
+} /* bionet_hab_get_name() */
+
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

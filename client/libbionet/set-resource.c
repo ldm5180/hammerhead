@@ -18,12 +18,29 @@
 #include "bionet.h"
 
 #include "bionet-asn.h"
+#include "bionet-util.h"
 
 
 
+int bionet_set_resource(bionet_resource_t *resource, const char *value) {
 
-int bionet_set_resource(const bionet_resource_t *resource, const char *value) {
-    return bionet_set_resource_by_habtype_habid_nodeid_resourceid(resource->node->hab->type, resource->node->hab->id, resource->node->id, resource->id, value);
+    bionet_node_t *node;
+    bionet_hab_t *hab;
+
+    /* sanity */
+    if (NULL == resource) {
+	errno = EINVAL;
+	return -1;
+    }
+
+    node = bionet_resource_get_node(resource);
+    hab = bionet_node_get_hab(node);
+    
+    return bionet_set_resource_by_habtype_habid_nodeid_resourceid(bionet_hab_get_type(hab), 
+								  bionet_hab_get_id(hab), 
+								  bionet_node_get_id(node), 
+								  bionet_resource_get_id(resource), 
+								  value);
 }
 
 
@@ -110,3 +127,8 @@ cleanup:
     return -1;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

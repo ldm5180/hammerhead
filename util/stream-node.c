@@ -6,9 +6,8 @@
 
 #include <string.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
+#include "bionet-util.h"
 
 
 bionet_node_t *bionet_stream_get_node(const bionet_stream_t *stream) {
@@ -20,5 +19,5 @@ bionet_node_t *bionet_stream_get_node(const bionet_stream_t *stream) {
     return stream->node;
 }
 
-#endif
+
 

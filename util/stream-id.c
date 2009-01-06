@@ -6,12 +6,8 @@
 
 #include <string.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
-#else
 #include "bionet-util.h"
-#endif
 
 
 const char *bionet_stream_get_id(const bionet_stream_t *stream) {

@@ -4,14 +4,10 @@
 //
 
 
-#ifdef BIONET_21_API
-#include "internal.h"
-#include "bionet-util-2.1.h"
-#else
-#include "bionet-util.h"
-#endif
-
 #include <errno.h>
+
+#include "internal.h"
+#include "bionet-util.h"
 
 
 void bionet_datapoint_make_clean(bionet_datapoint_t *datapoint) {

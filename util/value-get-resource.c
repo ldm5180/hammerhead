@@ -5,7 +5,7 @@
 
 #include "errno.h"
 
-#include "bionet-util-2.1.h"
+#include "bionet-util.h"
 #include "internal.h"
 
 

@@ -4,12 +4,9 @@
 //
 
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
-#else
 #include "bionet-util.h"
-#endif
+
 
 int bionet_resource_is_dirty(const bionet_resource_t *resource) {
     int di;

@@ -9,12 +9,9 @@
 
 #include <glib.h>
 
-#ifdef BIONET_21_API
 #include "internal.h"
-#include "bionet-util-2.1.h"
-#else
 #include "bionet-util.h"
-#endif
+
 
 int bionet_resource_get_num_datapoints(const bionet_resource_t *resource) {
     if (resource == NULL) {
@@ -35,6 +32,7 @@ bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource
     if (resource->datapoints->len <= index) return NULL;
     return g_ptr_array_index(resource->datapoints, index);
 }
+
 
 // Emacs cruft
 // Local Variables:
