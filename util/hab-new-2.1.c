@@ -3,7 +3,7 @@
 // Copyright (C) 2008, Regents of the University of Colorado.
 //
 
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -234,6 +234,25 @@ static char *hab_get_program_name(void) {
     return "a-windows-program";
 #endif
 }
+
+
+int bionet_hab_get_name(const bionet_hab_t * hab,
+			char * name,
+			int name_len)
+{
+    if (NULL == hab)
+    {
+	errno = EINVAL;
+	g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bionet_hab_get_name(): NULL hab passed in");
+	return -1;
+    }
+
+    return snprintf(name, name_len, "%s.%s", hab->type, hab->id);
+} /* bionet_hab_get_name() */
+
 
 // Emacs cruft
 // Local Variables:

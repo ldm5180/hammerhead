@@ -38,6 +38,28 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
 
 
 /**
+ * @brief Get the Bionet qualified name of the HAB
+ *
+ * HAB name is of the format <HAB-Type>.<HAB-ID>
+ *
+ * @param[in] hab The HAB
+ * @param[in][out] name Pointer to the buffer the name shall be written into
+ * @param[in] name_len Length of the buffer pointed to by name
+ *
+ * @return Number of characters which would have been written to the buffer not 
+ * including the terinating NULL 
+ * @return -1 Error
+ *
+ * @note If the return value is greater than name_len the name has been truncated.
+ * Suggested size for the buffer is 2*BIONET_NAME_COMPONENT_MAX_LEN. Check snprintf 
+ * utility for more information.
+ */
+int bionet_hab_get_name(const bionet_hab_t * hab,
+			char * name,
+			int name_len);
+
+
+/**
  * @brief Get the type of an existing HAB 
  *
  * @param[in] hab Pointer to a HAB

@@ -125,7 +125,6 @@ bionet_hab_t * bionet_datapoint_get_hab(const bionet_datapoint_t * datapoint)
 } /* bionet_datapoint_get_hab() */
 
 
-
 // Emacs cruft
 // Local Variables:
 // mode: C
