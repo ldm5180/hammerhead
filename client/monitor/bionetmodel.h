@@ -25,10 +25,14 @@
 #include <QRegExp>
 #include <QStandardItemModel>
 #include <QString>
+#include <QtDebug>
 
 #include <iostream>
 
-#define FULLNAMEROLE (Qt::UserRole)
+#define FULLNAMEROLE            (Qt::UserRole)
+#define HABNAMELENGTH           (2*BIONET_NAME_COMPONENT_MAX_LEN)
+#define NODENAMELENGTH          (3*BIONET_NAME_COMPONENT_MAX_LEN)
+#define RESOURCENAMELENGTH      (4*BIONET_NAME_COMPONENT_MAX_LEN)
 
 extern "C" {
 #include "bionet-2.1.h"
@@ -44,7 +48,7 @@ class BionetModel : public QStandardItemModel {
         BionetModel(QObject* parent=0);
 
         QString getName(const QModelIndex &index) const;
-        QString getDisplayName(const QModelIndex &index) const;
+        QString getID(const QModelIndex &index) const;
 
     public slots:
         void newHab(bionet_hab_t* hab);

@@ -241,7 +241,6 @@ void ResourceView::resourceValueChanged(bionet_datapoint_t* datapoint) {
 
 void ResourceView::textEntered() {
     int r = 0;
-    bionet_resource_t* resource;
 
     if (valueEditor->text() == NULL) {
         return;
