@@ -21,7 +21,7 @@ install-exec-hook: setup.py
 	cp _bdm_client.so $(LIB_INST_DIR)/.
 	$(LDCONFIG_EXE)
 
-bdm-client_wrap.c: bdm-client.i bdm-client-interface.c
+bdm-client_wrap.c: bdm-client.i bdm-client-interface.c ../../util/bionet-util-2.1.h ../../util/bionet-hab-2.1.h ../../util/bionet-node-2.1.h ../../util/bionet-resource-2.1.h ../../util/bionet-datapoint-2.1.h ../../util/bionet-value-2.1.h
 	swig -python -I../../util -I../../asn.1 -I../include -I../client bdm-client.i
 	ln -sf .libs/libbdm.so _bdm_client.so
 

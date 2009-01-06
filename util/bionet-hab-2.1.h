@@ -146,10 +146,8 @@ int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node);
  * @return -1 Failure
  *
  * @note Node is not free'd. The caller needs to free.
- *
- * @todo Node removed shall be returned instead of a success or failure code 
  */
-int bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node_id);
+bionet_node_t * bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node_id);
 
 
 /**
