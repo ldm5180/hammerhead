@@ -159,7 +159,7 @@ int discover_alsa_hardware(void) {
 
         for (ni = nodes; ni != NULL; ni = ni->next) {
             bionet_node_t *node = ni->data;
-            node_user_data_t *node_user_data = node->user_data;
+            node_user_data_t *node_user_data = bionet_node_get_user_data(node);
 
             node_user_data->hardware_is_still_there = 0;
         }
@@ -183,6 +183,7 @@ int discover_alsa_hardware(void) {
 
         const char *id;
         bionet_node_t *node;
+        node_user_data_t *node_user_data;
 
 
         r = snprintf(hw_name, sizeof(hw_name), "hw:%d", card);
@@ -216,9 +217,9 @@ int discover_alsa_hardware(void) {
 
             for (ni = nodes; ni != NULL; ni = ni->next) {
                 bionet_node_t *node = ni->data;
-                node_user_data_t *node_user_data = node->user_data;
+                node_user_data_t *node_user_data = bionet_node_get_user_data(node);
 
-                if (strcmp(id, node->id) == 0) {
+                if (strcmp(id, bionet_node_get_id(node)) == 0) {
                     node_user_data->hardware_is_still_there = 1;
                     snd_ctl_close(handle);
                     goto next_card;
@@ -240,13 +241,15 @@ int discover_alsa_hardware(void) {
 
         bionet_hab_add_node(this_hab, node);
 
-        node->user_data = (node_user_data_t *)malloc(sizeof(node_user_data_t));
-        if (node->user_data == NULL) {
+        node_user_data = (node_user_data_t *)malloc(sizeof(node_user_data_t));
+        if (node_user_data == NULL) {
             printf("error making user_data storage for new node\n");
             exit(1);
         }
 
-        ((node_user_data_t *)node->user_data)->hardware_is_still_there = 1;
+        bionet_node_set_user_data(node, node_user_data);
+
+        node_user_data->hardware_is_still_there = 1;
 
 
         // for now we just do device 0
@@ -316,14 +319,14 @@ int discover_alsa_hardware(void) {
         //
 
         {
-            GSList *sp;
+            int i;
 
-            g_message("found a new audio device: %s", node->id);
+            g_message("found a new audio device: %s", bionet_node_get_id(node));
 
-            for (sp = node->streams; sp != NULL; sp = sp->next) {
-                bionet_stream_t *s = sp->data;
-                user_data_t *user_data = s->user_data;
-                g_message("    %s (%s)", s->id, user_data->device);
+            for (i = 0; i < bionet_node_get_num_streams(node); i ++) {
+                bionet_stream_t *s = bionet_node_get_stream_by_index(node, i);
+                user_data_t *user_data = bionet_stream_get_user_data(s);
+                g_message("    %s (%s)", bionet_stream_get_id(s), user_data->device);
             }
         }
 
@@ -356,7 +359,7 @@ next_card:
 
         for (i = 0; i < g_slist_length(nodes); i ++) {
             bionet_node_t *node = g_slist_nth_data(nodes, i);
-            node_user_data_t *node_user_data = node->user_data;
+            node_user_data_t *node_user_data = bionet_node_get_user_data(node);
             int j;
 
             if (node_user_data->hardware_is_still_there) {
@@ -364,16 +367,16 @@ next_card:
             }
 
             // this node has been lost
-            printf("lost node %s\n", node->id);
-            hab_report_lost_node(node->id);
+            printf("lost node %s\n", bionet_node_get_id(node));
+            hab_report_lost_node(bionet_node_get_id(node));
 
-            free(node->user_data);
-            node->user_data = NULL;
+            free(node_user_data);
+            bionet_node_set_user_data(node, NULL);
 
             // close open streams
-            for (j = 0; j < g_slist_length(node->streams); j ++) {
-                bionet_stream_t *stream = g_slist_nth_data(node->streams, j);
-                user_data_t *user_data = stream->user_data;
+            for (j = 0; j < bionet_node_get_num_streams(node); j ++) {
+                bionet_stream_t *stream = bionet_node_get_stream_by_index(node, j);
+                user_data_t *user_data = bionet_stream_get_user_data(stream);
 
                 free(user_data->device);
 
@@ -383,8 +386,8 @@ next_card:
                     disconnect_client(stream, client);
                 }
 
-                free(stream->user_data);
-                stream->user_data = NULL;
+                free(user_data);
+                bionet_stream_set_user_data(stream, NULL);
             }
 
             nodes = g_slist_remove(nodes, node);

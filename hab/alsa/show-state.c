@@ -113,26 +113,24 @@ void show_state(void) {
 
     for (ni = nodes; ni != NULL; ni = ni->next) {
         bionet_node_t *node = ni->data;
-        GSList *si;
+        int si;
 
-        g_log("", G_LOG_LEVEL_INFO, "    %s", node->id);
+        g_message("    %s", bionet_node_get_id(node));
 
         // the streams
-        for (si = node->streams; si != NULL; si = si->next) {
-            bionet_stream_t *stream = si->data;
-            user_data_t *user_data = stream->user_data;
+        for (si = 0; si < bionet_node_get_num_streams(node); si++) {
+            bionet_stream_t *stream = bionet_node_get_stream_by_index(node, si);
+            user_data_t *user_data = bionet_stream_get_user_data(stream);
 
-            g_log(
-                "",
-                G_LOG_LEVEL_INFO,
+            g_message(
                 "        %s %s %s (%s)",
-                stream->id,
-                stream->type,
-                bionet_stream_direction_to_string(stream->direction),
+                bionet_stream_get_id(stream),
+                bionet_stream_get_type(stream),
+                bionet_stream_direction_to_string(bionet_stream_get_direction(stream)),
                 user_data->device
             );
 
-            show_clients(stream->user_data);
+            show_clients(user_data);
         }
     }
 }
