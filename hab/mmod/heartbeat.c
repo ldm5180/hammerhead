@@ -93,13 +93,19 @@ void heartbeat_check(void)
 	{
 	    /* this node has been lost! */
 	    const char * node_id = bionet_node_get_id(node);
-	    if (bionet_hab_remove_node_by_id(mmod_hab, node_id))
-	    {
-		g_warning("Failed to remove node %s\n", node_id);
-	    }
+	    bionet_node_t * node;
+	    node = bionet_hab_remove_node_by_id(mmod_hab, node_id);
 	    if (hab_report_lost_node(node_id))
 	    {
 		g_warning("Failed to report lost node %s\n", node_id);
+	    }
+	    if (NULL == node)
+	    {
+		g_warning("Failed to remove node %s\n", node_id);
+	    }
+	    else
+	    {
+		bionet_node_free(node);
 	    }
 	}
     }

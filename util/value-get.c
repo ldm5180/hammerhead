@@ -140,8 +140,13 @@ static int bionet_value_get_internal(bionet_value_t *value,
 
     if (value->resource->data_type != datatype)
     {
+	char name[4*BIONET_NAME_COMPONENT_MAX_LEN];
+	bionet_resource_get_name(value->resource, &name[0], 4*BIONET_NAME_COMPONENT_MAX_LEN); 
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_value_get_*(): resource/datatype mismatch");
+	      "bionet_value_get_*(): resource/datatype mismatch in %s: %s but should be %s",
+	      &name[0],
+	      bionet_resource_data_type_to_string(datatype),
+	      bionet_resource_data_type_to_string(value->resource->data_type));
 	errno = EINVAL;
 	return -1;
     }

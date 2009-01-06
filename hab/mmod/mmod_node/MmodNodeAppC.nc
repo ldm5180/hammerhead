@@ -27,7 +27,8 @@ implementation
 {
     components MmodNodeC, ActiveMessageC, MainC, LedsC, 
 	new TimerMilliC() as AccelTimer,
-	new TimerMilliC() as SettingsTimer;
+	new TimerMilliC() as SettingsTimer,
+	new TimerMilliC() as GeneralTimer;
 
 #if defined(PLATFORM_MICAZ)
     components CC2420ActiveMessageC as Radio;
@@ -41,6 +42,7 @@ implementation
     MmodNodeC.Boot -> MainC.Boot;
     MmodNodeC.AccelCheck -> AccelTimer;
     MmodNodeC.SettingsCheck -> SettingsTimer;
+    MmodNodeC.GeneralCheck -> GeneralTimer;
     MmodNodeC.Leds -> LedsC;
     MmodNodeC.RadioControl -> ActiveMessageC;
     MmodNodeC.LowPowerListening -> Radio;

@@ -205,25 +205,23 @@ void cb_set_resource(bionet_resource_t *resource,
 	    }
 	    else
 	    {
-		bionet_value_get_uint16(val, &uiVal);
-	    }
-
-	    char * tmp_str;
-	    bionet_value_get_str(val, &tmp_str);
-	    switch (tmp_str[0])
-	    {
-	    case 'N':
-		uiVal = 0;
-		break;
-	    case 'X':
-		uiVal = ACCEL_FLAG_X;
-		break;
-	    case 'Y':
-		uiVal = ACCEL_FLAG_Y;
-		break;
-	    default:
-		uiVal = ACCEL_FLAG_X | ACCEL_FLAG_Y;
-		break;
+		char * tmp_str;
+		bionet_value_get_str(val, &tmp_str);
+		switch (tmp_str[0])
+		{
+		case 'N':
+		    uiVal = 0;
+		    break;
+		case 'X':
+		    uiVal = ACCEL_FLAG_X;
+		    break;
+		case 'Y':
+		    uiVal = ACCEL_FLAG_Y;
+		    break;
+		default:
+		    uiVal = ACCEL_FLAG_X | ACCEL_FLAG_Y;
+		    break;
+		}
 	    }
   	}
     }
