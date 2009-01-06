@@ -611,10 +611,6 @@ StreamDirection_t bionet_stream_direction_to_asn(bionet_stream_direction_t direc
 
 
 Stream_t *bionet_stream_to_asn(const bionet_stream_t *stream) {
-#ifdef BIONET_21_API
-    return NULL;
-#else
-
     Stream_t *asn_stream;
     int r;
 
@@ -624,6 +620,27 @@ Stream_t *bionet_stream_to_asn(const bionet_stream_t *stream) {
         return NULL;
     }
 
+#ifdef BIONET_21_API
+    r = OCTET_STRING_fromString(&asn_stream->id, bionet_stream_get_id(stream));
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_stream_to_asn(): error making OCTET_STRING for Stream-ID %s", 
+	      bionet_stream_get_id(stream));
+        goto cleanup;
+    }
+
+    asn_stream->direction = bionet_stream_direction_to_asn(bionet_stream_get_direction(stream));
+    if (asn_stream->direction == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): invalid Stream Direction %d for Stream %s", bionet_stream_get_direction(stream), bionet_stream_get_id(stream));
+        goto cleanup;
+    }
+
+    r = OCTET_STRING_fromString(&asn_stream->type, bionet_stream_get_type(stream));
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): error making OCTET_STRING for Stream Type %s", bionet_stream_get_type(stream));
+        goto cleanup;
+    }
+#else
     r = OCTET_STRING_fromString(&asn_stream->id, stream->id);
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -643,13 +660,13 @@ Stream_t *bionet_stream_to_asn(const bionet_stream_t *stream) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_to_asn(): error making OCTET_STRING for Stream Type %s", stream->type);
         goto cleanup;
     }
+#endif
 
     return asn_stream;
 
 cleanup:
     ASN_STRUCT_FREE(asn_DEF_Stream, asn_stream);
     return NULL;
-#endif
 }
 
 
