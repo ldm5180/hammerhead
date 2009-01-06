@@ -185,7 +185,7 @@ const char *bionet_stream_direction_to_string(bionet_stream_direction_t directio
  * Stream name is of the format <HAB-Type>.<HAB-ID>.<Node-ID>:<Stream-ID>
  *
  * @param[in] stream The Stream
- * @param[in][out] name Pointer to the buffer the name shall be written into
+ * @param[out] name Pointer to the buffer the name shall be written into
  * @param[in] name_len Length of the buffer pointed to by name
  *
  * @return Number of characters which would have been written to the buffer not 
