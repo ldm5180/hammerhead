@@ -53,7 +53,7 @@ void bionet_datapoint_free(bionet_datapoint_t *datapoint);
 /**
  * @brief Set the value of a datapoint
  *
- * @param[in] d Datapoint to set
+ * @param[in] datapoint Datapoint to set
  * @param[in] value Value to set in the datapoint
  */
 void bionet_datapoint_set_value(bionet_datapoint_t *datapoint, bionet_value_t *value);
@@ -62,7 +62,7 @@ void bionet_datapoint_set_value(bionet_datapoint_t *datapoint, bionet_value_t *v
 /**
  * @brief Get the value of a datapoint
  *
- * @param[in] d Datapoint to set
+ * @param[in] datapoint Datapoint to set
  *
  * @retval Pointer to Value
  * @retval NULL on failure

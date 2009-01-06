@@ -96,18 +96,18 @@ void bionet_resource_free(bionet_resource_t *resource);
  * Resource name is of the format <HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>
  *
  * @param[in] resource The Resource
- * @param[in][out] name Pointer to the buffer the name shall be written into
+ * @param[out] name Pointer to the buffer the name shall be written into
  * @param[in] name_len Length of the buffer pointed to by name
  *
  * @return Number of characters which would have been written to the buffer not 
  * including the terinating NULL 
  * @return -1 Error
  *
- * @note If the return value is greater than name_len the name has been truncated.
- * Suggested size for the buffer is 4*BIONET_NAME_COMPONENT_MAX_LEN. Check snprintf 
- * utility for more information.
+ * @note If the return value is greater than or equal to name_len the name has 
+ * been truncated. Suggested size for the buffer is 
+ * 4*BIONET_NAME_COMPONENT_MAX_LEN. Check snprintf utility for more information.
  */
-int bionet_resource_get_name(const bionet_resource_t * node,
+int bionet_resource_get_name(const bionet_resource_t * resource,
 			     char * name,
 			     int name_len);
 
