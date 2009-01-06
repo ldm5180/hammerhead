@@ -27,9 +27,51 @@
  * @param[in] value The value
  *
  * @return Pointer to a resource
- * @return NULL on failure
+ * @return NULL Error
  */
 bionet_resource_t * bionet_value_get_resource(bionet_value_t * value);
+
+
+/**
+ * @brief Get the node a value belongs to
+ *
+ * @param[in] value The value
+ *
+ * @return Pointer to a Node
+ * @return NULL Error
+ *
+ * @note This is shorthand for getting the resource, then getting the 
+ * node of the resource.
+ */
+bionet_node_t * bionet_value_get_node(const bionet_value_t * value);
+
+
+/**
+ * @brief Get the HAB a value belongs to
+ *
+ * @param[in] value The value
+ * 
+ * @return Pointer to a HAB
+ * @return NULL Error
+ *
+ * @note This is shorthand for getting the resource, then getting the
+ * node of the resource, then getting the HAB of the node.
+ */
+bionet_hab_t * bionet_value_get_hab(const bionet_value_t * value);
+
+
+/**
+ * @brief Get the datapoint a value belongs to
+ * 
+ * @param[in] value The value
+ *
+ * @return Pointer to a datapoint
+ * @return NULL This is a stand-alone value or Error
+ *
+ * @note This is shorthand for getting the resource, then getting the
+ * datapoint of the resource.
+ */
+bionet_datapoint_t * bionet_value_get_datapoint(const bionet_value_t * value);
 
 
 /**

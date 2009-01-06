@@ -56,7 +56,7 @@ void bionet_datapoint_free(bionet_datapoint_t *datapoint);
  * @param[in] d Datapoint to set
  * @param[in] value Value to set in the datapoint
  */
-void bionet_datapoint_set_value(bionet_datapoint_t *d, bionet_value_t *value);
+void bionet_datapoint_set_value(bionet_datapoint_t *datapoint, bionet_value_t *value);
 
 
 /**
@@ -67,7 +67,50 @@ void bionet_datapoint_set_value(bionet_datapoint_t *d, bionet_value_t *value);
  * @retval Pointer to Value
  * @retval NULL on failure
  */
-bionet_value_t * bionet_datapoint_get_value(bionet_datapoint_t *d);
+bionet_value_t * bionet_datapoint_get_value(bionet_datapoint_t *datapoint);
+
+
+/**
+ * @brief Get the resource of a datapoint
+ *
+ * @param[in] datapoint The datapoint
+ *
+ * @return Pointer to Resource
+ * @return NULL Error or is not part of a resource
+ *
+ * @note This is shorthand for getting the value, then getting the
+ * resource of the value
+ */
+bionet_resource_t * bionet_datapoint_get_resource(const bionet_datapoint_t * datapoint);
+
+
+/**
+ * @brief Get the node of a datapoint
+ *
+ * @param[in] datapoint The datapoint
+ *
+ * @return Pointer to Node
+ * @return NULL Error or is not part of a node
+ *
+ * @note This is shorthand for getting the value, then getting the
+ * resource of the value, then getting the node of the resource
+ */
+bionet_node_t * bionet_datapoint_get_node(const bionet_datapoint_t * datapoint);
+
+
+/**
+ * @brief Get the HAB of a datapoint
+ *
+ * @param[in] datapoint The datapoint
+ *
+ * @return Pointer to HAB
+ * @return NULL Error or is not part of a HAB
+ *
+ * @note This is shorthand for getting the value, then getting the
+ * resource of the value, then getting the node of the resource, then
+ * getting the HAB of the node
+ */
+bionet_hab_t * bionet_datapoint_get_hab(const bionet_datapoint_t * datapoint);
 
 
 /**

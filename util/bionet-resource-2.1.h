@@ -113,6 +113,20 @@ bionet_node_t * bionet_resource_get_node(const bionet_resource_t *resource);
 
 
 /**
+ * @brief Get the HAB this resource belongs to
+ *
+ * @param[in] resource The Resource
+ *
+ * @return Pointer to HAB
+ * @return NULL Error
+ *
+ * @note This is shorthand for obtaining the Node and then obtaining
+ * Node's HAB
+ */
+bionet_hab_t * bionet_resource_get_hab(const bionet_resource_t *resource);
+
+
+/**
  * @brief Get the data type of a resource
  *
  * @param[in] resource The resource

@@ -20,8 +20,8 @@
 
 
 
-void bionet_datapoint_set_value(bionet_datapoint_t *d, bionet_value_t *value) {
-    if (d == NULL) {
+void bionet_datapoint_set_value(bionet_datapoint_t *datapoint, bionet_value_t *value) {
+    if (datapoint == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_value(): NULL datapoint passed in");
         return;
     }
@@ -30,28 +30,26 @@ void bionet_datapoint_set_value(bionet_datapoint_t *d, bionet_value_t *value) {
         return;
     }
 
-    
-    if (value == d->value)
+    if (value == datapoint->value)
     {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_set_value(): passed in value == d->value");
-	d->dirty = 1;
+	datapoint->dirty = 1;
 	return;
     }
-    else if (d->value) {
-        free(d->value);
-	d->value = value;
+    else if (datapoint->value) {
+        free(datapoint->value);
+	datapoint->value = value;
     } else {
-        d->value = value;
+        datapoint->value = value;
     }
 
-
-    d->dirty = 1;
+    datapoint->dirty = 1;
 }
 
 
-bionet_value_t * bionet_datapoint_get_value(bionet_datapoint_t *d)
+bionet_value_t * bionet_datapoint_get_value(bionet_datapoint_t *datapoint)
 {
-    if (NULL == d)
+    if (NULL == datapoint)
     {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_datapoint_get_value(): NULL datapoint passed in");
@@ -59,8 +57,74 @@ bionet_value_t * bionet_datapoint_get_value(bionet_datapoint_t *d)
 	return NULL;
     }
 
-    return d->value;
+    return datapoint->value;
 } /* bionet_datapoint_get_value() */
+
+
+bionet_resource_t * bionet_datapoint_get_resource(const bionet_datapoint_t * datapoint)
+{
+    if (NULL == datapoint)
+    {
+	errno = EINVAL;
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_get_resource(): passed in NULL datapoint");
+	return NULL;
+    }
+
+    if (NULL == datapoint->value) 
+    {
+	//not an error, datapoints aren't always part of values
+	return NULL;
+    }
+
+    return datapoint->value->resource;
+} /* bionet_datapoint_get_resource() */
+
+
+bionet_node_t * bionet_datapoint_get_node(const bionet_datapoint_t * datapoint)
+{
+    if (NULL == datapoint)
+    {
+	errno = EINVAL;
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_get_node(): passed in NULL datapoint");
+	return NULL;
+    }
+
+    if ((NULL == datapoint->value) || (NULL == datapoint->value->resource))
+    {
+	//not an error, datapoints aren't always part of values or resource
+	return NULL;
+    }
+
+    return datapoint->value->resource->node;
+} /* bionet_datapoint_get_node() */
+
+
+bionet_hab_t * bionet_datapoint_get_hab(const bionet_datapoint_t * datapoint)
+{
+    if (NULL == datapoint)
+    {
+	errno = EINVAL;
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_get_hab(): passed in NULL datapoint");
+	return NULL;
+    }
+
+    if ((NULL == datapoint->value) || (NULL == datapoint->value->resource))
+    {
+	//not an error, datapoints aren't always part of values or resource
+	return NULL;
+    }
+
+    if (NULL == datapoint->value->resource->node)
+    {
+	errno = EINVAL;
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_get_hab(): passed in datapoint has NULL node ptr");
+	return NULL;
+    }
+
+    return datapoint->value->resource->node->hab;
+} /* bionet_datapoint_get_hab() */
+
+
 
 // Emacs cruft
 // Local Variables:
