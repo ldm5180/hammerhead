@@ -139,8 +139,7 @@ int bionet_stream_connect(bionet_stream_t *stream);
  *
  * The user_data field of the stream structure must be NULL on entry to this
  * function, or it will leak memory.  All other dynamically allocated fields
- * of the stream structure are freed (id, type, host, hab_type, hab_id, 
- * and node_id).
+ * of the stream structure are freed.
  *
  * @param[in] stream The Stream to free.
  */
