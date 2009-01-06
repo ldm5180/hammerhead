@@ -95,6 +95,8 @@ libbionet_util_21_la_SOURCES =    \
     stream-free.c                       \
     stream-new.c                        \
     stream-name.c                       \
+    stream-user-data.c                  \
+    stream-node.c                       \
     value-free.c \
     value-get.c \
     value-get-resource.c \

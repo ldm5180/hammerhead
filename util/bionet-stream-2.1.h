@@ -87,12 +87,10 @@ const char * bionet_stream_get_type(const bionet_stream_t *stream);
  *
  * @param[in] stream Pointer to a Stream
  * 
- * @return Pointer to a Node
+ * @return Pointer to the Stream's Node
  * @return NULL on failure
- *
- * @todo implement me
  */
-bionet_node_t * bionet_stream_get_parent(const bionet_stream_t *stream);
+bionet_node_t * bionet_stream_get_node(const bionet_stream_t *stream);
 
 
 /**
@@ -202,6 +200,25 @@ const char *bionet_stream_direction_to_string(bionet_stream_direction_t directio
 int bionet_stream_get_name(const bionet_stream_t *stream,
 			     char * name,
 			     int name_len);
+
+
+/**
+ * @brief Set the user-data annotation of a Stream
+ *
+ * @param[in] stream The Stream
+ * @param[in] user_data The data to annotate the stream with.
+ */
+void bionet_stream_set_user_data(bionet_stream_t *stream, const void *user_data);
+
+
+/**
+ * @brief Get the user-data annotation of a Stream
+ *
+ * @param[in] stream The Stream
+ *
+ * @return The user_data pointer, or NULL if none has been set.
+ */
+void *bionet_stream_get_user_data(const bionet_stream_t *stream);
 
 
 

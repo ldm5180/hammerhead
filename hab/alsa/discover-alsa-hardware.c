@@ -102,7 +102,7 @@ static void try_add_stream(bionet_node_t *node, int card, int device, snd_ctl_t 
             exit(1);
         }
 
-        stream->user_data = user_data;
+        bionet_stream_set_user_data(stream, user_data);
     }
 
 

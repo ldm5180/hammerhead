@@ -24,10 +24,15 @@
 void disconnect_client(bionet_stream_t *stream, client_t *client) {
     user_data_t *user_data;
 
-    user_data = stream->user_data;
+    user_data = bionet_stream_get_user_data(stream);
 
 
-    g_log("", G_LOG_LEVEL_INFO, "client on %s:%s (socket %d) disconnects", stream->node->id, stream->id, client->socket);
+    g_message(
+        "client on %s:%s (socket %d) disconnects",
+        bionet_node_get_id(bionet_stream_get_node(stream)),
+        bionet_stream_get_id(stream),
+        client->socket
+    );
 
 
     user_data->clients = g_slist_remove(user_data->clients, client);
