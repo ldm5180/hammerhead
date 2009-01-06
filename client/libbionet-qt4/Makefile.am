@@ -43,7 +43,7 @@ libbionet_qt4_la_LIBADD = $(AM_LDADD) -lbionet -lbionet-util -lbionet-asn -lcal-
 
 
 makefile.qt: ../libbionet/libbionet.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la
-	qmake-qt4 -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=lib" "QT+=network" "CONFIG+=link_pkgconfig debug" "DEFINES*=BIONET_21_API"
+	qmake-qt4 -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=lib" "QT+=network" "CONFIG+=link_pkgconfig debug"
 	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects} 
 
 clean-local:
