@@ -17,6 +17,10 @@
 
 #include <stdint.h>
 
+#include "bionet-util-2.1.h"
+
+
+
 
 typedef enum {
     BIONET_STREAM_DIRECTION_INVALID = -1,
@@ -26,6 +30,8 @@ typedef enum {
 
 #define  BIONET_STREAM_DIRECTION_MIN  BIONET_STREAM_DIRECTION_PRODUCER
 #define  BIONET_STREAM_DIRECTION_MAX  BIONET_STREAM_DIRECTION_CONSUMER
+
+
 
 
 /**
@@ -42,30 +48,9 @@ typedef enum {
  * @retval >0 Success
  */
 bionet_stream_t *bionet_stream_new(
-    bionet_node_t *node,
+    const bionet_node_t *node,
     const char *id,
     bionet_stream_direction_t direction,
-    const char *type
-);
-
-
-/**
- * @brief Allocates and initializes a new Stream.
- *
- * @param node The Node that this Stream belongs to, or NULL if there isn't
- *            a Node.
- * @param[in] id The ID of this Stream.
- * @param[in] direction_str The direction of the new Stream.
- * @param[in] type The type of the Stream (currently only "audio" is supported).
- *
- * @return Pointer to the new Stream.
- * @retval NULL Error
- * @retval >0 Success
- */
-bionet_stream_t *bionet_stream_new_from_strings(
-    bionet_node_t *node,
-    const char *id,
-    const char *direction_str,
     const char *type
 );
 
@@ -79,7 +64,6 @@ bionet_stream_t *bionet_stream_new_from_strings(
  * @return NULL on failure
  *
  * @note Do not free the returned pointer
- * @todo implement me
  */
 const char * bionet_stream_get_id(const bionet_stream_t *stream);
 
@@ -171,10 +155,8 @@ void bionet_stream_free(bionet_stream_t *stream);
  * @retval #BIONET_STREAM_DIRECTION_INVALID Failure
  * @retval #BIONET_STREAM_DIRECTION_PRODUCER Producer
  * @retval #BIONET_STREAM_DIRECTION_CONSUMER Consumer
- *
- * @todo implement me
  */
-bionet_stream_direction_t bionet_stream_get_direction(bionet_stream_t * stream);
+bionet_stream_direction_t bionet_stream_get_direction(const bionet_stream_t * stream);
 
 
 /**
@@ -198,6 +180,29 @@ bionet_stream_direction_t bionet_stream_direction_from_string(const char *direct
  * @retval NULL Failure
  */
 const char *bionet_stream_direction_to_string(bionet_stream_direction_t direction);
+
+
+/**
+ * @brief Get the Bionet qualified name of the Stream
+ *
+ * Stream name is of the format <HAB-Type>.<HAB-ID>.<Node-ID>:<Stream-ID>
+ *
+ * @param[in] stream The Stream
+ * @param[in][out] name Pointer to the buffer the name shall be written into
+ * @param[in] name_len Length of the buffer pointed to by name
+ *
+ * @return Number of characters which would have been written to the buffer not 
+ * including the terminating NULL 
+ * @return -1 Error
+ *
+ * @note If the return value is greater than or equal to name_len the name
+ * has been truncated.  Suggested size for the buffer is
+ * 4*BIONET_NAME_COMPONENT_MAX_LEN. Check snprintf utility for more
+ * information.
+ */
+int bionet_stream_get_name(const bionet_stream_t *stream,
+			     char * name,
+			     int name_len);
 
 
 
