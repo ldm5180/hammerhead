@@ -230,7 +230,6 @@ int main(int argc, char *argv[]) {
 
         // anything from Bionet?
         if (FD_ISSET(bionet_fd, &readers)) {
-            g_log("", G_LOG_LEVEL_INFO, "servicing Bionet fd");
             hab_read();
         }
 
