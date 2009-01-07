@@ -8,7 +8,6 @@ alsa_hab_SOURCES =               \
     cb-stream-subscription.c     \
     check-alsa-poll.c            \
     close-alsa-device.c          \
-    connect-client.c             \
     disconnect-client.c          \
     discover-alsa-hardware.c     \
     handle-client.c              \
