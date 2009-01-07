@@ -42,7 +42,6 @@
 typedef struct {
     char *device;
     GSList *clients;
-    int socket;
 } user_data_t;
 
 

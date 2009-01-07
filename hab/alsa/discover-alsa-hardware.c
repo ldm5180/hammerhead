@@ -92,16 +92,6 @@ static void try_add_stream(bionet_node_t *node, int card, int device, snd_ctl_t 
     }
 
 
-/*
-    r = bionet_stream_listen(stream);
-    if (r < 0) {
-        printf("error starting Mic stream listening\n");
-        exit(1);
-    }
-
-    ((user_data_t*)(stream->user_data))->socket = r;
-*/
-
     r = bionet_node_add_stream(node, stream);
     if (r < 0) {
         printf("error adding stream to node\n");
@@ -295,6 +285,7 @@ int discover_alsa_hardware(void) {
 
         //
         // add the node to the node-list
+        // FIXME: just use this_hab probably
         //
 
         nodes = g_slist_prepend(nodes, node);
@@ -386,5 +377,4 @@ next_card:
 
     return 0;
 }
-
 
