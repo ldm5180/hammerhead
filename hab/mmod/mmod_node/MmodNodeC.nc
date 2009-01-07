@@ -273,6 +273,7 @@ implementation
 
 	if (TOS_NODE_ID != new_settings->node_id)
 	{
+	    red_led_toggle();
 	    green_led_toggle();
 	    return;
 	}

@@ -26,6 +26,8 @@ void cb_set_resource(bionet_resource_t *resource,
     tmsg_t new_settings;
     bionet_datapoint_t * dp;
     bionet_value_t *val;
+    bionet_resource_t *lr;
+
     new_settings.data = malloc(MMODSETTINGSMSG_SIZE);
     new_settings.len = MMODSETTINGSMSG_SIZE;
 
@@ -59,14 +61,14 @@ void cb_set_resource(bionet_resource_t *resource,
     }
     else
     {
-	resource = bionet_node_get_resource_by_id(node, "SampleInterval");
-	if (NULL == resource)
+	lr = bionet_node_get_resource_by_id(node, "SampleInterval");
+	if (NULL == lr)
 	{
 	    uiVal = 0;
 	}
 	else
 	{
-	    dp = bionet_resource_get_datapoint_by_index(resource, 0);
+	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
 	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
@@ -83,18 +85,18 @@ void cb_set_resource(bionet_resource_t *resource,
     if (0 == strncmp(bionet_resource_get_id(resource), "NumAccelSamples", 
 			  strlen("NumAccelSamples")))
     {
-	bionet_value_get_uint16(val, &uiVal);
+	bionet_value_get_uint16(value, &uiVal);
     }
     else
     {
-	resource = bionet_node_get_resource_by_id(node, "NumAccelSamples");
-	if (NULL == resource)
+	lr = bionet_node_get_resource_by_id(node, "NumAccelSamples");
+	if (NULL == lr)
 	{
 	    uiVal = 0;
 	}
 	else
 	{
-	    dp = bionet_resource_get_datapoint_by_index(resource, 0);
+	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
 	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
@@ -111,18 +113,18 @@ void cb_set_resource(bionet_resource_t *resource,
     if (0 == strncmp(bionet_resource_get_id(resource), "AccelSampleInterval", 
 			  strlen("AccelSampleInterval")))
     {
-	bionet_value_get_uint16(val, &uiVal);
+	bionet_value_get_uint16(value, &uiVal);
     }
     else
     {
-	resource = bionet_node_get_resource_by_id(node, "AccelSampleInterval");
-	if (NULL == resource)
+	lr = bionet_node_get_resource_by_id(node, "AccelSampleInterval");
+	if (NULL == lr)
 	{
 	    uiVal = 0;
 	}
 	else
 	{
-	    dp = bionet_resource_get_datapoint_by_index(resource, 0);
+	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
 	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
@@ -139,18 +141,21 @@ void cb_set_resource(bionet_resource_t *resource,
     if (0 == strncmp(bionet_resource_get_id(resource), "HeartbeatTime", 
 			  strlen("HeartbeatTime")))
     {
-	bionet_value_get_uint16(val, &uiVal);
+	if (bionet_value_get_uint16(value, &uiVal))
+	{
+	    fprintf(stderr, "Failed to get value for HeartbeatTime\n");
+	}
     }
     else
     {
-	resource = bionet_node_get_resource_by_id(node, "HeartbeatTime");
-	if (NULL == resource)
+	lr = bionet_node_get_resource_by_id(node, "HeartbeatTime");
+	if (NULL == lr)
 	{
 	    uiVal = 0;
 	}
 	else
 	{
-	    dp = bionet_resource_get_datapoint_by_index(resource, 0);
+	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
 	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
@@ -190,14 +195,14 @@ void cb_set_resource(bionet_resource_t *resource,
     }
     else
     {
-	resource = bionet_node_get_resource_by_id(node, "AccelAxis");
-	if (NULL == resource)
+	lr = bionet_node_get_resource_by_id(node, "AccelAxis");
+	if (NULL == lr)
 	{
 	    uiVal = ACCEL_FLAG_X;
 	}
 	else
 	{
-	    dp = bionet_resource_get_datapoint_by_index(resource, 0);
+	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
 	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
