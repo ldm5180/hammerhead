@@ -200,27 +200,67 @@ static void libhab_handle_datapoint_subscription_request(const char *peer_name, 
 }
 
 
+
+
 static void libhab_handle_stream_subscription_request(const char *peer_name, const char *topic) {
     char topic_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char topic_stream_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    bionet_node_t *node;
+    bionet_stream_t *stream;
     int r;
+
+
+    // 
+    // sanity checks
+    //
 
     r = bionet_split_nodeid_resourceid_r(topic, topic_node_id, topic_stream_id);
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid stream subscription topic '%s'", peer_name, topic);
         return;
     }
-    if (!bionet_is_valid_name_component_or_wildcard(topic_node_id)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid stream subscription topic '%s'", peer_name, topic);
+
+    if (!bionet_is_valid_name_component(topic_node_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests stream subscription with invalid Node '%s'", peer_name, topic_node_id);
         return;
     }
-    if (!bionet_is_valid_name_component_or_wildcard(topic_stream_id)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid stream subscription topic '%s'", peer_name, topic);
+
+    if (!bionet_is_valid_name_component(topic_stream_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests stream subscription with invalid Stream '%s'", peer_name, topic_stream_id);
         return;
+    }
+
+
+    //
+    // the topic looks syntactically good, see if it matches an existing stream
+    // NOTE: stream subscriptions differ from datapoint subscriptions in that you can only subscribe to existing streams
+    //
+
+    node = bionet_hab_get_node_by_id(libhab_this, topic_node_id);
+    if (node == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests stream subscription with unknown Node '%s'", peer_name, topic_node_id);
+        return;
+    }
+
+    stream = bionet_node_get_stream_by_id(node, topic_stream_id);
+    if (stream == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests stream subscription with unknown Stream %s:%s", peer_name, bionet_node_get_id(node), topic_stream_id);
+        return;
+    }
+
+
+    // 
+    // ok it all looks good, report it to the HAB and accept the subscription
+    //
+
+    if (libhab_callback_stream_subscription != NULL) {
+        libhab_callback_stream_subscription(peer_name, stream);
     }
 
     cal_server.subscribe(peer_name, topic);
 }
+
+
 
 
 static void libhab_handle_node_list_subscription_request(const char *peer_name, const char *topic) {

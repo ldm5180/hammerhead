@@ -137,8 +137,21 @@ void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_
  * The callback function gets a single argument: the unique "id" of the
  * disconnecting Client.
  */
-
 void hab_register_callback_lost_client(void (*cb_lost_client)(const char *client_id));
+
+
+/**
+ * @brief Registers the HAB's Stream-subscription callback function.
+ *
+ * The Hardware Abstractor library will call this callback whenever
+ * a Bionet Client subscribes to a Stream.
+ *
+ * @param cb_stream_subscription  The new callback function.
+ *
+ * The callback function gets two arguments, the Client's unique "id", and
+ * the Stream being subscribed to.
+ */
+void hab_register_callback_stream_subscription(void (*cb_stream_subscription)(const char *client_id, const bionet_stream_t *stream));
 
 
 

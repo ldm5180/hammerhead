@@ -56,7 +56,14 @@ void tv_sub(struct timeval *t0, const struct timeval *t1) {
 
 
 void cb_lost_client(const char *client_id) {
-    printf("lost client '%s'\n", client_id);
+    // FIXME: in the future this will close all the client's Alsa connections
+}
+
+
+
+
+void cb_stream_subscription(const char *client_id, const bionet_stream_t *stream) {
+    printf("client '%s' subscribes to %s:%s\n", client_id, bionet_node_get_id(bionet_stream_get_node(stream)), bionet_stream_get_id(stream));
 }
 
 
@@ -78,6 +85,7 @@ int main(int argc, char *argv[]) {
     //
 
     hab_register_callback_lost_client(cb_lost_client);
+    hab_register_callback_stream_subscription(cb_stream_subscription);
 
     this_hab = bionet_hab_new("Alsa", NULL);
 

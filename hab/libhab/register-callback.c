@@ -17,3 +17,8 @@ void hab_register_callback_lost_client(void (*cb_lost_client)(const char *client
     libhab_callback_lost_client = cb_lost_client;
 }
 
+
+void hab_register_callback_stream_subscription(void (*cb_stream_subscription)(const char *client_id, const bionet_stream_t *stream)) {
+    libhab_callback_stream_subscription = cb_stream_subscription;
+}
+
