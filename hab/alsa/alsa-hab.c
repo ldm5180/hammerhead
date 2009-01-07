@@ -28,7 +28,7 @@ bionet_hab_t *this_hab = NULL;
 
 
 // like memcmp, but for timevals
-int tv_cmp(const struct timeval *t0, const struct timeval *t1) {
+static int tv_cmp(const struct timeval *t0, const struct timeval *t1) {
     if (t0->tv_sec < t1->tv_sec) return -1;
     if (t0->tv_sec > t1->tv_sec) return 1;
     if (t0->tv_usec < t1->tv_usec) return -1;
@@ -38,7 +38,7 @@ int tv_cmp(const struct timeval *t0, const struct timeval *t1) {
 
 
 // t0 -= t1, but min is { 0, 0 }
-void tv_sub(struct timeval *t0, const struct timeval *t1) {
+static void tv_sub(struct timeval *t0, const struct timeval *t1) {
     if (tv_cmp(t0, t1) <= 0) {
         t0->tv_sec = 0;
         t0->tv_usec = 0;
