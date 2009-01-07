@@ -151,24 +151,6 @@ int main(int argc, char *argv[]) {
         max_fd = bionet_fd;
 
 #if 0
-        // anyone new connecting to the streams?
-        {
-            GSList *ni;
-
-            for (ni = nodes; ni != NULL; ni = ni->next) {
-                bionet_node_t *node = ni->data;
-                GSList *si;
-
-                for (si = node->streams; si != NULL; si = si->next) {
-                    bionet_stream_t *stream = si->data;
-                    int socket = ((user_data_t*)(stream->user_data))->socket;
-
-                    FD_SET(socket, &readers);
-                    max_fd = Max(max_fd, socket);
-                }
-            }
-        }
-
         // any of the connected streams want attention?
         {
             GSList *ni;
@@ -254,35 +236,6 @@ int main(int argc, char *argv[]) {
                         }
                     }
                 }
-            }
-        }
-
-
-        //
-        // anyone new connecting to the streams?
-        //
-        {
-            GSList *ni;
-            int got_a_new_client = 0;
-
-            for (ni = nodes; ni != NULL; ni = ni->next) {
-                bionet_node_t *node = ni->data;
-                GSList *si;
-
-                for (si = node->streams; si != NULL; si = si->next) {
-                    bionet_stream_t *stream = si->data;
-                    int socket = ((user_data_t*)(stream->user_data))->socket;
-
-                    if (FD_ISSET(socket, &readers)) {
-                        g_message("client connecting to %s:%s", node->id, stream->id);
-                        connect_client(stream);
-                        got_a_new_client = 1;
-                    }
-                }
-            }
-
-            if (got_a_new_client) {
-                continue;
             }
         }
 #endif
