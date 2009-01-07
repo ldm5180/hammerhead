@@ -454,6 +454,38 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     }
     else
     {
+	if (ACCEL_FLAG_X & flags)
+	{
+	    if (MMODGENMSG_accel_x_get(&t) >= 20)
+	    {
+		struct timeval tmp_tv = tv;
+		bionet_value_t * value;
+		float content;
+		tmp_tv.tv_sec--;
+		resource = bionet_node_get_resource_by_id(node, "Accel-X");
+		value = bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0));
+		bionet_value_get_float(value, &content);
+		bionet_resource_set_float(resource, 
+					  mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
+							    X_AXIS,
+							    content),
+					  &tmp_tv);
+	    }
+	 
+	    if (MMODGENMSG_accel_x_get(&t) >= 20)
+	    {
+		struct timeval tmp_tv = tv;
+		bionet_value_t * value;
+		uint16_t content;
+		tmp_tv.tv_sec--;
+		resource = bionet_node_get_resource_by_id(node, "RawAccel-X");
+		value = bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0));
+		bionet_value_get_uint16(value, &content);
+		bionet_resource_set_uint16(resource, content, &tmp_tv);
+	    }
+
+	    hab_report_datapoints(node);
+	}
 	/* the node already exists, so just update the resource values */
 	resource = bionet_node_get_resource_by_id(node, "Voltage");
 	mv = mts310_cook_voltage(MMODGENMSG_volt_get(&t));

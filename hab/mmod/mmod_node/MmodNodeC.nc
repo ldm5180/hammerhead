@@ -45,7 +45,6 @@ module MmodNodeC
     {
 	interface Timer<TMilli> as AccelCheck;
 	interface Timer<TMilli> as SettingsCheck;
-	interface Timer<TMilli> as GeneralCheck;
 	interface Read<uint16_t> as Light;
 	interface Read<uint16_t> as Voltage;
 	interface Read<uint16_t> as Temperature;
@@ -105,6 +104,11 @@ implementation
     bool ay_busy = FALSE; /* accel-y buffer */
     bool sm_busy = FALSE; /* settings message */
     bool tgm_busy = FALSE; /* temp general message */
+    bool sent_general = FALSE;
+    bool is_recording = FALSE;
+    bool just_sent = FALSE;
+
+    uint16_t count_below_thres = 0;
 
     /* number of samples taken this round */
     uint16_t num_x_samples;
@@ -131,9 +135,73 @@ implementation
     }
 
 
+    void send_general_msg()
+    {
+	mmod_general_msg_t* general_msg;
+
+
+	gm_busy = TRUE;
+	hb_sec = 0; /* reset the heartbeat second counter */
+	yellow_led_toggle();
+
+	general_msg = 
+	    call GeneralRoot.getPayload(&general_msgbuf,
+					sizeof(mmod_general_msg_t));
+
+	tgm_busy = TRUE;
+	general_msg->node_id = TOS_NODE_ID;
+	general_msg->volt = tmp_general_msg.volt;
+	general_msg->temp = tmp_general_msg.temp;
+
+	if (ACCEL_FLAG_X & settings.accel_flags)
+	{
+	    general_msg->accel_x = tmp_general_msg.accel_x;
+	    tmp_general_msg.accel_x = 0; /* reset me */
+	}
+	else
+	{
+	    tmp_general_msg.accel_x++;
+	    general_msg->accel_x = tmp_general_msg.accel_x;
+	}
+
+	if ((ACCEL_FLAG_X & settings.accel_flags)
+	    && (0 == (ACCEL_FLAG_Y & settings.accel_flags)))
+	{
+	    tmp_general_msg.accel_y++;
+	    general_msg->accel_y = tmp_general_msg.accel_y;
+	}
+	else
+	{
+	    general_msg->accel_y = tmp_general_msg.accel_y;
+	    tmp_general_msg.accel_y = 0;
+	}
+	general_msg->photo = tmp_general_msg.photo;
+	general_msg->accel_flags = settings.accel_flags;
+	tgm_busy = FALSE;
+
+	call GeneralRoot.send(&general_msgbuf, sizeof(*general_msg));
+	call Leds.led1Off();
+    }
+
+
+
     event void SettingsRoot.sendDone(message_t *msg, error_t ok)
     {
+	mmod_settings_msg_t *settings_msg;
+
 	sm_busy = FALSE;
+	if (FALSE == sent_general)
+	{
+	    send_general_msg();
+	    sent_general = TRUE;
+	    
+	    sm_busy = TRUE;
+	    settings_msg = 
+		call SettingsRoot.getPayload(&settings_msgbuf,
+					    sizeof(mmod_settings_msg_t));
+	    *settings_msg = settings;
+	    call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
+	}
     }
 
    
@@ -176,8 +244,14 @@ implementation
 					    sizeof(mmod_settings_msg_t));
 	    *settings_msg = settings;
 	    call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
-	    call SettingsCheck.startPeriodic(5123);
-	    call GeneralCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
+	    if (settings.heartbeat_time <= 10)
+	    {
+		call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
+	    }
+	    else
+	    {
+		call SettingsCheck.startPeriodic((settings.heartbeat_time - 5) * 1000);
+	    }
 	}
 	else
 	{
@@ -225,14 +299,20 @@ implementation
 	}
 	settings.accel_flags = new_settings->accel_flags;
 
-	/* ensure the sample period timer is correct */
+	if (settings.heartbeat_time <= 10)
+	{
+	    call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
+	}
+	else
+	{
+	    call SettingsCheck.startPeriodic((settings.heartbeat_time - 5) * 1000);
+	}
+
+        /* ensure the sample period timer is correct */
 	num_periods_per_sec = 
 	    (uint32_t)MSEC_PER_SEC / (nx_uint32_t)settings.sample_interval;
 	call AccelCheck.startPeriodic(settings.sample_interval);
 
-	/* ensure the heartbeat general timer period is correct */
-	call GeneralCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
-	
 	/* send out a settings message to let the HAB know that the changes
 	 * have been implemented */
 	if (!sm_busy)
@@ -267,54 +347,6 @@ implementation
 	call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));	
     } /* SettingsCheck.fired() */
 
-
-    event void GeneralCheck.fired()
-    {
-	mmod_general_msg_t* general_msg;
-
-
-	gm_busy = TRUE;
-	hb_sec = 0; /* reset the heartbeat second counter */
-	yellow_led_toggle();
-
-	general_msg = 
-	    call GeneralRoot.getPayload(&general_msgbuf,
-					sizeof(mmod_general_msg_t));
-
-	tgm_busy = TRUE;
-	general_msg->node_id = TOS_NODE_ID;
-	general_msg->volt = tmp_general_msg.volt;
-	general_msg->temp = tmp_general_msg.temp;
-
-	if (ACCEL_FLAG_X & settings.accel_flags)
-	{
-	    general_msg->accel_x = tmp_general_msg.accel_x;
-	    tmp_general_msg.accel_x = 0; /* reset me */
-	}
-	else
-	{
-	    tmp_general_msg.accel_x++;
-	    general_msg->accel_x = tmp_general_msg.accel_x;
-	}
-
-	if ((ACCEL_FLAG_X & settings.accel_flags)
-	    && (0 == (ACCEL_FLAG_Y & settings.accel_flags)))
-	{
-	    tmp_general_msg.accel_y++;
-	    general_msg->accel_y = tmp_general_msg.accel_y;
-	}
-	else
-	{
-	    general_msg->accel_y = tmp_general_msg.accel_y;
-	    tmp_general_msg.accel_y = 0;
-	}
-	general_msg->photo = tmp_general_msg.photo;
-	general_msg->accel_flags = settings.accel_flags;
-	tgm_busy = FALSE;
-
-	call GeneralRoot.send(&general_msgbuf, sizeof(*general_msg));
-	call Leds.led1Off();
-    }
 
     /* every time the timer fires, check accel, check if other items need to
      * be checked and do it if needed. see if a new message needs to be sent
@@ -469,24 +501,44 @@ implementation
 	    return;
 	}
 
-	
-	/* update general_msg regardless so it gets sent in next heartbeat */
-	if (!tgm_busy)
+	if (cur_accel_avg_x > avg)
 	{
-	    if (cur_accel_avg_x > avg)
-	    {
-		tmp = cur_accel_avg_x - avg;
-	    }
-	    else
-	    {
-		tmp = avg - cur_accel_avg_x;
-	    }
-	    
+	    tmp = cur_accel_avg_x - avg;
+	}
+	else
+	{
+	    tmp = avg - cur_accel_avg_x;
+	}
+	
+	if ((just_sent) && (tmp <= 4))
+	{
+	    just_sent = FALSE;
+	    tmp_general_msg.accel_x = tmp;
+	    send_general_msg();
+	}
+	
+	if (!tgm_busy) /* update general_msg regardless so it gets sent in next heartbeat */
+	{
 	    /* only report the highest over the time period, this is reset 
              * when a message is sent */
-	    if (tmp_general_msg.accel_x < tmp)
+	    if ((tmp_general_msg.accel_x < tmp) && (tmp > DEFAULT_ACCEL_THRESHOLD))
 	    {
 		tmp_general_msg.accel_x = tmp;
+		is_recording = TRUE;
+	    }
+	    else if (!is_recording)
+	    {
+		tmp_general_msg.accel_x = 0;
+	    }
+	    if ((is_recording) && (tmp < DEFAULT_ACCEL_THRESHOLD))
+	    {
+		if (++count_below_thres > 10)
+		{
+		    send_general_msg();
+		    count_below_thres = 0;
+		    is_recording = FALSE;
+		    just_sent = TRUE;
+		}
 	    }
 	}
 	else
