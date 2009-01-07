@@ -5,6 +5,7 @@ bin_PROGRAMS = alsa-hab
 
 alsa_hab_SOURCES =               \
     alsa-hab.c                   \
+    cb-stream-subscription.c     \
     check-alsa-poll.c            \
     close-alsa-device.c          \
     connect-client.c             \

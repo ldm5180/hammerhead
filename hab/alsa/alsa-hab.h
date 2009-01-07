@@ -136,6 +136,8 @@ void connect_client(bionet_stream_t *stream);
 int handle_client(bionet_stream_t *stream, client_t *client);
 void disconnect_client(bionet_stream_t *stream, client_t *client);
 
+void cb_stream_subscription(const char *client_id, const bionet_stream_t *stream);
+
 
 
 

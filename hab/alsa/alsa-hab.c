@@ -62,13 +62,6 @@ void cb_lost_client(const char *client_id) {
 
 
 
-void cb_stream_subscription(const char *client_id, const bionet_stream_t *stream) {
-    printf("client '%s' subscribes to %s:%s\n", client_id, bionet_node_get_id(bionet_stream_get_node(stream)), bionet_stream_get_id(stream));
-}
-
-
-
-
 int main(int argc, char *argv[]) {
     int r;
 
