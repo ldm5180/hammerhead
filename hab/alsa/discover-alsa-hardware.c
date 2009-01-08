@@ -136,12 +136,11 @@ int discover_alsa_hardware(void) {
     //
 
     {
-        GSList *ni;
+        int ni;
 
-        for (ni = nodes; ni != NULL; ni = ni->next) {
-            bionet_node_t *node = ni->data;
+        for (ni = 0; ni < bionet_hab_get_num_nodes(this_hab); ni++) {
+            bionet_node_t *node = bionet_hab_get_node_by_index(this_hab, ni);
             node_user_data_t *node_user_data = bionet_node_get_user_data(node);
-
             node_user_data->hardware_is_still_there = 0;
         }
     }
@@ -194,10 +193,10 @@ int discover_alsa_hardware(void) {
         //
 
         {
-            GSList *ni;
+            int ni;
 
-            for (ni = nodes; ni != NULL; ni = ni->next) {
-                bionet_node_t *node = ni->data;
+            for (ni = 0; ni < bionet_hab_get_num_nodes(this_hab); ni++) {
+                bionet_node_t *node = bionet_hab_get_node_by_index(this_hab, ni);
                 node_user_data_t *node_user_data = bionet_node_get_user_data(node);
 
                 if (strcmp(id, bionet_node_get_id(node)) == 0) {
@@ -227,10 +226,9 @@ int discover_alsa_hardware(void) {
             printf("error making user_data storage for new node\n");
             exit(1);
         }
+        node_user_data->hardware_is_still_there = 1;
 
         bionet_node_set_user_data(node, node_user_data);
-
-        node_user_data->hardware_is_still_there = 1;
 
 
         // for now we just do device 0
@@ -288,14 +286,6 @@ int discover_alsa_hardware(void) {
         snd_ctl_close(handle);
 
 
-        //
-        // add the node to the node-list
-        // FIXME: just use this_hab probably
-        //
-
-        nodes = g_slist_prepend(nodes, node);
-
-
         // 
         // print a blurb about the new node
         //
@@ -339,8 +329,8 @@ next_card:
     {
         int i;
 
-        for (i = 0; i < g_slist_length(nodes); i ++) {
-            bionet_node_t *node = g_slist_nth_data(nodes, i);
+        for (i = 0; i < bionet_hab_get_num_nodes(this_hab); i ++) {
+            bionet_node_t *node = bionet_hab_get_node_by_index(this_hab, i);
             node_user_data_t *node_user_data = bionet_node_get_user_data(node);
             int j;
 
@@ -350,6 +340,7 @@ next_card:
 
             // this node has been lost
             printf("lost node %s\n", bionet_node_get_id(node));
+            bionet_hab_remove_node_by_id(this_hab, bionet_node_get_id(node));
             hab_report_lost_node(bionet_node_get_id(node));
 
             free(node_user_data);
@@ -364,7 +355,6 @@ next_card:
 
                 while (user_data->clients != NULL) {
                     client_t *client = g_slist_nth_data(user_data->clients, 0);
-
                     disconnect_client(stream, client);
                 }
 
@@ -372,10 +362,9 @@ next_card:
                 bionet_stream_set_user_data(stream, NULL);
             }
 
-            nodes = g_slist_remove(nodes, node);
-            i --;
-
             bionet_node_free(node);
+
+            i --;
         }
     }
 

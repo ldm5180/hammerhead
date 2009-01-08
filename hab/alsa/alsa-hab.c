@@ -16,7 +16,6 @@
 
 
 
-GSList *nodes = NULL;
 bionet_hab_t *this_hab = NULL;
 
 

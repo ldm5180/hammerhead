@@ -93,12 +93,12 @@ static void show_clients(user_data_t *user_data) {
 
 
 void show_state(void) {
-    GSList *ni;
+    int ni;
 
     g_log("", G_LOG_LEVEL_INFO, "internal state:");
 
-    for (ni = nodes; ni != NULL; ni = ni->next) {
-        bionet_node_t *node = ni->data;
+    for (ni = 0; ni < bionet_hab_get_num_nodes(this_hab); ni++) {
+        bionet_node_t *node = bionet_hab_get_node_by_index(this_hab, ni);
         int si;
 
         g_message("    %s", bionet_node_get_id(node));

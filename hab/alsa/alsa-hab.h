@@ -104,14 +104,6 @@ typedef struct {
 
 
 
-//
-// The list of the Alsa-HAB's Nodes.
-// There is one Node per device (soundcard).
-//
-
-extern GSList *nodes;
-
-
 // 
 // this hab
 //
