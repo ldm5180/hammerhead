@@ -50,7 +50,7 @@ if (0 > bionet_fd):
 #test mode. open the output file and sleep to let subscribers catch up
 if (options.test):
     f = open(options.test, "w")
-    time.sleep(5)
+    time.sleep(10)
     loops = 0
 else:
     f = None;
