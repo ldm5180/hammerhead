@@ -16,7 +16,7 @@
 
 
 const char *bionet_resource_get_name(bionet_resource_t * resource) {
-    char buf[3 * BIONET_NAME_COMPONENT_MAX_LEN];
+    char buf[4 * BIONET_NAME_COMPONENT_MAX_LEN];
     int r;
 
     if (resource == NULL) {
