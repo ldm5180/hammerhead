@@ -13,6 +13,8 @@ struct bionet_hab_opaque_t {
     char *type;
     char *id;
 
+    char *name;
+
     GSList *nodes;
 
     void *user_data;

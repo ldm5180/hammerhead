@@ -37,7 +37,7 @@
 
 
 int hab_connect(bionet_hab_t *hab) {
-    char cal_name[BIONET_NAME_COMPONENT_MAX_LEN * 2];
+    const char *cal_name;
 
 
     // 
@@ -64,11 +64,17 @@ int hab_connect(bionet_hab_t *hab) {
     // record this hab
     libhab_this = hab;
 
-    sprintf(cal_name, "%s.%s", bionet_hab_get_type(libhab_this), bionet_hab_get_id(libhab_this));
+    cal_name = bionet_hab_get_name(libhab_this);
+    if (cal_name == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): error getting HAB name");
+        libhab_this = NULL;
+        return -1;
+    }
 
     libhab_cal_fd = cal_server.init("bionet", cal_name, libhab_cal_callback, libhab_cal_topic_matches);
     if (libhab_cal_fd == -1) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): error initializing CAL");
+        libhab_this = NULL;
         return -1;
     }
 

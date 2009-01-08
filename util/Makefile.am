@@ -14,6 +14,7 @@ libbionet_util_la_SOURCES =    \
     hab-new.c                  \
     hab-free.c                 \
     hab-get-node.c             \
+    hab-name.c                 \
     node-new.c                 \
     node-add-resource.c        \
     node-get-resource.c        \

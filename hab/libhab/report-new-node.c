@@ -36,11 +36,10 @@ int hab_report_new_node(const bionet_node_t *node) {
 		  "hab_report_new_node(): passed-in Node does not belong to a HAB.");
 	} else {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "hab_report_new_node(): passed-in Node does not belong to this HAB (it belongs to %s.%s, this hab is %s.%s)",
-		  bionet_hab_get_type(hab),
-		  bionet_hab_get_id(hab),
-		  bionet_hab_get_type(libhab_this),
-		  bionet_hab_get_id(libhab_this));
+		  "hab_report_new_node(): passed-in Node does not belong to this HAB (it belongs to %s, this hab is %s)",
+		  bionet_hab_get_name(hab),
+		  bionet_hab_get_name(libhab_this)
+            );
 	}
         goto fail0;
     }

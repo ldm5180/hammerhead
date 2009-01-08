@@ -22,7 +22,6 @@ static int bionet_hab_set_id(bionet_hab_t *hab, const char *id);
 
 
 const char * bionet_hab_get_type(const bionet_hab_t *hab) {
-
     if (hab == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_hab_get_type(): NULL HAB passed in!");
@@ -34,7 +33,6 @@ const char * bionet_hab_get_type(const bionet_hab_t *hab) {
 
 
 const char * bionet_hab_get_id(const bionet_hab_t *hab) {
-
     if (hab == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_hab_get_type(): NULL HAB passed in!");
@@ -234,25 +232,6 @@ static char *hab_get_program_name(void) {
     return "a-windows-program";
 #endif
 }
-
-
-int bionet_hab_get_name(const bionet_hab_t * hab,
-			char * name,
-			int name_len)
-{
-    if (NULL == hab)
-    {
-	errno = EINVAL;
-	g_log(
-            BIONET_LOG_DOMAIN,
-            G_LOG_LEVEL_WARNING,
-            "bionet_hab_get_name(): NULL hab passed in");
-	return -1;
-    }
-
-    return snprintf(name, name_len, "%s.%s", hab->type, hab->id);
-} /* bionet_hab_get_name() */
-
 
 // Emacs cruft
 // Local Variables:

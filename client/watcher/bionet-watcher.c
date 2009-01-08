@@ -33,7 +33,7 @@ void signal_handler(int signo) {
         int ni;
         bionet_hab_t *hab = bionet_cache_get_hab_by_index(hi);
 
-        g_log("", G_LOG_LEVEL_INFO, "    %s.%s", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
+        g_log("", G_LOG_LEVEL_INFO, "    %s", bionet_hab_get_name(hab));
 
         for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
             int i;
@@ -101,9 +101,8 @@ void cb_datapoint(bionet_datapoint_t *datapoint) {
     g_log(
         "",
         G_LOG_LEVEL_INFO,
-        "%s.%s.%s:%s = %s %s %s @ %s",
-        bionet_hab_get_type(hab),
-        bionet_hab_get_id(hab),
+        "%s.%s:%s = %s %s %s @ %s",
+        bionet_hab_get_name(hab),
         bionet_node_get_id(node),
         bionet_resource_get_id(resource),
         bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
@@ -118,9 +117,8 @@ void cb_datapoint(bionet_datapoint_t *datapoint) {
 
 void cb_lost_node(bionet_node_t *node) {
     bionet_hab_t *hab = bionet_node_get_hab(node);
-    g_log("", G_LOG_LEVEL_INFO, "lost node: %s.%s.%s", 
-	  bionet_hab_get_type(hab), 
-	  bionet_hab_get_id(hab), 
+    g_log("", G_LOG_LEVEL_INFO, "lost node: %s.%s", 
+	  bionet_hab_get_name(hab), 
 	  bionet_node_get_id(node));
 }
 
@@ -129,8 +127,8 @@ void cb_new_node(bionet_node_t *node) {
     int i;
     bionet_hab_t *hab = bionet_node_get_hab(node);
 
-    g_log("", G_LOG_LEVEL_INFO, "new node: %s.%s.%s", 
-	  bionet_hab_get_type(hab), bionet_hab_get_id(hab), bionet_node_get_id(node));
+    g_log("", G_LOG_LEVEL_INFO, "new node: %s.%s", 
+	  bionet_hab_get_name(hab), bionet_node_get_id(node));
 
     if (bionet_node_get_num_resources(node)) {
         g_log("", G_LOG_LEVEL_INFO, "    Resources:");
@@ -179,12 +177,12 @@ void cb_new_node(bionet_node_t *node) {
 
 
 void cb_lost_hab(bionet_hab_t *hab) {
-    g_log("", G_LOG_LEVEL_INFO, "lost hab: %s.%s", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
+    g_log("", G_LOG_LEVEL_INFO, "lost hab: %s", bionet_hab_get_name(hab));
 }
 
 
 void cb_new_hab(bionet_hab_t *hab) {
-    g_log("", G_LOG_LEVEL_INFO, "new hab: %s.%s", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
+    g_log("", G_LOG_LEVEL_INFO, "new hab: %s", bionet_hab_get_name(hab));
 }
 
 

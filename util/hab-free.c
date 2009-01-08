@@ -30,6 +30,10 @@ void bionet_hab_free(bionet_hab_t *hab) {
         free(hab->id);
     }
 
+    if (hab->name != NULL) {
+        free(hab->name);
+    }
+
     bionet_hab_remove_all_nodes(hab);
 
     free(hab);

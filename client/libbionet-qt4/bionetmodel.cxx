@@ -37,11 +37,10 @@ QString BionetModel::getID(const QModelIndex &index) const {
 
 void BionetModel::newHab(bionet_hab_t *hab) {
     QStandardItem *item = NULL;
-    char hab_name[HABNAMELENGTH];
-    int r;
+    const char *hab_name;
 
-    r = bionet_hab_get_name(hab, hab_name, HABNAMELENGTH);
-    if (r < 0) {
+    hab_name = bionet_hab_get_name(hab);
+    if (hab_name == NULL) {
         qWarning() << "newHab(): unable to create hab name";
         return;
     }
@@ -62,11 +61,10 @@ void BionetModel::newHab(bionet_hab_t *hab) {
 void BionetModel::lostHab(bionet_hab_t* hab) {
     QStandardItem* habItem;
     QList<QStandardItem*> habList, rowList;
-    char hab_name[HABNAMELENGTH];
-    int r;
+    const char *hab_name;
 
-    r = bionet_hab_get_name(hab, hab_name, HABNAMELENGTH);
-    if (r < 0) {
+    hab_name = bionet_hab_get_name(hab);
+    if (hab_name == NULL) {
         qWarning() << "lostHab(): unable to create hab name";
         return;
     }
@@ -88,12 +86,13 @@ void BionetModel::lostHab(bionet_hab_t* hab) {
 
 void BionetModel::newNode(bionet_node_t* node) {
     QStandardItem *habItem, *nodeItem;
-    const bionet_hab_t *hab = bionet_node_get_hab(node);
-    char hab_name[HABNAMELENGTH], node_name[NODENAMELENGTH];
+    bionet_hab_t *hab = bionet_node_get_hab(node);
+    const char *hab_name;
+    char node_name[NODENAMELENGTH];
     int r;
 
-    r = bionet_hab_get_name(hab, hab_name, HABNAMELENGTH);
-    if (r < 0) {
+    hab_name = bionet_hab_get_name(hab);
+    if (hab_name == NULL) {
         qWarning() << "newNode(): unable to create hab name";
         return;
     }
