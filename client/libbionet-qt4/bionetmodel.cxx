@@ -88,7 +88,7 @@ void BionetModel::newNode(bionet_node_t* node) {
     QStandardItem *habItem, *nodeItem;
     bionet_hab_t *hab = bionet_node_get_hab(node);
     const char *hab_name;
-    char node_name[NODENAMELENGTH];
+    const char *node_name;
     int r;
 
     hab_name = bionet_hab_get_name(hab);
@@ -96,8 +96,8 @@ void BionetModel::newNode(bionet_node_t* node) {
         qWarning() << "newNode(): unable to create hab name";
         return;
     }
-    r = bionet_node_get_name(node, node_name, NODENAMELENGTH);
-    if (r < 0) {
+    node_name = bionet_node_get_name(node);
+    if (node_name == NULL) {
         qWarning() << "newNode(): unable to create node name";
         return;
     }
@@ -189,11 +189,11 @@ void BionetModel::newNode(bionet_node_t* node) {
 
 
 void BionetModel::lostNode(bionet_node_t* node) {
-    char node_name[NODENAMELENGTH];
+    const char *node_name;
     int r;
 
-    r = bionet_node_get_name(node, node_name, RESOURCENAMELENGTH);
-    if (r < 0) {
+    node_name = bionet_node_get_name(node);
+    if (node_name == NULL) {
         qWarning() << "lostNode(): unable to create resource name";
         return;
     }

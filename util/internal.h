@@ -26,6 +26,8 @@ struct bionet_node_opaque_t {
 
     char *id;
 
+    char *name;
+
     GSList *resources;
     GSList *streams;
 

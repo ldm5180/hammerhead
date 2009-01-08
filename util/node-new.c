@@ -79,22 +79,6 @@ bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node)
 } /* bionet_node_get_hab() */
 
 
-int bionet_node_get_name(const bionet_node_t * node,
-			 char * name,
-			 int name_len)
-{
-    if ((NULL == node) || (NULL == node->hab))
-    {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_get_name(): NULL node or hab passed in");
-	errno = EINVAL;
-	return -1;	
-    }
-
-    return snprintf(name, name_len, "%s.%s.%s", 
-		    node->hab->type, node->hab->id, node->id);
-} /* bionet_node_get_name() */
-
-
 // Emacs cruft
 // Local Variables:
 // mode: C

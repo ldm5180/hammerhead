@@ -40,20 +40,10 @@ bionet_node_t* bionet_node_new(bionet_hab_t *hab, const char* node_id);
  * Node name is of the format <HAB-Type>.<HAB-ID>.<Node-ID>
  *
  * @param[in] node The Node
- * @param[out] name Pointer to the buffer the name shall be written into
- * @param[in] name_len Length of the buffer pointed to by name
  *
- * @return Number of characters which would have been written to the buffer not 
- * including the terinating NULL 
- * @return -1 Error
- *
- * @note If the return value is greater than or equal to name_len the name has
- * been truncated. Suggested size for the buffer is 
- * 3*BIONET_NAME_COMPONENT_MAX_LEN. Check snprintf utility for more information.
+ * @return The Node name, or NULL on error.
  */
-int bionet_node_get_name(const bionet_node_t * node,
-			 char * name,
-			 int name_len);
+const char *bionet_node_get_name(bionet_node_t * node);
 
 
 /**

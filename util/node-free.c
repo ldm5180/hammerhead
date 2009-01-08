@@ -26,6 +26,10 @@ void bionet_node_free(bionet_node_t *node) {
         free(node->id);
     }
 
+    if (node->name != NULL) {
+        free(node->name);
+    }
+
 
     // free all the resources
     while (node->resources != NULL) {

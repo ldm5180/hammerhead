@@ -23,6 +23,7 @@ libbionet_util_la_SOURCES =    \
     node-matches.c             \
     node-free.c                \
     node-user-data.c           \
+    node-name.c                \
     resource-new.c             \
     resource-free.c            \
     resource-get.c             \

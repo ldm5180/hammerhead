@@ -94,16 +94,14 @@ void cb_datapoint(bionet_datapoint_t *datapoint) {
     bionet_value_t * value = bionet_datapoint_get_value(datapoint);
     bionet_resource_t * resource = bionet_value_get_resource(value);
     bionet_node_t * node = bionet_resource_get_node(resource);
-    bionet_hab_t * hab = bionet_node_get_hab(node);
 
     char * value_str = bionet_value_to_str(value);
 
     g_log(
         "",
         G_LOG_LEVEL_INFO,
-        "%s.%s:%s = %s %s %s @ %s",
-        bionet_hab_get_name(hab),
-        bionet_node_get_id(node),
+        "%s:%s = %s %s %s @ %s",
+        bionet_node_get_name(node),
         bionet_resource_get_id(resource),
         bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
         bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
@@ -116,19 +114,14 @@ void cb_datapoint(bionet_datapoint_t *datapoint) {
 
 
 void cb_lost_node(bionet_node_t *node) {
-    bionet_hab_t *hab = bionet_node_get_hab(node);
-    g_log("", G_LOG_LEVEL_INFO, "lost node: %s.%s", 
-	  bionet_hab_get_name(hab), 
-	  bionet_node_get_id(node));
+    g_log("", G_LOG_LEVEL_INFO, "lost node: %s", bionet_node_get_name(node));
 }
 
 
 void cb_new_node(bionet_node_t *node) {
     int i;
-    bionet_hab_t *hab = bionet_node_get_hab(node);
 
-    g_log("", G_LOG_LEVEL_INFO, "new node: %s.%s", 
-	  bionet_hab_get_name(hab), bionet_node_get_id(node));
+    g_log("", G_LOG_LEVEL_INFO, "new node: %s", bionet_node_get_name(node));
 
     if (bionet_node_get_num_resources(node)) {
         g_log("", G_LOG_LEVEL_INFO, "    Resources:");
