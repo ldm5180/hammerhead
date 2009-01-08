@@ -14,9 +14,8 @@ void disconnect_client(bionet_stream_t *stream, client_t *client) {
 
 
     g_message(
-        "client on %s:%s (socket %d) disconnects",
-        bionet_node_get_id(bionet_stream_get_node(stream)),
-        bionet_stream_get_id(stream),
+        "client on %s (socket %d) disconnects",
+        bionet_stream_get_local_name(stream),
         client->socket
     );
 

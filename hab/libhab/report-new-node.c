@@ -72,14 +72,11 @@ int hab_report_new_node(const bionet_node_t *node) {
 
     {
         int ri;
-        char resource_topic[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 2];
 
         for (ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
             bionet_resource_t *resource = bionet_node_get_resource_by_index(node, ri);
             int r;
 
-            sprintf(resource_topic, "%s:%s", 
-		    bionet_node_get_id(node), bionet_resource_get_id(resource));
             r = bionet_resource_metadata_to_asnbuf(resource, &buf);
             if (r != 0) {
                 // an error has already been logged, and the buffer has been freed
@@ -87,7 +84,7 @@ int hab_report_new_node(const bionet_node_t *node) {
             }
 
             // publish the message to any connected subscribers
-            cal_server.publish(resource_topic, buf.buf, buf.size);
+            cal_server.publish(bionet_resource_get_local_name(resource), buf.buf, buf.size);
 
             // FIXME: cal_server.publish should take the buf
             free(buf.buf);
@@ -100,7 +97,7 @@ int hab_report_new_node(const bionet_node_t *node) {
             bionet_resource_make_clean(resource);
 
             // publish the message to any connected subscribers
-            cal_server.publish(resource_topic, buf.buf, buf.size);
+            cal_server.publish(bionet_resource_get_local_name(resource), buf.buf, buf.size);
 
             // FIXME: cal_server.publish should take the buf
             free(buf.buf);

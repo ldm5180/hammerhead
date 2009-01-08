@@ -25,9 +25,8 @@
 
 void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value) {
     printf(
-        "callback: should set %s:%s to '%s'\n",
-	bionet_node_get_id(bionet_resource_get_node(resource)),
-        bionet_resource_get_id(resource),
+        "callback: should set %s to '%s'\n",
+        bionet_resource_get_local_name(resource),
         bionet_value_to_str(value)
     );
 }

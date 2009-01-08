@@ -103,14 +103,13 @@ static void libhab_set_resource(const char *peer_name, SetResourceValue_t *set_r
                 g_log(
                     BIONET_LOG_DOMAIN,
                     G_LOG_LEVEL_WARNING,
-                    "set-resource request from '%s' %s:%s = '%s' cannot parse value to data type %s of %s:%s",
+                    "set-resource request from '%s' %s:%s = '%s' cannot parse value to data type %s of %s",
                     peer_name,
                     (char *)set_resource_value->nodeId.buf,
                     (char *)set_resource_value->resourceId.buf,
                     (char *)set_resource_value->value.buf,
                     bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-		    bionet_node_get_id(node),
-		    bionet_resource_get_id(resource)
+		    bionet_resource_get_local_name(resource)
                 );
                 continue;
             }

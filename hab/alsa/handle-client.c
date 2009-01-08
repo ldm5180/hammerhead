@@ -66,7 +66,7 @@ int handle_producer_client(bionet_stream_t *stream, client_t *client) {
     r = pcm_read(client->alsa);
     if (r < 0) {
         // FIXME
-        printf("read error on stream %s\n", bionet_stream_get_id(stream));
+        printf("read error on stream %s\n", bionet_stream_get_local_name(stream));
         disconnect_client(stream, client);
         return 1;
     }
@@ -76,11 +76,11 @@ int handle_producer_client(bionet_stream_t *stream, client_t *client) {
 
     r = write(client->socket, client->alsa->audio_buffer, bytes);
     if (r < 0) {
-        printf("error writing stream %s to consumer: %s\n", bionet_stream_get_id(stream), strerror(errno));
+        printf("error writing stream %s to consumer: %s\n", bionet_stream_get_local_name(stream), strerror(errno));
         disconnect_client(stream, client);
         return 1;
     } else if (r < bytes) {
-        printf("short write to stream %s consumer", bionet_stream_get_id(stream));
+        printf("short write to stream %s consumer", bionet_stream_get_local_name(stream));
         disconnect_client(stream, client);
         return 1;
     }
@@ -114,12 +114,11 @@ int handle_consumer_client(bionet_stream_t *stream, client_t *client) {
             client->waiting = WAITING_FOR_CLIENT;
             return 0;
         }
-        printf("error reading from producer for stream %s: %s\n", bionet_stream_get_id(stream), strerror(errno));
+        printf("error reading from producer for stream %s: %s\n", bionet_stream_get_local_name(stream), strerror(errno));
         disconnect_client(stream, client);
         return 1;
     } else if (bytes_read == 0) {
-        bionet_node_t *node = bionet_stream_get_node(stream);
-        g_message("eof reading from client of %s:%s", bionet_node_get_id(node), bionet_stream_get_id(stream));
+        g_message("eof reading from client of %s", bionet_stream_get_local_name(stream));
         disconnect_client(stream, client);
         return 1;
     } else {

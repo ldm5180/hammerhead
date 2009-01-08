@@ -27,7 +27,6 @@ int hab_report_datapoints(const bionet_node_t *node) {
 
     for (ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
         bionet_asn_buffer_t buf;
-        char topic[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 2];
         int r;
         bionet_resource_t *resource;
 
@@ -40,10 +39,8 @@ int hab_report_datapoints(const bionet_node_t *node) {
 
         bionet_resource_make_clean(resource);
 
-        sprintf(topic, "%s:%s", bionet_node_get_id(node), bionet_resource_get_id(resource));
-
         // publish the message to any connected subscribers
-        cal_server.publish(topic, buf.buf, buf.size);
+        cal_server.publish(bionet_resource_get_local_name(resource), buf.buf, buf.size);
 
         // FIXME: cal_server.publish should take the buf
         free(buf.buf);
