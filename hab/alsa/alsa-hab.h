@@ -125,7 +125,23 @@ void show_state(void);
 void show_global_pollfds(void);
 void show_client(client_t *client);
 
+
+/**
+ * @brief Rescan the list of available Alsa devices.
+ *
+ * This function gets run periodically (every 5 seconds) from the main
+ * loop.
+ *
+ * For all Alsa devices that have been connected to the computer since last
+ * we checked, we create a new Node with Streams for the first Alsa PCM
+ * endpoints.
+ *
+ * For all Alsa devices that have been disconnected since last we checked,
+ * we close the Alsa devices and report the corresponding Node missing.
+ */
 int discover_alsa_hardware(void);
+
+
 alsa_t *open_alsa_device(char *device, snd_pcm_stream_t direction);
 void close_alsa_device(alsa_t *alsa);
 int xrun_handler(snd_pcm_t *handle, int err);

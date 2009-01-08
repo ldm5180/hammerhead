@@ -13,8 +13,15 @@
 
 
 
+/**
+ * @brief Turns an Alsa device name into a Bionet Node ID.
+ *
+ * @param[in] input The Alsa device name
+ *
+ * @return The Node-ID, in a statically allocated char array.
+ */
 static const char *make_id(const char *input) {
-    static char id[256];
+    static char id[BIONET_NAME_COMPONENT_MAX_LEN];
     char *p;
 
     strncpy(id, input, sizeof(id));
