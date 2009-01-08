@@ -15,7 +15,7 @@
 #include "bionet-util.h"
 
 
-const char *bionet_node_get_name(bionet_node_t * node) {
+const char *bionet_node_get_name(const bionet_node_t * node) {
     char buf[3 * BIONET_NAME_COMPONENT_MAX_LEN];
     int r;
 
@@ -47,7 +47,7 @@ const char *bionet_node_get_name(bionet_node_t * node) {
 	return NULL;
     }
 
-    node->name = strdup(buf);
+    ((bionet_node_t *)node)->name = strdup(buf);
     if (node->name == NULL) {
 	g_log(
             BIONET_LOG_DOMAIN,

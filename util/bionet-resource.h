@@ -99,7 +99,7 @@ void bionet_resource_free(bionet_resource_t *resource);
  *
  * @return The Resource Name, or NULL on error
  */
-const char *bionet_resource_get_name(bionet_resource_t * resource);
+const char *bionet_resource_get_name(const bionet_resource_t * resource);
 
 
 /**
@@ -111,7 +111,7 @@ const char *bionet_resource_get_name(bionet_resource_t * resource);
  *
  * @return The local Resource Name, or NULL on error
  */
-const char *bionet_resource_get_local_name(bionet_resource_t * resource);
+const char *bionet_resource_get_local_name(const bionet_resource_t * resource);
 
 
 /**

@@ -15,7 +15,7 @@
 #include "internal.h"
 
 
-const char *bionet_resource_get_name(bionet_resource_t * resource) {
+const char *bionet_resource_get_name(const bionet_resource_t * resource) {
     char buf[4 * BIONET_NAME_COMPONENT_MAX_LEN];
     int r;
 
@@ -94,7 +94,7 @@ const char *bionet_resource_get_name(bionet_resource_t * resource) {
 	return NULL;
     }
 
-    resource->name = strdup(buf);
+    ((bionet_resource_t *)resource)->name = strdup(buf);
     if (resource->name == NULL) {
 	g_log(
             BIONET_LOG_DOMAIN,
@@ -108,7 +108,7 @@ const char *bionet_resource_get_name(bionet_resource_t * resource) {
 }
 
 
-const char *bionet_resource_get_local_name(bionet_resource_t * resource) {
+const char *bionet_resource_get_local_name(const bionet_resource_t * resource) {
     char buf[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     int r;
 
@@ -162,7 +162,7 @@ const char *bionet_resource_get_local_name(bionet_resource_t * resource) {
 	return NULL;
     }
 
-    resource->local_name = strdup(buf);
+    ((bionet_resource_t *)resource)->local_name = strdup(buf);
     if (resource->local_name == NULL) {
 	g_log(
             BIONET_LOG_DOMAIN,

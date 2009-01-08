@@ -13,7 +13,7 @@
 #include "bionet-util.h"
 
 
-const char *bionet_stream_get_name(bionet_stream_t *stream) {
+const char *bionet_stream_get_name(const bionet_stream_t *stream) {
     char buf[4 * BIONET_NAME_COMPONENT_MAX_LEN];
     int r;
 
@@ -94,7 +94,7 @@ const char *bionet_stream_get_name(bionet_stream_t *stream) {
         return NULL;
     }
 
-    stream->name = strdup(buf);
+    ((bionet_stream_t *)stream)->name = strdup(buf);
     if (stream->name == NULL) {
         g_log(
             BIONET_LOG_DOMAIN,
@@ -108,7 +108,7 @@ const char *bionet_stream_get_name(bionet_stream_t *stream) {
 }
 
 
-const char *bionet_stream_get_local_name(bionet_stream_t *stream) {
+const char *bionet_stream_get_local_name(const bionet_stream_t *stream) {
     char buf[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     int r;
 
@@ -167,7 +167,7 @@ const char *bionet_stream_get_local_name(bionet_stream_t *stream) {
         return NULL;
     }
 
-    stream->local_name = strdup(buf);
+    ((bionet_stream_t *)stream)->local_name = strdup(buf);
     if (stream->local_name == NULL) {
         g_log(
             BIONET_LOG_DOMAIN,

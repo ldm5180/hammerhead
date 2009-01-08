@@ -43,7 +43,7 @@ bionet_node_t* bionet_node_new(bionet_hab_t *hab, const char* node_id);
  *
  * @return The Node name, or NULL on error.
  */
-const char *bionet_node_get_name(bionet_node_t * node);
+const char *bionet_node_get_name(const bionet_node_t * node);
 
 
 /**

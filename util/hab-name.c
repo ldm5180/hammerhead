@@ -16,7 +16,7 @@
 #include "internal.h"
 #include "bionet-util.h"
 
-const char *bionet_hab_get_name(bionet_hab_t *hab) {
+const char *bionet_hab_get_name(const bionet_hab_t *hab) {
     char buf[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     int r;
 
@@ -45,7 +45,7 @@ const char *bionet_hab_get_name(bionet_hab_t *hab) {
 	return NULL;
     }
 
-    hab->name = strdup(buf);
+    ((bionet_hab_t *)hab)->name = strdup(buf);
     if (hab->name == NULL) {
 	g_log(
             BIONET_LOG_DOMAIN,

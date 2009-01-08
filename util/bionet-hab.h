@@ -46,7 +46,7 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
  *
  * @return The HAB name.
  */
-const char *bionet_hab_get_name(bionet_hab_t * hab);
+const char *bionet_hab_get_name(const bionet_hab_t * hab);
 
 
 /**

@@ -188,7 +188,7 @@ const char *bionet_stream_direction_to_string(bionet_stream_direction_t directio
  *
  * @return The name of the Stream, or NULL on error.
  */
-const char *bionet_stream_get_name(bionet_stream_t *stream);
+const char *bionet_stream_get_name(const bionet_stream_t *stream);
 
 
 /**
@@ -200,7 +200,7 @@ const char *bionet_stream_get_name(bionet_stream_t *stream);
  *
  * @return The local name of the Stream, or NULL on error.
  */
-const char *bionet_stream_get_local_name(bionet_stream_t *stream);
+const char *bionet_stream_get_local_name(const bionet_stream_t *stream);
 
 
 /**
