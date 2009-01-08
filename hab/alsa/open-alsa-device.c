@@ -4,8 +4,6 @@
 //
 
 
-#define NDEBUG  // turn off asserts globally, to shut up a false-positive one in the alsa library that causes our -Werror to fail...
-
 #include <alsa/asoundlib.h>
 #include "hardware-abstractor.h"
 #include "alsa-hab.h"
