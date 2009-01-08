@@ -27,6 +27,10 @@ void bionet_stream_free(bionet_stream_t *stream) {
         free(stream->name);
     }
 
+    if (stream->local_name != NULL) {
+        free(stream->local_name);
+    }
+
     if (stream->type != NULL) {
         free(stream->type);
     }

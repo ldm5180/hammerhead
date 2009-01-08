@@ -192,6 +192,18 @@ const char *bionet_stream_get_name(bionet_stream_t *stream);
 
 
 /**
+ * @brief Get the local-to-the-HAB name of a Stream
+ *
+ * The local Stream name is of the format <Node-ID>:<Stream-ID>
+ *
+ * @param[in] stream The Stream
+ *
+ * @return The local name of the Stream, or NULL on error.
+ */
+const char *bionet_stream_get_local_name(bionet_stream_t *stream);
+
+
+/**
  * @brief Set the user-data annotation of a Stream
  *
  * @param[in] stream The Stream

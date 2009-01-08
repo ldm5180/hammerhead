@@ -108,6 +108,74 @@ const char *bionet_resource_get_name(bionet_resource_t * resource) {
 }
 
 
+const char *bionet_resource_get_local_name(bionet_resource_t * resource) {
+    char buf[2 * BIONET_NAME_COMPONENT_MAX_LEN];
+    int r;
+
+    if (resource == NULL) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_get_local_name(): NULL Resource passed in");
+	errno = EINVAL;
+	return NULL;
+    }
+
+    if (resource->id == NULL) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_get_local_name(): passed-in Resource has NULL ID");
+	errno = EINVAL;
+	return NULL;
+    }
+
+    if (resource->node == NULL) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_get_local_name(): passed-in Resource has NULL Node");
+	errno = EINVAL;
+	return NULL;
+    }
+
+    if (resource->node->id == NULL) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_resource_get_local_name(): passed-in Resource has Node with NULL ID");
+	errno = EINVAL;
+	return NULL;
+    }
+
+    if (resource->local_name != NULL) return resource->local_name;
+
+    r = snprintf(
+        buf,
+        sizeof(buf),
+        "%s:%s",
+        resource->node->id,
+        resource->id
+    );
+
+    if (r >= sizeof(buf)) {
+	errno = EINVAL;
+	g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bionet_resource_get_local_name(): local Resource name %s:%s too long!",
+            resource->node->id,
+            resource->id
+        );
+	return NULL;
+    }
+
+    resource->local_name = strdup(buf);
+    if (resource->local_name == NULL) {
+	g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bionet_resource_get_local_name(): out of memory!"
+        );
+	return NULL;
+    }
+
+    return resource->local_name;
+}
+
+
 // Emacs cruft
 // Local Variables:
 // mode: C

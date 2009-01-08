@@ -44,6 +44,7 @@ struct bionet_stream_opaque_t {
     char *type;
 
     char *name;
+    char *local_name;
 
     const void *user_data;  // const because the bionet library wont monkey with it
 };
@@ -85,6 +86,7 @@ struct bionet_resource_opaque_t {
     char *id;
 
     char *name;
+    char *local_name;
 
     bionet_resource_flavor_t flavor;
     bionet_resource_data_type_t data_type;

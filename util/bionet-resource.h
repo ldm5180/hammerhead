@@ -103,6 +103,18 @@ const char *bionet_resource_get_name(bionet_resource_t * resource);
 
 
 /**
+ * @brief Get the local-to-the-HAB name of a Resource
+ *
+ * The local Resource name is of the format <Node-ID>:<Resource-ID>
+ *
+ * @param[in] resource The Resource
+ *
+ * @return The local Resource Name, or NULL on error
+ */
+const char *bionet_resource_get_local_name(bionet_resource_t * resource);
+
+
+/**
  * @brief Get ID of a resource
  *
  * @param[in] resource The resource

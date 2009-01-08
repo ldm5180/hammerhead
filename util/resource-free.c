@@ -31,6 +31,10 @@ void bionet_resource_free(bionet_resource_t *resource) {
         free(resource->name);
     }
 
+    if (resource->local_name != NULL) {
+        free(resource->local_name);
+    }
+
     // free all the datapoints
     while(resource->datapoints->len > 0) {
         bionet_datapoint_t *d = g_ptr_array_remove_index_fast(resource->datapoints, 0);
