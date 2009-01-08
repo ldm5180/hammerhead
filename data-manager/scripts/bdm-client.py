@@ -9,7 +9,7 @@ import re
 parser = optparse.OptionParser()
 parser.add_option("-o", "--output", dest="output", default="csv", 
                   help="Output format",
-                  metavar="csv|matlab")
+                  metavar="csv|matlab|chrono")
 parser.add_option("-s", "--server", dest="server",
                   help="BDM server hostname.", 
                   default="localhost")
@@ -37,6 +37,8 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
+if (options.output == "chrono"):
+    li = []
 
 import gobject
 import time
@@ -92,9 +94,16 @@ for hi in range(hab_list.len):  # loop over all the HABs
                         match = timematch.match(ts)
                         mlts = time.strftime("%Y:%m:%d\t%H:%M:%S", time.strptime(match.group(1), "%Y-%m-%d %H:%M:%S"))
                         print bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "\t" + mlts + "\t" + bionet_value_to_str(v) 
+                    elif (options.output == "chrono"):
+                        #sort me
+                        output_string = bionet_datapoint_timestamp_to_string(d) + "," + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "," + bionet_value_to_str(v)          
+                        li.append(output_string);
                     else:
                         print "Unknown format"
                         parser.usage()
 
 bdm_disconnect() # done, disconnect
 
+sorted_list = sorted(li)
+for i in range(len(sorted_list)):
+    print sorted_list[i]

@@ -20,6 +20,8 @@ parser.add_option("-x", "--max-delay", dest="max_delay",
 parser.add_option("-t", "--test", dest="test", default=None,
                   help="Output all data to a file formatted for testing against BDM.",
                   metavar="FILE")
+parser.add_option("-l", "--loop", dest="loops", default=0,
+                  help="Number of times to do node updates before quitting.")
 
 (options, args) = parser.parse_args()
 
@@ -31,8 +33,6 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-#if (options.test):
-#    testlog = logging.getLogger(
 
 from hab import *
 import add_node
@@ -47,23 +47,34 @@ if (0 > bionet_fd):
     logger.warning("problem connection to Bionet, exiting\n")
     exit(1)
 
+#test mode. open the output file and sleep to let subscribers catch up
+if (options.test):
+    f = open(options.test, "w")
+    time.sleep(5)
+    loops = 0
+else:
+    f = None;
+
+hab_read()
+
 #make nodes
-while(1):
+while (int(options.loops) == 0) or (loops < int(options.loops)):
     while(bionet_hab_get_num_nodes(hab) < options.min_nodes):
-        add_node.Add(hab, options)
+        add_node.Add(hab, f)
 
     while(bionet_hab_get_num_nodes(hab) > (2 * options.min_nodes)):
-        destroy_node.Destroy(hab, options)
+        destroy_node.Destroy(hab, f)
 
     rnd = random.randint(0,100)
 
     if (rnd < 10):
-        destroy_node.Destroy(hab, options)
+        destroy_node.Destroy(hab, f)
     elif (rnd < 20):
-        add_node.Add(hab, options)
+        add_node.Add(hab, f)
     else:
-        update_node.Update(hab, options)
-        
+        update_node.Update(hab, f)
+
     hab_read()
+    loops = loops + 1
     time.sleep(options.max_delay)
-    
+
