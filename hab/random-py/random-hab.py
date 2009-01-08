@@ -17,6 +17,9 @@ parser.add_option("-x", "--max-delay", dest="max_delay",
                   help="After taking each action (adding or removing a Node, or updating a Resource), the random-hab sleeps up to this long (seconds)",
                   default=1,
                   metavar="X")
+parser.add_option("-t", "--test", dest="test", default=None,
+                  help="Output all data to a file formatted for testing against BDM.",
+                  metavar="FILE")
 
 (options, args) = parser.parse_args()
 
@@ -28,13 +31,16 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
+#if (options.test):
+#    testlog = logging.getLogger(
+
 from hab import *
 import add_node
 import destroy_node
 import update_node
 
 #connect to bionet
-hab = bionet_hab_new("RANDOM-py", options.hab_id)
+hab = bionet_hab_new("RANDOM", options.hab_id)
 hab_register_callback_set_resource(cb_set_resource);
 bionet_fd = hab_connect(hab)
 if (0 > bionet_fd):
@@ -44,19 +50,20 @@ if (0 > bionet_fd):
 #make nodes
 while(1):
     while(bionet_hab_get_num_nodes(hab) < options.min_nodes):
-        add_node.Add(hab)
+        add_node.Add(hab, options)
 
     while(bionet_hab_get_num_nodes(hab) > (2 * options.min_nodes)):
-        destroy_node.Destroy(hab)
+        destroy_node.Destroy(hab, options)
 
     rnd = random.randint(0,100)
 
     if (rnd < 10):
-        destroy_node.Destroy(hab)
+        destroy_node.Destroy(hab, options)
     elif (rnd < 20):
-        add_node.Add(hab)
+        add_node.Add(hab, options)
     else:
-        update_node.Update(hab)
+        update_node.Update(hab, options)
         
+    hab_read()
     time.sleep(options.max_delay)
     
