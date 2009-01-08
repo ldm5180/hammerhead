@@ -4,6 +4,7 @@
 //
 
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,53 +13,54 @@
 #include "bionet-util.h"
 
 
-int bionet_stream_get_name(
-    const bionet_stream_t *stream,
-    char * name,
-    int name_len
-) {
+const char *bionet_stream_get_name(bionet_stream_t *stream) {
+    char buf[4 * BIONET_NAME_COMPONENT_MAX_LEN];
+    int r;
+
     //
     // is the caller INSANE??!
     //
 
     if (stream == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_get_name: NULL Stream passed in!");
-        return -1;
+        errno = EINVAL;
+        return NULL;
     }
 
     if (stream->id == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_get_name: passed-in Stream has NULL ID!");
-        return -1;
+        errno = EINVAL;
+        return NULL;
     }
 
     if (stream->node == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_get_name: passed-in Stream has NULL Node!");
-        return -1;
+        errno = EINVAL;
+        return NULL;
     }
 
     if (stream->node->id == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_get_name: passed-in Stream's Node has NULL ID!");
-        return -1;
+        errno = EINVAL;
+        return NULL;
     }
 
     if (stream->node->hab == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_get_name: passed-in Stream's Node has NULL HAB!");
-        return -1;
+        errno = EINVAL;
+        return NULL;
     }
 
     if (stream->node->hab->type == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_get_name: passed-in Stream's Node's HAB has NULL Type!");
-        return -1;
+        errno = EINVAL;
+        return NULL;
     }
 
     if (stream->node->hab->id == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_get_name: passed-in Stream's Node's HAB has NULL ID!");
-        return -1;
-    }
-
-    if (name == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_get_name: passed-in name buffer is NULL!");
-        return -1;
+        errno = EINVAL;
+        return NULL;
     }
 
 
@@ -66,15 +68,42 @@ int bionet_stream_get_name(
     // looks ok
     //
 
-    return snprintf(
-        name,
-        name_len,
-        "%s.%s.%s:%s", 
-	stream->node->hab->type,
+    if (stream->name != NULL) return stream->name;
+
+    r = snprintf(
+        buf,
+        sizeof(buf),
+        "%s.%s.%s:%s",
+        stream->node->hab->type,
         stream->node->hab->id,
         stream->node->id,
         stream->id
     );
-}
 
+    if (r >= sizeof(buf)) {
+        errno = EINVAL;
+        g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bionet_stream_get_name(): Stream name %s.%s.%s:%s too long!",
+            stream->node->hab->type,
+            stream->node->hab->id,
+            stream->node->id,
+            stream->id
+        );
+        return NULL;
+    }
+
+    stream->name = strdup(buf);
+    if (stream->name == NULL) {
+        g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bionet_stream_get_name(): out of memory!"
+        );
+        return NULL;
+    }
+
+    return stream->name;
+}
 

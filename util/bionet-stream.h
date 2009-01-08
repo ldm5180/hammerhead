@@ -185,21 +185,10 @@ const char *bionet_stream_direction_to_string(bionet_stream_direction_t directio
  * Stream name is of the format <HAB-Type>.<HAB-ID>.<Node-ID>:<Stream-ID>
  *
  * @param[in] stream The Stream
- * @param[out] name Pointer to the buffer the name shall be written into
- * @param[in] name_len Length of the buffer pointed to by name
  *
- * @return Number of characters which would have been written to the buffer not 
- * including the terminating NULL 
- * @return -1 Error
- *
- * @note If the return value is greater than or equal to name_len the name
- * has been truncated.  Suggested size for the buffer is
- * 4*BIONET_NAME_COMPONENT_MAX_LEN. Check snprintf utility for more
- * information.
+ * @return The name of the Stream, or NULL on error.
  */
-int bionet_stream_get_name(const bionet_stream_t *stream,
-			     char * name,
-			     int name_len);
+const char *bionet_stream_get_name(bionet_stream_t *stream);
 
 
 /**

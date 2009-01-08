@@ -43,6 +43,8 @@ struct bionet_stream_opaque_t {
     bionet_stream_direction_t direction;
     char *type;
 
+    char *name;
+
     const void *user_data;  // const because the bionet library wont monkey with it
 };
 

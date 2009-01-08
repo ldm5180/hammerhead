@@ -23,6 +23,10 @@ void bionet_stream_free(bionet_stream_t *stream) {
         free(stream->id);
     }
 
+    if (stream->name != NULL) {
+        free(stream->name);
+    }
+
     if (stream->type != NULL) {
         free(stream->type);
     }
