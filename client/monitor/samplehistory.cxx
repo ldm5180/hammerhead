@@ -57,14 +57,13 @@ void SampleHistory::recordSample(bionet_datapoint_t* datapoint) {
     bionet_resource_t* resource = bionet_value_get_resource(bionet_value);
     bionet_hab_t* hab;
     bionet_node_t* node;
-    char resource_name[RESOURCENAMELENGTH];
-    int r;
+    const char *resource_name;
 
     node = bionet_resource_get_node(resource);
     hab = bionet_resource_get_hab(resource);
 
-    r = bionet_resource_get_name(resource, resource_name, RESOURCENAMELENGTH);
-    if (r < 0) // invalid resource name, something's broken
+    resource_name = bionet_resource_get_name(resource);
+    if (resource_name == NULL) // invalid resource name, something's broken
         return;
 
     QString key = QString(resource_name);

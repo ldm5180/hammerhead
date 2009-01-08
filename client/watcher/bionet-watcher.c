@@ -93,16 +93,14 @@ void signal_handler(int signo) {
 void cb_datapoint(bionet_datapoint_t *datapoint) {
     bionet_value_t * value = bionet_datapoint_get_value(datapoint);
     bionet_resource_t * resource = bionet_value_get_resource(value);
-    bionet_node_t * node = bionet_resource_get_node(resource);
 
     char * value_str = bionet_value_to_str(value);
 
     g_log(
         "",
         G_LOG_LEVEL_INFO,
-        "%s:%s = %s %s %s @ %s",
-        bionet_node_get_name(node),
-        bionet_resource_get_id(resource),
+        "%s = %s %s %s @ %s",
+        bionet_resource_get_name(resource),
         bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
         bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
         value_str,

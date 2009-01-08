@@ -89,7 +89,6 @@ void BionetModel::newNode(bionet_node_t* node) {
     bionet_hab_t *hab = bionet_node_get_hab(node);
     const char *hab_name;
     const char *node_name;
-    int r;
 
     hab_name = bionet_hab_get_name(hab);
     if (hab_name == NULL) {
@@ -130,10 +129,10 @@ void BionetModel::newNode(bionet_node_t* node) {
         bionet_datapoint_t* datapoint;
         bionet_value_t* bionet_value;
         QStandardItem *name, *flavor, *type, *time, *value;
-        char resource_name[RESOURCENAMELENGTH];
+        const char *resource_name;
 
-        r = bionet_resource_get_name(resource, resource_name, RESOURCENAMELENGTH);
-        if (r < 0) {
+        resource_name = bionet_resource_get_name(resource);
+        if (resource_name == NULL) {
             qWarning() << "newNode(): unable to create resource name";
             return;
         }
@@ -190,7 +189,6 @@ void BionetModel::newNode(bionet_node_t* node) {
 
 void BionetModel::lostNode(bionet_node_t* node) {
     const char *node_name;
-    int r;
 
     node_name = bionet_node_get_name(node);
     if (node_name == NULL) {
@@ -202,11 +200,11 @@ void BionetModel::lostNode(bionet_node_t* node) {
     
     for (int i=0; i<bionet_node_get_num_resources(node); i++) {
         bionet_resource_t* resource = bionet_node_get_resource_by_index(node, i);
-        char resource_name[RESOURCENAMELENGTH];
+        const char *resource_name;
         QString resourceName;
 
-        r = bionet_resource_get_name(resource, resource_name, RESOURCENAMELENGTH);
-        if (r < 0) {
+        resource_name = bionet_resource_get_name(resource);
+        if (resource_name == NULL) {
             qWarning() << "lostNode(): unable to create resource name";
             return;
         }
@@ -253,8 +251,7 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
     bionet_node_t *node;
     bionet_hab_t *hab;
     bionet_value_t *value;
-    char resource_name[RESOURCENAMELENGTH];
-    int r;
+    const char *resource_name;
     
     if (datapoint == NULL) {
         cout << "newDatapoint(): received NULL datapoint!?!" << endl;
@@ -265,8 +262,8 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
     node = bionet_datapoint_get_node(datapoint);
     resource = bionet_datapoint_get_resource(datapoint);
 
-    r = bionet_resource_get_name(resource, resource_name, RESOURCENAMELENGTH);
-    if (r < 0) {
+    resource_name = bionet_resource_get_name(resource);
+    if (resource_name == NULL) {
         qWarning() << "newDatapoint(): unable to get resource name string";
         return;
     }

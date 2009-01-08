@@ -82,6 +82,8 @@ struct bionet_resource_opaque_t {
 
     char *id;
 
+    char *name;
+
     bionet_resource_flavor_t flavor;
     bionet_resource_data_type_t data_type;
 

@@ -341,8 +341,7 @@ void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
     bionet_resource_t* resource;
     bionet_node_t* node;
     bionet_hab_t* hab;
-    char resource_name[RESOURCENAMELENGTH];
-    int r;
+    const char *resource_name;
 
     if (datapoint == NULL)
         return;
@@ -351,8 +350,8 @@ void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
     node = bionet_datapoint_get_node(datapoint);
     hab = bionet_datapoint_get_hab(datapoint);
 
-    r = bionet_resource_get_name(resource, resource_name, RESOURCENAMELENGTH);
-    if (r < 0) {
+    resource_name = bionet_resource_get_name(resource);
+    if (resource_name == NULL) {
         cout << "updatePlot(): unable to get resource name" << endl;
         return;
     }

@@ -95,23 +95,6 @@ const char *bionet_resource_get_id(bionet_resource_t *resource)
 }
 
 
-int bionet_resource_get_name(const bionet_resource_t * resource,
-			     char * name,
-			     int name_len)
-{
-    if ((NULL == resource) || (NULL == resource->node) || (NULL == resource->node->hab))
-    {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_resource_get_name(): NULL resource or node or hab passed in");
-	errno = EINVAL;
-	return -1;	
-    }
-
-    return snprintf(name, name_len, "%s.%s.%s:%s", 
-		    resource->node->hab->type, resource->node->hab->id, resource->node->id, resource->id);
-} /* bionet_node_get_name() */
-
-
 // Emacs cruft
 // Local Variables:
 // mode: C
