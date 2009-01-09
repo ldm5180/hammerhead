@@ -47,13 +47,15 @@ if (0 > bionet_fd):
     logger.warning("problem connection to Bionet, exiting\n")
     exit(1)
 
+loops = 0
+
 #test mode. open the output file and sleep to let subscribers catch up
 if (options.test):
     f = open(options.test, "w")
     time.sleep(10)
-    loops = 0
 else:
     f = None;
+
 
 hab_read()
 

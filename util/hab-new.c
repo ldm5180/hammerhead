@@ -75,7 +75,7 @@ static int bionet_hab_set_type(bionet_hab_t *hab, const char *type) {
     {
 	char * tmp_type;
         tmp_type = hab_get_program_name();
-        if (type == NULL) {
+        if (tmp_type == NULL) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_hab_set_type(): the passed-in HAB has no HAB-Type, and cannot get program name");
             return -1;
