@@ -1,0 +1,14 @@
+
+syshealth gathers system information and feeds it into Bionet.
+
+It uses a modular architecture, making it easy to add new sources of
+system information.  Each source provides an init() and an update()
+function.  The main program creates a single Bionet node called "system",
+then calls the modules' init() functions, which may add resources to
+the node.  The init() functions return -1 on failure (no resources added
+to the node) and 0 on success (at least one resource added to the node).
+After all the init() functions have been run, the program enters the main
+loop, where it periodically wakes up and runs the update() functions of
+the modules that returned success from init(), and reports the result
+to Bionet.
+

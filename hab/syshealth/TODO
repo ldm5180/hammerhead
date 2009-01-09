@@ -1,0 +1,16 @@
+
+
+When i run 'ps -eo pid,rss,cmd | grep my-command', what is the RSS field?
+Pages or kilobytes or what?
+
+
+incorporate sar, mostly for disk i/o and cpu utilization
+
+
+The main syshealth program should dlopen all the information-source
+modules, so they can link against esoteric libraries like libsensors.
+This way you can compile optimized code (rather than shelling out to
+helper-programs like sensors(1)) without requiring the target system to
+have all the libraries installed.
+
+
