@@ -77,6 +77,7 @@ void add_resource(bionet_node_t *node) {
         set_random_resource_value(resource);
         datapoint = bionet_resource_get_datapoint_by_index(resource, 0);  // there's only one datapoint
         if (!terse) {
+            printf("%s\n", bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
         } else {
             printf(
                 "%s %s %s = %s @ %s\n",
