@@ -14,15 +14,13 @@ void disconnect_client(bionet_stream_t *stream, client_t *client) {
 
 
     g_message(
-        "client on %s (socket %d) disconnects",
-        bionet_stream_get_local_name(stream),
-        client->socket
+        "client %s of Stream %s disconnects",
+        client->id,
+        bionet_stream_get_local_name(stream)
     );
 
 
     user_data->clients = g_slist_remove(user_data->clients, client);
-
-    close(client->socket);
 
     close_alsa_device(client->alsa);
 

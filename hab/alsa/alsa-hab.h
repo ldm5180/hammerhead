@@ -88,7 +88,7 @@ typedef enum {
 
 
 typedef struct {
-    int socket;
+    char *id;
     who_are_we_waiting_for_t waiting;
     alsa_t *alsa;
 } client_t;

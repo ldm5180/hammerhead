@@ -71,7 +71,7 @@ static void show_pcm(snd_pcm_t *pcm_handle) {
 
 
 void show_client(client_t *client) {
-    g_log("", G_LOG_LEVEL_INFO, "                socket = %d", client->socket);
+    g_log("", G_LOG_LEVEL_INFO, "                id = %s", client->id);
     g_log("", G_LOG_LEVEL_INFO, "                waiting for %s", (client->waiting == WAITING_FOR_ALSA) ? "ALSA" : "Client");
     show_pcm(client->alsa->pcm_handle);
 }

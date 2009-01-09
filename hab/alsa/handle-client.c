@@ -14,6 +14,7 @@
 
 
 
+#if 0
 static ssize_t pcm_read(alsa_t *alsa) {
     int r;
 
@@ -45,11 +46,13 @@ static ssize_t pcm_read(alsa_t *alsa) {
         return -1;
     }
 }
+#endif
 
 
 
 
 int handle_producer_client(bionet_stream_t *stream, client_t *client) {
+#if 0
     int r;
     int frames, bytes;
 
@@ -84,12 +87,14 @@ int handle_producer_client(bionet_stream_t *stream, client_t *client) {
         disconnect_client(stream, client);
         return 1;
     }
+#endif
 
     return 0;
 }
 
 
 int handle_consumer_client(bionet_stream_t *stream, client_t *client) {
+#if 0
     int r;
     int bytes_read, frames_read;
 
@@ -144,6 +149,7 @@ int handle_consumer_client(bionet_stream_t *stream, client_t *client) {
     } else if (r != frames_read) {
         g_log("", G_LOG_LEVEL_WARNING, "short write to alsa device (wrote %d of %d frames)!", r, frames_read);
     }
+#endif
 
     return 0;
 }
