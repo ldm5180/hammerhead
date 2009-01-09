@@ -90,6 +90,19 @@ int hab_report_lost_node(const char *node_id);
 
 
 /**
+ * @brief Publishes a block of data to a Stream.
+ *
+ * @param[in] stream The Stream to publish on.
+ * @param[in] buf The data to publish.
+ * @param[in] count The number of bytes in buf.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int hab_publish_stream(const bionet_stream_t *stream, const void *buffer, size_t count);
+
+
+/**
  * @brief read any pending messages and if appropriate call callback function.  
  * 
  * The HAB should call this function when the Bionet file descriptor returned

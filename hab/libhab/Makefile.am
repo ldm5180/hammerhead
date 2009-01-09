@@ -7,6 +7,7 @@ libhab_la_SOURCES =      \
     report-new-node.c    \
     report-lost-node.c   \
     report-datapoints.c  \
+    publish-stream.c     \
     read.c               \
     register-callback.c  \
     cal-callback.c       \
