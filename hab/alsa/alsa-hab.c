@@ -181,10 +181,8 @@ int main(int argc, char *argv[]) {
 #endif
 
 
-#if 0
         printf("\n\n*****  top of main loop  *****\n");
         show_state();
-#endif
 
         r = select(max_fd + 1, &readers, NULL, NULL, &timeout);
         if (r < 0) {
