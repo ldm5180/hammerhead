@@ -15,33 +15,40 @@ int libhab_cal_topic_matches(const char *topic, const char *subscription) {
     // There are three kinds of subscriptions: node subscriptions, stream
     // subscriptions, and datapoint subscriptions.
     //
-    // Node subscriptions are of the form "<NodeId>"
+    // Node subscriptions are of the form "N <NodeId>"
     //
     // Stream subscriptions are of the form "S <NodeID:StreamID>"
     //
-    // Datapoint subscriptions are of the form "<NodeID:ResourceID>"
+    // Datapoint subscriptions are of the form "D <NodeID:ResourceID>"
     //
 
 
     //
-    // If the subscription doesnt have a ':', then it's a Node subscription
+    // first of all, the family of the topic of the subscription and the
+    // family of the topic of the published info need to be the same
     //
 
-    if (strchr(subscription, ':') == NULL) {
-        // this is a Node subscription
-        if (strchr(topic, ':') == NULL) {
-            // and a Node topic
-            if (bionet_name_component_matches(topic, subscription)) return 0;
+    if (strncmp(subscription, topic, 2) != 0) return -1;
+
+
+    //
+    // Node subscription
+    //
+
+    if (subscription[0] == 'N') {
+        if (bionet_name_component_matches(&topic[2], &subscription[2])) {
+            return 0;
+        } else {
+            return -1;
         }
-        return -1;
     }
 
 
     //
-    // If the subscription begins with "S ", then it's a Stream subscription
+    // Stream subscription
     //
 
-    if (strncmp(subscription, "S ", 2) == 0) {
+    if (subscription[0] == 'S') {
         char sub_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
         char sub_stream_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
@@ -50,15 +57,10 @@ int libhab_cal_topic_matches(const char *topic, const char *subscription) {
 
         int r;
 
-        if (strncmp(topic, "S ", 2) != 0) {
-            // not a Stream topic
-            return -1;
-        }
-
-        r = bionet_split_nodeid_resourceid_r(subscription, sub_node_id, sub_stream_id);
+        r = bionet_split_nodeid_resourceid_r(&subscription[2], sub_node_id, sub_stream_id);
         if (r != 0) return -1;
 
-        r = bionet_split_nodeid_resourceid_r(topic, topic_node_id, topic_stream_id);
+        r = bionet_split_nodeid_resourceid_r(&topic[2], topic_node_id, topic_stream_id);
         if (r != 0) return -1;
 
         if (!bionet_name_component_matches(topic_node_id, sub_node_id)) return -1;
@@ -69,13 +71,10 @@ int libhab_cal_topic_matches(const char *topic, const char *subscription) {
 
 
     //
-    // this must be a Datapoint subscription then
+    // If the subscription begins with "D ", then it's a Datapoint subscription
     //
 
-    {
-	// make sure it's a Datapoint topic too
-	if (strchr(topic, ':') == NULL) return -1;
-
+    if (subscription[0] == 'D') {
         char sub_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
         char sub_resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
@@ -84,10 +83,10 @@ int libhab_cal_topic_matches(const char *topic, const char *subscription) {
 
         int r;
 
-        r = bionet_split_nodeid_resourceid_r(subscription, sub_node_id, sub_resource_id);
+        r = bionet_split_nodeid_resourceid_r(&subscription[2], sub_node_id, sub_resource_id);
         if (r != 0) return -1;
 
-        r = bionet_split_nodeid_resourceid_r(topic, topic_node_id, topic_resource_id);
+        r = bionet_split_nodeid_resourceid_r(&topic[2], topic_node_id, topic_resource_id);
         if (r != 0) return -1;
 
         if (!bionet_name_component_matches(topic_node_id, sub_node_id)) return -1;
@@ -95,5 +94,9 @@ int libhab_cal_topic_matches(const char *topic, const char *subscription) {
 
         return 0;
     }
+
+
+    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "unknown publish topic '%s'", topic);
+    return -1;
 }
 

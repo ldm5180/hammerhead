@@ -20,6 +20,7 @@ int hab_report_lost_node(const char *node_id) {
     PrintableString_t *lostnode;
     asn_enc_rval_t asn_r;
     int r;
+    char topic[BIONET_NAME_COMPONENT_MAX_LEN + 2];
 
     bionet_asn_buffer_t buf;
 
@@ -58,7 +59,9 @@ int hab_report_lost_node(const char *node_id) {
         goto fail1;
     }
 
-    cal_server.publish(node_id, buf.buf, buf.size);
+    sprintf(topic, "N %s", node_id);
+
+    cal_server.publish(topic, buf.buf, buf.size);
 
     // FIXME: cal_server.publish should take the buf
     free(buf.buf);

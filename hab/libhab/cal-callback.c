@@ -129,17 +129,17 @@ static void libhab_handle_datapoint_subscription_request(const char *peer_name, 
     char topic_resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
     int r;
 
-    r = bionet_split_nodeid_resourceid_r(topic, topic_node_id, topic_resource_id);
+    r = bionet_split_nodeid_resourceid_r(&topic[2], topic_node_id, topic_resource_id);
     if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid datapoint subscription topic '%s'", peer_name, topic);
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid Datapoint subscription topic '%s'", peer_name, &topic[2]);
         return;
     }
     if (!bionet_is_valid_name_component_or_wildcard(topic_node_id)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid datapoint subscription topic '%s'", peer_name, topic);
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid Datapoint subscription topic '%s'", peer_name, &topic[2]);
         return;
     }
     if (!bionet_is_valid_name_component_or_wildcard(topic_resource_id)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid datapoint subscription topic '%s'", peer_name, topic);
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid Datapoint subscription topic '%s'", peer_name, &topic[2]);
         return;
     }
 
@@ -213,9 +213,9 @@ static void libhab_handle_stream_subscription_request(const char *peer_name, con
     // sanity checks
     //
 
-    r = bionet_split_nodeid_resourceid_r(topic, topic_node_id, topic_stream_id);
+    r = bionet_split_nodeid_resourceid_r(&topic[2], topic_node_id, topic_stream_id);
     if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid stream subscription topic '%s'", peer_name, topic);
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid Stream subscription topic '%s'", peer_name, &topic[2]);
         return;
     }
 
@@ -264,8 +264,8 @@ static void libhab_handle_stream_subscription_request(const char *peer_name, con
 
 static void libhab_handle_node_list_subscription_request(const char *peer_name, const char *topic) {
 
-    if (!bionet_is_valid_name_component_or_wildcard(topic)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid subscription topic '%s'", peer_name, topic);
+    if (!bionet_is_valid_name_component_or_wildcard(&topic[2])) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid Node-list subscription topic '%s'", peer_name, &topic[2]);
         return;
     }
 
@@ -276,7 +276,7 @@ static void libhab_handle_node_list_subscription_request(const char *peer_name, 
         bionet_node_t *node = bionet_hab_get_node_by_index(libhab_this, i);
         int r;
 
-        if (libhab_cal_topic_matches(bionet_node_get_id(node), topic) != 0) continue;
+        if (!bionet_name_component_matches(bionet_node_get_id(node), &topic[2])) continue;
 
         r = bionet_node_to_asnbuf(node, &buf);
         if (r != 0) {
@@ -297,18 +297,21 @@ static void libhab_handle_node_list_subscription_request(const char *peer_name, 
 static void libhab_handle_subscription_request(const char *peer_name, const char *topic) {
     // stream subscription?
     if (strncmp(topic, "S ", 2) == 0) {
-        libhab_handle_stream_subscription_request(peer_name, &topic[2]);
+        libhab_handle_stream_subscription_request(peer_name, topic);
         return;
     }
 
     // datapoint subscription?
-    if (strchr(topic, ':') != NULL) {
+    if (strncmp(topic, "D ", 2) == 0) {
         libhab_handle_datapoint_subscription_request(peer_name, topic);
         return;
     }
 
     // node subscription then, hopefully
-    libhab_handle_node_list_subscription_request(peer_name, topic);
+    if (strncmp(topic, "N ", 2) == 0) {
+        libhab_handle_node_list_subscription_request(peer_name, topic);
+        return;
+    }
 }
 
 

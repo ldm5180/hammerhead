@@ -18,6 +18,7 @@
 int hab_report_new_node(const bionet_node_t *node) {
     bionet_asn_buffer_t buf;
     int r;
+    char topic[BIONET_NAME_COMPONENT_MAX_LEN + 2];
 
     //
     // sanity checks
@@ -60,8 +61,10 @@ int hab_report_new_node(const bionet_node_t *node) {
         goto fail1;
     }
 
+    sprintf(topic, "N %s", bionet_node_get_id(node));
+
     // publish the message to any connected subscribers
-    cal_server.publish(bionet_node_get_id(node), buf.buf, buf.size);
+    cal_server.publish(topic, buf.buf, buf.size);
     // FIXME: cal_server.publish should take the buf
     free(buf.buf);
 

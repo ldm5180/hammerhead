@@ -17,8 +17,8 @@
 
 int bionet_subscribe_stream_by_habtype_habid_nodeid_streamid(const char *hab_type,  const char *hab_id, const char *node_id, const char *stream_id) {
     int r;
-    char publisher[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 2];  // the +2 is one for the '.' and one for the '\0'
-    char topic[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 4];  // the +4 is for the starting "S ", the ':' in the name, and the '\0' at the end
+    char publisher[BIONET_NAME_COMPONENT_MAX_LEN * 2];
+    char topic[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 2];  // the +2 is for the starting "S " subscription family
 
     r = snprintf(publisher, sizeof(publisher), "%s.%s", hab_type, hab_id);
     if (r >= sizeof(publisher)) {
