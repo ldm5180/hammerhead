@@ -146,6 +146,14 @@ void show_client(client_t *client);
 int discover_alsa_hardware(void);
 
 
+/**
+ * @brief Read from an Alsa device, publish to a Producer Stream
+ *
+ * @param[in] stream The Stream to publish on.
+ */
+int read_producer_stream(bionet_stream_t *stream);
+
+
 alsa_t *open_alsa_device(char *device, snd_pcm_stream_t direction);
 void close_alsa_device(alsa_t *alsa);
 int xrun_handler(snd_pcm_t *handle, int err);

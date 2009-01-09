@@ -146,8 +146,31 @@ int main(int argc, char *argv[]) {
 
         FD_ZERO(&readers);
 
+
+        // does Bionet want attention?
         FD_SET(bionet_fd, &readers);
         max_fd = bionet_fd;
+
+
+        // do any of the producer streams want attention?
+        {
+            int ni;
+
+            for (ni = 0; ni < bionet_hab_get_num_nodes(this_hab); ni++) {
+                bionet_node_t *node = bionet_hab_get_node_by_index(this_hab, ni);
+                int si;
+
+                for (si = 0; si < bionet_node_get_num_streams(node); si++) {
+                    bionet_stream_t *stream = bionet_node_get_stream_by_index(node, si);
+                    stream_info_t *sinfo = bionet_stream_get_user_data(stream);
+
+                    if ((bionet_stream_get_direction(stream) == BIONET_STREAM_DIRECTION_PRODUCER) && (sinfo->info.producer.alsa != NULL)) {
+                        FD_SET(sinfo->info.producer.alsa->pollfd->fd, &readers);
+                        max_fd = Max(max_fd, sinfo->info.producer.alsa->pollfd->fd);
+                    }
+                }
+            }
+        }
 
 #if 0
         // any of the connected streams want attention?
@@ -197,6 +220,31 @@ int main(int argc, char *argv[]) {
         // anything from Bionet?
         if (FD_ISSET(bionet_fd, &readers)) {
             hab_read();
+        }
+
+
+        //
+        // any of the connected producer streams want attention?
+        //
+        {
+            int ni;
+
+            for (ni = 0; ni < bionet_hab_get_num_nodes(this_hab); ni++) {
+                bionet_node_t *node = bionet_hab_get_node_by_index(this_hab, ni);
+                int si;
+
+                for (si = 0; si < bionet_node_get_num_streams(node); si++) {
+                    bionet_stream_t *stream = bionet_node_get_stream_by_index(node, si);
+                    stream_info_t *sinfo = bionet_stream_get_user_data(stream);
+
+                    if ((bionet_stream_get_direction(stream) == BIONET_STREAM_DIRECTION_PRODUCER) && (sinfo->info.producer.alsa != NULL)) {
+                        if (FD_ISSET(sinfo->info.producer.alsa->pollfd->fd, &readers)) {
+                            int client_disconnected = read_producer_stream(stream);
+                            if (client_disconnected) break;
+                        }
+                    }
+                }
+            }
         }
 
 

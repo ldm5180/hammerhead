@@ -11,6 +11,7 @@ alsa_hab_SOURCES =               \
     disconnect-client.c          \
     discover-alsa-hardware.c     \
     handle-client.c              \
+    read-producer-stream.c       \
     open-alsa-device.c           \
     show-state.c                 \
     xrun-handler.c
