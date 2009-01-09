@@ -11,6 +11,9 @@
 #define HAB_TYPE "random-hab"
 
 
+extern int terse;
+
+
 void new_node_with_resources(bionet_hab_t* random_hab);
 void destroy_node(bionet_hab_t* random_hab);
 

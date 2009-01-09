@@ -49,32 +49,44 @@ void add_resource(bionet_node_t *node) {
         resource_id
     );
     if (resource == NULL) {
-        printf("Error creating Resource\n");
+        fprintf(stderr, "Error creating Resource\n");
         return;
     }
 
     r = bionet_node_add_resource(node, resource);
     if (r != 0) {
-        printf("Error adding Resource\n");
+        fprintf(stderr, "Error adding Resource\n");
     }
 
-    printf(
-        "    %s %s %s = ",
-        resource_id,
-        bionet_resource_data_type_to_string(data_type),
-        bionet_resource_flavor_to_string(flavor)
-    );
+    if (!terse) {
+        printf(
+            "    %s %s %s = ",
+            resource_id,
+            bionet_resource_data_type_to_string(data_type),
+            bionet_resource_flavor_to_string(flavor)
+        );
+    }
 
     //
     // half of the resources start out without a datapoint
     // the other half of the resources get an initial datapoint
     //
     if ((rand() % 2) == 0) {
-        printf("(starts with no value)\n");
+        if (!terse) printf("(starts with no value)\n");
     } else {
         set_random_resource_value(resource);
         datapoint = bionet_resource_get_datapoint_by_index(resource, 0);  // there's only one datapoint
-        printf("%s\n", bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
+        if (!terse) {
+        } else {
+            printf(
+                "%s %s %s = %s @ %s\n",
+                bionet_resource_data_type_to_string(data_type),
+                bionet_resource_flavor_to_string(flavor),
+                bionet_resource_get_name(resource),
+                bionet_value_to_str(bionet_datapoint_get_value(datapoint)),
+                bionet_datapoint_timestamp_to_string(datapoint)
+            );
+        }
     }
 }
 
@@ -98,7 +110,7 @@ void add_node(bionet_hab_t* random_hab) {
         if (bionet_hab_get_node_by_id(random_hab, node_id) == NULL) break;
     } while(1);
 
-    printf("new Node %s\n", node_id);
+    if (!terse) printf("new Node %s\n", node_id);
 
     node = bionet_node_new(random_hab, node_id);
     
@@ -109,7 +121,7 @@ void add_node(bionet_hab_t* random_hab) {
     }
 
     if (bionet_hab_add_node(random_hab, node) != 0) {
-	printf("HAB failed to add Node\n");
+	fprintf(stderr, "HAB failed to add Node\n");
 	return;
     }
     

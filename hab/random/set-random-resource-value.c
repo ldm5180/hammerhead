@@ -44,7 +44,7 @@ void set_random_resource_value(bionet_resource_t* resource) {
 
     switch (bionet_resource_get_data_type(resource)) {
         case BIONET_RESOURCE_DATA_TYPE_INVALID: {
-            printf("*** INVALID DATA TYPE\n");
+            fprintf(stderr, "*** INVALID DATA TYPE\n");
             return;
         }
 
@@ -128,14 +128,14 @@ void set_random_resource_value(bionet_resource_t* resource) {
             new_string[strlen(new_string) - 1] = '\0';
 	    value = bionet_value_new_str(resource, strdup(new_string)); 
            if (NULL == value) {
-                printf("*** out of memory!\n");
+                fprintf(stderr, "*** out of memory!\n");
                 return;
             }
             break;
         }
 
         default: {
-            printf("*** unknown data type, skipping\n");
+            fprintf(stderr, "*** unknown data type, skipping\n");
             return;
         }
     }

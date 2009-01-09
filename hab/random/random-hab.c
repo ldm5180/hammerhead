@@ -23,12 +23,19 @@
 
 
 
+int terse = 0;
+
+
+
+
 void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value) {
-    printf(
-        "callback: should set %s to '%s'\n",
-        bionet_resource_get_local_name(resource),
-        bionet_value_to_str(value)
-    );
+    if (!terse) {
+        printf(
+            "callback: should set %s to '%s'\n",
+            bionet_resource_get_local_name(resource),
+            bionet_value_to_str(value)
+        );
+    }
 }
 
 
@@ -76,13 +83,18 @@ int main (int argc, char *argv[]) {
             hab_id = argv[i];
 
         } else if (
+            (strcmp(argv[i], "--terse") == 0)
+        ) {
+            terse = 1;
+
+        } else if (
             (strcmp(argv[i], "--help") == 0) ||
             (strcmp(argv[i], "-h") == 0)
         ) {
             usage(0);
 
         } else {
-            printf("unknown command-line argument: %s\n", argv[i]);
+            fprintf(stderr, "unknown command-line argument: %s\n", argv[i]);
             exit(1);
         }
     }
@@ -103,7 +115,7 @@ int main (int argc, char *argv[]) {
 
     bionet_fd = hab_connect(hab);
     if (bionet_fd < 0) {
-        printf("problem connecting to Bionet, exiting\n");
+        fprintf(stderr, "problem connecting to Bionet, exiting\n");
         return 1;
     }
 
@@ -156,7 +168,7 @@ int main (int argc, char *argv[]) {
             continue;
         }
         if (r < 0) {
-            g_log("", G_LOG_LEVEL_WARNING, "error from select: %s", strerror(errno));
+            fprintf(stderr, "error from select: %s", strerror(errno));
             g_usleep(1000*1000);
             continue;
         }
@@ -176,7 +188,7 @@ void destroy_node(bionet_hab_t* random_hab) {
     node = pick_random_node(random_hab);
     if (node == NULL) return;
 
-    printf("removing Node %s\n", bionet_node_get_id(node));
+    if (!terse) printf("removing Node %s\n", bionet_node_get_id(node));
 
     bionet_hab_remove_node_by_id(random_hab, bionet_node_get_id(node));
     hab_report_lost_node(bionet_node_get_id(node));

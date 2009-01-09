@@ -38,6 +38,10 @@ OPTIONS:\n\
                                  removing a Node, or updating a Resource),\n\
                                  the random-hab sleeps up to this long (in\n\
                                  seconds).\n\
+\n\
+    --terse                      If specified, only terse datapoint output\n\
+                                 is provided.\n\
+\n\
 ");
 
     exit(exit_val);

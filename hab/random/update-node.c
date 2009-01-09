@@ -37,10 +37,10 @@ void update_node(bionet_hab_t* random_hab) {
     node = pick_random_node(random_hab);
     if (node == NULL) return;
 
-    printf("updating Resources on Node %s:\n", bionet_node_get_id(node));
+    if (!terse) printf("updating Resources on Node %s:\n", bionet_node_get_id(node));
 
     if (0 == bionet_node_get_num_resources(node)) {
-        printf("    no Resources, skipping\n");
+        if (!terse) printf("    no Resources, skipping\n");
         return;
     }
 
@@ -48,25 +48,38 @@ void update_node(bionet_hab_t* random_hab) {
 	bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
         bionet_datapoint_t *datapoint;
 
-        printf(
-            "    %s %s %s = ",
-            bionet_resource_get_id(resource),
-            bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-            bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
-        );
+        if (!terse) {
+            printf(
+                "    %s %s %s = ",
+                bionet_resource_get_id(resource),
+                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
+            );
+        }
 
         // resources are only updated 50% of the time
         if ((rand() % 2) == 0) {
-            printf("*** skipped\n");
+            if (!terse) printf("*** skipped\n");
             continue;
         }
 
         set_random_resource_value(resource);
 
         datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
-        printf("%s\n", bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
+        if (!terse) {
+            printf("%s\n", bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
+        } else {
+            printf(
+                "%s %s %s = %s @ %s\n",
+                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                bionet_resource_get_name(resource),
+                bionet_value_to_str(bionet_datapoint_get_value(datapoint)),
+                bionet_datapoint_timestamp_to_string(datapoint)
+            );
+        }
     }
 
-    if (hab_report_datapoints(node)) printf("PROBLEM UPDATING!!!\n");
+    if (hab_report_datapoints(node)) fprintf(stderr, "PROBLEM UPDATING!!!\n");
 }
 
