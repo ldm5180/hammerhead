@@ -4,10 +4,27 @@
 //
 
 #include <alsa/asoundlib.h>
+
 #include "alsa-hab.h"
 #include "bionet-util.h"
 
-void disconnect_client(bionet_stream_t *stream, client_t *client) {
+
+static void disconnect_client_from_producer(bionet_stream_t *stream) {
+    stream_info_t *sinfo;
+
+    sinfo = bionet_stream_get_user_data(stream);
+
+    sinfo->info.producer.num_clients --;
+    if (sinfo->info.producer.num_clients > 0) return;
+
+    close_alsa_device(sinfo->info.producer.alsa);
+    free(sinfo->info.producer.alsa);
+    sinfo->info.producer.alsa = NULL;
+}
+
+
+static void disconnect_client_from_consumer(bionet_stream_t *stream, client_t *client) {
+#if 0
     user_data_t *user_data;
 
     user_data = bionet_stream_get_user_data(stream);
@@ -26,5 +43,17 @@ void disconnect_client(bionet_stream_t *stream, client_t *client) {
 
     free(client->alsa);
     free(client);
+#endif
+}
+
+
+void disconnect_client(bionet_stream_t *stream, client_t *client) {
+    g_message("client disconnects from Stream %s", bionet_stream_get_local_name(stream));
+
+    if (bionet_stream_get_direction(stream) == BIONET_STREAM_DIRECTION_PRODUCER) {
+        disconnect_client_from_producer(stream);
+    } else {
+        disconnect_client_from_consumer(stream, client);
+    }
 }
 

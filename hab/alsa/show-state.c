@@ -70,6 +70,7 @@ static void show_pcm(snd_pcm_t *pcm_handle) {
 
 
 
+#if 0
 void show_client(client_t *client) {
     g_log("", G_LOG_LEVEL_INFO, "                id = %s", client->id);
     g_log("", G_LOG_LEVEL_INFO, "                waiting for %s", (client->waiting == WAITING_FOR_ALSA) ? "ALSA" : "Client");
@@ -88,6 +89,7 @@ static void show_clients(user_data_t *user_data) {
         show_client((client_t *)ci->data);
     }
 }
+#endif
 
 
 
@@ -106,17 +108,22 @@ void show_state(void) {
         // the streams
         for (si = 0; si < bionet_node_get_num_streams(node); si++) {
             bionet_stream_t *stream = bionet_node_get_stream_by_index(node, si);
-            user_data_t *user_data = bionet_stream_get_user_data(stream);
+            stream_info_t *sinfo = bionet_stream_get_user_data(stream);
 
             g_message(
                 "        %s %s %s (%s)",
                 bionet_stream_get_id(stream),
                 bionet_stream_get_type(stream),
                 bionet_stream_direction_to_string(bionet_stream_get_direction(stream)),
-                user_data->device
+                sinfo->device
             );
 
-            show_clients(user_data);
+            if (bionet_stream_get_direction(stream) == BIONET_STREAM_DIRECTION_PRODUCER) {
+                g_message("            %d clients connected", sinfo->info.producer.num_clients);
+                if (sinfo->info.producer.alsa != NULL) show_pcm(sinfo->info.producer.alsa->pcm_handle);
+            } else {
+                // FIXME
+            }
         }
     }
 }

@@ -34,19 +34,6 @@
 
 
 
-// 
-// local (to the alsa-hab) information, each stream gets one of these in
-// its user_data pointer
-//
-
-typedef struct {
-    char *device;
-    GSList *clients;
-} user_data_t;
-
-
-
-
 //
 // this holds info about an open alsa device
 //
@@ -69,6 +56,31 @@ typedef struct {
     int16_t *audio_buffer;
     int audio_buffer_frames;
 } alsa_t;
+
+
+
+
+// 
+// local (to the alsa-hab) information, each stream gets a stream_info_t as
+// its user_data
+//
+
+typedef struct {
+    alsa_t *alsa;
+    int num_clients;
+} producer_info_t;
+
+typedef struct {
+    GSList *clients;
+} consumer_info_t;
+
+typedef struct {
+    char *device;
+    union {
+        producer_info_t producer;
+        consumer_info_t consumer;
+    } info;
+} stream_info_t;
 
 
 //

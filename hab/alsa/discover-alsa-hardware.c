@@ -45,7 +45,67 @@ static const char *make_id(const char *input) {
 
 
 
-static void try_add_stream(bionet_node_t *node, int card, int device, snd_ctl_t *handle, snd_pcm_info_t *pcminfo, bionet_stream_direction_t dir) {
+
+static void try_add_producer_stream(bionet_node_t *node, int card, int device, snd_ctl_t *handle, snd_pcm_info_t *pcminfo) {
+    char id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char alsa_device[256];
+    int r;
+
+    bionet_stream_t *stream;
+    stream_info_t *sinfo;
+
+
+    snd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_CAPTURE);
+    snprintf(alsa_device, sizeof(alsa_device), "plug:dsnoop:%d", card);
+    snprintf(id, sizeof(id), "%s", "Microphone");
+
+    r = snd_ctl_pcm_info(handle, pcminfo);
+    if (r < 0) {
+        if (r != -ENOENT) {
+            printf("control digital audio info (%i): %s\n", card, snd_strerror(r));
+        }
+        return;
+    }
+
+    stream = bionet_stream_new(node, id, BIONET_STREAM_DIRECTION_PRODUCER, "audio");
+    if (stream == NULL) {
+        printf("error creating new stream\n");
+        exit(1);
+    }
+
+    sinfo = (stream_info_t *)calloc(1, sizeof(stream_info_t));
+    if (sinfo == NULL) {
+        printf("out of memory!");
+        exit(1);
+    }
+
+    sinfo->device = strdup(alsa_device);
+    if (sinfo->device == NULL) {
+        printf("out of memory!");
+        exit(1);
+    }
+
+    // the sinfo->info.producer fields are all initialized to zero by the calloc, and that's how i like it
+
+    bionet_stream_set_user_data(stream, sinfo);
+
+    r = bionet_node_add_stream(node, stream);
+    if (r < 0) {
+        printf("error adding stream to node\n");
+        exit(1);
+    }
+
+    //  FIXME: set up mixer elements to sane defaults
+
+    //  FIXME: add resources for mixer elements
+
+}
+
+
+
+
+static void try_add_consumer_stream(bionet_node_t *node, int card, int device, snd_ctl_t *handle, snd_pcm_info_t *pcminfo) {
+#if 0
     char id[BIONET_NAME_COMPONENT_MAX_LEN];
     char alsa_device[256];
     int r;
@@ -108,14 +168,15 @@ static void try_add_stream(bionet_node_t *node, int card, int device, snd_ctl_t 
 
     //  FIXME: add resources for mixer elements
 
+#endif
 }
 
 
 
 
 static void try_add_streams(bionet_node_t *node, int card, int device, snd_ctl_t *handle, snd_pcm_info_t *pcminfo) {
-    try_add_stream(node, card, device, handle, pcminfo, BIONET_STREAM_DIRECTION_PRODUCER);
-    try_add_stream(node, card, device, handle, pcminfo, BIONET_STREAM_DIRECTION_CONSUMER);
+    try_add_producer_stream(node, card, device, handle, pcminfo);
+    try_add_consumer_stream(node, card, device, handle, pcminfo);
 }
 
 
@@ -297,8 +358,8 @@ int discover_alsa_hardware(void) {
 
             for (i = 0; i < bionet_node_get_num_streams(node); i ++) {
                 bionet_stream_t *s = bionet_node_get_stream_by_index(node, i);
-                user_data_t *user_data = bionet_stream_get_user_data(s);
-                g_message("    %s (%s)", bionet_stream_get_id(s), user_data->device);
+                stream_info_t *sinfo = bionet_stream_get_user_data(s);
+                g_message("    %s (%s)", bionet_stream_get_id(s), sinfo->device);
             }
         }
 
@@ -349,16 +410,25 @@ next_card:
             // close open streams
             for (j = 0; j < bionet_node_get_num_streams(node); j ++) {
                 bionet_stream_t *stream = bionet_node_get_stream_by_index(node, j);
-                user_data_t *user_data = bionet_stream_get_user_data(stream);
+                stream_info_t *sinfo = bionet_stream_get_user_data(stream);
 
-                free(user_data->device);
+                free(sinfo->device);
 
-                while (user_data->clients != NULL) {
-                    client_t *client = g_slist_nth_data(user_data->clients, 0);
-                    disconnect_client(stream, client);
+                if (bionet_stream_get_direction(stream) == BIONET_STREAM_DIRECTION_PRODUCER) {
+                    if (sinfo->info.producer.alsa != NULL) {
+                        close_alsa_device(sinfo->info.producer.alsa);
+                        free(sinfo->info.producer.alsa);
+                    }
+                } else {
+#if 0
+                    while (user_data->clients != NULL) {
+                        client_t *client = g_slist_nth_data(user_data->clients, 0);
+                        disconnect_client(stream, client);
+                    }
+#endif
                 }
 
-                free(user_data);
+                free(sinfo);
                 bionet_stream_set_user_data(stream, NULL);
             }
 
