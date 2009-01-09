@@ -61,7 +61,7 @@ export INTERFACE_VER
 #
 # Increment this with every buf-fix release;
 # Set this to 0 when INTERFACE_VER changes
-INTERFACE_REV = 0
+INTERFACE_REV = 1
 export INTERFACE_REV
 
 # The number of previous additional interfaces supported by this library. If 
