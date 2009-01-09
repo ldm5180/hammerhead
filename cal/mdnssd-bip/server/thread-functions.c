@@ -225,29 +225,29 @@ fail0:
 
 
 
-static void send_disconnect_event(const char *peer_name) {
+static void handle_client_disconnect(const char *peer_name) {
     int r;
     cal_event_t *event;
 
     event = cal_event_new(CAL_EVENT_DISCONNECT);
     if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "send_disconnect_event: out of memory");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "handle_client_disconnect: out of memory");
         return;
     }
 
     event->peer_name = strdup(peer_name);
     if (event->peer_name == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "send_disconnect_event: out of memory");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "handle_client_disconnect: out of memory");
         cal_event_free(event);
         return;
     }
 
     r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "send_disconnect_event: error writing Disconnect event: %s", strerror(errno));
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: error writing Disconnect event: %s", strerror(errno));
         cal_event_free(event);
     } else if (r != sizeof(cal_event_t*)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "send_disconnect_event: short write of Disconnect event!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: short write of Disconnect event!");
         cal_event_free(event);
     }
 }
@@ -263,7 +263,7 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
 
     r = bip_read_from_peer(peer_name, peer);
     if (r < 0) {
-        send_disconnect_event(peer_name);
+        handle_client_disconnect(peer_name);
         g_hash_table_remove(clients, peer_name);  // close the network connection, free all allocated memory for key & value
         return -1;
     }
