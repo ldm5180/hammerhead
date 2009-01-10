@@ -209,7 +209,7 @@ static int add_resource_to_db(bionet_resource_t *resource) {
     }
 
     hab_type = bionet_hab_get_type(bionet_node_get_hab(bionet_resource_get_node(resource)));
-    r = SHA1_Update(&sha_ctx, hab_type, strlen(hab_id));
+    r = SHA1_Update(&sha_ctx, hab_type, strlen(hab_type));
     if (r != 1) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource HAB-Type\n");
 	return -1;
