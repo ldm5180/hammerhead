@@ -93,7 +93,7 @@ int hab_report_lost_node(const char *node_id);
  * @brief Publishes a block of data to a Stream.
  *
  * @param[in] stream The Stream to publish on.
- * @param[in] buf The data to publish.
+ * @param[in] buffer The data to publish.
  * @param[in] count The number of bytes in buf.
  *
  * @retval 0 Success
