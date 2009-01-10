@@ -34,6 +34,10 @@ clean-local:
 install-exec-hook:
 	$(LDCONFIG_EXE)
 
+.PHONY: test
+test:
+	(cd test; ./do-test)
+
 #
 # Set The SDL Version.
 #
