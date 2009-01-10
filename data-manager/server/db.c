@@ -718,7 +718,7 @@ static int db_get_resource_datapoints_callback(
 	value = bionet_value_new_double(resource, strtod(argv[6], NULL));
 	break; 
     case BIONET_RESOURCE_DATA_TYPE_STRING:
-	tmpstr = malloc(strlen(argv[6]));
+	tmpstr = malloc(strlen(argv[6]) + 1);
 	strcpy(tmpstr, argv[6]);
 	value = bionet_value_new_str(resource, tmpstr);
 	break; 
