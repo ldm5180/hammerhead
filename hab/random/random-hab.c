@@ -128,12 +128,16 @@ int main (int argc, char *argv[]) {
     //       and a lower probability of adding/deleting a node
     //
 
+    sleep(5);
+
     while (1) {
         fd_set readers;
         struct timeval timeout;
         int rnd;
         uint32_t ms_delay;
         int r;
+
+	hab_read();
 
         while (bionet_hab_get_num_nodes(hab) < min_nodes) {
             add_node(hab);

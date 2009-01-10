@@ -20,7 +20,6 @@
 
 
 
-
 static sqlite3 *db = NULL;
 
 extern char * database_file;
@@ -367,6 +366,10 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
     bionet_node_t * node = bionet_resource_get_node(resource);
     bionet_hab_t * hab = bionet_node_get_hab(node);
 
+//    fprintf(stderr, "%s,%s,%s\n", bionet_datapoint_timestamp_to_string(datapoint),
+//	    bionet_resource_get_name(resource),
+//	    bionet_value_to_str(value));
+
     r = snprintf(
         sql,
         sizeof(sql),
@@ -448,7 +451,7 @@ int db_add_datapoint(bionet_datapoint_t *datapoint) {
     resource = bionet_value_get_resource(value);
     node = bionet_resource_get_node(resource);
     hab = bionet_node_get_hab(node);
-    
+
     r = add_hab_to_db(hab);
     if (r != 0) goto fail;
 
@@ -649,6 +652,7 @@ static int db_get_resource_datapoints_callback(
     int err = 0;
     bionet_value_t * value = NULL;
     bionet_datapoint_t * datapoint = NULL;
+    char * tmpstr;
 
     hab = find_hab(hab_list, argv[0], argv[1]);
     if (hab == NULL) {
@@ -707,7 +711,9 @@ static int db_get_resource_datapoints_callback(
 	value = bionet_value_new_double(resource, strtod(argv[6], NULL));
 	break; 
     case BIONET_RESOURCE_DATA_TYPE_STRING:
-	value = bionet_value_new_str(resource, argv[6]);
+	tmpstr = malloc(strlen(argv[6]));
+	strcpy(tmpstr, argv[6]);
+	value = bionet_value_new_str(resource, tmpstr);
 	break; 
     case BIONET_RESOURCE_DATA_TYPE_INVALID:
     default:

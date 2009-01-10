@@ -69,13 +69,11 @@ void update_node(bionet_hab_t* random_hab) {
         if (!terse) {
             printf("%s\n", bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
         } else {
-            printf(
-                "%s %s %s = %s @ %s\n",
-                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+            fprintf(stderr,
+                "%s,%s,%s\n",
+                bionet_datapoint_timestamp_to_string(datapoint),
                 bionet_resource_get_name(resource),
-                bionet_value_to_str(bionet_datapoint_get_value(datapoint)),
-                bionet_datapoint_timestamp_to_string(datapoint)
+                bionet_value_to_str(bionet_datapoint_get_value(datapoint))
             );
         }
     }

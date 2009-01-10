@@ -15,7 +15,7 @@ mv bdm.db $ORIG_DIR/.
 mv bdm.db-old bdm.db
 cd $ORIG_DIR
 echo "Starting BDM server..."
-bionet-data-manager -f ./bdm.db -r "RANDOM.*.*:*" &
+bionet-data-manager -f ./bdm.db -r "RANDOM.*.*:*" 2> /dev/null &
 sleep 1
 
 #run a Random HAB and output the test data here
