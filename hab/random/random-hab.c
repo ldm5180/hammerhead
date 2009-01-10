@@ -24,6 +24,27 @@
 
 
 om_t output_mode = OM_NORMAL;
+bionet_hab_t *hab;
+
+
+
+
+void show_stuff_going_away(void) {
+    int i;
+
+    if (output_mode != OM_BIONET_WATCHER) return;
+
+    for (i = 0; i < bionet_hab_get_num_nodes(hab); i ++) {
+        bionet_node_t *node = bionet_hab_get_node_by_index(hab, i);
+        g_message("lost node: %s", bionet_node_get_name(node));
+    }
+    g_message("lost hab: %s", bionet_hab_get_name(hab));
+}
+
+
+void signal_handler(int unused) {
+    exit(0);
+}
 
 
 
@@ -42,7 +63,6 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value) {
 
 
 int main (int argc, char *argv[]) {
-    bionet_hab_t* hab;
     int bionet_fd;
     int i;
 
@@ -134,9 +154,17 @@ int main (int argc, char *argv[]) {
         return 1;
     }
 
+    if (output_mode == OM_BIONET_WATCHER) {
+        g_message("new hab: %s", bionet_hab_get_name(hab));
+
+        signal(SIGTERM, signal_handler);
+        signal(SIGINT, signal_handler);
+        atexit(show_stuff_going_away);
+    }
+
 
     //
-    // give clients 5 seconds to connect
+    // give clients a couple of seconds to connect
     // FIXME: racy hack
     //
 
@@ -153,7 +181,7 @@ int main (int argc, char *argv[]) {
 
             now = time(NULL);
 
-            if ((now - start) > 5) break;
+            if ((now - start) > 2) break;
 
             timeout.tv_sec = 1;
             timeout.tv_usec = 0;
@@ -236,6 +264,7 @@ void destroy_node(bionet_hab_t* random_hab) {
     if (node == NULL) return;
 
     if (output_mode == OM_NORMAL) printf("removing Node %s\n", bionet_node_get_id(node));
+    else if (output_mode == OM_BIONET_WATCHER) printf("lost node: %s\n", bionet_node_get_name(node));
 
     bionet_hab_remove_node_by_id(random_hab, bionet_node_get_id(node));
     hab_report_lost_node(bionet_node_get_id(node));
