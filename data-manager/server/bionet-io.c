@@ -16,13 +16,13 @@
 //
 
 int hab_list_index = 0;
-char *hab_list_name_patterns[(2 * BIONET_NAME_COMPONENT_MAX_LEN)];
+char *hab_list_name_patterns[MAX_SUBSCRIPTIONS];
 
 int node_list_index = 0;
-char *node_list_name_patterns[(3 * BIONET_NAME_COMPONENT_MAX_LEN)];
+char *node_list_name_patterns[MAX_SUBSCRIPTIONS];
 
 int resource_index = 0;
-char *resource_name_patterns[(4 * BIONET_NAME_COMPONENT_MAX_LEN)];
+char *resource_name_patterns[MAX_SUBSCRIPTIONS];
 
 
 
@@ -130,7 +130,7 @@ int try_to_connect_to_bionet(void *unused) {
         (hab_list_index == 0) &&
         (node_list_index == 0) &&
         (resource_index == 0)
-	) {
+    ) {
         bionet_subscribe_hab_list_by_name("*.*");
         bionet_subscribe_node_list_by_name("*.*.*");
         bionet_subscribe_datapoints_by_name("*.*.*:*");

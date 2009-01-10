@@ -80,14 +80,15 @@ GPtrArray *db_get_resource_datapoints(
 // stuff for being a bionet client
 //
 
+#define MAX_SUBSCRIPTIONS 100
 extern int hab_list_index;
-extern char *hab_list_name_patterns[(2 * BIONET_NAME_COMPONENT_MAX_LEN)];
+extern char *hab_list_name_patterns[MAX_SUBSCRIPTIONS];
 
 extern int node_list_index;
-extern char *node_list_name_patterns[(3 * BIONET_NAME_COMPONENT_MAX_LEN)];
+extern char *node_list_name_patterns[MAX_SUBSCRIPTIONS];
 
 extern int resource_index;
-extern char *resource_name_patterns[(4 * BIONET_NAME_COMPONENT_MAX_LEN)];
+extern char *resource_name_patterns[MAX_SUBSCRIPTIONS];
 
 
 int try_to_connect_to_bionet(void *unused);

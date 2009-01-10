@@ -70,18 +70,33 @@ int main(int argc, char *argv[]) {
         for ( ; *argv != NULL; argv ++) {
             if (strcmp(*argv, "--habs") == 0) {
                 argv ++;
-                hab_list_name_patterns[hab_list_index] = *argv;
-                hab_list_index ++;
+                if (hab_list_index < MAX_SUBSCRIPTIONS) {
+                    hab_list_name_patterns[hab_list_index] = *argv;
+                    hab_list_index ++;
+                } else {
+                    g_warning("skipping HAB subscription %s, only %d are handled", *argv, MAX_SUBSCRIPTIONS);
+                    argv ++;
+                }
 
             } else if (strcmp(*argv, "--nodes") == 0) {
                 argv ++;
-                node_list_name_patterns[node_list_index] = *argv;
-                node_list_index ++;
+                if (node_list_index < MAX_SUBSCRIPTIONS) {
+                    node_list_name_patterns[node_list_index] = *argv;
+                    node_list_index ++;
+                } else {
+                    g_warning("skipping Node subscription %s, only %d are handled", *argv, MAX_SUBSCRIPTIONS);
+                    argv ++;
+                }
 
             } else if ((strcmp(*argv, "-r") == 0) || (strcmp(*argv, "--resource") == 0) || (strcmp(*argv, "--resources") == 0)) {
                 argv ++;
-                resource_name_patterns[resource_index] = *argv;
-                resource_index ++;
+                if (resource_index < MAX_SUBSCRIPTIONS) {
+                    resource_name_patterns[resource_index] = *argv;
+                    resource_index ++;
+                } else {
+                    g_warning("skipping Resource subscription %s, only %d are handled", *argv, MAX_SUBSCRIPTIONS);
+                    argv ++;
+                }
 
             } else if ((strcmp(*argv, "-f") == 0) 
 		       || (strcmp(*argv, "--file") == 0)) {
