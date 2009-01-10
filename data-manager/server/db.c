@@ -529,9 +529,16 @@ int db_add_node(bionet_node_t *node) {
     // add this node's resources
     for (i = 0; i < bionet_node_get_num_resources(node); i++) {
         bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
+        bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, 0);
 
         r = add_resource_to_db(resource);
         if (r != 0) goto fail;
+
+        // add the resource's data point, if any
+        if (d != NULL) {
+            r = add_datapoint_to_db(d);
+            if (r != 0) goto fail;
+        }
     }
 
 
