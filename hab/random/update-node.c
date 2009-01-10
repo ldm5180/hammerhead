@@ -37,10 +37,10 @@ void update_node(bionet_hab_t* random_hab) {
     node = pick_random_node(random_hab);
     if (node == NULL) return;
 
-    if (!terse) printf("updating Resources on Node %s:\n", bionet_node_get_id(node));
+    if (output_mode == OM_NORMAL) printf("updating Resources on Node %s:\n", bionet_node_get_id(node));
 
     if (0 == bionet_node_get_num_resources(node)) {
-        if (!terse) printf("    no Resources, skipping\n");
+        if (output_mode == OM_NORMAL) printf("    no Resources, skipping\n");
         return;
     }
 
@@ -48,7 +48,7 @@ void update_node(bionet_hab_t* random_hab) {
 	bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
         bionet_datapoint_t *datapoint;
 
-        if (!terse) {
+        if (output_mode == OM_NORMAL) {
             printf(
                 "    %s %s %s = ",
                 bionet_resource_get_id(resource),
@@ -59,16 +59,16 @@ void update_node(bionet_hab_t* random_hab) {
 
         // resources are only updated 50% of the time
         if ((rand() % 2) == 0) {
-            if (!terse) printf("*** skipped\n");
+            if (output_mode == OM_NORMAL) printf("*** skipped\n");
             continue;
         }
 
         set_random_resource_value(resource);
 
         datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
-        if (!terse) {
+        if (output_mode == OM_NORMAL) {
             printf("%s\n", bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
-        } else {
+        } else if (output_mode == OM_BDM_CLIENT) {
             fprintf(stderr,
                 "%s,%s,%s\n",
                 bionet_datapoint_timestamp_to_string(datapoint),

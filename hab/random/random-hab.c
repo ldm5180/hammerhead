@@ -23,13 +23,13 @@
 
 
 
-int terse = 0;
+om_t output_mode = OM_NORMAL;
 
 
 
 
 void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value) {
-    if (!terse) {
+    if (output_mode == OM_NORMAL) {
         printf(
             "callback: should set %s to '%s'\n",
             bionet_resource_get_local_name(resource),
@@ -83,9 +83,16 @@ int main (int argc, char *argv[]) {
             hab_id = argv[i];
 
         } else if (
-            (strcmp(argv[i], "--terse") == 0)
+            (strcmp(argv[i], "--output-mode") == 0)
         ) {
-            terse = 1;
+            i ++;
+            if (strcmp(argv[i], "normal") == 0) output_mode = OM_NORMAL;
+            else if (strcmp(argv[i], "bdm-client") == 0) output_mode = OM_BDM_CLIENT;
+            else if (strcmp(argv[i], "bionet-watcher") == 0) output_mode = OM_BIONET_WATCHER;
+            else {
+                fprintf(stderr, "unknown output mode %s\n", argv[i]);
+                exit(1);
+            }
 
         } else if (
             (strcmp(argv[i], "--help") == 0) ||
@@ -220,7 +227,7 @@ void destroy_node(bionet_hab_t* random_hab) {
     node = pick_random_node(random_hab);
     if (node == NULL) return;
 
-    if (!terse) printf("removing Node %s\n", bionet_node_get_id(node));
+    if (output_mode == OM_NORMAL) printf("removing Node %s\n", bionet_node_get_id(node));
 
     bionet_hab_remove_node_by_id(random_hab, bionet_node_get_id(node));
     hab_report_lost_node(bionet_node_get_id(node));

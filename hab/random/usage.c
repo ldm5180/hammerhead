@@ -18,7 +18,7 @@
 
 
 void usage(int exit_val) {
-    printf("Random-hab makes up Nodes and Resources, and reports them to the Nag.\n\
+    printf("The random-hab makes up Nodes and Resources, and reports them to Bionet.\n\
 The Resources change over time, and Nodes come and go,\n\
 providing a reasonable test load.\n\
 \n\
@@ -39,8 +39,8 @@ OPTIONS:\n\
                                  the random-hab sleeps up to this long (in\n\
                                  seconds).\n\
 \n\
-    --terse                      If specified, only terse datapoint output\n\
-                                 is provided.\n\
+    --output-mode MODE           Available modes are 'normal',\n\
+                                 'bdm-client', and 'bionet-watcher'\n\
 \n\
 ");
 

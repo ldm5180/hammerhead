@@ -11,7 +11,13 @@
 #define HAB_TYPE "random-hab"
 
 
-extern int terse;
+typedef enum {
+    OM_NORMAL,
+    OM_BDM_CLIENT,
+    OM_BIONET_WATCHER
+} om_t;
+
+extern om_t output_mode;
 
 
 void new_node_with_resources(bionet_hab_t* random_hab);

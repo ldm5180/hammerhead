@@ -58,7 +58,7 @@ void add_resource(bionet_node_t *node) {
         fprintf(stderr, "Error adding Resource\n");
     }
 
-    if (!terse) {
+    if (output_mode == OM_NORMAL) {
         printf(
             "    %s %s %s = ",
             resource_id,
@@ -72,13 +72,13 @@ void add_resource(bionet_node_t *node) {
     // the other half of the resources get an initial datapoint
     //
     if ((rand() % 2) == 0) {
-        if (!terse) printf("(starts with no value)\n");
+        if (output_mode == OM_NORMAL) printf("(starts with no value)\n");
     } else {
         set_random_resource_value(resource);
         datapoint = bionet_resource_get_datapoint_by_index(resource, 0);  // there's only one datapoint
-        if (!terse) {
+        if (output_mode == OM_NORMAL) {
             printf("%s\n", bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
-        } else {
+        } else if (output_mode == OM_BDM_CLIENT) {
             fprintf(stderr,
                 "%s,%s,%s\n",
                 bionet_datapoint_timestamp_to_string(datapoint),
@@ -110,7 +110,7 @@ void add_node(bionet_hab_t* random_hab) {
         if (bionet_hab_get_node_by_id(random_hab, node_id) == NULL) break;
     } while(1);
 
-    if (!terse) printf("new Node %s\n", node_id);
+    if (output_mode == OM_NORMAL) printf("new Node %s\n", node_id);
 
     node = bionet_node_new(random_hab, node_id);
     
