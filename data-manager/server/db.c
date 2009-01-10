@@ -208,14 +208,14 @@ static int add_resource_to_db(bionet_resource_t *resource) {
         return -1;
     }
 
-    hab_type = bionet_hab_get_type(bionet_node_get_hab(bionet_resource_get_node(resource)));
+    hab_type = bionet_hab_get_type(bionet_resource_get_hab(resource));
     r = SHA1_Update(&sha_ctx, hab_type, strlen(hab_type));
     if (r != 1) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource HAB-Type\n");
 	return -1;
     }
     
-    hab_id = bionet_hab_get_id(bionet_node_get_hab(bionet_resource_get_node(resource)));
+    hab_id = bionet_hab_get_id(bionet_resource_get_hab(resource));
     r = SHA1_Update(&sha_ctx, hab_id, strlen(hab_id));
     if (r != 1) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource HAB-ID\n");
