@@ -1,0 +1,32 @@
+#!/bin/bash
+
+echo starting random-hab
+$ROOT/hab/random/random-hab --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
+
+echo starting two bionet-watchers
+$ROOT/client/watcher/bionet-watcher >| out.watcher.0 &
+$ROOT/client/watcher/bionet-watcher >| out.watcher.1 &
+
+sleep 30
+
+kill %1
+sleep 2  # to let the clients notice
+
+kill %2
+kill %3
+
+
+if ! diff -q out.watcher.0 out.watcher.1; then
+    echo "ERROR: watcher outputs differ:"
+    diff -u out.watcher.0 out.watcher.1
+    exit 1
+fi
+echo "watcher outputs are identical, yay"
+
+if ! diff -q out.watcher.0 out.random-hab; then
+    echo "ERROR: watcher output differs from random-hab output:"
+    diff -u out.random-hab out.watcher.0
+    exit 1
+fi
+echo "watcher outputs are identical to random-hab output, yay"
+
