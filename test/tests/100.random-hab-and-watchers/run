@@ -1,11 +1,13 @@
 #!/bin/bash
 
+UNIQUE=$$
+
 echo starting random-hab
-$ROOT/hab/random/random-hab --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
 
 echo starting two bionet-watchers
-$ROOT/client/watcher/bionet-watcher >| out.watcher.0 &
-$ROOT/client/watcher/bionet-watcher >| out.watcher.1 &
+$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.0 &
+$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.1 &
 
 sleep 30
 
