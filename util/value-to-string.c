@@ -134,7 +134,7 @@ char *bionet_value_to_str(const bionet_value_t *value)
 	break;
 
     case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-	r = snprintf(str, BIONET_STR_MAX, "%.15g", value->content.double_v);
+	r = snprintf(str, BIONET_STR_MAX, "%.14g", value->content.double_v);
 	if (r >= BIONET_STR_MAX)
 	{
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
