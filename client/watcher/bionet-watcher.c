@@ -21,34 +21,33 @@
 
 
 
+
 #if defined(LINUX) || defined(MACOSX)
 #include <signal.h>
 
 void signal_handler(int signo) {
     int hi;
 
-    g_log("", G_LOG_LEVEL_INFO, "cache:");
+    g_message("cache:");
 
     for (hi = 0; hi < bionet_cache_get_num_habs(); hi ++) {
         int ni;
         bionet_hab_t *hab = bionet_cache_get_hab_by_index(hi);
 
-        g_log("", G_LOG_LEVEL_INFO, "    %s", bionet_hab_get_name(hab));
+        g_message("    %s", bionet_hab_get_name(hab));
 
         for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
             int i;
             bionet_node_t *node = bionet_hab_get_node_by_index(hab, ni);
 
-            g_log("", G_LOG_LEVEL_INFO, "        %s", bionet_node_get_id(node));
+            g_message("        %s", bionet_node_get_id(node));
 
             for (i = 0; i < bionet_node_get_num_resources(node); i ++) {
                 bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
                 bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, 0);
 		bionet_value_t *value = bionet_datapoint_get_value(d);
                 if (d == NULL) {
-                    g_log(
-                        "",
-                        G_LOG_LEVEL_INFO,
+                    g_message(
                         "            %s (%s %s): (no value)",
                         bionet_resource_get_id(resource),
                         bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
@@ -56,9 +55,7 @@ void signal_handler(int signo) {
                     );
                 } else {
 		    char * value_str = bionet_value_to_str(value);
-                    g_log(
-                        "",
-                        G_LOG_LEVEL_INFO,
+                    g_message(
                         "            %s (%s %s):  %s @ %s",
                         bionet_resource_get_id(resource),
                         bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
@@ -69,18 +66,15 @@ void signal_handler(int signo) {
 		    free(value_str);
                 }
             }
-#if 0
-            for (i = 0; i < g_slist_length(node->streams); i ++) {
-                bionet_stream_t *stream = g_slist_nth_data(node->streams, i);
-                g_log(
-                    "", G_LOG_LEVEL_INFO,
+            for (i = 0; i < bionet_node_get_num_streams(node); i ++) {
+                bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
+                g_message(
                     "            %s %s %s", 
-                    stream->id,
-                    stream->type,
-                    bionet_stream_direction_to_string(stream->direction)
+                    bionet_stream_get_id(stream),
+                    bionet_stream_get_type(stream),
+                    bionet_stream_direction_to_string(bionet_stream_get_direction(stream))
                 );
             }
-#endif
         }
     }
 }
@@ -96,9 +90,7 @@ void cb_datapoint(bionet_datapoint_t *datapoint) {
 
     char * value_str = bionet_value_to_str(value);
 
-    g_log(
-        "",
-        G_LOG_LEVEL_INFO,
+    g_message(
         "%s = %s %s %s @ %s",
         bionet_resource_get_name(resource),
         bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
@@ -112,68 +104,70 @@ void cb_datapoint(bionet_datapoint_t *datapoint) {
 
 
 void cb_lost_node(bionet_node_t *node) {
-    g_log("", G_LOG_LEVEL_INFO, "lost node: %s", bionet_node_get_name(node));
+    g_message("lost node: %s", bionet_node_get_name(node));
 }
 
 
 void cb_new_node(bionet_node_t *node) {
     int i;
 
-    g_log("", G_LOG_LEVEL_INFO, "new node: %s", bionet_node_get_name(node));
+    g_message("new node: %s", bionet_node_get_name(node));
 
     if (bionet_node_get_num_resources(node)) {
-        g_log("", G_LOG_LEVEL_INFO, "    Resources:");
+        g_message("    Resources:");
 
         for (i = 0; i < bionet_node_get_num_resources(node); i++) {
             bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
             bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
 
             if (datapoint == NULL) {
-                g_log("", G_LOG_LEVEL_INFO,
-		      "        %s %s %s (no known value)", 
-		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-		      bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-		      bionet_resource_get_id(resource));
+                g_message(
+                    "        %s %s %s (no known value)", 
+                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                    bionet_resource_get_id(resource)
+                );
             } else {
-		char * value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
-                g_log("", G_LOG_LEVEL_INFO,
-		      "        %s %s %s = %s @ %s", 
-		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-		      bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-		      bionet_resource_get_id(resource),
-		      value_str,
-		      bionet_datapoint_timestamp_to_string(datapoint));
+                char * value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+
+                g_message(
+                    "        %s %s %s = %s @ %s", 
+                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                    bionet_resource_get_id(resource),
+                    value_str,
+                    bionet_datapoint_timestamp_to_string(datapoint)
+                );
+
 		free(value_str);
             }
 
         }
     }
-#if 0
-    if (node->streams) {
-        g_log("", G_LOG_LEVEL_INFO, "    Streams:");
 
-        for (i = node->streams; i != NULL; i = i->next) {
-            bionet_stream_t *stream = i->data;
-            g_log(
-                "", G_LOG_LEVEL_INFO,
+    if (bionet_node_get_num_streams(node)) {
+        g_message("    Streams:");
+
+        for (i = 0; i < bionet_node_get_num_streams(node); i++) {
+            bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
+            g_message(
                 "        %s %s %s", 
-                stream->id,
-                stream->type,
-                bionet_stream_direction_to_string(stream->direction)
+                bionet_stream_get_id(stream),
+                bionet_stream_get_type(stream),
+                bionet_stream_direction_to_string(bionet_stream_get_direction(stream))
             );
         }
     }
-#endif
 }
 
 
 void cb_lost_hab(bionet_hab_t *hab) {
-    g_log("", G_LOG_LEVEL_INFO, "lost hab: %s", bionet_hab_get_name(hab));
+    g_message("lost hab: %s", bionet_hab_get_name(hab));
 }
 
 
 void cb_new_hab(bionet_hab_t *hab) {
-    g_log("", G_LOG_LEVEL_INFO, "new hab: %s", bionet_hab_get_name(hab));
+    g_message("new hab: %s", bionet_hab_get_name(hab));
 }
 
 
@@ -211,10 +205,9 @@ int main(int argc, char *argv[]) {
     // this must happen before anything else
     bionet_fd = bionet_connect();
     if (bionet_fd < 0) {
-        g_log("", G_LOG_LEVEL_WARNING, "error connecting to Bionet");
+        fprintf(stderr, "error connecting to Bionet");
         exit(1);
     }
-    g_log("", G_LOG_LEVEL_INFO, "connected to Bionet");
 
 
     bionet_register_callback_new_hab(cb_new_hab);
@@ -280,7 +273,7 @@ int main(int argc, char *argv[]) {
             r = select(bionet_fd + 1, &readers, NULL, NULL, NULL);
 
             if ((r < 0) && (errno != EINTR)) {
-                g_log("", G_LOG_LEVEL_WARNING, "error from select: %s", strerror(errno));
+                fprintf(stderr, "error from select: %s", strerror(errno));
                 g_usleep(1000*1000);
                 break;
             }
