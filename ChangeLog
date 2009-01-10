@@ -1,6 +1,24 @@
-Bionet 2.0.5
+
+Bionet 2.1.0, 2009 January 10
+
+    * New API & network protocol!  Source code and executables are *not*
+      backwards compatible with 2.0!
+
+    * Fixed bugs all over.
+
+    * Added Python binding for the HAB library.  Added Python module
+      installer.
+
+    * New example HAB: syshealth, which reports system health information.
 
     * MMOD-HAB only allows one instance per gateway device file
+
+    * BDM server now takes a command-line argument specifying the bdm.db
+      file to use.
+
+    * Added the incomplete beginnings of a Stream API.  Not complete yet,
+      not ready for use.  This part of the Bionet API will change and
+      mature over the next few point releases.
 
 
 Bionet 2.0.4, 2008 December 18
