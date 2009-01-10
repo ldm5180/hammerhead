@@ -25,6 +25,7 @@ echo "Running Random-HAB..."
 ./random-hab -i tester1 --output-mode bdm-client 2> $ORIG_DIR/random.out &
 sleep 35
 killall lt-random-hab 
+cd $ORIG_DIR
 
 #grab data from the BDM
 YEAR=`date +%Y`
