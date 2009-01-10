@@ -1,0 +1,42 @@
+#!/bin/bash
+
+UNIQUE=$$
+
+YEAR=`date +%Y`
+PREV_YEAR=$(($YEAR-1))
+NEXT_YEAR=$(($YEAR+1))
+
+echo "making DB file"
+rm -f bdm.db
+pushd $ROOT/data-manager/server > /dev/null
+./make-db.sh > /dev/null
+popd > /dev/null
+mv $ROOT/data-manager/server/bdm.db .
+
+echo starting BDM
+$ROOT/data-manager/server/bionet-data-manager --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
+sleep 3 # let the bdm come up before starting the HAB
+
+echo starting random-hab
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+
+sleep 10
+
+echo "test run complete, killing random-hab"
+kill %2
+sleep 1 # let the BDM get any last things sent by the random-hab
+
+echo getting data from bdm
+export PYTHONPATH=$ROOT/data-manager/py-client
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -b "$PREV_YEAR-01-01 00:00:00" -e "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-client.py
+
+echo "killing BDM"
+kill %1
+
+if ! diff -q out.random-hab out.bdm-client.py; then
+    echo "ERROR: bdm-client.py output differs from random-hab output:"
+    diff -u out.random-hab out.bdm-client.py
+    exit 1
+fi
+echo "bdm-client.py output is identical to random-hab output, yay"
+

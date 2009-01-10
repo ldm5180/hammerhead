@@ -91,8 +91,8 @@ void add_resource(bionet_node_t *node) {
                 bionet_datapoint_timestamp_to_string(datapoint)
             );
         } else if (output_mode == OM_BDM_CLIENT) {
-            fprintf(stderr,
-                "%s,%s,%s\n",
+            g_message(
+                "%s,%s,%s",
                 bionet_datapoint_timestamp_to_string(datapoint),
                 bionet_resource_get_name(resource),
                 bionet_value_to_str(bionet_datapoint_get_value(datapoint))
