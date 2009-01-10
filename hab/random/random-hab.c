@@ -52,6 +52,14 @@ int main (int argc, char *argv[]) {
     char *hab_type = HAB_TYPE;
     char *hab_id = NULL;
 
+    bionet_log_context_t log_context = {
+        destination: BIONET_LOG_TO_STDOUT,
+        log_limit: G_LOG_LEVEL_INFO
+    };
+
+    g_log_set_default_handler(bionet_glib_log_handler, &log_context);
+
+
 
     //
     //  Seed the random function
