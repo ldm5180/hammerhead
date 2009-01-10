@@ -120,15 +120,43 @@ int main (int argc, char *argv[]) {
     }
 
 
-    //  
-    //  Interacting with the hab:
-    //      -make five nodes
-    //      -if there are every less than 5 nodes add more until there are 5 nodes
-    //      -iterate through, having a high probability of changing resources
-    //       and a lower probability of adding/deleting a node
+    //
+    // give clients 5 seconds to connect
+    // FIXME: racy hack
     //
 
-    sleep(5);
+    {
+        time_t start;
+
+        start = time(NULL);
+
+        do {
+            time_t now;
+            struct timeval timeout;
+            fd_set readers;
+            int r;
+
+            now = time(NULL);
+
+            if ((now - start) > 5) break;
+
+            timeout.tv_sec = 1;
+            timeout.tv_usec = 0;
+
+            FD_ZERO(&readers);
+            FD_SET(bionet_fd, &readers);
+
+            r = select(bionet_fd + 1, &readers, NULL, NULL, &timeout);
+            if (r < 0) {
+                fprintf(stderr, "error from select: %s", strerror(errno));
+                g_usleep(1000*1000);
+                continue;
+            }
+
+            hab_read();
+        } while(1);
+    }
+
 
     while (1) {
         fd_set readers;
