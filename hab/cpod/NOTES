@@ -1,0 +1,13 @@
+Some notes on the state of the cpod hab:
+================================================
+
+The hab correctly connects to the cpod, negotiates parameters for
+an rfcomm connection.  After writing anything to the file desctiptor,
+we correctly see the data go out to the device, and the acknowledge-
+ments from the HCI layer, but we never see the UA command comming back
+from the device.  Either I'm sending data correctly and the cpod is 
+broken, or I'm sending the data incorrectly, and the cpod isn't
+responding.  If the latter is true, we should still see the UA 
+command coming back from the cpod's bluetooth layer, as rfcomm 
+provides reliable communication.  Whether or not the cpod likes the
+data is a different story.  Something is really fishy here...
