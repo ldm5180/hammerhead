@@ -244,13 +244,13 @@ implementation
 					    sizeof(mmod_settings_msg_t));
 	    *settings_msg = settings;
 	    call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
-	    if (settings.heartbeat_time <= 10)
+	    if (settings.heartbeat_time <= 20)
 	    {
 		call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
 	    }
 	    else
 	    {
-		call SettingsCheck.startPeriodic((settings.heartbeat_time - 5) * 1000);
+		call SettingsCheck.startPeriodic((settings.heartbeat_time - 10) * 1000);
 	    }
 	}
 	else
