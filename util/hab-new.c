@@ -141,11 +141,6 @@ static int bionet_hab_set_id(bionet_hab_t *hab, const char *id) {
         }
 
 	hab->id = strdup(hostname);
-
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
-	      "bionet_hab_set_id(): the passed-in HAB has no HAB-ID, using hostname '%s'", 
-	      hab->id);
-
     }
 
     return 0;
