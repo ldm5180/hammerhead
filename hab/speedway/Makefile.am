@@ -30,7 +30,7 @@ speedway_SOURCES =         \
 
 speedway_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libhab -I../../util -I LTK-1.0.0.5/LTKC/Library
 
-speedway_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../libhab -L../../util -L../../asn.1 -L../../cal/mdnssd-bip/server -L LTK-1.0.0.5/LTKC/Library/LLRP.org -L LTK-1.0.0.5/LTKC/Library
+speedway_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../libhab -L../../util -L../../asn.1 -L../../cal/mdnssd-bip/server -LLTK-1.0.0.5/LTKC/Library/LLRP.org -LLTK-1.0.0.5/LTKC/Library
 
 speedway_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lltkc -lltkcllrporg -lm -lpthread
 
