@@ -1,4 +1,7 @@
+
 #include <errno.h>
+#include <stdio.h>
+
 #include <glib.h>
 
 #include "ltkc.h"
@@ -20,7 +23,5 @@ void printXMLMessage(LLRP_tSMessage *pMessage)
 	LLRP_toXMLString(&pMessage->elementHdr, aBuf, sizeof aBuf);
 
 	printf("%s", aBuf);
-
-	return 0;
 }
 

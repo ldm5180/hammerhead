@@ -1,4 +1,7 @@
+
 #include <errno.h>
+#include <stdio.h>
+
 #include <glib.h>
 
 #include "ltkc.h"
@@ -41,7 +44,7 @@ int resetConfigurationToFactoryDefaults()
      */
     pRsp = (LLRP_tSSET_READER_CONFIG_RESPONSE *) pRspMsg;
 
-printf("pnt20\n");
+    printf("pnt20\n");
 
     /*
      * Check the LLRPStatus parameter.

@@ -34,7 +34,7 @@ int startROSpec();
 void printTagReportData(LLRP_tSRO_ACCESS_REPORT *pRO_ACCESS_REPORT);
 LLRP_tSMessage *transact(LLRP_tSMessage *pSendMsg);
 void printXMLMessage(LLRP_tSMessage *pMessage);
-void printOneTagReport(LLRP_tSTagReportData *pTagReportData);
+void printOneTagReportData(LLRP_tSTagReportData *pTagReportData);
 int freeMessage(LLRP_tSMessage *pMessage);
 
 #endif 

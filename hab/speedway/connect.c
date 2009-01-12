@@ -1,5 +1,7 @@
+
 #include <errno.h>
 #include <signal.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -49,7 +51,7 @@ int speedway_connect(const char* reader_ip) {
 
 	rc = LLRP_Conn_openConnectionToReader(pConn, reader_ip);
 
-	if (rc != NULL) {
+	if (rc != 0) {
 		printf("Error: speedway_connect() %s (%d)\n", 
 			pConn->pConnectErrorStr, rc);
 
