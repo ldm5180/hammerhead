@@ -71,18 +71,14 @@ int main(int argc, char *argv[]) {
 	}
 
 
+        // 
+        // init the Speedway reader
+        //
+
 	if (speedway_connect(reader_ip) != 0) {
 		printf("Error: speedway connect failed\n");
 		goto end;
 	}
-
-
-        //
-        // if we get here, we're connected to the Speedway reader
-        //
-
-	add_node();
-
 
 	if (scrubConfiguration() != 0) {
 		printf("Error: scrub config failed\n");
@@ -98,6 +94,14 @@ int main(int argc, char *argv[]) {
 		printf("Error: enableROSpec failed\n");
 		goto end;
 	}
+
+
+        //
+        // if we get here, we're connected to the Speedway reader
+        //
+
+	add_node();
+
 
 	for (i = 1; i < 5; i++) {
 		printf("INFO: Starting run %d \n", i);
@@ -115,8 +119,8 @@ int main(int argc, char *argv[]) {
 
 	scrubConfiguration();
 
-	end: 
-		LLRP_TypeRegistry_destruct(pTypeRegistry);
+end: 
+        LLRP_TypeRegistry_destruct(pTypeRegistry);
 
     exit(0);
 }
