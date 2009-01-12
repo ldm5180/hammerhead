@@ -32,6 +32,19 @@ int main(int argc, char *argv[]) {
 
 	bionet_hab_t *hab;
 
+
+        for (i = 1; i < argc; i ++) {
+            if (strcmp(argv[i], "--target") == 0) {
+                i ++;
+                reader_ip = argv[i];
+
+            } else {
+                fprintf(stderr, "unknown command-line argument '%s'\n", argv[i]);
+                exit(1);
+            }
+        }
+
+
 	// todo: parse cmd line args.
 
 	if (local_dbg) {
