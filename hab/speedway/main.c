@@ -27,8 +27,8 @@ int main(int argc, char *argv[]) {
 	int bionet_fd;
 
 	char* hab_type = "speedway";
-	char* hab_id = "storm";
-	char* reader_ip = "192.168.5.42";
+	char* hab_id = NULL;
+	char* reader_ip = NULL;
 
 	bionet_hab_t *hab;
 
@@ -38,14 +38,20 @@ int main(int argc, char *argv[]) {
                 i ++;
                 reader_ip = argv[i];
 
+            } else if (strcmp(argv[i], "--id") == 0) {
+                i ++;
+                hab_id = argv[i];
+
             } else {
                 fprintf(stderr, "unknown command-line argument '%s'\n", argv[i]);
                 exit(1);
             }
         }
 
-
-	// todo: parse cmd line args.
+        if (reader_ip == NULL) {
+            fprintf(stderr, "no reader IP specified (use --target)\n");
+            exit(1);
+        }
 
 	if (local_dbg) {
 		printf("reader_ip = %s\n", reader_ip);
