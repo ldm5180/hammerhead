@@ -1,0 +1,17 @@
+diff -ur LTK-1.0.0.5.orig/LTK/LTKC/Library/ltkc_platform.h LTK-1.0.0.5/LTK/LTKC/Library/ltkc_platform.h
+--- LTK-1.0.0.5.orig/LTK/LTKC/Library/ltkc_platform.h	2008-01-29 18:56:24.000000000 -0600
++++ LTK-1.0.0.5/LTK/LTKC/Library/ltkc_platform.h	2009-01-12 12:19:08.000000000 -0600
+@@ -28,8 +28,13 @@
+ #include <stdlib.h>         /* malloc() */
+ #include <string.h>         /* memcpy() */
+ 
++#ifndef FALSE
+ #define FALSE       0
++#endif
++
++#ifndef TRUE
+ #define TRUE        1
++#endif
+ 
+ /*
+  * Typedefs of simple types.

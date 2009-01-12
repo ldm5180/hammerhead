@@ -38,10 +38,12 @@ speedway_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-s
 # we need to compile the LLRP Tool Kit before compiling the speedway hab
 BUILT_SOURCES = LTK
 LTK_DIR = LTK-1.0.0.5
+LTK_PATCH = ltkc-1.0.0.5.patch
 
 $(LTK_DIR): ltkc_src_1_0_0_5.tgz
 	tar -xzf ltkc_src_1_0_0_5.tgz
 	mv LTK $(LTK_DIR)
+	patch --dir=$(LTK_DIR) -p2 --quiet < $(LTK_PATCH) 
 
 .PHONY: LTK
 LTK: $(LTK_DIR)
