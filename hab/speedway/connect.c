@@ -58,11 +58,6 @@ int speedway_connect(const char* reader_ip) {
 		return -3;
 	}
 
-	/*
-	 * Record the pointer to the connection object.
-	 */
-	g_pConnectionToReader = pConn;
-
 	if (g_verbose) {
 		printf("Info: Connected, checking status ... \n");
 	}

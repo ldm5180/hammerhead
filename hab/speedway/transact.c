@@ -26,7 +26,6 @@
 
 LLRP_tSMessage *transact (LLRP_tSMessage *pSendMsg) 
 {
-    LLRP_tSConnection *pConn = g_pConnectionToReader;
     LLRP_tSMessage *pRspMsg;
 
     /*

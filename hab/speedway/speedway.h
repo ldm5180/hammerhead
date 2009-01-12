@@ -7,7 +7,6 @@
 extern int g_verbose;
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
-extern LLRP_tSConnection *g_pConnectionToReader;
 
 // bionet functions.
 int add_node(bionet_hab_t *hab);

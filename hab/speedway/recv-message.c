@@ -16,7 +16,6 @@
  */
 
 LLRP_tSMessage * recvMessage (int nMaxMS) {
-	LLRP_tSConnection *pConn = g_pConnectionToReader;
     LLRP_tSMessage *pMessage;
 
     /*
