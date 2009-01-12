@@ -59,17 +59,19 @@ int main(int argc, char *argv[]) {
 		printf("hab_id = %s\n", hab_id);
 	}
 
-	// Initialize hab with bionet naming, type.id.
+
+        // 
+        // init bionet
+        //
+
 	hab = bionet_hab_new(hab_type, hab_id);
 
-	// Connect to bionet.
 	bionet_fd = hab_connect(hab);
-	
 	if (bionet_fd < 0) {
 		printf("Error: could not connect, exiting\n");
-
 		return 1;
 	}
+
 
 	add_node(hab);
 
