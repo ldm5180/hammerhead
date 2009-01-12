@@ -28,10 +28,16 @@ speedway_SOURCES =         \
     one-tag-report.c
 
 
-speedway_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libhab -I../../util -I../../../Impinj/LTK/LTKC/Library
+speedway_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libhab -I../../util -I LTK-1.0.0.5/LTKC/Library
 
-speedway_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../libhab -L../../util -L../../asn.1 -L../../cal/mdnssd-bip/server -L../../../Impinj/LTK/LTKC/Library/LLRP.org -L../../../Impinj/LTK/LTKC/Library
+speedway_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../libhab -L../../util -L../../asn.1 -L../../cal/mdnssd-bip/server -L LTK-1.0.0.5/LTKC/Library/LLRP.org -L LTK-1.0.0.5/LTKC/Library
 
 speedway_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lltkc -lltkcllrporg -lm -lpthread
 
+
+# we need to compile the LLRP Tool Kit before compiling the speedway hab
+BUILT_SOURCES = LTK
+.PHONY: LTK
+LTK:
+	$(MAKE) -C LTK-1.0.0.5/LTKC
 
