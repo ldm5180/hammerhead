@@ -4,12 +4,14 @@
 #include "ltkc.h"
 #include "hardware-abstractor.h"
 
+extern bionet_hab_t *hab;
+
 extern int g_verbose;
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
 
 // bionet functions.
-int add_node(bionet_hab_t *hab);
+int add_node(void);
 void cb_set_resource(const char *node_id, const char *resource_id, 
 	const char *value);
 

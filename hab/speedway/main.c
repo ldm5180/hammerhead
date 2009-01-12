@@ -30,8 +30,6 @@ int main(int argc, char *argv[]) {
 	char* hab_id = NULL;
 	char* reader_ip = NULL;
 
-	bionet_hab_t *hab;
-
 
         for (i = 1; i < argc; i ++) {
             if (strcmp(argv[i], "--target") == 0) {
@@ -73,12 +71,18 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	add_node(hab);
-
 	if (speedway_connect(reader_ip) != 0) {
 		printf("Error: speedway connect failed\n");
 		goto end;
 	}
+
+
+        //
+        // if we get here, we're connected to the Speedway reader
+        //
+
+	add_node();
+
 
 	if (scrubConfiguration() != 0) {
 		printf("Error: scrub config failed\n");

@@ -1,4 +1,9 @@
+
 #include "ltkc.h"
+#include "hardware-abstractor.h"
+
+
+bionet_hab_t *hab;
 
 int g_verbose = 2;
 

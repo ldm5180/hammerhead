@@ -14,7 +14,7 @@
  * Create a node and report it to bionet.
  */
 
-int add_node(bionet_hab_t *hab) {
+int add_node() {
 	bionet_node_t *node;
 
 	node = bionet_node_new(hab, "myTestSpeedwayNode");
@@ -24,6 +24,10 @@ int add_node(bionet_hab_t *hab) {
 		
 		return 1;
 	}
+
+        // FIXME: add some resources maybe
+
+        hab_report_new_node(node);
 
 	return 0;
 }
