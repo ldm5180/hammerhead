@@ -44,8 +44,6 @@ int resetConfigurationToFactoryDefaults()
      */
     pRsp = (LLRP_tSSET_READER_CONFIG_RESPONSE *) pRspMsg;
 
-    printf("pnt20\n");
-
     /*
      * Check the LLRPStatus parameter.
      */
@@ -55,8 +53,6 @@ int resetConfigurationToFactoryDefaults()
 
         return -1;
     }
-
-printf("pnt21\n");
 
     freeMessage(pRspMsg);
 
