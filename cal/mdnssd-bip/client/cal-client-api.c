@@ -33,6 +33,10 @@ int cal_client_mdnssd_bip_init(
     cal_client_mdnssd_bip_t *this;
 
 
+    // initialize threading, if the user hasn't already
+    if (!g_thread_supported()) g_thread_init(NULL);
+
+
     if (network_type == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: NULL network_type specified!");
         goto fail0;

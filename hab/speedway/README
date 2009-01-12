@@ -1,0 +1,11 @@
+
+This is a Bionet HAB for the Impinj Speedway RFID reader.
+
+It uses a protocol called LLRP to communicate with the reader.
+An open-source (Apache 2.0) LLRP library is available from:
+
+    <http://sourceforge.net/projects/llrp-toolkit/>
+
+The source code for this library has been included in the LTK-1.0.0.5
+directory.
+

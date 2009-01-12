@@ -65,7 +65,7 @@ esac
 #                 [Define if you have want featureX support])
 #    ])
 
-PKG_CHECK_MODULES(GLIB20, [ glib-2.0 >= 2.4.0 ])
+PKG_CHECK_MODULES(GLIB20, [ gthread-2.0 >= 2.4.0 ])
 AC_SUBST(GLIB20_CFLAGS)
 AC_SUBST(GLIB20_LIBS)
 
@@ -204,6 +204,7 @@ AC_CONFIG_FILES([Makefile
                  hab/random/Makefile
                  hab/alsa/Makefile
                  hab/syshealth/Makefile
+                 hab/speedway/Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile

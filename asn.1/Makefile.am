@@ -167,5 +167,5 @@ clean-asn1: clean
 
 rebuild-asn1:
 	asn1c -Werror -fnative-types -fskeletons-copy -pdu=auto -gen-PER $(ASN_SOURCE)
-	patch --quiet -p4 < local-patch
+	patch --quiet -p1 < local-patch
 

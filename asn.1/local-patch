@@ -3,9 +3,9 @@ the asn1c compiler.  This should get pushed upstream to Lev Walkin
 <vlm@lionet.info>
 
 
-=== modified file 'generic-sw/src/bionet-data-manager/asn.1/OCTET_STRING.c'
---- generic-sw/src/bionet-data-manager/asn.1/OCTET_STRING.c	2008-08-14 21:26:15 +0000
-+++ generic-sw/src/bionet-data-manager/asn.1/OCTET_STRING.c	2008-09-23 17:22:46 +0000
+=== modified file 'asn.1/OCTET_STRING.c'
+--- asn.1/OCTET_STRING.c	2008-08-14 21:26:15 +0000
++++ asn.1/OCTET_STRING.c	2008-09-23 17:22:46 +0000
 @@ -1319,6 +1319,9 @@
  	const uint8_t *buf;
  	int ret;
@@ -17,9 +17,9 @@ the asn1c compiler.  This should get pushed upstream to Lev Walkin
  		_ASN_ENCODE_FAILED;
  
 
-=== modified file 'generic-sw/src/bionet-data-manager/asn.1/constr_SET_OF.c'
---- generic-sw/src/bionet-data-manager/asn.1/constr_SET_OF.c	2008-08-14 21:26:15 +0000
-+++ generic-sw/src/bionet-data-manager/asn.1/constr_SET_OF.c	2008-09-23 17:21:58 +0000
+=== modified file 'asn.1/constr_SET_OF.c'
+--- asn.1/constr_SET_OF.c	2008-08-14 21:26:15 +0000
++++ asn.1/constr_SET_OF.c	2008-09-23 17:21:58 +0000
 @@ -904,7 +904,7 @@
  			nelems = uper_get_length(pd,
  				ct ? ct->effective_bits : -1, &repeat);
@@ -39,9 +39,9 @@ the asn1c compiler.  This should get pushed upstream to Lev Walkin
  				ASN_DEBUG("Failed decoding %s of %s (SET OF)",
  					elm->type->name, td->name);
 
-=== modified file 'generic-sw/src/bionet-data-manager/asn.1/converter-sample.c'
---- generic-sw/src/bionet-data-manager/asn.1/converter-sample.c	2008-08-14 21:26:15 +0000
-+++ generic-sw/src/bionet-data-manager/asn.1/converter-sample.c	2008-09-23 17:26:46 +0000
+=== modified file 'asn.1/converter-sample.c'
+--- asn.1/converter-sample.c	2008-08-14 21:26:15 +0000
++++ asn.1/converter-sample.c	2008-09-23 17:26:46 +0000
 @@ -343,9 +343,9 @@
  		for(shift = 7; shift >= DynamicBuffer.unbits; shift--)
  			fprintf(stderr, "%c", ((*p >> shift) & 1) ? '1' : '0');
@@ -91,9 +91,9 @@ the asn1c compiler.  This should get pushed upstream to Lev Walkin
  
  		/*
 
-=== modified file 'generic-sw/src/bionet-data-manager/asn.1/BOOLEAN.c'
---- generic-sw/src/bionet-data-manager/asn.1/BOOLEAN.c   2008-09-23 20:44:53.000000000 -0600
-+++ generic-sw/src/bionet-data-manager/asn.1/BOOLEAN.c   2008-09-23 20:43:27.000000000 -0600
+=== modified file 'asn.1/BOOLEAN.c'
+--- asn.1/BOOLEAN.c   2008-09-23 20:44:53.000000000 -0600
++++ asn.1/BOOLEAN.c   2008-09-23 20:43:27.000000000 -0600
 @@ -274,6 +274,9 @@
 	const BOOLEAN_t *st = (const BOOLEAN_t *)sptr;
 	asn_enc_rval_t er;
@@ -104,9 +104,9 @@ the asn1c compiler.  This should get pushed upstream to Lev Walkin
 	(void)constraints;
 
 	if(!st) _ASN_ENCODE_FAILED;
-=== modified file 'generic-sw/src/bionet-data-manager/asn.1/Value.c'
---- generic-sw/src/bionet-data-manager/asn.1/Value.c	2008-09-25 03:58:56 +0000
-+++ generic-sw/src/bionet-data-manager/asn.1/Value.c	2008-09-25 04:20:57 +0000
+=== modified file 'asn.1/Value.c'
+--- asn.1/Value.c	2008-09-25 03:58:56 +0000
++++ asn.1/Value.c	2008-09-25 04:20:57 +0000
 @@ -129,7 +129,7 @@
  		return -1;
  	}
@@ -139,4 +139,20 @@ the asn1c compiler.  This should get pushed upstream to Lev Walkin
  	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
  };
  static asn_TYPE_member_t asn_MBR_Value_1[] = {
+
+=== modified file 'asn.1/GeneralizedTime.c'
+--- asn.1/GeneralizedTime.c	2008-11-04 06:53:25 +0000
++++ asn.1/GeneralizedTime.c	2009-01-12 20:53:31 +0000
+@@ -3,7 +3,11 @@
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+ #define	_POSIX_PTHREAD_SEMANTICS	/* for Sun */
++
++#ifndef _REENTRANT
+ #define	_REENTRANT			/* for Sun */
++#endif
++
+ #include <asn_internal.h>
+ #include <GeneralizedTime.h>
+ #include <errno.h>
 
