@@ -204,6 +204,7 @@ AC_CONFIG_FILES([Makefile
                  hab/random/Makefile
                  hab/alsa/Makefile
                  hab/syshealth/Makefile
+                 hab/speedway/Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
