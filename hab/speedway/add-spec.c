@@ -74,7 +74,13 @@ int addROSpec(void)
 {
     LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
-        .eROSpecStartTriggerType = LLRP_ROSpecStartTriggerType_Null,
+        .eROSpecStartTriggerType = LLRP_ROSpecStartTriggerType_Periodic,
+    };
+
+    LLRP_tSPeriodicTriggerValue PeriodicTriggerValue = {
+        .hdr.elementHdr.pType = &LLRP_tdPeriodicTriggerValue,
+        .Period = 5000,
+        .pUTCTimestamp = NULL
     };
 
     LLRP_tSROSpecStopTrigger ROSpecStopTrigger = {
@@ -153,6 +159,16 @@ int addROSpec(void)
 
     LLRP_tSMessage *pRspMsg;
     LLRP_tSADD_ROSPEC_RESPONSE *pRsp;
+    LLRP_tResultCode r;
+    
+    r = LLRP_ROSpecStartTrigger_setPeriodicTriggerValue(
+        &ROSpecStartTrigger,
+        &PeriodicTriggerValue
+    );
+    if (r != LLRP_RC_OK) {
+        g_warning("error setting period trigger");
+        return -1;
+    }
 
     /*
      * Send the message, expect the response of certain type

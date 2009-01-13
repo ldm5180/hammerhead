@@ -15,6 +15,7 @@ int add_node(void);
 
 // reader functions.
 int speedway_connect(const char* reader_ip);
+int speedway_configure(void);
 int checkConnectionStatus();
 int scrubConfiguration();
 
@@ -34,7 +35,6 @@ int resetConfigurationToFactoryDefaults();
 int freeMessage(LLRP_tSMessage *pMessage);
 int checkLLRPStatus(LLRP_tSLLRPStatus *pLLRPStatus, char *pWhatStr);
 LLRP_tSMessage *recvMessage(int nMaxMS);
-int startROSpec();
 LLRP_tSMessage *transact(LLRP_tSMessage *pSendMsg);
 void printXMLMessage(LLRP_tSMessage *pMessage);
 int freeMessage(LLRP_tSMessage *pMessage);

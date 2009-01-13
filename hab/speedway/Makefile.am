@@ -9,7 +9,6 @@ speedway_SOURCES =         \
     connect.c              \
     configure.c            \
     global.c               \
-    start-spec.c           \
     recv-message.c         \
     scrub-config.c         \
     free-message.c         \

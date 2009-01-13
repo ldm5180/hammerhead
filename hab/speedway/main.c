@@ -80,18 +80,8 @@ int main(int argc, char *argv[]) {
 		goto end;
 	}
 
-	if (scrubConfiguration() != 0) {
-		printf("Error: scrub config failed\n");
-		goto end;
-	}
-
-	if (addROSpec() != 0) {
-		printf("Error: addROSpec failed\n");
-		goto end;
-	}
-
-	if (enableROSpec() != 0) {
-		printf("Error: enableROSpec failed\n");
+	if (speedway_configure() != 0) {
+		printf("Error: speedway configure failed\n");
 		goto end;
 	}
 
@@ -106,12 +96,6 @@ int main(int argc, char *argv[]) {
 
 	do {
 		printf("INFO: Starting run\n");
-
-		if (startROSpec() != 0) {
-			printf("INFO: startROSpec failed\n");
-			break;
-		}
-
 		poll_for_report();
 	} while(1);
 
