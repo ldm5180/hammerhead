@@ -1,6 +1,13 @@
 #!/bin/bash
 
+TEST_DURATION=30
+
 UNIQUE=$$
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
 
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
@@ -9,7 +16,7 @@ echo starting two bionet-watchers
 $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.0 &
 $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.1 &
 
-sleep 30
+sleep $TEST_DURATION
 
 kill %1
 sleep 2  # to let the clients notice
