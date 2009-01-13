@@ -13,7 +13,7 @@ static char buffer[BUFFER_SIZE];
 
 extern bionet_hab_t *parsec_hab;
 
-// Parsec informaiton comes in the format:
+// Parsec information comes in the format:
 // <id> <range[m]> <temperature[C]>
 
 void read_parsec(int fd) {
