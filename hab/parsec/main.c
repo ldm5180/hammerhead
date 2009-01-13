@@ -32,7 +32,7 @@ static const char* hab_type = "parsec";
 
 static int verbose = 0;
 static int daemon_mode = 0;
-static uint16_t port = 63557;
+static uint16_t port = 61557;
 bionet_hab_t * parsec_hab;
 char * parsec_id = NULL;
 
