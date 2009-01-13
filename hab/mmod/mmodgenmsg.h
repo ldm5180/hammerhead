@@ -9,7 +9,7 @@
 
 enum {
   /** The default size of this message type in bytes. */
-  MMODGENMSG_SIZE = 14,
+  MMODGENMSG_SIZE = 20,
 
   /** The Active Message type associated with this message. */
   MMODGENMSG_AM_TYPE = 33,
@@ -24,65 +24,65 @@ enum {
   /** Size (in bits) of the field 'node_id' */
   MMODGENMSG_NODE_ID_SIZEBITS = 16,
 
-  /* Field volt: type uint16_t, offset (bits) 16, size (bits) 16 */
-  /** Offset (in bytes) of the field 'volt' */
-  MMODGENMSG_VOLT_OFFSET = 2,
-  /** Offset (in bits) of the field 'volt' */
-  MMODGENMSG_VOLT_OFFSETBITS = 16,
-  /** Size (in bytes) of the field 'volt' */
-  MMODGENMSG_VOLT_SIZE = 2,
-  /** Size (in bits) of the field 'volt' */
-  MMODGENMSG_VOLT_SIZEBITS = 16,
-
-  /* Field temp: type uint16_t, offset (bits) 32, size (bits) 16 */
-  /** Offset (in bytes) of the field 'temp' */
-  MMODGENMSG_TEMP_OFFSET = 4,
-  /** Offset (in bits) of the field 'temp' */
-  MMODGENMSG_TEMP_OFFSETBITS = 32,
-  /** Size (in bytes) of the field 'temp' */
-  MMODGENMSG_TEMP_SIZE = 2,
-  /** Size (in bits) of the field 'temp' */
-  MMODGENMSG_TEMP_SIZEBITS = 16,
-
-  /* Field photo: type uint16_t, offset (bits) 48, size (bits) 16 */
-  /** Offset (in bytes) of the field 'photo' */
-  MMODGENMSG_PHOTO_OFFSET = 6,
-  /** Offset (in bits) of the field 'photo' */
-  MMODGENMSG_PHOTO_OFFSETBITS = 48,
-  /** Size (in bytes) of the field 'photo' */
-  MMODGENMSG_PHOTO_SIZE = 2,
-  /** Size (in bits) of the field 'photo' */
-  MMODGENMSG_PHOTO_SIZEBITS = 16,
-
-  /* Field accel_x: type uint16_t, offset (bits) 64, size (bits) 16 */
+  /* Field accel_x: type uint16_t, offset (bits) 16, size (bits) 16 */
   /** Offset (in bytes) of the field 'accel_x' */
-  MMODGENMSG_ACCEL_X_OFFSET = 8,
+  MMODGENMSG_ACCEL_X_OFFSET = 2,
   /** Offset (in bits) of the field 'accel_x' */
-  MMODGENMSG_ACCEL_X_OFFSETBITS = 64,
+  MMODGENMSG_ACCEL_X_OFFSETBITS = 16,
   /** Size (in bytes) of the field 'accel_x' */
   MMODGENMSG_ACCEL_X_SIZE = 2,
   /** Size (in bits) of the field 'accel_x' */
   MMODGENMSG_ACCEL_X_SIZEBITS = 16,
 
-  /* Field accel_y: type uint16_t, offset (bits) 80, size (bits) 16 */
+  /* Field accel_y: type uint16_t, offset (bits) 32, size (bits) 16 */
   /** Offset (in bytes) of the field 'accel_y' */
-  MMODGENMSG_ACCEL_Y_OFFSET = 10,
+  MMODGENMSG_ACCEL_Y_OFFSET = 4,
   /** Offset (in bits) of the field 'accel_y' */
-  MMODGENMSG_ACCEL_Y_OFFSETBITS = 80,
+  MMODGENMSG_ACCEL_Y_OFFSETBITS = 32,
   /** Size (in bytes) of the field 'accel_y' */
   MMODGENMSG_ACCEL_Y_SIZE = 2,
   /** Size (in bits) of the field 'accel_y' */
   MMODGENMSG_ACCEL_Y_SIZEBITS = 16,
 
-  /* Field accel_flags: type uint16_t, offset (bits) 96, size (bits) 16 */
+  /* Field accel_flags: type uint16_t, offset (bits) 48, size (bits) 16 */
   /** Offset (in bytes) of the field 'accel_flags' */
-  MMODGENMSG_ACCEL_FLAGS_OFFSET = 12,
+  MMODGENMSG_ACCEL_FLAGS_OFFSET = 6,
   /** Offset (in bits) of the field 'accel_flags' */
-  MMODGENMSG_ACCEL_FLAGS_OFFSETBITS = 96,
+  MMODGENMSG_ACCEL_FLAGS_OFFSETBITS = 48,
   /** Size (in bytes) of the field 'accel_flags' */
   MMODGENMSG_ACCEL_FLAGS_SIZE = 2,
   /** Size (in bits) of the field 'accel_flags' */
   MMODGENMSG_ACCEL_FLAGS_SIZEBITS = 16,
+
+  /* Field tv_sec: type uint32_t, offset (bits) 64, size (bits) 32 */
+  /** Offset (in bytes) of the field 'tv_sec' */
+  MMODGENMSG_TV_SEC_OFFSET = 8,
+  /** Offset (in bits) of the field 'tv_sec' */
+  MMODGENMSG_TV_SEC_OFFSETBITS = 64,
+  /** Size (in bytes) of the field 'tv_sec' */
+  MMODGENMSG_TV_SEC_SIZE = 4,
+  /** Size (in bits) of the field 'tv_sec' */
+  MMODGENMSG_TV_SEC_SIZEBITS = 32,
+
+  /* Field tv_usec: type uint32_t, offset (bits) 96, size (bits) 32 */
+  /** Offset (in bytes) of the field 'tv_usec' */
+  MMODGENMSG_TV_USEC_OFFSET = 12,
+  /** Offset (in bits) of the field 'tv_usec' */
+  MMODGENMSG_TV_USEC_OFFSETBITS = 96,
+  /** Size (in bytes) of the field 'tv_usec' */
+  MMODGENMSG_TV_USEC_SIZE = 4,
+  /** Size (in bits) of the field 'tv_usec' */
+  MMODGENMSG_TV_USEC_SIZEBITS = 32,
+
+  /* Field offset: type uint32_t, offset (bits) 128, size (bits) 32 */
+  /** Offset (in bytes) of the field 'offset' */
+  MMODGENMSG_OFFSET_OFFSET = 16,
+  /** Offset (in bits) of the field 'offset' */
+  MMODGENMSG_OFFSET_OFFSETBITS = 128,
+  /** Size (in bytes) of the field 'offset' */
+  MMODGENMSG_OFFSET_SIZE = 4,
+  /** Size (in bits) of the field 'offset' */
+  MMODGENMSG_OFFSET_SIZEBITS = 32,
 };
 
 /**
@@ -94,36 +94,6 @@ uint16_t MMODGENMSG_node_id_get(tmsg_t *msg);
  * Set the value of the field 'node_id'
  */
 void MMODGENMSG_node_id_set(tmsg_t *msg, uint16_t value);
-
-/**
- * Return the value of the field 'volt'
- */
-uint16_t MMODGENMSG_volt_get(tmsg_t *msg);
-
-/**
- * Set the value of the field 'volt'
- */
-void MMODGENMSG_volt_set(tmsg_t *msg, uint16_t value);
-
-/**
- * Return the value of the field 'temp'
- */
-uint16_t MMODGENMSG_temp_get(tmsg_t *msg);
-
-/**
- * Set the value of the field 'temp'
- */
-void MMODGENMSG_temp_set(tmsg_t *msg, uint16_t value);
-
-/**
- * Return the value of the field 'photo'
- */
-uint16_t MMODGENMSG_photo_get(tmsg_t *msg);
-
-/**
- * Set the value of the field 'photo'
- */
-void MMODGENMSG_photo_set(tmsg_t *msg, uint16_t value);
 
 /**
  * Return the value of the field 'accel_x'
@@ -154,5 +124,35 @@ uint16_t MMODGENMSG_accel_flags_get(tmsg_t *msg);
  * Set the value of the field 'accel_flags'
  */
 void MMODGENMSG_accel_flags_set(tmsg_t *msg, uint16_t value);
+
+/**
+ * Return the value of the field 'tv_sec'
+ */
+uint32_t MMODGENMSG_tv_sec_get(tmsg_t *msg);
+
+/**
+ * Set the value of the field 'tv_sec'
+ */
+void MMODGENMSG_tv_sec_set(tmsg_t *msg, uint32_t value);
+
+/**
+ * Return the value of the field 'tv_usec'
+ */
+uint32_t MMODGENMSG_tv_usec_get(tmsg_t *msg);
+
+/**
+ * Set the value of the field 'tv_usec'
+ */
+void MMODGENMSG_tv_usec_set(tmsg_t *msg, uint32_t value);
+
+/**
+ * Return the value of the field 'offset'
+ */
+uint32_t MMODGENMSG_offset_get(tmsg_t *msg);
+
+/**
+ * Set the value of the field 'offset'
+ */
+void MMODGENMSG_offset_set(tmsg_t *msg, uint32_t value);
 
 #endif

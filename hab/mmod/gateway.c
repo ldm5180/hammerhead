@@ -20,7 +20,6 @@
 
 #include "gateway.h"
 #include "mmodgenmsg.h"
-#include "mmodaccelmsg.h"
 #include "mmodsettingsmsg.h"
 #include "serialsource.h"
 #include "mmod_message.h"

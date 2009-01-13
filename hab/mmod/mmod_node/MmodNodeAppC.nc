@@ -47,15 +47,9 @@ implementation
 
 
     /* wire up the sensors */
-    components new PhotoC(), 
-	new AccelXStreamC(), 
-	new AccelYStreamC(), 
-	new VoltageC(), 
-	new TempC();
+    components new AccelXStreamC(), 
+	new AccelYStreamC();
 
-    MmodNodeC.Light -> PhotoC;
-    MmodNodeC.Voltage -> VoltageC;
-    MmodNodeC.Temperature -> TempC;
     MmodNodeC.ReadAccelXStream -> AccelXStreamC;
     MmodNodeC.ReadAccelYStream -> AccelYStreamC;
 
