@@ -6,7 +6,6 @@ speedway_SOURCES =         \
     main.c                 \
     add-node.c             \
     poll-for-report.c      \
-    process-ro-access-report.c   \
     connect.c              \
     configure.c            \
     global.c               \

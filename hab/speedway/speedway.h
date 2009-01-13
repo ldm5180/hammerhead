@@ -21,7 +21,6 @@ int checkConnectionStatus();
 int scrubConfiguration();
 
 int poll_for_report();
-void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report);
 
 int addROSpec();
 void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent);
