@@ -265,6 +265,7 @@ void cb_set_resource(bionet_resource_t *resource,
 	}
 	MMODSETTINGSMSG_is_ts_update_set(&new_settings, 0);
     }
+    fprintf(stderr, "setting ts to %u\n", uiVal);
     MMODSETTINGSMSG_timestamp_id_set(&new_settings, uiVal);
 
     memcpy(&pkt[8], new_settings.data, new_settings.len);

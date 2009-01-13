@@ -30,7 +30,7 @@
 #define CHECK_Y_ACCEL 0x02
 
 #define DEFAULT_ACCEL_THRESHOLD       10
-#define DEFAULT_ACCEL_SAMPLES         16
+#define DEFAULT_ACCEL_SAMPLES         4
 #define DEFAULT_INTERVAL              5 /* milliseconds (ms) */
 #define DEFAULT_ACCEL_STREAM_INTERVAL 200 /* microseconds (us) */
 #define MAX_ACCEL_SAMPLES 16
@@ -268,35 +268,14 @@ implementation
 		no_setting_send = TRUE;
 	    }
 	}
-	else if (new_settings->node_id == 0)
-	{
-	    call AccelCheck.stop();
-	    if (tmp_general_msg.timestamp_id != new_settings->timestamp_id)
-	    {
-		no_setting_send = TRUE;
-	    }
-	    tmp_general_msg.timestamp_id = settings.timestamp_id = new_settings->timestamp_id;
-	    tmp_general_msg.offset = 0;
-	    
-	    general_msg = 
-		call GeneralRoot.getPayload(&general_msgbuf,
-					    sizeof(mmod_general_msg_t));
-	    general_msg->accel_x = 0;
-	    general_msg->accel_y = 0;
-	    tmp_general_msg.accel_x = 0;
-	    tmp_general_msg.accel_y = 0;	    
 
-	    call AccelCheck.startPeriodic(settings.sample_interval);
-
-	    just_sent = FALSE;
-	    found = FALSE;
-	}
-
+	call AccelCheck.stop();
 	if (tmp_general_msg.timestamp_id != new_settings->timestamp_id)
 	{
 	    no_setting_send = TRUE;
 	}
-	tmp_general_msg.timestamp_id = settings.timestamp_id = new_settings->timestamp_id;
+	settings.timestamp_id = new_settings->timestamp_id;
+	tmp_general_msg.timestamp_id = settings.timestamp_id;
 	tmp_general_msg.offset = 0;
 
 	/* copy everything over but the node id, we know who we are */
@@ -317,6 +296,17 @@ implementation
 	    call SettingsCheck.startPeriodic((settings.heartbeat_time - 10) * 1000);
 	}
 
+	general_msg = 
+	    call GeneralRoot.getPayload(&general_msgbuf,
+					sizeof(mmod_general_msg_t));
+	general_msg->accel_x = 0;
+	general_msg->accel_y = 0;
+	tmp_general_msg.accel_x = 0;
+	tmp_general_msg.accel_y = 0;	    
+		
+	just_sent = FALSE;
+	found = FALSE;
+
         /* ensure the sample period timer is correct */
 	num_periods_per_sec = 
 	    (uint32_t)MSEC_PER_SEC / (nx_uint32_t)settings.sample_interval;
@@ -327,6 +317,8 @@ implementation
 	{
 	    send_settings_msg();
 	}
+
+	call AccelCheck.startPeriodic(settings.sample_interval);
     } /* SettingsValue.changed() */
 
 
