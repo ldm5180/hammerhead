@@ -27,6 +27,7 @@ libbionet_util_la_SOURCES =    \
     resource-new.c             \
     resource-free.c            \
     resource-get.c             \
+    resource-get-value.c       \
     resource-data-type.c       \
     resource-flavor.c          \
     resource-datapoint.c       \

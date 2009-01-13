@@ -417,6 +417,178 @@ int bionet_resource_set_str(bionet_resource_t *resource,
 
 
 /**
+ * @brief Gets the value of a Resource.
+ *
+ * Gets the value of the Resource's first datapoint (if any).
+ *
+ * @param[in] resource The Resource to get.
+ * @param[in] content The value will be written here.
+ * @param[in] timestamp The timestamp will be written here.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_get_binary(bionet_resource_t *resource, 
+			       int *content, 
+			       struct timeval *timestamp);
+
+
+/**
+ * @brief Gets the value of a Resource.
+ *
+ * Gets the value of the Resource's first datapoint (if any).
+ *
+ * @param[in] resource The Resource to get.
+ * @param[in] content The value will be written here.
+ * @param[in] timestamp The timestamp will be written here.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_get_uint8(bionet_resource_t *resource, 
+			      uint8_t *content, 
+			      struct timeval *timestamp);
+
+
+/**
+ * @brief Gets the value of a Resource.
+ *
+ * Gets the value of the Resource's first datapoint (if any).
+ *
+ * @param[in] resource The Resource to get.
+ * @param[in] content The value will be written here.
+ * @param[in] timestamp The timestamp will be written here.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_get_int8(bionet_resource_t *resource, 
+			     int8_t *content, 
+			     struct timeval *timestamp);
+
+
+/**
+ * @brief Gets the value of a Resource.
+ *
+ * Gets the value of the Resource's first datapoint (if any).
+ *
+ * @param[in] resource The Resource to get.
+ * @param[in] content The value will be written here.
+ * @param[in] timestamp The timestamp will be written here.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_get_uint16(bionet_resource_t *resource, 
+			       uint16_t *content, 
+			       struct timeval *timestamp);
+
+
+/**
+ * @brief Gets the value of a Resource.
+ *
+ * Gets the value of the Resource's first datapoint (if any).
+ *
+ * @param[in] resource The Resource to get.
+ * @param[in] content The value will be written here.
+ * @param[in] timestamp The timestamp will be written here.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_get_int16(bionet_resource_t *resource, 
+			      int16_t *content, 
+			      struct timeval *timestamp);
+
+
+/**
+ * @brief Gets the value of a Resource.
+ *
+ * Gets the value of the Resource's first datapoint (if any).
+ *
+ * @param[in] resource The Resource to get.
+ * @param[in] content The value will be written here.
+ * @param[in] timestamp The timestamp will be written here.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_get_uint32(bionet_resource_t *resource, 
+			       uint32_t *content, 
+			       struct timeval *timestamp);
+
+
+/**
+ * @brief Gets the value of a Resource.
+ *
+ * Gets the value of the Resource's first datapoint (if any).
+ *
+ * @param[in] resource The Resource to get.
+ * @param[in] content The value will be written here.
+ * @param[in] timestamp The timestamp will be written here.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_get_int32(bionet_resource_t *resource, 
+			      int32_t *content, 
+			      struct timeval *timestamp);
+
+
+/**
+ * @brief Gets the value of a Resource.
+ *
+ * Gets the value of the Resource's first datapoint (if any).
+ *
+ * @param[in] resource The Resource to get.
+ * @param[in] content The value will be written here.
+ * @param[in] timestamp The timestamp will be written here.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_get_float(bionet_resource_t *resource, 
+			      float *content, 
+			      struct timeval *timestamp);
+
+
+/**
+ * @brief Gets the value of a Resource.
+ *
+ * Gets the value of the Resource's first datapoint (if any).
+ *
+ * @param[in] resource The Resource to get.
+ * @param[in] content The value will be written here.
+ * @param[in] timestamp The timestamp will be written here.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_get_double(bionet_resource_t *resource, 
+			       double *content, 
+			       struct timeval *timestamp);
+
+
+/**
+ * @brief Gets the value of a Resource.
+ *
+ * Gets the value of the Resource's first datapoint (if any).
+ *
+ * @param[in] resource The Resource to get.
+ * @param[in] content The value will be written here.  *content will be set
+ *            to point to dynamically allocated memory, which becomes the
+ *            responsibility of the caller.
+ * @param[in] timestamp The timestamp will be written here.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_resource_get_str(bionet_resource_t *resource, 
+			    char * *content, 
+			    struct timeval *timestamp);
+
+
+/**
  * @brief Add a datapoint to a resource
  *
  * @param[in] resource The resource to which the datapoint is added
