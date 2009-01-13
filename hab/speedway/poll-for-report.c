@@ -10,12 +10,8 @@
 #include "ltkc.h"
 #include "speedway.h"
 
-/*
- * Receive and print the RO_ACCESS_REPORT
- * Receive messages until an RO_ACCESS_REPORT is received.
- */
 
-int awaitAndPrintReport() {
+int poll_for_report() {
 	int bDone = 0;
 	int retVal = 0;
 
@@ -53,7 +49,7 @@ int awaitAndPrintReport() {
 
 			pNtf = (LLRP_tSRO_ACCESS_REPORT *) pMessage;
 
-			printTagReportData(pNtf);
+			process_ro_access_report(pNtf);
 			bDone = 1;
 			retVal = 0;
 		}

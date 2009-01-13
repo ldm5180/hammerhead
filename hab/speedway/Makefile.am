@@ -5,7 +5,8 @@ bin_PROGRAMS = speedway
 speedway_SOURCES =         \
     main.c                 \
     add-node.c             \
-    access-report.c        \
+    poll-for-report.c      \
+    process-ro-access-report.c   \
     connect.c              \
     configure.c            \
     global.c               \
@@ -14,7 +15,6 @@ speedway_SOURCES =         \
     scrub-config.c         \
     free-message.c         \
     handle-event.c         \
-    tag-report.c           \
     conn-status.c          \
     add-spec.c             \
     enable-spec.c          \
@@ -24,8 +24,7 @@ speedway_SOURCES =         \
     factory-defaults.c     \
     delete-specs.c         \
     antenna-event.c        \
-    exception-event.c      \
-    one-tag-report.c
+    exception-event.c
 
 
 speedway_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libhab -I../../util -I LTK-1.0.0.5/LTKC/Library

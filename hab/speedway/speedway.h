@@ -19,7 +19,10 @@ void cb_set_resource(const char *node_id, const char *resource_id,
 int speedway_connect(const char* reader_ip);
 int checkConnectionStatus();
 int scrubConfiguration();
-int awaitAndPrintReport();
+
+int poll_for_report();
+void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report);
+
 int addROSpec();
 void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent);
 int deleteAllROSpecs();
@@ -32,10 +35,8 @@ int freeMessage(LLRP_tSMessage *pMessage);
 int checkLLRPStatus(LLRP_tSLLRPStatus *pLLRPStatus, char *pWhatStr);
 LLRP_tSMessage *recvMessage(int nMaxMS);
 int startROSpec();
-void printTagReportData(LLRP_tSRO_ACCESS_REPORT *pRO_ACCESS_REPORT);
 LLRP_tSMessage *transact(LLRP_tSMessage *pSendMsg);
 void printXMLMessage(LLRP_tSMessage *pMessage);
-void printOneTagReportData(LLRP_tSTagReportData *pTagReportData);
 int freeMessage(LLRP_tSMessage *pMessage);
 
 #endif 

@@ -4,16 +4,15 @@
 
 #include <glib.h>
 
+#include "hardware-abstractor.h"
+
 #include "ltkc.h"
 #include "speedway.h"
 
-/*
- *
- * Helper routine to print one tag report entry on one line
- */
 
-void printOneTagReportData(LLRP_tSTagReportData *pTagReportData)
-{
+
+
+static void process_one_TagReportData(LLRP_tSTagReportData *pTagReportData) {
     char aBuf[64];
     const LLRP_tSTypeDescriptor *pType;
 
@@ -65,6 +64,38 @@ void printOneTagReportData(LLRP_tSTagReportData *pTagReportData)
     printf("%-32s", aBuf);
 
     printf("\n");
+}
+
+
+
+
+void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
+    unsigned int nEntry = 0;
+    LLRP_tSTagReportData *pTagReportData;
+
+    /*
+     * Loop through and count the number of entries
+     */
+    for(
+        pTagReportData = report->listTagReportData;
+        NULL != pTagReportData;
+        pTagReportData = (LLRP_tSTagReportData *)pTagReportData->hdr.pNextSubParameter
+    ) {
+        nEntry++;
+    }
+
+    printf("INFO: %u tag report entries\n", nEntry);
+
+    /*
+     * Loop through again and print each entry.
+     */
+    for(
+        pTagReportData = report->listTagReportData;
+            NULL != pTagReportData;
+            pTagReportData = (LLRP_tSTagReportData *)pTagReportData->hdr.pNextSubParameter
+    ) {
+        process_one_TagReportData(pTagReportData);
+    }
 }
 
 

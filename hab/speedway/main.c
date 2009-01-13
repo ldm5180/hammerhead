@@ -101,23 +101,22 @@ int main(int argc, char *argv[]) {
         //
 
 
-	add_node();
+	// add_node();
 
 
 
-	for (i = 1; i < 5; i++) {
-		printf("INFO: Starting run %d \n", i);
+	do {
+		printf("INFO: Starting run\n");
 
 		if (startROSpec() != 0) {
-			printf("INFO: startROSpec failed, %d \n", i);
-
+			printf("INFO: startROSpec failed\n");
 			break;
 		}
 
-		if (awaitAndPrintReport()) {
+		if (poll_for_report()) {
 			break;
 		}
-	}
+	} while(1);
 
 	scrubConfiguration();
 
