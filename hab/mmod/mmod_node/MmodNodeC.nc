@@ -1,4 +1,3 @@
-
 //
 // Copyright (C) 2004-2008, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
@@ -102,6 +101,7 @@ implementation
     bool sent_general = FALSE;
     bool is_recording = FALSE;
     bool just_sent = FALSE;
+    bool first_time = TRUE;
 
     uint16_t count_below_thres = 0;
 
@@ -129,6 +129,33 @@ implementation
 	yellow_led_toggle();
     }
 
+
+    void send_settings_msg()
+    {
+	mmod_settings_msg_t *settings_msg;
+
+	red_led_toggle();
+	/* send out a quick settings msg */
+	sm_busy = TRUE;
+	settings_msg = 
+	    call SettingsRoot.getPayload(&settings_msgbuf,
+					 sizeof(mmod_settings_msg_t));
+	*settings_msg = settings;
+	call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
+	if (first_time)
+	{
+	    if (settings.heartbeat_time <= 20)
+	    {
+		call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
+	    }
+	    else
+	    {
+		call SettingsCheck.startPeriodic((settings.heartbeat_time - 10) * 1000);
+	    }	    
+	    red_led_toggle();
+	}
+	first_time = FALSE;
+    }
 
     void send_general_msg()
     {
@@ -184,20 +211,14 @@ implementation
 
     event void SettingsRoot.sendDone(message_t *msg, error_t ok)
     {
-	mmod_settings_msg_t *settings_msg;
-
+	red_led_toggle();
 	sm_busy = FALSE;
-	sm_busy = TRUE;
-	settings_msg = 
-	    call SettingsRoot.getPayload(&settings_msgbuf,
-					 sizeof(mmod_settings_msg_t));
-	*settings_msg = settings;
-	call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
     }
 
    
     event void Boot.booted()
     {
+	call Leds.led0Off();
 	settings.node_id = TOS_NODE_ID;
 	settings.thres_accel = DEFAULT_ACCEL_THRESHOLD;
 	settings.sample_interval = DEFAULT_INTERVAL; //milliseconds (ms)
@@ -214,35 +235,15 @@ implementation
 
     event void RadioControl.startDone(error_t ok) 
     {
-	mmod_settings_msg_t *settings_msg;
-
 	call Leds.led1On();
 
 	if (SUCCESS == ok)
 	{
 	    call DisseminationControl.start();
 	    call CollectionControl.start();
-	    call LowPowerListening.setLocalDutyCycle(200);
+	    //call LowPowerListening.setLocalDutyCycle(200);
 
-	    /* send out a quick settings msg */
-	    sm_busy = TRUE;
-	    settings_msg = 
-		call SettingsRoot.getPayload(&settings_msgbuf,
-					    sizeof(mmod_settings_msg_t));
-	    *settings_msg = settings;
-	    call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
-	    if (settings.heartbeat_time <= 20)
-	    {
-		call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
-	    }
-	    else
-	    {
-		call SettingsCheck.startPeriodic((settings.heartbeat_time - 10) * 1000);
-	    }
-	}
-	else
-	{
-	    red_led_toggle();
+	    call SettingsCheck.startOneShot(5000);
 	}
     } /* RadioControl.startDone() */
 
@@ -252,7 +253,6 @@ implementation
 
     event void SettingsValue.changed()
     {
-	mmod_settings_msg_t *settings_msg;
 	const mmod_settings_msg_t* new_settings;
 	mmod_general_msg_t* general_msg;
 
@@ -293,13 +293,13 @@ implementation
 
 	settings.accel_flags = new_settings->accel_flags;
 
-	if (settings.heartbeat_time <= 10)
+	if (settings.heartbeat_time <= 20)
 	{
 	    call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
 	}
 	else
 	{
-	    call SettingsCheck.startPeriodic((settings.heartbeat_time - 5) * 1000);
+	    call SettingsCheck.startPeriodic((settings.heartbeat_time - 10) * 1000);
 	}
 
         /* ensure the sample period timer is correct */
@@ -310,31 +310,14 @@ implementation
 	 * have been implemented */
 	if (!sm_busy)
 	{
-	    sm_busy = TRUE;
-	    settings_msg = 
-		call SettingsRoot.getPayload(&settings_msgbuf,
-					     sizeof(mmod_settings_msg_t));
-	    *settings_msg = settings;
-	    call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
+	    send_settings_msg();
 	}
     } /* SettingsValue.changed() */
 
 
     event void SettingsCheck.fired()
     {
-	mmod_settings_msg_t *settings_msg;	
-
-	if (sm_busy)
-	{
-	    return;
-	}
-
-	sm_busy = TRUE;
-	settings_msg = 
-	    call SettingsRoot.getPayload(&settings_msgbuf,
-					sizeof(mmod_settings_msg_t));
-	*settings_msg = settings;
-	call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));	
+	send_settings_msg();
     } /* SettingsCheck.fired() */
 
 

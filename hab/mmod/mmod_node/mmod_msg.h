@@ -53,13 +53,13 @@ enum
 {
     /* msgs from nodes */
     COL_MMOD_GENERAL_MSG  = 0x11,
-    COL_MMOD_SETTINGS_MSG = 0x13,
+    COL_MMOD_SETTINGS_MSG = 0x12,
 
     /* msgs from gateway */
     AM_MMOD_GENERAL_MSG   = 0x21,
-    DIS_MMOD_SETTINGS_MSG = 0x23,
+    DIS_MMOD_SETTINGS_MSG = 0x22,
 
     /* msgs from host or node */
-    AM_MMOD_SETTINGS_MSG  = 0x33,
+    AM_MMOD_SETTINGS_MSG  = 0x32,
 };
 #endif /* MMOD_MSG_H */

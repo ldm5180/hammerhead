@@ -468,6 +468,8 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
     bionet_resource_t *resource;
     struct timeval tv;
 
+    fprintf(stderr, "incoming settings msg\n");
+
     if (NULL == mmod_hab)
     {
 	return 0;
@@ -484,15 +486,274 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
     /* if this node doesn't exist yet, forget it */
     if (NULL == node)
     {
-	return 0;
-    }
+	last = MMODGENMSG_accel_y_get(&t);
+	node = bionet_node_new(mmod_hab, &node_id[0]);
+	if (NULL == node)
+	{
+	    fprintf(stderr, "Failed to create new node\n");
+	    return 1;
+	}
+	bionet_hab_add_node(mmod_hab, node);
 
-    /* see if the settings resources have already been added to the node */
-    resource = bionet_node_get_resource_by_id(node, "SampleInterval");
-    if (NULL == resource)
-    {
-	/* resource doesn't exist yet, so ignore it */
-	return 0;
+
+	/* create accel-x resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_FLOAT,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "Accel-X");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: Accel-X\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: Accel-X\n");
+	    }
+	    if (bionet_resource_set_float(resource, 0, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+	/* create raw accel-x resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "RawAccel-X");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: RawAccel-X\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: RawAccel-X\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, 0, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+	/* create accel-y resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_FLOAT,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "Accel-Y");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: Accel-Y\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: Accel-Y\n");
+	    }
+	    if (bionet_resource_set_float(resource, 0, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+	/* create raw accel-y resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "RawAccel-Y");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: RawAccel-Y\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: RawAccel-Y\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, 0, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+	/* create Sample Interval resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				       "SampleInterval");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: SampleInterval\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: SampleInterval\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_sample_interval_get(&t), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+	/* create Num of Accel Samples resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				       "NumAccelSamples");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: NumAccelSamples\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: NumAccelSamples\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_num_accel_samples_get(&t), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+	/* create Accel Sample Interval resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				       "AccelSampleInterval");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, 
+		    "Failed to get new resource: AccelSampleInterval\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, 
+			"Failed to add resource: AccelSampleInterval\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_accel_sample_interval_get(&t), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+	/* create Heartbeat Time resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				       "HeartbeatTime");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: HeartbeatTime\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: HeartbeatTime\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_heartbeat_time_get(&t), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	    if (MMODSETTINGSMSG_heartbeat_time_get(&t) < heartbeat_time)
+	    {
+		heartbeat_time = (uint32_t)MMODSETTINGSMSG_heartbeat_time_get(&t);
+	    }
+	}
+
+	/* create  Accel Axis resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_STRING,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				       "AccelAxis");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: AccelAxis\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: AccelAxis\n");
+	    }
+	    flags = MMODSETTINGSMSG_accel_flags_get(&t);
+	    if (flags & ACCEL_FLAG_X)
+	    {
+		if (flags & ACCEL_FLAG_Y)
+		{
+		    bionet_resource_set_str(resource, strdup("both"), &tv);
+		}
+		else
+		{
+		    bionet_resource_set_str(resource, strdup("X-Axis"), &tv);
+		}
+	    }
+	    else if (flags & ACCEL_FLAG_Y)
+	    {
+		bionet_resource_set_str(resource, strdup("Y-Axis"), &tv);
+	    }
+	    else
+	    {
+		bionet_resource_set_str(resource, strdup("None"), &tv);
+	    }
+	}
+
+	/* create counter resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "MsgCounter");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: MsgCounter\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: MsgCounter\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, last, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource: MsgCounter\n"); 
+	    }
+	}
+
+	/* create counter resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "MissedMsgs");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: MissedMsgs\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: MissedMsgs\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, 0, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource: MissedMsgs\n"); 
+	    }
+	}
+
+	/* add node for real */
+	if (hab_report_new_node(node))
+	{
+	    g_error("Error reporting new node %s to hab", &node_id[0]);
+	}
     }
     else
     {
