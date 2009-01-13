@@ -97,10 +97,12 @@ int main(int argc, char *argv[]) {
 
 
         //
-        // if we get here, we're connected to the Speedway reader
+        // here we're connected to the Speedway reader and it's all set up
         //
 
+
 	add_node();
+
 
 
 	for (i = 1; i < 5; i++) {
