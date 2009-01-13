@@ -20,43 +20,16 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
     LLRP_tSTagReportData *pTagReportData;
     int ni;
 
+
     // set all nodes to "not seen on any antenna"
     for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
         bionet_node_t *node = bionet_hab_get_node_by_index(hab, ni);
-        bionet_resource_t *resource;
-        char *rid;
+        node_data_t *node_data = bionet_node_get_user_data(node);
+        int i;
 
-        rid = "Antenna-1";
-        resource = bionet_node_get_resource_by_id(node, rid);
-        if (resource == NULL) {
-            g_warning("error getting Resource %s:%s", bionet_node_get_id(node), rid);
-            return;
+        for (i = 1; i <= 4; i ++) {
+            node_data->antenna[i] = 0;
         }
-        bionet_resource_set_binary(resource, 0, NULL);
-
-        rid = "Antenna-2";
-        resource = bionet_node_get_resource_by_id(node, rid);
-        if (resource == NULL) {
-            g_warning("error getting Resource %s:%s", bionet_node_get_id(node), rid);
-            return;
-        }
-        bionet_resource_set_binary(resource, 0, NULL);
-
-        rid = "Antenna-3";
-        resource = bionet_node_get_resource_by_id(node, rid);
-        if (resource == NULL) {
-            g_warning("error getting Resource %s:%s", bionet_node_get_id(node), rid);
-            return;
-        }
-        bionet_resource_set_binary(resource, 0, NULL);
-
-        rid = "Antenna-4";
-        resource = bionet_node_get_resource_by_id(node, rid);
-        if (resource == NULL) {
-            g_warning("error getting Resource %s:%s", bionet_node_get_id(node), rid);
-            return;
-        }
-        bionet_resource_set_binary(resource, 0, NULL);
     }
 
 
@@ -70,10 +43,67 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
     }
 
 
-    // report all the updated resources to Bionet
+    // update seen-on-antenna information for all nodes
     for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
         bionet_node_t *node = bionet_hab_get_node_by_index(hab, ni);
-        hab_report_datapoints(node);
+        node_data_t *node_data = bionet_node_get_user_data(node);
+        int i;
+        int node_changed;
+        int node_still_here;
+
+        node_changed = 0;
+        node_still_here = 0;
+
+        for (i = 1; i <= 4; i ++) {
+            char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+            bionet_resource_t *resource;
+            bionet_datapoint_t *d;
+            bionet_value_t *v;
+
+            int value;
+            int r;
+
+            sprintf(resource_id, "Antenna-%d", i);
+            resource = bionet_node_get_resource_by_id(node, resource_id);
+            if (resource == NULL) {
+                g_warning("cannot find Resource %s:%s", bionet_node_get_id(node), resource_id);
+                continue;
+            }
+
+            d = bionet_resource_get_datapoint_by_index(resource, 0);
+            if (d != NULL) {
+                v = bionet_datapoint_get_value(d);
+                if (v == NULL) {
+                    g_warning("cannot get datapoint value of Resource %s", bionet_resource_get_local_name(resource));
+                    continue;
+                }
+                r = bionet_value_get_binary(v, &value);
+                if (r != 0) {
+                    g_warning("cannot get binary value from Resource %s", bionet_resource_get_local_name(resource));
+                    continue;
+                }
+            }
+
+            if ((d == NULL) || (value != node_data->antenna[i])) {
+                value = node_data->antenna[i];
+                bionet_resource_set_binary(resource, value, NULL);
+                node_changed = 1;
+            }
+
+            if (value != 0) node_still_here = 1;
+        }
+
+        if (!node_still_here) {
+            free(node_data);
+            bionet_node_set_user_data(node, NULL);
+            bionet_hab_remove_node_by_id(hab, bionet_node_get_id(node));
+            hab_report_lost_node(bionet_node_get_id(node));
+            bionet_node_free(node);
+            ni --;
+        } else if (node_changed) {
+            hab_report_datapoints(node);
+        }
     }
 }
 

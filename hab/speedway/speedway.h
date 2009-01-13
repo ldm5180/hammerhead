@@ -1,8 +1,15 @@
 #ifndef __SPEEDWAY_H_
 #define __SPEEDWAY_H_
 
+
 #include "ltkc.h"
 #include "hardware-abstractor.h"
+
+
+typedef struct {
+    int antenna[5];  // there are only 4 antennas, but they start counting at 1
+} node_data_t;
+
 
 extern bionet_hab_t *hab;
 
@@ -10,8 +17,6 @@ extern int show_messages;
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
 
-// bionet functions.
-int add_node(void);
 
 // reader functions.
 int speedway_connect(const char* reader_ip);

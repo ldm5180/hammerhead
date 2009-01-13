@@ -75,6 +75,8 @@ bionet_node_t *make_new_node(const char *node_id) {
     int r;
     bionet_node_t *node;
     bionet_resource_t *resource;
+    node_data_t *node_data;
+    int i;
 
     node = bionet_node_new(hab, node_id);
     if (node == NULL) {
@@ -82,79 +84,44 @@ bionet_node_t *make_new_node(const char *node_id) {
         return NULL;
     }
 
-    resource = bionet_resource_new(
-        node,
-        BIONET_RESOURCE_DATA_TYPE_BINARY,
-        BIONET_RESOURCE_FLAVOR_SENSOR,
-        "Antenna-1"
-    );
-    if (resource == NULL) {
-        g_warning("error making a Resource for Tag %s", node_id);
+    node_data = (node_data_t *)calloc(1, sizeof(node_data_t));
+    if (node_data == NULL) {
+        g_warning("out of memory");
+        bionet_node_free(node);
         return NULL;
     }
-    r = bionet_node_add_resource(node, resource);
-    if (r != 0) {
-        g_warning("error making a Resource for Tag %s", node_id);
-        return NULL;
-    }
-    bionet_resource_set_binary(resource, 0, NULL);
 
-    resource = bionet_resource_new(
-        node,
-        BIONET_RESOURCE_DATA_TYPE_BINARY,
-        BIONET_RESOURCE_FLAVOR_SENSOR,
-        "Antenna-2"
-    );
-    if (resource == NULL) {
-        g_warning("error making a Resource for Tag %s", node_id);
-        return NULL;
-    }
-    r = bionet_node_add_resource(node, resource);
-    if (r != 0) {
-        g_warning("error making a Resource for Tag %s", node_id);
-        return NULL;
-    }
-    bionet_resource_set_binary(resource, 0, NULL);
+    bionet_node_set_user_data(node, node_data);
 
-    resource = bionet_resource_new(
-        node,
-        BIONET_RESOURCE_DATA_TYPE_BINARY,
-        BIONET_RESOURCE_FLAVOR_SENSOR,
-        "Antenna-3"
-    );
-    if (resource == NULL) {
-        g_warning("error making a Resource for Tag %s", node_id);
-        return NULL;
-    }
-    r = bionet_node_add_resource(node, resource);
-    if (r != 0) {
-        g_warning("error making a Resource for Tag %s", node_id);
-        return NULL;
-    }
-    bionet_resource_set_binary(resource, 0, NULL);
+    for (i = 1; i <= 4; i ++) {
+        char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
-    resource = bionet_resource_new(
-        node,
-        BIONET_RESOURCE_DATA_TYPE_BINARY,
-        BIONET_RESOURCE_FLAVOR_SENSOR,
-        "Antenna-4"
-    );
-    if (resource == NULL) {
-        g_warning("error making a Resource for Tag %s", node_id);
-        return NULL;
+        sprintf(resource_id, "Antenna-%d", i);
+
+        resource = bionet_resource_new(
+            node,
+            BIONET_RESOURCE_DATA_TYPE_BINARY,
+            BIONET_RESOURCE_FLAVOR_SENSOR,
+            resource_id
+        );
+        if (resource == NULL) {
+            g_warning("error making a Resource %s:%s", node_id, resource_id);
+            return NULL;
+        }
+        r = bionet_node_add_resource(node, resource);
+        if (r != 0) {
+            g_warning("error making Resource %s:%s", node_id, resource_id);
+            return NULL;
+        }
     }
-    r = bionet_node_add_resource(node, resource);
-    if (r != 0) {
-        g_warning("error making a Resource for Tag %s", node_id);
-        return NULL;
-    }
-    bionet_resource_set_binary(resource, 0, NULL);
 
     r = bionet_hab_add_node(hab, node);
     if (r != 0) {
         g_warning("error adding Node %s to HAB", node_id);
         return NULL;
     }
+
+    hab_report_new_node(node);
 
     return node;
 }
@@ -179,11 +146,9 @@ bionet_node_t *make_new_node(const char *node_id) {
 //                                                
 
 void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
-    bionet_node_t *node;
     char *node_id;
-
-    bionet_resource_t *resource;
-    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    bionet_node_t *node;
+    node_data_t *node_data;
 
     node_id = get_tag_id(pTagReportData);
     if (node_id == NULL) return;
@@ -192,8 +157,13 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
     if (node == NULL) {
         node = make_new_node(node_id);
         if (node == NULL) return;
-        hab_report_new_node(node);
 
+    }
+
+    node_data = bionet_node_get_user_data(node);
+    if (node_data == NULL) {
+        g_warning("no user data for node %s!", node_id);
+        return;
     }
 
     if (pTagReportData->pAntennaID == NULL) {
@@ -201,12 +171,6 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
         return;
     }
 
-    sprintf(resource_id, "Antenna-%d", pTagReportData->pAntennaID->AntennaID);
-    resource = bionet_node_get_resource_by_id(node, resource_id);
-    if (resource == NULL) {
-        g_warning("cannot find Resource %s:%s", node_id, resource_id);
-        return;
-    }
-    bionet_resource_set_binary(resource, 1, NULL);
+    node_data->antenna[pTagReportData->pAntennaID->AntennaID] = 1;
 }
 
