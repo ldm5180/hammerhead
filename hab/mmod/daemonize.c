@@ -77,7 +77,7 @@ int daemonize(int *verbosity)
     fclose(stdout);
     fclose(stderr);
 
-    openlog("cpod", 0, 0);
+    openlog("mmod", 0, 0);
     g_log_set_default_handler(daemon_log_handler, verbosity);
     g_log("", G_LOG_LEVEL_INFO, "starting up...");
 
