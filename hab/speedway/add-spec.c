@@ -7,6 +7,11 @@
 #include "ltkc.h"
 #include "speedway.h"
 
+
+#define RO_TRIGGER_PERIOD 6000
+#define AI_DURATION 5000
+
+
 /*
  *
  * Add our ROSpec using ADD_ROSPEC message
@@ -72,6 +77,11 @@
 
 int addROSpec(void) 
 {
+
+    // 
+    // The RO starts periodically and doesnt stop until we tell it to stop.
+    //
+
     LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
         .eROSpecStartTriggerType = LLRP_ROSpecStartTriggerType_Periodic,
@@ -79,7 +89,7 @@ int addROSpec(void)
 
     LLRP_tSPeriodicTriggerValue PeriodicTriggerValue = {
         .hdr.elementHdr.pType = &LLRP_tdPeriodicTriggerValue,
-        .Period = 5000,
+        .Period = RO_TRIGGER_PERIOD,
         .pUTCTimestamp = NULL
     };
 
@@ -95,12 +105,18 @@ int addROSpec(void)
         .pROSpecStopTrigger     = &ROSpecStopTrigger,
     };
 
+
+    // 
+    // The Reader Operation contains a single Antenna Inventory, saying
+    // to scan all antennas.
+    //
+
     llrp_u16_t AntennaIDs[1] = { 0 }; // 0 is all antenna's.
 
     LLRP_tSAISpecStopTrigger    AISpecStopTrigger = {
         .hdr.elementHdr.pType   = &LLRP_tdAISpecStopTrigger,
         .eAISpecStopTriggerType = LLRP_AISpecStopTriggerType_Duration,
-        .DurationTrigger        = 5000,
+        .DurationTrigger        = AI_DURATION,
     };
 
     LLRP_tSInventoryParameterSpec InventoryParameterSpec = {
@@ -119,14 +135,20 @@ int addROSpec(void)
         .listInventoryParameterSpec = &InventoryParameterSpec,
     };
 
+
+    // 
+    // This specifies the report we want from the Reader each time the RO
+    // finishes.
+    //
+
     LLRP_tSTagReportContentSelector TagReportContentSelector = {
         .hdr.elementHdr.pType   = &LLRP_tdTagReportContentSelector,
         .EnableROSpecID         = 0,
         .EnableSpecIndex        = 0,
         .EnableInventoryParameterSpecID = 0,
-        .EnableAntennaID        = 0,
+        .EnableAntennaID        = 1,
         .EnableChannelIndex     = 0,
-        .EnablePeakRSSI         = 0,
+        .EnablePeakRSSI         = 1,
         .EnableFirstSeenTimestamp = 0,
         .EnableLastSeenTimestamp = 0,
         .EnableTagSeenCount     = 0,
@@ -135,10 +157,9 @@ int addROSpec(void)
 
     LLRP_tSROReportSpec ROReportSpec = {
         .hdr.elementHdr.pType   = &LLRP_tdROReportSpec,
-        .eROReportTrigger       =
-			LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec,
+        .eROReportTrigger       = LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec,
         .N = 0, 
-		.pTagReportContentSelector = &TagReportContentSelector,
+	.pTagReportContentSelector = &TagReportContentSelector,
     };
 
     LLRP_tSROSpec ROSpec = {
