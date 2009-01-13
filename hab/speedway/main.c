@@ -86,23 +86,42 @@ int main(int argc, char *argv[]) {
 	}
 
 
-        //
-        // here we're connected to the Speedway reader and it's all set up
-        //
+    //
+    // here we're connected to the Speedway reader and it's all set up
+    //
 
 
-	// add_node();
+    do {
+        struct timeval timeout;
+        fd_set readers;
+        int r;
+
+        printf("INFO: Starting run\n");
+
+        poll_for_report();
+
+        FD_ZERO(&readers);
+        FD_SET(bionet_fd, &readers);
+
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 100 * 1000;
+
+        r = select(bionet_fd + 1, &readers, NULL, NULL, &timeout);
+        if (r < 0) {
+            if (errno == EINTR) continue;
+            g_warning("error with select(): %s", strerror(errno));
+            exit(1);
+        } else if (r == 1) {
+            g_message("*** bionet needs attention ***");
+            hab_read();
+        }
+    } while(1);
 
 
-	do {
-		printf("INFO: Starting run\n");
-		poll_for_report();
-	} while(1);
-
-	scrubConfiguration();
+    scrubConfiguration();
 
 end: 
-        LLRP_TypeRegistry_destruct(pTypeRegistry);
+    LLRP_TypeRegistry_destruct(pTypeRegistry);
 
     exit(0);
 }
