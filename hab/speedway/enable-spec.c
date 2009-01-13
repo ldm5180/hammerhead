@@ -56,10 +56,6 @@ int enableROSpec (void)
      */
     freeMessage(pRspMsg);
 
-    if(g_verbose) {
-        printf("INFO: ROSpec enabled\n");
-    }
-
     return 0;
 }
 

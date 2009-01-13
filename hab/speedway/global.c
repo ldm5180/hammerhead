@@ -5,7 +5,7 @@
 
 bionet_hab_t *hab;
 
-int g_verbose = 2;
+int show_messages = 0;
 
 LLRP_tSConnection *pConn;
 LLRP_tSTypeRegistry *pTypeRegistry;

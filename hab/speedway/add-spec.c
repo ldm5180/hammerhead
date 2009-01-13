@@ -219,10 +219,6 @@ int addROSpec(void)
      */
     freeMessage(pRspMsg);
 
-    if(g_verbose) {
-        printf("INFO: ROSpec added\n");
-    }
-
     return 0;
 }
 

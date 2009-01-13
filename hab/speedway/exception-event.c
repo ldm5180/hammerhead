@@ -22,11 +22,9 @@ void handleReaderExceptionEvent(
     Message = LLRP_ReaderExceptionEvent_getMessage(pReaderExceptionEvent);
 
     if(0 < Message.nValue && NULL != Message.pValue) {
-        printf("NOTICE: ReaderException '%.*s'\n",
-             Message.nValue, Message.pValue);
-    }
-    else {
-        printf("NOTICE: ReaderException but no message\n");
+        g_warning("ReaderException '%.*s'", Message.nValue, Message.pValue);
+    } else {
+        g_warning("ReaderException but no message");
     }
 }
 

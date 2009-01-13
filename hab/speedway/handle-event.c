@@ -53,7 +53,7 @@ void handleReaderEventNotification(LLRP_tSReaderEventNotificationData
      */
 
     if(nReported == 0) {
-        printf("NOTICE: Unexpected (unhandled) ReaderEvent\n");
+        g_warning("Unexpected (unhandled) ReaderEvent");
     }
 }
 

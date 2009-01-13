@@ -21,8 +21,6 @@
  */
 
 int main(int argc, char *argv[]) {
-	int local_dbg = 1;
-
 	int i = 0;
 	int bionet_fd;
 
@@ -40,22 +38,19 @@ int main(int argc, char *argv[]) {
                 i ++;
                 hab_id = argv[i];
 
+            } else if (strcmp(argv[i], "--show-messages") == 0) {
+                show_messages = 1;
+
             } else {
-                fprintf(stderr, "unknown command-line argument '%s'\n", argv[i]);
+                g_warning("unknown command-line argument '%s'", argv[i]);
                 exit(1);
             }
         }
 
         if (reader_ip == NULL) {
-            fprintf(stderr, "no reader IP specified (use --target)\n");
+            g_warning("no reader IP specified (use --target)");
             exit(1);
         }
-
-	if (local_dbg) {
-		printf("reader_ip = %s\n", reader_ip);
-		printf("hab_type = %s\n", hab_type);
-		printf("hab_id = %s\n", hab_id);
-	}
 
 
         // 
@@ -66,7 +61,7 @@ int main(int argc, char *argv[]) {
 
 	bionet_fd = hab_connect(hab);
 	if (bionet_fd < 0) {
-		printf("Error: could not connect, exiting\n");
+		g_warning("could not connect to Bionet, exiting");
 		return 1;
 	}
 
@@ -76,12 +71,12 @@ int main(int argc, char *argv[]) {
         //
 
 	if (speedway_connect(reader_ip) != 0) {
-		printf("Error: speedway connect failed\n");
+		g_warning("speedway connect failed");
 		goto end;
 	}
 
 	if (speedway_configure() != 0) {
-		printf("Error: speedway configure failed\n");
+		g_warning("speedway configure failed");
 		goto end;
 	}
 
@@ -96,8 +91,6 @@ int main(int argc, char *argv[]) {
         fd_set readers;
         int r;
 
-        printf("INFO: Starting run\n");
-
         FD_ZERO(&readers);
         FD_SET(bionet_fd, &readers);
 
@@ -110,7 +103,6 @@ int main(int argc, char *argv[]) {
             g_warning("error with select(): %s", strerror(errno));
             exit(1);
         } else if (r == 1) {
-            g_message("*** bionet needs attention ***");
             hab_read();
             continue;
         }

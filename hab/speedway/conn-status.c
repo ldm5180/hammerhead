@@ -92,14 +92,10 @@ int checkConnectionStatus(void)
      */
     freeMessage(pMessage);
 
-    if(g_verbose) {
-        printf("INFO: Connection status OK\n");
-    }
-
     return 0;
 
-	fail:
-    printf("ERROR: checkConnectionStatus failed\n");
+fail:
+    g_warning("checkConnectionStatus failed");
 
     freeMessage(pMessage);
 

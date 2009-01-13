@@ -22,19 +22,19 @@ int speedway_configure() {
 	r = scrubConfiguration();	
 
 	if (r != 0) {
-		printf("Error: scrubConfiguration error\n");
+		g_warning("scrubConfiguration error");
 	}
 
 	r = addROSpec();
 
 	if (r != 0) {
-		printf("Error: addROSpec error\n");
+		g_warning("addROSpec error");
 	}
 
 	r = enableROSpec();
 
 	if (r != 0) {
-		printf("Error: enableROSpec error\n");
+		g_warning("enableROSpec error");
 	}
 
 	return r;

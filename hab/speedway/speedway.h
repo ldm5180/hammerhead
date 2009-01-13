@@ -6,7 +6,7 @@
 
 extern bionet_hab_t *hab;
 
-extern int g_verbose;
+extern int show_messages;
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
 

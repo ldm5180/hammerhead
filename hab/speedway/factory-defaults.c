@@ -56,9 +56,7 @@ int resetConfigurationToFactoryDefaults()
 
     freeMessage(pRspMsg);
 
-    if(g_verbose) {
-        printf("INFO: Configuration reset to factory defaults\n");
-    }
+    g_debug("Configuration reset to factory defaults");
 
     return 0;
 }

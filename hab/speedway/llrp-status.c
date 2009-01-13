@@ -25,8 +25,7 @@ int checkLLRPStatus(LLRP_tSLLRPStatus *pLLRPStatus, char *pWhatStr)
      * diagnostic and suppose to catch LTKC mistakes).
      */
     if(pLLRPStatus == NULL) {
-        printf("ERROR: %s missing LLRP status\n", pWhatStr);
-
+        g_warning("%s missing LLRP status", pWhatStr);
         return -1;
     }
 
@@ -37,19 +36,14 @@ int checkLLRPStatus(LLRP_tSLLRPStatus *pLLRPStatus, char *pWhatStr)
      */
     if(LLRP_StatusCode_M_Success != pLLRPStatus->eStatusCode) {
         if(pLLRPStatus->ErrorDescription.nValue == 0) {
-            printf("ERROR: %s failed, no error description given\n",
-                pWhatStr);
-        }
-        else {
-            printf("ERROR: %s failed, %.*s\n", 
-				pWhatStr,
-                pLLRPStatus->ErrorDescription.nValue,
-                pLLRPStatus->ErrorDescription.pValue);
+            g_warning("%s failed, no error description given", pWhatStr);
+        } else {
+            g_warning("%s failed, %.*s", pWhatStr, pLLRPStatus->ErrorDescription.nValue, pLLRPStatus->ErrorDescription.pValue);
         }
 
         return -2;
     }
    
-	return 0;
+    return 0;
 }
 

@@ -124,13 +124,13 @@ void poll_for_report() {
             handleReaderEventNotification(pNtfData);
         } else {
             // Should never happen.
-            printf("Warning: READER_EVENT_NOTIFICATION  without data\n");
+            g_warning("READER_EVENT_NOTIFICATION  without data");
         }
     } else {
         /*
          * Something unexpected happened.
          */
-        printf("Warning: Ignoring unexpected message during monitor: %s\n", pType->pName);
+        g_warning("Ignoring unexpected message during monitor: %s", pType->pName);
     }
 
 cleanup:

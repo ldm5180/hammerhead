@@ -65,10 +65,6 @@ int deleteAllROSpecs (void)
 
     freeMessage(pRspMsg);
 
-    if(g_verbose) {
-        printf("INFO: All ROSpecs are deleted\n");
-    }
-
     return 0;
 }
 

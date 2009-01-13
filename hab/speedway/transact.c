@@ -32,9 +32,9 @@ LLRP_tSMessage *transact (LLRP_tSMessage *pSendMsg)
      * Print the XML text for the outbound message if
      * verbosity is 2 or higher.
      */
-    if(g_verbose > 1) {
-        printf("\n===================================\n");
-        printf("INFO: Transact sending\n");
+    if(show_messages) {
+        g_message("===================================");
+        g_message("Transact sending");
         printXMLMessage(pSendMsg);
     }
 
@@ -48,18 +48,18 @@ LLRP_tSMessage *transact (LLRP_tSMessage *pSendMsg)
     if(pRspMsg == NULL) {
         const LLRP_tSErrorDetails *pError = LLRP_Conn_getTransactError(pConn);
 
-        printf("ERROR: %s transact failed, %s\n",
+        g_warning(
+            "%s transact failed, %s",
             pSendMsg->elementHdr.pType->pName,
-            pError->pWhatStr ? pError->pWhatStr : "no reason given");
+            pError->pWhatStr ? pError->pWhatStr : "no reason given"
+        );
 
         if(NULL != pError->pRefType) {
-            printf("ERROR: ... reference type %s\n",
-                pError->pRefType->pName);
+            g_warning("... reference type %s", pError->pRefType->pName);
         }
 
         if(NULL != pError->pRefField) {
-            printf("ERROR: ... reference field %s\n",
-				pError->pRefField->pName);
+            g_warning(" ... reference field %s", pError->pRefField->pName);
         }
 
         return NULL;
@@ -70,9 +70,9 @@ LLRP_tSMessage *transact (LLRP_tSMessage *pSendMsg)
      * verbosity is 2 or higher.
      */
 
-    if(g_verbose > 1) {
-        printf("\n- - - - - - - - - - - - - - - - - -\n");
-        printf("INFO: Transact received response\n");
+    if(show_messages) {
+        g_message("- - - - - - - - - - - - - - - - - -");
+        g_message("INFO: Transact received response");
         printXMLMessage(pRspMsg);
     }
 
@@ -85,8 +85,7 @@ LLRP_tSMessage *transact (LLRP_tSMessage *pSendMsg)
 
         pResponseType = pSendMsg->elementHdr.pType->pResponseType;
 
-        printf("ERROR: Received ERROR_MESSAGE instead of %s\n",
-            pResponseType->pName);
+        g_warning("Received ERROR_MESSAGE instead of %s", pResponseType->pName);
 
         freeMessage(pRspMsg);
 

@@ -28,7 +28,8 @@ int speedway_connect(const char* reader_ip) {
 	pTypeRegistry = LLRP_getTheTypeRegistry();
 
 	if (pTypeRegistry == NULL) {
-		printf("Error: getTheTypeRegistry failed\n");
+		g_warning("getTheTypeRegistry failed");
+                return -1;
 	}
 								     
 	/*
@@ -39,36 +40,30 @@ int speedway_connect(const char* reader_ip) {
 	pConn = LLRP_Conn_construct(pTypeRegistry, (32u * 1024u));
 
 	if (pConn == NULL) {
-		printf("Error: Conn_construct failed\n");
+		g_warning("Conn_construct failed");
+                return -1;
 	}
 
 	/*
 	 * Open the connection to the reader.
 	 */
-	if (g_verbose) {
-		printf("INFO: Connecting to %s ... \n", reader_ip);
-	}
+        g_debug("Connecting to %s ... ", reader_ip);
 
 	rc = LLRP_Conn_openConnectionToReader(pConn, reader_ip);
 
 	if (rc != 0) {
-		printf("Error: speedway_connect() %s (%d)\n", 
-			pConn->pConnectErrorStr, rc);
-
+		g_warning("speedway_connect() %s (%d)", pConn->pConnectErrorStr, rc);
 		return -3;
 	}
 
-	if (g_verbose) {
-		printf("Info: Connected, checking status ... \n");
-	}
+        g_debug("Connected, checking status ... ");
 
 	rc = checkConnectionStatus(); 
 
 	if (rc != 0) {
 		LLRP_Conn_closeConnectionToReader(pConn);
 		LLRP_Conn_destruct(pConn);
-
-		printf("Error: connectionStatus failed\n");	
+		g_warning("connectionStatus failed");	
 	}
 
     return rc;

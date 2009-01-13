@@ -38,7 +38,5 @@ void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent)
 
         	break;
     }
-
-    printf("NOTICE: Antenna %d is %s\n", AntennaID, pStateStr);
 }
 

@@ -35,15 +35,14 @@ LLRP_tSMessage * recvMessage (int nMaxMS) {
             return NULL;
         }
 
-        printf("Error: recvMessage failed, %s\n",
-            pError->pWhatStr ? pError->pWhatStr : "no reason given");
+        g_warning("recvMessage failed, %s", pError->pWhatStr ? pError->pWhatStr : "no reason given");
 
         if(pError->pRefType != NULL) {
-            printf("ERROR: ... reference type %s\n", pError->pRefType->pName);
+            g_warning("... reference type %s", pError->pRefType->pName);
         }
 
         if(pError->pRefField != NULL) {
-            printf("ERROR: ... reference field %s\n", pError->pRefField->pName);
+            g_warning("... reference field %s", pError->pRefField->pName);
         }
 
         return NULL;
@@ -53,10 +52,9 @@ LLRP_tSMessage * recvMessage (int nMaxMS) {
      * Print the XML text for the inbound message if
      * verbosity is 2 or higher.
      */
-    if(1 < g_verbose)
-    {
-        printf("\n===================================\n");
-        printf("INFO: Message received\n");
+    if(show_messages) {
+        g_message("===================================");
+        g_message("Message received");
         printXMLMessage(pMessage);
     }
 
