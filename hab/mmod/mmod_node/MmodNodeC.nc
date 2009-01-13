@@ -31,7 +31,7 @@
 #define CHECK_Y_ACCEL 0x02
 
 #define DEFAULT_LIGHT_THRESHOLD       10
-#define DEFAULT_ACCEL_THRESHOLD       20
+#define DEFAULT_ACCEL_THRESHOLD       10
 #define DEFAULT_TEMPERATURE_THRESHOLD 5
 #define DEFAULT_VOLTAGE_THRESHOLD     3
 #define DEFAULT_ACCEL_SAMPLES         4
@@ -244,13 +244,13 @@ implementation
 					    sizeof(mmod_settings_msg_t));
 	    *settings_msg = settings;
 	    call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
-	    if (settings.heartbeat_time <= 10)
+	    if (settings.heartbeat_time <= 20)
 	    {
 		call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
 	    }
 	    else
 	    {
-		call SettingsCheck.startPeriodic((settings.heartbeat_time - 5) * 1000);
+		call SettingsCheck.startPeriodic((settings.heartbeat_time - 10) * 1000);
 	    }
 	}
 	else
