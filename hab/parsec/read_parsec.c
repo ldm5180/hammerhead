@@ -27,7 +27,7 @@ void read_parsec(int fd) {
   bionet_resource_t resource;
 
   size = recvfrom(fd, buffer, BUFFER_SIZE, 0, 0, 0);
-  timestamp = gettimeofday(&timestamp, NULL);
+  gettimeofday(&timestamp, NULL);
 
   scanned = sscanf(buffer, "%ud %f %f", &id, &range, &temp);
 
