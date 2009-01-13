@@ -364,31 +364,26 @@ implementation
 
     task void check_accel_x()
     {
-	uint8_t i, j;
-	uint16_t avg[4] = {0};
+	uint8_t i;
+	uint16_t avg = 0;
 	uint16_t tmp;
-	uint16_t biggest = 0;
 
 	tmp_general_msg.offset += settings.sample_interval;
 
 	for (i = 0; i < num_x_samples; i++)
 	{
-	    for (j = 0; j <= 4; j++)
-	    {
-		avg[i] += accel_x_samples[i*j];
-	    }
-	    avg[i] /= num_x_samples;
-	    avg_accum_x += avg[i];
-	    num_readings_in_accum_x++;
+	    avg += accel_x_samples[i];
 	}
+	avg /= num_x_samples;
 
+	avg_accum_x += avg;
+	num_readings_in_accum_x++;
 
 	/* if there are enough to make an average, record it */
 	if (num_readings_in_accum_x >= num_readings_needed)
 	{
-	    cur_accel_avg_x = avg_accum_x >> 4;
+	    cur_accel_avg_x = avg_accum_x >> 6;
 	    num_readings_in_accum_x = avg_accum_x = 0;
-	    call Leds.led1Off();
 	}
 	else if (0 == cur_accel_avg_x)
 	{
@@ -397,49 +392,40 @@ implementation
 	    return;
 	}
 
-	for (i = 0; i < num_x_samples; i++)
+	//get abs val
+	if (cur_accel_avg_x > avg)
 	{
-	    //get abs val
-	    if (cur_accel_avg_x > avg[i])
-	    {
-		tmp = cur_accel_avg_x - avg[i];
-	    }
-	    else
-	    {
-		tmp = avg[i] - cur_accel_avg_x;
-	    }
-	
-	    //if we just sent, report when we get back to a floor
-	    if ((just_sent) && (tmp <= 4) && (found))
-	    {
-		tmp_general_msg.accel_x = tmp;
-		send_general_msg();
-		ax_busy = FALSE;
-		call AccelCheck.stop();
-		found = 0;
-		return;
-	    }
-	    else if (just_sent)
-	    {
-		ax_busy = FALSE;
-		return;
-	    }
-
-	    //find the biggest for the time period
-	    if (tmp > biggest)
-	    {
-		biggest = tmp;
-	    }
+	    tmp = cur_accel_avg_x - avg;
 	}
-
+	else
+	{
+	    tmp = avg - cur_accel_avg_x;
+	}
+	
+	//if we just sent, report when we get back to a floor
+	if ((just_sent) && (tmp <= 4) && (found))
+	{
+	    tmp_general_msg.accel_x = tmp;
+	    send_general_msg();
+	    ax_busy = FALSE;
+	    call AccelCheck.stop();
+	    found = 0;
+	    return;
+	}
+	else if (just_sent)
+	{
+	    ax_busy = FALSE;
+	    return;
+	}
+	
         /* update general_msg regardless so it gets sent in next heartbeat */
 	if (!tgm_busy) 
 	{
 	    /* only report the highest over the time period, this is reset 
              * when a message is sent */
-	    if ((tmp_general_msg.accel_x < biggest) && (biggest > DEFAULT_ACCEL_THRESHOLD))
+	    if ((tmp_general_msg.accel_x < tmp) && (tmp > DEFAULT_ACCEL_THRESHOLD))
 	    {
-		tmp_general_msg.accel_x = biggest;
+		tmp_general_msg.accel_x = tmp;
 		found++;
 	    }
 	    else if (!is_recording)
