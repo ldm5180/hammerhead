@@ -3,10 +3,15 @@
 #include <glib.h>
 #include <stdio.h>
 #include <sys/socket.h>
+#include <sys/time.h>
+
+#include "hardware-abstractor.h"
 
 #define BUFFER_SIZE 1024
 
 static char buffer[BUFFER_SIZE];
+
+extern bionet_hab_t *parsec_hab;
 
 // Parsec informaiton comes in the format:
 // <id> <range[m]> <temperature[C]>
@@ -16,8 +21,12 @@ void read_parsec(int fd) {
   unsigned int id, scanned;
   float range;
   float temp;
+  struct timeval timestamp;
+
+  bionet_node_t node;
 
   size = recvfrom(fd, buffer, BUFFER_SIZE, 0, 0, 0);
+  timestamp = gettimeofday(&timestamp, NULL);
 
   scanned = sscanf(buffer, "%ud %f %f", &id, &range, &temp);
 
@@ -27,5 +36,52 @@ void read_parsec(int fd) {
 	return;
   }
 
-  
+  node = bionet_hab_get_node_by_name(parsec_hab, id);
+  if (node == NULL) {
+	// Add the node
+	bionet_resource_t resource;
+	node = bionet_node_new(parsec_hab, id);
+	resource = bionet_resource_new(node, 
+								   BIONET_RESOURCE_DATA_TYPE_FLOAT, 
+								   BIONET_RESOURCE_FLAVOR_SENSOR, 
+								   "Range");
+
+	if (resource == NULL) {
+	  g_error("Failed to create Range resource: Range for id %d", id);
+	  return;
+	}
+
+	if (bionet_node_add_resource(node, resource)) {
+	  g_error("Failed to add Range resource to node %d", id);
+	  return;
+	}
+
+	if (bionet_set_resource_float(resource, range, &timestamp)) {
+	  g_error("Failed to set Range resource after creation for node %d", id);
+	  return;
+	}
+	
+	bionet_resource_new(node, 
+						BIONET_RESOURCE_DATA_TYPE_FLOAT, 
+						BIONET_RESOURCE_FLAVOR_SENSOR, 
+						"Temperature");
+
+	if (resource == NULL) {
+	  g_error("Failed to create Temperature resource: Range for id %d", id);
+	  return;
+	}
+
+	if (bionet_node_add_resource(node, resource)) {
+	  g_error("Failed to add Temperature resource to node %d", id);
+	  return;
+	}
+
+	if (bionet_set_resource_float(resource, temp, &timestamp)) {
+	  g_error("Failed to set Temperature resource after creation for node %d", id);
+	  return;
+	}
+
+  } else {
+	//
+  }
 }
