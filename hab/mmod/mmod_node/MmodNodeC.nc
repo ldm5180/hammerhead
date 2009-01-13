@@ -102,6 +102,7 @@ implementation
     bool is_recording = FALSE;
     bool just_sent = FALSE;
     bool first_time = TRUE;
+    bool no_setting_send = FALSE;
 
     uint16_t count_below_thres = 0;
 
@@ -133,28 +134,31 @@ implementation
     void send_settings_msg()
     {
 	mmod_settings_msg_t *settings_msg;
-
-	red_led_toggle();
-	/* send out a quick settings msg */
-	sm_busy = TRUE;
-	settings_msg = 
-	    call SettingsRoot.getPayload(&settings_msgbuf,
-					 sizeof(mmod_settings_msg_t));
-	*settings_msg = settings;
-	call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
-	if (first_time)
+	if (FALSE == no_setting_send)
 	{
-	    if (settings.heartbeat_time <= 20)
-	    {
-		call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
-	    }
-	    else
-	    {
-		call SettingsCheck.startPeriodic((settings.heartbeat_time - 10) * 1000);
-	    }	    
+
 	    red_led_toggle();
+	    /* send out a quick settings msg */
+	    sm_busy = TRUE;
+	    settings_msg = 
+		call SettingsRoot.getPayload(&settings_msgbuf,
+					     sizeof(mmod_settings_msg_t));
+	    *settings_msg = settings;
+	    call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
+	    if (first_time)
+	    {
+		if (settings.heartbeat_time <= 20)
+		{
+		    call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
+		}
+		else
+		{
+		    call SettingsCheck.startPeriodic((settings.heartbeat_time - 10) * 1000);
+		}	    
+	    }
+	    first_time = FALSE;
 	}
-	first_time = FALSE;
+	no_setting_send = FALSE;
     }
 
     void send_general_msg()
@@ -197,8 +201,7 @@ implementation
 	general_msg->accel_flags = settings.accel_flags;
 
 	/* timer */
-	general_msg->tv_sec = tmp_general_msg.tv_sec;
-	general_msg->tv_usec = tmp_general_msg.tv_usec;
+	general_msg->timestamp_id = tmp_general_msg.timestamp_id;
 	general_msg->offset = tmp_general_msg.offset;
 
 	tgm_busy = FALSE;
@@ -243,7 +246,7 @@ implementation
 	    call CollectionControl.start();
 	    //call LowPowerListening.setLocalDutyCycle(200);
 
-	    call SettingsCheck.startOneShot(5000);
+	    call SettingsCheck.startOneShot(1000);
 	}
     } /* RadioControl.startDone() */
 
@@ -260,14 +263,19 @@ implementation
 
 	if ((TOS_NODE_ID != new_settings->node_id) && (new_settings->node_id != 0))
 	{
-	    red_led_toggle();
-	    return;
+	    if (tmp_general_msg.timestamp_id != new_settings->timestamp_id)
+	    {
+		no_setting_send = TRUE;
+	    }
 	}
 	else if (new_settings->node_id == 0)
 	{
 	    call AccelCheck.stop();
-	    tmp_general_msg.tv_sec = settings.tv_sec;
-	    tmp_general_msg.tv_usec = settings.tv_usec;
+	    if (tmp_general_msg.timestamp_id != new_settings->timestamp_id)
+	    {
+		no_setting_send = TRUE;
+	    }
+	    tmp_general_msg.timestamp_id = settings.timestamp_id = new_settings->timestamp_id;
 	    tmp_general_msg.offset = 0;
 	    
 	    general_msg = 
@@ -283,6 +291,13 @@ implementation
 	    just_sent = FALSE;
 	    found = FALSE;
 	}
+
+	if (tmp_general_msg.timestamp_id != new_settings->timestamp_id)
+	{
+	    no_setting_send = TRUE;
+	}
+	tmp_general_msg.timestamp_id = settings.timestamp_id = new_settings->timestamp_id;
+	tmp_general_msg.offset = 0;
 
 	/* copy everything over but the node id, we know who we are */
 	settings.thres_accel = new_settings->thres_accel;

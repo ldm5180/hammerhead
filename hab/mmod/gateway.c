@@ -23,6 +23,7 @@
 #include "mmodsettingsmsg.h"
 #include "serialsource.h"
 #include "mmod_message.h"
+#include "set-resource.h"
 
 #define AM_HEADER_LEN          8   
 #define AM_HEADER_DATALEN_LOC  5
