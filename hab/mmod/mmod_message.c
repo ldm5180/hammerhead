@@ -27,7 +27,6 @@
 #include "hardware-abstractor.h"
 #include "mmod_message.h"
 #include "mmodgenmsg.h"
-#include "mmodaccelmsg.h"
 #include "mmodsettingsmsg.h"
 #include "message.h"
 #include "bionet-hab.h"
@@ -50,17 +49,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     bionet_node_t *node;
     char node_id[8];
     struct timeval tv;
-    uint32_t mv;
     bionet_resource_t * resource;
-
-#if DEBUG
-    printf("    Message node: %04u\n", MMODGENMSG_node_id_get(&t)); 
-    printf("    Voltage:      %04u\n", MMODGENMSG_volt_get(&t));
-    printf("    Temperature:  %04u\n", MMODGENMSG_temp_get(&t));
-    printf("    Photo:        %04u\n", MMODGENMSG_photo_get(&t));
-    printf("    Accel X:      %04u\n", MMODGENMSG_accel_x_get(&t));
-    printf("    Accel Y:      %04u\n", MMODGENMSG_accel_y_get(&t));
-#endif /* DEBUG */
 
     snprintf(&node_id[0], 8, "%04u", MMODGENMSG_node_id_get(&t));
     node = bionet_hab_get_node_by_id(mmod_hab, &node_id[0]);
@@ -75,9 +64,6 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     {
 
 	last = MMODGENMSG_accel_y_get(&t);
-#if DEBUG
-	fprintf(stderr, "Creating new node %s\n", &node_id[0]);
-#endif
 	node = bionet_node_new(mmod_hab, &node_id[0]);
 	if (NULL == node)
 	{
@@ -86,132 +72,6 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	}
 	bionet_hab_add_node(mmod_hab, node);
 
-	/* create voltage resource */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT32,
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
-				       "Voltage");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get new resource: Voltage\n");
-	}
-	else
-	{
-	    if (bionet_node_add_resource(node, resource))
-	    {
-		fprintf(stderr, "Failed to add resource: Voltage\n");
-	    }
-	    mv = mts310_cook_voltage(MMODGENMSG_volt_get(&t));
-	    if (bionet_resource_set_uint32(resource, mv, &tv))
-	    {
-		fprintf(stderr, "Failed to set resource\n"); 
-	    }
-	}
-        /* create raw voltage resource */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT16,
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
-				       "RawVoltage");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get new resource: RawVoltage\n");
-	}
-	else
-	{
-	    if (bionet_node_add_resource(node, resource))
-	    {
-		fprintf(stderr, "Failed to add resource: RawVoltage\n");
-	    }
-	    if (bionet_resource_set_uint16(resource, MMODGENMSG_volt_get(&t), &tv))
-	    {
-		fprintf(stderr, "Failed to set resource\n"); 
-	    }
-	}
-
-	/* create temperature resource */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_FLOAT,
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
-				       "Temperature");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get new resource: Temperature\n");
-	}
-	else
-	{
-	    if (bionet_node_add_resource(node, resource))
-	    {
-		fprintf(stderr, "Failed to add resource: Temperature\n");
-	    }
-	    if (bionet_resource_set_float(resource, mts310_cook_temperature(MMODGENMSG_temp_get(&t)), &tv))
-	    {
-		fprintf(stderr, "Failed to set resource\n"); 
-	    }
-	}
-
-
-	/* create raw temperature resource */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT16,
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
-				       "RawTemperature");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get new resource: RawTemperature\n");
-	}
-	else
-	{
-	    if (bionet_node_add_resource(node, resource))
-	    {
-		fprintf(stderr, "Failed to add resource: RawTemperature\n");
-	    }
-	    if (bionet_resource_set_uint16(resource, MMODGENMSG_temp_get(&t), &tv))
-	    {
-		fprintf(stderr, "Failed to set resource\n"); 
-	    }
-	}
-
-	/* create photo resource */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT16,
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
-				       "Photo");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get new resource: Photo\n");
-	}
-	else
-	{
-	    if (bionet_node_add_resource(node, resource))
-	    {
-		fprintf(stderr, "Failed to add resource: Photo\n");
-	    }
-	    if (bionet_resource_set_uint16(resource, mts310_cook_light(mv, MMODGENMSG_photo_get(&t)), &tv))
-	    {
-		fprintf(stderr, "Failed to set resource\n"); 
-	    }
-	}
-
-	/* create raw photo resource */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT16,
-				       BIONET_RESOURCE_FLAVOR_SENSOR, 
-				       "RawPhoto");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get new resource: RawPhoto\n");
-	}
-	else
-	{
-	    if (bionet_node_add_resource(node, resource))
-	    {
-		fprintf(stderr, "Failed to add resource: RawPhoto\n");
-	    }
-	    if (bionet_resource_set_uint16(resource, MMODGENMSG_photo_get(&t), &tv))
-	    {
-		fprintf(stderr, "Failed to set resource\n"); 
-	    }
-	}
 
 	/* create accel-x resource */
 	resource = bionet_resource_new(node, 
@@ -485,67 +345,6 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    }
 
 	    hab_report_datapoints(node);
-	}
-	/* the node already exists, so just update the resource values */
-	resource = bionet_node_get_resource_by_id(node, "Voltage");
-	mv = mts310_cook_voltage(MMODGENMSG_volt_get(&t));
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get resource: Voltage\n");
-	}
-	else
-	{
-	    bionet_resource_set_uint32(resource, mv, &tv);
-	}
-
-	resource = bionet_node_get_resource_by_id(node, "RawVoltage");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get resource: RawVoltage\n");
-	}
-	else
-	{
-	    bionet_resource_set_uint16(resource, MMODGENMSG_volt_get(&t), &tv);
-	}
-
-	resource = bionet_node_get_resource_by_id(node, "Temperature");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get resource: Temperature\n");
-	}
-	else
-	{
-	    bionet_resource_set_float(resource, mts310_cook_temperature(MMODGENMSG_temp_get(&t)), &tv);
-	}
-
-	resource = bionet_node_get_resource_by_id(node, "RawTemperature");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get resource: RawTemperature\n");
-	}
-	else
-	{
-	    bionet_resource_set_uint16(resource, MMODGENMSG_temp_get(&t), &tv);
-	}
-
-	resource = bionet_node_get_resource_by_id(node, "Photo");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get resource: Photo\n");
-	}
-	else
-	{
-	    bionet_resource_set_uint16(resource, mts310_cook_light(mv, MMODGENMSG_photo_get(&t)), &tv);
-	}
-
-	resource = bionet_node_get_resource_by_id(node, "RawPhoto");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get resource: RawPhoto\n");
-	}
-	else
-	{
-	    bionet_resource_set_uint16(resource, MMODGENMSG_photo_get(&t), &tv);
 	}
 
 	if (0 == (ACCEL_FLAG_X & flags))

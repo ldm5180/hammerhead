@@ -2,11 +2,7 @@ include $(top_srcdir)/common.am
 
 if TINYOSMIG_DISABLED
 else
-BUILT_SOURCES = mmodaccelmsg.c mmodgenmsg.c mmodsettingsmsg.c mmodaccelmsg.h mmodgenmsg.h mmodsettingsmsg.h
-
-mmodaccelmsg.c: mmod_node/mmod_msg.h
-	touch mmodaccelmsg.c
-	mig -o mmodaccelmsg.h -c-prefix=MMODACCELMSG c mmod_node/mmod_msg.h mmod_accel_msg
+BUILT_SOURCES = mmodgenmsg.c mmodsettingsmsg.c mmodgenmsg.h mmodsettingsmsg.h
 
 mmodgenmsg.c: mmod_node/mmod_msg.h
 	touch mmodgenmsg.c
@@ -15,10 +11,6 @@ mmodgenmsg.c: mmod_node/mmod_msg.h
 mmodsettingsmsg.c: mmod_node/mmod_msg.h
 	touch mmodsettingsmsg.c
 	mig -o mmodsettingsmsg.h -c-prefix=MMODSETTINGSMSG c mmod_node/mmod_msg.h mmod_settings_msg
-
-mmodaccelmsg.h: mmod_node/mmod_msg.h
-	touch mmodaccelmsg.c
-	mig -o mmodaccelmsg.h -c-prefix=MMODACCELMSG c mmod_node/mmod_msg.h mmod_accel_msg
 
 mmodgenmsg.h: mmod_node/mmod_msg.h
 	touch mmodgenmsg.c
@@ -42,7 +34,6 @@ mmod_hab_SOURCES =    \
     heartbeat.c       \
     main.c            \
     message.c         \
-    mmodaccelmsg.c    \
     mmodgenmsg.c      \
     mmod_message.c    \
     mmodsettingsmsg.c \
