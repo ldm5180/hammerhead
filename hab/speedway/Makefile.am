@@ -4,7 +4,6 @@ bin_PROGRAMS = speedway
 
 speedway_SOURCES =         \
     main.c                 \
-    add-node.c             \
     poll-for-report.c      \
     connect.c              \
     configure.c            \
