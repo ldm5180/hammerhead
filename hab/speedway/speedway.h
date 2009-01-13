@@ -12,14 +12,17 @@ extern LLRP_tSTypeRegistry *pTypeRegistry;
 
 // bionet functions.
 int add_node(void);
-void cb_set_resource(const char *node_id, const char *resource_id, 
-	const char *value);
 
 // reader functions.
 int speedway_connect(const char* reader_ip);
 int checkConnectionStatus();
 int scrubConfiguration();
 
+/**
+ * @brief Poll for a RO Access Report from the Speedway, process it if found.
+ *
+ * @return 0 on success, non-zero on failure.
+ */
 int poll_for_report();
 
 int addROSpec();
