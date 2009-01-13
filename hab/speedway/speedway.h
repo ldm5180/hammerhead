@@ -23,6 +23,7 @@ int scrubConfiguration();
  * @brief Poll for messages from the Speedway, process if found.
  */
 void poll_for_report();
+void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData);
 
 int addROSpec();
 void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent);

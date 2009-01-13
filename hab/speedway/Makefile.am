@@ -5,6 +5,7 @@ bin_PROGRAMS = speedway
 speedway_SOURCES =         \
     main.c                 \
     poll-for-report.c      \
+    handle-tag-report-data.c  \
     connect.c              \
     configure.c            \
     global.c               \
