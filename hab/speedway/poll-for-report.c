@@ -13,6 +13,9 @@
 #include "speedway.h"
 
 
+#define RECEIVE_TIMEOUT 100
+
+
 
 
 static void process_one_TagReportData(LLRP_tSTagReportData *pTagReportData) {
@@ -108,8 +111,11 @@ void poll_for_report() {
     LLRP_tSMessage *pMessage = NULL;
     const LLRP_tSTypeDescriptor *pType;
 
-    // wait up to 7000 milliseconds for a message
-    pMessage = recvMessage(7000);
+    // wait a little bit for a message
+    //
+    // FIXME: it'd be nice if the LLRP library exposed a file descriptor so
+    // we could roll it into select in our main loop
+    pMessage = recvMessage(RECEIVE_TIMEOUT);
     if (pMessage == NULL) {
         // timeout
         return;

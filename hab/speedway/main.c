@@ -98,8 +98,6 @@ int main(int argc, char *argv[]) {
 
         printf("INFO: Starting run\n");
 
-        poll_for_report();
-
         FD_ZERO(&readers);
         FD_SET(bionet_fd, &readers);
 
@@ -114,7 +112,11 @@ int main(int argc, char *argv[]) {
         } else if (r == 1) {
             g_message("*** bionet needs attention ***");
             hab_read();
+            continue;
         }
+
+        // only if bionet didnt have anything to do, do we check the reader
+        poll_for_report();
     } while(1);
 
 

@@ -30,6 +30,11 @@ LLRP_tSMessage * recvMessage (int nMaxMS) {
     if(pMessage == NULL) {
         const LLRP_tSErrorDetails *pError = LLRP_Conn_getRecvError(pConn);
 
+        if (strcmp(pError->pWhatStr, "timeout") == 0) {
+            // timeouts are ok, since the LLRP library forces us to poll for messages, grump
+            return NULL;
+        }
+
         printf("Error: recvMessage failed, %s\n",
             pError->pWhatStr ? pError->pWhatStr : "no reason given");
 
