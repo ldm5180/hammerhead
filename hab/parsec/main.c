@@ -26,6 +26,7 @@
 
 static void parse_cmdline(int argc, char** argv);
 static void print_usage(char* prog_name, FILE* fout);
+void read_parsec(int fd);
 
 static const char* hab_type = "parsec";
 
@@ -34,9 +35,6 @@ static int daemon_mode = 0;
 static uint16_t port = 63557;
 bionet_hab_t * parsec_hab;
 char * parsec_id = NULL;
-
-// Parsec informaiton cmoes in the format:
-// <id> <range[m]> <temperature[C]>
 
 
 int main(int argc, char** argv) {
@@ -105,7 +103,7 @@ int main(int argc, char** argv) {
 			}
 
 			if (FD_ISSET(parsec_fd, &readers)) {
-				// read the data from parsec
+				read_parsec(parsec_fd);
 			}
 		}
     }

@@ -5,6 +5,7 @@ bin_PROGRAMS = parsec-hab
 
 parsec_hab_SOURCES =               \
     main.c                         \
+    read_parsec.c                  \
     daemonize.c
 
 parsec_hab_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libhab -I../../util
