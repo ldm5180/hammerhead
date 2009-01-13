@@ -17,31 +17,63 @@
 
 
 static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
-    unsigned int nEntry = 0;
     LLRP_tSTagReportData *pTagReportData;
+    int ni;
 
-    /*
-     * Loop through and count the number of entries
-     */
-    for(
-        pTagReportData = report->listTagReportData;
-        NULL != pTagReportData;
-        pTagReportData = (LLRP_tSTagReportData *)pTagReportData->hdr.pNextSubParameter
-    ) {
-        nEntry++;
+    // set all nodes to "not seen on any antenna"
+    for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
+        bionet_node_t *node = bionet_hab_get_node_by_index(hab, ni);
+        bionet_resource_t *resource;
+        char *rid;
+
+        rid = "Antenna-1";
+        resource = bionet_node_get_resource_by_id(node, rid);
+        if (resource == NULL) {
+            g_warning("error getting Resource %s:%s", bionet_node_get_id(node), rid);
+            return;
+        }
+        bionet_resource_set_binary(resource, 0, NULL);
+
+        rid = "Antenna-2";
+        resource = bionet_node_get_resource_by_id(node, rid);
+        if (resource == NULL) {
+            g_warning("error getting Resource %s:%s", bionet_node_get_id(node), rid);
+            return;
+        }
+        bionet_resource_set_binary(resource, 0, NULL);
+
+        rid = "Antenna-3";
+        resource = bionet_node_get_resource_by_id(node, rid);
+        if (resource == NULL) {
+            g_warning("error getting Resource %s:%s", bionet_node_get_id(node), rid);
+            return;
+        }
+        bionet_resource_set_binary(resource, 0, NULL);
+
+        rid = "Antenna-4";
+        resource = bionet_node_get_resource_by_id(node, rid);
+        if (resource == NULL) {
+            g_warning("error getting Resource %s:%s", bionet_node_get_id(node), rid);
+            return;
+        }
+        bionet_resource_set_binary(resource, 0, NULL);
     }
 
-    printf("INFO: %u tag report entries\n", nEntry);
 
-    /*
-     * Loop through again and print each entry.
-     */
+    // handle each TagReportData entry separately
     for(
         pTagReportData = report->listTagReportData;
         NULL != pTagReportData;
         pTagReportData = (LLRP_tSTagReportData *)pTagReportData->hdr.pNextSubParameter
     ) {
         handle_tag_report_data(pTagReportData);
+    }
+
+
+    // report all the updated resources to Bionet
+    for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
+        bionet_node_t *node = bionet_hab_get_node_by_index(hab, ni);
+        hab_report_datapoints(node);
     }
 }
 

@@ -71,6 +71,97 @@ static char *get_tag_id (LLRP_tSTagReportData *pTagReportData) {
 
 
 
+bionet_node_t *make_new_node(const char *node_id) {
+    int r;
+    bionet_node_t *node;
+    bionet_resource_t *resource;
+
+    node = bionet_node_new(hab, node_id);
+    if (node == NULL) {
+        g_warning("error making a Node for Tag %s", node_id);
+        return NULL;
+    }
+
+    resource = bionet_resource_new(
+        node,
+        BIONET_RESOURCE_DATA_TYPE_BINARY,
+        BIONET_RESOURCE_FLAVOR_SENSOR,
+        "Antenna-1"
+    );
+    if (resource == NULL) {
+        g_warning("error making a Resource for Tag %s", node_id);
+        return NULL;
+    }
+    r = bionet_node_add_resource(node, resource);
+    if (r != 0) {
+        g_warning("error making a Resource for Tag %s", node_id);
+        return NULL;
+    }
+    bionet_resource_set_binary(resource, 0, NULL);
+
+    resource = bionet_resource_new(
+        node,
+        BIONET_RESOURCE_DATA_TYPE_BINARY,
+        BIONET_RESOURCE_FLAVOR_SENSOR,
+        "Antenna-2"
+    );
+    if (resource == NULL) {
+        g_warning("error making a Resource for Tag %s", node_id);
+        return NULL;
+    }
+    r = bionet_node_add_resource(node, resource);
+    if (r != 0) {
+        g_warning("error making a Resource for Tag %s", node_id);
+        return NULL;
+    }
+    bionet_resource_set_binary(resource, 0, NULL);
+
+    resource = bionet_resource_new(
+        node,
+        BIONET_RESOURCE_DATA_TYPE_BINARY,
+        BIONET_RESOURCE_FLAVOR_SENSOR,
+        "Antenna-3"
+    );
+    if (resource == NULL) {
+        g_warning("error making a Resource for Tag %s", node_id);
+        return NULL;
+    }
+    r = bionet_node_add_resource(node, resource);
+    if (r != 0) {
+        g_warning("error making a Resource for Tag %s", node_id);
+        return NULL;
+    }
+    bionet_resource_set_binary(resource, 0, NULL);
+
+    resource = bionet_resource_new(
+        node,
+        BIONET_RESOURCE_DATA_TYPE_BINARY,
+        BIONET_RESOURCE_FLAVOR_SENSOR,
+        "Antenna-4"
+    );
+    if (resource == NULL) {
+        g_warning("error making a Resource for Tag %s", node_id);
+        return NULL;
+    }
+    r = bionet_node_add_resource(node, resource);
+    if (r != 0) {
+        g_warning("error making a Resource for Tag %s", node_id);
+        return NULL;
+    }
+    bionet_resource_set_binary(resource, 0, NULL);
+
+    r = bionet_hab_add_node(hab, node);
+    if (r != 0) {
+        g_warning("error adding Node %s to HAB", node_id);
+        return NULL;
+    }
+
+    return node;
+}
+
+
+
+
 //
 //    The Tag Reports requested by our RO look like this:
 //
@@ -91,30 +182,31 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
     bionet_node_t *node;
     char *node_id;
 
+    bionet_resource_t *resource;
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
     node_id = get_tag_id(pTagReportData);
     if (node_id == NULL) return;
 
     node = bionet_hab_get_node_by_id(hab, node_id);
     if (node == NULL) {
-        int r;
-
-	node = bionet_node_new(hab, node_id);
-        if (node == NULL) {
-            g_warning("error making a Node for Tag %s", node_id);
-            return;
-        }
-
-	r = bionet_hab_add_node(hab, node);
-        if (r != 0) {
-            g_warning("error adding Node %s to HAB", node_id);
-            return;
-	}
-
-        // FIXME: add some resources maybe
-
+        node = make_new_node(node_id);
+        if (node == NULL) return;
         hab_report_new_node(node);
+
     }
 
-    printf("%-32s\n", node_id);
+    if (pTagReportData->pAntennaID == NULL) {
+        g_warning("no antenna for Tag %s!", node_id);
+        return;
+    }
+
+    sprintf(resource_id, "Antenna-%d", pTagReportData->pAntennaID->AntennaID);
+    resource = bionet_node_get_resource_by_id(node, resource_id);
+    if (resource == NULL) {
+        g_warning("cannot find Resource %s:%s", node_id, resource_id);
+        return;
+    }
+    bionet_resource_set_binary(resource, 1, NULL);
 }
 
