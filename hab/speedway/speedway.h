@@ -26,11 +26,15 @@ int scrubConfiguration();
 
 /**
  * @brief Poll for messages from the Speedway, process if found.
+ *
+ * @return 1 if it got a message
+ * @return 0 if there was no message
  */
-void poll_for_report();
+int poll_for_report();
 void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData);
 
 int addROSpec();
+int startROSpec();
 void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent);
 int deleteAllROSpecs();
 int enableROSpec();

@@ -86,6 +86,8 @@ int main(int argc, char *argv[]) {
     //
 
 
+    startROSpec();
+
     do {
         struct timeval timeout;
         fd_set readers;
@@ -108,7 +110,8 @@ int main(int argc, char *argv[]) {
         }
 
         // only if bionet didnt have anything to do, do we check the reader
-        poll_for_report();
+        r = poll_for_report();
+        if (r == 1) startROSpec();
     } while(1);
 
 

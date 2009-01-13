@@ -110,7 +110,7 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
 
 
 
-void poll_for_report() {
+int poll_for_report() {
     LLRP_tSMessage *pMessage = NULL;
     const LLRP_tSTypeDescriptor *pType;
 
@@ -121,7 +121,7 @@ void poll_for_report() {
     pMessage = recvMessage(RECEIVE_TIMEOUT);
     if (pMessage == NULL) {
         // timeout
-        return;
+        return 0;
     }
 
 
@@ -136,7 +136,8 @@ void poll_for_report() {
      */
     if (&LLRP_tdRO_ACCESS_REPORT == pType) {
         process_ro_access_report((LLRP_tSRO_ACCESS_REPORT *)pMessage);
-        goto cleanup;
+        freeMessage(pMessage);
+        return 1;
     }
 
     /*
@@ -163,7 +164,8 @@ void poll_for_report() {
         g_warning("Ignoring unexpected message during monitor: %s", pType->pName);
     }
 
-cleanup:
-    if (pMessage != NULL) freeMessage(pMessage);
+    freeMessage(pMessage);
+
+    return 1;
 }
 

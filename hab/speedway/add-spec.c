@@ -8,8 +8,7 @@
 #include "speedway.h"
 
 
-#define RO_TRIGGER_PERIOD 6000
-#define AI_DURATION 5000
+#define RO_TRIGGER_PERIOD 1100
 
 
 /*
@@ -79,18 +78,28 @@ int addROSpec(void)
 {
 
     // 
-    // The RO starts periodically and doesnt stop until we tell it to stop.
+    // The RO start & stop specs
     //
 
-    LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
-        .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
-        .eROSpecStartTriggerType = LLRP_ROSpecStartTriggerType_Periodic,
-    };
-
+#if 0
+    // this is a periodic trigger
     LLRP_tSPeriodicTriggerValue PeriodicTriggerValue = {
         .hdr.elementHdr.pType = &LLRP_tdPeriodicTriggerValue,
         .Period = RO_TRIGGER_PERIOD,
         .pUTCTimestamp = NULL
+    };
+
+    LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
+        .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
+        .eROSpecStartTriggerType = LLRP_ROSpecStartTriggerType_Periodic,
+        .pPeriodicTriggerValue = &PeriodicTriggerValue
+    };
+#endif
+
+    // this is a Null trigger, so it just starts when we tell it to
+    LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
+        .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
+        .eROSpecStartTriggerType = LLRP_ROSpecStartTriggerType_Null,
     };
 
     LLRP_tSROSpecStopTrigger ROSpecStopTrigger = {
@@ -113,10 +122,17 @@ int addROSpec(void)
 
     llrp_u16_t AntennaIDs[1] = { 0 }; // 0 is all antenna's.
 
+    LLRP_tSTagObservationTrigger TagObservationTrigger = {
+        .hdr.elementHdr.pType = &LLRP_tdTagObservationTrigger,
+        .eTriggerType         = LLRP_TagObservationTriggerType_Upon_Seeing_No_More_New_Tags_For_Tms_Or_Timeout,
+        .T                    = 3000,
+        .Timeout              = 5000
+    };
+
     LLRP_tSAISpecStopTrigger    AISpecStopTrigger = {
         .hdr.elementHdr.pType   = &LLRP_tdAISpecStopTrigger,
-        .eAISpecStopTriggerType = LLRP_AISpecStopTriggerType_Duration,
-        .DurationTrigger        = AI_DURATION,
+        .eAISpecStopTriggerType = LLRP_AISpecStopTriggerType_Tag_Observation,
+        .pTagObservationTrigger = &TagObservationTrigger
     };
 
     LLRP_tSInventoryParameterSpec InventoryParameterSpec = {
@@ -180,16 +196,6 @@ int addROSpec(void)
 
     LLRP_tSMessage *pRspMsg;
     LLRP_tSADD_ROSPEC_RESPONSE *pRsp;
-    LLRP_tResultCode r;
-    
-    r = LLRP_ROSpecStartTrigger_setPeriodicTriggerValue(
-        &ROSpecStartTrigger,
-        &PeriodicTriggerValue
-    );
-    if (r != LLRP_RC_OK) {
-        g_warning("error setting period trigger");
-        return -1;
-    }
 
     /*
      * Send the message, expect the response of certain type
