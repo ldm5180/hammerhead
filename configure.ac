@@ -203,6 +203,7 @@ AC_CONFIG_FILES([Makefile
 		 hab/mmod/Makefile
                  hab/random/Makefile
                  hab/alsa/Makefile
+                 hab/parsec/Makefile
                  hab/syshealth/Makefile
                  hab/speedway/Makefile
                  data-manager/Makefile

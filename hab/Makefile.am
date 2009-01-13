@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.am
 
-SUBDIRS = libhab random csa-cp mmod syshealth
+SUBDIRS = libhab random csa-cp mmod syshealth parsec
 
 if ENABLE_ALSA
 SUBDIRS += alsa
