@@ -49,15 +49,10 @@ int startROSpec() {
 	 */
 	if (checkLLRPStatus(pRsp->pLLRPStatus, "startROSpec")) {
 		freeMessage(pRspMsg);
-
 		return -1;
 	}
 
 	freeMessage(pRspMsg);
-
-	if (g_verbose) {
-		printf("INFO: ROSpec started\n");
-	}
 
 	return 0;
 }

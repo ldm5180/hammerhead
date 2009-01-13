@@ -15,6 +15,7 @@ speedway_SOURCES =         \
     handle-event.c         \
     conn-status.c          \
     add-spec.c             \
+    start-spec.c           \
     enable-spec.c          \
     transact.c             \
     llrp-status.c          \
