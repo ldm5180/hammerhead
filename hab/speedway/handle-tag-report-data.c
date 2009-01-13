@@ -97,7 +97,6 @@ bionet_node_t *make_new_node(const char *node_id) {
         char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
         sprintf(resource_id, "Antenna-%d", i);
-
         resource = bionet_resource_new(
             node,
             BIONET_RESOURCE_DATA_TYPE_BINARY,
@@ -113,6 +112,24 @@ bionet_node_t *make_new_node(const char *node_id) {
             g_warning("error making Resource %s:%s", node_id, resource_id);
             return NULL;
         }
+
+        sprintf(resource_id, "Antenna-%d-PeakRSSI", i);
+        resource = bionet_resource_new(
+            node,
+            BIONET_RESOURCE_DATA_TYPE_INT8,
+            BIONET_RESOURCE_FLAVOR_SENSOR,
+            resource_id
+        );
+        if (resource == NULL) {
+            g_warning("error making a Resource %s:%s", node_id, resource_id);
+            return NULL;
+        }
+        r = bionet_node_add_resource(node, resource);
+        if (r != 0) {
+            g_warning("error making Resource %s:%s", node_id, resource_id);
+            return NULL;
+        }
+
     }
 
     r = bionet_hab_add_node(hab, node);
@@ -149,6 +166,10 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
     char *node_id;
     bionet_node_t *node;
     node_data_t *node_data;
+    int antenna;
+
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    bionet_resource_t *resource;
 
     node_id = get_tag_id(pTagReportData);
     if (node_id == NULL) return;
@@ -171,6 +192,17 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
         return;
     }
 
-    node_data->antenna[pTagReportData->pAntennaID->AntennaID] = 1;
+    antenna = pTagReportData->pAntennaID->AntennaID;
+
+    node_data->antenna[antenna] = 1;
+
+    sprintf(resource_id, "Antenna-%d-PeakRSSI", antenna);
+    resource = bionet_node_get_resource_by_id(node, resource_id);
+    if (resource == NULL) {
+        g_warning("error getting Resource %s:%s", node_id, resource_id);
+        return;
+    }
+
+    bionet_resource_set_int8(resource, pTagReportData->pPeakRSSI->PeakRSSI, NULL);
 }
 
