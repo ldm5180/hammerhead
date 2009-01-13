@@ -104,7 +104,6 @@ int main(int argc, char *argv[]) {
 	// add_node();
 
 
-
 	do {
 		printf("INFO: Starting run\n");
 
@@ -113,9 +112,7 @@ int main(int argc, char *argv[]) {
 			break;
 		}
 
-		if (poll_for_report()) {
-			break;
-		}
+		poll_for_report();
 	} while(1);
 
 	scrubConfiguration();

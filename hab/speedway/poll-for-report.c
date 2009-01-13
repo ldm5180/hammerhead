@@ -104,83 +104,57 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
 
 
 
-int poll_for_report() {
-	int bDone = 0;
-	int retVal = 0;
+void poll_for_report() {
+    LLRP_tSMessage *pMessage = NULL;
+    const LLRP_tSTypeDescriptor *pType;
 
-	/*
-	 * Keep receiving messages until done or until something has happened.
-	 */
-	while (!bDone) {
-		LLRP_tSMessage *pMessage;
-		const LLRP_tSTypeDescriptor *pType;
+    // wait up to 7000 milliseconds for a message
+    pMessage = recvMessage(7000);
+    if (pMessage == NULL) {
+        // timeout
+        return;
+    }
 
-		/*
-		 * Wait up to 7 seconds for a message, though the report should
-		 * occur within 5 seconds.
-		 */
-		pMessage = recvMessage(7000);
 
-		if (pMessage == NULL) {
-			retVal = -2;
-			bDone = 1;
+    /*
+     * What happens here depends on what kind of message was received.
+     * Use the type label (pType) to discriminate message types.
+     */
+    pType = pMessage->elementHdr.pType;
 
-			continue;
-		}
+    /*
+     * If this is a tag report, then process it.
+     */
+    if (&LLRP_tdRO_ACCESS_REPORT == pType) {
+        process_ro_access_report((LLRP_tSRO_ACCESS_REPORT *)pMessage);
+        goto cleanup;
+    }
 
-		/*
-		 * What happens here depends on what kind of message was received.
-		 * Use the type label (pType) to discriminate message types.
-		 */
-		pType = pMessage->elementHdr.pType;
+    /*
+     * If this is a reader event ...
+     */
+    else if (&LLRP_tdREADER_EVENT_NOTIFICATION == pType) {
+        LLRP_tSREADER_EVENT_NOTIFICATION *pNtf;
+        LLRP_tSReaderEventNotificationData *pNtfData;
 
-		/*
-		 * If this is a tag report, then print it.
-		 */
-		if (&LLRP_tdRO_ACCESS_REPORT == pType) {
-			LLRP_tSRO_ACCESS_REPORT *pNtf;
+        pNtf = (LLRP_tSREADER_EVENT_NOTIFICATION *) pMessage;
 
-			pNtf = (LLRP_tSRO_ACCESS_REPORT *) pMessage;
+        pNtfData = LLRP_READER_EVENT_NOTIFICATION_getReaderEventNotificationData(pNtf);
 
-			process_ro_access_report(pNtf);
-			bDone = 1;
-			retVal = 0;
-		}
+        if (pNtfData != NULL) {
+            handleReaderEventNotification(pNtfData);
+        } else {
+            // Should never happen.
+            printf("Warning: READER_EVENT_NOTIFICATION  without data\n");
+        }
+    } else {
+        /*
+         * Something unexpected happened.
+         */
+        printf("Warning: Ignoring unexpected message during monitor: %s\n", pType->pName);
+    }
 
-		/*
-		 * If this is a reader event ...
-		 */
-		else if (&LLRP_tdREADER_EVENT_NOTIFICATION == pType) {
-			LLRP_tSREADER_EVENT_NOTIFICATION *pNtf;
-			LLRP_tSReaderEventNotificationData *pNtfData;
-
-			pNtf = (LLRP_tSREADER_EVENT_NOTIFICATION *) pMessage;
-
-			pNtfData = 
-				LLRP_READER_EVENT_NOTIFICATION_getReaderEventNotificationData(
-					pNtf);
-
-			if (pNtfData != NULL) {
-				handleReaderEventNotification(pNtfData);
-			}
-			else {
-				// Should never happen.
-				printf("Warning: READER_EVENT_NOTIFICATION  without data\n");
-			}
-		}
-		else {
-			/*
-			 * Something unexpected happened.
-			 */
-			printf("Warning: Ignoring unexpected message during monitor: %s\n",
-				pType->pName);
-		}
-
-		freeMessage(pMessage);
-	}
-	
-
-	return retVal;
+cleanup:
+    if (pMessage != NULL) freeMessage(pMessage);
 }
-
 

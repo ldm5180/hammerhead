@@ -19,11 +19,9 @@ int checkConnectionStatus();
 int scrubConfiguration();
 
 /**
- * @brief Poll for a RO Access Report from the Speedway, process it if found.
- *
- * @return 0 on success, non-zero on failure.
+ * @brief Poll for messages from the Speedway, process if found.
  */
-int poll_for_report();
+void poll_for_report();
 
 int addROSpec();
 void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent);
