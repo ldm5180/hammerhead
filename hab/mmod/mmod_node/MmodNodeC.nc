@@ -268,57 +268,75 @@ implementation
 		no_setting_send = TRUE;
 	    }
 	}
-
-	call AccelCheck.stop();
-	if (tmp_general_msg.timestamp_id != new_settings->timestamp_id)
+	else if (new_settings->node_id == 0)
 	{
-	    no_setting_send = TRUE;
-	}
-	settings.timestamp_id = new_settings->timestamp_id;
-	tmp_general_msg.timestamp_id = settings.timestamp_id;
-	tmp_general_msg.offset = 0;
+	    yellow_led_toggle();
+	    call AccelCheck.stop();
 
-	/* copy everything over but the node id, we know who we are */
-	settings.thres_accel = new_settings->thres_accel;
-	settings.sample_interval = new_settings->sample_interval;
-	settings.num_accel_samples = new_settings->num_accel_samples;
-	settings.accel_sample_interval = new_settings->accel_sample_interval;
-	settings.heartbeat_time = new_settings->heartbeat_time;
+	    settings.timestamp_id = new_settings->timestamp_id;
+	    tmp_general_msg.timestamp_id = settings.timestamp_id;
+	    tmp_general_msg.offset = 0;
+	    
+	    general_msg = 
+		call GeneralRoot.getPayload(&general_msgbuf,
+					    sizeof(mmod_general_msg_t));
+	    general_msg->accel_x = 0;
+	    general_msg->accel_y = 0;
+	    tmp_general_msg.accel_x = 0;
+	    tmp_general_msg.accel_y = 0;	    
+	    
+	    just_sent = FALSE;
+	    found = FALSE;
 
-	settings.accel_flags = new_settings->accel_flags;
-
-	if (settings.heartbeat_time <= 20)
-	{
-	    call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
+	    call AccelCheck.startPeriodic(settings.sample_interval);
 	}
 	else
 	{
-	    call SettingsCheck.startPeriodic((settings.heartbeat_time - 10) * 1000);
+	    if (tmp_general_msg.timestamp_id != new_settings->timestamp_id)
+	    {
+		no_setting_send = TRUE;
+	    }
+
+	    /* copy everything over but the node id, we know who we are */
+	    settings.thres_accel = new_settings->thres_accel;
+	    settings.sample_interval = new_settings->sample_interval;
+	    settings.num_accel_samples = new_settings->num_accel_samples;
+	    settings.accel_sample_interval = new_settings->accel_sample_interval;
+	    settings.heartbeat_time = new_settings->heartbeat_time;
+	    
+	    settings.accel_flags = new_settings->accel_flags;
+	    
+	    if (settings.heartbeat_time <= 20)
+	    {
+		call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
+	    }
+	    else
+	    {
+		call SettingsCheck.startPeriodic((settings.heartbeat_time - 10) * 1000);
+	    }
+	    
+	    general_msg = 
+		call GeneralRoot.getPayload(&general_msgbuf,
+					    sizeof(mmod_general_msg_t));
+	    general_msg->accel_x = 0;
+	    general_msg->accel_y = 0;
+	    tmp_general_msg.accel_x = 0;
+	    tmp_general_msg.accel_y = 0;	    
+	    
+	    just_sent = FALSE;
+	    found = FALSE;
+	    
+	    /* ensure the sample period timer is correct */
+	    num_periods_per_sec = 
+		(uint32_t)MSEC_PER_SEC / (nx_uint32_t)settings.sample_interval;
+	    
+	    /* send out a settings message to let the HAB know that the changes
+	     * have been implemented */
+	    if (!sm_busy)
+	    {
+		send_settings_msg();
+	    }
 	}
-
-	general_msg = 
-	    call GeneralRoot.getPayload(&general_msgbuf,
-					sizeof(mmod_general_msg_t));
-	general_msg->accel_x = 0;
-	general_msg->accel_y = 0;
-	tmp_general_msg.accel_x = 0;
-	tmp_general_msg.accel_y = 0;	    
-		
-	just_sent = FALSE;
-	found = FALSE;
-
-        /* ensure the sample period timer is correct */
-	num_periods_per_sec = 
-	    (uint32_t)MSEC_PER_SEC / (nx_uint32_t)settings.sample_interval;
-
-	/* send out a settings message to let the HAB know that the changes
-	 * have been implemented */
-	if (!sm_busy)
-	{
-	    send_settings_msg();
-	}
-
-	call AccelCheck.startPeriodic(settings.sample_interval);
     } /* SettingsValue.changed() */
 
 
