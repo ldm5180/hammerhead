@@ -21,96 +21,96 @@
  */
 
 int main(int argc, char *argv[]) {
-	int i = 0;
-	int bionet_fd;
+    int i = 0;
+    int bionet_fd;
 
-        int old_gpi = -1;
-        int gpi[4];
+    int old_gpi = -1;
+    int gpi[4];
 
-	char* hab_type = "speedway";
-	char* hab_id = NULL;
-	char* reader_ip = NULL;
+    char* hab_type = "speedway";
+    char* hab_id = NULL;
+    char* reader_ip = NULL;
 
 
-        for (i = 1; i < argc; i ++) {
-            if (strcmp(argv[i], "--target") == 0) {
-                i ++;
-                reader_ip = argv[i];
+    for (i = 1; i < argc; i ++) {
+        if (strcmp(argv[i], "--target") == 0) {
+            i ++;
+            reader_ip = argv[i];
 
-            } else if (strcmp(argv[i], "--id") == 0) {
-                i ++;
-                hab_id = argv[i];
+        } else if (strcmp(argv[i], "--id") == 0) {
+            i ++;
+            hab_id = argv[i];
 
-            } else if (strcmp(argv[i], "--show-messages") == 0) {
-                show_messages = 1;
+        } else if (strcmp(argv[i], "--show-messages") == 0) {
+            show_messages = 1;
 
-            } else {
-                g_warning("unknown command-line argument '%s'", argv[i]);
-                exit(1);
-            }
-        }
-
-        if (reader_ip == NULL) {
-            g_warning("no reader IP specified (use --target)");
+        } else {
+            g_warning("unknown command-line argument '%s'", argv[i]);
             exit(1);
         }
+    }
+
+    if (reader_ip == NULL) {
+        g_warning("no reader IP specified (use --target)");
+        exit(1);
+    }
 
 
-        // 
-        // init bionet
-        //
+    // 
+    // init bionet
+    //
 
-	hab = bionet_hab_new(hab_type, hab_id);
+    hab = bionet_hab_new(hab_type, hab_id);
 
-	bionet_fd = hab_connect(hab);
-	if (bionet_fd < 0) {
-		g_warning("could not connect to Bionet, exiting");
-		return 1;
-	}
-
-
-        // 
-        // init the Speedway reader
-        //
-
-	if (speedway_connect(reader_ip) != 0) {
-		g_warning("speedway connect failed");
-		goto end;
-	}
-
-	if (speedway_configure() != 0) {
-		g_warning("speedway configure failed");
-		goto end;
-	}
+    bionet_fd = hab_connect(hab);
+    if (bionet_fd < 0) {
+        g_warning("could not connect to Bionet, exiting");
+        return 1;
+    }
 
 
-        //
-        // For the JSC Wireless Habitat demo, we want a GPI trigger.
-        // The Speedway GPIs are not biased, and there is no +5 supply
-        // available on the GPIO connector, so we use a GPO to provide the
-        // voltage for the active-high activation signal.
-        //
-        // The circuit looks like this:
-        //
-        // GPO 1 ----
-        //          |
-        //          /  (a normally open momentary switch)
-        //         /   
-        //          |
-        // GPI 1 ----
-        //          |
-        //          R  (33K resistor)
-        //          |
-        // GND   ----
-        // 
+    // 
+    // init the Speedway reader
+    //
 
-        if (set_gpo(1, 1) != 0) {
-            g_warning("speedway GPO setup failed");
-            goto end;
-        }
+    if (speedway_connect(reader_ip) != 0) {
+        g_warning("speedway connect failed");
+        goto end;
+    }
+
+    if (speedway_configure() != 0) {
+        g_warning("speedway configure failed");
+        goto end;
+    }
 
 
-        get_reader_config();
+    //
+    // For the JSC Wireless Habitat demo, we want a GPI trigger.
+    // The Speedway GPIs are not biased, and there is no +5 supply
+    // available on the GPIO connector, so we use a GPO to provide the
+    // voltage for the active-high activation signal.
+    //
+    // The circuit looks like this:
+    //
+    // GPO 1 ----
+    //          |
+    //          /  (a normally open momentary switch)
+    //         /   
+    //          |
+    // GPI 1 ----
+    //          |
+    //          R  (33K resistor)
+    //          |
+    // GND   ----
+    // 
+
+    if (set_gpo(1, 1) != 0) {
+        g_warning("speedway GPO setup failed");
+        goto end;
+    }
+
+
+    get_reader_config();
 
 
     //
