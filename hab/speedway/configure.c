@@ -12,23 +12,26 @@
 
 
 int speedway_configure() {
-    int r = 0;
+    int r;
 
     r = scrubConfiguration();	
     if (r != 0) {
         g_warning("scrubConfiguration error");
+        return -1;
     }
 
     r = addROSpec();
     if (r != 0) {
         g_warning("addROSpec error");
+        return -1;
     }
 
     r = enableROSpec();
     if (r != 0) {
         g_warning("enableROSpec error");
+        return -1;
     }
 
-    return r;
+    return 0;
 }
 
