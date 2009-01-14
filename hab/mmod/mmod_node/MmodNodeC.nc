@@ -53,6 +53,7 @@ module MmodNodeC
 	interface SplitControl as RadioControl;
 	interface LowPowerListening;
 	interface LocalTime<TMilli> as LocalTimeMilli;
+	interface CC2420Config;
     } /* uses */
 } /* module MmodNodeC */
 
@@ -220,8 +221,7 @@ implementation
 	sm_busy = FALSE;
     }
 
-   
-    event void Boot.booted()
+    event void CC2420Config.syncDone(error_t error) 
     {
 	call Leds.led0Off();
 	settings.node_id = TOS_NODE_ID;
@@ -235,6 +235,12 @@ implementation
 	num_periods_per_sec = 
 	    ((uint32_t)MSEC_PER_SEC / (nx_uint32_t)settings.sample_interval);
 	call RadioControl.start();
+    }
+
+    event void Boot.booted()
+    {
+	call CC2420Config.setChannel(1);	
+	call CC2420Config.sync();
     } /* Boot.booted() */
 
 

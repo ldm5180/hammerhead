@@ -40,6 +40,8 @@ module MmodGatewayC
 	interface AMSend as SettingsNodeForward;
 
 	interface Leds;
+
+	interface CC2420Config;
     }
 } /* module MmodGatewayC */
 
@@ -81,10 +83,16 @@ implementation
 	}
     } /* msg_send_done() */
 
+    event void CC2420Config.syncDone(error_t error) 
+    {
+	call RadioControl.start();
+    }
+
     event void Boot.booted()
     {
 	call SerialControl.start();
-	call RadioControl.start();
+	call CC2420Config.setChannel(1);	
+	call CC2420Config.sync();
     } /* Boot.booted() */
 
 
