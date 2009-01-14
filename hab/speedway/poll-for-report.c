@@ -27,6 +27,8 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
         node_data_t *node_data = bionet_node_get_user_data(node);
         int i;
 
+        if (node == reader_node) continue;
+
         for (i = 1; i <= 4; i ++) {
             node_data->antenna[i] = 0;
         }
@@ -50,6 +52,8 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
         int i;
         int node_changed;
         int node_still_here;
+
+        if (node == reader_node) continue;
 
         node_changed = 0;
         node_still_here = 0;

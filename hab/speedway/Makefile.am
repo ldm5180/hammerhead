@@ -4,6 +4,7 @@ bin_PROGRAMS = speedway
 
 speedway_SOURCES =         \
     main.c                 \
+    make-reader-node.c     \
     get-reader-config.c    \
     poll-for-report.c      \
     handle-tag-report-data.c  \

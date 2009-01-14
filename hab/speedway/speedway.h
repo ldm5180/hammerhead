@@ -18,6 +18,10 @@ extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
 
 
+extern bionet_node_t *reader_node;
+int make_reader_node(void);
+
+
 // reader functions.
 int speedway_connect(const char* reader_ip);
 int speedway_configure(void);

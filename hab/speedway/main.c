@@ -114,6 +114,10 @@ int main(int argc, char *argv[]) {
     // here we're connected to the Speedway reader and it's all set up
     //
 
+
+    make_reader_node();
+
+
     do {
         struct timeval timeout;
         fd_set readers;
