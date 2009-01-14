@@ -54,8 +54,6 @@ int read_gpis(int gpi[4]) {
         port_num --;
 
         gpi[port_num] = state;
-
-        g_message("GPI %d config=%d, state=%d", port_num, config, state);
     }
     
 
