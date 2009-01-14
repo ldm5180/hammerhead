@@ -19,7 +19,7 @@
 
 
 #include "mmod_msg.h"
-
+#include <Timer.h>
 
 configuration MmodNodeAppC {}
 
@@ -31,6 +31,7 @@ implementation
 
 #if defined(PLATFORM_MICAZ)
     components CC2420ActiveMessageC as Radio;
+    
 #elif defined(PLATFORM_IRIS)
     components ActiveMessageC as Radio;
 #else
@@ -67,4 +68,7 @@ implementation
     MmodNodeC.GeneralRoot -> GeneralSender;
     MmodNodeC.SettingsRoot -> SettingsSender;
     MmodNodeC.CollectionControl -> CollectionC;
+
+    components LocalTimeMilliC;
+    MmodNodeC.LocalTimeMilli -> LocalTimeMilliC;
 } /* implementation */

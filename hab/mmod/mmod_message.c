@@ -35,11 +35,12 @@
 #include "message.h"
 #include "set-resource.h"
 
-struct timeval timeval_table[256];
+static struct timeval timeval_table[256];
 uint16_t current_tv_index = 0;
 
 extern bionet_hab_t * mmod_hab;
 
+static uint16_t accel_thres = 0;
 
 extern uint16_t heartbeat_time;
 static uint16_t flags = ACCEL_FLAG_X;
@@ -53,8 +54,9 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     char node_id[8];
     struct timeval tv;
     bionet_resource_t * resource;
-    bionet_resource_t * accel_resource;
-    bionet_value_t * accel_value;
+    struct timeval tv_accel;
+    uint16_t offset;
+    uint16_t tv_index;
 
     snprintf(&node_id[0], 8, "%04u", MMODGENMSG_node_id_get(&t));
     node = bionet_hab_get_node_by_id(mmod_hab, &node_id[0]);
@@ -70,48 +72,6 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	return 0;
     }
 
-    if (ACCEL_FLAG_X & flags)
-    {
-	if (MMODGENMSG_accel_x_get(&t) >= 20)
-	{
-	    struct timeval tmp_tv = tv;
-	    bionet_value_t * value;
-	    float content;
-	    tmp_tv.tv_sec--;
-	    resource = bionet_node_get_resource_by_id(node, "Accel-X");
-	    value = bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0));
-	    bionet_value_get_float(value, &content);
-	    bionet_resource_set_float(resource, 
-				      mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
-							X_AXIS,
-							content),
-				      &tmp_tv);
-	}
-	 
-	accel_resource = bionet_node_get_resource_by_id(node, "AccelThres");
-	if (accel_resource) {
-	    accel_value = bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0));
-	}
-     
-	if ((NULL != accel_resource) && (accel_value)) {
-	    uint16_t content;
-	    bionet_value_get_uint16(accel_value, &content);
-	    if (MMODGENMSG_accel_x_get(&t) >= content)
-	    {
-		struct timeval tmp_tv = tv;
-		bionet_value_t * value;
-		uint16_t content;
-		tmp_tv.tv_sec--;
-		resource = bionet_node_get_resource_by_id(node, "RawAccel-X");
-		value = bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0));
-		bionet_value_get_uint16(value, &content);
-		bionet_resource_set_uint16(resource, content, &tmp_tv);
-	    }
-	}
-
-	hab_report_datapoints(node);
-    }
-
     resource = bionet_node_get_resource_by_id(node, "Timestamp");
     if (NULL == resource)
     {
@@ -119,7 +79,24 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     }
     else
     {
-	//get the timestamp and add the offset
+	uint32_t secs;
+	tv_index = MMODGENMSG_timestamp_id_get(&t);
+	tv_accel = timeval_table[tv_index];
+	offset = MMODGENMSG_offset_get(&t);
+
+	secs = offset / 1000;
+	tv_accel.tv_sec += secs;
+	tv_accel.tv_usec += ((uint32_t)offset - (secs * 1000)) * 1000;
+	//handle rollover
+	if (tv_accel.tv_usec < timeval_table[tv_index].tv_usec)
+	{
+	    tv_accel.tv_sec++;
+	}
+	if (tv_accel.tv_usec >= 1000000)
+	{
+	    tv_accel.tv_usec -= 1000000;
+	    tv_accel.tv_sec++;
+	}
     }
 
     resource = bionet_node_get_resource_by_id(node, "Accel-X");
@@ -133,7 +110,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 				  mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
 						    X_AXIS,
 						    MMODGENMSG_accel_x_get(&t)),
-				  &tv);
+				  &tv_accel);
     }
     
     resource = bionet_node_get_resource_by_id(node, "RawAccel-X");
@@ -143,7 +120,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     }
     else
     {
-	bionet_resource_set_uint16(resource, MMODGENMSG_accel_x_get(&t), &tv);
+	bionet_resource_set_uint16(resource, MMODGENMSG_accel_x_get(&t), &tv_accel);
     }
 
     resource = bionet_node_get_resource_by_id(node, "Accel-Y");
@@ -157,7 +134,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 				  mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
 						    Y_AXIS,
 						    MMODGENMSG_accel_y_get(&t)),
-				  &tv);
+				  &tv_accel);
     }
     
     resource = bionet_node_get_resource_by_id(node, "RawAccel-Y");
@@ -167,7 +144,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     }
     else
     {
-	bionet_resource_set_uint16(resource, MMODGENMSG_accel_y_get(&t), &tv);
+	bionet_resource_set_uint16(resource, MMODGENMSG_accel_y_get(&t), &tv_accel);
     }
 
     
@@ -298,6 +275,28 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	    }
 	}
 
+	/* create Acceleration Threshold resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				       "AccelThres");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: SampleInterval\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: SampleInterval\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_thres_accel_get(&t), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	    accel_thres = MMODSETTINGSMSG_thres_accel_get(&t);
+	}
+
 	/* create Sample Interval resource */
 	resource = bionet_resource_new(node, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
@@ -356,6 +355,10 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, 
 			"Failed to add resource: AccelSampleInterval\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_accel_sample_interval_get(&t), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
 	    }
 	}
 
