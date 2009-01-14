@@ -22,6 +22,7 @@ extern LLRP_tSTypeRegistry *pTypeRegistry;
 int speedway_connect(const char* reader_ip);
 int speedway_configure(void);
 int set_gpo(int gpo_num, int state);
+int read_gpis(int gpi[4]);
 int checkConnectionStatus();
 int scrubConfiguration();
 void get_reader_config(void);

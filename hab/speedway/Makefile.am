@@ -10,6 +10,7 @@ speedway_SOURCES =         \
     connect.c              \
     configure.c            \
     set-gpo.c              \
+    read-gpis.c            \
     global.c               \
     recv-message.c         \
     scrub-config.c         \
