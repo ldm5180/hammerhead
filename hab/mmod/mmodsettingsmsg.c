@@ -17,83 +17,93 @@ void MMODSETTINGSMSG_node_id_set(tmsg_t *msg, uint16_t value)
   tmsg_write_ube(msg, 0, 16, value);
 }
 
-uint16_t MMODSETTINGSMSG_thres_accel_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_timestamp_id_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 16, 16);
 }
 
-void MMODSETTINGSMSG_thres_accel_set(tmsg_t *msg, uint16_t value)
+void MMODSETTINGSMSG_timestamp_id_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 16, 16, value);
 }
 
-uint16_t MMODSETTINGSMSG_sample_interval_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_thres_accel_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 32, 16);
 }
 
-void MMODSETTINGSMSG_sample_interval_set(tmsg_t *msg, uint16_t value)
+void MMODSETTINGSMSG_thres_accel_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 32, 16, value);
 }
 
-uint16_t MMODSETTINGSMSG_num_accel_samples_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_is_ts_update_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 48, 16);
 }
 
-void MMODSETTINGSMSG_num_accel_samples_set(tmsg_t *msg, uint16_t value)
+void MMODSETTINGSMSG_is_ts_update_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 48, 16, value);
 }
 
-uint16_t MMODSETTINGSMSG_accel_sample_interval_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_unused2_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 64, 16);
 }
 
-void MMODSETTINGSMSG_accel_sample_interval_set(tmsg_t *msg, uint16_t value)
+void MMODSETTINGSMSG_unused2_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 64, 16, value);
 }
 
-uint16_t MMODSETTINGSMSG_heartbeat_time_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_sample_interval_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 80, 16);
 }
 
-void MMODSETTINGSMSG_heartbeat_time_set(tmsg_t *msg, uint16_t value)
+void MMODSETTINGSMSG_sample_interval_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 80, 16, value);
 }
 
-uint16_t MMODSETTINGSMSG_accel_flags_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_num_accel_samples_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 96, 16);
 }
 
-void MMODSETTINGSMSG_accel_flags_set(tmsg_t *msg, uint16_t value)
+void MMODSETTINGSMSG_num_accel_samples_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 96, 16, value);
 }
 
-uint32_t MMODSETTINGSMSG_tv_sec_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_accel_sample_interval_get(tmsg_t *msg)
 {
-  return tmsg_read_ube(msg, 112, 32);
+  return tmsg_read_ube(msg, 112, 16);
 }
 
-void MMODSETTINGSMSG_tv_sec_set(tmsg_t *msg, uint32_t value)
+void MMODSETTINGSMSG_accel_sample_interval_set(tmsg_t *msg, uint16_t value)
 {
-  tmsg_write_ube(msg, 112, 32, value);
+  tmsg_write_ube(msg, 112, 16, value);
 }
 
-uint32_t MMODSETTINGSMSG_tv_usec_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_heartbeat_time_get(tmsg_t *msg)
 {
-  return tmsg_read_ube(msg, 144, 32);
+  return tmsg_read_ube(msg, 128, 16);
 }
 
-void MMODSETTINGSMSG_tv_usec_set(tmsg_t *msg, uint32_t value)
+void MMODSETTINGSMSG_heartbeat_time_set(tmsg_t *msg, uint16_t value)
 {
-  tmsg_write_ube(msg, 144, 32, value);
+  tmsg_write_ube(msg, 128, 16, value);
+}
+
+uint16_t MMODSETTINGSMSG_accel_flags_get(tmsg_t *msg)
+{
+  return tmsg_read_ube(msg, 144, 16);
+}
+
+void MMODSETTINGSMSG_accel_flags_set(tmsg_t *msg, uint16_t value)
+{
+  tmsg_write_ube(msg, 144, 16, value);
 }
 

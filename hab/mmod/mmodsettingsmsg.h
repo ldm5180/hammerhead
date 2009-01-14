@@ -9,7 +9,7 @@
 
 enum {
   /** The default size of this message type in bytes. */
-  MMODSETTINGSMSG_SIZE = 22,
+  MMODSETTINGSMSG_SIZE = 20,
 
   /** The Active Message type associated with this message. */
   MMODSETTINGSMSG_AM_TYPE = 51,
@@ -24,85 +24,95 @@ enum {
   /** Size (in bits) of the field 'node_id' */
   MMODSETTINGSMSG_NODE_ID_SIZEBITS = 16,
 
-  /* Field thres_accel: type uint16_t, offset (bits) 16, size (bits) 16 */
+  /* Field timestamp_id: type uint16_t, offset (bits) 16, size (bits) 16 */
+  /** Offset (in bytes) of the field 'timestamp_id' */
+  MMODSETTINGSMSG_TIMESTAMP_ID_OFFSET = 2,
+  /** Offset (in bits) of the field 'timestamp_id' */
+  MMODSETTINGSMSG_TIMESTAMP_ID_OFFSETBITS = 16,
+  /** Size (in bytes) of the field 'timestamp_id' */
+  MMODSETTINGSMSG_TIMESTAMP_ID_SIZE = 2,
+  /** Size (in bits) of the field 'timestamp_id' */
+  MMODSETTINGSMSG_TIMESTAMP_ID_SIZEBITS = 16,
+
+  /* Field thres_accel: type uint16_t, offset (bits) 32, size (bits) 16 */
   /** Offset (in bytes) of the field 'thres_accel' */
-  MMODSETTINGSMSG_THRES_ACCEL_OFFSET = 2,
+  MMODSETTINGSMSG_THRES_ACCEL_OFFSET = 4,
   /** Offset (in bits) of the field 'thres_accel' */
-  MMODSETTINGSMSG_THRES_ACCEL_OFFSETBITS = 16,
+  MMODSETTINGSMSG_THRES_ACCEL_OFFSETBITS = 32,
   /** Size (in bytes) of the field 'thres_accel' */
   MMODSETTINGSMSG_THRES_ACCEL_SIZE = 2,
   /** Size (in bits) of the field 'thres_accel' */
   MMODSETTINGSMSG_THRES_ACCEL_SIZEBITS = 16,
 
-  /* Field sample_interval: type uint16_t, offset (bits) 32, size (bits) 16 */
+  /* Field is_ts_update: type uint16_t, offset (bits) 48, size (bits) 16 */
+  /** Offset (in bytes) of the field 'is_ts_update' */
+  MMODSETTINGSMSG_IS_TS_UPDATE_OFFSET = 6,
+  /** Offset (in bits) of the field 'is_ts_update' */
+  MMODSETTINGSMSG_IS_TS_UPDATE_OFFSETBITS = 48,
+  /** Size (in bytes) of the field 'is_ts_update' */
+  MMODSETTINGSMSG_IS_TS_UPDATE_SIZE = 2,
+  /** Size (in bits) of the field 'is_ts_update' */
+  MMODSETTINGSMSG_IS_TS_UPDATE_SIZEBITS = 16,
+
+  /* Field unused2: type uint16_t, offset (bits) 64, size (bits) 16 */
+  /** Offset (in bytes) of the field 'unused2' */
+  MMODSETTINGSMSG_UNUSED2_OFFSET = 8,
+  /** Offset (in bits) of the field 'unused2' */
+  MMODSETTINGSMSG_UNUSED2_OFFSETBITS = 64,
+  /** Size (in bytes) of the field 'unused2' */
+  MMODSETTINGSMSG_UNUSED2_SIZE = 2,
+  /** Size (in bits) of the field 'unused2' */
+  MMODSETTINGSMSG_UNUSED2_SIZEBITS = 16,
+
+  /* Field sample_interval: type uint16_t, offset (bits) 80, size (bits) 16 */
   /** Offset (in bytes) of the field 'sample_interval' */
-  MMODSETTINGSMSG_SAMPLE_INTERVAL_OFFSET = 4,
+  MMODSETTINGSMSG_SAMPLE_INTERVAL_OFFSET = 10,
   /** Offset (in bits) of the field 'sample_interval' */
-  MMODSETTINGSMSG_SAMPLE_INTERVAL_OFFSETBITS = 32,
+  MMODSETTINGSMSG_SAMPLE_INTERVAL_OFFSETBITS = 80,
   /** Size (in bytes) of the field 'sample_interval' */
   MMODSETTINGSMSG_SAMPLE_INTERVAL_SIZE = 2,
   /** Size (in bits) of the field 'sample_interval' */
   MMODSETTINGSMSG_SAMPLE_INTERVAL_SIZEBITS = 16,
 
-  /* Field num_accel_samples: type uint16_t, offset (bits) 48, size (bits) 16 */
+  /* Field num_accel_samples: type uint16_t, offset (bits) 96, size (bits) 16 */
   /** Offset (in bytes) of the field 'num_accel_samples' */
-  MMODSETTINGSMSG_NUM_ACCEL_SAMPLES_OFFSET = 6,
+  MMODSETTINGSMSG_NUM_ACCEL_SAMPLES_OFFSET = 12,
   /** Offset (in bits) of the field 'num_accel_samples' */
-  MMODSETTINGSMSG_NUM_ACCEL_SAMPLES_OFFSETBITS = 48,
+  MMODSETTINGSMSG_NUM_ACCEL_SAMPLES_OFFSETBITS = 96,
   /** Size (in bytes) of the field 'num_accel_samples' */
   MMODSETTINGSMSG_NUM_ACCEL_SAMPLES_SIZE = 2,
   /** Size (in bits) of the field 'num_accel_samples' */
   MMODSETTINGSMSG_NUM_ACCEL_SAMPLES_SIZEBITS = 16,
 
-  /* Field accel_sample_interval: type uint16_t, offset (bits) 64, size (bits) 16 */
+  /* Field accel_sample_interval: type uint16_t, offset (bits) 112, size (bits) 16 */
   /** Offset (in bytes) of the field 'accel_sample_interval' */
-  MMODSETTINGSMSG_ACCEL_SAMPLE_INTERVAL_OFFSET = 8,
+  MMODSETTINGSMSG_ACCEL_SAMPLE_INTERVAL_OFFSET = 14,
   /** Offset (in bits) of the field 'accel_sample_interval' */
-  MMODSETTINGSMSG_ACCEL_SAMPLE_INTERVAL_OFFSETBITS = 64,
+  MMODSETTINGSMSG_ACCEL_SAMPLE_INTERVAL_OFFSETBITS = 112,
   /** Size (in bytes) of the field 'accel_sample_interval' */
   MMODSETTINGSMSG_ACCEL_SAMPLE_INTERVAL_SIZE = 2,
   /** Size (in bits) of the field 'accel_sample_interval' */
   MMODSETTINGSMSG_ACCEL_SAMPLE_INTERVAL_SIZEBITS = 16,
 
-  /* Field heartbeat_time: type uint16_t, offset (bits) 80, size (bits) 16 */
+  /* Field heartbeat_time: type uint16_t, offset (bits) 128, size (bits) 16 */
   /** Offset (in bytes) of the field 'heartbeat_time' */
-  MMODSETTINGSMSG_HEARTBEAT_TIME_OFFSET = 10,
+  MMODSETTINGSMSG_HEARTBEAT_TIME_OFFSET = 16,
   /** Offset (in bits) of the field 'heartbeat_time' */
-  MMODSETTINGSMSG_HEARTBEAT_TIME_OFFSETBITS = 80,
+  MMODSETTINGSMSG_HEARTBEAT_TIME_OFFSETBITS = 128,
   /** Size (in bytes) of the field 'heartbeat_time' */
   MMODSETTINGSMSG_HEARTBEAT_TIME_SIZE = 2,
   /** Size (in bits) of the field 'heartbeat_time' */
   MMODSETTINGSMSG_HEARTBEAT_TIME_SIZEBITS = 16,
 
-  /* Field accel_flags: type uint16_t, offset (bits) 96, size (bits) 16 */
+  /* Field accel_flags: type uint16_t, offset (bits) 144, size (bits) 16 */
   /** Offset (in bytes) of the field 'accel_flags' */
-  MMODSETTINGSMSG_ACCEL_FLAGS_OFFSET = 12,
+  MMODSETTINGSMSG_ACCEL_FLAGS_OFFSET = 18,
   /** Offset (in bits) of the field 'accel_flags' */
-  MMODSETTINGSMSG_ACCEL_FLAGS_OFFSETBITS = 96,
+  MMODSETTINGSMSG_ACCEL_FLAGS_OFFSETBITS = 144,
   /** Size (in bytes) of the field 'accel_flags' */
   MMODSETTINGSMSG_ACCEL_FLAGS_SIZE = 2,
   /** Size (in bits) of the field 'accel_flags' */
   MMODSETTINGSMSG_ACCEL_FLAGS_SIZEBITS = 16,
-
-  /* Field tv_sec: type uint32_t, offset (bits) 112, size (bits) 32 */
-  /** Offset (in bytes) of the field 'tv_sec' */
-  MMODSETTINGSMSG_TV_SEC_OFFSET = 14,
-  /** Offset (in bits) of the field 'tv_sec' */
-  MMODSETTINGSMSG_TV_SEC_OFFSETBITS = 112,
-  /** Size (in bytes) of the field 'tv_sec' */
-  MMODSETTINGSMSG_TV_SEC_SIZE = 4,
-  /** Size (in bits) of the field 'tv_sec' */
-  MMODSETTINGSMSG_TV_SEC_SIZEBITS = 32,
-
-  /* Field tv_usec: type uint32_t, offset (bits) 144, size (bits) 32 */
-  /** Offset (in bytes) of the field 'tv_usec' */
-  MMODSETTINGSMSG_TV_USEC_OFFSET = 18,
-  /** Offset (in bits) of the field 'tv_usec' */
-  MMODSETTINGSMSG_TV_USEC_OFFSETBITS = 144,
-  /** Size (in bytes) of the field 'tv_usec' */
-  MMODSETTINGSMSG_TV_USEC_SIZE = 4,
-  /** Size (in bits) of the field 'tv_usec' */
-  MMODSETTINGSMSG_TV_USEC_SIZEBITS = 32,
 };
 
 /**
@@ -116,6 +126,16 @@ uint16_t MMODSETTINGSMSG_node_id_get(tmsg_t *msg);
 void MMODSETTINGSMSG_node_id_set(tmsg_t *msg, uint16_t value);
 
 /**
+ * Return the value of the field 'timestamp_id'
+ */
+uint16_t MMODSETTINGSMSG_timestamp_id_get(tmsg_t *msg);
+
+/**
+ * Set the value of the field 'timestamp_id'
+ */
+void MMODSETTINGSMSG_timestamp_id_set(tmsg_t *msg, uint16_t value);
+
+/**
  * Return the value of the field 'thres_accel'
  */
 uint16_t MMODSETTINGSMSG_thres_accel_get(tmsg_t *msg);
@@ -124,6 +144,26 @@ uint16_t MMODSETTINGSMSG_thres_accel_get(tmsg_t *msg);
  * Set the value of the field 'thres_accel'
  */
 void MMODSETTINGSMSG_thres_accel_set(tmsg_t *msg, uint16_t value);
+
+/**
+ * Return the value of the field 'is_ts_update'
+ */
+uint16_t MMODSETTINGSMSG_is_ts_update_get(tmsg_t *msg);
+
+/**
+ * Set the value of the field 'is_ts_update'
+ */
+void MMODSETTINGSMSG_is_ts_update_set(tmsg_t *msg, uint16_t value);
+
+/**
+ * Return the value of the field 'unused2'
+ */
+uint16_t MMODSETTINGSMSG_unused2_get(tmsg_t *msg);
+
+/**
+ * Set the value of the field 'unused2'
+ */
+void MMODSETTINGSMSG_unused2_set(tmsg_t *msg, uint16_t value);
 
 /**
  * Return the value of the field 'sample_interval'
@@ -174,25 +214,5 @@ uint16_t MMODSETTINGSMSG_accel_flags_get(tmsg_t *msg);
  * Set the value of the field 'accel_flags'
  */
 void MMODSETTINGSMSG_accel_flags_set(tmsg_t *msg, uint16_t value);
-
-/**
- * Return the value of the field 'tv_sec'
- */
-uint32_t MMODSETTINGSMSG_tv_sec_get(tmsg_t *msg);
-
-/**
- * Set the value of the field 'tv_sec'
- */
-void MMODSETTINGSMSG_tv_sec_set(tmsg_t *msg, uint32_t value);
-
-/**
- * Return the value of the field 'tv_usec'
- */
-uint32_t MMODSETTINGSMSG_tv_usec_get(tmsg_t *msg);
-
-/**
- * Set the value of the field 'tv_usec'
- */
-void MMODSETTINGSMSG_tv_usec_set(tmsg_t *msg, uint32_t value);
 
 #endif
