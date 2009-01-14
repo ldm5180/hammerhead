@@ -88,6 +88,10 @@ void read_parsec(int fd) {
 	  return;
 	}
 
+	if (hab_report_new_node(node)) {
+	  g_error("Failed to report new node %d", id);
+	}
+
   } else {
 	// Get the node and update
 
