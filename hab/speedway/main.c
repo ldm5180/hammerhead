@@ -24,6 +24,9 @@ int main(int argc, char *argv[]) {
 	int i = 0;
 	int bionet_fd;
 
+        int old_gpi = -1;
+        int gpi[4];
+
 	char* hab_type = "speedway";
 	char* hab_id = NULL;
 	char* reader_ip = NULL;
@@ -114,12 +117,10 @@ int main(int argc, char *argv[]) {
     // here we're connected to the Speedway reader and it's all set up
     //
 
-
     do {
         struct timeval timeout;
         fd_set readers;
         int r;
-        int gpi[4];
 
         FD_ZERO(&readers);
         FD_SET(bionet_fd, &readers);
@@ -140,8 +141,12 @@ int main(int argc, char *argv[]) {
         // only if bionet didnt have anything to do, do we check the reader
         poll_for_report();
 
+        // this is just for showing the humans the stat of the button for fun
         read_gpis(gpi);
-        g_message("GPI1 = %d", gpi[0]);
+        if (gpi[0] != old_gpi) {
+            g_message("GPI1 = %d", gpi[0]);
+            old_gpi = gpi[0];
+        }
     } while(1);
 
 
