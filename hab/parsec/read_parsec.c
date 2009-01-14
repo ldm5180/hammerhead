@@ -120,5 +120,7 @@ void read_parsec(int fd) {
 	  g_error("Failed to set Temperature resource for node %d", id);
 	  return;
 	}
+
+	hab_report_datapoints(node);
   }
 }
