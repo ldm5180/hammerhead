@@ -9,6 +9,7 @@ speedway_SOURCES =         \
     handle-tag-report-data.c  \
     connect.c              \
     configure.c            \
+    set-gpo.c              \
     global.c               \
     recv-message.c         \
     scrub-config.c         \
