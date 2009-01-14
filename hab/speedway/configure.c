@@ -20,6 +20,12 @@ int speedway_configure() {
         return -1;
     }
 
+    r = configure_gpi();
+    if (r != 0) {
+        // an error has been logged
+        return -1;
+    }
+
     r = addROSpec();
     if (r != 0) {
         g_warning("addROSpec error");

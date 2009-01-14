@@ -96,11 +96,30 @@ int addROSpec(void)
     };
 #endif
 
+#if 0
     // this is a Null trigger, so it just starts when we tell it to
     LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
         .eROSpecStartTriggerType = LLRP_ROSpecStartTriggerType_Null,
     };
+#endif
+
+#if 1
+    // this is a GPI trigger, so it starts when we push a button
+    LLRP_tSGPITriggerValue GPITriggerValue = {
+        .hdr.elementHdr.pType = &LLRP_tdGPITriggerValue,
+        .GPIPortNum = 1,
+        .GPIEvent = 1,
+        .Timeout = 0
+    };
+
+    LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
+        .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
+        .eROSpecStartTriggerType = LLRP_ROSpecStartTriggerType_GPI,
+        .pGPITriggerValue = &GPITriggerValue
+    };
+#endif
+
 
     LLRP_tSROSpecStopTrigger ROSpecStopTrigger = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpecStopTrigger,

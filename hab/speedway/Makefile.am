@@ -9,6 +9,7 @@ speedway_SOURCES =         \
     handle-tag-report-data.c  \
     connect.c              \
     configure.c            \
+    configure-gpi.c        \
     set-gpo.c              \
     read-gpis.c            \
     global.c               \

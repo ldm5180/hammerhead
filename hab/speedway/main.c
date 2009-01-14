@@ -80,6 +80,33 @@ int main(int argc, char *argv[]) {
 		goto end;
 	}
 
+
+        //
+        // For the JSC Wireless Habitat demo, we want a GPI trigger.
+        // The Speedway GPIs are not biased, and there is no +5 supply
+        // available on the GPIO connector, so we use a GPO to provide the
+        // voltage for the active-high activation signal.
+        //
+        // The circuit looks like this:
+        //
+        // GPO 1 ----
+        //          |
+        //          /  (a normally open momentary switch)
+        //         /   
+        //          |
+        // GPI 1 ----
+        //          |
+        //          R  (33K resistor)
+        //          |
+        // GND   ----
+        // 
+
+        if (set_gpo(1, 1) != 0) {
+            g_warning("speedway GPO setup failed");
+            goto end;
+        }
+
+
         get_reader_config();
 
 
@@ -88,12 +115,11 @@ int main(int argc, char *argv[]) {
     //
 
 
-    startROSpec();
-
     do {
         struct timeval timeout;
         fd_set readers;
         int r;
+        int gpi[4];
 
         FD_ZERO(&readers);
         FD_SET(bionet_fd, &readers);
@@ -112,8 +138,10 @@ int main(int argc, char *argv[]) {
         }
 
         // only if bionet didnt have anything to do, do we check the reader
-        r = poll_for_report();
-        if (r == 1) startROSpec();
+        poll_for_report();
+
+        read_gpis(gpi);
+        g_message("GPI1 = %d", gpi[0]);
     } while(1);
 
 
