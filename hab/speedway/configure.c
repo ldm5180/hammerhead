@@ -20,7 +20,7 @@ int speedway_configure() {
         return -1;
     }
 
-    r = configure_gpi();
+    r = configure_reader();
     if (r != 0) {
         // an error has been logged
         return -1;

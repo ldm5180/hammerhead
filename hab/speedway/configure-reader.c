@@ -8,7 +8,7 @@
 #include "speedway.h"
 
 
-int configure_gpi(void) {
+int configure_reader(void) {
 
     LLRP_tSGPIPortCurrentState gpi_port_state[] = {
         { 
