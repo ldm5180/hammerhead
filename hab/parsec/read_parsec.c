@@ -18,7 +18,7 @@ static char buffer[BUFFER_SIZE];
 extern bionet_hab_t *parsec_hab;
 
 // Parsec information comes in the format:
-// <id> <range[m]> <temperature[C]>
+// <id> <temperature[C]> <range[m]>
 
 void read_parsec(int fd) {
   ssize_t size;
@@ -34,8 +34,8 @@ void read_parsec(int fd) {
   size = recvfrom(fd, buffer, BUFFER_SIZE, 0, 0, 0);
   gettimeofday(&timestamp, NULL);
 
-  scanned = sscanf(buffer, "%ud %f %f", &id, &range, &temp);
-
+  scanned = sscanf(buffer, "%ud       %f       %f\n\r", &id, &temp, &range);
+  //                                 
   if (scanned != 3) {
 	buffer[BUFFER_SIZE - 1] = '\0';
 	g_warning("Couldn't properly scan message sent: %s", buffer);
