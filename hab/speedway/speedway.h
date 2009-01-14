@@ -23,6 +23,7 @@ int speedway_connect(const char* reader_ip);
 int speedway_configure(void);
 int checkConnectionStatus();
 int scrubConfiguration();
+void get_reader_config(void);
 
 /**
  * @brief Poll for messages from the Speedway, process if found.

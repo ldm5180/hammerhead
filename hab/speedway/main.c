@@ -80,6 +80,8 @@ int main(int argc, char *argv[]) {
 		goto end;
 	}
 
+        get_reader_config();
+
 
     //
     // here we're connected to the Speedway reader and it's all set up
