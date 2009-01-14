@@ -8,6 +8,12 @@
 #include "speedway.h"
 
 
+//
+// This function configures the reader for the JSC "Trashcan" and "Portal" demos.
+//
+// enable GPI1, and enable GPI Event Notification
+//
+
 int configure_reader(void) {
 
     LLRP_tSGPIPortCurrentState gpi_port_state[] = {
@@ -18,10 +24,23 @@ int configure_reader(void) {
         }
     };
 
+    LLRP_tSEventNotificationState notifications[] = {
+        {
+            .hdr.elementHdr.pType = &LLRP_tdEventNotificationState,
+            .eEventType = LLRP_NotificationEventType_GPI_Event,
+            .NotificationState = 1  // enabled
+        }
+    };
+
+    LLRP_tSReaderEventNotificationSpec events = {
+        .hdr.elementHdr.pType = &LLRP_tdReaderEventNotificationSpec,
+        .listEventNotificationState = notifications
+    };
+
     LLRP_tSSET_READER_CONFIG set_reader_config = {
         .hdr.elementHdr.pType   = &LLRP_tdSET_READER_CONFIG,
         .ResetToFactoryDefault = 0,
-        .pReaderEventNotificationSpec = NULL,
+        .pReaderEventNotificationSpec = &events,
         .listAntennaProperties = NULL,
         .listAntennaConfiguration = NULL,
         .pROReportSpec = NULL,

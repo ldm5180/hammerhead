@@ -39,12 +39,14 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData);
 
 int addROSpec();
 int startROSpec();
-void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent);
 int deleteAllROSpecs();
 int enableROSpec();
+
+void handleReaderEventNotification( LLRP_tSReaderEventNotificationData *pNftData);
+void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent);
 void handleReaderExceptionEvent();
-void handleReaderEventNotification(
-	LLRP_tSReaderEventNotificationData *pNftData);
+void handle_gpi_event(LLRP_tSGPIEvent *pGPIEvent);
+
 int resetConfigurationToFactoryDefaults();
 int freeMessage(LLRP_tSMessage *pMessage);
 int checkLLRPStatus(LLRP_tSLLRPStatus *pLLRPStatus, char *pWhatStr);

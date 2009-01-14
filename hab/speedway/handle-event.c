@@ -19,6 +19,7 @@ void handleReaderEventNotification(LLRP_tSReaderEventNotificationData *pNtfData)
     int nReported = 0;
     LLRP_tSAntennaEvent *pAntennaEvent;
     LLRP_tSReaderExceptionEvent *pReaderExceptionEvent;
+    LLRP_tSGPIEvent *pGPIEvent;
 
     pAntennaEvent = LLRP_ReaderEventNotificationData_getAntennaEvent(pNtfData);
     if (pAntennaEvent != NULL) {
@@ -32,10 +33,15 @@ void handleReaderEventNotification(LLRP_tSReaderEventNotificationData *pNtfData)
         nReported++;
     }
 
+    pGPIEvent = LLRP_ReaderEventNotificationData_getGPIEvent(pNtfData);
+    if (pGPIEvent != NULL) {
+        handle_gpi_event(pGPIEvent);
+        nReported++;
+    }
+
     /*
      * Similarly handle other events here:
      *      HoppingEvent
-     *      GPIEvent
      *      ROSpecEvent
      *      ReportBufferLevelWarningEvent
      *      ReportBufferOverflowErrorEvent

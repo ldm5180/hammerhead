@@ -17,6 +17,7 @@ speedway_SOURCES =         \
     scrub-config.c         \
     free-message.c         \
     handle-event.c         \
+    handle-gpi-event.c     \
     conn-status.c          \
     add-spec.c             \
     start-spec.c           \

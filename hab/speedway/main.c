@@ -24,9 +24,6 @@ int main(int argc, char *argv[]) {
     int i = 0;
     int bionet_fd;
 
-    int old_gpi = -1;
-    int gpi[4];
-
     char* hab_type = "speedway";
     char* hab_id = NULL;
     char* reader_ip = NULL;
@@ -141,12 +138,6 @@ int main(int argc, char *argv[]) {
         // only if bionet didnt have anything to do, do we check the reader
         poll_for_report();
 
-        // this is just for showing the humans the stat of the button for fun
-        read_gpis(gpi);
-        if (gpi[0] != old_gpi) {
-            g_message("GPI1 = %d", gpi[0]);
-            old_gpi = gpi[0];
-        }
     } while(1);
 
 
