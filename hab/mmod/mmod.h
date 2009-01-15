@@ -21,7 +21,7 @@
 #define MMOD_H
 
 #define MMOD_HAB_TYPE          "MMOD"
-#define DEFAULT_HEARTBEAT_TIME 30
+#define DEFAULT_HEARTBEAT_TIME 60
 #define DEFAULT_USB_DEV        "/dev/ttyUSB1"
 
 

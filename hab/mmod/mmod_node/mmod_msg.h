@@ -24,8 +24,8 @@ typedef nx_struct mmod_general_msg
 {
     nx_uint16_t node_id;
     nx_uint16_t volt;
-    nx_uint16_t timestamp_id;
-    nx_uint16_t offset;
+    nx_uint16_t temp;
+    nx_uint16_t photo;
     nx_uint16_t accel_x;
     nx_uint16_t accel_y;
     nx_uint16_t accel_flags;
@@ -43,10 +43,10 @@ typedef nx_struct mmod_accel_msg
 typedef nx_struct mmod_settings_msg
 {
     nx_uint16_t node_id;
-    nx_uint16_t timestamp_id;
+    nx_uint16_t thres_light;
     nx_uint16_t thres_accel;
-    nx_uint16_t is_ts_update;
-    nx_uint16_t unused2;
+    nx_uint16_t thres_temp;
+    nx_uint16_t thres_volt;
     nx_uint16_t sample_interval;
     nx_uint16_t num_accel_samples;
     nx_uint16_t accel_sample_interval;

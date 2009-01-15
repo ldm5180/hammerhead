@@ -56,12 +56,18 @@ implementation
     /* collection of sensor messages */
     components CollectionC, 
 	new SerialAMSenderC(AM_MMOD_GENERAL_MSG) as GeneralForwarder, 
+	new SerialAMSenderC(AM_MMOD_ACCEL_MSG) as AccelForwarder,
 	new SerialAMSenderC(AM_MMOD_SETTINGS_MSG) as SettingsNodeForwarder;
     
     MmodGatewayC.CollectionControl -> CollectionC;
     MmodGatewayC.RootControl -> CollectionC;
     MmodGatewayC.GeneralReceive -> CollectionC.Receive[COL_MMOD_GENERAL_MSG];
     MmodGatewayC.GeneralForward -> GeneralForwarder;
+    MmodGatewayC.AccelReceive -> CollectionC.Receive[COL_MMOD_ACCEL_MSG];
+    MmodGatewayC.AccelForward -> AccelForwarder;
     MmodGatewayC.SettingsNodeReceive -> CollectionC.Receive[COL_MMOD_SETTINGS_MSG];
     MmodGatewayC.SettingsNodeForward -> SettingsNodeForwarder;
+
+    components CC2420ControlC;
+    MmodGatewayC.CC2420Config -> CC2420ControlC;
 }

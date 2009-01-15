@@ -27,12 +27,14 @@
 static void parse_cmdline(int argc, char** argv);
 static void print_usage(char* prog_name, FILE* fout);
 void read_parsec(int fd);
+void expire_old_nodes(unsigned int timeout);
 
 static const char* hab_type = "parsec";
 
 static int verbose = 0;
 static int daemon_mode = 0;
 static uint16_t port = 61557;
+static unsigned int timeout = 10;
 bionet_hab_t * parsec_hab;
 char * parsec_id = NULL;
 
@@ -73,7 +75,7 @@ int main(int argc, char** argv) {
 	server.sin_port = htons(port);
 
 	if (bind(parsec_fd, (struct sockaddr*)&server, sizeof(server)) != 0) {
-        g_critical("Can't bind to port %hd, quitting./n", port);
+        g_critical("Can't bind to port %hu, quitting./n", port);
         exit(3);	
 	}
 
@@ -82,13 +84,16 @@ int main(int argc, char** argv) {
         fd_set readers;
         int max_fd;
 		int ret;
+		struct timeval t;
 
 		FD_ZERO(&readers);
 		FD_SET(bionet_fd, &readers);
 		FD_SET(parsec_fd, &readers);
 		max_fd = MAX(bionet_fd, parsec_fd);
+		t.tv_sec = timeout;
+		t.tv_usec = 0;
 
-		ret = select(max_fd + 1, &readers, NULL, NULL, NULL);
+		ret = select(max_fd + 1, &readers, NULL, NULL, &t);
 		if (ret < 0) { 
 			if ((EAGAIN != errno) && (EINTR != errno)) {
 				g_critical("Error from select: %s\n", strerror(errno));
@@ -106,6 +111,7 @@ int main(int argc, char** argv) {
 				read_parsec(parsec_fd);
 			}
 		}
+		expire_old_nodes(timeout);
     }
     return 0;
 } /* main() */
@@ -119,7 +125,7 @@ int main(int argc, char** argv) {
  */
 static void parse_cmdline(int argc, char** argv)
 {
-    const char * optstring = "dh?vi:p:";
+    const char * optstring = "dh?vi:p:t:";
     int opt;
 
     while (0 < (opt = getopt(argc, argv, optstring))) {
@@ -139,9 +145,16 @@ static void parse_cmdline(int argc, char** argv)
 			break;
 	    
 		case 'p':
-			if (sscanf(optarg, "%hd", &port) == 1);
+		    if (sscanf(optarg, "%hu", &port) != 1) {
+			  g_error("Unable to interpret port: %s\n", optarg);
+	    	    }
 			break;
 
+		case 't':
+		  if (sscanf(optarg, "%ud", &timeout) != 1) {
+			g_error("Unable to interpret timeout: %s\n", optarg);
+		  }
+			break;
 		case 'v':
 			verbose++;
 			break;
@@ -164,10 +177,11 @@ static void parse_cmdline(int argc, char** argv)
 static void print_usage(char* prog_name, FILE* fout)
 {
     fprintf(fout,
-	    "Usage: %s [-v] [-d] [-h] [-?] [-i id] [-p port]\n"
+	    "Usage: %s [-v] [-d] [-h] [-?] [-i id] [-p port] [-t timeout]\n"
 	    "    -d     run as a daemon\n"
 	    "    -h -?  display this help\n"
 	    "    -i     HAB ID (parsec)\n"
 	    "    -p     port to receive on (FIXME)\n"
+		"    -t     timeout [s] to expire lost nodes\n"
 			"    -v     verbose logging\n", prog_name);
 } /* print_usage() */
