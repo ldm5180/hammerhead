@@ -90,7 +90,7 @@ implementation
     event void Boot.booted()
     {
 	call SerialControl.start();
-	call CC2420Config.setChannel(11);	
+	call CC2420Config.setChannel(1);	
 	call CC2420Config.sync();
     } /* Boot.booted() */
 

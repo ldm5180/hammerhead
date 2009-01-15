@@ -239,7 +239,7 @@ implementation
 
     event void Boot.booted()
     {
-	call CC2420Config.setChannel(11);	
+	call CC2420Config.setChannel(1);	
 	call CC2420Config.sync();
     } /* Boot.booted() */
 
