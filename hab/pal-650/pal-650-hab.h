@@ -20,6 +20,7 @@ extern bionet_hab_t *hab;
 extern char *pal_ip;
 extern int pal_port;
 extern int tag_timeout;
+extern int show_messages;
 
 
 int pal_connect(const char *pal_ip, const int pal_port);

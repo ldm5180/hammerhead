@@ -190,7 +190,9 @@ static void parse_line(char *line) {
     char *result = NULL;
 
 
-    // printf("Parsing line: %s\n", line);
+    if (show_messages) {
+        printf("Parsing line: %s\n", line);
+    }
 
     m.header = line[0];
     line += 2;
@@ -243,17 +245,17 @@ static void parse_line(char *line) {
         i++;
     }
 
-#if 0
-    printf("    header=%c\n", m.header);
-    printf("    tag_id=%s\n", m.tag_id);
-    printf("    x=%.3g\n", m.x);
-    printf("    y=%.3g\n", m.y);
-    printf("    z=%.3g\n", m.z);
-    printf("    battery=%d\n", m.battery);
-    printf("    timestamp=%d\n", (int)m.timestamp);
-    printf("    unit=%s\n", m.unit);
-    printf("    remainder=%s\n", m.remainder);
-#endif
+    if (show_messages) {
+        printf("    header=%c\n", m.header);
+        printf("    tag_id=%s\n", m.tag_id);
+        printf("    x=%.3g\n", m.x);
+        printf("    y=%.3g\n", m.y);
+        printf("    z=%.3g\n", m.z);
+        printf("    battery=%d\n", m.battery);
+        printf("    timestamp=%d\n", (int)m.timestamp);
+        printf("    unit=%s\n", m.unit);
+        printf("    remainder=%s\n", m.remainder);
+    }
 
     switch (m.header) {
         case 'D': 
