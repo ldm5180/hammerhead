@@ -37,7 +37,6 @@ implementation
     MmodGatewayC.Boot -> MainC;
     MmodGatewayC.SerialControl -> SerialActiveMessageC;
     MmodGatewayC.RadioControl -> ActiveMessageC;
-    MmodGatewayC.LowPowerListening -> Radio;
     MmodGatewayC.Leds -> LedsC;
 
 
@@ -64,4 +63,7 @@ implementation
     MmodGatewayC.GeneralForward -> GeneralForwarder;
     MmodGatewayC.SettingsNodeReceive -> CollectionC.Receive[COL_MMOD_SETTINGS_MSG];
     MmodGatewayC.SettingsNodeForward -> SettingsNodeForwarder;
+
+    components CC2420ControlC;
+    MmodGatewayC.CC2420Config -> CC2420ControlC;
 }

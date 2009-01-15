@@ -51,7 +51,8 @@ module MmodNodeC
 	interface StdControl as CollectionControl;
 	interface StdControl as DisseminationControl;
 	interface SplitControl as RadioControl;
-	interface LowPowerListening;
+	interface LocalTime<TMilli> as LocalTimeMilli;
+	interface CC2420Config;
     } /* uses */
 } /* module MmodNodeC */
 
@@ -67,6 +68,7 @@ implementation
     uint16_t num_readings_in_accum_y;
     uint16_t num_readings_needed;
     uint8_t found = 0;
+    uint32_t local_time;
 
     void yellow_led_toggle() 
     {
@@ -127,7 +129,7 @@ implementation
     {
 	need_send &= ~SEND_GENERAL_MSG;
 	gm_busy = FALSE;
-	yellow_led_toggle();
+	//yellow_led_toggle();
     }
 
 
@@ -167,7 +169,7 @@ implementation
 
 	gm_busy = TRUE;
 	hb_sec = 0; /* reset the heartbeat second counter */
-	yellow_led_toggle();
+	call Leds.led2Off();
 
 	general_msg = 
 	    call GeneralRoot.getPayload(&general_msgbuf,
@@ -203,7 +205,7 @@ implementation
 	/* timer */
 	general_msg->timestamp_id = tmp_general_msg.timestamp_id;
 	general_msg->offset = tmp_general_msg.offset;
-
+	tmp_general_msg.offset = 0;
 	tgm_busy = FALSE;
 
 	call GeneralRoot.send(&general_msgbuf, sizeof(*general_msg));
@@ -218,8 +220,7 @@ implementation
 	sm_busy = FALSE;
     }
 
-   
-    event void Boot.booted()
+    event void CC2420Config.syncDone(error_t error) 
     {
 	call Leds.led0Off();
 	settings.node_id = TOS_NODE_ID;
@@ -233,6 +234,12 @@ implementation
 	num_periods_per_sec = 
 	    ((uint32_t)MSEC_PER_SEC / (nx_uint32_t)settings.sample_interval);
 	call RadioControl.start();
+    }
+
+    event void Boot.booted()
+    {
+	call CC2420Config.setChannel(11);	
+	call CC2420Config.sync();
     } /* Boot.booted() */
 
 
@@ -244,8 +251,6 @@ implementation
 	{
 	    call DisseminationControl.start();
 	    call CollectionControl.start();
-	    //call LowPowerListening.setLocalDutyCycle(200);
-
 	    call SettingsCheck.startOneShot(1000);
 	}
     } /* RadioControl.startDone() */
@@ -261,21 +266,15 @@ implementation
 
 	new_settings = call SettingsValue.get();
 
-	if ((TOS_NODE_ID != new_settings->node_id) && (new_settings->node_id != 0))
+	if (TOS_NODE_ID != new_settings->node_id)
 	{
-	    if (tmp_general_msg.timestamp_id != new_settings->timestamp_id)
-	    {
-		no_setting_send = TRUE;
-	    }
-	}
-	else if (new_settings->node_id == 0)
-	{
-	    yellow_led_toggle();
+	    call Leds.led2On();
 	    call AccelCheck.stop();
 
 	    settings.timestamp_id = new_settings->timestamp_id;
 	    tmp_general_msg.timestamp_id = settings.timestamp_id;
 	    tmp_general_msg.offset = 0;
+	    local_time = call LocalTimeMilli.get();
 	    
 	    general_msg = 
 		call GeneralRoot.getPayload(&general_msgbuf,
@@ -386,8 +385,6 @@ implementation
 	uint16_t avg = 0;
 	uint16_t tmp;
 
-	tmp_general_msg.offset += settings.sample_interval;
-
 	for (i = 0; i < num_x_samples; i++)
 	{
 	    avg += accel_x_samples[i];
@@ -424,7 +421,7 @@ implementation
 	if ((just_sent) && (tmp <= 4) && (found))
 	{
 	    tmp_general_msg.accel_x = tmp;
-	    send_general_msg();
+	    //send_general_msg();
 	    ax_busy = FALSE;
 	    call AccelCheck.stop();
 	    found = 0;
@@ -444,6 +441,7 @@ implementation
 	    if ((tmp_general_msg.accel_x < tmp) && (tmp > DEFAULT_ACCEL_THRESHOLD))
 	    {
 		tmp_general_msg.accel_x = tmp;
+		tmp_general_msg.offset = (uint16_t)(call LocalTimeMilli.get() - local_time); 		
 		found++;
 	    }
 	    else if (!is_recording)

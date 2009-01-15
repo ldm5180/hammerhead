@@ -26,7 +26,6 @@ module MmodGatewayC
 	interface Boot;
 	interface SplitControl as SerialControl;
 	interface SplitControl as RadioControl;
-	interface LowPowerListening;
 
 	interface DisseminationUpdate<mmod_settings_msg_t> as SettingsUpdate;
 	interface Receive as SettingsReceive;
@@ -40,6 +39,8 @@ module MmodGatewayC
 	interface AMSend as SettingsNodeForward;
 
 	interface Leds;
+
+	interface CC2420Config;
     }
 } /* module MmodGatewayC */
 
@@ -81,10 +82,16 @@ implementation
 	}
     } /* msg_send_done() */
 
+    event void CC2420Config.syncDone(error_t error) 
+    {
+	call RadioControl.start();
+    }
+
     event void Boot.booted()
     {
 	call SerialControl.start();
-	call RadioControl.start();
+	call CC2420Config.setChannel(11);	
+	call CC2420Config.sync();
     } /* Boot.booted() */
 
 
@@ -99,7 +106,6 @@ implementation
     {
 	if (SUCCESS == error)
 	{
-	    call LowPowerListening.setLocalDutyCycle(200); //really?
 	    call DisseminationControl.start();
 	    call CollectionControl.start();
 	    call RootControl.setRoot();
