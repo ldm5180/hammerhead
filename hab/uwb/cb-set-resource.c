@@ -1,7 +1,7 @@
 
 #include <hardware-abstractor.h>
 
-#include "td-radio.h"
+#include "uwb.h"
 
 void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value) {
 

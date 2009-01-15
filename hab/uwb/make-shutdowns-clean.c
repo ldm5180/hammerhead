@@ -9,7 +9,7 @@
 
 #include <glib.h>
 
-#include "td-radio.h"
+#include "uwb.h"
 
 #if defined(LINUX) || defined(MAC_OSX)
 static void exit_signal_handler(int signal_number) {

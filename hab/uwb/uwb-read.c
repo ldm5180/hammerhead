@@ -12,7 +12,7 @@
 
 #include <glib.h>
 
-#include "td-radio.h"
+#include "uwb.h"
 
 /*
  * Send the RESPONDER message to the radio.

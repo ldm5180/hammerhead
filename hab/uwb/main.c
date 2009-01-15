@@ -17,7 +17,7 @@
 
 #include <hardware-abstractor.h>
 
-#include "td-radio.h"
+#include "uwb.h"
 
 bionet_hab_t *uwb_hab;
 struct sockaddr_in uwb_address;
