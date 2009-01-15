@@ -18,6 +18,8 @@ extern int show_messages;
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
 
+extern int reader_is_busy;
+
 
 extern bionet_node_t *reader_node;
 int make_reader_node(void);

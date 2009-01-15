@@ -30,6 +30,10 @@ int startROSpec() {
 	LLRP_tSMessage *pRspMsg;
 	LLRP_tSSTART_ROSPEC_RESPONSE *pRsp;
 
+
+        if (reader_is_busy) return 0;
+
+
 	/*
 	 * Send the message and expect a respose of a certain type.
 	 */
@@ -38,6 +42,9 @@ int startROSpec() {
 	if (pRspMsg == NULL) {
 		return -1;
 	}
+
+        reader_is_busy = 1;
+
 
 	/*
 	 * Cast to a START_ROSPEC_RESPONSE message.
