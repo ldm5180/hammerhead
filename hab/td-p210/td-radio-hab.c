@@ -6,6 +6,7 @@
  *
  */
 
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +20,7 @@
 #include "td-radio.h"
 
 bionet_hab_t *tdp210_hab;
+struct sockaddr_in uwb_address;
 
 static GOptionEntry entries[] = {
 	{"ip", 'a', 0, G_OPTION_ARG_STRING, &ip, "IP address of radio", NULL},
@@ -64,7 +66,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (port == 0) {
-		g_warning("Radio port not specified.");
+		g_warning("Radio port not secified.");
 		exit(1);
 	}
 
@@ -165,15 +167,5 @@ int main(int argc, char *argv[]) {
 	}
 
 	return 0;
-}
-
-void print_buffer() {
-/*	g_message("scanNumber: %d", scan->scanNumber);
-	g_message("segmentNumber: %d", scan->segmentNumber);
-	g_message("numScanPointsTotal: %d", scan->numScanPointsTotal); 
-	g_message("maxScanPointsSegment: %d", scan->maxScanPointsSegment); 
-	g_message("numScanPointsSegment: %d", scan->numScanPointsSegment); 
-	g_message("scanRateRx: %d", scan->scanRateRx); 
-	g_message("scanRateTx: %d", scan->scanRateTx); */
 }
 

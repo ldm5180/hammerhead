@@ -8,7 +8,6 @@ td_p210_hab_SOURCES =               \
     global.c                        \
     process-data.c                  \
     td-radio-connect.c              \
-    td-radio-send.c                 \
     td-radio-read.c                 \
     make-shutdowns-clean.c          \
     cb-set-resource.c

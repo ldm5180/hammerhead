@@ -35,8 +35,6 @@ int radio_connect(const char *radio_ip, const int radio_port);
 int radio_read(int fd, char* buffer);
 
 int process_data(char *buffer);
-int do_output();
-void print_buffer();
 
 // If the TD-P210 had any actuators we wanted to expose, this callback would
 // let us know when something wanted to change them.
