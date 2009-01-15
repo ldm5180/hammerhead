@@ -66,10 +66,6 @@ int main(int argc, char *argv[]) {
     }
 
 
-    // Initialize the nodes hash.
-    nodes = g_hash_table_new_full(g_str_hash, g_str_equal, free, drop_node);
-
-
     // Connect to Bionet.
     hab = bionet_hab_new("PAL-650", NULL);
     if (hab == NULL) {

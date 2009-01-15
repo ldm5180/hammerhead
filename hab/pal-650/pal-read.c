@@ -55,15 +55,16 @@ static void hexdump(char *buffer, int size) {
 
 static void parse_line(char *line) {
     char tag_id[16];
-    float x_coord;
-    float y_coord;
-    float z_coord;
 
-    int i = 0;
     char delims[] = ",";
     char *result = NULL;
 
+    int i;
+    char *resource_id[] = { "X", "Y", "Z" };
+    float value[3];  // x, y, z, to match the resource id's above
+
     bionet_node_t *node = 0;
+    node_data_t *node_data;
 
 
     printf(" Parsing line: %s\n", line);
@@ -72,8 +73,9 @@ static void parse_line(char *line) {
 
     result = strtok(line, delims);
 
+    i = 0;
     while (result != NULL) {
-        printf("(%d) result = \"%s\"\n", i, result);
+        // printf("(%d) result = \"%s\"\n", i, result);
 
         if (strcmp(result, "P") == 0) {
             printf("Got a Presence indicator.\n");
@@ -82,22 +84,13 @@ static void parse_line(char *line) {
         switch(i) {
             case 1: 
                 memcpy(tag_id, result, strlen(result));
-                //printf("tag: %s\n", tag_id);
                 break;
 
             case 2:
-                x_coord = strtod(result, NULL);
-                //printf("x_coord: %s\n", x_coord);
-                break;
-
             case 3:
-                y_coord = strtod(result, NULL);
-                //printf("y_coord: %s, len: %d\n", y_coord, strlen(result));
-                break;
-
             case 4:
-                z_coord = strtod(result, NULL);
-                //printf("z_coord: %s, len: %d\n", z_coord, strlen(result));
+                value[i-2] = strtod(result, NULL);
+                printf("%s: %s -> %.3g\n", resource_id[i-2], result, value[i-2]);
                 break;
         }
 
@@ -105,28 +98,15 @@ static void parse_line(char *line) {
         i++;
     }
 
-    node = g_hash_table_lookup(nodes, tag_id);
-    if (node != NULL) {
-        node_data_t *node_data = bionet_node_get_user_data(node);
-        // aw, old node, we already knew about this one
-        // refresh its last-seen time so we dont remove it just yet
-        node_data->time = time(NULL);
-    }
-
-    printf("New Node '%s'\n", tag_id);
-
-    node = bionet_node_new(hab, tag_id);
-
+    node = bionet_hab_get_node_by_id(hab, tag_id);
     if (node == NULL) {
-        g_warning("Error creating a new node '%s'", tag_id);
-        return;
-    }
+        printf("New Node '%s'\n", tag_id);
 
-
-    {
-        int i;
-        char *resource_id[] = { "X", "Y", "Z" };
-        float value[] = { x_coord, y_coord, z_coord };
+        node = bionet_node_new(hab, tag_id);
+        if (node == NULL) {
+            g_warning("Error creating a new node '%s'", tag_id);
+            return;
+        }
 
         for (i = 0; i < 3; i ++) {
             bionet_resource_t *resource;
@@ -143,30 +123,41 @@ static void parse_line(char *line) {
                 return;
             }
 
-            bionet_resource_set_float(resource, value[i], NULL);
-
             bionet_node_add_resource(node, resource);
         }
-    }
 
-
-    {
-        node_data_t *node_data = (node_data_t*)calloc(1, sizeof(node_data_t));
+        node_data = (node_data_t*)calloc(1, sizeof(node_data_t));
         if (node_data == NULL) {
             g_warning("out of memory");
             bionet_node_free(node);
+            return;
         }
-
-        node_data->time = time(NULL);
-
         bionet_node_set_user_data(node, node_data);
+
+        bionet_hab_add_node(hab, node);
+
+        hab_report_new_node(node);
     }
 
 
-    hab_report_new_node(node);
+    for (i = 0; i < 3; i ++) {
+        bionet_resource_t *resource;
 
-    g_hash_table_insert(nodes, strdup(tag_id), node);
-    
+        node_data = bionet_node_get_user_data(node);
+        node_data->time = time(NULL);
+
+        resource = bionet_node_get_resource_by_id(node, resource_id[i]);
+        if (resource == NULL) {
+            g_warning("error getting Resource %s:%s", bionet_node_get_id(node), resource_id[i]);
+            bionet_node_free(node);
+            return;
+        }
+
+        bionet_resource_set_float(resource, value[i], NULL);
+    }
+
+    hab_report_datapoints(node);
+
     printf("All looks good with '%s'\n", tag_id);
 }
 

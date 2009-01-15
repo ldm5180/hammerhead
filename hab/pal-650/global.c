@@ -4,8 +4,6 @@
 
 bionet_hab_t *hab = NULL;
 
-GHashTable *nodes = NULL;
-
 char *pal_ip = NULL;
 int pal_port = 5117;
 int tag_timeout = 5;

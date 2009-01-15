@@ -17,8 +17,6 @@ typedef struct {
 
 extern bionet_hab_t *hab;
 
-extern GHashTable *nodes;
-
 extern char *pal_ip;
 extern int pal_port;
 extern int tag_timeout;
