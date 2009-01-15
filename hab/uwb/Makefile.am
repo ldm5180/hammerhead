@@ -7,8 +7,7 @@ uwb_hab_SOURCES =               \
     main.c                          \
     global.c                        \
     uwb-connect.c                   \
-    uwb-read.c                      \
-    make-shutdowns-clean.c          \
+    uwb-read.c
 
 
 uwb_hab_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libhab -I../../util

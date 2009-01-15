@@ -77,8 +77,6 @@ int main(int argc, char *argv[]) {
 	  exit(1);
 	}
 
-	make_shutdowns_clean();
-
 	buffer = calloc(BUFFER_SZ, sizeof(unsigned int));
 
 	if (buffer == NULL) {
