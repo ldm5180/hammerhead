@@ -1,4 +1,4 @@
 # Script to start the PAL-650 Bionet HAB
 
-./pal-650-hab --nag jubilee --pal-ip 192.168.5.100 --port 5117
+./pal-650 --pal-ip 192.168.5.100 --port 5117
 
