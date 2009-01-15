@@ -1,5 +1,5 @@
 /*
- * Written to interface with the Time Domain radio.
+ * Written to interface with the UWB.exe program.
  *
  * G.L. Grobe
  * Ported to Bionet 2.1 by Shea Williams
@@ -23,15 +23,15 @@ bionet_hab_t *uwb_hab;
 struct sockaddr_in uwb_address;
 
 static GOptionEntry entries[] = {
-	{"ip", 'a', 0, G_OPTION_ARG_STRING, &ip, "IP address of radio", NULL},
-	{"port", 'p', 0, G_OPTION_ARG_INT, &port, "Radio data port", NULL}, 
+	{"ip", 'a', 0, G_OPTION_ARG_STRING, &ip, "IP address of UWB", NULL},
+	{"port", 'p', 0, G_OPTION_ARG_INT, &port, "UWB port", NULL}, 
 	{"timeout", 't', 0, G_OPTION_ARG_INT, &timeout, 
 		"Seconds of absense before reporting no data.", NULL}, 
 	{NULL}
 };
 
 int main(int argc, char *argv[]) {
-	int radio_fd = -1;
+	int uwb_fd = -1;
 	int hab_fd = -1;
 	int bytes = 0;
 	char *buffer;
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 	GOptionContext *context;
 
 	context = g_option_context_new (
-		"A radio interface for the Time Domain hardware.");
+		"An interface for the UWB.exe.");
 
 	g_option_context_add_main_entries(context, entries, NULL);
 
@@ -61,19 +61,19 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (ip == NULL) {
-		g_warning("Radio IP not specified.");
+		g_warning("UWB IP not specified.");
 		exit(1);
 	}
 
 	if (port == 0) {
-		g_warning("Radio port not secified.");
+		g_warning("UWB port not secified.");
 		exit(1);
 	}
 
 	uwb_hab = bionet_hab_new("TD-P210", NULL);
 	hab_fd = hab_connect(uwb_hab);	
 	if (hab_fd == -1) {
-	  g_error("Cannot connect to Bionet, quitting.");
+	  g_error("Cannot connect to bionet, quitting.");
 	  exit(1);
 	}
 
@@ -92,25 +92,25 @@ int main(int argc, char *argv[]) {
 
         int max;
 
-		// Likewise, make sure we're connected to the radio.
-		if (radio_fd < 0) {
-			radio_fd = radio_connect(ip, port);
+		// Likewise, make sure we're connected to UWB.exe.
+		if (uwb_fd < 0) {
+			uwb_fd = uwb_connect(ip, port);
 
-			if (radio_fd < 0) {
+			if (uwb_fd < 0) {
 				g_warning("Connection failed.");
 				return -1;
 			}
 
 			g_message("Connected to the TD-P210.");
-			g_message("Radio IP address: %s", ip);
-			g_message("Radio port: %d", port);
+			g_message("UWB IP address: %s", ip);
+			g_message("UWB port: %d", port);
 			g_message("Timeout: %d", timeout);
 		}
 
 		FD_ZERO(&reader);
-		FD_SET(radio_fd, &reader);
+		FD_SET(uwb_fd, &reader);
 		FD_SET(hab_fd, &reader);
-		max = (hab_fd > radio_fd ? hab_fd : radio_fd);
+		max = (hab_fd > uwb_fd ? hab_fd : uwb_fd);
 
 		tv.tv_sec = timeout;
 		tv.tv_usec = 0;
@@ -122,11 +122,11 @@ int main(int argc, char *argv[]) {
 		}
 		else if (ready >= 1) {
 
-		  if (FD_ISSET(radio_fd, &reader)) {
-			  bytes = radio_read(radio_fd, buffer);
+		  if (FD_ISSET(uwb_fd, &reader)) {
+			  bytes = uwb_read(uwb_fd, buffer);
 
 			  if (bytes < 0)  {
-				  g_message("radio_read() returned: %d.", bytes);
+				  g_message("uwb_read() returned: %d.", bytes);
 				  continue;
 			  }
 		  } 

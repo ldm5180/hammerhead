@@ -15,9 +15,9 @@
 #include "uwb.h"
 
 /*
- * Send the RESPONDER message to the radio.
+ * Send the RESPONDER message to the UWB.exe program.
  */
-int radio_read(int fd, char* buffer) 
+int uwb_read(int fd, char* buffer) 
 {
 	int bytes = 0;
 
@@ -26,8 +26,8 @@ int radio_read(int fd, char* buffer)
 	bytes = recvfrom(fd, buffer, BUFFER_SZ, 0, 0, 0);
 	
 	if (bytes < 0) {
-		g_warning("\tradio_read(): recvfrom failed, %s", strerror(errno));
-		g_error("\tradio_read(): exiting...");
+		g_warning("\tuwb_read(): recvfrom failed, %s", strerror(errno));
+		g_error("\tuwb_read(): exiting...");
 	}
 
 	return bytes;

@@ -12,8 +12,7 @@ short signed int complete_scan[COMPLETE_SCAN_SIZE];
 long current_range_count = 0;
 long scan_points = 0;
 
-struct sockaddr_in local_address;
-struct sockaddr_in radio_address;
+struct sockaddr_in uwb_address;
 
 
 
