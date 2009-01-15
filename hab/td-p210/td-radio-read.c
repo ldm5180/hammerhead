@@ -21,34 +21,18 @@
  */
 int radio_read(int fd, char* buffer) 
 {
-	bool debug = true;
+	bool debug = false;
 	int bytes = 0;
 
 	memset(buffer, '\0', BUFFER_SZ);
 
-	if (debug) {
-		g_message("radio_read(): enter");
-		g_message("\ts_addr = %d", radio_address.sin_addr.s_addr);
-		g_message("\tsin_port = %d", radio_address.sin_port);
-	}
-
 	socklen_t socklen = sizeof(radio_address);
 
-	bytes = recvfrom(fd, buffer, BUFFER_SZ, 0,
-		(struct sockaddr *) &radio_address, &socklen);
+	bytes = recvfrom(fd, buffer, BUFFER_SZ, 0, 0, 0);
 	
-	if (debug) {
-		g_message("bytes = %d", bytes);
-	}
-
-
 	if (bytes < 0) {
 		g_warning("\tradio_read(): recvfrom failed, %s", strerror(errno));
-		g_message("\tradio_read(): exit");
-	}
-
-	if (debug) {
-		g_message("radio_read(): exit");
+		g_error("\tradio_read(): exiting...");
 	}
 
 	return bytes;
