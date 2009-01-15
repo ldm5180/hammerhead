@@ -173,25 +173,18 @@ int pal_read(int pal_fd) {
     if (r < 0) {
         g_warning("error reading from PAL: %s", strerror(errno));
         index = 0;
-
         return -1;
     }
 
     if (r == 0) {
         g_warning("PAL disconnected");
         index = 0;
-
         return -1;
     }
 
-    //printf("read %d bytes:\n", r);
-    //hexdump(&buffer[index], r);
-
     index += r;
 
-	/*
-	 * Parse all data within the buffer.
-	 */
+    // Parse all data within the buffer.
     while (1) {
         char *p;
 
@@ -208,10 +201,10 @@ int pal_read(int pal_fd) {
             return 0;
         }
 
-		/*
-		 * If we get here, then the buffer contains at least one complete line.
-		 */
-    	//printf("Got at least one complete line.\n");
+        //
+        // If we get here, then the buffer contains at least one complete
+        // line, and p points to it.
+        //
 
         *p = '\0';
 
@@ -220,9 +213,6 @@ int pal_read(int pal_fd) {
         int remainder = index - ((p+1) - buffer);
         memmove(buffer, (p+1), remainder);
         index = remainder;
-
-        //printf("buffer has %d bytes:\n", index);
-        //hexdump(buffer, index);
     }
 
     return 0;
