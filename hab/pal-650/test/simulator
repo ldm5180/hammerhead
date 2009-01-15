@@ -1,0 +1,44 @@
+#!/usr/bin/python
+
+import SocketServer
+import time
+import sys
+
+
+class PAL650_Simulator(SocketServer.BaseRequestHandler):
+    def setup(self):
+        print self.client_address, 'connected!'
+
+    def handle(self):
+        f = open(filename)
+        for line in f:
+            try:
+                self.request.send(line)
+            except Exception:
+                print "error!"
+                return
+            time.sleep(1)
+        f.close()
+        print "sent whole file!"
+
+    def finish(self):
+        print self.client_address, 'disconnected!'
+
+
+SocketServer.TCPServer.allow_reuse_address = True
+server = SocketServer.TCPServer(('', 5117), PAL650_Simulator)
+
+
+if (len(sys.argv) != 2):
+    print "no filename given!"
+    sys.exit(0)
+
+filename = sys.argv[1]
+
+
+print "ready!"
+server.handle_request()
+print "done!"
+
+                             
+
