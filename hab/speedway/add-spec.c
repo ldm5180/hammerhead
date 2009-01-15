@@ -30,7 +30,7 @@ int addROSpec(void) {
     };
 #endif
 
-#if 0
+#if 1
     // this is a Null trigger, so it just starts when we tell it to
     LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
@@ -38,7 +38,7 @@ int addROSpec(void) {
     };
 #endif
 
-#if 1
+#if 0
     // this is a GPI trigger, so it starts when we push a button
     LLRP_tSGPITriggerValue GPITriggerValue = {
         .hdr.elementHdr.pType = &LLRP_tdGPITriggerValue,

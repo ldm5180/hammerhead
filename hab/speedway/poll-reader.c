@@ -114,7 +114,7 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
 
 
 
-int poll_for_report() {
+int poll_reader() {
     LLRP_tSMessage *pMessage = NULL;
     const LLRP_tSTypeDescriptor *pType;
 
@@ -125,7 +125,7 @@ int poll_for_report() {
     pMessage = recvMessage(RECEIVE_TIMEOUT);
     if (pMessage == NULL) {
         // timeout
-        return 0;
+        return 1;
     }
 
 

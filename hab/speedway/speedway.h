@@ -10,6 +10,7 @@ typedef struct {
     int antenna[5];  // there are only 4 antennas, but they start counting at 1
 } node_data_t;
 
+extern GMainLoop *main_loop;
 
 extern bionet_hab_t *hab;
 
@@ -20,6 +21,7 @@ extern LLRP_tSTypeRegistry *pTypeRegistry;
 
 extern bionet_node_t *reader_node;
 int make_reader_node(void);
+int read_from_bionet(GIOChannel *unused_channel, GIOCondition unused_condition, gpointer unused_data);
 
 
 // reader functions.
@@ -35,10 +37,10 @@ void get_reader_config(void);
 /**
  * @brief Poll for messages from the Speedway, process if found.
  *
- * @return 1 if it got a message
- * @return 0 if there was no message
+ * @return TRUE (1)
  */
-int poll_for_report();
+int poll_reader();
+
 void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData);
 
 int addROSpec();

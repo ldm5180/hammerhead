@@ -5,8 +5,9 @@ bin_PROGRAMS = speedway
 speedway_SOURCES =         \
     main.c                 \
     make-reader-node.c     \
+    read-from-bionet.c     \
     get-reader-config.c    \
-    poll-for-report.c      \
+    poll-reader.c          \
     handle-tag-report-data.c  \
     connect.c              \
     configure.c            \

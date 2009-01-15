@@ -5,6 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <glib.h>
+
 #include "speedway.h"
 
 /*
@@ -110,39 +112,27 @@ int main(int argc, char *argv[]) {
     get_reader_config();
 
 
-    //
-    // here we're connected to the Speedway reader and it's all set up
-    //
-
-
     make_reader_node();
 
 
-    do {
-        struct timeval timeout;
-        fd_set readers;
-        int r;
+    //
+    // here we're connected to the Speedway reader and it's all set up
+    //
+    // set up the main loop
+    //
 
-        FD_ZERO(&readers);
-        FD_SET(bionet_fd, &readers);
+    main_loop = g_main_loop_new(NULL, TRUE);
 
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 100 * 1000;
+    {
+        GIOChannel *ch;
+        ch = g_io_channel_unix_new(bionet_fd);
+        g_io_add_watch(ch, G_IO_IN, read_from_bionet, NULL);
+    }
 
-        r = select(bionet_fd + 1, &readers, NULL, NULL, &timeout);
-        if (r < 0) {
-            if (errno == EINTR) continue;
-            g_warning("error with select(): %s", strerror(errno));
-            exit(1);
-        } else if (r == 1) {
-            hab_read();
-            continue;
-        }
+    g_timeout_add(100, poll_reader, NULL);
+        
 
-        // only if bionet didnt have anything to do, do we check the reader
-        poll_for_report();
-
-    } while(1);
+    g_main_loop_run(main_loop);
 
 
     scrubConfiguration();
