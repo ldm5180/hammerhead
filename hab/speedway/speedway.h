@@ -18,6 +18,8 @@ extern int show_messages;
 extern int gpi_delay;
 extern int gpi_polarity;
 extern int num_scans;
+extern int scan_idle;
+extern int scan_timeout;
 
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;

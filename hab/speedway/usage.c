@@ -22,6 +22,14 @@ OPTIONS is zero or more of these:\n\
     --num-scans N     After a GPI trigger, do a sequence of N scans.\n\
                       Defaults to 1.\n\
 \n\
+    --scan-idle N     When scanning for tags, terminate the scan early if\n\
+                      N milliseconds pass without seeing a new tag.\n\
+                      Defaults to 3000.\n\
+\n\
+    --scan-timeout N  A scan for tags may not go longer than N\n\
+                      milliseconds, even if new tags keep being found.\n\
+                      Defaults to 5000.\n\
+\n\
     --show-messages   Enable printing of all messages between the HAB and\n\
                       the Speedway device.  Defaults to off.\n\
 ");

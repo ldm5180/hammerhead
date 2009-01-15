@@ -78,8 +78,8 @@ int addROSpec(void) {
     LLRP_tSTagObservationTrigger TagObservationTrigger = {
         .hdr.elementHdr.pType = &LLRP_tdTagObservationTrigger,
         .eTriggerType         = LLRP_TagObservationTriggerType_Upon_Seeing_No_More_New_Tags_For_Tms_Or_Timeout,
-        .T                    = 3000,
-        .Timeout              = 5000
+        .T                    = scan_idle,
+        .Timeout              = scan_timeout
     };
 
     LLRP_tSAISpecStopTrigger    AISpecStopTrigger = {

@@ -48,6 +48,14 @@ int main(int argc, char *argv[]) {
             i ++;
             num_scans = atoi(argv[i]);
 
+        } else if (strcmp(argv[i], "--scan-idle") == 0) {
+            i ++;
+            scan_idle = atoi(argv[i]);
+
+        } else if (strcmp(argv[i], "--scan-timeout") == 0) {
+            i ++;
+            scan_timeout = atoi(argv[i]);
+
         } else if (strcmp(argv[i], "--show-messages") == 0) {
             show_messages = 1;
 
