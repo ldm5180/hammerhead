@@ -28,8 +28,7 @@ void drop_node(gpointer node);
 
 // If the PAL-650 had any actuators we wanted to expose, this callback would 
 // let us know when someone wanted to change them.
-void cb_set_resource(const char *node_id, const char *resource_id, 
-	const char *value);
+void cb_set_resource(const char *node_id, const char *resource_id, const char *value);
 
 
 void make_shutdowns_clean(void);
