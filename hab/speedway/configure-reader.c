@@ -16,10 +16,29 @@
 
 int configure_reader(void) {
 
+    // enable all the GPI pins
     LLRP_tSGPIPortCurrentState gpi_port_state[] = {
         { 
             .hdr.elementHdr.pType = &LLRP_tdGPIPortCurrentState,
             .GPIPortNum = 1,
+            .Config = 1  // enabled
+        },
+
+        { 
+            .hdr.elementHdr.pType = &LLRP_tdGPIPortCurrentState,
+            .GPIPortNum = 2,
+            .Config = 1  // enabled
+        },
+
+        { 
+            .hdr.elementHdr.pType = &LLRP_tdGPIPortCurrentState,
+            .GPIPortNum = 3,
+            .Config = 1  // enabled
+        },
+
+        { 
+            .hdr.elementHdr.pType = &LLRP_tdGPIPortCurrentState,
+            .GPIPortNum = 4,
             .Config = 1  // enabled
         }
     };
