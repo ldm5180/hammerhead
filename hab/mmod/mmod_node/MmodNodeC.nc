@@ -51,7 +51,6 @@ module MmodNodeC
 	interface StdControl as CollectionControl;
 	interface StdControl as DisseminationControl;
 	interface SplitControl as RadioControl;
-	interface LowPowerListening;
 	interface LocalTime<TMilli> as LocalTimeMilli;
 	interface CC2420Config;
     } /* uses */
@@ -239,7 +238,7 @@ implementation
 
     event void Boot.booted()
     {
-	call CC2420Config.setChannel(1);	
+	call CC2420Config.setChannel(11);	
 	call CC2420Config.sync();
     } /* Boot.booted() */
 
@@ -252,8 +251,6 @@ implementation
 	{
 	    call DisseminationControl.start();
 	    call CollectionControl.start();
-	    //call LowPowerListening.setLocalDutyCycle(200);
-
 	    call SettingsCheck.startOneShot(1000);
 	}
     } /* RadioControl.startDone() */

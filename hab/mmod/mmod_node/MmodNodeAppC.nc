@@ -44,7 +44,6 @@ implementation
     MmodNodeC.SettingsCheck -> SettingsTimer;
     MmodNodeC.Leds -> LedsC;
     MmodNodeC.RadioControl -> ActiveMessageC;
-    MmodNodeC.LowPowerListening -> Radio;
 
     components CC2420ControlC;
     MmodNodeC.CC2420Config -> CC2420ControlC;
