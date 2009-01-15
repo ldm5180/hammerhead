@@ -32,7 +32,6 @@ extern int timeout;
 extern struct sockaddr_in uwb_address;
 
 int radio_connect(const char *radio_ip, const int radio_port);
-int radio_send(int fd);
 int radio_read(int fd, char* buffer);
 
 int process_data(char *buffer);

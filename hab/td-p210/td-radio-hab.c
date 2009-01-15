@@ -103,10 +103,6 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 
-			if (radio_send(radio_fd) < 0) {
-				g_warning("Could not send message.");
-			}
-
 			g_message("Connected to the TD-P210.");
 			g_message("Radio IP address: %s", ip);
 			g_message("Radio port: %d", port);
