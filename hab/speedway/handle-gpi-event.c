@@ -30,7 +30,8 @@ void handle_gpi_event(LLRP_tSGPIEvent *pGPIEvent) {
     hab_report_datapoints(reader_node);
 
     if ((gpi_num == 1) && (new_level == gpi_polarity)) {
-        g_timeout_add(gpi_delay, startROSpec, NULL);
+        if (scans_left_to_do == 0) g_timeout_add(gpi_delay, startROSpec, NULL);
+        scans_left_to_do = num_scans;
     }
 }
 

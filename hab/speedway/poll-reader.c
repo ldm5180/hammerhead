@@ -140,8 +140,11 @@ int poll_reader() {
      */
     if (&LLRP_tdRO_ACCESS_REPORT == pType) {
         process_ro_access_report((LLRP_tSRO_ACCESS_REPORT *)pMessage);
-        reader_is_busy = 0;
         freeMessage(pMessage);
+
+        scans_left_to_do --;
+        if (scans_left_to_do > 0) startROSpec();
+
         return 1;
     }
 

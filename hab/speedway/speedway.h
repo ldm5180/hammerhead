@@ -17,11 +17,12 @@ extern bionet_hab_t *hab;
 extern int show_messages;
 extern int gpi_delay;
 extern int gpi_polarity;
+extern int num_scans;
 
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
 
-extern int reader_is_busy;
+extern int scans_left_to_do;
 
 
 extern bionet_node_t *reader_node;

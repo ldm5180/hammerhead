@@ -44,6 +44,10 @@ int main(int argc, char *argv[]) {
             i ++;
             gpi_polarity = atoi(argv[i]);
 
+        } else if (strcmp(argv[i], "--num-scans") == 0) {
+            i ++;
+            num_scans = atoi(argv[i]);
+
         } else if (strcmp(argv[i], "--show-messages") == 0) {
             show_messages = 1;
 

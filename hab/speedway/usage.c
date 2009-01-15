@@ -19,6 +19,9 @@ OPTIONS is zero or more of these:\n\
     --gpi-polarity N  Trigger a tag scan when the value of GPI1 becomes N.\n\
                       Valid values are 0 and 1.  Defaults to 1.\n\
 \n\
+    --num-scans N     After a GPI trigger, do a sequence of N scans.\n\
+                      Defaults to 1.\n\
+\n\
     --show-messages   Enable printing of all messages between the HAB and\n\
                       the Speedway device.  Defaults to off.\n\
 ");
