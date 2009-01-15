@@ -29,8 +29,7 @@ extern bionet_hab_t *tdp210_hab;
 extern int port;
 extern int timeout;
 
-extern struct sockaddr_in local_address;
-extern struct sockaddr_in radio_address;
+extern struct sockaddr_in uwb_address;
 
 int radio_connect(const char *radio_ip, const int radio_port);
 int radio_send(int fd);
