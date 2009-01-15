@@ -37,6 +37,7 @@ implementation
     MmodGatewayC.Boot -> MainC;
     MmodGatewayC.SerialControl -> SerialActiveMessageC;
     MmodGatewayC.RadioControl -> ActiveMessageC;
+    MmodGatewayC.LowPowerListening -> Radio;
     MmodGatewayC.Leds -> LedsC;
 
 
