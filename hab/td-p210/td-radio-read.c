@@ -13,20 +13,15 @@
 #include <glib.h>
 
 #include "td-radio.h"
-#include "td-radio-scan.h"
-
 
 /*
  * Send the RESPONDER message to the radio.
  */
 int radio_read(int fd, char* buffer) 
 {
-	bool debug = false;
 	int bytes = 0;
 
 	memset(buffer, '\0', BUFFER_SZ);
-
-	socklen_t socklen = sizeof(radio_address);
 
 	bytes = recvfrom(fd, buffer, BUFFER_SZ, 0, 0, 0);
 	
