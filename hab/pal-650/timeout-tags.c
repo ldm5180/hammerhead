@@ -21,6 +21,7 @@ void timeout_tags(void) {
             bionet_node_set_user_data(node, NULL);
             bionet_hab_remove_node_by_id(hab, bionet_node_get_id(node));
             hab_report_lost_node(bionet_node_get_id(node));
+            bionet_node_free(node);
             i --;
         }
     }
