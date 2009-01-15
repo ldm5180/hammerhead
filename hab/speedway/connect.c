@@ -47,19 +47,14 @@ int speedway_connect(const char* reader_ip) {
 	/*
 	 * Open the connection to the reader.
 	 */
-        g_debug("Connecting to %s ... ", reader_ip);
 
 	rc = LLRP_Conn_openConnectionToReader(pConn, reader_ip);
-
 	if (rc != 0) {
 		g_warning("speedway_connect() %s (%d)", pConn->pConnectErrorStr, rc);
 		return -3;
 	}
 
-        g_debug("Connected, checking status ... ");
-
 	rc = checkConnectionStatus(); 
-
 	if (rc != 0) {
 		LLRP_Conn_closeConnectionToReader(pConn);
 		LLRP_Conn_destruct(pConn);
