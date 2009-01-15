@@ -15,9 +15,9 @@
 
 
 static GOptionEntry entries[] = {
-  	{ "pal-ip", 'a', 0, G_OPTION_ARG_STRING,  &pal_ip, "IP address of the PAL-650", NULL },
-	{ "port", 'p', 0, G_OPTION_ARG_INT, &pal_port, "PAL-650 Data Port", NULL },
-	{ "tag-timeout", 't', 0, G_OPTION_ARG_INT, &tag_timeout, "Seconds of RFID Tag absence before reporing the Bionet Node lost", NULL },
+  	{ "pal-ip",      'a', 0, G_OPTION_ARG_STRING,  &pal_ip,      "IP address of the PAL-650",                                        NULL },
+	{ "port",        'p', 0, G_OPTION_ARG_INT,     &pal_port,    "PAL-650 Data Port (defaults to 5117).",                            NULL },
+	{ "tag-timeout", 't', 0, G_OPTION_ARG_INT,     &tag_timeout, "Seconds of RFID Tag absence before reporing the Bionet Node lost", NULL },
 	{ NULL }
 };
 
