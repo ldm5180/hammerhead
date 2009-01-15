@@ -226,12 +226,12 @@ static void parse_line(char *line) {
 
             case 7: 
                 strncpy(m.unit, result, sizeof(m.unit));
-                m.tag_id[sizeof(m.unit)-1] = '\0';
+                m.unit[sizeof(m.unit)-1] = '\0';
                 break;
 
             case 8: 
                 strncpy(m.remainder, result, sizeof(m.remainder));
-                m.tag_id[sizeof(m.remainder)-1] = '\0';
+                m.remainder[sizeof(m.remainder)-1] = '\0';
                 break;
 
             default:
