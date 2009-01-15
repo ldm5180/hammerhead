@@ -1,8 +1,9 @@
 
 #include <hardware-abstractor.h>
 
-void cb_set_resource(const char *node_id, const char *resource_id, 
-		const char *value) {
+#include "td-radio.h"
+
+void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value) {
 
     g_message("not implemented yet");
 
