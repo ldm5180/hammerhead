@@ -14,6 +14,32 @@
 #include "pal-650-hab.h"
 
 
+
+
+// 
+// The "packet" format from the PAL-650 is:
+//
+//     <Data Header>, <tag #>, <X>, <Y>, <Z>, <battery>, <timestamp>, <unit> [,<DQI>] <LF>
+//
+// Note DQI is optional.  This HAB ignores it if it *is* present.
+//
+
+typedef struct {
+    char header;
+    char tag_id[16];
+    float x, y, z;
+    int battery;
+    time_t timestamp;
+    char unit[16];
+    char remainder[100];
+} message_t;
+
+
+static const char *resource_id[] = { "X", "Y", "Z" };
+
+
+
+
 #if 0
 static void hexdump(char *buffer, int size) {
     char hex[60];
@@ -53,59 +79,23 @@ static void hexdump(char *buffer, int size) {
 }
 #endif
 
-static void parse_line(char *line) {
-    char tag_id[16];
 
-    char delims[] = ",";
-    char *result = NULL;
 
-    int i;
-    char *resource_id[] = { "X", "Y", "Z" };
-    float value[3];  // x, y, z, to match the resource id's above
 
-    bionet_node_t *node = 0;
+static bionet_node_t *get_node(const char *node_id) {
+    bionet_node_t *node;
     node_data_t *node_data;
 
-
-    printf(" Parsing line: %s\n", line);
-
-    memset(tag_id, '\0', sizeof(tag_id));
-
-    result = strtok(line, delims);
-
-    i = 0;
-    while (result != NULL) {
-        // printf("(%d) result = \"%s\"\n", i, result);
-
-        if (strcmp(result, "P") == 0) {
-            printf("Got a Presence indicator.\n");
-        }
-
-        switch(i) {
-            case 1: 
-                memcpy(tag_id, result, strlen(result));
-                break;
-
-            case 2:
-            case 3:
-            case 4:
-                value[i-2] = strtod(result, NULL);
-                printf("%s: %s -> %.3g\n", resource_id[i-2], result, value[i-2]);
-                break;
-        }
-
-        result = strtok(NULL, delims);
-        i++;
-    }
-
-    node = bionet_hab_get_node_by_id(hab, tag_id);
+    node = bionet_hab_get_node_by_id(hab, node_id);
     if (node == NULL) {
-        printf("New Node '%s'\n", tag_id);
+        int i;
 
-        node = bionet_node_new(hab, tag_id);
+        printf("New Node '%s'\n", node_id);
+
+        node = bionet_node_new(hab, node_id);
         if (node == NULL) {
-            g_warning("Error creating a new node '%s'", tag_id);
-            return;
+            g_warning("Error creating a new node '%s'", node_id);
+            return NULL;
         }
 
         for (i = 0; i < 3; i ++) {
@@ -120,7 +110,7 @@ static void parse_line(char *line) {
             if (resource == NULL) {
                 g_warning("error making Resource %s:%s", bionet_node_get_id(node), resource_id[i]);
                 bionet_node_free(node);
-                return;
+                return NULL;
             }
 
             bionet_node_add_resource(node, resource);
@@ -130,7 +120,7 @@ static void parse_line(char *line) {
         if (node_data == NULL) {
             g_warning("out of memory");
             bionet_node_free(node);
-            return;
+            return NULL;
         }
         bionet_node_set_user_data(node, node_data);
 
@@ -139,12 +129,42 @@ static void parse_line(char *line) {
         hab_report_new_node(node);
     }
 
+    node_data = bionet_node_get_user_data(node);
+    node_data->time = time(NULL);
+
+    return node;
+}
+
+
+
+
+static void handle_diagnostic_message(const message_t *m) {
+    g_message("diagnostic message from PAL-650: %s", m->remainder);
+}
+
+
+
+static void handle_presence_message(const message_t *m) {
+    bionet_node_t *node;
+
+    node = get_node(m->tag_id);
+    if (node == NULL) return;
+}
+
+
+
+
+
+static void handle_position_message(const message_t *m) {
+    bionet_node_t *node;
+    float value[3] = { m->x, m->y, m->z };
+    int i;
+
+    node = get_node(m->tag_id);
+    if (node == NULL) return;
 
     for (i = 0; i < 3; i ++) {
         bionet_resource_t *resource;
-
-        node_data = bionet_node_get_user_data(node);
-        node_data->time = time(NULL);
 
         resource = bionet_node_get_resource_by_id(node, resource_id[i]);
         if (resource == NULL) {
@@ -157,9 +177,107 @@ static void parse_line(char *line) {
     }
 
     hab_report_datapoints(node);
-
-    printf("All looks good with '%s'\n", tag_id);
 }
+
+
+
+
+static void parse_line(char *line) {
+    message_t m;
+
+    int i;
+    char delims[] = ",";
+    char *result = NULL;
+
+
+    // printf("Parsing line: %s\n", line);
+
+    m.header = line[0];
+    line += 2;
+
+    i = 1;
+    result = strtok(line, delims);
+    while (result != NULL) {
+        switch(i) {
+            case 1: 
+                strncpy(m.tag_id, result, sizeof(m.tag_id));
+                m.tag_id[sizeof(m.tag_id)-1] = '\0';
+                break;
+
+            case 2:
+                m.x = strtod(result, NULL);
+                break;
+
+            case 3:
+                m.y = strtod(result, NULL);
+                break;
+
+            case 4:
+                m.z = strtod(result, NULL);
+                break;
+
+            case 5:
+                m.battery = atoi(result);
+                break;
+
+            case 6:
+                m.timestamp = atoi(result);
+                break;
+
+            case 7: 
+                strncpy(m.unit, result, sizeof(m.unit));
+                m.tag_id[sizeof(m.unit)-1] = '\0';
+                break;
+
+            case 8: 
+                strncpy(m.remainder, result, sizeof(m.remainder));
+                m.tag_id[sizeof(m.remainder)-1] = '\0';
+                break;
+
+            default:
+                g_warning("dont know what to do with field %d: '%s'", i, result);
+                break;
+        }
+
+        result = strtok(NULL, delims);
+        i++;
+    }
+
+#if 0
+    printf("    header=%c\n", m.header);
+    printf("    tag_id=%s\n", m.tag_id);
+    printf("    x=%.3g\n", m.x);
+    printf("    y=%.3g\n", m.y);
+    printf("    z=%.3g\n", m.z);
+    printf("    battery=%d\n", m.battery);
+    printf("    timestamp=%d\n", (int)m.timestamp);
+    printf("    unit=%s\n", m.unit);
+    printf("    remainder=%s\n", m.remainder);
+#endif
+
+    switch (m.header) {
+        case 'D': 
+            return handle_diagnostic_message(&m);
+            break;
+
+        case 'R':
+        case 'T':
+        case 'O':
+            return handle_position_message(&m);
+            break;
+
+        case 'P':
+            return handle_presence_message(&m);
+            break;
+
+        default:
+            g_warning("dont know what to do with '%c' message", m.header);
+            break;
+    }
+}
+
+
+
 
 int pal_read(int pal_fd) {
     static char buffer[4096];
