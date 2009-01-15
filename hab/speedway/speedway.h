@@ -7,7 +7,7 @@
 
 
 typedef struct {
-    int antenna[5];  // there are only 4 antennas, but they start counting at 1
+    int still_here;
 } node_data_t;
 
 extern GMainLoop *main_loop;
