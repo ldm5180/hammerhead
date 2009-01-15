@@ -19,7 +19,7 @@
 
 #include "td-radio.h"
 
-bionet_hab_t *tdp210_hab;
+bionet_hab_t *uwb_hab;
 struct sockaddr_in uwb_address;
 
 static GOptionEntry entries[] = {
@@ -70,8 +70,8 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	tdp210_hab = bionet_hab_new("TD-P210", NULL);
-	hab_fd = hab_connect(tdp210_hab);	
+	uwb_hab = bionet_hab_new("TD-P210", NULL);
+	hab_fd = hab_connect(uwb_hab);	
 	if (hab_fd == -1) {
 	  g_error("Cannot connect to Bionet, quitting.");
 	  exit(1);

@@ -24,7 +24,7 @@ extern long current_range_count;
 extern long scan_points;
 
 extern char *ip;
-extern bionet_hab_t *tdp210_hab;
+extern bionet_hab_t *uwb_hab;
 
 extern int port;
 extern int timeout;
