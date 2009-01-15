@@ -11,6 +11,7 @@ bionet_node_t *reader_node = NULL;
 int reader_is_busy = 0;
 
 int show_messages = 0;
+int gpi_delay = 0;
 
 LLRP_tSConnection *pConn;
 LLRP_tSTypeRegistry *pTypeRegistry;

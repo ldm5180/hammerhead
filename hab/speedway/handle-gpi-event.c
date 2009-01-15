@@ -30,7 +30,7 @@ void handle_gpi_event(LLRP_tSGPIEvent *pGPIEvent) {
     hab_report_datapoints(reader_node);
 
     if ((gpi_num == 1) && (new_level == 1)) {
-        g_timeout_add(3 * 1000, startROSpec, NULL);
+        g_timeout_add(gpi_delay, startROSpec, NULL);
     }
 }
 
