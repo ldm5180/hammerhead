@@ -536,7 +536,7 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
     {
 	g_warning("error with gettimeofday: %s", strerror(errno));
     }
-    else
+    else if (0 == MMODSETTINGSMSG_is_ts_update_get(&t))
     {
 	bionet_value_t * tsv = bionet_value_new_uint16(resource, 
 						       current_tv_index);

@@ -233,56 +233,12 @@ void cb_set_resource(bionet_resource_t *resource,
     }
     MMODSETTINGSMSG_accel_flags_set(&new_settings, uiVal);
 
-    if (0 == strncmp(bionet_resource_get_id(resource), "Timestamp", 
-			  strlen("Timestamp")))
-    {
-	if (bionet_value_get_uint16(value, &uiVal))
-	{
-	    fprintf(stderr, "Failed to get value for Timestamp\n");
-	}
-	MMODSETTINGSMSG_is_ts_update_set(&new_settings, 1);
-    }
-    else
-    {
-	lr = bionet_node_get_resource_by_id(node, "Timestamp");
-	if (NULL == lr)
-	{
-	    fprintf(stderr, "no timestamp resource");
-	    uiVal = 0;
-	}
-	else
-	{
-	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
-	    if (NULL == dp)
-	    {
-		uiVal = current_tv_index;
-	    }
-	    else
-	    {
-		val = bionet_datapoint_get_value(dp);
-		bionet_value_get_uint16(val, &uiVal);
-	    }
-	}
-	MMODSETTINGSMSG_is_ts_update_set(&new_settings, 0);
-    }
-    MMODSETTINGSMSG_timestamp_id_set(&new_settings, uiVal);
+    MMODSETTINGSMSG_is_ts_update_set(&new_settings, 1);
+    MMODSETTINGSMSG_timestamp_id_set(&new_settings, current_tv_index);
 
     memcpy(&pkt[8], new_settings.data, new_settings.len);
     
     write_serial_packet(gw_src, pkt, MMODSETTINGSMSG_SIZE + 8);
-
-    //send timestamp out to all nodes
-    bionet_hab_t * hab = bionet_resource_get_hab(resource);
-    bionet_node_t * this_node = bionet_resource_get_node(resource);
-    bionet_node_t * first_node;
-    first_node = bionet_hab_get_node_by_index(hab, 0);
-    if (first_node == this_node)
-    {
-	MMODSETTINGSMSG_node_id_set(&new_settings, 0);
-	MMODSETTINGSMSG_is_ts_update_set(&new_settings, 1);
-	memcpy(&pkt[8], new_settings.data, new_settings.len);
-	write_serial_packet(gw_src, pkt, MMODSETTINGSMSG_SIZE + 8);
-    }
 
     free(new_settings.data);
 
