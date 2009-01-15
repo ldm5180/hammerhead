@@ -32,11 +32,7 @@ int main(int argc, char *argv[]) {
 
 
     for (i = 1; i < argc; i ++) {
-        if (strcmp(argv[i], "--target") == 0) {
-            i ++;
-            reader_ip = argv[i];
-
-        } else if (strcmp(argv[i], "--id") == 0) {
+        if (strcmp(argv[i], "--id") == 0) {
             i ++;
             hab_id = argv[i];
 
@@ -47,9 +43,16 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[i], "--show-messages") == 0) {
             show_messages = 1;
 
+        } else if (strcmp(argv[i], "--help") == 0) {
+            usage();
+            exit(0);
+
         } else {
-            g_warning("unknown command-line argument '%s'", argv[i]);
-            exit(1);
+            if (i != (argc-1)) {
+                g_warning("unknown command-line argument '%s'", argv[i]);
+                exit(1);
+            }
+            reader_ip = argv[i];
         }
     }
 

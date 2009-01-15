@@ -65,6 +65,8 @@ LLRP_tSMessage *transact(LLRP_tSMessage *pSendMsg);
 void printXMLMessage(LLRP_tSMessage *pMessage);
 int freeMessage(LLRP_tSMessage *pMessage);
 
+void usage(void);
+
 #endif 
 
 

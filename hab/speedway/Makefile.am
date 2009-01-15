@@ -4,6 +4,7 @@ bin_PROGRAMS = speedway
 
 speedway_SOURCES =         \
     main.c                 \
+    usage.c                \
     make-reader-node.c     \
     read-from-bionet.c     \
     get-reader-config.c    \
