@@ -16,12 +16,15 @@
 // Todo: why was this size chosen ?
 #define BUFFER_SZ			32767 //20000
 
+#include "hardware-abstractor.h"
+
 extern double scan_data[];
 extern short signed int complete_scan[];
 extern long current_range_count;
 extern long scan_points;
 
 extern char *ip;
+extern bionet_hab_t *tdp210_hab;
 
 extern int port;
 extern int timeout;
@@ -39,8 +42,7 @@ void print_buffer();
 
 // If the TD-P210 had any actuators we wanted to expose, this callback would
 // let us know when something wanted to change them.
-void cb_set_resource(const char *node_id, const char *resource_id, 
-	const char *value);
+void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value);
 
 void make_shutdowns_clean(void);
 

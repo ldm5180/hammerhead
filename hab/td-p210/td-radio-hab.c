@@ -28,6 +28,7 @@ static GOptionEntry entries[] = {
 
 int main(int argc, char *argv[]) {
 	int radio_fd = -1;
+	int hab_fd = -1;
 	int bytes = 0;
 	char *buffer;
 
@@ -66,6 +67,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	tdp210_hab = bionet_hab_new("TD-P210", NULL);
+	hab_fd = hab_connect(tdp210_hab);	
+	if (hab_fd == -1) {
+	  g_error("Cannot connect to Bionet, quitting.");
+	  exit(1);
+	}
+
 	hab_register_callback_set_resource(cb_set_resource);
 
 	make_shutdowns_clean();
@@ -83,19 +90,7 @@ int main(int argc, char *argv[]) {
 
 	while (1) {
 
-		// If we don't have our connection to the NAG, then connect.
-		if (nag_fd < 0) {
-			nag_fd = hab_connect_to_nag();
-
-			if (nag_fd < 0) {
-				g_warning("Error connecting to the NAG");
-				sleep(3);
-
-				continue;
-			}
-
-			g_message("Connected to the NAG.");
-		}
+        int max;
 
 		// Likewise, make sure we're connected to the radio.
 		if (radio_fd < 0) {
@@ -118,45 +113,53 @@ int main(int argc, char *argv[]) {
 
 		FD_ZERO(&reader);
 		FD_SET(radio_fd, &reader);
+		FD_SET(hab_fd, &reader);
+		max = (hab_fd > radio_fd ? hab_fd : radio_fd);
 
 		tv.tv_sec = timeout;
 		tv.tv_usec = 0;
 
-		int ready = select(radio_fd + 1, &reader, NULL, NULL, &tv);
+		int ready = select(max + 1, &reader, NULL, NULL, &tv);
 
 		if (ready == -1) {
 			g_warning("error with select(): %s", strerror(errno));
 		}
-		else if (ready) {
-			bytes = radio_read(radio_fd, buffer);
+		else if (ready >= 1) {
 
-			if (bytes < 0)  {
-				g_message("radio_read() returned: %d.", bytes);
-				continue;
-			}
+		  if (FD_ISSET(radio_fd, &reader)) {
+			  bytes = radio_read(radio_fd, buffer);
 
-			switch(process_data(buffer)) {
-				case NO_SCAN: 
-					g_message("NO_SCAN");
-					// nothing to do.
-					break;
+			  if (bytes < 0)  {
+				  g_message("radio_read() returned: %d.", bytes);
+				  continue;
+			  }
 
-				case WRONG_SEGMENT: 
-					g_message("WRONG_SEGMENT");
-					// nothing to do.
-					break;
+			  switch(process_data(buffer)) {
+			      case NO_SCAN: 
+					  g_message("NO_SCAN");
+					  // nothing to do.
+					  break;
 
-				case NEXT_SEGMENT:
-					g_message("NEXT_SEGMENT");
-					// nothing to do.
-					break;
+				  case WRONG_SEGMENT: 
+					  g_message("WRONG_SEGMENT");
+					  // nothing to do.
+					  break;
 
-				case SCAN_COMPLETE:
-					g_message("SCAN_COMPLETE");
-					// todo: write to file.	
-					//
-					break;
-			}
+				  case NEXT_SEGMENT:
+					  g_message("NEXT_SEGMENT");
+					  // nothing to do.
+					  break;
+
+			      case SCAN_COMPLETE:
+					  g_message("SCAN_COMPLETE");
+					  // todo: write to file.	
+					  //
+					  break;
+			  }
+		  } 
+		  if (FD_ISSET(hab_fd, &reader)) {
+			hab_read();
+		  }
 		}
 		else {
 			g_message("No data for the last %d seconds.", timeout);
