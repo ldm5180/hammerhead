@@ -34,25 +34,25 @@ enum {
   /** Size (in bits) of the field 'volt' */
   MMODGENMSG_VOLT_SIZEBITS = 16,
 
-  /* Field timestamp_id: type uint16_t, offset (bits) 32, size (bits) 16 */
-  /** Offset (in bytes) of the field 'timestamp_id' */
-  MMODGENMSG_TIMESTAMP_ID_OFFSET = 4,
-  /** Offset (in bits) of the field 'timestamp_id' */
-  MMODGENMSG_TIMESTAMP_ID_OFFSETBITS = 32,
-  /** Size (in bytes) of the field 'timestamp_id' */
-  MMODGENMSG_TIMESTAMP_ID_SIZE = 2,
-  /** Size (in bits) of the field 'timestamp_id' */
-  MMODGENMSG_TIMESTAMP_ID_SIZEBITS = 16,
+  /* Field temp: type uint16_t, offset (bits) 32, size (bits) 16 */
+  /** Offset (in bytes) of the field 'temp' */
+  MMODGENMSG_TEMP_OFFSET = 4,
+  /** Offset (in bits) of the field 'temp' */
+  MMODGENMSG_TEMP_OFFSETBITS = 32,
+  /** Size (in bytes) of the field 'temp' */
+  MMODGENMSG_TEMP_SIZE = 2,
+  /** Size (in bits) of the field 'temp' */
+  MMODGENMSG_TEMP_SIZEBITS = 16,
 
-  /* Field offset: type uint16_t, offset (bits) 48, size (bits) 16 */
-  /** Offset (in bytes) of the field 'offset' */
-  MMODGENMSG_OFFSET_OFFSET = 6,
-  /** Offset (in bits) of the field 'offset' */
-  MMODGENMSG_OFFSET_OFFSETBITS = 48,
-  /** Size (in bytes) of the field 'offset' */
-  MMODGENMSG_OFFSET_SIZE = 2,
-  /** Size (in bits) of the field 'offset' */
-  MMODGENMSG_OFFSET_SIZEBITS = 16,
+  /* Field photo: type uint16_t, offset (bits) 48, size (bits) 16 */
+  /** Offset (in bytes) of the field 'photo' */
+  MMODGENMSG_PHOTO_OFFSET = 6,
+  /** Offset (in bits) of the field 'photo' */
+  MMODGENMSG_PHOTO_OFFSETBITS = 48,
+  /** Size (in bytes) of the field 'photo' */
+  MMODGENMSG_PHOTO_SIZE = 2,
+  /** Size (in bits) of the field 'photo' */
+  MMODGENMSG_PHOTO_SIZEBITS = 16,
 
   /* Field accel_x: type uint16_t, offset (bits) 64, size (bits) 16 */
   /** Offset (in bytes) of the field 'accel_x' */
@@ -106,24 +106,24 @@ uint16_t MMODGENMSG_volt_get(tmsg_t *msg);
 void MMODGENMSG_volt_set(tmsg_t *msg, uint16_t value);
 
 /**
- * Return the value of the field 'timestamp_id'
+ * Return the value of the field 'temp'
  */
-uint16_t MMODGENMSG_timestamp_id_get(tmsg_t *msg);
+uint16_t MMODGENMSG_temp_get(tmsg_t *msg);
 
 /**
- * Set the value of the field 'timestamp_id'
+ * Set the value of the field 'temp'
  */
-void MMODGENMSG_timestamp_id_set(tmsg_t *msg, uint16_t value);
+void MMODGENMSG_temp_set(tmsg_t *msg, uint16_t value);
 
 /**
- * Return the value of the field 'offset'
+ * Return the value of the field 'photo'
  */
-uint16_t MMODGENMSG_offset_get(tmsg_t *msg);
+uint16_t MMODGENMSG_photo_get(tmsg_t *msg);
 
 /**
- * Set the value of the field 'offset'
+ * Set the value of the field 'photo'
  */
-void MMODGENMSG_offset_set(tmsg_t *msg, uint16_t value);
+void MMODGENMSG_photo_set(tmsg_t *msg, uint16_t value);
 
 /**
  * Return the value of the field 'accel_x'

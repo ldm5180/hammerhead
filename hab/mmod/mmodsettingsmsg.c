@@ -17,12 +17,12 @@ void MMODSETTINGSMSG_node_id_set(tmsg_t *msg, uint16_t value)
   tmsg_write_ube(msg, 0, 16, value);
 }
 
-uint16_t MMODSETTINGSMSG_timestamp_id_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_thres_light_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 16, 16);
 }
 
-void MMODSETTINGSMSG_timestamp_id_set(tmsg_t *msg, uint16_t value)
+void MMODSETTINGSMSG_thres_light_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 16, 16, value);
 }
@@ -37,22 +37,22 @@ void MMODSETTINGSMSG_thres_accel_set(tmsg_t *msg, uint16_t value)
   tmsg_write_ube(msg, 32, 16, value);
 }
 
-uint16_t MMODSETTINGSMSG_is_ts_update_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_thres_temp_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 48, 16);
 }
 
-void MMODSETTINGSMSG_is_ts_update_set(tmsg_t *msg, uint16_t value)
+void MMODSETTINGSMSG_thres_temp_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 48, 16, value);
 }
 
-uint16_t MMODSETTINGSMSG_unused2_get(tmsg_t *msg)
+uint16_t MMODSETTINGSMSG_thres_volt_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 64, 16);
 }
 
-void MMODSETTINGSMSG_unused2_set(tmsg_t *msg, uint16_t value)
+void MMODSETTINGSMSG_thres_volt_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 64, 16, value);
 }

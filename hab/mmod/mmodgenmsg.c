@@ -27,22 +27,22 @@ void MMODGENMSG_volt_set(tmsg_t *msg, uint16_t value)
   tmsg_write_ube(msg, 16, 16, value);
 }
 
-uint16_t MMODGENMSG_timestamp_id_get(tmsg_t *msg)
+uint16_t MMODGENMSG_temp_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 32, 16);
 }
 
-void MMODGENMSG_timestamp_id_set(tmsg_t *msg, uint16_t value)
+void MMODGENMSG_temp_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 32, 16, value);
 }
 
-uint16_t MMODGENMSG_offset_get(tmsg_t *msg)
+uint16_t MMODGENMSG_photo_get(tmsg_t *msg)
 {
   return tmsg_read_ube(msg, 48, 16);
 }
 
-void MMODGENMSG_offset_set(tmsg_t *msg, uint16_t value)
+void MMODGENMSG_photo_set(tmsg_t *msg, uint16_t value)
 {
   tmsg_write_ube(msg, 48, 16, value);
 }

@@ -19,7 +19,7 @@
 
 
 #include "mmod_msg.h"
-#include <Timer.h>
+
 
 configuration MmodNodeAppC {}
 
@@ -31,7 +31,6 @@ implementation
 
 #if defined(PLATFORM_MICAZ)
     components CC2420ActiveMessageC as Radio;
-    
 #elif defined(PLATFORM_IRIS)
     components ActiveMessageC as Radio;
 #else
@@ -44,14 +43,21 @@ implementation
     MmodNodeC.SettingsCheck -> SettingsTimer;
     MmodNodeC.Leds -> LedsC;
     MmodNodeC.RadioControl -> ActiveMessageC;
+    MmodNodeC.LowPowerListening -> Radio;
 
     components CC2420ControlC;
     MmodNodeC.CC2420Config -> CC2420ControlC;
 
     /* wire up the sensors */
-    components new AccelXStreamC(), 
-	new AccelYStreamC();
+    components new PhotoC(), 
+	new AccelXStreamC(), 
+	new AccelYStreamC(), 
+	new VoltageC(), 
+	new TempC();
 
+    MmodNodeC.Light -> PhotoC;
+    MmodNodeC.Voltage -> VoltageC;
+    MmodNodeC.Temperature -> TempC;
     MmodNodeC.ReadAccelXStream -> AccelXStreamC;
     MmodNodeC.ReadAccelYStream -> AccelYStreamC;
 
@@ -69,7 +75,4 @@ implementation
     MmodNodeC.GeneralRoot -> GeneralSender;
     MmodNodeC.SettingsRoot -> SettingsSender;
     MmodNodeC.CollectionControl -> CollectionC;
-
-    components LocalTimeMilliC;
-    MmodNodeC.LocalTimeMilli -> LocalTimeMilliC;
 } /* implementation */

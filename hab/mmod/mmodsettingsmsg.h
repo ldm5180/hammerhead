@@ -24,15 +24,15 @@ enum {
   /** Size (in bits) of the field 'node_id' */
   MMODSETTINGSMSG_NODE_ID_SIZEBITS = 16,
 
-  /* Field timestamp_id: type uint16_t, offset (bits) 16, size (bits) 16 */
-  /** Offset (in bytes) of the field 'timestamp_id' */
-  MMODSETTINGSMSG_TIMESTAMP_ID_OFFSET = 2,
-  /** Offset (in bits) of the field 'timestamp_id' */
-  MMODSETTINGSMSG_TIMESTAMP_ID_OFFSETBITS = 16,
-  /** Size (in bytes) of the field 'timestamp_id' */
-  MMODSETTINGSMSG_TIMESTAMP_ID_SIZE = 2,
-  /** Size (in bits) of the field 'timestamp_id' */
-  MMODSETTINGSMSG_TIMESTAMP_ID_SIZEBITS = 16,
+  /* Field thres_light: type uint16_t, offset (bits) 16, size (bits) 16 */
+  /** Offset (in bytes) of the field 'thres_light' */
+  MMODSETTINGSMSG_THRES_LIGHT_OFFSET = 2,
+  /** Offset (in bits) of the field 'thres_light' */
+  MMODSETTINGSMSG_THRES_LIGHT_OFFSETBITS = 16,
+  /** Size (in bytes) of the field 'thres_light' */
+  MMODSETTINGSMSG_THRES_LIGHT_SIZE = 2,
+  /** Size (in bits) of the field 'thres_light' */
+  MMODSETTINGSMSG_THRES_LIGHT_SIZEBITS = 16,
 
   /* Field thres_accel: type uint16_t, offset (bits) 32, size (bits) 16 */
   /** Offset (in bytes) of the field 'thres_accel' */
@@ -44,25 +44,25 @@ enum {
   /** Size (in bits) of the field 'thres_accel' */
   MMODSETTINGSMSG_THRES_ACCEL_SIZEBITS = 16,
 
-  /* Field is_ts_update: type uint16_t, offset (bits) 48, size (bits) 16 */
-  /** Offset (in bytes) of the field 'is_ts_update' */
-  MMODSETTINGSMSG_IS_TS_UPDATE_OFFSET = 6,
-  /** Offset (in bits) of the field 'is_ts_update' */
-  MMODSETTINGSMSG_IS_TS_UPDATE_OFFSETBITS = 48,
-  /** Size (in bytes) of the field 'is_ts_update' */
-  MMODSETTINGSMSG_IS_TS_UPDATE_SIZE = 2,
-  /** Size (in bits) of the field 'is_ts_update' */
-  MMODSETTINGSMSG_IS_TS_UPDATE_SIZEBITS = 16,
+  /* Field thres_temp: type uint16_t, offset (bits) 48, size (bits) 16 */
+  /** Offset (in bytes) of the field 'thres_temp' */
+  MMODSETTINGSMSG_THRES_TEMP_OFFSET = 6,
+  /** Offset (in bits) of the field 'thres_temp' */
+  MMODSETTINGSMSG_THRES_TEMP_OFFSETBITS = 48,
+  /** Size (in bytes) of the field 'thres_temp' */
+  MMODSETTINGSMSG_THRES_TEMP_SIZE = 2,
+  /** Size (in bits) of the field 'thres_temp' */
+  MMODSETTINGSMSG_THRES_TEMP_SIZEBITS = 16,
 
-  /* Field unused2: type uint16_t, offset (bits) 64, size (bits) 16 */
-  /** Offset (in bytes) of the field 'unused2' */
-  MMODSETTINGSMSG_UNUSED2_OFFSET = 8,
-  /** Offset (in bits) of the field 'unused2' */
-  MMODSETTINGSMSG_UNUSED2_OFFSETBITS = 64,
-  /** Size (in bytes) of the field 'unused2' */
-  MMODSETTINGSMSG_UNUSED2_SIZE = 2,
-  /** Size (in bits) of the field 'unused2' */
-  MMODSETTINGSMSG_UNUSED2_SIZEBITS = 16,
+  /* Field thres_volt: type uint16_t, offset (bits) 64, size (bits) 16 */
+  /** Offset (in bytes) of the field 'thres_volt' */
+  MMODSETTINGSMSG_THRES_VOLT_OFFSET = 8,
+  /** Offset (in bits) of the field 'thres_volt' */
+  MMODSETTINGSMSG_THRES_VOLT_OFFSETBITS = 64,
+  /** Size (in bytes) of the field 'thres_volt' */
+  MMODSETTINGSMSG_THRES_VOLT_SIZE = 2,
+  /** Size (in bits) of the field 'thres_volt' */
+  MMODSETTINGSMSG_THRES_VOLT_SIZEBITS = 16,
 
   /* Field sample_interval: type uint16_t, offset (bits) 80, size (bits) 16 */
   /** Offset (in bytes) of the field 'sample_interval' */
@@ -126,14 +126,14 @@ uint16_t MMODSETTINGSMSG_node_id_get(tmsg_t *msg);
 void MMODSETTINGSMSG_node_id_set(tmsg_t *msg, uint16_t value);
 
 /**
- * Return the value of the field 'timestamp_id'
+ * Return the value of the field 'thres_light'
  */
-uint16_t MMODSETTINGSMSG_timestamp_id_get(tmsg_t *msg);
+uint16_t MMODSETTINGSMSG_thres_light_get(tmsg_t *msg);
 
 /**
- * Set the value of the field 'timestamp_id'
+ * Set the value of the field 'thres_light'
  */
-void MMODSETTINGSMSG_timestamp_id_set(tmsg_t *msg, uint16_t value);
+void MMODSETTINGSMSG_thres_light_set(tmsg_t *msg, uint16_t value);
 
 /**
  * Return the value of the field 'thres_accel'
@@ -146,24 +146,24 @@ uint16_t MMODSETTINGSMSG_thres_accel_get(tmsg_t *msg);
 void MMODSETTINGSMSG_thres_accel_set(tmsg_t *msg, uint16_t value);
 
 /**
- * Return the value of the field 'is_ts_update'
+ * Return the value of the field 'thres_temp'
  */
-uint16_t MMODSETTINGSMSG_is_ts_update_get(tmsg_t *msg);
+uint16_t MMODSETTINGSMSG_thres_temp_get(tmsg_t *msg);
 
 /**
- * Set the value of the field 'is_ts_update'
+ * Set the value of the field 'thres_temp'
  */
-void MMODSETTINGSMSG_is_ts_update_set(tmsg_t *msg, uint16_t value);
+void MMODSETTINGSMSG_thres_temp_set(tmsg_t *msg, uint16_t value);
 
 /**
- * Return the value of the field 'unused2'
+ * Return the value of the field 'thres_volt'
  */
-uint16_t MMODSETTINGSMSG_unused2_get(tmsg_t *msg);
+uint16_t MMODSETTINGSMSG_thres_volt_get(tmsg_t *msg);
 
 /**
- * Set the value of the field 'unused2'
+ * Set the value of the field 'thres_volt'
  */
-void MMODSETTINGSMSG_unused2_set(tmsg_t *msg, uint16_t value);
+void MMODSETTINGSMSG_thres_volt_set(tmsg_t *msg, uint16_t value);
 
 /**
  * Return the value of the field 'sample_interval'

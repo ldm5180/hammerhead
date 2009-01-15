@@ -16,7 +16,6 @@
 
 extern serial_source gw_src;
 extern bionet_hab_t * mmod_hab;
-uint16_t current_tv_index;
 
 void cb_set_resource(bionet_resource_t *resource,
 		     bionet_value_t *value)
@@ -70,13 +69,13 @@ void cb_set_resource(bionet_resource_t *resource,
 	else
 	{
 	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
+	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
 		uiVal = 0;
 	    }
 	    else
 	    {
-		val = bionet_datapoint_get_value(dp);
 		bionet_value_get_uint16(val, &uiVal);
 	    }
 	}
@@ -98,13 +97,13 @@ void cb_set_resource(bionet_resource_t *resource,
 	else
 	{
 	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
+	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
 		uiVal = 0;
 	    }
 	    else
 	    {
-		val = bionet_datapoint_get_value(dp);
 		bionet_value_get_uint16(val, &uiVal);
 	    }
 	}
@@ -126,13 +125,13 @@ void cb_set_resource(bionet_resource_t *resource,
 	else
 	{
 	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
+	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
 		uiVal = 0;
 	    }
 	    else
 	    {
-		val = bionet_datapoint_get_value(dp);
 		bionet_value_get_uint16(val, &uiVal);
 	    }
 	}
@@ -157,13 +156,13 @@ void cb_set_resource(bionet_resource_t *resource,
 	else
 	{
 	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
+	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
 		uiVal = 0;
 	    }
 	    else
 	    {
-		val = bionet_datapoint_get_value(dp);
 		bionet_value_get_uint16(val, &uiVal);
 	    }
 	}
@@ -204,6 +203,7 @@ void cb_set_resource(bionet_resource_t *resource,
 	else
 	{
 	    dp = bionet_resource_get_datapoint_by_index(lr, 0);
+	    val = bionet_datapoint_get_value(dp);
 	    if (NULL == dp)
 	    {
 		uiVal = 0;
@@ -211,7 +211,6 @@ void cb_set_resource(bionet_resource_t *resource,
 	    else
 	    {
 		char * tmp_str;
-		val = bionet_datapoint_get_value(dp);
 		bionet_value_get_str(val, &tmp_str);
 		switch (tmp_str[0])
 		{
@@ -232,9 +231,6 @@ void cb_set_resource(bionet_resource_t *resource,
   	}
     }
     MMODSETTINGSMSG_accel_flags_set(&new_settings, uiVal);
-
-    MMODSETTINGSMSG_is_ts_update_set(&new_settings, 1);
-    MMODSETTINGSMSG_timestamp_id_set(&new_settings, current_tv_index);
 
     memcpy(&pkt[8], new_settings.data, new_settings.len);
     

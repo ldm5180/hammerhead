@@ -27,25 +27,22 @@
 #include "hardware-abstractor.h"
 #include "mmod_message.h"
 #include "mmodgenmsg.h"
+#include "mmodaccelmsg.h"
 #include "mmodsettingsmsg.h"
 #include "message.h"
 #include "bionet-hab.h"
 #include "mts310_cook.h"
 #include "serialsource.h"
 #include "message.h"
-#include "set-resource.h"
-
-static struct timeval timeval_table[256];
-uint16_t current_tv_index = 0;
 
 extern bionet_hab_t * mmod_hab;
 
-static uint16_t accel_thres = 0;
 
 extern uint16_t heartbeat_time;
 static uint16_t flags = ACCEL_FLAG_X;
 
 static uint16_t last = 0;
+static uint16_t missed = 0;
 
 int msg_gen_process(uint8_t *msg, ssize_t len)
 {
@@ -53,10 +50,17 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     bionet_node_t *node;
     char node_id[8];
     struct timeval tv;
+    uint32_t mv;
     bionet_resource_t * resource;
-    struct timeval tv_accel;
-    uint16_t offset;
-    uint16_t tv_index;
+
+#if DEBUG
+    printf("    Message node: %04u\n", MMODGENMSG_node_id_get(&t)); 
+    printf("    Voltage:      %04u\n", MMODGENMSG_volt_get(&t));
+    printf("    Temperature:  %04u\n", MMODGENMSG_temp_get(&t));
+    printf("    Photo:        %04u\n", MMODGENMSG_photo_get(&t));
+    printf("    Accel X:      %04u\n", MMODGENMSG_accel_x_get(&t));
+    printf("    Accel Y:      %04u\n", MMODGENMSG_accel_y_get(&t));
+#endif /* DEBUG */
 
     snprintf(&node_id[0], 8, "%04u", MMODGENMSG_node_id_get(&t));
     node = bionet_hab_get_node_by_id(mmod_hab, &node_id[0]);
@@ -69,119 +73,11 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     /* if this node doesn't exist yet, create it */
     if (NULL == node)
     {
-	return 0;
-    }
 
-    resource = bionet_node_get_resource_by_id(node, "Timestamp");
-    if (NULL == resource)
-    {
-	fprintf(stderr, "Failed to get resource: Timestamp\n");
-    }
-    else
-    {
-	uint32_t secs;
-	tv_index = MMODGENMSG_timestamp_id_get(&t);
-	tv_accel = timeval_table[tv_index];
-	offset = MMODGENMSG_offset_get(&t);
-
-	secs = offset / 1000;
-	tv_accel.tv_sec += secs;
-	tv_accel.tv_usec += ((uint32_t)offset - (secs * 1000)) * 1000;
-	//handle rollover
-	if (tv_accel.tv_usec < timeval_table[tv_index].tv_usec)
-	{
-	    tv_accel.tv_sec++;
-	}
-	if (tv_accel.tv_usec >= 1000000)
-	{
-	    tv_accel.tv_usec -= 1000000;
-	    tv_accel.tv_sec++;
-	}
-    }
-
-    resource = bionet_node_get_resource_by_id(node, "Accel-X");
-    if (NULL == resource)
-    {
-	fprintf(stderr, "Failed to get resource: Accel-X\n");
-    }
-    else
-    {
-	bionet_resource_set_float(resource, 
-				  mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
-						    X_AXIS,
-						    MMODGENMSG_accel_x_get(&t)),
-				  &tv_accel);
-    }
-    
-    resource = bionet_node_get_resource_by_id(node, "RawAccel-X");
-    if (NULL == resource)
-    {
-	fprintf(stderr, "Failed to get resource: RawAccel-X\n");
-    }
-    else
-    {
-	bionet_resource_set_uint16(resource, MMODGENMSG_accel_x_get(&t), &tv_accel);
-    }
-
-    resource = bionet_node_get_resource_by_id(node, "Accel-Y");
-    if (NULL == resource)
-    {
-	fprintf(stderr, "Failed to get resource: Accel-Y\n");
-    }
-    else
-    {
-	bionet_resource_set_float(resource,
-				  mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
-						    Y_AXIS,
-						    MMODGENMSG_accel_y_get(&t)),
-				  &tv_accel);
-    }
-    
-    resource = bionet_node_get_resource_by_id(node, "RawAccel-Y");
-    if (NULL == resource)
-    {
-	fprintf(stderr, "Failed to get resource: RawAccel-Y\n");
-    }
-    else
-    {
-	bionet_resource_set_uint16(resource, MMODGENMSG_accel_y_get(&t), &tv_accel);
-    }
-
-    
-#if DEBUG						
-    fprintf(stderr, "Reporting general update...\n");
-#endif						
-    hab_report_datapoints(node);
-
-    return 0;
-} /* msg_gen_process() */
-
-
-int msg_settings_process(uint8_t *msg, ssize_t len)
-{
-    char node_id[8];
-    tmsg_t t = { msg, (size_t)len };
-    bionet_node_t *node;
-    bionet_resource_t *resource;
-    struct timeval tv;
-
-    if (NULL == mmod_hab)
-    {
-	return 0;
-    }
-
-    snprintf(&node_id[0], 8, "%04u", MMODSETTINGSMSG_node_id_get(&t));
-    node = bionet_hab_get_node_by_id(mmod_hab, &node_id[0]);
-
-    if (0 > gettimeofday(&tv, NULL))
-    {
-	g_warning("error with gettimeofday: %s", strerror(errno));
-    }
-
-    /* if this node doesn't exist yet, forget it */
-    if (NULL == node)
-    {
 	last = MMODGENMSG_accel_y_get(&t);
+#if DEBUG
+	fprintf(stderr, "Creating new node %s\n", &node_id[0]);
+#endif
 	node = bionet_node_new(mmod_hab, &node_id[0]);
 	if (NULL == node)
 	{
@@ -190,6 +86,132 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	}
 	bionet_hab_add_node(mmod_hab, node);
 
+	/* create voltage resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT32,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "Voltage");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: Voltage\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: Voltage\n");
+	    }
+	    mv = mts310_cook_voltage(MMODGENMSG_volt_get(&t));
+	    if (bionet_resource_set_uint32(resource, mv, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+        /* create raw voltage resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "RawVoltage");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: RawVoltage\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: RawVoltage\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, MMODGENMSG_volt_get(&t), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+	/* create temperature resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_FLOAT,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "Temperature");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: Temperature\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: Temperature\n");
+	    }
+	    if (bionet_resource_set_float(resource, mts310_cook_temperature(MMODGENMSG_temp_get(&t)), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+
+	/* create raw temperature resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "RawTemperature");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: RawTemperature\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: RawTemperature\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, MMODGENMSG_temp_get(&t), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+	/* create photo resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "Photo");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: Photo\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: Photo\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, mts310_cook_light(mv, MMODGENMSG_photo_get(&t)), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
+	/* create raw photo resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "RawPhoto");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: RawPhoto\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: RawPhoto\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, MMODGENMSG_photo_get(&t), &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
 
 	/* create accel-x resource */
 	resource = bionet_resource_new(node, 
@@ -275,28 +297,6 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	    }
 	}
 
-	/* create Acceleration Threshold resource */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT16,
-				       BIONET_RESOURCE_FLAVOR_PARAMETER, 
-				       "AccelThres");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get new resource: SampleInterval\n");
-	}
-	else
-	{
-	    if (bionet_node_add_resource(node, resource))
-	    {
-		fprintf(stderr, "Failed to add resource: SampleInterval\n");
-	    }
-	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_thres_accel_get(&t), &tv))
-	    {
-		fprintf(stderr, "Failed to set resource\n"); 
-	    }
-	    accel_thres = MMODSETTINGSMSG_thres_accel_get(&t);
-	}
-
 	/* create Sample Interval resource */
 	resource = bionet_resource_new(node, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
@@ -312,7 +312,7 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: SampleInterval\n");
 	    }
-	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_sample_interval_get(&t), &tv))
+	    if (bionet_resource_set_uint16(resource, 0, &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 
 	    }
@@ -333,7 +333,7 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: NumAccelSamples\n");
 	    }
-	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_num_accel_samples_get(&t), &tv))
+	    if (bionet_resource_set_uint16(resource, 0, &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 
 	    }
@@ -356,7 +356,7 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 		fprintf(stderr, 
 			"Failed to add resource: AccelSampleInterval\n");
 	    }
-	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_accel_sample_interval_get(&t), &tv))
+	    if (bionet_resource_set_uint16(resource, 0, &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 
 	    }
@@ -377,13 +377,9 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: HeartbeatTime\n");
 	    }
-	    if (bionet_resource_set_uint16(resource, MMODSETTINGSMSG_heartbeat_time_get(&t), &tv))
+	    if (bionet_resource_set_uint16(resource, 0, &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 
-	    }
-	    if (MMODSETTINGSMSG_heartbeat_time_get(&t) < heartbeat_time)
-	    {
-		heartbeat_time = (uint32_t)MMODSETTINGSMSG_heartbeat_time_get(&t);
 	    }
 	}
 
@@ -402,43 +398,52 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: AccelAxis\n");
 	    }
-	    flags = MMODSETTINGSMSG_accel_flags_get(&t);
-	    if (flags & ACCEL_FLAG_X)
+	    if (bionet_resource_set_str(resource, strdup("X-Axis"), &tv))
 	    {
-		if (flags & ACCEL_FLAG_Y)
-		{
-		    bionet_resource_set_str(resource, strdup("both"), &tv);
-		}
-		else
-		{
-		    bionet_resource_set_str(resource, strdup("X-Axis"), &tv);
-		}
-	    }
-	    else if (flags & ACCEL_FLAG_Y)
-	    {
-		bionet_resource_set_str(resource, strdup("Y-Axis"), &tv);
-	    }
-	    else
-	    {
-		bionet_resource_set_str(resource, strdup("None"), &tv);
+		fprintf(stderr, "Failed to set resource\n"); 
 	    }
 	}
 
-	resource = bionet_resource_new(node,
+	/* create counter resource */
+	resource = bionet_resource_new(node, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
-				       BIONET_RESOURCE_FLAVOR_PARAMETER,
-				       "Timestamp");
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "MsgCounter");
 	if (NULL == resource)
 	{
-	    fprintf(stderr, "Failed to get new resource: Timestamp\n");
+	    fprintf(stderr, "Failed to get new resource: MsgCounter\n");
 	}
 	else
 	{
 	    if (bionet_node_add_resource(node, resource))
 	    {
-		fprintf(stderr, "Failed to add resource: Timestamp\n");
+		fprintf(stderr, "Failed to add resource: MsgCounter\n");
 	    }
-	    bionet_resource_set_uint16(resource, 0, &tv);
+	    if (bionet_resource_set_uint16(resource, last, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource: MsgCounter\n"); 
+	    }
+	}
+
+	/* create counter resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT16,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "MissedMsgs");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: MissedMsgs\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: MissedMsgs\n");
+	    }
+	    if (bionet_resource_set_uint16(resource, 0, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource: MissedMsgs\n"); 
+	    }
 	}
 
 	/* add node for real */
@@ -446,6 +451,249 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	{
 	    g_error("Error reporting new node %s to hab", &node_id[0]);
 	}
+    }
+    else
+    {
+	if (ACCEL_FLAG_X & flags)
+	{
+	    if (MMODGENMSG_accel_x_get(&t) >= 20)
+	    {
+		struct timeval tmp_tv = tv;
+		bionet_value_t * value;
+		float content;
+		tmp_tv.tv_sec--;
+		resource = bionet_node_get_resource_by_id(node, "Accel-X");
+		value = bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0));
+		bionet_value_get_float(value, &content);
+		bionet_resource_set_float(resource, 
+					  mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
+							    X_AXIS,
+							    content),
+					  &tmp_tv);
+	    }
+	 
+	    if (MMODGENMSG_accel_x_get(&t) >= 20)
+	    {
+		struct timeval tmp_tv = tv;
+		bionet_value_t * value;
+		uint16_t content;
+		tmp_tv.tv_sec--;
+		resource = bionet_node_get_resource_by_id(node, "RawAccel-X");
+		value = bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0));
+		bionet_value_get_uint16(value, &content);
+		bionet_resource_set_uint16(resource, content, &tmp_tv);
+	    }
+
+	    hab_report_datapoints(node);
+	}
+	/* the node already exists, so just update the resource values */
+	resource = bionet_node_get_resource_by_id(node, "Voltage");
+	mv = mts310_cook_voltage(MMODGENMSG_volt_get(&t));
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get resource: Voltage\n");
+	}
+	else
+	{
+	    bionet_resource_set_uint32(resource, mv, &tv);
+	}
+
+	resource = bionet_node_get_resource_by_id(node, "RawVoltage");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get resource: RawVoltage\n");
+	}
+	else
+	{
+	    bionet_resource_set_uint16(resource, MMODGENMSG_volt_get(&t), &tv);
+	}
+
+	resource = bionet_node_get_resource_by_id(node, "Temperature");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get resource: Temperature\n");
+	}
+	else
+	{
+	    bionet_resource_set_float(resource, mts310_cook_temperature(MMODGENMSG_temp_get(&t)), &tv);
+	}
+
+	resource = bionet_node_get_resource_by_id(node, "RawTemperature");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get resource: RawTemperature\n");
+	}
+	else
+	{
+	    bionet_resource_set_uint16(resource, MMODGENMSG_temp_get(&t), &tv);
+	}
+
+	resource = bionet_node_get_resource_by_id(node, "Photo");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get resource: Photo\n");
+	}
+	else
+	{
+	    bionet_resource_set_uint16(resource, mts310_cook_light(mv, MMODGENMSG_photo_get(&t)), &tv);
+	}
+
+	resource = bionet_node_get_resource_by_id(node, "RawPhoto");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get resource: RawPhoto\n");
+	}
+	else
+	{
+	    bionet_resource_set_uint16(resource, MMODGENMSG_photo_get(&t), &tv);
+	}
+
+	if (0 == (ACCEL_FLAG_X & flags))
+	{
+	    /* using accel-x as a counter */
+	    resource = bionet_node_get_resource_by_id(node, "MsgCounter");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: MsgCounter\n");
+	    }
+	    else
+	    {
+		/* set the latest msg count */
+		bionet_resource_set_uint16(resource, MMODGENMSG_accel_x_get(&t), &tv);
+
+		if ((last != 0) && (MMODGENMSG_accel_x_get(&t) > 1) 
+		    && (last + 1 != MMODGENMSG_accel_x_get(&t)))
+		{
+		    missed = last - MMODGENMSG_accel_x_get(&t);
+		}
+		last = MMODGENMSG_accel_x_get(&t);
+	    }
+	}
+	else
+	{
+	    resource = bionet_node_get_resource_by_id(node, "Accel-X");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: Accel-X\n");
+	    }
+	    else
+	    {
+		bionet_resource_set_float(resource, 
+					  mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
+							    X_AXIS,
+							    MMODGENMSG_accel_x_get(&t)),
+					  &tv);
+	    }
+	
+	    resource = bionet_node_get_resource_by_id(node, "RawAccel-X");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: RawAccel-X\n");
+	    }
+	    else
+	    {
+		bionet_resource_set_uint16(resource, MMODGENMSG_accel_x_get(&t), &tv);
+	    }
+	}
+
+	if ((ACCEL_FLAG_X & flags) && (0 == (ACCEL_FLAG_Y & flags)))
+	{
+	    /* using accel-y as a counter */
+	    resource = bionet_node_get_resource_by_id(node, "MsgCounter");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: MsgCounter\n");
+	    }
+	    else
+	    {
+		/* set the latest msg count */
+		bionet_resource_set_uint16(resource, MMODGENMSG_accel_y_get(&t), &tv);
+
+		if ((last != 0) && (MMODGENMSG_accel_y_get(&t) > 1) 
+		    && (last + 1 != MMODGENMSG_accel_y_get(&t)))
+		{
+		    missed = last - MMODGENMSG_accel_y_get(&t);
+		}
+		last = MMODGENMSG_accel_y_get(&t);
+	    }
+	}
+	else
+	{
+	    resource = bionet_node_get_resource_by_id(node, "Accel-Y");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: Accel-Y\n");
+	    }
+	    else
+	    {
+		bionet_resource_set_float(resource,
+					  mts310_cook_accel(MMODGENMSG_node_id_get(&t), 
+							    Y_AXIS,
+							    MMODGENMSG_accel_y_get(&t)),
+					  &tv);
+	    }
+	    
+	    resource = bionet_node_get_resource_by_id(node, "RawAccel-Y");
+	    if (NULL == resource)
+	    {
+		fprintf(stderr, "Failed to get resource: RawAccel-Y\n");
+	    }
+	    else
+	    {
+		bionet_resource_set_uint16(resource, MMODGENMSG_accel_y_get(&t), &tv);
+	    }
+	}
+
+	resource = bionet_node_get_resource_by_id(node,
+						  "MissedMsgs");
+	if (NULL != resource)
+	{
+	    bionet_resource_set_uint16(resource, missed, &tv);
+	}
+
+#if DEBUG
+	fprintf(stderr, "Reporting general update...\n");
+#endif
+	hab_report_datapoints(node);
+    }
+
+    return 0;
+} /* msg_gen_process() */
+
+
+int msg_settings_process(uint8_t *msg, ssize_t len)
+{
+    char node_id[8];
+    tmsg_t t = { msg, (size_t)len };
+    bionet_node_t *node;
+    bionet_resource_t *resource;
+    struct timeval tv;
+
+    if (NULL == mmod_hab)
+    {
+	return 0;
+    }
+
+    snprintf(&node_id[0], 8, "%04u", MMODSETTINGSMSG_node_id_get(&t));
+    node = bionet_hab_get_node_by_id(mmod_hab, &node_id[0]);
+
+    if (0 > gettimeofday(&tv, NULL))
+    {
+	g_warning("error with gettimeofday: %s", strerror(errno));
+    }
+
+    /* if this node doesn't exist yet, forget it */
+    if (NULL == node)
+    {
+	return 0;
+    }
+
+    /* see if the settings resources have already been added to the node */
+    resource = bionet_node_get_resource_by_id(node, "SampleInterval");
+    if (NULL == resource)
+    {
+	/* resource doesn't exist yet, so ignore it */
+	return 0;
     }
     else
     {
@@ -516,34 +764,9 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	{
 	    bionet_resource_set_str(resource, strdup("None"), &tv);
 	}
-
-	resource = bionet_node_get_resource_by_id(node, "Timestamp");
-	if (NULL == resource)
-	{
-	    fprintf(stderr, "Failed to get resource: Timestamp\n");
-	}
-	else
-	{
-	    bionet_resource_set_uint16(resource, MMODSETTINGSMSG_timestamp_id_get(&t), &tv);
-	}
     }
 
     hab_report_datapoints(node);
-
-    resource = bionet_node_get_resource_by_id(node, "Timestamp");
-    current_tv_index++;
-    if (0 > gettimeofday(&timeval_table[current_tv_index & 0xFF], NULL))
-    {
-	g_warning("error with gettimeofday: %s", strerror(errno));
-    }
-    else if (0 == MMODSETTINGSMSG_is_ts_update_get(&t))
-    {
-	bionet_value_t * tsv = bionet_value_new_uint16(resource, 
-						       current_tv_index);
-	cb_set_resource(resource, tsv);
-	bionet_value_free(tsv);
-    }
-
     return 0;
 } /* msg_settings_process() */
 
