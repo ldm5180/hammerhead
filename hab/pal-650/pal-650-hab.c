@@ -144,7 +144,6 @@ int main(int argc, char *argv[]) {
             int r;
 
             r = pal_read(pal_fd);
-
             if (r < 0) {
                 close(pal_fd);
                 pal_fd = -1;
