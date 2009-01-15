@@ -34,12 +34,6 @@ extern struct sockaddr_in uwb_address;
 int radio_connect(const char *radio_ip, const int radio_port);
 int radio_read(int fd, char* buffer);
 
-int process_data(char *buffer);
-
-// If the TD-P210 had any actuators we wanted to expose, this callback would
-// let us know when something wanted to change them.
-void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value);
-
 void make_shutdowns_clean(void);
 
 #endif 

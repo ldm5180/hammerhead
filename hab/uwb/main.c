@@ -77,8 +77,6 @@ int main(int argc, char *argv[]) {
 	  exit(1);
 	}
 
-	hab_register_callback_set_resource(cb_set_resource);
-
 	make_shutdowns_clean();
 
 	buffer = calloc(BUFFER_SZ, sizeof(unsigned int));
@@ -132,29 +130,6 @@ int main(int argc, char *argv[]) {
 			  if (bytes < 0)  {
 				  g_message("radio_read() returned: %d.", bytes);
 				  continue;
-			  }
-
-			  switch(process_data(buffer)) {
-			      case NO_SCAN: 
-					  g_message("NO_SCAN");
-					  // nothing to do.
-					  break;
-
-				  case WRONG_SEGMENT: 
-					  g_message("WRONG_SEGMENT");
-					  // nothing to do.
-					  break;
-
-				  case NEXT_SEGMENT:
-					  g_message("NEXT_SEGMENT");
-					  // nothing to do.
-					  break;
-
-			      case SCAN_COMPLETE:
-					  g_message("SCAN_COMPLETE");
-					  // todo: write to file.	
-					  //
-					  break;
 			  }
 		  } 
 		  if (FD_ISSET(hab_fd, &reader)) {
