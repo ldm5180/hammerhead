@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	uwb_hab = bionet_hab_new("TD-P210", NULL);
+	uwb_hab = bionet_hab_new("UWB", NULL);
 	hab_fd = hab_connect(uwb_hab);	
 	if (hab_fd == -1) {
 	  g_error("Cannot connect to bionet, quitting.");
@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 
-			g_message("Connected to the TD-P210.");
+			g_message("Connected to the UWB processor.");
 			g_message("UWB IP address: %s", ip);
 			g_message("UWB port: %d", port);
 			g_message("Timeout: %d", timeout);
