@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -13,7 +14,7 @@
 #include "pal-650-hab.h"
 
 
-#if 1
+#if 0
 static void hexdump(char *buffer, int size) {
     char hex[60];
     char ascii[20];
@@ -52,116 +53,121 @@ static void hexdump(char *buffer, int size) {
 }
 #endif
 
-static void parse_line(const char *line) {
-    int r1, r2, r3;
+static void parse_line(char *line) {
     char tag_id[16];
-    char x_coord[16];
-    char y_coord[16];
-    char z_coord[16];
+    float x_coord;
+    float y_coord;
+    float z_coord;
 
-	bionet_node_t *node = 0;
+    int i = 0;
+    char delims[] = ",";
+    char *result = NULL;
+
+    bionet_node_t *node = 0;
+
 
     printf(" Parsing line: %s\n", line);
 
-	int i = 0;
-	char delims[] = ",";
-	char *result = NULL;
+    memset(tag_id, '\0', sizeof(tag_id));
 
-	memset(tag_id, '\0', sizeof(tag_id));
-	memset(x_coord, '\0', sizeof(x_coord));
-	memset(y_coord, '\0', sizeof(y_coord));
-	memset(z_coord, '\0', sizeof(z_coord));
+    result = strtok(line, delims);
 
-	result = strtok(line, delims);
+    while (result != NULL) {
+        printf("(%d) result = \"%s\"\n", i, result);
 
-	while (result != NULL) {
-		printf("(%d) result = \"%s\"\n", i, result);
+        if (strcmp(result, "P") == 0) {
+            printf("Got a Presence indicator.\n");
+        }
 
-		if (strcmp(result, "P") == 0) {
-			printf("Got a Presence indicator.\n");
-		}
+        switch(i) {
+            case 1: 
+                memcpy(tag_id, result, strlen(result));
+                //printf("tag: %s\n", tag_id);
+                break;
 
-		switch(i) {
-			case 1: 
-				memcpy(tag_id, result, strlen(result));
-				//printf("tag: %s\n", tag_id);
+            case 2:
+                x_coord = strtod(result, NULL);
+                //printf("x_coord: %s\n", x_coord);
+                break;
 
-				break;
+            case 3:
+                y_coord = strtod(result, NULL);
+                //printf("y_coord: %s, len: %d\n", y_coord, strlen(result));
+                break;
 
-			case 2:
-				memcpy(x_coord, result, strlen(result));
-				//printf("x_coord: %s\n", x_coord);
+            case 4:
+                z_coord = strtod(result, NULL);
+                //printf("z_coord: %s, len: %d\n", z_coord, strlen(result));
+                break;
+        }
 
-				break;
-
-			case 3:
-				memcpy(y_coord, result, strlen(result)); 
-				//printf("y_coord: %s, len: %d\n", y_coord, strlen(result));
-
-				break;
-
-			case 4:
-				memcpy(z_coord, result, strlen(result));
-				//printf("z_coord: %s, len: %d\n", z_coord, strlen(result));
-
-				break;
-		}
-
-		result = strtok(NULL, delims);
-		i++;
-	}
+        result = strtok(NULL, delims);
+        i++;
+    }
 
     node = g_hash_table_lookup(nodes, tag_id);
-	printf("pnt 1\n");
-
     if (node != NULL) {
+        node_data_t *node_data = bionet_node_get_user_data(node);
         // aw, old node, we already knew about this one
         // refresh its last-seen time so we dont remove it just yet
-        time(node->user_data);
+        node_data->time = time(NULL);
     }
-	
-   	printf("New Node '%s'\n", tag_id);
 
-   	node = bionet_node_new(NULL, NULL, tag_id);
+    printf("New Node '%s'\n", tag_id);
+
+    node = bionet_node_new(hab, tag_id);
 
     if (node == NULL) {
         g_warning("Error creating a new node '%s'", tag_id);
-
         return;
     }
 
-    //r1 = bionet_node_add_resource_with_valueptr_timevalptr(node, "float", 
-	//	"Parameter", "Tag-X", &tag_x, NULL);
-    r1 = bionet_node_add_resource_with_valuestr_timestr(node, "Float", 
-		"Parameter", "X", x_coord, NULL);
-    r2 = bionet_node_add_resource_with_valuestr_timestr(node, "Float", 
-		"Parameter", "Y", y_coord, NULL);
-	r3 = bionet_node_add_resource_with_valuestr_timestr(node, "Float", 
-		"Parameter", "Z", z_coord, NULL);
 
-    if ((r1 < 0) || (r2 < 0) || (r3 < 0)) {
-        g_warning("Error adding data to node '%s', dropping node", tag_id);
-        bionet_node_free(node);
+    {
+        int i;
+        char *resource_id[] = { "X", "Y", "Z" };
+        float value[] = { x_coord, y_coord, z_coord };
 
-        return;
+        for (i = 0; i < 3; i ++) {
+            bionet_resource_t *resource;
+
+            resource = bionet_resource_new(
+                node,
+                BIONET_RESOURCE_DATA_TYPE_FLOAT,
+                BIONET_RESOURCE_FLAVOR_SENSOR,
+                resource_id[i]
+            );
+            if (resource == NULL) {
+                g_warning("error making Resource %s:%s", bionet_node_get_id(node), resource_id[i]);
+                bionet_node_free(node);
+                return;
+            }
+
+            bionet_resource_set_float(resource, value[i], NULL);
+
+            bionet_node_add_resource(node, resource);
+        }
     }
 
-    node->user_data = malloc(sizeof(time_t));
 
-    if (node->user_data == NULL) {
-        g_warning("Error adding user_data to node '%s', dropping node", tag_id);
-        bionet_node_free(node);
+    {
+        node_data_t *node_data = (node_data_t*)calloc(1, sizeof(node_data_t));
+        if (node_data == NULL) {
+            g_warning("out of memory");
+            bionet_node_free(node);
+        }
 
-        return;
+        node_data->time = time(NULL);
+
+        bionet_node_set_user_data(node, node_data);
     }
 
-    time(node->user_data);
 
     hab_report_new_node(node);
 
     g_hash_table_insert(nodes, strdup(tag_id), node);
     
-	printf("All looks good with '%s'\n", tag_id);
+    printf("All looks good with '%s'\n", tag_id);
 }
 
 int pal_read(int pal_fd) {
@@ -216,7 +222,7 @@ int pal_read(int pal_fd) {
 		 */
     	//printf("Got at least one complete line.\n");
 
-        *p = (char)NULL;
+        *p = '\0';
 
         parse_line(buffer);
 

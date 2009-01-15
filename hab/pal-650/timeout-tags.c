@@ -7,9 +7,9 @@
 static gboolean node_too_old(gpointer key, gpointer value, gpointer user_data) {
     time_t now = *(time_t *)user_data;
     bionet_node_t *node = (bionet_node_t *)value;
-    time_t node_time = *(time_t *)node->user_data;
+    node_data_t *node_data = bionet_node_get_user_data(node);
 
-    if ((now - node_time) > tag_timeout) { 
+    if ((now - node_data->time) > tag_timeout) { 
 		return TRUE; 
 	}
 
