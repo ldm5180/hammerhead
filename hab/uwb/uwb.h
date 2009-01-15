@@ -23,7 +23,6 @@ extern short signed int complete_scan[];
 extern long current_range_count;
 extern long scan_points;
 
-extern char *ip;
 extern bionet_hab_t *uwb_hab;
 
 extern int port;
@@ -31,7 +30,7 @@ extern int timeout;
 
 extern struct sockaddr_in uwb_address;
 
-int uwb_connect(const char *uwb_ip, const int uwb_port);
+int uwb_connect(const int uwb_port);
 int uwb_read(int fd, char* buffer);
 
 #endif 

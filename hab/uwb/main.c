@@ -23,7 +23,6 @@ bionet_hab_t *uwb_hab;
 struct sockaddr_in uwb_address;
 
 static GOptionEntry entries[] = {
-	{"ip", 'a', 0, G_OPTION_ARG_STRING, &ip, "IP address of UWB", NULL},
 	{"port", 'p', 0, G_OPTION_ARG_INT, &port, "UWB port", NULL}, 
 	{"timeout", 't', 0, G_OPTION_ARG_INT, &timeout, 
 		"Seconds of absense before reporting no data.", NULL}, 
@@ -60,11 +59,6 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	if (ip == NULL) {
-		g_warning("UWB IP not specified.");
-		exit(1);
-	}
-
 	if (port == 0) {
 		g_warning("UWB port not secified.");
 		exit(1);
@@ -94,7 +88,7 @@ int main(int argc, char *argv[]) {
 
 		// Likewise, make sure we're connected to UWB.exe.
 		if (uwb_fd < 0) {
-			uwb_fd = uwb_connect(ip, port);
+			uwb_fd = uwb_connect(port);
 
 			if (uwb_fd < 0) {
 				g_warning("Connection failed.");
@@ -102,7 +96,6 @@ int main(int argc, char *argv[]) {
 			}
 
 			g_message("Connected to the UWB processor.");
-			g_message("UWB IP address: %s", ip);
 			g_message("UWB port: %d", port);
 			g_message("Timeout: %d", timeout);
 		}
