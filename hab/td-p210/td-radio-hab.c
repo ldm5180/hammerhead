@@ -18,6 +18,8 @@
 
 #include "td-radio.h"
 
+bionet_hab_t *tdp210_hab;
+
 static GOptionEntry entries[] = {
 	{"ip", 'a', 0, G_OPTION_ARG_STRING, &ip, "IP address of radio", NULL},
 	{"port", 'p', 0, G_OPTION_ARG_INT, &port, "Radio data port", NULL}, 
