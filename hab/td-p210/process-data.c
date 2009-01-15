@@ -112,9 +112,9 @@ int process_data(char *buffer)
 }
 
 int do_output() {
-	double *data_out;
+  //double *data_out;
 
-	mxArray *plhs;
+	//mxArray *plhs;
 
 	//plhs[0] (double *)mxMalloc(1 * numberOfScanPoints, mxReal);
 
