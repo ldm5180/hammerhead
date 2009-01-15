@@ -6,11 +6,9 @@ bin_PROGRAMS = uwb-hab
 uwb_hab_SOURCES =               \
     main.c                          \
     global.c                        \
-    process-data.c                  \
     uwb-connect.c                   \
     uwb-read.c                      \
     make-shutdowns-clean.c          \
-    cb-set-resource.c
 
 
 uwb_hab_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libhab -I../../util
