@@ -29,10 +29,10 @@
 #define CHECK_X_ACCEL 0x01
 #define CHECK_Y_ACCEL 0x02
 
-#define DEFAULT_ACCEL_THRESHOLD       10
+#define DEFAULT_ACCEL_THRESHOLD       5
 #define DEFAULT_ACCEL_SAMPLES         4
 #define DEFAULT_INTERVAL              5 /* milliseconds (ms) */
-#define DEFAULT_ACCEL_STREAM_INTERVAL 200 /* microseconds (us) */
+#define DEFAULT_ACCEL_STREAM_INTERVAL 500 /* microseconds (us) */
 #define MAX_ACCEL_SAMPLES 16
 
 module MmodNodeC
@@ -239,7 +239,7 @@ implementation
 
     event void Boot.booted()
     {
-	call CC2420Config.setChannel(11);	
+	call CC2420Config.setChannel(20);	
 	call CC2420Config.sync();
     } /* Boot.booted() */
 

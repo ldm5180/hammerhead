@@ -37,7 +37,7 @@ module MmodGatewayC
 	interface AMSend as GeneralForward;
 	interface Receive as SettingsNodeReceive;
 	interface AMSend as SettingsNodeForward;
-
+	interface LowPowerListening;
 	interface Leds;
 
 	interface CC2420Config;
@@ -90,7 +90,7 @@ implementation
     event void Boot.booted()
     {
 	call SerialControl.start();
-	call CC2420Config.setChannel(11);	
+	call CC2420Config.setChannel(20);	
 	call CC2420Config.sync();
     } /* Boot.booted() */
 
@@ -106,6 +106,7 @@ implementation
     {
 	if (SUCCESS == error)
 	{
+	    call LowPowerListening.setLocalDutyCycle(200); //really?
 	    call DisseminationControl.start();
 	    call CollectionControl.start();
 	    call RootControl.setRoot();
