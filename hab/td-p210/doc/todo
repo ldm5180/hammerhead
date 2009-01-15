@@ -1,0 +1,15 @@
+
+
+
+output is correct numbers as they increment.
+
+
+
+memcpy is failing because numScanPointsSegment is waaaya to big!!!!
+
+so, why is it getting that number????
+
+
+
+
+
