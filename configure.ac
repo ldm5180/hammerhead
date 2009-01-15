@@ -206,6 +206,7 @@ AC_CONFIG_FILES([Makefile
                  hab/parsec/Makefile
                  hab/syshealth/Makefile
                  hab/speedway/Makefile
+                 hab/pal-650/Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
