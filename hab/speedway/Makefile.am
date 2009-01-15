@@ -4,15 +4,23 @@ bin_PROGRAMS = speedway
 
 speedway_SOURCES =         \
     main.c                 \
-    poll-for-report.c      \
+    usage.c                \
+    make-reader-node.c     \
+    read-from-bionet.c     \
+    get-reader-config.c    \
+    poll-reader.c          \
     handle-tag-report-data.c  \
     connect.c              \
     configure.c            \
+    configure-reader.c     \
+    set-gpo.c              \
+    read-gpis.c            \
     global.c               \
     recv-message.c         \
     scrub-config.c         \
     free-message.c         \
     handle-event.c         \
+    handle-gpi-event.c     \
     conn-status.c          \
     add-spec.c             \
     start-spec.c           \

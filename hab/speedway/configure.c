@@ -10,33 +10,34 @@
 #include "ltkc.h"
 #include "speedway.h"
 
-/*
- * The steps done here are:
- * 	- Clear (scrub) the reader configuration.
- * 	- Configure for what we want to do.
- */
 
 int speedway_configure() {
-	int r = 0;
+    int r;
 
-	r = scrubConfiguration();	
+    r = scrubConfiguration();	
+    if (r != 0) {
+        g_warning("scrubConfiguration error");
+        return -1;
+    }
 
-	if (r != 0) {
-		g_warning("scrubConfiguration error");
-	}
+    r = configure_reader();
+    if (r != 0) {
+        // an error has been logged
+        return -1;
+    }
 
-	r = addROSpec();
+    r = addROSpec();
+    if (r != 0) {
+        g_warning("addROSpec error");
+        return -1;
+    }
 
-	if (r != 0) {
-		g_warning("addROSpec error");
-	}
+    r = enableROSpec();
+    if (r != 0) {
+        g_warning("enableROSpec error");
+        return -1;
+    }
 
-	r = enableROSpec();
-
-	if (r != 0) {
-		g_warning("enableROSpec error");
-	}
-
-	return r;
+    return 0;
 }
 

@@ -178,13 +178,6 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
     if (node == NULL) {
         node = make_new_node(node_id);
         if (node == NULL) return;
-
-    }
-
-    node_data = bionet_node_get_user_data(node);
-    if (node_data == NULL) {
-        g_warning("no user data for node %s!", node_id);
-        return;
     }
 
     if (pTagReportData->pAntennaID == NULL) {
@@ -192,9 +185,19 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
         return;
     }
 
+    node_data = bionet_node_get_user_data(node);
+
     antenna = pTagReportData->pAntennaID->AntennaID;
 
-    node_data->antenna[antenna] = 1;
+    node_data->still_here = 1;
+
+    sprintf(resource_id, "Antenna-%d", antenna);
+    resource = bionet_node_get_resource_by_id(node, resource_id);
+    if (resource == NULL) {
+        g_warning("error getting Resource %s:%s", node_id, resource_id);
+        return;
+    }
+    bionet_resource_set_binary(resource, 1, NULL);
 
     sprintf(resource_id, "Antenna-%d-PeakRSSI", antenna);
     resource = bionet_node_get_resource_by_id(node, resource_id);
@@ -202,7 +205,6 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
         g_warning("error getting Resource %s:%s", node_id, resource_id);
         return;
     }
-
     bionet_resource_set_int8(resource, pTagReportData->pPeakRSSI->PeakRSSI, NULL);
 }
 

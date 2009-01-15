@@ -8,80 +8,14 @@
 #include "speedway.h"
 
 
-#define RO_TRIGGER_PERIOD 1100
-
-
-/*
- *
- * Add our ROSpec using ADD_ROSPEC message
- *
- * This ROSpec waits for a START_ROSPEC message, then takes inventory on all 
- * antennas for 5 seconds.
- *
- * The tag report is generated after the ROSpec is done.
- *
- * This example is deliberately streamlined. Nothing here configures the 
- * antennas, RF, or Gen2. The current defaults are used. Remember we just 
- * reset the reader to factory defaults (above). Normally an application 
- * would be more precise in configuring the reader and in its ROSpecs.
- *
- * Experience suggests that typical ROSpecs are about double this in size.
- *
- * The message is:
- *
- *	<ADD_ROSPEC MessageID='201'>
- *  	<ROSpec>
- *      	<ROSpecID>123</ROSpecID>
- *         	<Priority>0</Priority>
- *         	<CurrentState>Disabled</CurrentState>
- *         	<ROBoundarySpec>
- *         		<ROSpecStartTrigger>
- *            		<ROSpecStartTriggerType>Null</ROSpecStartTriggerType>
- *     			</ROSpecStartTrigger>
- *           	<ROSpecStopTrigger>
- *             		<ROSpecStopTriggerType>Null</ROSpecStopTriggerType>
- *             		<DurationTriggerValue>0</DurationTriggerValue>
- *           	</ROSpecStopTrigger>
- *         	</ROBoundarySpec>
- *         	<AISpec>
- *         		<AntennaIDs>0</AntennaIDs>
- *           	<AISpecStopTrigger>
- *             		<AISpecStopTriggerType>Duration</AISpecStopTriggerType>
- *             		<DurationTrigger>5000</DurationTrigger>
- *           	</AISpecStopTrigger>
- *           	<InventoryParameterSpec>
- *             		<InventoryParameterSpecID>1234</InventoryParameterSpecID>
- *             		<ProtocolID>EPCGlobalClass1Gen2</ProtocolID>
- *           	</InventoryParameterSpec>
- *     		</AISpec>
- *  		<ROReportSpec>
- *  			<ROReportTrigger>Upon_N_Tags_Or_End_Of_ROSpec</ROReportTrigger>
- *        		<N>0</N>
- *       		<TagReportContentSelector>
- *         		 	<EnableROSpecID>0</EnableROSpecID>
- *         		 	<EnableSpecIndex>0</EnableSpecIndex>
- *         		 	<EnableInventoryParameterSpecID>0</EnableInventoryParameterSpecID>
- *         		 	<EnableAntennaID>0</EnableAntennaID>
- *         		 	<EnableChannelIndex>0</EnableChannelIndex>
- *         		 	<EnablePeakRSSI>0</EnablePeakRSSI>
- *         		 	<EnableFirstSeenTimestamp>0</EnableFirstSeenTimestamp>
- *         		 	<EnableLastSeenTimestamp>0</EnableLastSeenTimestamp>
- *         		 	<EnableTagSeenCount>0</EnableTagSeenCount>
- *         		 	<EnableAccessSpecID>0</EnableAccessSpecID>
- *      		</TagReportContentSelector>
- *   		</ROReportSpec>
- * 		</ROSpec>
- *	</ADD_ROSPEC>
- */
-
-int addROSpec(void) 
-{
+int addROSpec(void) {
 
     // 
     // The RO start & stop specs
     //
 
 #if 0
+#define RO_TRIGGER_PERIOD 1100
     // this is a periodic trigger
     LLRP_tSPeriodicTriggerValue PeriodicTriggerValue = {
         .hdr.elementHdr.pType = &LLRP_tdPeriodicTriggerValue,
@@ -96,11 +30,30 @@ int addROSpec(void)
     };
 #endif
 
+#if 1
     // this is a Null trigger, so it just starts when we tell it to
     LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
         .eROSpecStartTriggerType = LLRP_ROSpecStartTriggerType_Null,
     };
+#endif
+
+#if 0
+    // this is a GPI trigger, so it starts when we push a button
+    LLRP_tSGPITriggerValue GPITriggerValue = {
+        .hdr.elementHdr.pType = &LLRP_tdGPITriggerValue,
+        .GPIPortNum = 1,
+        .GPIEvent = 1,
+        .Timeout = 0
+    };
+
+    LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
+        .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
+        .eROSpecStartTriggerType = LLRP_ROSpecStartTriggerType_GPI,
+        .pGPITriggerValue = &GPITriggerValue
+    };
+#endif
+
 
     LLRP_tSROSpecStopTrigger ROSpecStopTrigger = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpecStopTrigger,
@@ -125,8 +78,8 @@ int addROSpec(void)
     LLRP_tSTagObservationTrigger TagObservationTrigger = {
         .hdr.elementHdr.pType = &LLRP_tdTagObservationTrigger,
         .eTriggerType         = LLRP_TagObservationTriggerType_Upon_Seeing_No_More_New_Tags_For_Tms_Or_Timeout,
-        .T                    = 3000,
-        .Timeout              = 5000
+        .T                    = scan_idle,
+        .Timeout              = scan_timeout
     };
 
     LLRP_tSAISpecStopTrigger    AISpecStopTrigger = {
@@ -197,32 +150,18 @@ int addROSpec(void)
     LLRP_tSMessage *pRspMsg;
     LLRP_tSADD_ROSPEC_RESPONSE *pRsp;
 
-    /*
-     * Send the message, expect the response of certain type
-     */
-    pRspMsg = transact(&Cmd.hdr);
 
+    pRspMsg = transact(&Cmd.hdr);
     if(pRspMsg == NULL) {
         return -1;
     }
 
-    /*
-     * Cast to an ADD_ROSPEC_RESPONSE message.
-     */
     pRsp = (LLRP_tSADD_ROSPEC_RESPONSE *) pRspMsg;
-
-    /*
-     * Check the LLRPStatus parameter.
-     */
     if(checkLLRPStatus(pRsp->pLLRPStatus, "addROSpec") != 0) {
         freeMessage(pRspMsg);
-
         return -1;
     }
 
-    /*
-     * Done with the response message.
-     */
     freeMessage(pRspMsg);
 
     return 0;

@@ -1,0 +1,11 @@
+
+#include "pal-650-hab.h"
+
+
+GHashTable *nodes = NULL;
+
+char *nag_hostname = NULL;
+char *pal_ip = NULL;
+int pal_port = 5117;
+int tag_timeout = 5;
+

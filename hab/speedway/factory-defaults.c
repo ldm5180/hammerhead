@@ -56,8 +56,6 @@ int resetConfigurationToFactoryDefaults()
 
     freeMessage(pRspMsg);
 
-    g_debug("Configuration reset to factory defaults");
-
     return 0;
 }
 

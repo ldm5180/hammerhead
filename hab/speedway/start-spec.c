@@ -30,6 +30,7 @@ int startROSpec() {
 	LLRP_tSMessage *pRspMsg;
 	LLRP_tSSTART_ROSPEC_RESPONSE *pRsp;
 
+
 	/*
 	 * Send the message and expect a respose of a certain type.
 	 */
@@ -38,6 +39,7 @@ int startROSpec() {
 	if (pRspMsg == NULL) {
 		return -1;
 	}
+
 
 	/*
 	 * Cast to a START_ROSPEC_RESPONSE message.

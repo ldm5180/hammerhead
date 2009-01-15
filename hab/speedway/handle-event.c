@@ -15,33 +15,33 @@
  * dispatches to handlers of specific event types.
  */
 
-void handleReaderEventNotification(LLRP_tSReaderEventNotificationData 
-		*pNtfData) 
-{
+void handleReaderEventNotification(LLRP_tSReaderEventNotificationData *pNtfData) {
     int nReported = 0;
     LLRP_tSAntennaEvent *pAntennaEvent;
     LLRP_tSReaderExceptionEvent *pReaderExceptionEvent;
+    LLRP_tSGPIEvent *pGPIEvent;
 
-    pAntennaEvent = 
-		LLRP_ReaderEventNotificationData_getAntennaEvent(pNtfData);
-
-    if(pAntennaEvent != NULL) {
+    pAntennaEvent = LLRP_ReaderEventNotificationData_getAntennaEvent(pNtfData);
+    if (pAntennaEvent != NULL) {
         handleAntennaEvent(pAntennaEvent);
         nReported++;
     }
 
-    pReaderExceptionEvent =
-        LLRP_ReaderEventNotificationData_getReaderExceptionEvent(pNtfData);
-
-    if(pReaderExceptionEvent != NULL) {
+    pReaderExceptionEvent = LLRP_ReaderEventNotificationData_getReaderExceptionEvent(pNtfData);
+    if (pReaderExceptionEvent != NULL) {
         handleReaderExceptionEvent(pReaderExceptionEvent);
+        nReported++;
+    }
+
+    pGPIEvent = LLRP_ReaderEventNotificationData_getGPIEvent(pNtfData);
+    if (pGPIEvent != NULL) {
+        handle_gpi_event(pGPIEvent);
         nReported++;
     }
 
     /*
      * Similarly handle other events here:
      *      HoppingEvent
-     *      GPIEvent
      *      ROSpecEvent
      *      ReportBufferLevelWarningEvent
      *      ReportBufferOverflowErrorEvent
