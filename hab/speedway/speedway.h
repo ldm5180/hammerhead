@@ -16,6 +16,7 @@ extern bionet_hab_t *hab;
 
 extern int show_messages;
 extern int gpi_delay;
+extern int gpi_polarity;
 
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;

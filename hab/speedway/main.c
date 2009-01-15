@@ -40,6 +40,10 @@ int main(int argc, char *argv[]) {
             i ++;
             gpi_delay = atoi(argv[i]);
 
+        } else if (strcmp(argv[i], "--gpi-polarity") == 0) {
+            i ++;
+            gpi_polarity = atoi(argv[i]);
+
         } else if (strcmp(argv[i], "--show-messages") == 0) {
             show_messages = 1;
 

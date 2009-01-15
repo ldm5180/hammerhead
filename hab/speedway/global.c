@@ -12,6 +12,7 @@ int reader_is_busy = 0;
 
 int show_messages = 0;
 int gpi_delay = 0;
+int gpi_polarity = 1;
 
 LLRP_tSConnection *pConn;
 LLRP_tSTypeRegistry *pTypeRegistry;
