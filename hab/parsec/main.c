@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
 	server.sin_port = htons(port);
 
 	if (bind(parsec_fd, (struct sockaddr*)&server, sizeof(server)) != 0) {
-        g_critical("Can't bind to port %hd, quitting./n", port);
+        g_critical("Can't bind to port %hu, quitting./n", port);
         exit(3);	
 	}
 
@@ -139,7 +139,7 @@ static void parse_cmdline(int argc, char** argv)
 			break;
 	    
 		case 'p':
-			if (sscanf(optarg, "%hd", &port) == 1);
+			if (sscanf(optarg, "%hu", &port) == 1);
 			break;
 
 		case 'v':
