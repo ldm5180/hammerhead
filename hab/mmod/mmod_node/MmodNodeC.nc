@@ -101,15 +101,10 @@ implementation
 
     /* busy flags */
     bool gm_busy = FALSE; /* general message */
+    bool am_busy = FALSE; /* accel message */
     bool ax_busy = FALSE; /* accel-x buffer */
     bool ay_busy = FALSE; /* accel-y buffer */
     bool sm_busy = FALSE; /* settings message */
-    bool tgm_busy = FALSE; /* temp general message */
-    bool sent_general = FALSE;
-    bool is_recording = FALSE;
-    bool just_sent = FALSE;
-
-    uint16_t count_below_thres = 0;
 
     /* number of samples taken this round */
     uint16_t num_x_samples;
@@ -135,77 +130,14 @@ implementation
 	yellow_led_toggle();
     }
 
-
-    void send_general_msg()
-    {
-	mmod_general_msg_t* general_msg;
-
-
-	gm_busy = TRUE;
-	hb_sec = 0; /* reset the heartbeat second counter */
-	yellow_led_toggle();
-
-	general_msg = 
-	    call GeneralRoot.getPayload(&general_msgbuf,
-					sizeof(mmod_general_msg_t));
-
-	tgm_busy = TRUE;
-	general_msg->node_id = TOS_NODE_ID;
-	general_msg->volt = tmp_general_msg.volt;
-	general_msg->temp = tmp_general_msg.temp;
-
-	if (ACCEL_FLAG_X & settings.accel_flags)
-	{
-	    general_msg->accel_x = tmp_general_msg.accel_x;
-	    tmp_general_msg.accel_x = 0; /* reset me */
-	}
-	else
-	{
-	    tmp_general_msg.accel_x++;
-	    general_msg->accel_x = tmp_general_msg.accel_x;
-	}
-
-	if ((ACCEL_FLAG_X & settings.accel_flags)
-	    && (0 == (ACCEL_FLAG_Y & settings.accel_flags)))
-	{
-	    tmp_general_msg.accel_y++;
-	    general_msg->accel_y = tmp_general_msg.accel_y;
-	}
-	else
-	{
-	    general_msg->accel_y = tmp_general_msg.accel_y;
-	    tmp_general_msg.accel_y = 0;
-	}
-	general_msg->photo = tmp_general_msg.photo;
-	general_msg->accel_flags = settings.accel_flags;
-	tgm_busy = FALSE;
-
-	call GeneralRoot.send(&general_msgbuf, sizeof(*general_msg));
-	call Leds.led1Off();
-    }
-
-
-
+    
     event void SettingsRoot.sendDone(message_t *msg, error_t ok)
     {
-	mmod_settings_msg_t *settings_msg;
-
 	sm_busy = FALSE;
-	if (FALSE == sent_general)
-	{
-	    send_general_msg();
-	    sent_general = TRUE;
-	    
-	    sm_busy = TRUE;
-	    settings_msg = 
-		call SettingsRoot.getPayload(&settings_msgbuf,
-					    sizeof(mmod_settings_msg_t));
-	    *settings_msg = settings;
-	    call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
-	}
+	yellow_led_toggle();
     }
 
-
+   
     event void CC2420Config.syncDone(error_t error)
     {
 	settings.node_id = TOS_NODE_ID;
@@ -223,7 +155,7 @@ implementation
 	    ((uint32_t)MSEC_PER_SEC / (nx_uint32_t)settings.sample_interval);
 	call RadioControl.start();
     }
-   
+
     event void Boot.booted()
     {
 	call CC2420Config.setChannel(20);	
@@ -245,20 +177,14 @@ implementation
 	    call LowPowerListening.setLocalDutyCycle(200);
 
 	    /* send out a quick settings msg */
+	    yellow_led_toggle();
 	    sm_busy = TRUE;
 	    settings_msg = 
 		call SettingsRoot.getPayload(&settings_msgbuf,
 					    sizeof(mmod_settings_msg_t));
 	    *settings_msg = settings;
 	    call SettingsRoot.send(&settings_msgbuf, sizeof(*settings_msg));
-	    if (settings.heartbeat_time <= 10)
-	    {
-		call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
-	    }
-	    else
-	    {
-		call SettingsCheck.startPeriodic((settings.heartbeat_time - 5) * 1000);
-	    }
+	    call SettingsCheck.startPeriodic(5000);
 	}
 	else
 	{
@@ -280,7 +206,6 @@ implementation
 
 	if (TOS_NODE_ID != new_settings->node_id)
 	{
-	    red_led_toggle();
 	    green_led_toggle();
 	    return;
 	}
@@ -307,16 +232,7 @@ implementation
 	}
 	settings.accel_flags = new_settings->accel_flags;
 
-	if (settings.heartbeat_time <= 10)
-	{
-	    call SettingsCheck.startPeriodic((settings.heartbeat_time >> 1) * 1000);
-	}
-	else
-	{
-	    call SettingsCheck.startPeriodic((settings.heartbeat_time - 5) * 1000);
-	}
-
-        /* ensure the sample period timer is correct */
+	/* ensure the sample period timer is correct */
 	num_periods_per_sec = 
 	    (uint32_t)MSEC_PER_SEC / (nx_uint32_t)settings.sample_interval;
 	call AccelCheck.startPeriodic(settings.sample_interval);
@@ -326,6 +242,7 @@ implementation
 	if (!sm_busy)
 	{
 	    sm_busy = TRUE;
+	    yellow_led_toggle();
 	    settings_msg = 
 		call SettingsRoot.getPayload(&settings_msgbuf,
 					     sizeof(mmod_settings_msg_t));
@@ -348,6 +265,7 @@ implementation
 	}
 
 	sm_busy = TRUE;
+	yellow_led_toggle();
 	settings_msg = 
 	    call SettingsRoot.getPayload(&settings_msgbuf,
 					sizeof(mmod_settings_msg_t));
@@ -361,21 +279,65 @@ implementation
      * and send it if needed */
     event void AccelCheck.fired()
     {
+	mmod_general_msg_t* general_msg;
+	
+        /* check if there are any messages to send and send em */
+	if ((!gm_busy) && (need_send & SEND_GENERAL_MSG))
+	{
+	    gm_busy = TRUE;
+	    hb_sec = 0; /* reset the heartbeat second counter */
+	    yellow_led_toggle();
+
+	    general_msg = 
+		call GeneralRoot.getPayload(&general_msgbuf,
+					    sizeof(mmod_general_msg_t));
+
+	    general_msg->node_id = TOS_NODE_ID;
+	    general_msg->volt = tmp_general_msg.volt;
+	    general_msg->temp = tmp_general_msg.temp;
+
+	    if (ACCEL_FLAG_X & settings.accel_flags)
+	    {
+		general_msg->accel_x = tmp_general_msg.accel_x;
+		tmp_general_msg.accel_x = 0; /* reset me */
+	    }
+	    else
+	    {
+		tmp_general_msg.accel_x++;
+		general_msg->accel_x = tmp_general_msg.accel_x;
+	    }
+
+	    if ((ACCEL_FLAG_X & settings.accel_flags)
+		&& (0 == (ACCEL_FLAG_Y & settings.accel_flags)))
+	    {
+		tmp_general_msg.accel_y++;
+		general_msg->accel_y = tmp_general_msg.accel_y;
+	    }
+	    else
+	    {
+		general_msg->accel_y = tmp_general_msg.accel_y;
+		tmp_general_msg.accel_y = 0;
+	    }
+	    general_msg->photo = tmp_general_msg.photo;
+	    general_msg->accel_flags = settings.accel_flags;
+
+	    call GeneralRoot.send(&general_msgbuf, sizeof(*general_msg));
+	    call Leds.led1Off();
+	}
+
 	/* every Nth period, check the light and temp */
 	if (0 == period)
 	{
-	    //get a bit closer to checking again
-	    period = num_periods_per_sec >> 3;
-	    if (!tgm_busy)
+	    period++;
+	    if ((settings.heartbeat_time <= hb_sec) && (!gm_busy))
+	    {
+		need_send |= SEND_GENERAL_MSG;
+	    }
+	    if ((!gm_busy) && (0 == (need_send & SEND_GENERAL_MSG)))
 	    {
 		call Light.read();
 		call Voltage.read();
 		call Temperature.read();
-	    }
-
-	    if ((settings.heartbeat_time <= hb_sec) && (!gm_busy))
-	    {
-		need_send |= SEND_GENERAL_MSG;
 	    }
 
 	    /* a second has passed so bump the heartbeat second counter */
@@ -387,7 +349,7 @@ implementation
 	     * note reset the period counter. otherwise bump it. use 1/2 sec so
 	     * that the heartbeat is sent about 1/2 the requested time and we
 	     * are safer to not miss any */
-	    period = (period >= (num_periods_per_sec)) ? 0 : period + 1;
+	    period = (period >= (num_periods_per_sec>>1)) ? 0 : period + 1;
 	}
 
 	/* read the X accelerometer */
@@ -415,6 +377,7 @@ implementation
     event void Light.readDone(error_t ok, uint16_t val) 
     {
 	mmod_general_msg_t* general_msg;
+	uint16_t d;
 
 	if (SUCCESS != ok)
 	{
@@ -425,10 +388,20 @@ implementation
 	general_msg = call GeneralRoot.getPayload(&general_msgbuf,
 						  sizeof(mmod_general_msg_t));
 
+	/* get the absolute difference between last sent and current */
+	if (general_msg->photo < val)
+	{
+	    d = val - general_msg->photo;
+	}
+	else
+	{
+	    d = general_msg->photo - val;
+	}
+
 	/* always put things in the tmp msg. this gets copied into real msg
 	 * when it is sent. this is so that heartbeats can always contain
 	 * up-to-date info but we are not comparing against moving target */
-	if (!tgm_busy)
+	if (!gm_busy)
 	{
 	    tmp_general_msg.photo = val;
 	}
@@ -438,6 +411,7 @@ implementation
     event void Voltage.readDone(error_t ok, uint16_t val)
     {
 	mmod_general_msg_t* general_msg;
+	uint16_t d;
 
 	if (SUCCESS != ok)
 	{
@@ -448,10 +422,20 @@ implementation
 	general_msg = call GeneralRoot.getPayload(&general_msgbuf,
 						  sizeof(mmod_general_msg_t));
 
+	/* get the absolute difference between last sent and current */
+	if (general_msg->volt < val)
+	{
+	    d = val - general_msg->volt;
+	}
+	else
+	{
+	    d = general_msg->volt - val;
+	}
+
 	/* always put things in the tmp msg. this gets copied into real msg
 	 * when it is sent. this is so that heartbeats can always contain
 	 * up-to-date info but we are not comparing against moving target */
-	if (!tgm_busy)
+	if (!gm_busy)
 	{
 	    tmp_general_msg.volt = val;
 	}	
@@ -461,6 +445,7 @@ implementation
     event void Temperature.readDone(error_t ok, uint16_t val) 
     {
 	mmod_general_msg_t* general_msg;
+	uint16_t d;
 
 	if (SUCCESS != ok)
 	{
@@ -471,10 +456,20 @@ implementation
 	general_msg = call GeneralRoot.getPayload(&general_msgbuf,
 						  sizeof(mmod_general_msg_t));
 
+	/* get the absolute difference between last sent and current */
+	if (general_msg->temp < val)
+	{
+	    d = val - general_msg->temp;
+	}
+	else
+	{
+	    d = general_msg->temp - val;
+	}
+
 	/* always put things in the tmp msg. this gets copied into real msg
 	 * when it is sent. this is so that heartbeats can always contain
 	 * up-to-date info but we are not comparing against moving target */
-	if (!tgm_busy)
+	if (!gm_busy)
 	{
 	    tmp_general_msg.temp = val;
 	}
@@ -509,51 +504,28 @@ implementation
 	    return;
 	}
 
-	if (cur_accel_avg_x > avg)
-	{
-	    tmp = cur_accel_avg_x - avg;
-	}
-	else
-	{
-	    tmp = avg - cur_accel_avg_x;
-	}
 	
-	if ((just_sent) && (tmp <= 4))
+	/* update general_msg regardless so it gets sent in next heartbeat */
+	if (!gm_busy)
 	{
-	    just_sent = FALSE;
-	    tmp_general_msg.accel_x = tmp;
-	    send_general_msg();
-	}
-	
-	if (!tgm_busy) /* update general_msg regardless so it gets sent in next heartbeat */
-	{
+	    if (cur_accel_avg_x > avg)
+	    {
+		tmp = cur_accel_avg_x - avg;
+	    }
+	    else
+	    {
+		tmp = avg - cur_accel_avg_x;
+	    }
+	    
 	    /* only report the highest over the time period, this is reset 
              * when a message is sent */
-	    if ((tmp_general_msg.accel_x < tmp) && (tmp > DEFAULT_ACCEL_THRESHOLD))
+	    if (tmp_general_msg.accel_x < tmp)
 	    {
 		tmp_general_msg.accel_x = tmp;
-		is_recording = TRUE;
 	    }
-	    else if (!is_recording)
-	    {
-		tmp_general_msg.accel_x = 0;
-	    }
-	    if ((is_recording) && (tmp < DEFAULT_ACCEL_THRESHOLD))
-	    {
-		if (++count_below_thres > 10)
-		{
-		    send_general_msg();
-		    count_below_thres = 0;
-		    is_recording = FALSE;
-		    just_sent = TRUE;
-		}
-	    }
-	}
-	else
-	{
-	    red_led_toggle();
 	}
 	
+	am_busy = FALSE;
 	ax_busy = FALSE;
     } /* check_accel_x() */
 
@@ -586,7 +558,7 @@ implementation
 	}
 
 	/* update general_msg regardless so it gets sent in next heartbeat */
-	if (!tgm_busy)
+	if (!gm_busy)
 	{
 	    if (cur_accel_avg_y > avg)
 	    {
@@ -602,11 +574,8 @@ implementation
 		tmp_general_msg.accel_y = tmp;
 	    }
 	}
-	else
-	{
-	    red_led_toggle();
-	}
 	
+	am_busy = FALSE;
 	ay_busy = FALSE;
     } /* check_accel_y() */
 

@@ -83,7 +83,6 @@ implementation
 	}
     } /* msg_send_done() */
 
-
     event void CC2420Config.syncDone(error_t error) 
     {
 	call RadioControl.start();
@@ -91,7 +90,6 @@ implementation
 
     event void Boot.booted()
     {
-	call LowPowerListening.setLocalDutyCycle(200); //really?
 	call SerialControl.start();
 	call CC2420Config.setChannel(20);	
 	call CC2420Config.sync();
