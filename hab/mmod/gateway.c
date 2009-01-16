@@ -20,10 +20,10 @@
 
 #include "gateway.h"
 #include "mmodgenmsg.h"
+#include "mmodaccelmsg.h"
 #include "mmodsettingsmsg.h"
 #include "serialsource.h"
 #include "mmod_message.h"
-#include "set-resource.h"
 
 #define AM_HEADER_LEN          8   
 #define AM_HEADER_DATALEN_LOC  5
@@ -49,7 +49,7 @@ int gateway_read(serial_source src)
     packet = read_serial_packet(src, &len);
     if (NULL == packet)
     {
-	return ret;
+	return 1;
     }
 
     if ((MMODGENMSG_SIZE == packet[AM_HEADER_DATALEN_LOC]) 

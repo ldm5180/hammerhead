@@ -36,9 +36,11 @@ module MmodGatewayC
 	interface RootControl;
 	interface Receive as GeneralReceive;
 	interface AMSend as GeneralForward;
+	interface Receive as AccelReceive;
+	interface AMSend as AccelForward;
 	interface Receive as SettingsNodeReceive;
 	interface AMSend as SettingsNodeForward;
-
+	interface CC2420Config;
 	interface Leds;
     }
 } /* module MmodGatewayC */
@@ -81,10 +83,16 @@ implementation
 	}
     } /* msg_send_done() */
 
+    event void CC2420Config.syncDone(error_t error) 
+    {
+	call RadioControl.start();
+    }
+
     event void Boot.booted()
     {
 	call SerialControl.start();
-	call RadioControl.start();
+	call CC2420Config.setChannel(20);	
+	call CC2420Config.sync();
     } /* Boot.booted() */
 
 
@@ -223,5 +231,53 @@ implementation
 	msg_send_done(msg, error);
 	red_led_toggle();
     } /* SettingsNodeForward.sendDone() */
+
+
+    event message_t* AccelReceive.receive(message_t* msg, 
+					    void* payload,
+					    uint8_t len)
+    {
+	mmod_accel_msg_t* new_accel = payload;
+	uint8_t msg_index = 0;
+	
+	green_led_toggle();
+
+	while ((NUM_MSG_BUFS > msg_index) && (fwd_busy[msg_index]))
+	{
+	    msg_index++;
+	}
+	
+	if ((NUM_MSG_BUFS > msg_index) && (sizeof(*new_accel) == len))
+	{
+	    /* copy the payload into from the collector to the serial msg
+	     * buffer and send the serial message */
+
+	    /* first get a ptr to the payload of the fwd_msg to use */
+	    mmod_accel_msg_t* fwd_accel = 
+		call AccelForward.getPayload(&fwd_msg[msg_index], 
+					       sizeof(mmod_accel_msg_t));
+	    if (NULL != fwd_accel)
+	    {
+		/* copy the data */
+		*fwd_accel = *new_accel;
+		/* if the send works, then set the buffer as "busy" */
+		if (SUCCESS == call AccelForward.send(AM_BROADCAST_ADDR, 
+							&fwd_msg[msg_index], 
+							sizeof(*fwd_accel)))
+		{
+		    fwd_busy[msg_index] = TRUE;
+		}
+	    }
+	}
+
+	return msg;
+    } /* AccelReceive.receive() */
+
+
+    event void AccelForward.sendDone(message_t* msg, error_t error)
+    {
+	msg_send_done(msg, error);
+	green_led_toggle();
+    } /* AccelForward.sendDone() */
 
 } /* implementation */

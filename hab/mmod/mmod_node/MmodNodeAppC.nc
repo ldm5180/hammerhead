@@ -45,11 +45,19 @@ implementation
     MmodNodeC.RadioControl -> ActiveMessageC;
     MmodNodeC.LowPowerListening -> Radio;
 
+    components CC2420ControlC;
+    MmodNodeC.CC2420Config -> CC2420ControlC;
 
     /* wire up the sensors */
-    components new AccelXStreamC(), 
-	new AccelYStreamC();
+    components new PhotoC(), 
+	new AccelXStreamC(), 
+	new AccelYStreamC(), 
+	new VoltageC(), 
+	new TempC();
 
+    MmodNodeC.Light -> PhotoC;
+    MmodNodeC.Voltage -> VoltageC;
+    MmodNodeC.Temperature -> TempC;
     MmodNodeC.ReadAccelXStream -> AccelXStreamC;
     MmodNodeC.ReadAccelYStream -> AccelYStreamC;
 

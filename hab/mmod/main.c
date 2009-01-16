@@ -130,10 +130,13 @@ int main(int argc, char** argv)
 	    if (FD_ISSET(gw_fd, &readers))
 	    {
 		num_read = gateway_read(gw_src);
+		if (1 == num_read)
+		{
+		    usleep(5000);
+		}
 		/* is the number of messages read even relevant? */
 	    }
 	}
-	
 	/* check all attached nodes to ensure that 2*heartbeat_period has
 	 * not elapsed. if it has then report lost nodes */
 	heartbeat_check();

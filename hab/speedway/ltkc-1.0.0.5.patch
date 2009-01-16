@@ -1,6 +1,6 @@
-diff -ur LTK-1.0.0.5.orig/LTK/LTKC/Library/ltkc_platform.h LTK-1.0.0.5/LTK/LTKC/Library/ltkc_platform.h
---- LTK-1.0.0.5.orig/LTK/LTKC/Library/ltkc_platform.h	2008-01-29 18:56:24.000000000 -0600
-+++ LTK-1.0.0.5/LTK/LTKC/Library/ltkc_platform.h	2009-01-12 12:19:08.000000000 -0600
+diff -ur LTK-1.0.0.5.orig/LTKC/Library/ltkc_platform.h LTK-1.0.0.5/LTKC/Library/ltkc_platform.h
+--- LTK-1.0.0.5.orig/LTKC/Library/ltkc_platform.h	2008-01-29 18:56:24.000000000 -0600
++++ LTK-1.0.0.5/LTKC/Library/ltkc_platform.h	2009-01-16 09:07:49.000000000 -0600
 @@ -28,8 +28,13 @@
  #include <stdlib.h>         /* malloc() */
  #include <string.h>         /* memcpy() */
@@ -15,3 +15,48 @@ diff -ur LTK-1.0.0.5.orig/LTK/LTKC/Library/ltkc_platform.h LTK-1.0.0.5/LTK/LTKC/
  
  /*
   * Typedefs of simple types.
+diff -ur LTK-1.0.0.5.orig/LTKC/Library/ltkc_xmltextencode.c LTK-1.0.0.5/LTKC/Library/ltkc_xmltextencode.c
+--- LTK-1.0.0.5.orig/LTKC/Library/ltkc_xmltextencode.c	2008-10-17 12:51:50.000000000 -0500
++++ LTK-1.0.0.5/LTKC/Library/ltkc_xmltextencode.c	2009-01-16 09:07:49.000000000 -0600
+@@ -1498,7 +1498,7 @@
+         return;
+     }
+ 
+-    strcpy(&pEncoder->pBuffer[pEncoder->iNext], aHoldBuf);
++    strcpy((char*)&pEncoder->pBuffer[pEncoder->iNext], aHoldBuf);
+ 
+     pEncoder->iNext += nHoldBuf;
+ }
+@@ -1542,7 +1542,7 @@
+     /*
+      * Construct an XML encoder
+      */
+-    pXMLEncoder = LLRP_XMLTextEncoder_construct(pBuffer, nBuffer);
++    pXMLEncoder = LLRP_XMLTextEncoder_construct((unsigned char *)pBuffer, nBuffer);
+     if(NULL == pXMLEncoder)
+     {
+         strcpy(pBuffer, "ERROR: XMLTextEncoder_construct failed\n");
+diff -ur LTK-1.0.0.5.orig/LTKC/Tests/dx101.c LTK-1.0.0.5/LTKC/Tests/dx101.c
+--- LTK-1.0.0.5.orig/LTKC/Tests/dx101.c	2008-01-29 18:56:24.000000000 -0600
++++ LTK-1.0.0.5/LTKC/Tests/dx101.c	2009-01-16 09:07:49.000000000 -0600
+@@ -287,7 +287,7 @@
+             char                    aBuf[100*1024];
+             LLRP_tSXMLTextEncoder * pEncoder;
+ 
+-            pEncoder = LLRP_XMLTextEncoder_construct(aBuf, sizeof aBuf);
++            pEncoder = LLRP_XMLTextEncoder_construct((unsigned char *)aBuf, sizeof aBuf);
+             LLRP_Encoder_encodeElement(&pEncoder->encoderHdr,
+                     &pMessage->elementHdr);
+             if(!pEncoder->bOverflow)
+diff -ur LTK-1.0.0.5.orig/LTKC/Tests/dx201.c LTK-1.0.0.5/LTKC/Tests/dx201.c
+--- LTK-1.0.0.5.orig/LTKC/Tests/dx201.c	2008-01-29 18:56:24.000000000 -0600
++++ LTK-1.0.0.5/LTKC/Tests/dx201.c	2009-01-16 09:08:20.000000000 -0600
+@@ -259,7 +259,7 @@
+         char *              pMemHiwatAtEnd = (char*)sbrk(0);
+ 
+         printf("INFO: Needed %d bytes of heap\n",
+-            pMemHiwatAtEnd - pMemHiwatAtStart);
++            (int)(pMemHiwatAtEnd - pMemHiwatAtStart));
+     }
+ #endif
+ 

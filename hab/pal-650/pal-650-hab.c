@@ -15,16 +15,16 @@
 
 
 static GOptionEntry entries[] = {
-	{ "nag", 'n', 0, G_OPTION_ARG_STRING, &nag_hostname, "NAG hostname", NULL },
-  	{ "pal-ip", 'a', 0, G_OPTION_ARG_STRING,  &pal_ip, "IP address of the PAL-650", NULL },
-	{ "port", 'p', 0, G_OPTION_ARG_INT, &pal_port, "PAL-650 Data Port", NULL },
-	{ "tag-timeout", 't', 0, G_OPTION_ARG_INT, &tag_timeout, "Seconds of RFID Tag absence before reporing the Bionet Node lost", NULL },
+  	{ "pal-ip",        'a', 0, G_OPTION_ARG_STRING,  &pal_ip,        "IP address of the PAL-650",                                        NULL },
+	{ "port",          'p', 0, G_OPTION_ARG_INT,     &pal_port,      "PAL-650 Data Port (defaults to 5117).",                            NULL },
+	{ "tag-timeout",   't', 0, G_OPTION_ARG_INT,     &tag_timeout,   "Seconds of RFID Tag absence before reporing the Bionet Node lost", NULL },
+	{ "show-messages", 'm', 0, G_OPTION_ARG_NONE,    &show_messages, "Turn on debug logging of messages from the PAL-650.",              NULL },
 	{ NULL }
 };
 
 
 int main(int argc, char *argv[]) {
-    int nag_fd;
+    int bionet_fd;
     int pal_fd;
 
 
@@ -55,11 +55,6 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
-        if (nag_hostname == NULL) {
-            g_warning("No NAG hostname specified!");
-            exit(1);
-        }
-
         if (pal_ip == NULL) {
             g_warning("PAL-650 IP not specified!");
             exit(1);
@@ -72,38 +67,30 @@ int main(int argc, char *argv[]) {
     }
 
 
-    // Initialize the nodes hash.
-    nodes = g_hash_table_new_full(g_str_hash, g_str_equal, free, drop_node);
-
-
     // Connect to Bionet.
-    hab_set_type("PAL-650");
-    hab_set_nag_hostname(nag_hostname);
+    hab = bionet_hab_new("PAL-650", NULL);
+    if (hab == NULL) {
+        g_warning("error creating HAB structure!");
+        exit(1);
+    }
+
     hab_register_callback_set_resource(cb_set_resource);
 
-    nag_fd = -1;  // we'll initialize it in the main loop below
+    bionet_fd = hab_connect(hab);
+    if (bionet_fd < 0) {
+        g_warning("error connecting to Bionet");
+        exit(1);
+    }
+
     pal_fd = -1;  // we'll initialize it in the main loop below
 
     make_shutdowns_clean();
 
-    int r;
-    int max_fd;
-    fd_set readers;
-    struct timeval timeout;
-
     while (1) {
-        // Connect to the NAG.
-        if (nag_fd < 0) {
-            nag_fd = hab_connect_to_nag();
-
-            if (nag_fd < 0) {
-                g_warning("Error connecting to NAG");
-       	    	sleep(3);
-       	    	continue;
-            }
-
-            g_message("Connected to the NAG");
-        }
+        int r;
+        int max_fd;
+        fd_set readers;
+        struct timeval timeout;
 
         // Connect to the PAL-650.
         if (pal_fd < 0) {
@@ -121,10 +108,10 @@ int main(int argc, char *argv[]) {
         // g_log("", G_LOG_LEVEL_INFO, "top of main loop");
 
         FD_ZERO(&readers);
-        FD_SET(nag_fd, &readers);
+        FD_SET(bionet_fd, &readers);
         FD_SET(pal_fd, &readers);
 
-        max_fd = Max(nag_fd, pal_fd) + 1;
+        max_fd = Max(bionet_fd, pal_fd) + 1;
 
         timeout.tv_sec = 1;
         timeout.tv_usec = 0;
@@ -149,9 +136,8 @@ int main(int argc, char *argv[]) {
 
         timeout_tags();
 
-        if (FD_ISSET(nag_fd, &readers)) {
-            hab_read_from_nag();
-            hab_handle_queued_nag_messages();
+        if (FD_ISSET(bionet_fd, &readers)) {
+            hab_read();
             continue;
         }
 
@@ -159,7 +145,6 @@ int main(int argc, char *argv[]) {
             int r;
 
             r = pal_read(pal_fd);
-
             if (r < 0) {
                 close(pal_fd);
                 pal_fd = -1;

@@ -4,17 +4,23 @@
 
 
 #include <glib.h>
+#include <hardware-abstractor.h>
 
 
 #define Max(a, b)  ((a) > (b) ? (a) : (b))
 
 
-extern GHashTable *nodes;
+typedef struct {
+    time_t time;
+} node_data_t;
 
-extern char *nag_hostname;
+
+extern bionet_hab_t *hab;
+
 extern char *pal_ip;
 extern int pal_port;
 extern int tag_timeout;
+extern int show_messages;
 
 
 int pal_connect(const char *pal_ip, const int pal_port);
@@ -28,7 +34,7 @@ void drop_node(gpointer node);
 
 // If the PAL-650 had any actuators we wanted to expose, this callback would 
 // let us know when someone wanted to change them.
-void cb_set_resource(const char *node_id, const char *resource_id, const char *value);
+void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value);
 
 
 void make_shutdowns_clean(void);
