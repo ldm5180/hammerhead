@@ -25,6 +25,7 @@ extern long scan_points;
 
 extern bionet_hab_t *uwb_hab;
 
+extern char *node_id;
 extern int port;
 extern int timeout;
 

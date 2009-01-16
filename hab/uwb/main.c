@@ -24,6 +24,7 @@ struct sockaddr_in uwb_address;
 
 static GOptionEntry entries[] = {
 	{"port", 'p', 0, G_OPTION_ARG_INT, &port, "UWB port", NULL}, 
+	{"node", 'n', 0, G_OPTION_ARG_STRING, &node_id, "UWB node name", NULL}, 
 	{"timeout", 't', 0, G_OPTION_ARG_INT, &timeout, 
 		"Seconds of absense before reporting no data.", NULL}, 
 	{NULL}
@@ -56,6 +57,11 @@ int main(int argc, char *argv[]) {
 
 	if (! r) {
 		g_warning("Error parsing.");
+		exit(1);
+	}
+
+	if (node_id == NULL) {
+	    g_error("You must pick a node name.  Use -n.");
 		exit(1);
 	}
 

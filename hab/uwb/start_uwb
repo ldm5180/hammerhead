@@ -1,3 +1,3 @@
 
-./uwb-hab --ip 192.168.5.45 --port 9400 --timeout 7
+./uwb-hab -n JustANodeName --port 9400 --timeout 7
 

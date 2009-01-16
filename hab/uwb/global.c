@@ -4,6 +4,8 @@
 
 char *ip = NULL;
 
+char *node_id;
+
 int port = 9400;
 int timeout = 10;
 
