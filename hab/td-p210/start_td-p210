@@ -1,3 +1,0 @@
-
-./td-p210-hab --nag localhost --ip 192.168.5.45 --port 9400 --timeout 7
-
