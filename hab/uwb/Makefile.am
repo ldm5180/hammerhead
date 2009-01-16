@@ -6,6 +6,7 @@ bin_PROGRAMS = uwb-hab
 uwb_hab_SOURCES =               \
     main.c                          \
     global.c                        \
+    node-remove.c                   \
     uwb-connect.c                   \
     uwb-read.c
 

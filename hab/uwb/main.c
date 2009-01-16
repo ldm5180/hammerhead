@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
 		  }
 		}
 		else {
-			g_message("No data for the last %d seconds.", timeout);
+            node_remove();
 		}
 	}
 

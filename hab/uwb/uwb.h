@@ -33,6 +33,7 @@ extern struct sockaddr_in uwb_address;
 
 int uwb_connect(const int uwb_port);
 int uwb_read(int fd, char* buffer);
+void node_remove();
 
 #endif 
 
