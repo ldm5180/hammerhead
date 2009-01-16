@@ -50,8 +50,9 @@ BUILT_SOURCES = $(LTK_DIR)
 $(LTK_DIR):
 	tar -xzf $(LTK_TARBALL)
 	mv LTK $(LTK_DIR)
-	patch --dir=$(LTK_DIR) -p2 --quiet < $(LTK_PATCH) 
+	patch --dir=$(LTK_DIR) -p1 --quiet < $(LTK_PATCH) 
 	$(MAKE) -C $(LTK_DIR)/LTKC
 
 clean-local:
 	rm -rf $(LTK_DIR)
+
