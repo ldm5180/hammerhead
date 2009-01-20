@@ -81,6 +81,16 @@ typedef enum {
     //! a subscribe event back to the CAL thread.
     CAL_EVENT_SUBSCRIBE,
 
+    //! This event is only used on the server for now.
+    //!
+    //! In the server, the user thread gets this event from the CAL thread
+    //! when a client terminates an existing subscription.
+    //!
+    //! FIXME: in the awesome future, clients will be able to unsubscribe
+    //! at well, currently the server synthesizes unsubscribe events to the
+    //! server user thread when the client disconnects
+    CAL_EVENT_UNSUBSCRIBE,
+
     //! This event indicates that a server has published new information to
     //! us.
     CAL_EVENT_PUBLISH

@@ -53,7 +53,7 @@ void disconnect_client(bionet_stream_t *stream, client_t *client) {
     if (bionet_stream_get_direction(stream) == BIONET_STREAM_DIRECTION_PRODUCER) {
         disconnect_client_from_producer(stream);
     } else {
-        disconnect_client_from_consumer(stream, client);
+        disconnect_client_from_consumer(stream, NULL);
     }
 }
 

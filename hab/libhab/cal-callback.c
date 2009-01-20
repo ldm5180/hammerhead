@@ -317,6 +317,77 @@ static void libhab_handle_subscription_request(const char *peer_name, const char
 
 
 
+static void libhab_handle_stream_unsubscription_request(const char *peer_name, const char *topic) {
+    char topic_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char topic_stream_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    bionet_node_t *node;
+    bionet_stream_t *stream;
+    int r;
+
+
+    // 
+    // sanity checks
+    //
+
+    r = bionet_split_nodeid_resourceid_r(topic, topic_node_id, topic_stream_id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid stream unsubscription topic '%s'", peer_name, topic);
+        return;
+    }
+
+    if (!bionet_is_valid_name_component(topic_node_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests stream unsubscription with invalid Node '%s'", peer_name, topic_node_id);
+        return;
+    }
+
+    if (!bionet_is_valid_name_component(topic_stream_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests stream unsubscription with invalid Stream '%s'", peer_name, topic_stream_id);
+        return;
+    }
+
+
+    //
+    // the topic looks syntactically good, see if it matches an existing stream
+    //
+
+    node = bionet_hab_get_node_by_id(libhab_this, topic_node_id);
+    if (node == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests stream unsubscription with unknown Node '%s'", peer_name, topic_node_id);
+        return;
+    }
+
+    stream = bionet_node_get_stream_by_id(node, topic_stream_id);
+    if (stream == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests stream unsubscription with unknown Stream %s:%s", peer_name, bionet_node_get_id(node), topic_stream_id);
+        return;
+    }
+
+
+    // 
+    // ok it all looks good, report it to the HAB
+    //
+
+    if (libhab_callback_stream_unsubscription != NULL) {
+        libhab_callback_stream_unsubscription(peer_name, stream);
+    }
+}
+
+
+
+
+static void libhab_handle_unsubscription_request(const char *peer_name, const char *topic) {
+    // stream unsubscription?
+    if (strncmp(topic, "S ", 2) == 0) {
+        libhab_handle_stream_unsubscription_request(peer_name, &topic[2]);
+        return;
+    }
+
+    // datapoint unsubscription and node-list unsubscription are not handled yet
+}
+
+
+
+
 void libhab_cal_callback(const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
@@ -376,6 +447,14 @@ void libhab_cal_callback(const cal_event_t *event) {
             libhab_handle_subscription_request(event->peer_name, event->topic);
             break;
         }
+
+
+        case CAL_EVENT_UNSUBSCRIBE: {
+            // g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "%s unsubscribes '%s'", event->peer_name, event->topic);
+            libhab_handle_unsubscription_request(event->peer_name, event->topic);
+            break;
+        }
+
 
         default: {
             printf("unhandled CAL event type %d\n", event->type);

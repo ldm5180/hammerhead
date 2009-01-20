@@ -103,12 +103,14 @@ int hab_publish_stream(const bionet_stream_t *stream, const void *buffer, size_t
 
 
 /**
- * @brief read any pending messages and if appropriate call callback function.  
+ * @brief Read and handle any pending Bionet events.
  * 
- * The HAB should call this function when the Bionet file descriptor returned
- * from hab_connect() is readable, or when the HAB wants to poll the fd.  
+ * The HAB should call this function whenever the Bionet file descriptor
+ * returned from hab_connect() becomes readable.
  *
  * @note See hab_register_callback_set_resource().
+ *
+ * @todo Add hab_read_with_timeout()
  */
 void hab_read(void);
 
@@ -165,6 +167,20 @@ void hab_register_callback_lost_client(void (*cb_lost_client)(const char *client
  * the Stream being subscribed to.
  */
 void hab_register_callback_stream_subscription(void (*cb_stream_subscription)(const char *client_id, const bionet_stream_t *stream));
+
+
+/**
+ * @brief Registers the HAB's Stream-Unsubscription callback function.
+ *
+ * The Hardware Abstractor library will call this callback whenever
+ * a Bionet Client unsubscribes from a Stream.
+ *
+ * @param cb_stream_unsubscription  The new callback function.
+ *
+ * The callback function gets two arguments, the Client's unique "id", and
+ * the Stream being unsubscribed from.
+ */
+void hab_register_callback_stream_unsubscription(void (*cb_stream_unsubscription)(const char *client_id, const bionet_stream_t *stream));
 
 
 

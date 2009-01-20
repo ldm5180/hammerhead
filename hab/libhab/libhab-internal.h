@@ -32,6 +32,7 @@ void libhab_cal_callback(const cal_event_t *event);
 
 extern void (*libhab_callback_set_resource)(bionet_resource_t *resource, bionet_value_t *value);
 extern void (*libhab_callback_stream_subscription)(const char *client_id, const bionet_stream_t *stream);
+extern void (*libhab_callback_stream_unsubscription)(const char *client_id, const bionet_stream_t *stream);
 extern void (*libhab_callback_lost_client)(const char *client_id);
 
 
