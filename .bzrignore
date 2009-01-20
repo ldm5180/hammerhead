@@ -1,0 +1,7 @@
+./Makefile.in
+./asn.1/**/Makefile.in
+./cal/**/Makefile.in
+./client/**/Makefile.in
+./data-manager/**/Makefile.in
+./hab/**/Makefile.in
+./util/**/Makefile.in
