@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
 	}
 
         if (FD_ISSET(cal_fd, &readers)) {
-            if (!cal_client.read()) {
+            if (!cal_client.read(NULL)) {
                 printf("error reading CAL event!\n");
                 cal_client.shutdown();
                 exit(1);

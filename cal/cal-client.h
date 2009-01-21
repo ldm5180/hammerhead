@@ -11,6 +11,7 @@
 #ifndef __CAL_CLIENT_H
 #define __CAL_CLIENT_H
 
+#include <sys/time.h>
 
 #include "cal-event.h"
 
@@ -100,7 +101,7 @@ typedef struct {
     //!     .init() to get a new fd.
     //!
 
-    int (*read)(void);
+    int (*read)(struct timeval *timeout);
 
 
     //!

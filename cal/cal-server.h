@@ -11,6 +11,7 @@
 #ifndef __CAL_SERVER_H
 #define __CAL_SERVER_H
 
+#include <sys/time.h>
 
 #include "cal-util.h"
 
@@ -93,7 +94,7 @@ typedef struct {
     //!     followed by .init() to get a new fd.
     //!
 
-    int (*read)(void);
+    int (*read)(struct timeval *timeout);
 
 
     //!

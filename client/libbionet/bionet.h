@@ -438,7 +438,6 @@ int bionet_subscribe_stream_by_name(const char *stream_name);
  *
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that the HAB accepted the request.
- * @todo implement me
  */
 int bionet_set_resource(bionet_resource_t *resource, const char *value);
 

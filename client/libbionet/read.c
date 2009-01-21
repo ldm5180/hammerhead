@@ -28,24 +28,21 @@
 
 int bionet_read_with_timeout(struct timeval *timeout) {
     int r;
-    fd_set readers;
 
     if (!bionet_is_connected()) return -1;
 
-    FD_ZERO(&readers);
-    FD_SET(libbionet_cal_fd, &readers);
-
-    r = select(libbionet_cal_fd + 1, &readers, NULL, NULL, timeout);
-    if (r < 0) return r;
-
-    // FIXME: CAL return TRUE on success, FALSE on failure.
-    r = cal_client.read();
+    r = cal_client.read(timeout);
     if (r) return 0;
     return -1;
 }
 
 
 int bionet_read(void) {
-    return cal_client.read();
+    struct timeval timeout;
+
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+
+    return cal_client.read(&timeout);
 }
 

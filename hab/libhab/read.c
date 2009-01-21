@@ -10,6 +10,19 @@
 
 
 void hab_read(void) {
-    cal_server.read();
-}
+    struct timeval timeout;
 
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+
+    cal_server.read(&timeout);
+} /* hab_read() */
+
+
+int hab_read_with_timeout(struct timeval *timeout) {
+    int r;
+
+    r = cal_server.read(timeout);
+    if (r) return 0;
+    return -1;
+} /* hab_read_with_timeout() */

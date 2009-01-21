@@ -226,13 +226,33 @@ void cal_server_mdnssd_bip_shutdown(void) {
 
 
 
-int cal_server_mdnssd_bip_read(void) {
+int cal_server_mdnssd_bip_read(struct timeval *timeout) {
     int r;
     cal_event_t *event;
 
     if (cal_server_mdnssd_bip_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: called before init!");
         return 0;
+    }
+
+    if ((timeout == NULL) || ((timeout) && ((timeout->tv_sec > 0) || timeout->tv_usec > 0))) {
+	fd_set readers;
+	int ret;
+
+	FD_ZERO(&readers);
+	FD_SET(cal_server_mdnssd_bip_fds_to_user[0], &readers);
+	ret = select(cal_server_mdnssd_bip_fds_to_user[0] + 1, &readers, NULL, NULL, timeout);
+	if (0 > ret) {
+	    if ((EAGAIN != errno)
+		&& (EINTR != errno)) {
+		return 0;
+	    }
+	    return 1;
+	}
+	else if (0 == ret)
+	{
+	    return 1;
+	}
     }
 
     r = read(cal_server_mdnssd_bip_fds_to_user[0], &event, sizeof(cal_event_t*));

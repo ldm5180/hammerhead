@@ -108,11 +108,26 @@ int hab_publish_stream(const bionet_stream_t *stream, const void *buffer, size_t
  * The HAB should call this function whenever the Bionet file descriptor
  * returned from hab_connect() becomes readable.
  *
- * @note See hab_register_callback_set_resource().
- *
- * @todo Add hab_read_with_timeout()
+ * @see hab_register_callback_set_resource().
  */
 void hab_read(void);
+
+
+/**
+ * @brief Read and handle any pending Bionet events and timeout if there 
+ * is nothing to read.
+ * 
+ * The HAB should call this function whenever the Bionet file descriptor
+ * returned from hab_connect() becomes readable.
+ * 
+ * @param[in] timeout Timeout length or NULL to block.
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ *
+ * @see hab_register_callback_set_resource()
+ */
+int hab_read_with_timeout(struct timeval *timeout);
 
 
 /**
