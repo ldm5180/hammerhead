@@ -5,3 +5,5 @@ like filtering duplicate Joins from the module.  All to make the module
 simpler.  For example the dnssd cal-pd module reports multiple services
 for each publisher: IPv4 and IPv6 on each interface.
 
+When publishing, the topic is not available to the subscriber...
+
