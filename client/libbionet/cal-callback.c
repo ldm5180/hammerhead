@@ -234,6 +234,46 @@ static void handle_resource_datapoints(const cal_event_t *event, ResourceDatapoi
 
 
 
+static void handle_stream_data(const cal_event_t *event, StreamData_t *sd) {
+    char *hab_type;
+    char *hab_id;
+
+    bionet_stream_t *stream;
+
+    int r;
+
+
+    r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error parsing HAB name from CAL peer name '%s'", event->peer_name);
+        return;
+    }
+
+    stream = bionet_cache_lookup_stream(
+        hab_type,
+        hab_id,
+        (const char *)sd->nodeId.buf,
+        (const char *)sd->streamId.buf
+    );
+    if (stream == NULL) {
+        g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "got Stream data for unknown Stream %s.%s.%s:%s",
+            hab_type,
+            hab_id,
+            (const char *)sd->nodeId.buf,
+            (const char *)sd->streamId.buf
+        );
+        return;
+    }
+
+    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got %d bytes of Stream data for %s", sd->data.size, bionet_stream_get_name(stream));
+}
+
+
+
+
 static void handle_server_message(const cal_event_t *event) {
     H2C_Message_t *m = NULL;
     asn_dec_rval_t rval;
@@ -275,6 +315,11 @@ static void handle_server_message(const cal_event_t *event) {
 
         case H2C_Message_PR_datapointsUpdate: {
             handle_resource_datapoints(event, &m->choice.datapointsUpdate);
+            break;
+        }
+
+        case H2C_Message_PR_streamData: {
+            handle_stream_data(event, &m->choice.streamData);
             break;
         }
 

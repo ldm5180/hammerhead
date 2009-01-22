@@ -128,6 +128,17 @@ BEGIN
 
 
     -- 
+    -- StreamData contains some stream data
+    -- 
+
+    StreamData ::= SEQUENCE {
+        nodeId    PrintableString,
+        streamId  PrintableString,
+        data      OCTET STRING
+    }
+
+
+    -- 
     -- C2H-Message is a Client-to-Hab message
     -- 
 
@@ -146,7 +157,8 @@ BEGIN
         newNode            Node,
         lostNode           PrintableString,
         resourceMetadata   ResourceMetadata,
-        datapointsUpdate   ResourceDatapoints
+        datapointsUpdate   ResourceDatapoints,
+        streamData         StreamData
     }
 
 

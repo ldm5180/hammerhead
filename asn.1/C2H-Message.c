@@ -39,9 +39,9 @@ static asn_TYPE_member_t asn_MBR_C2H_Message_1[] = {
 		},
 };
 static asn_TYPE_tag2member_t asn_MAP_C2H_Message_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* subscribeNode at 135 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* subscribeDatapoints at 136 */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* setResourceValue at 138 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* subscribeNode at 146 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* subscribeDatapoints at 147 */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* setResourceValue at 149 */
 };
 static asn_CHOICE_specifics_t asn_SPC_C2H_Message_specs_1 = {
 	sizeof(struct C2H_Message),

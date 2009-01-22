@@ -16,6 +16,7 @@
 #include <PrintableString.h>
 #include "ResourceMetadata.h"
 #include "ResourceDatapoints.h"
+#include "StreamData.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
@@ -28,7 +29,8 @@ typedef enum H2C_Message_PR {
 	H2C_Message_PR_newNode,
 	H2C_Message_PR_lostNode,
 	H2C_Message_PR_resourceMetadata,
-	H2C_Message_PR_datapointsUpdate
+	H2C_Message_PR_datapointsUpdate,
+	H2C_Message_PR_streamData
 } H2C_Message_PR;
 
 /* H2C-Message */
@@ -39,6 +41,7 @@ typedef struct H2C_Message {
 		PrintableString_t	 lostNode;
 		ResourceMetadata_t	 resourceMetadata;
 		ResourceDatapoints_t	 datapointsUpdate;
+		StreamData_t	 streamData;
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */

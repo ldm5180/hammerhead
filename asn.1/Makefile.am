@@ -20,6 +20,7 @@ ASN_MODULE_SOURCES =            \
     ResourceDatapointsQuery.c   \
     ResourceDatapointsReply.c   \
     SetResourceValue.c          \
+    StreamData.c                \
     C2H-Message.c               \
     H2C-Message.c               \
     BDM-C2S-Message.c           \
@@ -41,6 +42,7 @@ ASN_MODULE_HEADS =              \
     ResourceDatapointsQuery.h   \
     ResourceDatapointsReply.h   \
     SetResourceValue.h          \
+    StreamData.h                \
     C2H-Message.h               \
     H2C-Message.h               \
     BDM-C2S-Message.h           \
