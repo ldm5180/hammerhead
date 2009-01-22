@@ -6,32 +6,20 @@
 
 function usage {
     echo "audio-stream-consumer"
-    echo "Connects to a Bionet audio Stream producer and plays it out the speakers."
-    echo "usage: audio-stream-consumer OPTIONS STREAM"
     echo ""
-    echo "OPTIONS:"
-    echo "    --nag NAG-HOSTNAME"
+    echo "Connects to a Bionet audio Stream producer and plays it out the speakers."
+    echo "usage: audio-stream-consumer STREAM"
     echo ""
 }
 
 
-BSTREAM="../../client/stream/bionet-stream"
+BSTREAM="./bionet-stream"
 
-
-if [ -z "$BIONET_NAG" ]; then
-    BIONET_NAG="bionet.colorado.edu"
-fi
-
-if [ "$1" = "--nag" ]; then
-    shift
-    BIONET_NAG="$1"
-    shift
-fi
 
 STREAM="$1"
 if [ -z "$STREAM" ]; then
     echo "no stream name specified, pick one:\n"
-    $BSTREAM --nag $BIONET_NAG
+    $BSTREAM 
     echo
     usage
     exit 1
@@ -53,5 +41,5 @@ BIOSERVE_AUDIO_FORMAT_APLAY="-t raw -r 9600 -c 1 -f S16_LE"
 
 
 # play via aplay
-$BSTREAM --nag $BIONET_NAG "$1" | aplay -D plug:dmix $BIOSERVE_AUDIO_FORMAT_APLAY
+$BSTREAM "$STREAM" | aplay $BIOSERVE_AUDIO_FORMAT_APLAY
 
