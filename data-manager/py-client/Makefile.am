@@ -26,4 +26,4 @@ bdm-client_wrap.c: bdm-client.i bdm-client-interface.c ../../util/bionet-util.h 
 	ln -sf .libs/libbdm.so _bdm_client.so
 
 clean-local:
-	rm -f *.so bdm-client_wrap.c bdm_client.*
+	rm -f *.so bdm-client_wrap.c bdm_client.* build
