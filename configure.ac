@@ -106,7 +106,7 @@ AC_ARG_ENABLE(
 fi
 
 if test "x$ENABLE_ALSA" = "xyes" ; then
-    PKG_CHECK_MODULES(ALSA, [ alsa >= 1.0.15 ])
+    PKG_CHECK_MODULES(ALSA, [ alsa >= 1.0.16 ])
     AC_SUBST(ALSA_CFLAGS)
     AC_SUBST(ALSA_LIBS)
 fi
