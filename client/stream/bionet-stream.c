@@ -85,7 +85,20 @@ void cb_new_node(bionet_node_t *node) {
 
 
 void cb_stream(bionet_stream_t *stream, void *buffer, int size) {
-    g_message("%s produced %d bytes", bionet_stream_get_name(stream), size);
+    int r;
+
+
+    // g_message("%s produced %d bytes", bionet_stream_get_name(stream), size);
+
+    r = write(fileno(stdout), buffer, size);
+    if (r < 0) {
+        g_warning("error writing to stdout: %s", strerror(errno));
+        exit(1);
+    }
+    if (r < size) {
+        g_warning("short write to stdout: %s", strerror(errno));
+        exit(1);
+    }
 }
 
 
