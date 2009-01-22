@@ -111,6 +111,23 @@ AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
 
 
 
+###
+# 
+# make sure there is sqlite3 (required for BDM)
+#
+###
+
+AC_CHECK_LIB(
+    sqlite3,
+    sqlite3_libversion_number,
+    [ HAVE_SQLITE3=yes ],
+    [ AC_MSG_ERROR([could not find libsqlite3-dev]) ],
+    [ ]
+)
+
+
+
+
 AC_ARG_ENABLE(python, AC_HELP_STRING([--disable-python],
       [disable python dependent parts]),
       [ENABLE_PYTHON=$enableval],
