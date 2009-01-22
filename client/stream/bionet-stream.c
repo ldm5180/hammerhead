@@ -121,7 +121,6 @@ void read_from_stream(bionet_stream_t *stream) {
 
     while (1) {
         bionet_read_with_timeout(NULL);
-        fprintf(stderr, "something happened\n");
     }
 
 #if 0
