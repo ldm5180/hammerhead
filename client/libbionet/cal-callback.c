@@ -268,7 +268,9 @@ static void handle_stream_data(const cal_event_t *event, StreamData_t *sd) {
         return;
     }
 
-    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got %d bytes of Stream data for %s", sd->data.size, bionet_stream_get_name(stream));
+    if (libbionet_callback_stream!= NULL) {
+        libbionet_callback_stream(stream, sd->data.buf, sd->data.size);
+    }
 }
 
 
