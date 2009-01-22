@@ -88,21 +88,16 @@ AM_CONDITIONAL(ENABLE_LINUX, test "x$HAVE_LINUX" = "xyes")
 # see if the user wants ALSA stuff, and if so if it's available, only on Linux
 #
 ###
+
 if test "x$ALSA_ABLE" = "xyes"; then
-AC_ARG_ENABLE(
-    alsa,
-    AC_HELP_STRING([--disable-alsa], [disable ALSA dependent parts]),
-    [ENABLE_ALSA=$enableval],
-    [ENABLE_ALSA=no]
-)
-fi
-if test "x$ALSA_ABLE" = "xyes"; then
-AC_ARG_ENABLE(
-    alsa,
-    AC_HELP_STRING([--disable-alsa], [disable ALSA dependent parts]),
-    [ENABLE_ALSA=$enableval],
-    [ENABLE_ALSA=yes]
-)
+    AC_ARG_ENABLE(
+        alsa,
+        AC_HELP_STRING([--disable-alsa], [disable ALSA dependent parts]),
+        [ENABLE_ALSA=$enableval],
+        [ENABLE_ALSA=yes]
+    )
+else
+    ENABLE_ALSA=no
 fi
 
 if test "x$ENABLE_ALSA" = "xyes" ; then
@@ -112,6 +107,7 @@ if test "x$ENABLE_ALSA" = "xyes" ; then
 fi
 
 AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
+
 
 
 
