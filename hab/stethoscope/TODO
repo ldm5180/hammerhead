@@ -1,0 +1,8 @@
+ToDo notes:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~````
+
+Dont report the node until we get the first battery reading, to avoid
+the bogus initial value.
+
+Send stop stream command when noone's connected.
+

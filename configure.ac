@@ -168,6 +168,20 @@ AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
 AC_PATH_PROG(DOT, dot, no)
 AM_CONDITIONAL([DISABLE_DOT], [test "x$DOT" = "xno"])
 		      
+#bluetooth
+AC_ARG_ENABLE(bluetooth, AC_HELP_STRING([--disable-bluetooth],
+      [disable bluetooth dependent parts]),
+      [ENABLE_BLUETOOTH=$enableval],
+      [ENABLE_BLUETOOTH=yes])
+if test "x$ENABLE_BLUETOOTH" = "xyes"; then
+PKG_CHECK_MODULES(BLUEZ, [ bluez >= 0.22 ])
+AC_SUBST(BLUEZ_CFLAGS)
+AC_SUBST(BLUEZ_LIBS)
+AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
+else
+AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
+fi
+
 # Checks for library functions.
 AC_FUNC_MALLOC
 
@@ -195,11 +209,13 @@ AC_CONFIG_FILES([Makefile
                  hab/Makefile
                  hab/libhab/Makefile
 		 hab/py-libhab/Makefile
+		 hab/libamedevice/Makefile
                  hab/csa-cp/Makefile
 		 hab/mmod/Makefile
                  hab/random/Makefile
                  hab/alsa/Makefile
                  hab/parsec/Makefile
+		 hab/stethoscope/Makefile
                  hab/syshealth/Makefile
                  hab/speedway/Makefile
                  hab/pal-650/Makefile

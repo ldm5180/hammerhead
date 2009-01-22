@@ -10,3 +10,6 @@ if ENABLE_PYTHON
 SUBDIRS += py-libhab
 endif
 
+if ENABLE_BLUETOOTH
+SUBDIRS += libamedevice stethoscope
+endif
