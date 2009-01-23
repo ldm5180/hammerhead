@@ -217,6 +217,7 @@ int main (int argc, char *argv[]) {
         int r;
 
         if (should_exit) {
+            sleep(1);  // let the CAL thread emit any last-second events we sent *last* time through the main loop
             show_stuff_going_away();
             exit(0);
         }
