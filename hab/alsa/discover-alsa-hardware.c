@@ -105,23 +105,17 @@ static void try_add_producer_stream(bionet_node_t *node, int card, int device, s
 
 
 static void try_add_consumer_stream(bionet_node_t *node, int card, int device, snd_ctl_t *handle, snd_pcm_info_t *pcminfo) {
-#if 0
     char id[BIONET_NAME_COMPONENT_MAX_LEN];
     char alsa_device[256];
     int r;
 
     bionet_stream_t *stream;
+    stream_info_t *sinfo;
 
 
-    if (dir == BIONET_STREAM_DIRECTION_PRODUCER) {
-        snd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_CAPTURE);
-        snprintf(alsa_device, sizeof(alsa_device), "plug:dsnoop:%d", card);
-        snprintf(id, sizeof(id), "%s", "Microphone");
-    } else {
-        snd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
-        snprintf(alsa_device, sizeof(alsa_device), "plug:dmix:%d", card);
-        snprintf(id, sizeof(id), "%s", "Speaker");
-    }
+    snd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
+    snprintf(alsa_device, sizeof(alsa_device), "plug:dmix:%d", card);
+    snprintf(id, sizeof(id), "%s", "Speaker");
 
     r = snd_ctl_pcm_info(handle, pcminfo);
     if (r < 0) {
@@ -131,31 +125,25 @@ static void try_add_consumer_stream(bionet_node_t *node, int card, int device, s
         return;
     }
 
-    stream = bionet_stream_new(node, id, dir, "audio");
+    stream = bionet_stream_new(node, id, BIONET_STREAM_DIRECTION_CONSUMER, "audio");
     if (stream == NULL) {
         printf("error creating new stream\n");
         exit(1);
     }
 
-
-    {
-        user_data_t *user_data;
-
-        user_data = (user_data_t *)calloc(1, sizeof(user_data_t));
-        if (user_data == NULL) {
-            printf("out of memory!");
-            exit(1);
-        }
-
-        user_data->device = strdup(alsa_device);
-        if (user_data->device == NULL) {
-            printf("out of memory!");
-            exit(1);
-        }
-
-        bionet_stream_set_user_data(stream, user_data);
+    sinfo = (stream_info_t *)calloc(1, sizeof(stream_info_t));
+    if (sinfo == NULL) {
+        printf("out of memory!");
+        exit(1);
     }
 
+    sinfo->device = strdup(alsa_device);
+    if (sinfo->device == NULL) {
+        printf("out of memory!");
+        exit(1);
+    }
+
+    bionet_stream_set_user_data(stream, sinfo);
 
     r = bionet_node_add_stream(node, stream);
     if (r < 0) {
@@ -163,12 +151,10 @@ static void try_add_consumer_stream(bionet_node_t *node, int card, int device, s
         exit(1);
     }
 
-
     //  FIXME: set up mixer elements to sane defaults
 
     //  FIXME: add resources for mixer elements
 
-#endif
 }
 
 
