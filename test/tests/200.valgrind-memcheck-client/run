@@ -12,6 +12,9 @@ fi
 echo starting bionet-watcher under valgrind memcheck
 libtool --mode=execute valgrind --suppressions=valgrind.suppressions --quiet --log-file=out.valgrind.watcher --tool=memcheck --trace-children=yes --leak-check=full $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher &
 
+sleep 2  # let the client come up before starting the hab (valgrind makes it slow)
+
+
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
 
@@ -19,7 +22,7 @@ sleep $TEST_DURATION
 
 # kill the hab
 kill %2
-sleep 2  # to let the clients notice
+sleep 4  # to let the clients notice
 
 kill %1
 
