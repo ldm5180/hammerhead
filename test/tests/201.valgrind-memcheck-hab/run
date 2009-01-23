@@ -23,7 +23,7 @@ sleep $TEST_DURATION
 
 # kill the hab
 kill %1
-sleep 2  # to let the clients notice
+sleep 4  # to let the clients notice
 
 kill %2
 sleep 1
