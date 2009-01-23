@@ -53,6 +53,10 @@ void bionet_datapoint_free(bionet_datapoint_t *datapoint);
 /**
  * @brief Set the value of a datapoint
  *
+ * The datapoint's existing bionet_value_t (if any) is freed, and replaced
+ * with the passed-in bionet_value_t, which becomes the property of the
+ * datapoint.
+ *
  * @param[in] datapoint Datapoint to set
  * @param[in] value Value to set in the datapoint
  */
@@ -127,6 +131,11 @@ const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datap
 
 /**
  * @brief Sets the Datapoint Timestamp as specified.
+ *
+ * The datapoint's timestamp is overwritten with the contents of the new
+ * timestamp.  The new_timestamp argument is unmodified and, unlike the new
+ * value of bionet_datapoint_set_value(), remains the property of the
+ * caller.
  *
  * @param[in] datapoint The Datapoint to set the Timestamp of
  * @param[in] new_timestamp Timestamp to set it to (NULL means "now").
