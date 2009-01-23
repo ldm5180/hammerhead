@@ -145,7 +145,8 @@ BEGIN
     C2H-Message ::= CHOICE {
         subscribeNode         PrintableString,
         subscribeDatapoints   PrintableString,
-        setResourceValue      SetResourceValue
+        setResourceValue      SetResourceValue,
+        streamData            StreamData
     }
 
 

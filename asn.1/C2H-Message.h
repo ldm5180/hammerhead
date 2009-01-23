@@ -14,6 +14,7 @@
 /* Including external dependencies */
 #include <PrintableString.h>
 #include "SetResourceValue.h"
+#include "StreamData.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
@@ -25,7 +26,8 @@ typedef enum C2H_Message_PR {
 	C2H_Message_PR_NOTHING,	/* No components present */
 	C2H_Message_PR_subscribeNode,
 	C2H_Message_PR_subscribeDatapoints,
-	C2H_Message_PR_setResourceValue
+	C2H_Message_PR_setResourceValue,
+	C2H_Message_PR_streamData
 } C2H_Message_PR;
 
 /* C2H-Message */
@@ -35,6 +37,7 @@ typedef struct C2H_Message {
 		PrintableString_t	 subscribeNode;
 		PrintableString_t	 subscribeDatapoints;
 		SetResourceValue_t	 setResourceValue;
+		StreamData_t	 streamData;
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */
