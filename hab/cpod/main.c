@@ -47,15 +47,12 @@ int write_pidfile();
 void print_help(char* name)
 {
     printf("Usage: %s [options] bdaddr\n", name);
-    printf("=======================================================================================================\n");
-    printf("bdaddr\t\t\tBDADDR of the device you'd like to connect to\n\n");
     printf("Options are the following:\n");
     printf("-d,--daemon\t\tRun program as a daemon\n");
     printf("-e,--ecg\t\tParse and report the ECG output\n");
     printf("-h,--hab-id name\tSets the hab id\n");
     printf("-?,--help\t\tPrint this help message\n");
     printf("-k,--kill\t\tSearch for a running instance of processs and kill it\n");
-    printf("-n,--nag hostname\tThe hostname of the NAG to connect to\n");
     printf("-p,--period time\tPeriod between battery queries in seconds\n");
     printf("-v,--verbose\t\tTurn on verbose logging\n");
 }
@@ -183,7 +180,6 @@ int main ( int argc, char** argv )
     init_crcccitt_table();
 
     // Create the bionet hab
-	printf("FIXME: hab_id = %s\n", hab_id);
     hab = bionet_hab_new(HAB_TYPE, hab_id);
     if (hab == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "Unable to create a new hab...");
