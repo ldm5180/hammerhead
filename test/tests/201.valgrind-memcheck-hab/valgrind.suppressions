@@ -10,3 +10,22 @@
    fun:main
 }
 
+
+{
+    glib/g_thread_init
+    Memcheck:Leak
+    fun:memalign
+    fun:posix_memalign
+    obj:/usr/lib/libglib-2.*
+    fun:g_slice_alloc
+    fun:g_array_sized_new
+    fun:g_array_new
+    fun:g_static_private_set
+    fun:g_get_filename_charsets
+    obj:/usr/lib/libglib-2.*
+    fun:g_thread_init_glib
+    fun:g_thread_init
+    fun:cal_server_mdnssd_bip_init
+    fun:hab_connect
+    fun:main
+}
