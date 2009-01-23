@@ -1,7 +1,5 @@
 #!/bin/bash
 
-TEST_DURATION=30
-
 UNIQUE=$$
 
 if [ -z "$ROOT" ]; then
@@ -9,8 +7,14 @@ if [ -z "$ROOT" ]; then
     exit 1
 fi
 
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
+RETVAL=0
+
 echo starting random-hab under valgrind memcheck
-libtool --mode=execute valgrind --suppressions=valgrind.suppressions --quiet --log-file=out.valgrind.random-hab --tool=memcheck --trace-children=yes --leak-check=full $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
+libtool --mode=execute valgrind --suppressions=valgrind.suppressions --quiet --log-file=out.valgrind.random-hab --num-callers=25 --tool=memcheck --trace-children=yes --leak-check=full $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
 
 echo starting bionet-watcher
 $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher &
@@ -21,13 +25,14 @@ sleep $TEST_DURATION
 kill %1
 sleep 2  # to let the clients notice
 
-kill %1
+kill %2
+sleep 1
 
 
 if ! diff -q out.watcher out.random-hab; then
     echo "ERROR: watcher output differs from random-hab output:"
     diff -u out.random-hab out.watcher
-    exit 1
+    RETVAL=1
 fi
 echo "watcher output is identical to random-hab output, yay"
 
@@ -38,9 +43,12 @@ sleep 1
 if [ $(wc -l < out.valgrind.random-hab) -gt 0 ]; then
     echo "valgrind memcheck output:"
     cat out.valgrind.random-hab
-    exit 1
+    RETVAL=1
 fi
 
-echo "valgrind memcheck finds no errors :-)"
-exit 0
+if [ $RETVAL -eq 0 ]; then
+    echo "valgrind memcheck finds no errors :-)"
+fi
+
+exit $RETVAL
 
