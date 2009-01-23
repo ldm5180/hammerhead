@@ -79,6 +79,7 @@ int main(int argc, char *argv[]) {
     hab_register_callback_lost_client(cb_lost_client);
     hab_register_callback_stream_subscription(cb_stream_subscription);
     hab_register_callback_stream_unsubscription(cb_stream_unsubscription);
+    hab_register_callback_stream_data(cb_stream_data);
 
     this_hab = bionet_hab_new("Alsa", NULL);
 

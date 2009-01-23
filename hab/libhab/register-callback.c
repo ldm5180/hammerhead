@@ -27,3 +27,8 @@ void hab_register_callback_stream_unsubscription(void (*cb_stream_unsubscription
     libhab_callback_stream_unsubscription = cb_stream_unsubscription;
 }
 
+
+void hab_register_callback_stream_data(void (*cb_stream_data)(const char *client_id, bionet_stream_t *stream, const void *buf, unsigned int size)) {
+    libhab_callback_stream_data = cb_stream_data;
+}
+

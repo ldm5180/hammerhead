@@ -5,6 +5,7 @@ bin_PROGRAMS = alsa-hab
 
 alsa_hab_SOURCES =               \
     alsa-hab.c                   \
+    cb-stream-data.c             \
     cb-stream-subscription.c     \
     cb-stream-unsubscription.c   \
     check-alsa-poll.c            \

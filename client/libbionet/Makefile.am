@@ -12,6 +12,7 @@ libbionet_la_SOURCES =        \
     subscribe-node-list.c     \
     subscribe-stream.c        \
     set-resource.c            \
+    stream-write.c            \
     cal-callback.c            \
     cache-get-hab.c           \
     cache-internal.c          \

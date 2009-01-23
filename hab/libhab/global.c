@@ -18,6 +18,7 @@ int libhab_cal_fd = -1;
 bionet_hab_t *libhab_this = NULL;
 
 void (*libhab_callback_set_resource)(bionet_resource_t *resource, bionet_value_t *value) = NULL;
+void (*libhab_callback_stream_data)(const char *client_id, bionet_stream_t *stream, const void *buf, unsigned int size) = NULL;
 void (*libhab_callback_lost_client)(const char *client_id) = NULL;
 void (*libhab_callback_stream_subscription)(const char *client_id, const bionet_stream_t *stream) = NULL;
 void (*libhab_callback_stream_unsubscription)(const char *client_id, const bionet_stream_t *stream) = NULL;

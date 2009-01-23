@@ -179,19 +179,10 @@ void read_from_stream(bionet_stream_t *stream) {
 void write_to_stream(bionet_stream_t *stream) {
     fprintf(stderr, "writing to %s\n", bionet_stream_get_name(stream));
 
-    pause();
-
-#if 0
-    int fd;
-
     // unbuffer stdin
     setvbuf(stdin, NULL, _IONBF, 0);
 
-    fd = *(int*)stream->user_data;
-
     while (1) {
-        int index;
-        int bytes_remaining;
         int r;
         uint8_t buffer[1024];
 
@@ -200,29 +191,13 @@ void write_to_stream(bionet_stream_t *stream) {
             fprintf(stderr, "error reading stdin: %s\n", strerror(errno));
             exit(1);
         }
-
         if (r == 0) {
             fprintf(stderr, "end of file\n");
             exit(0);
         }
 
-        index = 0;
-        bytes_remaining = r;
-
-        // fprintf(stderr, "writing %d bytes to stream\n", r);
-
-        while (bytes_remaining > 0) {
-            r = write(fd, &buffer[index], bytes_remaining);
-            if (r < 0) {
-                fprintf(stderr, "error writing to stream: %s\n", strerror(errno));
-                exit(1);
-            }
-
-            index += r;
-            bytes_remaining -= r;
-        }
+        bionet_stream_write(stream, buffer, r);
     }
-#endif
 }
 
 

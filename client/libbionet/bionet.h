@@ -427,6 +427,16 @@ int bionet_subscribe_stream_by_name(const char *stream_name);
 
 
 /**
+ * @brief Sends a chunk of data to a Consumer Stream
+ *
+ * @param[in] stream Stream to write to (must be a Consumer stream)
+ * @param[in] buf Data to write
+ * @param[in] size Number of bytes in buf
+ */
+void bionet_stream_write(bionet_stream_t *stream, const void *buf, unsigned int size);
+
+
+/**
  * @brief  Sends a message to Bionet requesting that the specified
  * Resource be set to the specified value.
  *

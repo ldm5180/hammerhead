@@ -388,6 +388,28 @@ static void libhab_handle_unsubscription_request(const char *peer_name, const ch
 
 
 
+static void libhab_stream_data(const char *peer_name, StreamData_t *sd) {
+    bionet_node_t *node;
+    bionet_stream_t *stream;
+
+    node = bionet_hab_get_node_by_id(libhab_this, (char *)sd->nodeId.buf);
+    if (node == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got a Stream Data message from Client '%s', for unknown Node %s", peer_name, sd->nodeId.buf);
+        return;
+    }
+
+    stream = bionet_node_get_stream_by_id(node, (char *)sd->streamId.buf);
+    if (stream == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got a Stream Data message from Client '%s', for unknown Stream %s:%s", peer_name, bionet_node_get_id(node), sd->streamId.buf);
+        return;
+    }
+
+    libhab_callback_stream_data(peer_name, stream, (const char *)sd->data.buf, sd->data.size);
+}
+
+
+
+
 void libhab_cal_callback(const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
@@ -427,14 +449,25 @@ void libhab_cal_callback(const cal_event_t *event) {
                 g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained junk at end of message (consumed %d of %d)", event->peer_name, (int)rval.consumed, event->msg.size);
             }
 
-            if (m->present != C2H_Message_PR_setResourceValue) {
-                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Got unknown message %d from '%s'", m->present, event->peer_name);
-                asn_DEF_C2H_Message.free_struct(&asn_DEF_C2H_Message, m, 0);
-                break;
-            }
+            switch (m->present) {
+                case C2H_Message_PR_setResourceValue: {
+                    if (libhab_callback_set_resource != NULL) {
+                        libhab_set_resource(event->peer_name, &m->choice.setResourceValue);
+                    }
+                    break;
+                }
 
-            if (libhab_callback_set_resource != NULL) {
-                libhab_set_resource(event->peer_name, &m->choice.setResourceValue);
+                case C2H_Message_PR_streamData: {
+                    if (libhab_callback_stream_data != NULL) {
+                        libhab_stream_data(event->peer_name, &m->choice.streamData);
+                    }
+                    break;
+                }
+
+                default: {
+                    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Got unknown message %d from '%s'", m->present, event->peer_name);
+                    break;
+                }
             }
 
             asn_DEF_C2H_Message.free_struct(&asn_DEF_C2H_Message, m, 0);

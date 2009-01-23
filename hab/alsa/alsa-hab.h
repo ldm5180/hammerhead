@@ -165,6 +165,8 @@ void disconnect_client(bionet_stream_t *stream, client_t *client);
 void cb_stream_subscription(const char *client_id, const bionet_stream_t *stream);
 void cb_stream_unsubscription(const char *client_id, const bionet_stream_t *stream);
 
+void cb_stream_data(const char *client_id, bionet_stream_t *stream, const void *data, unsigned int size);
+
 
 
 

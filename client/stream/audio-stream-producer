@@ -6,31 +6,17 @@
 
 function usage {
     echo "audio-stream-producer"
+    echo ""
     echo "Sends an audio file to a Bionet audio Stream consumer."
-    echo "usage: audio-stream-producer [OPTIONS] SOUND-FILE STREAM"
-    echo ""
-    echo "OPTIONS:"
-    echo ""
-    echo "    --nag NAG-HOSTNAME"
+    echo "usage: audio-stream-producer SOUND-FILE STREAM"
     echo ""
 }
 
 
-if [ -z "$BIONET_NAG" ]; then
-    BIONET_NAG="bionet.colorado.edu"
-fi
-
 # for sox
 BIOSERVE_AUDIO_FORMAT="-t raw -r 9600 -c 1 -s -w"
 
-BSTREAM="../../client/stream/bionet-stream"
-
-
-if [ "$1" = "--nag" ]; then
-    shift
-    BIONET_NAG="$1"
-    shift
-fi
+BSTREAM="./bionet-stream"
 
 
 SOUND_FILE="$1"
@@ -49,18 +35,15 @@ STREAM=$1
 shift
 if [ -z "$STREAM" ]; then 
     echo "no target stream specified, pick one:"
-    $BSTREAM --nag $BIONET_NAG
-    echo 
-    usage
-    exit 1
+    $BSTREAM
 fi
 
 
 if echo $IN_TYPE | egrep -q '(WAVE audio)|(Sun/NeXT audio data)'; then
-    sox "$SOUND_FILE" $BIOSERVE_AUDIO_FORMAT - | $BSTREAM --nag $BIONET_NAG "$STREAM"
+    sox "$SOUND_FILE" $BIOSERVE_AUDIO_FORMAT - | $BSTREAM "$STREAM"
 
 elif echo $IN_TYPE | egrep -q '(MPEG.*layer III)|(MP3)'; then
-    mpg123 --au - "$SOUND_FILE" | sox -t au - $BIOSERVE_AUDIO_FORMAT - | $BSTREAM --nag $BIONET_NAG "$STREAM"
+    mpg123 --au - "$SOUND_FILE" | sox -t au - $BIOSERVE_AUDIO_FORMAT - | $BSTREAM "$STREAM"
 
 else
     echo "unknown sound file format: $IN_TYPE"
