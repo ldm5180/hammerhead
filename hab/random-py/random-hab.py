@@ -39,9 +39,14 @@ import add_node
 import destroy_node
 import update_node
 
+
+def pycb_set_resource(resource, value):
+    print "callback: should set " + bionet_resource_get_local_name(resource) + " to " + bionet_value_to_str(value)
+
+
 #connect to bionet
 hab = bionet_hab_new("RANDOM", options.hab_id)
-hab_register_callback_set_resource(cb_set_resource);
+pyhab_register_callback_set_resource(pycb_set_resource);
 bionet_fd = hab_connect(hab)
 if (0 > bionet_fd):
     logger.warning("problem connection to Bionet, exiting\n")
