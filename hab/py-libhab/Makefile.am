@@ -19,7 +19,7 @@ hab_wrap.c: hab.i ../../util/bionet-util.h ../../util/bionet-hab.h ../../util/bi
 	ln -sf .libs/libhab-py.so _hab.so
 
 clean-local:
-	rm -f hab.py _hab.so hab_wrap.c libbionet* build
+	rm -f hab.py _hab.so hab_wrap.c libbionet*
 
 install-exec-hook:
 	python setup.py install

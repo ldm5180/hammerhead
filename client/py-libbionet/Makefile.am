@@ -24,6 +24,6 @@ install-exec-hook:
 	$(LDCONFIG_EXE)
 
 clean-local:
-	rm -f bionet.py _bionet.so bionet_wrap.c libbionet* build
+	rm -f bionet.py _bionet.so bionet_wrap.c libbionet*
 
 EXTRA_DIST = bionet.py .libs/libbionet-py.so* libbionet-py.a
