@@ -123,6 +123,7 @@ libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util
 
 libbionet_asn_la_LIBADD = $(AM_LDADD)
 
+libbionet_asn_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION) 
 
 
 bin_PROGRAMS = test-asn-h2c test-asn-c2h test-asn-bdm-c2s test-asn-bdm-s2c

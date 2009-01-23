@@ -1,3 +1,5 @@
+include $(top_srcdir)/common.am
+
 SWIG_INCDIR = -I../libbionet -I../../util -I../../cal -I../../cal/util
 
 if ENABLE_LINUX
@@ -11,8 +13,9 @@ lib_LTLIBRARIES = libbionet-py.la
 libbionet_py_la_SOURCES = bionet_wrap.c
 
 libbionet_py_la_CFLAGS = `pkg-config --cflags glib-2.0` -I/usr/include/python2.5 ${SWIG_INCDIR}
-libbionet_py_la_LDFLAGS = -L../libbionet -L../../cal/mdnssd-bip/client -L../../asn.1 -L../../util
+libbionet_py_la_LDFLAGS = -L../libbionet -L../../cal/mdnssd-bip/client -L../../asn.1 -L../../util -version-info $(BIONET_INTERFACE_VERSION)
 libbionet_py_la_LIBADD = -lbionet -lcal-mdnssd-bip-client -lbionet-asn -lbionet-util
+
 
 bionet_wrap.c: bionet.i ../libbionet/libbionet.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la ../../asn.1/libbionet-asn.la ../../util/libbionet-util.la
 	swig -w302 -python ${SWIG_INCDIR} bionet.i 

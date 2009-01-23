@@ -16,6 +16,8 @@ libbdm_la_LIBADD = ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la $(G
 
 libbdm_la_CFLAGS = -I../../util -I/usr/include/python2.5 -I../../asn.1 -I../include $(GLIB20_CFLAGS) -L../../util -L../../asn.1 -I../client
 
+libbdm_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION) 
+
 install-exec-hook: setup.py
 	python setup.py install
 	cp _bdm_client.so $(LIB_INST_DIR)/.

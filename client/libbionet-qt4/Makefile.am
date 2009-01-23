@@ -36,10 +36,9 @@ libbionet_qt4_la_SOURCES = makefile.qt
 
 libbionet_qt4_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libbionet -I../../util -I/usr/include/qwt-qt4
 
-libbionet_qt4_la_LDFLAGS = $(AM_LDFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) -L../libbionet -L../../asn.1 -L../../util -L../../cal/mdnssd-bip/client
+libbionet_qt4_la_LDFLAGS = $(AM_LDFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) -L../libbionet -L../../asn.1 -L../../util -L../../cal/mdnssd-bip/client -version-info $(BIONET_INTERFACE_VERSION) 
 
 libbionet_qt4_la_LIBADD = $(AM_LDADD) -lbionet -lbionet-util -lbionet-asn -lcal-mdnssd-bip-client -lpthread -lm ${qtmake_moc_objects} ${qtmake_objects} 
-
 
 
 makefile.qt: ../libbionet/libbionet.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la

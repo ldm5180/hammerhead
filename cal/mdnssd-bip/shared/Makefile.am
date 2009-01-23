@@ -19,3 +19,5 @@ libcal_mdnssd_bip_shared_la_SOURCES =   \
 
 libcal_mdnssd_bip_shared_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../.. -I../../util
 libcal_mdnssd_bip_shared_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_CFLAGS) 
+
+libcal_mdnssd_bip_shared_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION) 

@@ -9,3 +9,19 @@ if ENABLE_LINUX
 endif
  
 CFLAGS=$(AM_CFLAGS)
+
+#
+# Set The SDL Version.
+#
+# For detailed explanation of this versioning scheme, 
+# See: http://sourceware.org/autobook/autobook/autobook_91.html#SEC91
+#
+# INTERFACE:REVISION:AGE
+#
+# Interface is bumped on API breaking events
+# Revision is bumped on each change like a bug fix
+# Age is bumped on every addition to the API
+BIONET_INTERFACE_VERSION=1:0:0
+
+#Purely aesthetic marketing version number
+BIONET_RELEASE_VERSION=2.1.1

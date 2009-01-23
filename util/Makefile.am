@@ -68,3 +68,4 @@ libbionet_util_la_SOURCES =    \
 #    stream-listen.c
 
 
+libbionet_util_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION)
