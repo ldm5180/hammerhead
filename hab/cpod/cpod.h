@@ -22,7 +22,7 @@
 #define CPOD_H
 
 #include <stdint.h>
-
+#include "hardware-abstractor.h"
 
 //  Ugly hack for the demo
 #define CPOD_BDADDR "00:A0:96:20:8A:C1"
@@ -66,6 +66,10 @@
 uint8_t next_command_number();
 
 void init_crcccitt_table();
+
+int create_zeroed_float_sensor(bionet_node_t* node, char* id);
+
+void set_float_resource(bionet_node_t* node, char *id, float value, struct timeval *tv);
 
 uint16_t crcccitt(char* data, int size);
 

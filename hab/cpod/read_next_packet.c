@@ -261,9 +261,9 @@ int read_next_packet(int fd)
                 Accel_y = ((float)accel_y - 1046.5)*(0.0126358) - 12.63;
                 Accel_z = ((float)accel_z - 1059)*(0.01236979) - 13.18;
 
-                bionet_node_set_resource_value(node, "Accel-X", &Accel_x, &tv);
-                bionet_node_set_resource_value(node, "Accel-Y", &Accel_y, &tv);
-                bionet_node_set_resource_value(node, "Accel-Z", &Accel_z, &tv);
+                set_float_resource(node, "Accel-X", Accel_x, &tv);
+                set_float_resource(node, "Accel-Y", Accel_y, &tv);
+                set_float_resource(node, "Accel-Z", Accel_z, &tv);
             }
 
             // ECG data
@@ -285,16 +285,16 @@ int read_next_packet(int fd)
                     ECG_V5[i*2] = (float)first_group(ecg_V5[i*3])/4096.0;
                     ECG_V5[i*2+1] = (float)first_group(ecg_V5[i*3+1])/4096.0;
 
-                    bionet_node_set_resource_value(node, "ECG-II", &ECG_II[i*2], &tmp);
-                    bionet_node_set_resource_value(node, "ECG-V5", &ECG_V5[i*2], &tmp);
+                    set_float_resource(node, "ECG-II", ECG_II[i*2], &tmp);
+                    set_float_resource(node, "ECG-V5", ECG_V5[i*2], &tmp);
 
-                    hab_report_resource_update(node);
+                    hab_report_datapoints(node);
 
                     tmp = add_time(tmp, 3910);
-                    bionet_node_set_resource_value(node, "ECG-II", &ECG_II[i*2+1], &tmp);
-                    bionet_node_set_resource_value(node, "ECG-V5", &ECG_V5[i*2+1], &tmp);
+                    set_float_resource(node, "ECG-II", ECG_II[i*2+1], &tmp);
+                    set_float_resource(node, "ECG-V5", ECG_V5[i*2+1], &tmp);
 
-                    hab_report_resource_update(node);
+                    hab_report_datapoints(node);
                     tmp = add_time(tmp, 3909);
                 }
             }
@@ -310,7 +310,7 @@ int read_next_packet(int fd)
                 Sp_O2 = (float)Sp_O2_data*0.0625;
 
                 if (Sp_O2 < 102.0)
-                    bionet_node_set_resource_value(node, "Pulse-Oximetry", &Sp_O2, &tv);
+                    set_float_resource(node, "Pulse-Oximetry", Sp_O2, &tv);
             }
 
             // Temperature data
@@ -322,7 +322,7 @@ int read_next_packet(int fd)
                 Temp_data = g_ntohs(Temp_data);
 
                 Temp = (float)Temp_data*0.0045 - 48.68;
-                bionet_node_set_resource_value(node, "Temperature", &Temp, &tv);
+                set_float_resource(node, "Temperature", Temp, &tv);
             }
 
             // Heart Rate
@@ -335,10 +335,10 @@ int read_next_packet(int fd)
 
                 Heart = (float)Heart_data*0.0625;
                 if(Heart < 200.0)
-                    bionet_node_set_resource_value(node, "Heart-Rate", &Heart, &tv);
+                    set_float_resource(node, "Heart-Rate", Heart, &tv);
             }
 
-            hab_report_resource_update(node);
+            hab_report_datapoints(node);
         }
 
         count = 0;

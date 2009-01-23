@@ -60,20 +60,21 @@ void print_help(char* name)
     printf("-v,--verbose\t\tTurn on verbose logging\n");
 }
 
-
 bionet_node_t *node;
+bionet_hab_t *hab;
 
 int print_ecg;
 
 
 int main ( int argc, char** argv )
 {
-    int cpod_fd, i, verbose, nag_fd, period, streaming, daemon;
+    int cpod_fd, i, verbose, hab_fd, period, streaming, daemon;
 
     bdaddr_t device;
 
     struct sockaddr_rc addr = {0};
 
+	char *hab_id = NULL;
 
     daemon = 0;
     cpod_fd = -1;
@@ -82,9 +83,6 @@ int main ( int argc, char** argv )
     streaming = 0;
     bacpy(&device, BDADDR_ANY);
     period = 10;
-
-    hab_set_nag_hostname(DEFAULT_NAG);
-    hab_set_type(HAB_TYPE);
 
 
     //  Parse command line arguments
@@ -122,28 +120,13 @@ int main ( int argc, char** argv )
 
             return r;
         }
-        else if (strcmp(argv[i], "--nag") == 0 ||
-                 strcmp(argv[i], "-n") == 0)
-        {
-            i++;
-
-            if (i < argc)
-            {
-                hab_set_nag_hostname(argv[i]);
-            }
-            else
-            {
-                print_help(argv[0]);
-                exit(2);
-            }
-        }
         else if (strcmp(argv[i], "--hab-id") == 0 ||
                  strcmp(argv[i], "-h") == 0)
         {
             i++;
 
             if (i < argc)
-                hab_set_id(argv[i]);
+                hab_id = argv[i];
             else
             {
                 print_help(argv[0]);
@@ -199,12 +182,19 @@ int main ( int argc, char** argv )
     // Initialize the CRC-CCITT calculation table
     init_crcccitt_table();
 
+    // Create the bionet hab
+	printf("FIXME: hab_id = %s\n", hab_id);
+    hab = bionet_hab_new(HAB_TYPE, hab_id);
+    if (hab == NULL) {
+        g_log("", G_LOG_LEVEL_ERROR, "Unable to create a new hab...");
+        exit(1);
+    }
 
-    //  Connect to the nag
+    //  Connect
 connect_to_nag:
-    nag_fd = hab_connect_to_nag();
 
-    if (nag_fd == -1)
+    hab_fd = hab_connect(hab);
+    if (hab_fd == -1)
     {
         g_critical("Can't connect to nag: %s - Restarting...", strerror(errno));
         g_usleep(10 * 1000*1000);
@@ -238,83 +228,30 @@ connecting:
     // Report resources to nag
     i = 0;
 
-    node = bionet_node_new(NULL, NULL, NODE_ID);
+    node = bionet_node_new(hab, NODE_ID);
+	if (node == NULL) {
+		g_log("", G_LOG_LEVEL_ERROR, "error creating node, quitting");
+		return 1;
+	}
+	if (bionet_hab_add_node(hab, node) != 0) {
+		g_log("", G_LOG_LEVEL_ERROR, "error adding node to hab, quitting");
+		return 1;
+	}
+
 
     if (print_ecg)
     {
-        i += bionet_node_add_resource_with_valuestr_timestr(
-            node,
-            "Float",
-            "Sensor",
-            "ECG-II",
-            "0",
-            NULL);
-
-        i += bionet_node_add_resource_with_valuestr_timestr(
-            node,
-            "Float",
-            "Sensor",
-            "ECG-V5",
-            "0",
-            NULL);
+		i += create_zeroed_float_sensor(node, "ECG-II");
+		i += create_zeroed_float_sensor(node, "ECG-V5");
     }
 
-    /*i += bionet_node_add_resource_with_valuestr_timestr(
-        node,
-        "Float",
-        "Sensor",
-        "Respiration-Raw",
-        "0",
-        NULL);*/
-
-    i += bionet_node_add_resource_with_valuestr_timestr(
-        node,
-        "Float",
-        "Sensor",
-        "Accel-X",
-        "0",
-        NULL);
-
-    i += bionet_node_add_resource_with_valuestr_timestr(
-        node,
-        "Float",
-        "Sensor",
-        "Accel-Y",
-        "0",
-        NULL);
-
-    i += bionet_node_add_resource_with_valuestr_timestr(
-        node,
-        "Float",
-        "Sensor",
-        "Accel-Z",
-        "0",
-        NULL);
-
-    i += bionet_node_add_resource_with_valuestr_timestr(
-        node,
-        "Float",
-        "Sensor",
-        "Temperature",
-        "0",
-        NULL);
-
-    i += bionet_node_add_resource_with_valuestr_timestr(
-        node,
-        "Float",
-        "Sensor",
-        "Pulse-Oximetry",
-        "0",
-        NULL);
-
-    i += bionet_node_add_resource_with_valuestr_timestr(
-        node,
-        "Float",
-        "Sensor",
-        "Heart-Rate",
-        "0",
-        NULL);
-
+    /*i += create_zeroed_float_sensor(node, "Respiration-Raw");*/
+    i += create_zeroed_float_sensor(node, "Accel-X");
+    i += create_zeroed_float_sensor(node, "Accel-Y");
+    i += create_zeroed_float_sensor(node, "Accel-Z");
+    i += create_zeroed_float_sensor(node, "Temperature");
+    i += create_zeroed_float_sensor(node, "Pulse-Oximetry");
+    i += create_zeroed_float_sensor(node, "Heart-Rate");
 
     i += hab_report_new_node(node);
 
@@ -322,7 +259,7 @@ connecting:
         i != 0)
     {
         g_critical("Can't report node to nag - Restarting");
-        close(nag_fd);
+        close(hab_fd);
         close(cpod_fd);
         cpod_fd = -1;
         goto connect_to_nag;
@@ -356,9 +293,9 @@ connecting:
 
         FD_ZERO(&readers);
 
-        FD_SET(nag_fd, &readers);
+        FD_SET(hab_fd, &readers);
         FD_SET(cpod_fd, &readers);
-        max_fd = MAX(nag_fd, cpod_fd);
+        max_fd = MAX(hab_fd, cpod_fd);
 
 
         i = select(max_fd + 1, &readers, NULL, NULL, &timeout);
@@ -371,6 +308,8 @@ connecting:
             cpod_fd = -1;
 
             hab_report_lost_node(NODE_ID);
+			bionet_hab_remove_node_by_id(hab, NODE_ID);
+			bionet_node_free(node);
 
             g_usleep(3*1000*1000);
             goto connect_to_nag;
@@ -390,16 +329,16 @@ connecting:
                 cpod_fd = -1;
 
                 hab_report_lost_node(NODE_ID);
+				bionet_hab_remove_node_by_id(hab, NODE_ID);
+				bionet_node_free(node);
 
                 goto connecting;
             }
         }
 
 
-        if (FD_ISSET(nag_fd, &readers))
-            hab_read_from_nag();
-
-        hab_handle_queued_nag_messages();
+        if (FD_ISSET(hab_fd, &readers))
+            hab_read();
 
 
         if (FD_ISSET(cpod_fd, &readers))
@@ -414,6 +353,8 @@ connecting:
                 cpod_fd = -1;
 
                 hab_report_lost_node(NODE_ID);
+				bionet_hab_remove_node_by_id(hab, NODE_ID);
+				bionet_node_free(node);
 
                 g_usleep(3*1000*1000);
                 goto connecting;

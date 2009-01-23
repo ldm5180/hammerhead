@@ -228,6 +228,7 @@ AC_CONFIG_FILES([Makefile
 		 hab/py-libhab/Makefile
 		 hab/libamedevice/Makefile
                  hab/csa-cp/Makefile
+                 hab/cpod/Makefile
 		 hab/mmod/Makefile
                  hab/random/Makefile
                  hab/alsa/Makefile
