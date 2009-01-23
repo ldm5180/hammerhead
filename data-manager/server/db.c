@@ -331,7 +331,7 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
     // the two-character string "''" (two single-quote characters).
 
     {
-        const char *src_string;
+        char *src_string;
         int src_index;
         int dest_index;
         int dest_size;
@@ -349,6 +349,7 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
                 if (dest_index >= (dest_size-2)) {
                     // not enough room for the escaped ' and the NULL
                     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL doesnt fit in buffer!\n");
+                    free(src_string);
                     return -1;
                 }
                 escaped_string[dest_index] = '\'';
@@ -357,6 +358,8 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
             escaped_string[dest_index] = src_string[src_index];
         }
         escaped_string[dest_index] = '\0';
+
+        free(src_string);
     }
 
 
