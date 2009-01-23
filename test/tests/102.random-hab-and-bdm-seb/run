@@ -1,5 +1,14 @@
 #!/bin/bash
 
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
 UNIQUE=$$
 
 YEAR=`date +%Y`
@@ -20,7 +29,7 @@ sleep 3 # let the bdm come up before starting the HAB
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
 
-sleep 30
+sleep $TEST_DURATION
 
 echo "test run complete, killing random-hab"
 kill %2

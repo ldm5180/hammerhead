@@ -1,12 +1,14 @@
 #!/bin/bash
 
-TEST_DURATION=30
-
 UNIQUE=$$
 
 if [ -z "$ROOT" ]; then
     echo "ROOT environment variable is undefined"
     exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
 fi
 
 echo starting bionet-watcher under valgrind memcheck

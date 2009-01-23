@@ -1,13 +1,16 @@
 #!/bin/bash
 
-TEST_DURATION=30
-
 UNIQUE=$$
 
 if [ -z "$ROOT" ]; then
     echo "ROOT environment variable is undefined"
     exit 1
 fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
 
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
