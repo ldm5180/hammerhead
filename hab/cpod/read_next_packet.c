@@ -150,7 +150,7 @@ int read_next_packet(int fd)
         {
             int i;
 
-            g_debug("WTF, mate? not 0xff.  It's %d, size = %d", (int)buffer[0], (int)buffer[1]);
+            g_debug("WTF, mate? not 0xff.  It's %x, size = %d", (int)buffer[0], (int)buffer[1]);
 
             for(i = 0;i < 500; i++) {
                 int r;
@@ -275,15 +275,15 @@ int read_next_packet(int fd)
 
                 for(i = 0; i < 8; i++)
                 {
-                    memcpy((void*)&ecg_II[i*3], &data->ecg_II_data[i*3], 2);
-                    memcpy((void*)&ecg_II[i*3+1], &data->ecg_II_data[i*3+1], 2);
-                    memcpy((void*)&ecg_V5[i*3], &data->ecg_V5_data[i*3], 2);
-                    memcpy((void*)&ecg_V5[i*3+1], &data->ecg_V5_data[i*3+1], 2);
+                    memcpy((void*)&ecg_II[i*2], &data->ecg_II_data[i*2], 2);
+                    memcpy((void*)&ecg_II[i*2+1], &data->ecg_II_data[i*2+1], 2);
+                    memcpy((void*)&ecg_V5[i*2], &data->ecg_V5_data[i*2], 2);
+                    memcpy((void*)&ecg_V5[i*2+1], &data->ecg_V5_data[i*2+1], 2);
 
-                    ECG_II[i*2] = (float)first_group(ecg_II[i*3])/4096.0;
-                    ECG_II[i*2+1] = (float)first_group(ecg_II[i*3+1])/4096.0;
-                    ECG_V5[i*2] = (float)first_group(ecg_V5[i*3])/4096.0;
-                    ECG_V5[i*2+1] = (float)first_group(ecg_V5[i*3+1])/4096.0;
+                    ECG_II[i*2] = (float)first_group(ecg_II[i*2])/4096.0;
+                    ECG_II[i*2+1] = (float)first_group(ecg_II[i*2+1])/4096.0;
+                    ECG_V5[i*2] = (float)first_group(ecg_V5[i*2])/4096.0;
+                    ECG_V5[i*2+1] = (float)first_group(ecg_V5[i*2+1])/4096.0;
 
                     set_float_resource(node, "ECG-II", ECG_II[i*2], &tmp);
                     set_float_resource(node, "ECG-V5", ECG_V5[i*2], &tmp);
