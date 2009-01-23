@@ -24,6 +24,10 @@
 
 
 
+// it sets this true in the signal handler and checks it at the top of the
+// main loop, so the hab's output can be consistent with the clients'
+int should_exit = 0;
+
 om_t output_mode = OM_NORMAL;
 bionet_hab_t *hab;
 
@@ -44,7 +48,7 @@ void show_stuff_going_away(void) {
 
 
 void signal_handler(int unused) {
-    exit(0);
+    should_exit = 1;
 }
 
 
@@ -160,7 +164,6 @@ int main (int argc, char *argv[]) {
 
         signal(SIGTERM, signal_handler);
         signal(SIGINT, signal_handler);
-        atexit(show_stuff_going_away);
     }
 
 
@@ -202,12 +205,21 @@ int main (int argc, char *argv[]) {
     }
 
 
+    // 
+    // main loop
+    // 
+
     while (1) {
         fd_set readers;
         struct timeval timeout;
         int rnd;
         uint32_t ms_delay;
         int r;
+
+        if (should_exit) {
+            show_stuff_going_away();
+            exit(0);
+        }
 
 	hab_read();
 
