@@ -624,6 +624,16 @@ bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource
 
 
 /**
+ * @brief Remove (and deallocate) a datapoint from a resource
+ *
+ * @param[in] resource The resource
+ * @param[in] index Index of the datapoint to remove
+ *
+ */
+void bionet_resource_remove_datapoint_by_index(bionet_resource_t *resource, unsigned int index);
+
+
+/**
  * @brief Checks if a Resource matches a name specification.
  *
  * @see bionet_resource_matches_habtype_habid_nodeid_resourceid()

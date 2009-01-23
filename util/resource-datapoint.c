@@ -35,6 +35,30 @@ void bionet_resource_add_datapoint(bionet_resource_t *resource,
     g_ptr_array_add(resource->datapoints, new_datapoint);
 } 
 
+
+void bionet_resource_remove_datapoint_by_index(
+    bionet_resource_t *resource,
+    unsigned int index
+) {
+    bionet_datapoint_t *d;
+
+    if (resource == NULL) {
+        g_log(
+            BIONET_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING, 
+            "bionet_resource_remove_datapoint_by_index(): NULL Resource passed in"
+        );
+	return;
+    }
+
+    if (index >= resource->datapoints->len) return;
+
+    d = g_ptr_array_remove_index(resource->datapoints, index);
+
+    bionet_datapoint_free(d);
+}
+
+
 // Emacs cruft
 // Local Variables:
 // mode: C
