@@ -174,38 +174,6 @@ int main(int argc, char *argv[]) {
             }
         }
 
-#if 0
-        // any of the connected streams want attention?
-        {
-            GSList *ni;
-
-            for (ni = nodes; ni != NULL; ni = ni->next) {
-                bionet_node_t *node = ni->data;
-                GSList *si;
-
-                for (si = node->streams; si != NULL; si = si->next) {
-                    bionet_stream_t *stream = si->data;
-                    user_data_t *user_data = stream->user_data;
-                    GSList *ci;
-
-                    for (ci = user_data->clients; ci != NULL; ci = ci->next) {
-                        client_t *client = ci->data;
-
-                        if (client->waiting == WAITING_FOR_CLIENT) {
-                            FD_SET(client->socket, &readers);
-                            max_fd = Max(max_fd, client->socket);
-                        } else {
-                            // FIXME: this works as long as there is 1 pollfd & it wants to be read....
-                            FD_SET(client->alsa->pollfd->fd, &readers);
-                            max_fd = Max(max_fd, client->alsa->pollfd->fd);
-                        }
-                    }
-                }
-            }
-        }
-#endif
-
-
         // printf("\n\n*****  top of main loop  *****\n");
         // show_state();
 
@@ -248,44 +216,6 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
-
-
-#if 0
-        //
-        // any of the connected streams want attention?
-        //
-        {
-            GSList *ni;
-
-            for (ni = nodes; ni != NULL; ni = ni->next) {
-                bionet_node_t *node = ni->data;
-                GSList *si;
-
-                for (si = node->streams; si != NULL; si = si->next) {
-                    bionet_stream_t *stream = si->data;
-                    user_data_t *user_data = stream->user_data;
-                    GSList *ci;
-
-                    for (ci = user_data->clients; ci != NULL; ci = ci->next) {
-                        client_t *client = ci->data;
-                        int client_disconnected;
-
-                        if (client->waiting == WAITING_FOR_CLIENT) {
-                            if (FD_ISSET(client->socket, &readers)) {
-                                client_disconnected = handle_client(stream, client);
-                                if (client_disconnected) break;
-                            }
-                        } else {
-                            if (FD_ISSET(client->alsa->pollfd->fd, &readers)) {
-                                client_disconnected = handle_client(stream, client);
-                                if (client_disconnected) break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-#endif
 
     }
 

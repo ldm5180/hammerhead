@@ -159,7 +159,6 @@ void close_alsa_device(alsa_t *alsa);
 int xrun_handler(snd_pcm_t *handle, int err);
 int check_alsa_poll(alsa_t *alsa);
 
-int handle_client(bionet_stream_t *stream, client_t *client);
 void disconnect_client(bionet_stream_t *stream, client_t *client);
 
 void cb_stream_subscription(const char *client_id, const bionet_stream_t *stream);
