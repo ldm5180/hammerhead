@@ -33,8 +33,9 @@ if ! diff -q out.watcher out.random-hab; then
     echo "ERROR: watcher output differs from random-hab output:"
     diff -u out.random-hab out.watcher
     RETVAL=1
+else
+    echo "watcher output is identical to random-hab output, yay"
 fi
-echo "watcher output is identical to random-hab output, yay"
 
 
 # let the valgrind output finish
@@ -44,9 +45,7 @@ if [ $(wc -l < out.valgrind.random-hab) -gt 0 ]; then
     echo "valgrind memcheck output:"
     cat out.valgrind.random-hab
     RETVAL=1
-fi
-
-if [ $RETVAL -eq 0 ]; then
+else
     echo "valgrind memcheck finds no errors :-)"
 fi
 
