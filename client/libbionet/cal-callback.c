@@ -222,6 +222,11 @@ static void handle_resource_datapoints(const cal_event_t *event, ResourceDatapoi
         } else {
             bionet_datapoint_set_value(d, bionet_datapoint_get_value(new_d));
             bionet_datapoint_set_timestamp(d, bionet_datapoint_get_timestamp(new_d));
+
+            // FIXME: can't use bionet_datapoint_free(), because there's no
+            //     way to set new_d->value to NULL even though the
+            //     bionet_datapoint_set_value() above stole it
+            free(new_d);
         }
 
         d = bionet_resource_get_datapoint_by_index(resource, 0);
