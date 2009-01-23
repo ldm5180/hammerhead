@@ -10,7 +10,6 @@
    fun:main
 }
 
-
 {
     glib/g_thread_init
     Memcheck:Leak
@@ -29,3 +28,4 @@
     fun:hab_connect
     fun:main
 }
+
