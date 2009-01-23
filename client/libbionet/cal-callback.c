@@ -426,6 +426,8 @@ void libbionet_cal_callback(const cal_event_t *event) {
                     libbionet_callback_lost_hab(hab);
                 }
                 libbionet_cache_remove_hab(hab);
+
+                bionet_hab_free(hab);
             }
 
             break;
