@@ -1,3 +1,9 @@
+
+//
+// Copyright (C) 2008, Regents of the University of Colorado.
+//
+
+
 #include "cpod.h"
 
 

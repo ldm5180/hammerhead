@@ -1,3 +1,9 @@
+
+//
+// Copyright (C) 2008, Regents of the University of Colorado.
+//
+
+
 #include "cpod.h"
 
 int create_zeroed_float_sensor(bionet_node_t* node, char* id) {
