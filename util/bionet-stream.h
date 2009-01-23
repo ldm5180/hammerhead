@@ -83,6 +83,17 @@ const char * bionet_stream_get_type(const bionet_stream_t *stream);
 
 
 /**
+ * @brief Get the parent HAB of a Stream
+ *
+ * @param[in] stream Pointer to a Stream
+ * 
+ * @return Pointer to the Stream's HAB
+ * @return NULL on failure
+ */
+bionet_hab_t * bionet_stream_get_hab(const bionet_stream_t *stream);
+
+
+/**
  * @brief Get the parent Node of a Stream
  *
  * @param[in] stream Pointer to a Stream

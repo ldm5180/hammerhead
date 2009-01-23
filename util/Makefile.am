@@ -55,6 +55,7 @@ libbionet_util_la_SOURCES =    \
     stream-name.c                       \
     stream-user-data.c                  \
     stream-node.c                       \
+    stream-hab.c                        \
     value-free.c \
     value-get.c \
     value-get-resource.c \
