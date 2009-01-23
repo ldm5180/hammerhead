@@ -79,15 +79,20 @@ void add_resource(bionet_node_t *node) {
             );
         }
     } else {
+        char *val_str;
+
         set_random_resource_value(resource);
+
         datapoint = bionet_resource_get_datapoint_by_index(resource, 0);  // there's only one datapoint
+        val_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+
         if (output_mode == OM_NORMAL) {
             g_message(
                 "    %s %s %s = %s @ %s",
                 resource_id,
                 bionet_resource_data_type_to_string(data_type),
                 bionet_resource_flavor_to_string(flavor),
-                bionet_value_to_str(bionet_datapoint_get_value(datapoint)),
+                val_str,
                 bionet_datapoint_timestamp_to_string(datapoint)
             );
         } else if (output_mode == OM_BDM_CLIENT) {
@@ -95,8 +100,7 @@ void add_resource(bionet_node_t *node) {
                 "%s,%s,%s",
                 bionet_datapoint_timestamp_to_string(datapoint),
                 bionet_resource_get_name(resource),
-                bionet_value_to_str(bionet_datapoint_get_value(datapoint))
-
+                val_str
             );
         } else if (output_mode == OM_BIONET_WATCHER) {
             g_message(
@@ -104,10 +108,12 @@ void add_resource(bionet_node_t *node) {
                 bionet_resource_data_type_to_string(data_type),
                 bionet_resource_flavor_to_string(flavor),
                 resource_id,
-                bionet_value_to_str(bionet_datapoint_get_value(datapoint)),
+                val_str,
                 bionet_datapoint_timestamp_to_string(datapoint)
             );
         }
+
+        free(val_str);
     }
 }
 
