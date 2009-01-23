@@ -36,7 +36,7 @@ void bionet_datapoint_set_value(bionet_datapoint_t *datapoint, bionet_value_t *v
 	return;
     }
     else if (datapoint->value) {
-        free(datapoint->value);
+        free(datapoint->value);  // FIXME: if it's a string value, we leak memory here
 	datapoint->value = value;
     } else {
         datapoint->value = value;
