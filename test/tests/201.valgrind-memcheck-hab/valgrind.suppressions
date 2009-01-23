@@ -1,0 +1,12 @@
+
+{
+   glibc/pthread_create
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.2.5
+   fun:cal_server_mdnssd_bip_init
+   fun:hab_connect
+   fun:main
+}
+
