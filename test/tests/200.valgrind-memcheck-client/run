@@ -1,0 +1,45 @@
+#!/bin/bash
+
+TEST_DURATION=30
+
+UNIQUE=$$
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+echo starting bionet-watcher under valgrind memcheck
+libtool --mode=execute valgrind --suppressions=valgrind.suppressions --quiet --log-file=out.valgrind.watcher --tool=memcheck --trace-children=yes --leak-check=full $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher &
+
+echo starting random-hab
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
+
+sleep $TEST_DURATION
+
+# kill the hab
+kill %2
+sleep 2  # to let the clients notice
+
+kill %1
+
+
+if ! diff -q out.watcher out.random-hab; then
+    echo "ERROR: watcher output differs from random-hab output:"
+    diff -u out.random-hab out.watcher
+    exit 1
+fi
+echo "watcher output is identical to random-hab output, yay"
+
+# let the valgrind output finish
+sleep 1
+
+if [ $(wc -l < out.valgrind.watcher) -gt 0 ]; then
+    echo "valgrind memcheck output:"
+    cat out.valgrind.watcher
+    exit 1
+fi
+
+echo "valgrind memcheck finds no errors :-)"
+exit 0
+
