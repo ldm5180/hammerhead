@@ -64,9 +64,4 @@ libbionet_util_la_SOURCES =    \
     value-to-string.c 
 
 
-#    stream-accept.c
-#    stream-connect.c
-#    stream-listen.c
-
-
 libbionet_util_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION)

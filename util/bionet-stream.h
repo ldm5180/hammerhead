@@ -105,45 +105,6 @@ bionet_node_t * bionet_stream_get_node(const bionet_stream_t *stream);
 
 
 /**
- * @brief Binds the Stream to an ephemeral (random, unused) port and
- *        starts listening.  Sets the Stream's "port" member to
- *        whatever port it got.
- *
- * @param[in] stream The Stream to listen on.
- *
- * @return The listening socket file descriptor
- * @retval >=0 Success
- * @retval -1 Failure
- */
-int bionet_stream_listen(bionet_stream_t *stream);
-
-
-/**
- * @brief Accepts a connection on a listening Stream.
- *
- * @param[in] stream The Stream to accept on
- * @param[in] listening_socket The listening socket file descriptor.
- *
- * @return The new socket file descriptor
- * @retval >=0 Success
- * @retval -1 Failure
- */
-int bionet_stream_accept(bionet_stream_t *stream, int listening_socket);
-
-
-/**
- * @brief Makes a connection to a Stream
- *
- * @param[in] stream The Stream to connect to.
- *
- * @return The new socket file descriptor
- * @retval >=0 Success
- * @retval -1 Failure
- */
-int bionet_stream_connect(bionet_stream_t *stream);
-
-
-/**
  * @brief Free a Stream
  *
  * The user_data field of the stream structure must be NULL on entry to this
