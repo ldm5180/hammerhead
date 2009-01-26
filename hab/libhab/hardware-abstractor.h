@@ -162,7 +162,7 @@ void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_
  * The Hardware Abstractor library will call this callback whenever
  * a Bionet Client sends some data for one of the HAB's Consumer Streams.
  *
- * @param cb_stream_data  The new callback function.
+ * @param cb_set_resource The new callback function.
  *
  * The callback function gets four arguments: the Client that's sending the
  * data, the Stream that's being written to, and the data being written.

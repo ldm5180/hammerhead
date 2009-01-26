@@ -262,6 +262,14 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_new_binary(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
  */
 int bionet_resource_set_binary(bionet_resource_t *resource, 
 			       int content, 
@@ -281,6 +289,14 @@ int bionet_resource_set_binary(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_new_uint8(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
  */
 int bionet_resource_set_uint8(bionet_resource_t *resource, 
 			      uint8_t content, 
@@ -300,6 +316,14 @@ int bionet_resource_set_uint8(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_new_int8(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
  */
 int bionet_resource_set_int8(bionet_resource_t *resource, 
 			     int8_t content, 
@@ -319,6 +343,14 @@ int bionet_resource_set_int8(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_new_uint16(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
  */
 int bionet_resource_set_uint16(bionet_resource_t *resource, 
 			       uint16_t content, 
@@ -338,6 +370,14 @@ int bionet_resource_set_uint16(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_new_int16(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
  */
 int bionet_resource_set_int16(bionet_resource_t *resource, 
 			      int16_t content, 
@@ -357,6 +397,14 @@ int bionet_resource_set_int16(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_new_uint32(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
  */
 int bionet_resource_set_uint32(bionet_resource_t *resource, 
 			       uint32_t content, 
@@ -376,6 +424,14 @@ int bionet_resource_set_uint32(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_new_int32(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
  */
 int bionet_resource_set_int32(bionet_resource_t *resource, 
 			      int32_t content, 
@@ -395,6 +451,14 @@ int bionet_resource_set_int32(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_new_float(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
  */
 int bionet_resource_set_float(bionet_resource_t *resource, 
 			      float content, 
@@ -414,6 +478,14 @@ int bionet_resource_set_float(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_new_double(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
  */
 int bionet_resource_set_double(bionet_resource_t *resource, 
 			       double content, 
@@ -433,6 +505,14 @@ int bionet_resource_set_double(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_new_str(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
  */
 int bionet_resource_set_str(bionet_resource_t *resource, 
 			    const char * content, 
@@ -450,6 +530,14 @@ int bionet_resource_set_str(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_datapoint_get_value(datapoint);
+ * timestamp = bionet_datapoint_get_timestamp(datapoint);
+ * bionet_value_get_binary(value, &content);
+ * @endcode
  */
 int bionet_resource_get_binary(bionet_resource_t *resource, 
 			       int *content, 
@@ -467,6 +555,14 @@ int bionet_resource_get_binary(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_datapoint_get_value(datapoint);
+ * timestamp = bionet_datapoint_get_timestamp(datapoint);
+ * bionet_value_get_uint8(value, &content);
+ * @endcode
  */
 int bionet_resource_get_uint8(bionet_resource_t *resource, 
 			      uint8_t *content, 
@@ -484,6 +580,14 @@ int bionet_resource_get_uint8(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_datapoint_get_value(datapoint);
+ * timestamp = bionet_datapoint_get_timestamp(datapoint);
+ * bionet_value_get_int8(value, &content);
+ * @endcode
  */
 int bionet_resource_get_int8(bionet_resource_t *resource, 
 			     int8_t *content, 
@@ -501,6 +605,14 @@ int bionet_resource_get_int8(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_datapoint_get_value(datapoint);
+ * timestamp = bionet_datapoint_get_timestamp(datapoint);
+ * bionet_value_get_uint16(value, &content);
+ * @endcode
  */
 int bionet_resource_get_uint16(bionet_resource_t *resource, 
 			       uint16_t *content, 
@@ -518,6 +630,14 @@ int bionet_resource_get_uint16(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_datapoint_get_value(datapoint);
+ * timestamp = bionet_datapoint_get_timestamp(datapoint);
+ * bionet_value_get_int16(value, &content);
+ * @endcode
  */
 int bionet_resource_get_int16(bionet_resource_t *resource, 
 			      int16_t *content, 
@@ -535,6 +655,14 @@ int bionet_resource_get_int16(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_datapoint_get_value(datapoint);
+ * timestamp = bionet_datapoint_get_timestamp(datapoint);
+ * bionet_value_get_uint32(value, &content);
+ * @endcode
  */
 int bionet_resource_get_uint32(bionet_resource_t *resource, 
 			       uint32_t *content, 
@@ -552,6 +680,14 @@ int bionet_resource_get_uint32(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_datapoint_get_value(datapoint);
+ * timestamp = bionet_datapoint_get_timestamp(datapoint);
+ * bionet_value_get_int32(value, &content);
+ * @endcode
  */
 int bionet_resource_get_int32(bionet_resource_t *resource, 
 			      int32_t *content, 
@@ -569,6 +705,14 @@ int bionet_resource_get_int32(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_datapoint_get_value(datapoint);
+ * timestamp = bionet_datapoint_get_timestamp(datapoint);
+ * bionet_value_get_float(value, &content);
+ * @endcode
  */
 int bionet_resource_get_float(bionet_resource_t *resource, 
 			      float *content, 
@@ -586,6 +730,14 @@ int bionet_resource_get_float(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_datapoint_get_value(datapoint);
+ * timestamp = bionet_datapoint_get_timestamp(datapoint);
+ * bionet_value_get_double(value, &content);
+ * @endcode
  */
 int bionet_resource_get_double(bionet_resource_t *resource, 
 			       double *content, 
@@ -605,6 +757,14 @@ int bionet_resource_get_double(bionet_resource_t *resource,
  *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_datapoint_get_value(datapoint);
+ * timestamp = bionet_datapoint_get_timestamp(datapoint);
+ * bionet_value_get_str(value, &content);
+ * @endcode
  */
 int bionet_resource_get_str(bionet_resource_t *resource, 
 			    char * *content, 
