@@ -61,8 +61,11 @@ typedef struct {
 
 
 // 
-// local (to the alsa-hab) information, each stream gets a stream_info_t as
-// its user_data
+// A Producer Stream reads audio from Alsa and publishes it, using
+// hab_publish_stream(), to all interested Bionet Clients.  It has a single
+// Alsa handle that it reads the audio data from.  It keeps track of how
+// many clients are subscribed to this Producer Stream using the
+// stream-subscription and stream-unsubscription events and callbacks.
 //
 
 typedef struct {
@@ -70,9 +73,15 @@ typedef struct {
     int num_clients;
 } producer_info_t;
 
+
 typedef struct {
     GSList *clients;
 } consumer_info_t;
+
+
+// 
+// local to the alsa-hab, each stream gets a stream_info_t as its user_data
+//
 
 typedef struct {
     char *device;
