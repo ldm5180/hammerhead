@@ -262,7 +262,7 @@ alsa_t *open_alsa_device(char *device, snd_pcm_stream_t direction) {
     // open the device in the requested mode (playback or capture)
     r = snd_pcm_open(&alsa->pcm_handle, device, direction, SND_PCM_NONBLOCK);
     if (r < 0) {
-        printf("Playback open error: %s\n", snd_strerror(r));
+        printf("snd_pcm_open of '%s' fails: %s\n", device, snd_strerror(r));
         free(alsa);
         return NULL;
     }

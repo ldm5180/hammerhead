@@ -74,6 +74,16 @@ typedef struct {
 } producer_info_t;
 
 
+// 
+// A Consumer Stream reads audio data from multiple Clients, and sends each
+// Client's data to a separate Alsa handle.  Alsa mixes it all together.
+//
+
+typedef struct {
+    char *id;
+    alsa_t *alsa;
+} client_t;
+
 typedef struct {
     GSList *clients;
 } consumer_info_t;
@@ -90,29 +100,6 @@ typedef struct {
         consumer_info_t consumer;
     } info;
 } stream_info_t;
-
-
-//
-// with ALSA Capture devices (aka bionet audio producers, aka microphones)
-// we always wait for ALSA to produce some noise
-//
-// with ALSA Playback devices (aka bionet audio consumers, aka speakers) we
-// wait for ALSA to consume the noise, unless there's no noise available
-// from the client, in which case we pause ALSA and wait for the client to
-// produce some noise for us
-//
-
-typedef enum {
-    WAITING_FOR_CLIENT = 0,
-    WAITING_FOR_ALSA
-} who_are_we_waiting_for_t;
-
-
-typedef struct {
-    char *id;
-    who_are_we_waiting_for_t waiting;
-    alsa_t *alsa;
-} client_t;
 
 
 
@@ -163,10 +150,31 @@ int discover_alsa_hardware(void);
 int read_producer_stream(bionet_stream_t *stream);
 
 
+/**
+ * @brief Open an Alsa device.
+ *
+ * @param[in] device The device to open (you get this from
+ *     discover_alsa_hardware()).
+ *
+ * @param[in] direction SND_PCM_STREAM_PLAYBACK or SND_PCM_STREAM_CAPTURE.
+ *
+ * @return The alsa_t corresponding to the Alsa device on success; NULL on
+ *     failure.
+ */
 alsa_t *open_alsa_device(char *device, snd_pcm_stream_t direction);
+
+
 void close_alsa_device(alsa_t *alsa);
 int xrun_handler(snd_pcm_t *handle, int err);
+
+
+/**
+ * @brief Checks to see if an Alsa handle is ready for I/O.
+ *
+ * @param[in] alsa The Alsa handle to poll.
+ */
 int check_alsa_poll(alsa_t *alsa);
+
 
 void disconnect_client(bionet_stream_t *stream, client_t *client);
 
