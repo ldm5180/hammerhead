@@ -89,6 +89,12 @@ const char * bionet_stream_get_type(const bionet_stream_t *stream);
  * 
  * @return Pointer to the Stream's HAB
  * @return NULL on failure
+ *
+ * @note This is shorthand (and may be more efficient) for obtaining the Node 
+ * and then obtaining Node's HAB:
+ * @code
+ * bionet_node_get_hab(bionet_stream_get_node(resource));
+ * @endcode
  */
 bionet_hab_t * bionet_stream_get_hab(const bionet_stream_t *stream);
 
@@ -159,6 +165,17 @@ const char *bionet_stream_direction_to_string(bionet_stream_direction_t directio
  * @param[in] stream The Stream
  *
  * @return The name of the Stream, or NULL on error.
+ *
+ * @note This function is shorthand (and may be more efficient) for the following code. Interal 
+ * library memory is used and cleaned up by the library when the node is free'd.
+ * @code
+ * char str[BIONET_NAME_COMPONENT_MAX_LEN * 4];
+ * sprintf(str, "%s.%s.%s:%s", 
+ *         bionet_hab_get_type(bionet_stream_get_hab(stream)), 
+ *         bionet_hab_get_id(bionet_stream_get_hab(stream)),
+ *         bionet_node_get_id(bionet_stream_get_node(stream)),
+ *         bionet_stream_get_id(stream));
+ * @endcode
  */
 const char *bionet_stream_get_name(const bionet_stream_t *stream);
 
@@ -171,6 +188,15 @@ const char *bionet_stream_get_name(const bionet_stream_t *stream);
  * @param[in] stream The Stream
  *
  * @return The local name of the Stream, or NULL on error.
+ *
+ * @note This function is shorthand (and may be more efficient) for the following code. Interal 
+ * library memory is used and cleaned up by the library when the node is free'd.
+ * @code
+ * char str[BIONET_NAME_COMPONENT_MAX_LEN * 2];
+ * sprintf(str, "%s:%s", 
+ *         bionet_node_get_id(bionet_stream_get_node(stream)),
+ *         bionet_stream_get_id(stream));
+ * @endcode
  */
 const char *bionet_stream_get_local_name(const bionet_stream_t *stream);
 
