@@ -1,3 +1,11 @@
+Bionet 2.1.1, TBA
+
+    * Added library versioning so that the system linker can correctly
+      determine binary compatibility.
+
+    * Added C -> Python callbacks. Callbacks can be written in Python and
+      registered using the py-prefixed version of the register function.
+
 
 Bionet 2.1.0, 2009 January 10
 

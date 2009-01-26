@@ -105,7 +105,7 @@ int main(int argc, char** argv)
     bionet_stream_t *steth_stream;
 
     GSList* listeners_fd;
-    char * hab_id;
+    char * hab_id = NULL;
     bionet_hab_t * this_hab;
     bionet_resource_t * resource;
 
@@ -308,13 +308,6 @@ connecting:
 
     bionet_stream_set_user_data(steth_stream, calloc(1, sizeof(user_data_t)));
     
-//    i = bionet_stream_listen(steth_stream);
-    
-    if ( i < 0) {
-        g_critical("Unable to create listening stream - Aborting");
-        exit(1);
-    }
-
     user_data_t * user_data = (user_data_t *)bionet_stream_get_user_data(steth_stream);
     user_data->socket = i;
 
@@ -340,6 +333,7 @@ connecting:
     }
     i+= bionet_node_add_resource(node, resource);
 
+    bionet_hab_add_node(this_hab, node);
     i += hab_report_new_node(node);
 
     if (node == NULL ||
@@ -422,8 +416,8 @@ connecting:
         {
             int fd;
 
-//            fd = bionet_stream_accept(steth_stream, 
-//				      user_data->socket);
+            //fd = bionet_stream_accept(steth_stream, 
+	    //user_data->socket);
             listeners_fd = g_slist_append(listeners_fd, GINT_TO_POINTER(fd));
 
             g_debug("Accepted a connection on the Stethoscope stream - adding fd = %d to list\n", fd);
