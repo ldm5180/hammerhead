@@ -98,6 +98,17 @@ void bionet_resource_free(bionet_resource_t *resource);
  * @param[in] resource The Resource
  *
  * @return The Resource Name, or NULL on error
+ *
+ * @note This function is shorthand (and may be more efficient) for the following code. Interal 
+ * library memory is used and cleaned up by the library when the node is free'd.
+ * @code
+ * char str[BIONET_NAME_COMPONENT_MAX_LEN * 4];
+ * sprintf(str, "%s.%s.%s:%s", 
+ *         bionet_hab_get_type(bionet_resource_get_hab(resource)), 
+ *         bionet_hab_get_id(bionet_resource_get_hab(resource)),
+ *         bionet_node_get_id(bionet_resource_get_node(resource)),
+ *         bionet_resource_get_id(resource));
+ * @endcode
  */
 const char *bionet_resource_get_name(const bionet_resource_t * resource);
 
@@ -110,6 +121,15 @@ const char *bionet_resource_get_name(const bionet_resource_t * resource);
  * @param[in] resource The Resource
  *
  * @return The local Resource Name, or NULL on error
+ *
+ * @note This function is shorthand (and may be more efficient) for the following code. Interal 
+ * library memory is used and cleaned up by the library when the node is free'd.
+ * @code
+ * char str[BIONET_NAME_COMPONENT_MAX_LEN * 2];
+ * sprintf(str, "%s:%s", 
+ *         bionet_node_get_id(bionet_resource_get_node(resource)),
+ *         bionet_resource_get_id(resource));
+ * @endcode
  */
 const char *bionet_resource_get_local_name(const bionet_resource_t * resource);
 
@@ -144,8 +164,11 @@ bionet_node_t * bionet_resource_get_node(const bionet_resource_t *resource);
  * @return Pointer to HAB
  * @return NULL Error
  *
- * @note This is shorthand for obtaining the Node and then obtaining
- * Node's HAB
+ * @note This is shorthand (and may be more efficient) for obtaining the Node 
+ * and then obtaining Node's HAB:
+ * @code
+ * bionet_node_get_hab(bionet_resource_get_node(resource));
+ * @endcode
  */
 bionet_hab_t * bionet_resource_get_hab(const bionet_resource_t *resource);
 
@@ -619,8 +642,23 @@ int bionet_resource_get_num_datapoints(const bionet_resource_t *resource);
  *
  * @return Pointer to a datapoint
  * @retval NULL Failure
+ *
+ * @note Resources owned by Clients and HABs should only ever have 1 datapoint. When a resource is 
+ * set to a new value the old datapoint is replaced by the Bionet library. @see 
+ * BIONET_RESOURCE_GET_DATAPOINT(resource). Resources from the Bionet Data Manager may have more 
+ * than 1 datapoint.
  */
 bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource_t *resource, unsigned int index);
+
+
+/**
+ * @def BIONET_RESOURCE_GET_DATAPOINT(resource)
+ * Obtain the first (and usually only) datapoint from a resource. Shorthand for getting the 0th 
+ * index datapoint.
+ *
+ * @see bionet_resource_get_datapoint_by_index()
+ */
+#define BIONET_RESOURCE_GET_DATAPOINT(resource) bionet_resource_get_datapoint_by_index(resource, 0)
 
 
 /**

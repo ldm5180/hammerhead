@@ -45,6 +45,13 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
  * @param[in] hab The HAB
  *
  * @return The HAB name.
+ *
+ * @note This function is shorthand (and may be more efficient) for the following code. Interal 
+ * library memory is used and cleaned up by the library when the node is free'd.
+ * @code
+ * char str[BIONET_NAME_COMPONENT_MAX_LEN * 2];
+ * sprintf(str, "%s.%s", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
+ * @endcode
  */
 const char *bionet_hab_get_name(const bionet_hab_t * hab);
 

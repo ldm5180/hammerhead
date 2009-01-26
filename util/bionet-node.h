@@ -42,6 +42,16 @@ bionet_node_t* bionet_node_new(bionet_hab_t *hab, const char* node_id);
  * @param[in] node The Node
  *
  * @return The Node name, or NULL on error.
+ *
+ * @note This function is shorthand (and may be more efficient) for the following code. Interal 
+ * library memory is used and cleaned up by the library when the node is free'd.
+ * @code
+ * char str[BIONET_NAME_COMPONENT_MAX_LEN * 3];
+ * sprintf(str, "%s.%s.%s", 
+ *         bionet_hab_get_type(bionet_node_get_hab(node)) 
+ *         bionet_hab_get_id(bionet_node_get_hab(node))
+ *         bionet_node_get_id(node));
+ * @endcode
  */
 const char *bionet_node_get_name(const bionet_node_t * node);
 
