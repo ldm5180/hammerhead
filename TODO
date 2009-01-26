@@ -1,8 +1,13 @@
 
 set errno consistently on function failure
 
+
 have the "remove" functions return the object that was removed, so the
 caller can free it ("remove_all" functions can't do this)
 
+
 ensure names and abbreviations are consistent across APIs
+
+
+consumer streams need authn/authz (explicit connect/disconnect)
 
