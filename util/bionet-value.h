@@ -42,6 +42,9 @@ bionet_resource_t * bionet_value_get_resource(bionet_value_t * value);
  *
  * @note This is shorthand for getting the resource, then getting the 
  * node of the resource.
+ * @code
+ * bionet_resource_get_node(bionet_value_get_resource(value))
+ * @endcode
  */
 bionet_node_t * bionet_value_get_node(const bionet_value_t * value);
 
@@ -56,6 +59,9 @@ bionet_node_t * bionet_value_get_node(const bionet_value_t * value);
  *
  * @note This is shorthand for getting the resource, then getting the
  * node of the resource, then getting the HAB of the node.
+ * @code
+ * bionet_node_get_hab(bionet_resource_get_node(bionet_value_get_resource(value)))
+ * @endcode
  */
 bionet_hab_t * bionet_value_get_hab(const bionet_value_t * value);
 
@@ -70,6 +76,9 @@ bionet_hab_t * bionet_value_get_hab(const bionet_value_t * value);
  *
  * @note This is shorthand for getting the resource, then getting the
  * datapoint of the resource.
+ * @code
+ * bionet_resource_get_get_datapoint_by_index(bionet_value_get_resource(value), 0)
+ * @endcode
  */
 bionet_datapoint_t * bionet_value_get_datapoint(const bionet_value_t * value);
 
