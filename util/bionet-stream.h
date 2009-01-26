@@ -41,7 +41,7 @@ typedef enum {
  *            a Node.
  * @param[in] id The ID of this Stream.
  * @param[in] direction The direction of the new Stream.
- * @param[in] type The type of the Stream (currently only "audio" is supported).
+ * @param[in] type The type of the Stream (a free-form ascii string).
  *
  * @return Pointer to the new Stream.
  * @retval NULL Error

@@ -47,11 +47,13 @@ bionet_stream_t *bionet_stream_new(
         return NULL;
     }
 
+#if 0
     // FIXME: make this its own function, is_valid_type()
     if (strcmp(type, "audio") != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_stream_new: invalid type specified!");
         return NULL;
     }
+#endif
 
 
     //
