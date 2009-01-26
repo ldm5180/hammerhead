@@ -31,6 +31,59 @@ logger.addHandler(ch)
 from bionet import *
 
 
+#callbacks
+def cb_lost_hab(hab):
+    print("lost hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab))
+
+
+def cb_new_hab(hab):
+    print("new hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab))
+
+
+def cb_new_node(node):
+    hab = bionet_node_get_hab(node)
+	
+    print("new node: " + bionet_node_get_name(node))
+	
+    if (bionet_node_get_num_resources(node)):
+        print("    Resources:")
+	    
+        for i in range(bionet_node_get_num_resources(node)):
+            resource = bionet_node_get_resource_by_index(node, i)
+            datapoint = bionet_resource_get_datapoint_by_index(resource, 0)
+		
+            if (datapoint == None):
+                print("        " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + bionet_resource_get_id(resource) + ": (no known value)")
+            
+            else:
+                value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+                #%s %s %s = %s @ %s 
+                print("        " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + bionet_resource_get_id(resource) + " = " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
+
+    if (bionet_node_get_num_streams(node)):
+        print("    Streams:")
+	    
+        for i in range(bionet_node_get_num_stream(node)):
+            stream = bionet_node_get_stream_by_index(node, i)
+            print("        " + bionet_stream_get_id(stream) + " " + bionet_stream_get_type(stream) + " " + bionet_stream_direction_to_string(bionet_stream_get_direction(stream)))
+
+
+def cb_lost_node(node):
+    hab = bionet_node_get_hab(node);
+    print("lost node: " + bionet_node_get_name(node))
+
+
+def cb_datapoint(datapoint):
+    value = bionet_datapoint_get_value(datapoint);
+    resource = bionet_value_get_resource(value);
+    node = bionet_resource_get_node(resource);
+    hab = bionet_node_get_hab(node);
+    
+    value_str = bionet_value_to_str(value);
+    #"%s.%s.%s:%s = %s %s %s @ %s"    
+    print(bionet_resource_get_name(resource) + " = " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
+    
+
 
 bionet_fd = bionet_connect()
 if (0 > bionet_fd):
@@ -39,13 +92,13 @@ if (0 > bionet_fd):
 
 logger.info("connected to Bionet")
 
-bionet_register_callback_new_hab(cb_new_hab)
-bionet_register_callback_lost_hab(cb_lost_hab);
+pybionet_register_callback_new_hab(cb_new_hab)
+pybionet_register_callback_lost_hab(cb_lost_hab);
 
-bionet_register_callback_new_node(cb_new_node);
-bionet_register_callback_lost_node(cb_lost_node);
+pybionet_register_callback_new_node(cb_new_node);
+pybionet_register_callback_lost_node(cb_lost_node);
 
-bionet_register_callback_datapoint(cb_datapoint);
+pybionet_register_callback_datapoint(cb_datapoint);
 
 subscribed_to_something = 0;
 

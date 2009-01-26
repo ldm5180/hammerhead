@@ -18,7 +18,7 @@ libbionet_py_la_LIBADD = -lbionet -lcal-mdnssd-bip-client -lbionet-asn -lbionet-
 
 
 bionet_wrap.c: bionet.i ../libbionet/libbionet.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la ../../asn.1/libbionet-asn.la ../../util/libbionet-util.la
-	swig -w302 -python ${SWIG_INCDIR} bionet.i 
+	swig -w302 -w454 -python ${SWIG_INCDIR} bionet.i 
 	ln -sf .libs/libbionet-py.so _bionet.so
 
 install-exec-hook:

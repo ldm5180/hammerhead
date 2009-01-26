@@ -2,111 +2,205 @@
 %{
 #include "bionet.h"
 #include "bionet-util.h"
+#include "bionet-hab.h"
+#include "bionet-node.h"
+#include "bionet-resource.h"
+#include "bionet-datapoint.h"
+#include "bionet-value.h"
 %}
 
 %include "bionet.h"
 %include "bionet-util.h"
+%include "bionet-hab.h"
+%include "bionet-node.h"
+%include "bionet-resource.h"
+%include "bionet-datapoint.h"
+%include "bionet-value.h"
 
-%constant void cb_lost_hab(bionet_hab_t *hab);
-%constant void cb_new_hab(bionet_hab_t *hab);
-%constant void cb_new_node(bionet_node_t *node);
-%constant void cb_lost_node(bionet_node_t *node);
-%constant void cb_datapoint(bionet_datapoint_t *datapoint);
+%include "typemaps.i"
+%import "stdint.i"
+%import "inttypes.i"
 
-%inline
-{
-    void cb_lost_hab(bionet_hab_t *hab) {
-	g_log("", G_LOG_LEVEL_INFO, "lost hab: %s.%s", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
-    }
- 
- 
-    void cb_new_hab(bionet_hab_t *hab) {
-	g_log("", G_LOG_LEVEL_INFO, "new hab: %s.%s", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
-    }
+%inline %{
+#define SWIG_HAB_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_hab_opaque_t, 1)
+#define SWIG_NODE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_node_opaque_t, 1)
+#define SWIG_RESOURCE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_resource_opaque_t, 1)
+#define SWIG_DATAPOINT_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_datapoint_opaque_t, 1)
+#define SWIG_STREAM_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_stream_opaque_t, 1)
+#define SWIG_VALUE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_value_opaque_t, 1)
 
-    void cb_new_node(bionet_node_t *node) {
-	int i;
-	bionet_hab_t *hab = bionet_node_get_hab(node);
-	
-	g_log("", G_LOG_LEVEL_INFO, "new node: %s.%s.%s", 
-	      bionet_hab_get_type(hab), bionet_hab_get_id(hab), bionet_node_get_id(node));
-	
-	if (bionet_node_get_num_resources(node)) {
-	    g_log("", G_LOG_LEVEL_INFO, "    Resources:");
-	    
-	    for (i = 0; i < bionet_node_get_num_resources(node); i++) {
-		bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
-		bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
-		
-		if (datapoint == NULL) {
-		    g_log("", G_LOG_LEVEL_INFO,
-			  "        %s %s %s (no known value)", 
-			  bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-			  bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-			  bionet_resource_get_id(resource));
-		} else {
-		    char * value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
-		    g_log("", G_LOG_LEVEL_INFO,
-			  "        %s %s %s = %s @ %s", 
-			  bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-			  bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-			  bionet_resource_get_id(resource),
-			  value_str,
-			  bionet_datapoint_timestamp_to_string(datapoint));
-		    free(value_str);
-		}
-		
-	    }
+
+    static PyObject * py_cb_lost_hab = NULL;
+    static PyObject * py_cb_new_hab = NULL;
+    static PyObject * py_cb_lost_node = NULL;
+    static PyObject * py_cb_new_node = NULL;
+    static PyObject * py_cb_stream = NULL;
+    static PyObject * py_cb_datapoint = NULL;
+
+    void pybionet_callback_lost_hab(bionet_hab_t *hab) {
+	PyObject *arglist;
+	PyObject *result = NULL;
+
+	arglist = Py_BuildValue("(O)", SWIG_HAB_WRAPPER(hab));
+	result = PyEval_CallObject(py_cb_lost_hab, arglist);
+	Py_DECREF(arglist);
+	if (result == NULL) {
+	    return;
 	}
-#if 0
-	if (node->streams) {
-	    g_log("", G_LOG_LEVEL_INFO, "    Streams:");
-	    
-	    for (i = node->streams; i != NULL; i = i->next) {
-		bionet_stream_t *stream = i->data;
-		g_log(
-		    "", G_LOG_LEVEL_INFO,
-		    "        %s %s %s", 
-		    stream->id,
-		    stream->type,
-		    bionet_stream_direction_to_string(stream->direction)
-	            );
-	    }
-	}
-#endif
+	Py_DECREF(result);
     }
 
-    void cb_datapoint(bionet_datapoint_t *datapoint) {
-	bionet_value_t * value = bionet_datapoint_get_value(datapoint);
-	bionet_resource_t * resource = bionet_value_get_resource(value);
-	bionet_node_t * node = bionet_resource_get_node(resource);
-	bionet_hab_t * hab = bionet_node_get_hab(node);
-	
-	char * value_str = bionet_value_to_str(value);
-	
-	g_log(
-	    "",
-	    G_LOG_LEVEL_INFO,
-	    "%s.%s.%s:%s = %s %s %s @ %s",
-	    bionet_hab_get_type(hab),
-	    bionet_hab_get_id(hab),
-	    bionet_node_get_id(node),
-	    bionet_resource_get_id(resource),
-	    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-	    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-	    value_str,
-	    bionet_datapoint_timestamp_to_string(datapoint)
-	    );
-	
-	free(value_str);
+    PyObject * pybionet_register_callback_lost_hab(PyObject * cb) {
+        if (!PyCallable_Check(cb)) {
+            PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+            return NULL;
+        }
+        Py_XINCREF(cb);         /* Add a reference to new callback */
+        Py_XDECREF(py_cb_lost_hab);  /* Dispose of previous callback */
+        py_cb_lost_hab = cb;       /* Remember new callback */
+
+	bionet_register_callback_lost_hab(pybionet_callback_lost_hab);
+
+	return py_cb_lost_hab;
     }
-    
-    
-    void cb_lost_node(bionet_node_t *node) {
-	bionet_hab_t *hab = bionet_node_get_hab(node);
-	g_log("", G_LOG_LEVEL_INFO, "lost node: %s.%s.%s", 
-	      bionet_hab_get_type(hab), 
-	      bionet_hab_get_id(hab), 
-	      bionet_node_get_id(node));
+
+
+    void pybionet_callback_new_hab(bionet_hab_t *hab) {
+	PyObject *arglist;
+	PyObject *result = NULL;
+
+	arglist = Py_BuildValue("(O)", SWIG_HAB_WRAPPER(hab));
+	result = PyEval_CallObject(py_cb_new_hab, arglist);
+	Py_DECREF(arglist);
+	if (result == NULL) {
+	    return;
+	}
+	Py_DECREF(result);
     }
-} 
+
+    PyObject * pybionet_register_callback_new_hab(PyObject * cb) {
+        if (!PyCallable_Check(cb)) {
+            PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+            return NULL;
+        }
+        Py_XINCREF(cb);         /* Add a reference to new callback */
+        Py_XDECREF(py_cb_new_hab);  /* Dispose of previous callback */
+        py_cb_new_hab = cb;       /* Remember new callback */
+	
+	bionet_register_callback_new_hab(pybionet_callback_new_hab);
+
+	return py_cb_new_hab;
+    }
+
+
+    void pybionet_callback_lost_node(bionet_node_t *node) {
+	PyObject *arglist;
+	PyObject *result = NULL;
+
+	arglist = Py_BuildValue("(O)", SWIG_NODE_WRAPPER(node));
+	result = PyEval_CallObject(py_cb_lost_node, arglist);
+	Py_DECREF(arglist);
+	if (result == NULL) {
+	    return;
+	}
+	Py_DECREF(result);
+    }
+
+    PyObject * pybionet_register_callback_lost_node(PyObject * cb) {
+        if (!PyCallable_Check(cb)) {
+            PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+            return NULL;
+        }
+        Py_XINCREF(cb);         /* Add a reference to new callback */
+        Py_XDECREF(py_cb_lost_node);  /* Dispose of previous callback */
+        py_cb_lost_node = cb;       /* Remember new callback */
+
+	bionet_register_callback_lost_node(pybionet_callback_lost_node);
+
+	return py_cb_lost_node;
+    }
+
+
+    void pybionet_callback_new_node(bionet_node_t *node) {
+	PyObject *arglist;
+	PyObject *result = NULL;
+
+	arglist = Py_BuildValue("(O)", SWIG_NODE_WRAPPER(node));
+	result = PyEval_CallObject(py_cb_new_node, arglist);
+	Py_DECREF(arglist);
+	if (result == NULL) {
+	    return;
+	}
+	Py_DECREF(result);
+    }
+
+    PyObject * pybionet_register_callback_new_node(PyObject * cb) {
+        if (!PyCallable_Check(cb)) {
+            PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+            return NULL;
+        }
+        Py_XINCREF(cb);         /* Add a reference to new callback */
+        Py_XDECREF(py_cb_new_node);  /* Dispose of previous callback */
+        py_cb_new_node = cb;       /* Remember new callback */
+
+	bionet_register_callback_new_node(pybionet_callback_new_node);
+
+	return py_cb_new_node;
+    }
+
+    void pybionet_callback_datapoint(bionet_datapoint_t *datapoint) {
+	PyObject *arglist;
+	PyObject *result = NULL;
+
+	arglist = Py_BuildValue("(O)", SWIG_DATAPOINT_WRAPPER(datapoint));
+	result = PyEval_CallObject(py_cb_datapoint, arglist);
+	Py_DECREF(arglist);
+	if (result == NULL) {
+	    return;
+	}
+	Py_DECREF(result);
+    }
+
+    PyObject * pybionet_register_callback_datapoint(PyObject * cb) {
+        if (!PyCallable_Check(cb)) {
+            PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+            return NULL;
+        }
+        Py_XINCREF(cb);         /* Add a reference to new callback */
+        Py_XDECREF(py_cb_datapoint);  /* Dispose of previous callback */
+        py_cb_datapoint = cb;       /* Remember new callback */
+
+	bionet_register_callback_datapoint(pybionet_callback_datapoint);
+
+	return py_cb_datapoint;
+    }
+
+
+    void pybionet_callback_stream(bionet_stream_t *stream, void *buffer, int size) {
+	PyObject *arglist;
+	PyObject *result = NULL;
+
+	arglist = Py_BuildValue("(OOi)", SWIG_STREAM_WRAPPER(stream), buffer, size);
+	result = PyEval_CallObject(py_cb_stream, arglist);
+	Py_DECREF(arglist);
+	if (result == NULL) {
+	    return;
+	}
+	Py_DECREF(result);
+    }
+
+    PyObject * pybionet_register_callback_stream(PyObject * cb) {
+        if (!PyCallable_Check(cb)) {
+            PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+            return NULL;
+        }
+        Py_XINCREF(cb);         /* Add a reference to new callback */
+        Py_XDECREF(py_cb_stream);  /* Dispose of previous callback */
+        py_cb_stream = cb;       /* Remember new callback */
+
+	bionet_register_callback_stream(pybionet_callback_stream);
+
+	return py_cb_stream;
+    }
+
+%} 

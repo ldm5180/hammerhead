@@ -18,7 +18,7 @@ libhab_py_la_LIBADD = -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server
 
 
 hab_wrap.c: hab.i ../../util/bionet-util.h ../../util/bionet-hab.h ../../util/bionet-node.h ../../util/bionet-resource.h ../../util/bionet-datapoint.h ../../util/bionet-value.h ../libhab/hardware-abstractor.h
-	swig -w302 -python ${SWIG_INCDIR} hab.i 
+	swig -w302 -w454 -python ${SWIG_INCDIR} hab.i 
 	ln -sf .libs/libhab-py.so _hab.so
 
 clean-local:
