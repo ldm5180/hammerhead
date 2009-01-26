@@ -238,6 +238,7 @@ AC_CONFIG_FILES([Makefile
                  hab/speedway/Makefile
                  hab/pal-650/Makefile
                  hab/uwb/Makefile
+                 hab/streamy/Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
