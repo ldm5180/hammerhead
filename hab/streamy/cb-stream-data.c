@@ -29,7 +29,5 @@ void cb_stream_data(const char *client_id, bionet_stream_t *stream, const void *
         fprintf(stderr, "error appending to '%s'\n", filename);
         return;
     }
-
-    printf("client '%s' sent %d bytes to stream %s\n", client_id, size, filename);
 }
 
