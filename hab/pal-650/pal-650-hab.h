@@ -1,4 +1,9 @@
 
+//
+// Copyright (C) 2008-2009, Gary Grobe and the Regents of the University of Colorado.
+//
+
+
 #ifndef __PAL_650_HAB_H
 #define __PAL_650_HAB_H
 

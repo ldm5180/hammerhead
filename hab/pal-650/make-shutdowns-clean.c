@@ -1,4 +1,9 @@
 
+//
+// Copyright (C) 2008-2009, Gary Grobe and the Regents of the University of Colorado.
+//
+
+
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>

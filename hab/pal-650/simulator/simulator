@@ -1,4 +1,7 @@
 #!/usr/bin/python
+#
+# Copyright (C) 2004-2009, Regents of the University of Colorado.
+#
 
 import SocketServer
 import time
