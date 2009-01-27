@@ -18,7 +18,7 @@ BSTREAM="./bionet-stream"
 
 STREAM="$1"
 if [ -z "$STREAM" ]; then
-    echo "no stream name specified, pick one:\n"
+    echo "no stream name specified, pick one:"
     $BSTREAM 
     echo
     usage
