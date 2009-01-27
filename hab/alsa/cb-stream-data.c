@@ -21,8 +21,6 @@ void cb_stream_data(const char *client_id, bionet_stream_t *stream, const void *
     int num_frames;
     int r;
 
-    printf("client '%s' sends %d bytes to stream %s\n", client_id, size, bionet_stream_get_local_name(stream));
-
     si = bionet_stream_get_user_data(stream);
 
     for (i = 0; i < g_slist_length(si->info.consumer.clients); i ++) {
