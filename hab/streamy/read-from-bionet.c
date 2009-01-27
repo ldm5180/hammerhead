@@ -1,4 +1,9 @@
 
+//
+// Copyright (C) 2008-2009, the Regents of the University of Colorado.
+//
+
+
 #include <glib.h>
 
 #include "hardware-abstractor.h"
