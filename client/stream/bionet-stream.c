@@ -47,13 +47,13 @@ void cb_lost_node(bionet_node_t *node) {
     num_streams = bionet_node_get_num_streams(node);
     if (num_streams <= 0) return;
 
-    fprintf(stderr, "lost node: %s", bionet_node_get_name(node));
+    fprintf(stderr, "lost node: %s\n", bionet_node_get_name(node));
 
     for (i = 0; i <num_streams; i ++) {
         bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
         fprintf(
             stderr,
-            "    %s %s %s", 
+            "    %s %s %s\n", 
             bionet_stream_get_id(stream),
             bionet_stream_get_type(stream),
             bionet_stream_direction_to_string(bionet_stream_get_direction(stream))
@@ -69,13 +69,13 @@ void cb_new_node(bionet_node_t *node) {
     num_streams = bionet_node_get_num_streams(node);
     if (num_streams <= 0) return;
 
-    fprintf(stderr, "new node: %s", bionet_node_get_name(node));
+    fprintf(stderr, "new node: %s\n", bionet_node_get_name(node));
 
     for (i = 0; i < num_streams; i ++) {
         bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
         fprintf(
             stderr,
-            "    %s %s %s", 
+            "    %s %s %s\n", 
             bionet_stream_get_id(stream),
             bionet_stream_get_type(stream),
             bionet_stream_direction_to_string(bionet_stream_get_direction(stream))
@@ -89,11 +89,11 @@ void cb_stream(bionet_stream_t *stream, void *buffer, int size) {
 
     r = write(fileno(stdout), buffer, size);
     if (r < 0) {
-        fprintf(stderr, "error writing to stdout: %s", strerror(errno));
+        fprintf(stderr, "error writing to stdout: %s\n", strerror(errno));
         exit(1);
     }
     if (r < size) {
-        fprintf(stderr, "short write to stdout: %s", strerror(errno));
+        fprintf(stderr, "short write to stdout: %s\n", strerror(errno));
         exit(1);
     }
 }
@@ -223,10 +223,10 @@ int main(int argc, char *argv[]) {
 
     bionet_fd = bionet_connect();
     if (bionet_fd < 0) {
-        fprintf(stderr, "error connecting to Bionet");
+        fprintf(stderr, "error connecting to Bionet\n");
         exit(1);
     }
-    fprintf(stderr, "connected to Bionet");
+    fprintf(stderr, "connected to Bionet\n");
 
 
     // if no stream name was specified, we just list all the streams as they come and goo
