@@ -4,12 +4,12 @@ Bionet 2.1.1, 2009 January 27
     * Added C -> Python callbacks. Callbacks can be written in Python and
       registered using the py-prefixed version of the register function.
 
+    * Added several HABs co-developed with Gary Grobe at JSC: speedway,
+      pal-650, td-p210, parsec
+
     * Lots of work on Streams and the Alsa HAB.  Bionet can now send
       audio streams from one place to another.  Added a new example
       "Streamy" HAB showing how to use streams.
-
-    * Added a bunch of HABs co-developed with Gary Grobe at JSC: speedway,
-      pal-650, td-p210, parsec
 
     * Ported the CPOD and Stethoscope HABs from the old Bionet 0.5
       codebase to 2.1.
