@@ -1,0 +1,21 @@
+
+in mainline: update ChangeLog & common.am, commit
+
+in mainline: tag with the release number: "bzr tag 2.1.1"
+
+on the server: branch trunk to a release-branch with "bzr branch trunk
+    bionet-2.1.1"
+
+check out the release branch
+
+in the branch: ./autogen.sh
+
+in the branch: export VERSION=$(grep BIONET_RELEASE_VERSION common.am | cut -d '=' -f 2) ; cd .. ; tar --exclude .bzr -cjf bionet-$VERSION.tar.bz2 bionet-$VERSION
+
+build the docs, install on our webserver
+
+send out an announcement email with links to the tarball and the API docs,
+and the top of the changelog
+
+in mainline: update ChangeLog & common.am, commit
+
