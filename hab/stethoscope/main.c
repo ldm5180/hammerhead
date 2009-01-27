@@ -1,22 +1,7 @@
 
 //
-// Copyright (C) 2004-2008, Regents of the University of Colorado.
-// This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
+// Copyright (C) 2008-2009, Regents of the University of Colorado.
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of GNU General Public License version 2, as
-// published by the Free Software Foundation.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-//
-
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -335,6 +320,8 @@ connecting:
     }
     i+= bionet_node_add_resource(node, resource);
 
+    bionet_resource_set_uint32(resource, gain, NULL);
+
     bionet_hab_add_node(this_hab, node);
     i += hab_report_new_node(node);
 
@@ -348,7 +335,9 @@ connecting:
 
 
     hab_register_callback_set_resource(cb_set_resource);
-
+    hab_register_callback_stream_data(cb_stream_data);
+    hab_register_callback_stream_subscription(cb_stream_subscription);
+    hab_register_callback_stream_unsubscription(cb_stream_unsubscription);
 
     // Make the device socket nonblocking
 
