@@ -195,7 +195,7 @@ int main (int argc, char *argv[]) {
 
             r = select(bionet_fd + 1, &readers, NULL, NULL, &timeout);
             if (r < 0) {
-                fprintf(stderr, "error from select: %s", strerror(errno));
+                fprintf(stderr, "error from select: %s\n", strerror(errno));
                 g_usleep(1000*1000);
                 continue;
             }
@@ -257,7 +257,7 @@ int main (int argc, char *argv[]) {
             continue;
         }
         if (r < 0) {
-            fprintf(stderr, "error from select: %s", strerror(errno));
+            fprintf(stderr, "error from select: %s\n", strerror(errno));
             g_usleep(1000*1000);
             continue;
         }
