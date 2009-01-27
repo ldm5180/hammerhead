@@ -24,4 +24,4 @@ CFLAGS=$(AM_CFLAGS)
 BIONET_INTERFACE_VERSION=1:0:0
 
 #Purely aesthetic marketing version number
-BIONET_RELEASE_VERSION=2.1.1
+BIONET_RELEASE_VERSION=2.1.1+epsilon
