@@ -154,6 +154,7 @@ void write_to_stream(bionet_stream_t *stream) {
         }
         if (r == 0) {
             fprintf(stderr, "end of file\n");
+            sleep(2);  // FIXME: to let bionet send out the data...
             exit(0);
         }
 
