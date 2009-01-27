@@ -1,3 +1,8 @@
+
+//
+// Copyright (C) 2008-2009, Gary Grobe and the Regents of the University of Colorado.
+//
+
 /*
  * Written to interface with the UWB.exe program.
  *

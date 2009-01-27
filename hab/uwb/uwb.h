@@ -1,3 +1,8 @@
+
+//
+// Copyright (C) 2008-2009, Gary Grobe and the Regents of the University of Colorado.
+//
+
 #ifndef __TD_RADIO_H_
 #define __TD_RADIO_H_
 
