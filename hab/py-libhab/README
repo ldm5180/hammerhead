@@ -1,0 +1,7 @@
+In order to use callbacks, write a function definition in Python then register it using the "py" prefixed form of the registration function.
+
+Example:
+def pycb_set_resource(resource, value):
+    print "callback: should set " + bionet_resource_get_local_name(resource) + " to " + bionet_value_to_str(value)
+
+pyhab_register_callback_set_resource(pycb_set_resource)

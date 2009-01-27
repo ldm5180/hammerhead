@@ -4,6 +4,9 @@ bin_PROGRAMS = stethoscope-hab
 
 
 stethoscope_hab_SOURCES =          		\
+	cb-stream-data.c			\
+	cb-stream-subscription.c		\
+	cb-stream-unsubscription.c		\
 	daemonize.c        			\
 	main.c             			\
 	mulaw2pcm16.c      			\

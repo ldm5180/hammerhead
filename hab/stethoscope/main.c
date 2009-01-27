@@ -57,6 +57,7 @@ typedef struct {
     int socket;
 } user_data_t;
 
+int num_listeners = 0;
 
 int daemonize(int*);
 
@@ -71,9 +72,12 @@ void cleanup_children()
     g_log("", G_LOG_LEVEL_INFO, "Got a child signal...");
 }
 
-int read_data_from_stethoscope_and_write(int fd, GSList **list);
+int read_data_from_stethoscope_and_write(int fd, bionet_stream_t * stream, int num_listeners);
 
 void cb_set_resource(bionet_resource_t * resource, bionet_value_t * value);
+void cb_stream_subscription(const char *client_id, const bionet_stream_t *stream);
+void cb_stream_unsubscription(const char *client_id, const bionet_stream_t *stream);
+void cb_stream_data(const char *client_id, bionet_stream_t *stream, const void *data, unsigned int size);
 
 void print_help(char* name)
 {
@@ -104,7 +108,6 @@ int main(int argc, char** argv)
 
     bionet_stream_t *steth_stream;
 
-    GSList* listeners_fd;
     char * hab_id = NULL;
     bionet_hab_t * this_hab;
     bionet_resource_t * resource;
@@ -113,7 +116,6 @@ int main(int argc, char** argv)
     daemon = 0;
     streaming = 0;
     bacpy(&device, BDADDR_ANY);
-    listeners_fd = NULL;
     gain = 10;
     period = 10;
 
@@ -297,7 +299,7 @@ connecting:
     }
 
 
-    // Report battery voltage and audio stream to nag
+    // Report battery voltage and audio stream to bionet
     node = bionet_node_new(this_hab, NODE_ID);
 
     steth_stream = bionet_stream_new(node, "output", BIONET_STREAM_DIRECTION_PRODUCER, "audio");
@@ -389,20 +391,11 @@ connecting:
 
         if (FD_ISSET(s, &readers))
         {
-            if (read_data_from_stethoscope_and_write(s, &listeners_fd))
+            if (read_data_from_stethoscope_and_write(s, steth_stream, num_listeners))
             {
                 g_message("Lost conection to stethoscope: %s - Resetting\n", strerror(errno));
 
-                for (i = 0; i < g_slist_length(listeners_fd); i++)
-                {
-                    int out_fd;
-
-                    out_fd = GPOINTER_TO_INT(g_slist_nth_data(listeners_fd, i));
-                
-                    close(out_fd);
-                }
                 close(s);
-                g_slist_free(listeners_fd);
 
                 hab_report_lost_node(NODE_ID);
 
@@ -415,10 +408,6 @@ connecting:
         if (FD_ISSET(user_data->socket, &readers))
         {
             int fd;
-
-            //fd = bionet_stream_accept(steth_stream, 
-	    //user_data->socket);
-            listeners_fd = g_slist_append(listeners_fd, GINT_TO_POINTER(fd));
 
             g_debug("Accepted a connection on the Stethoscope stream - adding fd = %d to list\n", fd);
 

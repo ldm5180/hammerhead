@@ -1,0 +1,7 @@
+In order to use callbacks, write a function definition in Python then register it using the "py" prefixed form of the registration function.
+
+Example:
+def cb_lost_hab(hab):
+    print("lost hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab))
+
+pybionet_register_callback_lost_hab(cb_lost_hab);

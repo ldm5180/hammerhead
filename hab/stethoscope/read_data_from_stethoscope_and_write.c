@@ -40,7 +40,6 @@ extern uint32_t gain;
 
 extern bionet_node_t *node;
 
-
 int16_t mulaw2pcm16(uint8_t byte);
 
 
@@ -75,7 +74,7 @@ int unbyte_escape_and_copy(char* dst, char* src, int size)
 }
 
 
-int read_data_from_stethoscope_and_write(int fd, GSList **list)
+int read_data_from_stethoscope_and_write(int fd, bionet_stream_t * stream, int num_listeners)
 {
     static char buffer[512];
     static int  buffer_size = 0;
@@ -190,7 +189,7 @@ int read_data_from_stethoscope_and_write(int fd, GSList **list)
         }
     }
 
-    if (state == RSP_STATUS_SAMPLING_ENABLED)
+    if ((state == RSP_STATUS_SAMPLING_ENABLED) && (num_listeners))
     {
         static int size = 248;
 
@@ -234,21 +233,7 @@ int read_data_from_stethoscope_and_write(int fd, GSList **list)
             }
 
 
-            for (i = 0; i < g_slist_length(*list); i++)
-            {
-                int out_fd;
-
-                out_fd = GPOINTER_TO_INT(g_slist_nth_data(*list, i));
-
-                r = write(out_fd, pcm16data, sizeof(pcm16data));
-
-                if (r != sizeof(pcm16data))
-                {
-                    g_message("Short write on fd %d, r = %d, size = %lu, disconnecting", out_fd, r, (long unsigned)sizeof(pcm16data));
-                    close(out_fd);
-                    *list = g_slist_remove_all(*list, GINT_TO_POINTER(out_fd));
-                }
-            }
+	    hab_publish_stream(stream, pcm16data, sizeof(pcm16data));
 
             buffer_size = 0;
             state = RSP_STATUS_WAITING;
