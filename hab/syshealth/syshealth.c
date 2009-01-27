@@ -1,4 +1,9 @@
 
+//
+// Copyright (C) 2008-2009, the Regents of the University of Colorado.
+//
+
+
 
     //This is syshealth written in c instead of shell
     //Written by Marek Sotola (with lots of help from others) //

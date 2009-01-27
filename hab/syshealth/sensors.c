@@ -1,4 +1,9 @@
 
+//
+// Copyright (C) 2008-2009, the Regents of the University of Colorado.
+//
+
+
 // 
 // This syshealth module reads info from the sensors(1) program.  It shells
 // out rather than linking against libsensors, so that the rest of the

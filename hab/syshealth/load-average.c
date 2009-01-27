@@ -1,4 +1,9 @@
 
+//
+// Copyright (C) 2008-2009, the Regents of the University of Colorado.
+//
+
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
