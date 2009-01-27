@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# This script lets you run one test over and over again until it fails or
+# you stop it.
+#
+# Set ROOT to the root of your sandbox, cd to the test-dir you want to run,
+# and run this script.
+#
+
+while : ; do
+    ./run
+    if [ $? -ne 0 ]; then
+        echo fail
+        exit 1
+    fi
+    sleep 1
+done
+
