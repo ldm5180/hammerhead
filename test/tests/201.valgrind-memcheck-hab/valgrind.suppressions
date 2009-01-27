@@ -29,3 +29,15 @@
     fun:main
 }
 
+{
+    avahi-thread-startup
+    fun:calloc
+    fun:_dl_allocate_tls
+    fun:pthread_create@@GLIBC_2.*
+    obj:/usr/lib/libdns_sd.*
+    fun:DNSServiceRegister (in /usr/lib/libdns_sd.so.1.0.0)
+    fun:cal_server_mdnssd_bip_function (thread-functions.c:515)
+    fun:start_thread (in /lib/libpthread-2.7.so)
+    fun:clone
+}
+
