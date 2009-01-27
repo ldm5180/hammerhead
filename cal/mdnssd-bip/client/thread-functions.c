@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <netdb.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -655,6 +656,13 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
     char mdnssd_service_name[100];
     int r;
+
+    // block all signals in this thread
+    {
+        sigset_t ss;
+        sigfillset(&ss);
+        pthread_sigmask(SIG_BLOCK, &ss, NULL);
+    }
 
     this = (cal_client_mdnssd_bip_t *)arg;
 

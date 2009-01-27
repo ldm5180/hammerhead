@@ -1,6 +1,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -450,6 +451,14 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
     TXTRecordRef txt_ref;
     DNSServiceErrorType error;
+
+
+    // block all signals in this thread
+    {
+        sigset_t ss;
+        sigfillset(&ss);
+        pthread_sigmask(SIG_BLOCK, &ss, NULL);
+    }
 
 
     this = this_as_voidp;
