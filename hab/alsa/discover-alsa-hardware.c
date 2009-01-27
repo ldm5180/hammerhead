@@ -351,7 +351,7 @@ int discover_alsa_hardware(void) {
 
 
         // 
-        // Report this new Node to the NAG
+        // Report this new Node to Bionet
         //
 
         r = hab_report_new_node(node);
