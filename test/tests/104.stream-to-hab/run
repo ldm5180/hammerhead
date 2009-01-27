@@ -1,0 +1,33 @@
+#!/bin/bash
+
+UNIQUE=$$
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+
+echo starting Streamy HAB
+$ROOT/hab/streamy/streamy-hab --id $UNIQUE &
+
+STREAM="Streamy.$UNIQUE.incoming:incoming" 
+for FILE in test-pattern-*; do
+    rm -f incoming:incoming
+    echo sending file $FILE to stream $STREAM
+    $ROOT/client/stream/bionet-stream $STREAM < $FILE
+
+    mv incoming:incoming out.$FILE
+    if ! cmp  $FILE out.$FILE ; then
+        echo "ERROR: $FILE differs from out.$FILE:"
+        hd $FILE > hd.$FILE
+        hd out.$FILE > hd.out.$FILE
+        diff -u hd.$FILE hd.out.$FILE
+        exit 1
+    fi
+    echo "files are identical, yay"
+done
+
+kill %1
+echo "stream transit successfull!"
+
