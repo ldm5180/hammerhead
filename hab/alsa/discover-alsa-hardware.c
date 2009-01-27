@@ -406,12 +406,14 @@ next_card:
                         free(sinfo->info.producer.alsa);
                     }
                 } else {
-#if 0
-                    while (user_data->clients != NULL) {
-                        client_t *client = g_slist_nth_data(user_data->clients, 0);
-                        disconnect_client(stream, client);
+                    while (g_slist_length(sinfo->info.consumer.clients) > 0) {
+                        client_t *client = g_slist_nth_data(sinfo->info.consumer.clients, 0);
+                        sinfo->info.consumer.clients = g_slist_remove(sinfo->info.consumer.clients, client);
+
+                        free(client->id);
+                        close_alsa_device(client->alsa);
+                        free(client->alsa);
                     }
-#endif
                 }
 
                 free(sinfo);
