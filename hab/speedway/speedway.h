@@ -1,3 +1,9 @@
+
+//
+// Copyright (C) 2008-2009, Gary Grobe and the Regents of the University of Colorado.
+//
+
+
 #ifndef __SPEEDWAY_H_
 #define __SPEEDWAY_H_
 

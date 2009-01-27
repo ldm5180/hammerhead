@@ -1,10 +1,27 @@
-Bionet 2.1.1, TBA
 
-    * Added library versioning so that the system linker can correctly
-      determine binary compatibility.
+Bionet 2.1.1, 2009 January 27
 
     * Added C -> Python callbacks. Callbacks can be written in Python and
       registered using the py-prefixed version of the register function.
+
+    * Lots of work on Streams and the Alsa HAB.  Bionet can now send
+      audio streams from one place to another.  Added a new example
+      "Streamy" HAB showing how to use streams.
+
+    * Added a bunch of HABs co-developed with Gary Grobe at JSC: speedway,
+      pal-650, td-p210, parsec
+
+    * Ported the CPOD and Stethoscope HABs from the old Bionet 0.5
+      codebase to 2.1.
+
+    * Added some shortcut functions in the API to make common operations
+      simpler.
+
+    * Added library versioning so that the system linker can correctly
+      determine binary compatibility.  Misc other build-system
+      improvements.
+
+    * Test improvements and several bug fixes.
 
 
 Bionet 2.1.0, 2009 January 10
