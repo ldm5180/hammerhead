@@ -1,8 +1,8 @@
 
 //
-// Copyright (C) 2004-2008, Regents of the University of Colorado.
-// This work was supported by NASA contracts NNJ05HE10G and NNC06CB40C.
+// Copyright (C) 2008-2009, Gary Grobe and the Regents of the University of Colorado.
 //
+
 
 #ifndef DAEMONIZE_H
 #define DAEMONIZE_H

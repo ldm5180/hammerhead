@@ -1,7 +1,8 @@
 
 //
-// Copyright (C) 2009, Regents of the University of Colorado.
+// Copyright (C) 2008-2009, Gary Grobe and the Regents of the University of Colorado.
 //
+
 
 /**
  * @file
