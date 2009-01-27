@@ -47,12 +47,12 @@ void cb_lost_node(bionet_node_t *node) {
     num_streams = bionet_node_get_num_streams(node);
     if (num_streams <= 0) return;
 
-    g_message("lost node: %s", bionet_node_get_name(node));
+    fprintf(stderr, "lost node: %s", bionet_node_get_name(node));
 
     for (i = 0; i <num_streams; i ++) {
         bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
-        g_log(
-            "", G_LOG_LEVEL_INFO,
+        fprintf(
+            stderr,
             "    %s %s %s", 
             bionet_stream_get_id(stream),
             bionet_stream_get_type(stream),
@@ -69,12 +69,12 @@ void cb_new_node(bionet_node_t *node) {
     num_streams = bionet_node_get_num_streams(node);
     if (num_streams <= 0) return;
 
-    g_message("new node: %s", bionet_node_get_name(node));
+    fprintf(stderr, "new node: %s", bionet_node_get_name(node));
 
     for (i = 0; i < num_streams; i ++) {
         bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
-        g_log(
-            "", G_LOG_LEVEL_INFO,
+        fprintf(
+            stderr,
             "    %s %s %s", 
             bionet_stream_get_id(stream),
             bionet_stream_get_type(stream),
@@ -87,16 +87,13 @@ void cb_new_node(bionet_node_t *node) {
 void cb_stream(bionet_stream_t *stream, void *buffer, int size) {
     int r;
 
-
-    // g_message("%s produced %d bytes", bionet_stream_get_name(stream), size);
-
     r = write(fileno(stdout), buffer, size);
     if (r < 0) {
-        g_warning("error writing to stdout: %s", strerror(errno));
+        fprintf(stderr, "error writing to stdout: %s", strerror(errno));
         exit(1);
     }
     if (r < size) {
-        g_warning("short write to stdout: %s", strerror(errno));
+        fprintf(stderr, "short write to stdout: %s", strerror(errno));
         exit(1);
     }
 }
@@ -135,42 +132,6 @@ void read_from_stream(bionet_stream_t *stream) {
     while (1) {
         bionet_read_with_timeout(NULL);
     }
-
-#if 0
-    while (1) {
-        int index;
-        int bytes_remaining;
-        int r;
-        uint8_t buffer[1024];
-
-        r = read(fd, buffer, sizeof(buffer));
-        if (r < 0) {
-            fprintf(stderr, "error reading stream: %s\n", strerror(errno));
-            exit(1);
-        }
-
-        if (r == 0) {
-            fprintf(stderr, "end of file\n");
-            exit(0);
-        }
-
-        // fprintf(stderr, "read %d bytes from stream\n", r);
-
-        index = 0;
-        bytes_remaining = r;
-
-        while (bytes_remaining > 0) {
-            r = write(fileno(stdout), &buffer[index], bytes_remaining);
-            if (r < 0) {
-                fprintf(stderr, "error writing to stdout: %s\n", strerror(errno));
-                exit(1);
-            }
-
-            index += r;
-            bytes_remaining -= r;
-        }
-    }
-#endif
 }
 
 
@@ -262,10 +223,10 @@ int main(int argc, char *argv[]) {
 
     bionet_fd = bionet_connect();
     if (bionet_fd < 0) {
-        g_log("", G_LOG_LEVEL_WARNING, "error connecting to Bionet");
+        fprintf(stderr, "error connecting to Bionet");
         exit(1);
     }
-    g_log("", G_LOG_LEVEL_INFO, "connected to Bionet");
+    fprintf(stderr, "connected to Bionet");
 
 
     // if no stream name was specified, we just list all the streams as they come and goo
