@@ -14,6 +14,8 @@ static void disconnect_client_from_producer(bionet_stream_t *stream) {
 
     sinfo = bionet_stream_get_user_data(stream);
 
+    if (sinfo->info.producer.num_clients <= 0) return;  // this should not happen...
+
     sinfo->info.producer.num_clients --;
     if (sinfo->info.producer.num_clients > 0) return;
 
