@@ -30,6 +30,7 @@
 static GHashTable *clients = NULL;
 
 static DNSServiceRef *advertisedRef = NULL;
+static TXTRecordRef txt_ref;
 
 static cal_server_mdnssd_bip_t *this = NULL;
 
@@ -463,11 +464,15 @@ void cleanup_pipes(void *unused) {
 }
 
 
+// free storage of the text record
+void cleanup_text_record(void *unused) {
+    TXTRecordDeallocate(&txt_ref);
+}
+
 void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     char mdnssd_service_name[100];
     int r;
 
-    TXTRecordRef txt_ref;
     DNSServiceErrorType error;
 
     cal_event_t *event;
@@ -513,6 +518,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     }
 
     TXTRecordCreate(&txt_ref, 0, NULL);
+    pthread_cleanup_push(cleanup_text_record, NULL)
 
 #if 0
     for (i = 0; i < peer->num_unicast_addresses; i ++) {
@@ -669,6 +675,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     //
 
     pthread_cleanup_pop(0);  // cleanup_advertisedRef
+    pthread_cleanup_pop(0);  // cleanup_text_record
     pthread_cleanup_pop(0);  // cleanup_clients
     pthread_cleanup_pop(0);  // cleanup_pipes
 }
