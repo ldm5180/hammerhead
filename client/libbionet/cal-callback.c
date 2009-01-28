@@ -371,7 +371,7 @@ void libbionet_cal_callback(const cal_event_t *event) {
         }
 
         case CAL_EVENT_LEAVE: {
-            bionet_hab_t *hab;
+            bionet_hab_t *hab = NULL;
             char *type;
             char *id;
             int r;
@@ -382,19 +382,13 @@ void libbionet_cal_callback(const cal_event_t *event) {
                 break;
             }
 
-            // remove this hab from the internal list of known habs
-            {
-                GSList *i;
 
-                for (i = libbionet_habs; i != NULL; i = i->next) {
-                    bionet_hab_t *hab = i->data;
+            //
+            // it's a bit confusing because there are two lists of HABs:
+            // the list of HABs that the client has been told about, and
+            // the "master" internal list of everything the process has seen
+            //
 
-                    if (bionet_hab_matches_type_and_id(hab, type, id)) {
-                        libbionet_habs = g_slist_remove(libbionet_habs, hab);
-                        break;
-                    }
-                }
-            }
 
             // if the client's been told about this HAB or any of its nodes, report them as lost now
             hab = bionet_cache_lookup_hab(type, id);
@@ -413,8 +407,21 @@ void libbionet_cal_callback(const cal_event_t *event) {
                     libbionet_callback_lost_hab(hab);
                 }
                 libbionet_cache_remove_hab(hab);
+            }
 
-                bionet_hab_free(hab);
+            // remove the hab from the "master" internal list of habs and free it
+            {
+                GSList *i;
+
+                for (i = libbionet_habs; i != NULL; i = i->next) {
+                    bionet_hab_t *hab = i->data;
+
+                    if (bionet_hab_matches_type_and_id(hab, type, id)) {
+                        libbionet_habs = g_slist_remove(libbionet_habs, hab);
+                        bionet_hab_free(hab);
+                        break;
+                    }
+                }
             }
 
             break;
