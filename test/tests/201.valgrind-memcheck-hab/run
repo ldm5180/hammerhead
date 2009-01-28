@@ -19,14 +19,19 @@ libtool --mode=execute valgrind --suppressions=valgrind.suppressions --quiet --l
 echo starting bionet-watcher
 $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher &
 
+
 sleep $TEST_DURATION
 
-# kill the hab
+
+echo "killing the HAB (under valgrind)"
 kill %1
+wait %1
 sleep 4  # to let the clients notice
 
+
+echo "killing the bionet-watcher"
 kill %2
-sleep 1
+wait
 
 
 if ! diff -q out.watcher out.random-hab; then
@@ -37,9 +42,6 @@ else
     echo "watcher output is identical to random-hab output, yay"
 fi
 
-
-# let the valgrind output finish
-sleep 1
 
 if [ $(wc -l < out.valgrind.random-hab) -gt 0 ]; then
     echo "valgrind memcheck output:"

@@ -19,13 +19,21 @@ echo starting two bionet-watchers
 $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.0 &
 $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.1 &
 
+
 sleep $TEST_DURATION
 
+
+echo "killing the random-hab"
 kill %1
+wait %1
+
 sleep 2  # to let the clients notice
 
+
+echo "killing the bionet-watchers"
 kill %2
 kill %3
+wait
 
 
 if ! diff -q out.watcher.0 out.watcher.1; then

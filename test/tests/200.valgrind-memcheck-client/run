@@ -20,13 +20,20 @@ sleep 2  # let the client come up before starting the hab (valgrind makes it slo
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
 
+
 sleep $TEST_DURATION
 
-# kill the hab
+
+echo "killing the HAB"
 kill %2
+wait %2
+
 sleep 4  # to let the clients notice
 
+
+echo "killing the bionet-watcher (under valgrind)"
 kill %1
+wait %1
 
 
 if ! diff -q out.watcher out.random-hab; then
@@ -35,9 +42,6 @@ if ! diff -q out.watcher out.random-hab; then
     exit 1
 fi
 echo "watcher output is identical to random-hab output, yay"
-
-# let the valgrind output finish
-sleep 1
 
 if [ $(wc -l < out.valgrind.watcher) -gt 0 ]; then
     echo "valgrind memcheck output:"
