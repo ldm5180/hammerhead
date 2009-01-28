@@ -452,7 +452,9 @@ static void resolve_callback(
     free(sc);
 
     if (errorCode != kDNSServiceErr_NoError) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "resolve_callback: Error returned from resolve: %d", errorCode);
+        if (errorCode != kDNSServiceErr_Unknown) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "resolve_callback: Error returned from resolve: %d", errorCode);
+        }
         goto fail0;
     }
 
@@ -578,6 +580,7 @@ static void browse_callback(
         // add this new service ref to the list
         service_list = g_slist_prepend(service_list, sc);
     } else {
+#if 0
         bip_peer_t *peer;
 
         peer = g_hash_table_lookup(peers, name);
@@ -590,6 +593,7 @@ static void browse_callback(
         // peer_leaves(peer);
 
         // report_peer_lost(name, peer);
+#endif
     }
 }
 
