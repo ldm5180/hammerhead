@@ -81,18 +81,18 @@ typedef enum {
     //! a subscribe event back to the CAL thread.
     CAL_EVENT_SUBSCRIBE,
 
-    //! This event is only used on the server for now.
-    //!
-    //! In the server, the user thread gets this event from the CAL thread
-    //! when a client terminates an existing subscription.
+    //! This event is delivered to CAL servers, to indicate that a CAL
+    //! client has terminated an existing subscription.
     //!
     //! FIXME: in the awesome future, clients will be able to unsubscribe
-    //! at well, currently the server synthesizes unsubscribe events to the
+    //! at will, currently the server synthesizes unsubscribe events to the
     //! server user thread when the client disconnects
     CAL_EVENT_UNSUBSCRIBE,
 
-    //! This event indicates that a server has published new information to
-    //! us.
+    //! This event is delivered to CAL clients, to indicate that a CAL
+    //! server has published new information to us.  event->peer_name is
+    //! the name of the server that published, and event->msg is the
+    //! published message.  event->topic is unused and set to NULL.
     CAL_EVENT_PUBLISH
 
 } cal_event_type_t;
