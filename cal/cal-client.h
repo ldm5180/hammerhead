@@ -70,6 +70,10 @@ typedef struct {
     );
 
 
+    //!
+    //! \brief Leave the network.
+    //!
+
     void (*shutdown)(void);
 
 
