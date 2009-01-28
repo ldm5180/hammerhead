@@ -95,6 +95,8 @@ int read_data_from_stethoscope_and_write(int fd, bionet_stream_t * stream, int n
         }
     }
 
+    fprintf(stderr, "bufsize = %d\n", buffer_size);
+
     if (state == RSP_STATUS_GOT_COMMAND)
     {
         switch ((uint8_t)buffer[1])
@@ -167,7 +169,7 @@ int read_data_from_stethoscope_and_write(int fd, bionet_stream_t * stream, int n
             break;
 
         default:
-            //g_debug("Unknown response: %c - Clearing and starting over", buffer[1]);
+            g_debug("Unknown response: %c - Clearing and starting over", buffer[1]);
             buffer_size = 0;
             state = RSP_STATUS_WAITING;
             break;

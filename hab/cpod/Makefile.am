@@ -23,8 +23,8 @@ cpod_hab_SOURCES = 	   \
 
 cpod_hab_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(BLUEZ_CFLAGS) -I../libhab -I../../util -I../libamedevice
 
-cpod_hab_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(BLUEZ_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) -L../libhab -L../../asn.1 -L../../util -L../../cal/mdnssd-bip/server -L../libamedevice
+cpod_hab_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(BLUEZ_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) -L../libhab -L../../asn.1 -L../../util -L../../cal/mdnssd-bip/server
 
-cpod_hab_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lpthread -lm -lamedevice
+cpod_hab_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lpthread -lm
 
-cpod_hab_DEPENDENCIES = ../libhab/libhab.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la ../libamedevice/libamedevice.la
+cpod_hab_DEPENDENCIES = ../libhab/libhab.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la 

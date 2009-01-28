@@ -274,17 +274,20 @@ connecting:
 
     // Verify this is a stethoscope...
     {
-        char *name;
+        char *name = NULL;
 
-        ame_command_return_name(s);
-        name = ame_response_return_name(s);
-        g_debug("Read name: >%s<", name);
-
-        if (name == NULL ||
-            strcmp(name, STETHOSCOPE_NAME) != 0)
-        {
-            g_warning("Can't verify device as Stethoscope device, reports %s - Continuing...", name);
-        }
+        while (name == NULL)
+	{
+	    ame_command_return_name(s);
+	    name = ame_response_return_name(s);
+	    g_debug("Read name: >%s<", name);
+	    if ((name) && (0 == strcmp(name, STETHOSCOPE_NAME)))
+	    {
+		break;
+	    }
+	    g_warning("Can't verify device as Stethoscope device, reports %s - Continuing...", name);
+	    name = NULL;
+	}
     }
 
 
@@ -355,8 +358,6 @@ connecting:
         FD_SET(bionet_fd, &readers);
         FD_SET(s, &readers);
         max_fd = MAX(bionet_fd, s);
-        FD_SET(s, &readers);
-        max_fd = MAX(max_fd, s);
 
 
         i = select(max_fd + 1, &readers, NULL, NULL, &timeout);
@@ -392,20 +393,20 @@ connecting:
 
                 goto connecting;
             }
-        }
 
-	if ((num_listeners) && (!streaming))
-	{
+	    if ((num_listeners) && (!streaming))
+	    {
+		
+		g_debug("Accepted a connection on the Stethoscope stream.");
+		ame_command_return_data(s, SAMPLE_RATE_RESYNCH, 20);
+		streaming = 1;
+	    }
 	    
-            g_debug("Accepted a connection on the Stethoscope stream.");
-	    ame_command_return_data(s, SAMPLE_RATE_RESYNCH, 0);
-	    streaming = 1;
-	}
-	
-	if ((0 == num_listeners) && (streaming))
-	{
-	    //turn off streaming
-	    streaming = 0;
+	    if ((0 == num_listeners) && (streaming))
+	    {
+		//turn off streaming
+		streaming = 0;
+	    }
 	}
     }
 
