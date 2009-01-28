@@ -456,6 +456,13 @@ void cleanup_clients(void *unused) {
 }
 
 
+// close the pipes to the user thread
+void cleanup_pipes(void *unused) {
+    close(cal_server_mdnssd_bip_fds_to_user[1]);
+    close(cal_server_mdnssd_bip_fds_from_user[0]);
+}
+
+
 void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     char mdnssd_service_name[100];
     int r;
@@ -474,15 +481,17 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     }
 
 
+    // at exit, close the pipes to the user thread
+    pthread_cleanup_push(cleanup_pipes, NULL)
+
+
     this = this_as_voidp;
 
 
     r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", cal_server_mdnssd_bip_network_type);
     if (r >= sizeof(mdnssd_service_name)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: network type '%s' is too long!", cal_server_mdnssd_bip_network_type);
-        close(cal_server_mdnssd_bip_fds_to_user[1]);
-        close(cal_server_mdnssd_bip_fds_from_user[0]);
-        return NULL;
+        pthread_exit(NULL);
     }
 
 
@@ -500,9 +509,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     advertisedRef = malloc(sizeof(DNSServiceRef));
     if (advertisedRef == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: out of memory!");
-        close(cal_server_mdnssd_bip_fds_to_user[1]);
-        close(cal_server_mdnssd_bip_fds_from_user[0]);
-        return NULL;
+        pthread_exit(NULL);
     }
 
     TXTRecordCreate(&txt_ref, 0, NULL);
@@ -552,9 +559,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
         if (error == kDNSServiceErr_Unknown) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: make sure the avahi-daemon is running");
         }
-        close(cal_server_mdnssd_bip_fds_to_user[1]);
-        close(cal_server_mdnssd_bip_fds_from_user[0]);
-        return NULL;
+        pthread_exit(NULL);
     }
 
     pthread_cleanup_push(cleanup_advertisedRef, NULL);
@@ -563,22 +568,16 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     event = cal_event_new(CAL_EVENT_INIT);
     if (event == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: out of memory!");
-        close(cal_server_mdnssd_bip_fds_to_user[1]);
-        close(cal_server_mdnssd_bip_fds_from_user[0]);
-        return NULL;
+        pthread_exit(NULL);
     }
 
     r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: error writing INIT event to user thread!!");
-        close(cal_server_mdnssd_bip_fds_to_user[1]);
-        close(cal_server_mdnssd_bip_fds_from_user[0]);
-        return NULL;
+        pthread_exit(NULL);
     } else if (r < sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: short write of INIT event to user thread!!");
-        close(cal_server_mdnssd_bip_fds_to_user[1]);
-        close(cal_server_mdnssd_bip_fds_from_user[0]);
-        return NULL;
+        pthread_exit(NULL);
     }
 
 
@@ -633,9 +632,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
         if (FD_ISSET(cal_server_mdnssd_bip_fds_from_user[0], &readers)) {
             if (read_from_user() < 0) {
-                close(cal_server_mdnssd_bip_fds_to_user[1]);
-                close(cal_server_mdnssd_bip_fds_from_user[0]);
-                return NULL;
+                pthread_exit(NULL);
             }
         }
 
@@ -673,5 +670,6 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
     pthread_cleanup_pop(0);  // cleanup_advertisedRef
     pthread_cleanup_pop(0);  // cleanup_clients
+    pthread_cleanup_pop(0);  // cleanup_pipes
 }
 
