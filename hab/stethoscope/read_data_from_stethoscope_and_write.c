@@ -95,8 +95,6 @@ int read_data_from_stethoscope_and_write(int fd, bionet_stream_t * stream, int n
         }
     }
 
-    fprintf(stderr, "bufsize = %d\n", buffer_size);
-
     if (state == RSP_STATUS_GOT_COMMAND)
     {
         switch ((uint8_t)buffer[1])

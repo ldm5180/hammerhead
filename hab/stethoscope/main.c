@@ -398,7 +398,7 @@ connecting:
 	    {
 		
 		g_debug("Accepted a connection on the Stethoscope stream.");
-		ame_command_return_data(s, SAMPLE_RATE_RESYNCH, 20);
+		ame_command_return_data(s, SAMPLE_RATE_RESYNCH, 0);
 		streaming = 1;
 	    }
 	    
