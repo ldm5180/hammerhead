@@ -236,6 +236,10 @@ int main(int argc, char** argv)
     // Get RFCOMM channel of device via SDP
     // Naaaa...Just use channel 1 til we get millions to rewrite it
 
+    hab_register_callback_set_resource(cb_set_resource);
+    hab_register_callback_stream_data(cb_stream_data);
+    hab_register_callback_stream_subscription(cb_stream_subscription);
+    hab_register_callback_stream_unsubscription(cb_stream_unsubscription);
 
     // first connect to Bionet to show we're alive
     bionet_fd = hab_connect(this_hab);
@@ -296,7 +300,7 @@ connecting:
     bionet_stream_set_user_data(steth_stream, calloc(1, sizeof(user_data_t)));
     
     user_data_t * user_data = (user_data_t *)bionet_stream_get_user_data(steth_stream);
-    user_data->socket = i;
+    user_data->socket = s;
 
     i = 0;
 
@@ -334,10 +338,6 @@ connecting:
     }
 
 
-    hab_register_callback_set_resource(cb_set_resource);
-    hab_register_callback_stream_data(cb_stream_data);
-    hab_register_callback_stream_subscription(cb_stream_subscription);
-    hab_register_callback_stream_unsubscription(cb_stream_unsubscription);
 
     // Make the device socket nonblocking
 
@@ -353,8 +353,8 @@ connecting:
         FD_ZERO(&readers);
 
         FD_SET(bionet_fd, &readers);
-        FD_SET(user_data->socket, &readers);
-        max_fd = MAX(bionet_fd, user_data->socket);
+        FD_SET(s, &readers);
+        max_fd = MAX(bionet_fd, s);
         FD_SET(s, &readers);
         max_fd = MAX(max_fd, s);
 
@@ -394,18 +394,19 @@ connecting:
             }
         }
 
-        if (FD_ISSET(user_data->socket, &readers))
-        {
-            int fd;
-
-            g_debug("Accepted a connection on the Stethoscope stream - adding fd = %d to list\n", fd);
-
-            if (!streaming)
-            {
-                ame_command_return_data(s, SAMPLE_RATE_RESYNCH, 0);
-                streaming = 1;
-            }
-        }
+	if ((num_listeners) && (!streaming))
+	{
+	    
+            g_debug("Accepted a connection on the Stethoscope stream.");
+	    ame_command_return_data(s, SAMPLE_RATE_RESYNCH, 0);
+	    streaming = 1;
+	}
+	
+	if ((0 == num_listeners) && (streaming))
+	{
+	    //turn off streaming
+	    streaming = 0;
+	}
     }
 
 

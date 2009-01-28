@@ -22,10 +22,10 @@ STETHOSCOPE_STREAM="$1"
 if [ -z "$STETHOSCOPE_STREAM" ]; then
     echo "usage: play-stethoscope STETHOSCOPE_STREAM"
     echo available streams:
-    $BSTREAM --nag $NAG
+    $BSTREAM 
     exit 1
 fi
 
-
-$BSTREAM --nag $NAG $STETHOSCOPE_STREAM | $LOWPASS | aplay -t raw -r 9600 -c 1 -f S16_LE
+echo "$BSTREAM $STETHOSCOPE_STREAM"
+$BSTREAM $STETHOSCOPE_STREAM | $LOWPASS | aplay -t raw -r 9600 -c 1 -f S16_LE
 

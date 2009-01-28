@@ -14,6 +14,7 @@ extern int num_listeners;
 
 
 void cb_stream_unsubscription(const char *client_id, const bionet_stream_t *stream) {
+    fprintf(stderr, "subscriber left: %s\n", client_id);
     num_listeners--;
 }
 

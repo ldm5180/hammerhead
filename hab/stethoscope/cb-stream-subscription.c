@@ -15,6 +15,7 @@ extern int num_listeners;
  
 
 void cb_stream_subscription(const char *client_id, const bionet_stream_t *stream) {
+    fprintf(stderr, "subscriber identified: %s\n", client_id);
     num_listeners++;
 }
 

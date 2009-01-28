@@ -15,4 +15,4 @@ bdm_client_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS)
 
 bdm_client_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lpthread -lm
 
-
+bdm_client_DEPENDENCIES = ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la
