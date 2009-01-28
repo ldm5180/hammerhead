@@ -53,17 +53,19 @@ static void register_callback(
 
 
 
-static void read_from_user(void) {
+// returns 0 on succes, -1 if it's time to die
+static int read_from_user(void) {
     cal_event_t *event;
     int r;
+    int ret_val = 0;
 
     r = read(cal_server_mdnssd_bip_fds_from_user[0], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: error reading from user: %s", strerror(errno));
-        return;
+        return -1;
     } else if (r != sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: short read from user");
-        return;
+        return -1;
     }
 
     switch (event->type) {
@@ -74,8 +76,9 @@ static void read_from_user(void) {
             peer = g_hash_table_lookup(clients, event->peer_name);
             if (peer == NULL) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping outgoing Message event", event->peer_name);
-                return;
+                break;
             }
+
             bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
             // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
 
@@ -88,7 +91,7 @@ static void read_from_user(void) {
             peer = g_hash_table_lookup(clients, event->peer_name);
             if (peer == NULL) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping Subscribe event", event->peer_name);
-                return;
+                break;
             }
 
             peer->subscriptions = g_slist_prepend(peer->subscriptions, event->topic);
@@ -119,13 +122,21 @@ static void read_from_user(void) {
             break;
         }
 
+        case CAL_EVENT_SHUTDOWN: {
+            ret_val = -1;
+            break;
+        }
+
         default: {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user(): unknown event %d from user", event->type);
-            return;  // dont free events we dont understand
+            event = NULL;  // dont free events we dont understand
+            break;
         }
     }
 
     cal_event_free(event);
+
+    return ret_val;
 }
 
 
@@ -621,7 +632,11 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
 
         if (FD_ISSET(cal_server_mdnssd_bip_fds_from_user[0], &readers)) {
-            read_from_user();
+            if (read_from_user() < 0) {
+                close(cal_server_mdnssd_bip_fds_to_user[1]);
+                close(cal_server_mdnssd_bip_fds_from_user[0]);
+                return NULL;
+            }
         }
 
         if (FD_ISSET(this->socket, &readers)) {

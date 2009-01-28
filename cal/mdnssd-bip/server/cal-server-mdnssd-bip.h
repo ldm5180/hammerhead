@@ -3,6 +3,7 @@
 #define __CAL_SERVER_MDNSSD_BIP_H
 
 
+#include <sys/select.h>
 #include <pthread.h>
 
 #include <dns_sd.h>
@@ -39,7 +40,9 @@ extern int cal_server_mdnssd_bip_fds_from_user[2];
 extern pthread_t *cal_server_mdnssd_bip_thread;
 void *cal_server_mdnssd_bip_function(void *this_as_voidp);
 
+
 void cal_server_mdnssd_bip_shutdown(void);
+int cal_server_mdnssd_bip_read(struct timeval *timeout);
 
 
 

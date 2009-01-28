@@ -47,6 +47,21 @@ int hab_connect(bionet_hab_t *hab);
 
 
 /**
+ * @brief Disconnects from Bionet.  
+ *
+ * This function may be called when the HAB has completed all its Bionet
+ * communications and is ready to terminate.  It ensures that all published
+ * information makes it out to Bionet before returning.
+ *
+ * @note This function will *not* publish anything new (for example, Nodes
+ * added to the HAB but not reported by hab_report_new_node()), it just
+ * ensures that already-published information is actually sent to the
+ * subscribers.
+ */
+void hab_disconnect(void);
+
+
+/**
  * @brief Called to report the addition of a new Node to the network.
  *
  * @param[in] node The Node to report.

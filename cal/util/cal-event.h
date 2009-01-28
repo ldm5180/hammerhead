@@ -104,7 +104,18 @@ typedef enum {
     //! success to the caller.  All event_t fields other than event->type
     //! are unused set to 0.  If the CAL thread instead closes the pipe,
     //! the init function returns failure to the caller.
-    CAL_EVENT_INIT
+    CAL_EVENT_INIT,
+
+    //! This event is used internally by the CAL server, and will never be
+    //! seen by user threads.  It is used by the mDNS-SD/BIP BIP CAL server
+    //! module, and in the future maybe other multi-threaded CAL modules.
+    //!
+    //! When the user thread calls the CAL shutdown function, the shutdown
+    //! function sends this event to the CAL thread.  All event_t fields
+    //! other than event->type are unused set to 0.  The CAL thread
+    //! responds to this event by cleaning up (including closing its end of
+    //! the pipes) and cancelling itself.
+    CAL_EVENT_SHUTDOWN
 
 } cal_event_type_t;
 

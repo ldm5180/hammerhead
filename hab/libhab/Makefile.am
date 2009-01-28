@@ -4,6 +4,7 @@ lib_LTLIBRARIES = libhab.la
 
 libhab_la_SOURCES =      \
     connect.c            \
+    disconnect.c         \
     report-new-node.c    \
     report-lost-node.c   \
     report-datapoints.c  \

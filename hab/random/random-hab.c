@@ -161,10 +161,10 @@ int main (int argc, char *argv[]) {
 
     if (output_mode == OM_BIONET_WATCHER) {
         g_message("new hab: %s", bionet_hab_get_name(hab));
-
-        signal(SIGTERM, signal_handler);
-        signal(SIGINT, signal_handler);
     }
+
+    signal(SIGTERM, signal_handler);
+    signal(SIGINT, signal_handler);
 
 
     //
@@ -217,7 +217,7 @@ int main (int argc, char *argv[]) {
         int r;
 
         if (should_exit) {
-            sleep(1);  // let the CAL thread emit any last-second events we sent *last* time through the main loop
+            hab_disconnect();  // let the CAL thread emit any last-second events we sent *last* time through the main loop
             show_stuff_going_away();
             exit(0);
         }

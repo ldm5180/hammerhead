@@ -237,6 +237,7 @@ fail0:
 
 
 void cal_server_mdnssd_bip_shutdown(void) {
+    cal_event_t *event;
     int r;
 
     if (cal_server_mdnssd_bip_thread == NULL) {
@@ -244,20 +245,65 @@ void cal_server_mdnssd_bip_shutdown(void) {
         return;
     }
 
-    r = pthread_cancel(*cal_server_mdnssd_bip_thread);
-    if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: error canceling server thread: %s", strerror(errno));
+    event = cal_event_new(CAL_EVENT_SHUTDOWN);
+    if (event == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: out of memory!");
         return;
-    } else {
-        pthread_join(*cal_server_mdnssd_bip_thread, NULL);
-        free(cal_server_mdnssd_bip_thread);
-        cal_server_mdnssd_bip_thread = NULL;
     }
 
-    close(cal_server_mdnssd_bip_fds_to_user[0]);
-    close(cal_server_mdnssd_bip_fds_to_user[1]);
+    r = write(cal_server_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    if (r < 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: error writing to server thread: %s", strerror(errno));
+        return;
+    }
+    if (r < sizeof(event)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: short write to server thread!!");
+        return;
+    }
 
-    close(cal_server_mdnssd_bip_fds_from_user[0]);
+
+    // read any pending events from the CAL thread, until it closes the pipe
+    while(1) {
+        fd_set readers;
+        int r;
+
+        FD_ZERO(&readers);
+        FD_SET(cal_server_mdnssd_bip_fds_to_user[0], &readers);
+
+        r = select(cal_server_mdnssd_bip_fds_to_user[0] + 1, &readers, NULL, NULL, NULL);
+        if (r < 0) {
+            if ((errno == EAGAIN) || (errno == EINTR)) continue;
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: error with select: %s", strerror(errno));
+            return;
+        }
+
+        r = read(cal_server_mdnssd_bip_fds_to_user[0], &event, sizeof(cal_event_t*));
+        if (r < 0) {
+            if ((errno == EAGAIN) || (errno == EINTR)) continue;
+        } else if (r != sizeof(cal_event_t*)) {
+            // done!
+            break;
+        } else if (event == NULL) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: got NULL event!");
+            return;
+        }
+
+        if (cal_server.callback != NULL) {
+            cal_server.callback(event);
+        }
+
+        cal_event_free(event);
+    }
+
+    //
+    // when we get here, the CAL thread has closed the pipe
+    //
+
+    pthread_join(*cal_server_mdnssd_bip_thread, NULL);
+    free(cal_server_mdnssd_bip_thread);
+    cal_server_mdnssd_bip_thread = NULL;
+
+    close(cal_server_mdnssd_bip_fds_to_user[0]);
     close(cal_server_mdnssd_bip_fds_from_user[1]);
 
     cal_server.callback = NULL;
