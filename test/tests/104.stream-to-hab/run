@@ -29,5 +29,6 @@ for FILE in test-pattern-*; do
 done
 
 kill %1
+wait
 echo "stream transit successfull!"
 

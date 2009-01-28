@@ -1,7 +1,5 @@
 #!/bin/bash
 
-UNIQUE=$$
-
 if [ -z "$ROOT" ]; then
     echo "ROOT environment variable is undefined"
     exit 1
@@ -10,6 +8,9 @@ fi
 if [ -z "$TEST_DURATION" ]; then
     TEST_DURATION=30
 fi
+
+UNIQUE=$$
+RETVAL=0
 
 
 echo starting random-hab
@@ -39,14 +40,18 @@ wait
 if ! diff -q out.watcher.0 out.watcher.1; then
     echo "ERROR: watcher outputs differ:"
     diff -u out.watcher.0 out.watcher.1
-    exit 1
+    RETVAL=1
+else
+    echo "watcher outputs are identical, yay"
 fi
-echo "watcher outputs are identical, yay"
 
 if ! diff -q out.watcher.0 out.random-hab; then
     echo "ERROR: watcher output differs from random-hab output:"
     diff -u out.random-hab out.watcher.0
-    exit 1
+    RETVAL=1
+else
+    echo "watcher outputs are identical to random-hab output, yay"
 fi
-echo "watcher outputs are identical to random-hab output, yay"
+
+exit $RETVAL
 

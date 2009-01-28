@@ -9,7 +9,10 @@ if [ -z "$TEST_DURATION" ]; then
     TEST_DURATION=30
 fi
 
+
 UNIQUE=$$
+RETVAL=0
+
 
 YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
@@ -33,7 +36,7 @@ sleep $TEST_DURATION
 
 echo "test run complete, killing random-hab"
 kill %2
-sleep 1 # let the BDM get any last things sent by the random-hab
+wait %2
 
 echo getting data from bdm
 export PYTHONPATH=$ROOT/data-manager/py-client
@@ -41,11 +44,15 @@ $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -b "$PREV_YEAR-0
 
 echo "killing BDM"
 kill %1
+wait
 
 if ! diff -q out.random-hab out.bdm-client.py; then
     echo "ERROR: bdm-client.py output differs from random-hab output:"
     diff -u out.random-hab out.bdm-client.py
-    exit 1
+    RETVAL=1
+else
+    echo "bdm-client.py output is identical to random-hab output, yay"
 fi
-echo "bdm-client.py output is identical to random-hab output, yay"
+
+exit $RETVAL
 
