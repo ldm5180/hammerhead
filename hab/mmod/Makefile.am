@@ -34,7 +34,7 @@ endif
 
 bin_PROGRAMS = mmod-hab
 
-mmod_hab_DEPENDENCIES = $(BUILT_SOURCES)
+mmod_hab_DEPENDENCIES = $(BUILT_SOURCES) ../libhab/libhab.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la
 
 mmod_hab_SOURCES =    \
     daemonize.c       \

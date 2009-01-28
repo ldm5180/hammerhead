@@ -40,6 +40,7 @@ speedway_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../libhab -L../../util -L../..
 
 speedway_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lltkc -lltkcllrporg -lm -lpthread
 
+speedway_DEPENDENCIES = ../libhab/libhab.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la LTK-1.0.0.5/LTKC/Library/LLRP.org/libltkcllrporg.a LTK-1.0.0.5/LTKC/Library/libltkc.a
 
 # we need to compile the LLRP Tool Kit before compiling the speedway hab
 LTK_TARBALL = ltkc_src_1_0_0_5.tgz

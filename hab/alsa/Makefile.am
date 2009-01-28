@@ -23,6 +23,7 @@ alsa_hab_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $
 
 alsa_hab_LDADD = $(AM_LDADD) -lasound -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lpthread -lm
 
+alsa_hab_DEPENDENCIES = ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la 
 
 #install: all
 #	$(INSTALL) -m 0755 alsa-hab               ${EXP_BIN_DIR}

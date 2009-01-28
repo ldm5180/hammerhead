@@ -21,3 +21,4 @@ bionet_data_manager_LDFLAGS = $(AM_LDFLAGS) $(OPENSSL_LIBS) $(GLIB20_LIBS) $(AVA
 
 bionet_data_manager_LDADD = $(AM_LDADD) -lsqlite3 -lbionet -lbionet-util -lbionet-asn -lcal-mdnssd-bip-client -lpthread -lm
 
+bionet_data_manager_DEPENDENCIES = ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la ../../client/libbionet/libbionet.la

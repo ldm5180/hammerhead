@@ -15,7 +15,7 @@ libhab_py_la_SOURCES = hab_wrap.c
 libhab_py_la_CFLAGS = `pkg-config --cflags glib-2.0` -I/usr/include/python2.5 ${SWIG_INCDIR}
 libhab_py_la_LDFLAGS = -L../libhab -L../../util -L../../asn.1 -L../../cal/mdnssd-bip/server -version-info $(BIONET_INTERFACE_VERSION)
 libhab_py_la_LIBADD = -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server
-
+libhab_py_la_DEPENDENCIES = ../libhab/libhab.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la
 
 hab_wrap.c: hab.i ../../util/bionet-util.h ../../util/bionet-hab.h ../../util/bionet-node.h ../../util/bionet-resource.h ../../util/bionet-datapoint.h ../../util/bionet-value.h ../libhab/hardware-abstractor.h
 	swig -w302 -w454 -python ${SWIG_INCDIR} hab.i 
