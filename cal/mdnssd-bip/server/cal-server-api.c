@@ -92,6 +92,18 @@ int cal_server_mdnssd_bip_init(
         if (r < 0) g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: ignoring setsockopt SO_REUSEADDR error: %s", strerror(errno));
     }
 
+    // turn on LINGER, so we can make sure all network traffic is emitted on shutdown
+    {
+        struct linger l;
+        int r;
+
+        l.l_onoff = 1;
+        l.l_linger = 10;  // 10 seconds
+
+        r = setsockopt(this->socket, SOL_SOCKET, SO_LINGER, (void*)&l, sizeof(l));
+        if (r < 0) g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: ignoring setsockopt SO_LINGER error: %s", strerror(errno));
+    }
+
 
     // ok! listen for connections
     // we dont need to bind since listen on an unbound socket defaults to INADDR_ANY and a random port, which is what we want
