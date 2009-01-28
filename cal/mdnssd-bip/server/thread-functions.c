@@ -452,6 +452,8 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     TXTRecordRef txt_ref;
     DNSServiceErrorType error;
 
+    cal_event_t *event;
+
 
     // block all signals in this thread
     {
@@ -467,6 +469,8 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", cal_server_mdnssd_bip_network_type);
     if (r >= sizeof(mdnssd_service_name)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: network type '%s' is too long!", cal_server_mdnssd_bip_network_type);
+        close(cal_server_mdnssd_bip_fds_to_user[1]);
+        close(cal_server_mdnssd_bip_fds_from_user[0]);
         return NULL;
     }
 
@@ -485,6 +489,8 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     advertisedRef = malloc(sizeof(DNSServiceRef));
     if (advertisedRef == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: out of memory!");
+        close(cal_server_mdnssd_bip_fds_to_user[1]);
+        close(cal_server_mdnssd_bip_fds_from_user[0]);
         return NULL;
     }
 
@@ -535,10 +541,34 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
         if (error == kDNSServiceErr_Unknown) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: make sure the avahi-daemon is running");
         }
+        close(cal_server_mdnssd_bip_fds_to_user[1]);
+        close(cal_server_mdnssd_bip_fds_from_user[0]);
         return NULL;
     }
 
     pthread_cleanup_push(cleanup_advertisedRef, NULL);
+
+
+    event = cal_event_new(CAL_EVENT_INIT);
+    if (event == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: out of memory!");
+        close(cal_server_mdnssd_bip_fds_to_user[1]);
+        close(cal_server_mdnssd_bip_fds_from_user[0]);
+        return NULL;
+    }
+
+    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
+    if (r < 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: error writing INIT event to user thread!!");
+        close(cal_server_mdnssd_bip_fds_to_user[1]);
+        close(cal_server_mdnssd_bip_fds_from_user[0]);
+        return NULL;
+    } else if (r < sizeof(event)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: short write of INIT event to user thread!!");
+        close(cal_server_mdnssd_bip_fds_to_user[1]);
+        close(cal_server_mdnssd_bip_fds_from_user[0]);
+        return NULL;
+    }
 
 
     while (1) {

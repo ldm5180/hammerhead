@@ -160,6 +160,34 @@ int cal_server_mdnssd_bip_init(
         goto fail5;
     }
 
+    // wait to see if the CAL thread started up successfully
+    // NOTE: the pipe is still blocking so this read will block until the CAL thread spins up
+    {
+        cal_event_t *event;
+        int r;
+
+        r = read(cal_server_mdnssd_bip_fds_to_user[0], &event, sizeof(cal_event_t*));
+        if (r < 0) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error: %s", strerror(errno));
+            cal_server_mdnssd_bip_shutdown();
+            return -1;
+        } else if (r != sizeof(cal_event_t*)) {
+            // this indicates the CAL thread refused to start up
+            return -1;
+        } else if (event == NULL) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: got NULL event!");
+            cal_server_mdnssd_bip_shutdown();
+            return -1;
+        } else if (event->type != CAL_EVENT_INIT) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: got unexpected event type %d while waiting for INIT!", event->type);
+            cal_server_mdnssd_bip_shutdown();
+            cal_event_free(event);
+            return -1;
+        }
+
+        cal_event_free(event);
+    }
+
 
     // make the cal_fd non-blocking
     r = fcntl(cal_server_mdnssd_bip_fds_to_user[0], F_SETFL, O_NONBLOCK);

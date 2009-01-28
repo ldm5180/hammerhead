@@ -93,7 +93,18 @@ typedef enum {
     //! server has published new information to us.  event->peer_name is
     //! the name of the server that published, and event->msg is the
     //! published message.  event->topic is unused and set to NULL.
-    CAL_EVENT_PUBLISH
+    CAL_EVENT_PUBLISH,
+
+    //! This event is used internally by the CAL server, and will never be
+    //! seen by user threads.  It is used by the mDNS-SD/BIP BIP CAL server
+    //! module, and in the future maybe other multi-threaded CAL modules.
+    //!
+    //! When the user thread calls the CAL init function, the init function
+    //! waits to receive this event from the CAL thread before returning
+    //! success to the caller.  All event_t fields other than event->type
+    //! are unused set to 0.  If the CAL thread instead closes the pipe,
+    //! the init function returns failure to the caller.
+    CAL_EVENT_INIT
 
 } cal_event_type_t;
 
