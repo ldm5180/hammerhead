@@ -582,7 +582,7 @@ static void browse_callback(
 
         peer = g_hash_table_lookup(peers, name);
         if (peer == NULL) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "browse_callback: got an mDNS Leave event for a server we dont know about, ignoring");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "browse_callback: got an mDNS Leave event for unknown server '%s', ignoring", name);
             return;
         }
 
