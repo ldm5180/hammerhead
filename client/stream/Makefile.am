@@ -5,9 +5,11 @@ bin_PROGRAMS = bionet-stream
 
 bionet_stream_SOURCES = bionet-stream.c
 
-bionet_stream_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libbionet -I../../util
+bionet_stream_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) 
 
-bionet_stream_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) -L../libbionet -L../../asn.1 -L../../util -L../../cal/mdnssd-bip/client
+bionet_stream_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_CLIENT) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_CAL_CLIENT)
 
-bionet_stream_LDADD = $(AM_LDADD) -lbionet -lbionet-util -lbionet-asn -lcal-mdnssd-bip-client -lpthread -lm
+bionet_stream_LDADD = $(AM_LDADD) $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_CAL_CLIENT) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_UTIL) -lpthread -lm
+
+bionet_stream_DEPENDENCIES = $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_CLIENT) 
 

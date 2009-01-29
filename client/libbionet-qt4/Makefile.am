@@ -30,18 +30,18 @@ qtmake_objects = bionetio.o bionetmodel.o
 
 lib_LTLIBRARIES = libbionet-qt4.la
 
-libbionet_qt4_la_DEPENDENCIES = makefile.qt ../libbionet/libbionet.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la 
+libbionet_qt4_la_DEPENDENCIES = makefile.qt $(BIONET_CLIENT_INCLUDES) $(BIONET_UTIL_INCLUDES) $(BIONET_ASN1_INCLUDES) $(BIONET_CAL_CLIENT_INCLUDES)
 
 libbionet_qt4_la_SOURCES = makefile.qt 
 
-libbionet_qt4_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libbionet -I../../util -I/usr/include/qwt-qt4
+libbionet_qt4_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) -I/usr/include/qwt-qt4
 
-libbionet_qt4_la_LDFLAGS = $(AM_LDFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) -L../libbionet -L../../asn.1 -L../../util -L../../cal/mdnssd-bip/client -version-info $(BIONET_INTERFACE_VERSION) 
+libbionet_qt4_la_LDFLAGS = $(AM_LDFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(LDFLAGS_BIONET_CLIENT) $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_CAL_CLIENT) -version-info $(BIONET_INTERFACE_VERSION) 
 
-libbionet_qt4_la_LIBADD = $(AM_LDADD) -lbionet -lbionet-util -lbionet-asn -lcal-mdnssd-bip-client -lpthread -lm ${qtmake_moc_objects} ${qtmake_objects} 
+libbionet_qt4_la_LIBADD = $(AM_LDADD) -lpthread -lm ${qtmake_moc_objects} ${qtmake_objects} $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_CLIENT)
 
 
-makefile.qt: ../libbionet/libbionet.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la
+makefile.qt:
 	qmake-qt4 -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=lib" "QT+=network" "CONFIG+=link_pkgconfig debug"
 	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects} 
 

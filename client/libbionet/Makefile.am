@@ -22,7 +22,10 @@ libbionet_la_SOURCES =        \
     cache-lookup-stream.c     \
     global.c
 
-libbionet_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../../cal -I ../../cal/util -I../../util -I../../asn.1
+libbionet_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_CAL_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1)
 libbionet_la_LIBADD = $(AM_LDADD) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(GLIB20_LIBS) $(DBUS_LIBS)
 
 libbionet_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION)
+
+libbionet_la_DEPENCENDIES = $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_CAL_UTIL) $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_ASN1) $(CFLAGS_BIONET_CAL_CLIENT)
+
