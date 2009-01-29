@@ -8,23 +8,23 @@ LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.ver
 
 lib_LTLIBRARIES = libbdm.la
 
-libbdm_la_DEPENDENCIES = ../client/bdm-client
+libbdm_la_DEPENDENCIES = $(INCLUDES_BIONET_UTIL)
 
 libbdm_la_SOURCES = bdm-client_wrap.c bdm-client-interface.c ../client/connect.c ../client/disconnect.c ../client/get-resource-datapoints.c ../client/send-asn.c  
 
-libbdm_la_LIBADD = ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la $(GLIB20_LIBS)
+libbdm_la_LIBADD = $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(GLIB20_LIBS)
 
-libbdm_la_CFLAGS = -I../../util -I/usr/include/python2.5 -I../../asn.1 -I../include $(GLIB20_CFLAGS) -L../../util -L../../asn.1 -I../client
+libbdm_la_CFLAGS = $(CFLAGS_BIONET_UTIL) -I/usr/include/python2.5 $(CFLAGS_BIONET_ASN1) -I../include $(GLIB20_CFLAGS) -I../client
 
-libbdm_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION) 
+libbdm_la_LDFLAGS = $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1) -version-info $(BIONET_INTERFACE_VERSION) 
 
 install-exec-hook: setup.py
 	python setup.py install
 	cp _bdm_client.so $(LIB_INST_DIR)/.
 	$(LDCONFIG_EXE)
 
-bdm-client_wrap.c: bdm-client.i bdm-client-interface.c ../../util/bionet-util.h ../../util/bionet-hab.h ../../util/bionet-node.h ../../util/bionet-resource.h ../../util/bionet-datapoint.h ../../util/bionet-value.h
-	swig -python -I../../util -I../../asn.1 -I../include -I../client bdm-client.i
+bdm-client_wrap.c: bdm-client.i bdm-client-interface.c $(INCLUDES_BIONET_UTIL)
+	swig -python $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) -I../include -I../client bdm-client.i
 	ln -sf .libs/libbdm.so _bdm_client.so
 
 clean-local:

@@ -9,10 +9,10 @@ bdm_client_SOURCES =            \
     get-resource-datapoints.c   \
     send-asn.c
 
-bdm_client_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../include -I../../util -I../../asn.1
+bdm_client_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) -I../include 
 
-bdm_client_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) -L../../asn.1 -L../../util
+bdm_client_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1)
 
-bdm_client_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lpthread -lm
+bdm_client_LDADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) -lpthread -lm
 
-bdm_client_DEPENDENCIES = ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la
+bdm_client_DEPENDENCIES = $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_ASN1)
