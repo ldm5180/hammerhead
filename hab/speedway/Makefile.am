@@ -34,13 +34,13 @@ speedway_SOURCES =         \
     exception-event.c
 
 
-speedway_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../libhab -I../../util -I LTK-1.0.0.5/LTKC/Library
+speedway_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I LTK-1.0.0.5/LTKC/Library $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) 
 
-speedway_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -L../libhab -L../../util -L../../asn.1 -L../../cal/mdnssd-bip/server -LLTK-1.0.0.5/LTKC/Library/LLRP.org -LLTK-1.0.0.5/LTKC/Library
+speedway_LDFLAGS = $(AM_LDFLAGS) $(GLIB20_LIBS) -LLTK-1.0.0.5/LTKC/Library/LLRP.org -LLTK-1.0.0.5/LTKC/Library $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_CAL_SERVER) 
 
-speedway_LDADD = $(AM_LDADD) -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server -lltkc -lltkcllrporg -lm -lpthread
+speedway_LDADD = $(AM_LDADD) -lltkc -lltkcllrporg -lm -lpthread $(LIBS_BIONET_HAB) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_SERVER)
 
-speedway_DEPENDENCIES = ../libhab/libhab.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la LTK-1.0.0.5/LTKC/Library/LLRP.org/libltkcllrporg.a LTK-1.0.0.5/LTKC/Library/libltkc.a
+speedway_DEPENDENCIES = LTK-1.0.0.5/LTKC/Library/LLRP.org/libltkcllrporg.a LTK-1.0.0.5/LTKC/Library/libltkc.a $(INCLUDES_BIONET_HAB) $(INCLUDES_BIONET_UTIL) 
 
 # we need to compile the LLRP Tool Kit before compiling the speedway hab
 LTK_TARBALL = ltkc_src_1_0_0_5.tgz

@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.am
 
-SWIG_INCDIR = -I../libhab -I../../util
+SWIG_INCDIR = $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) 
 
 if ENABLE_LINUX
 LDCONFIG_EXE = /sbin/ldconfig
@@ -13,11 +13,11 @@ lib_LTLIBRARIES = libhab-py.la
 libhab_py_la_SOURCES = hab_wrap.c
 
 libhab_py_la_CFLAGS = `pkg-config --cflags glib-2.0` -I/usr/include/python2.5 ${SWIG_INCDIR}
-libhab_py_la_LDFLAGS = -L../libhab -L../../util -L../../asn.1 -L../../cal/mdnssd-bip/server -version-info $(BIONET_INTERFACE_VERSION)
-libhab_py_la_LIBADD = -lhab -lbionet-util -lbionet-asn -lcal-mdnssd-bip-server
-libhab_py_la_DEPENDENCIES = ../libhab/libhab.la ../../util/libbionet-util.la ../../asn.1/libbionet-asn.la ../../cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la
+libhab_py_la_LDFLAGS = $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_CAL_SERVER) -version-info $(BIONET_INTERFACE_VERSION)
+libhab_py_la_LIBADD = $(LIBS_BIONET_HAB) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_SERVER) -lpthread -lm
+libhab_py_la_DEPENDENCIES = $(INCLUDES_BIONET_HAB) $(INCLUDES_BIONET_UTIL) 
 
-hab_wrap.c: hab.i ../../util/bionet-util.h ../../util/bionet-hab.h ../../util/bionet-node.h ../../util/bionet-resource.h ../../util/bionet-datapoint.h ../../util/bionet-value.h ../libhab/hardware-abstractor.h
+hab_wrap.c: hab.i $(INCLUDES_BIONET_HAB) $(INCLUDES_BIONET_UTIL) 
 	swig -w302 -w454 -python ${SWIG_INCDIR} hab.i 
 	ln -sf .libs/libhab-py.so _hab.so
 
