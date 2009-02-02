@@ -161,24 +161,32 @@ void BionetModel::newNode(bionet_node_t* node) {
         emit(newResource(rid));
     }
 
-    /*
-     * FIXME: WHEN streams are working, re-add
-    if ( streams )
-        for (GSList* cursor = node->streams; cursor != NULL; cursor = cursor->next) {
-            QList<QStandardItem*> streamList;
-            
-            bionet_stream_t* stream = ((bionet_stream_t*) (cursor->data));
-            QString sid = nodeId + QString(":%1").arg(bionet_stream_get_id(stream));
+    // FIXME: Need a better method of determining when the user wants and does not want to 
+    // have streams as a part of the display.
 
-            QStandardItem* streamItem = new QStandardItem(bionet_stream_get_id(stream));
-            streamItem->setData(sid, Qt::UserRole);
+    for (int i=0; i<bionet_node_get_num_streams(node); i++) {
+        QList<QStandardItem*> streamList;
+        QStandardItem* streamItem;
+        bionet_stream_t* stream = bionet_node_get_stream_by_index(node, i);
+        const char *streamName;
+        QString sid;
 
-            streamList << streamItem << new QStandardItem << new QStandardItem << new QStandardItem << new QStandardItem;
-            nodeItem->appendRow(streamList);
-
-            emit(newStream(sid));
+        streamName = bionet_stream_get_name(stream);
+        if (streamName == NULL) {
+            qWarning() << "newNode(): unable to create resource name";
+            return;
         }
-    */
+
+        sid = QString(streamName);
+
+        streamItem = new QStandardItem(bionet_stream_get_id(stream));
+        streamItem->setData(sid, Qt::UserRole);
+
+        streamList << streamItem << new QStandardItem << new QStandardItem << new QStandardItem << new QStandardItem;
+        nodeItem->appendRow(streamList);
+
+        emit(newStream(sid));
+    }
 
     //  Either I'm doing something wrong, or adding children to items (not the 
     //  model) does not update the model/layout.  Fix when one either Qt or 
@@ -205,23 +213,30 @@ void BionetModel::lostNode(bionet_node_t* node) {
 
         resource_name = bionet_resource_get_name(resource);
         if (resource_name == NULL) {
-            qWarning() << "lostNode(): unable to create resource name";
-            return;
+            qWarning() << "lostNode(): unable to find resource name";
+            continue;
         }
 
         resourceName = QString(resource_name);
 
         emit(lostResource(resourceName));
     }
-    /*
-     * FIXME: when streams are working, re-add
-    for (GSList* cursor = node->streams; cursor != NULL; cursor = cursor->next) {
-        bionet_stream_t* stream = ((bionet_stream_t*) (cursor->data));
-        QString sid = id + QString(":%1").arg(bionet_stream_get_id(stream));
+    
+    for (int i=0; i<bionet_node_get_num_streams(node); i++) {
+        bionet_stream_t* stream = bionet_node_get_stream_by_index(node, i);
+        const char *stream_name;
+        QString streamName;
 
-        emit(lostStream(sid));
+        stream_name = bionet_stream_get_name(stream);
+        if (stream_name == NULL) {
+            qWarning() << "lostNode(): unable to find stream name";
+            continue;
+        }
+
+        streamName = QString(stream_name);
+
+        emit(lostStream(streamName));
     }
-    */
 
     QModelIndexList nodes = match(index(0, 0, invisibleRootItem()->index()), 
             Qt::UserRole, QVariant(nodeName), 1, 

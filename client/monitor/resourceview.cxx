@@ -194,14 +194,12 @@ void ResourceView::newResourceSelected(bionet_resource_t* resource) {
     return;
 }
 
-/*
- * FIXME: when streams are working, re-enable this
 void ResourceView::newStreamSelected(bionet_stream_t* stream) {
     bionet_hab_t *hab;
     bionet_node_t *node;
 
-    node = bionet_resource_get_node(resource);
-    hab = bionet_resource_get_hab(node);
+    node = bionet_stream_get_node(stream);
+    hab = bionet_node_get_hab(node);
 
     if (rowCount() == 10) {
         removeSubmitableRows();
@@ -210,19 +208,18 @@ void ResourceView::newStreamSelected(bionet_stream_t* stream) {
     resourceIdTitle->setText("Stream");
     flavorTitle->setText("Direction");
     dataTypeTitle->setText("Type");
-    timestampTitle->setText("Host");
-    valueTitle->setText("Port");
+    timestampTitle->setText("");
+    valueTitle->setText("");
 
-    habType->setText(stream->node->hab->type);
-    habId->setText(stream->node->hab->id);
-    nodeId->setText(stream->node->id);
-    resourceId->setText(stream->id);
-    flavor->setText(bionet_stream_direction_to_string(stream->direction));
-    dataType->setText(stream->type);
-    // timestamp->setText(stream->host);
-    // value->setText(QString("%1").arg(stream->port));
+    habType->setText(bionet_hab_get_type(hab));
+    habId->setText(bionet_hab_get_id(hab));
+    nodeId->setText(bionet_node_get_id(node));
+    resourceId->setText(bionet_stream_get_id(stream));
+    flavor->setText(bionet_stream_direction_to_string(bionet_stream_get_direction(stream)));
+    dataType->setText(bionet_stream_get_type(stream));
+    timestamp->setText("");
+    value->setText("");
 }
-*/
 
 void ResourceView::resourceValueChanged(bionet_datapoint_t* datapoint) {
     bionet_resource_t *resource;

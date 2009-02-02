@@ -51,7 +51,7 @@ class ResourceView  : public QGridLayout {
         void lostNode(bionet_node_t* node);
         void resourceValueChanged(bionet_datapoint_t* datapoint);
         void newResourceSelected(bionet_resource_t* resource);
-        void newStreamSelected(bionet_stream_t* /*stream*/) { }
+        void newStreamSelected(bionet_stream_t* stream);
         void textEntered();
         void plotClicked();
         bionet_resource_t* resourceInView();

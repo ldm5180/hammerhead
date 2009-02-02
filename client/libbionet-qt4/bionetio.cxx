@@ -67,6 +67,7 @@ void BionetIO::registerCallbacks() {
     bionet_register_callback_new_node(cbNewNode);
     bionet_register_callback_lost_node(cbLostNode);
     bionet_register_callback_datapoint(cbDatapoint);
+    bionet_register_callback_stream(cbStream);
 }
 
 
@@ -77,11 +78,17 @@ void BionetIO::subscribe() {
         bionet_subscribe_node_list_by_name(qPrintable(pattern));
     foreach (QString pattern, resourceList)
         bionet_subscribe_datapoints_by_name(qPrintable(pattern));
+    foreach (QString pattern, streamList)
+        bionet_subscribe_stream_by_name(qPrintable(pattern));
     
-    if (habList.isEmpty() && nodeList.isEmpty() && resourceList.isEmpty()) {
+    if (habList.isEmpty() 
+            && nodeList.isEmpty() 
+            && resourceList.isEmpty()
+            && streamList.isEmpty()) {
         bionet_subscribe_hab_list_by_name("*.*");
         bionet_subscribe_node_list_by_name("*.*.*");
         bionet_subscribe_datapoints_by_name("*.*.*:*");
+        bionet_subscribe_stream_by_name("*.*.*:*");
     }
 }
 
@@ -98,4 +105,9 @@ void BionetIO::addNodeSubscription(const char *pattern) {
 
 void BionetIO::addResourceSubscription(const char *pattern) {
     resourceList << QString(pattern);
+}
+
+
+void BionetIO::addStreamSubscription(const char *pattern) {
+    streamList << QString(pattern);
 }
