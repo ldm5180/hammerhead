@@ -2,7 +2,7 @@
 
 # Prelude.
 AC_PREREQ([2.59])
-AC_INIT([Bionet], [2.0], [lenny@colorado.edu])
+AC_INIT([Bionet], [2.1], [lenny@colorado.edu])
 
 # unique source file --- primitive safety check 
 AC_CONFIG_SRCDIR([cal/cal-server.h])
@@ -25,6 +25,15 @@ AC_PROG_LIBTOOL
 AC_CHECK_TOOL([STRIP],[strip])
 
 # Checks for libraries.
+AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
+      [disable check unit testing]),
+      [ENABLE_CHECK=$enableval],
+      [ENABLE_CHECK=yes])
+if test "x$ENABLE_CHECK" = "xyes"; then
+PKG_CHECK_MODULES(CHECK, [check >= 0.9.5])
+AC_SUBST(CHECK_CFLAGS)
+AC_SUBST(CHECK_LIBS)
+fi
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -243,6 +252,8 @@ AC_CONFIG_FILES([Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
                  data-manager/py-client/Makefile
+		 check/Makefile
+		 check/libutil/Makefile
                  ])
 
 AC_OUTPUT

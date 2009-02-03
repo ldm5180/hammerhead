@@ -7,7 +7,7 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = cal util asn.1 client hab data-manager
+SUBDIRS = cal util asn.1 client hab data-manager check
 
 if ENABLE_LINUX
 LDCONFIG_EXE = /sbin/ldconfig
