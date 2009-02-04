@@ -11,8 +11,8 @@ endif
 CFLAGS=$(AM_CFLAGS)
 
 INCLUDES_BIONET_UTIL = $(top_srcdir)/util/bionet-util.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-datapoint.h $(top_srcdir)/util/bionet-value.h
-CFLAGS_BIONET_UTIL = -I$(top_srcdir)/util $(GLIB20_CFLAGS) 
-LDFLAGS_BIONET_UTIL = -L$(top_srcdir)/util $(GLIB20_LIBS)
+CFLAGS_BIONET_UTIL = -I$(top_srcdir)/util 
+LDFLAGS_BIONET_UTIL = -L$(top_srcdir)/util 
 LIBS_BIONET_UTIL = $(top_srcdir)/util/libbionet-util.la
 
 INCLUDES_BIONET_CLIENT = $(top_srcdir)/client/libbionet/bionet.h
