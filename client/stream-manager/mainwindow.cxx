@@ -51,6 +51,8 @@ MainWindow::MainWindow(char* argv[], QWidget* parent) : QWidget(parent) {
     setupModel();
     view = new StreamView(this);
     view->setModel(model);
+    connect(bionet, SIGNAL(streamRW(bionet_stream_t*, void*, int)), 
+            view, SLOT(read(bionet_stream_t*, void*, int)));
 
     createActions();
     createMenus();
@@ -139,11 +141,11 @@ void MainWindow::setupBionet() {
 
     bionet->addHabSubscription("*.*");
     bionet->addNodeSubscription("*.*.*");
-    bionet->addNodeSubscription("*.*.*:*");
+    bionet->addStreamSubscription("*.*.*:*");
 }
 
 void MainWindow::setupModel() {
-    model = new BionetModel(this, false, true);
+    model = new BionetModel(this);
 
     model->setColumnCount(1);
     model->setRowCount(0);
@@ -151,6 +153,7 @@ void MainWindow::setupModel() {
     connect(bionet, SIGNAL(newHab(bionet_hab_t*)), model, SLOT(newHab(bionet_hab_t*)));
     connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), model, SLOT(lostHab(bionet_hab_t*)));
     connect(bionet, SIGNAL(newNode(bionet_node_t*)), model, SLOT(newNode(bionet_node_t*)));
+    connect(bionet, SIGNAL(lostNode(bionet_node_t*)), model, SLOT(lostNode(bionet_node_t*)));
     connect(bionet, SIGNAL(lostNode(bionet_node_t*)), model, SLOT(lostNode(bionet_node_t*)));
 }
 

@@ -39,11 +39,11 @@
 #include <iostream>
 #include <math.h>
 
-#include "stream.h"
 #include "node.h"
 
 extern "C" {
 #include "bionet.h"
+#include "bionet-util.h"
 };
 
 
@@ -51,6 +51,11 @@ extern "C" {
 
 
 using namespace std;
+
+struct stream_info_t {
+    QPoint *center;
+    int count;
+};
 
 
 class StreamView : public QAbstractItemView {
@@ -65,9 +70,11 @@ public:
 
     void createActions();
     void connectEndpoints(Node* proNode, Node* conNode);
-    void disconnectEndpoints(Node* proNode, Node* conNode);
-    void disconnectStream(QString name);
-    void clearEndpoint(Node* node);
+    void disconnectNode(Node* node);
+    void disconnectNodes(Node* proNode, Node* conNode);
+    void disconnectEndpoint(bionet_stream_t* stream);
+    void disconnectEndpoints(bionet_stream_t *pro, bionet_stream_t *con);
+    void disconnectEndpointsWithoutRemoving(bionet_stream_t *pro, bionet_stream_t *con);
 
     bool isStreamCurrent();
     int numStreamsSelected();
@@ -92,6 +99,7 @@ protected slots:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void rowsInserted(const QModelIndex & parent, int start, int end);
     void rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
+    void read(bionet_stream_t* stream, void *buf, int size);
 
 protected:
     int horizontalOffset() const { return 2; }
@@ -132,7 +140,7 @@ private:
 
     int margin; 
     bool increase, active;
-    QHash<QString, Stream*> *connections;
+    QMultiHash<bionet_stream_t*, bionet_stream_t*> *connections;
     Node *root, *startingConnectorNode;
     QList<Node*> opposites;
     QTimer *pulse;
@@ -145,7 +153,8 @@ private:
     QAction *startConnectorAction;
     QAction *stopConnectorAction;
 
-    Stream* checkIntersection();
+    bool checkIntersection();
+    void deleteIntersection();
     bool intersects(QLineF line, QRect rect);
     QRect makeAdjustedGeometry();
 };

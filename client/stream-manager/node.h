@@ -34,7 +34,8 @@
 
 extern "C" {
 #include "bionet.h"
-}
+#include "bionet-util.h"
+};
 
 using namespace std;
 
@@ -67,6 +68,7 @@ public:
 
     // Get Functions
     QRect getArea() const { return area; }
+    QPoint getCenter() const { return area.center(); }
     QString getId () const { return id; }
     QString getName () const { return name; }
     BionetTypeT getBionetType () const { return bionetType; }

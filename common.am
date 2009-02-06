@@ -55,6 +55,8 @@ CFLAGS_BIONET_ASN1 = -I$(top_srcdir)/asn.1
 LDFLAGS_BIONET_ASN1 = -L$(top_srcdir)/asn.1
 LIBS_BIONET_ASN1 = $(top_srcdir)/asn.1/libbionet-asn.la
 
+INCLUDES_QT = `pkg-config --cflags QtCore` `pkg-config --cflags QtGui`
+LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`
 
 #
 # Set The SDL Version.

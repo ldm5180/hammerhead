@@ -40,9 +40,9 @@ Node::Node(QString name, QWidget* parent) :
             qPrintable(name.section('.', 2, 2).section(':', 0, 0)),
             qPrintable(id));
 
-        if (stream->direction == BIONET_STREAM_DIRECTION_CONSUMER)
+        if (bionet_stream_get_direction(stream) == BIONET_STREAM_DIRECTION_CONSUMER)
             endpointType = CONSUMER;
-        else if (stream->direction == BIONET_STREAM_DIRECTION_PRODUCER)
+        else if (bionet_stream_get_direction(stream) == BIONET_STREAM_DIRECTION_PRODUCER)
             endpointType = PRODUCER;
         else 
             endpointType = NEITHER;
