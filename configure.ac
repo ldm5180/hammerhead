@@ -191,6 +191,15 @@ AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TINYOSMIG" = "xno"])
 AC_PATH_PROG(DOXYGEN, doxygen, no)
 AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
 
+#ccache
+AC_PATH_PROG(CCACHE, ccache, no)
+AM_CONDITIONAL([ENABLE_CCACHE], [test "x$CCACHE" != "xno"])
+if test "$CCACHE" != "xno"; then
+   CC="ccache $CC"
+   CXX="ccache $CXX"
+fi
+
+
 AC_PATH_PROG(DOT, dot, no)
 AM_CONDITIONAL([DISABLE_DOT], [test "x$DOT" = "xno"])
 		      
@@ -206,6 +215,16 @@ AC_SUBST(BLUEZ_LIBS)
 AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
 else
 AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
+fi
+
+#xsltproc
+AC_ARG_ENABLE(xslt, AC_HELP_STRING([--disable-xslt],
+      [disable xslt dependent parts]),
+      [ENABLE_XSLT=$enableval],
+      [ENABLE_XSLT=yes])
+if test "x$ENABLE_XSLT" = "xyes"; then
+   AC_PATH_PROG(XSLTPROC, xsltproc, no)
+   AM_CONDITIONAL([HAVE_XSLTPROC], [test "x$XSLTPROC" != "xno"])
 fi
 
 # Checks for library functions.
