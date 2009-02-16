@@ -194,7 +194,7 @@ AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
 #ccache
 AC_PATH_PROG(CCACHE, ccache, no)
 AM_CONDITIONAL([ENABLE_CCACHE], [test "x$CCACHE" != "xno"])
-if test "$CCACHE" != "xno"; then
+if test "x$CCACHE" != "xno"; then
    CC="ccache $CC"
    CXX="ccache $CXX"
 fi
