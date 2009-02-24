@@ -1,15 +1,9 @@
 
-//
-// Copyright (C) 2008-2009, Gary Grobe and the Regents of the University of Colorado.
-//
+// Copyright (c) 2008-2009, Gary Grobe and the Regents of the University of
+// Colorado.
+// This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+// NNC07CB47C.
 
-/*
- * Written to interface with the UWB.exe program.
- *
- * G.L. Grobe
- * Ported to Bionet 2.1 by Shea Williams
- *
- */
 
 #include <arpa/inet.h>
 #include <stdio.h>
