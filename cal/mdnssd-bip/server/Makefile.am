@@ -1,3 +1,9 @@
+
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+
+
 include $(top_srcdir)/common.am
 
 LIBCAL_EVENT_SOURCES=../../util/event-free.c ../../util/event-new.c
@@ -25,3 +31,4 @@ libcal_mdnssd_bip_server_la_SOURCES = cal-server-api.c global.c thread-functions
 libcal_mdnssd_bip_server_la_LIBADD = $(AM_LDADD) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(GLIB20_LIBS) $(DBUS_LIBS)
 
 libcal_mdnssd_bip_server_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION)
+

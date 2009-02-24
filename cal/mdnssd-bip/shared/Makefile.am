@@ -1,3 +1,9 @@
+
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+
+
 include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libcal-mdnssd-bip-shared.la
@@ -21,3 +27,4 @@ libcal_mdnssd_bip_shared_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPA
 libcal_mdnssd_bip_shared_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_CFLAGS) 
 
 libcal_mdnssd_bip_shared_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION) 
+
