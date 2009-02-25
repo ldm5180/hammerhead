@@ -7,10 +7,17 @@
 #ifndef PLOTWINDOW_H
 #define PLOTWINDOW_H
 
-#include <QWidget>
-#include <QString>
 #include <QAction>
+#include <QCheckBox>
+#include <QSpinBox>
+#include <QGridLayout>
 #include <QHBoxLayout>
+#include <QSpinBox>
+#include <QString>
+#include <QVBoxLayout>
+#include <QWidget>
+
+#include <QtGlobal>
 
 #include <iostream>
 
@@ -31,11 +38,17 @@ class PlotWindow : public QWidget {
 
     public slots:
         void updatePlot(time_t x[], double y[], int size);
+        void changeYAutoscale(int newState);
+        void changeYMin(int d);
+        void changeYMax(int d);
 
     private:
         QwtPlot* p;
         QwtPlotCurve* c;
         QAction* closeAction;
+
+        QSpinBox *yMin, *yMax;
+        QCheckBox *yAutoscale;
         
         void createActions();
 };
