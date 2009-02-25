@@ -40,20 +40,20 @@ PlotWindow::PlotWindow(QString key, time_t x[], double y[], int size, QWidget* p
 
     /* y-max value doublespin box */
     yMin = new QSpinBox(this);
-    yMin->setRange(-2147483647, 2147483646);
+    yMin->setRange(MINSPINBOX, MAXSPINBOX);
     yMin->setValue(0);
-    connect(yMin, SIGNAL(valueChanged(int)), this, SLOT(changeYMin(int)));
+    connect(yMin, SIGNAL(valueChanged(int)), this, SLOT(changeYAutoscale()));
 
     /* y-min value doublespin box */
     yMax = new QSpinBox(this);
-    yMax->setRange(-2147483647, 2147483646);
+    yMax->setRange(MINSPINBOX, MAXSPINBOX);
     yMax->setValue(255);
-    connect(yMax, SIGNAL(valueChanged(int)), this, SLOT(changeYMax(int)));
+    connect(yMax, SIGNAL(valueChanged(int)), this, SLOT(changeYAutoscale()));
 
     /* check box for turning autoscaling on/off */
     yAutoscale = new QCheckBox("Autoscale");
     yAutoscale->setCheckState(Qt::Checked);
-    connect(yAutoscale, SIGNAL(stateChanged(int)), this, SLOT(changeYAutoscale(int)));
+    connect(yAutoscale, SIGNAL(stateChanged(int)), this, SLOT(changeYAutoscale()));
 
     /* Create the y-axis layout */
     QVBoxLayout *yScaleLayout = new QVBoxLayout();
@@ -85,7 +85,7 @@ void PlotWindow::updatePlot(time_t x[], double y[], int size) {
     c->setData(d, y, size);
     c->attach(p);
 
-    p->setAxisTitle(2, xLabel);
+    //p->setAxisTitle(2, xLabel);
     p->replot();
 
     delete x;
@@ -108,34 +108,18 @@ QString PlotWindow::createXLabel(time_t t) {
 }
 
 
-void PlotWindow::changeYAutoscale(int newState) {
-    if (newState == Qt::Unchecked) {
+void PlotWindow::changeYAutoscale() {
+    Qt::CheckState state = yAutoscale->checkState();
+    if (state == Qt::Unchecked) {
         /* to disable autoscale you have to set manually set the axis scale */
-        p->setAxisScale(QwtPlot::yLeft, yMin->value(), yMax->value());
-    } else if (newState == Qt::Checked) {
+        int min, max;
+        min = yMin->value();
+        max = yMax->value();
+        p->setAxisScale(QwtPlot::yLeft, min, max);
+    } else if (state == Qt::Checked) {
         /* re-enable the autoscaling */
         p->setAxisAutoScale(QwtPlot::yLeft);
     }
     /* you have to replot to update the axes */
     p->replot();
-}
-
-void PlotWindow::changeYMax(int i) {
-    if (yAutoscale->checkState() == Qt::Unchecked) {
-        double min, max;
-        min = yMin->value();
-        max = i;
-        p->setAxisScale(QwtPlot::yLeft, min, max, (max-min)/6);
-        p->replot();
-    }
-}
-
-void PlotWindow::changeYMin(int i) {
-    if (yAutoscale->checkState() == Qt::Unchecked) {
-        double min, max;
-        min = i;
-        max = yMax->value();
-        p->setAxisScale(QwtPlot::yLeft, min, max, (max-min)/6);
-        p->replot();
-    }
 }

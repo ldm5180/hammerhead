@@ -27,11 +27,34 @@ void SampleHistory::clear() {
 }
 
 void SampleHistory::addResource(QString id) {
+    char *resourceID, *nodeID, *habID, *habType;
+    bionet_resource_t* resource;
+    bionet_datapoint_t* datapoint;
+
     sampleData *newSample = new sampleData;
     newSample->times = new QList<time_t>;
     newSample->values = new QList<double>;
     QString key = id;
     samples->insert(key, newSample);
+
+    /* when we're adding resources we also want to add thier data points if 
+     * they exist */
+    bionet_split_resource_name(
+            qPrintable(id),
+            &habType,
+            &habID,
+            &nodeID,
+            &resourceID);
+
+    resource = bionet_cache_lookup_resource(habType, habID, nodeID, resourceID);
+    if (resource == NULL) {
+        qDebug() << "SampleHistory: unable to find resource:" << id;
+        return;
+    }
+
+    datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
+    if (datapoint != NULL)
+        recordSample(datapoint);
 }
 
 void SampleHistory::recordSample(bionet_datapoint_t* datapoint) {

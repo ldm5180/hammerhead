@@ -312,7 +312,7 @@ Ctrl-Q\t Quit");
 
 void MainWindow::makePlot(QString key) {
     
-    if (history->isEmpty(key)) 
+    if (history->isEmpty(key))
         return;
 
     if ( ! plots.contains(key) ) {

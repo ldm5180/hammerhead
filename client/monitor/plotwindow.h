@@ -25,6 +25,10 @@
 #include <qwt_plot_curve.h>
 #include <qwt_symbol.h>
 
+// Assuming 2's complement, 32 bit integer
+#define MAXSPINBOX (2147483646)
+#define MINSPINBOX (-2147483647)
+
 using namespace std;
 
 class PlotWindow : public QWidget {
@@ -38,9 +42,7 @@ class PlotWindow : public QWidget {
 
     public slots:
         void updatePlot(time_t x[], double y[], int size);
-        void changeYAutoscale(int newState);
-        void changeYMin(int d);
-        void changeYMax(int d);
+        void changeYAutoscale();
 
     private:
         QwtPlot* p;
