@@ -44,7 +44,7 @@ uint16_t heartbeat_time = DEFAULT_HEARTBEAT_TIME;
 serial_source gw_src;
 bionet_hab_t * mmod_hab;
 char * mmod_id = NULL;
-
+int skip_lost_node_messages = 0;
 
 int main(int argc, char** argv)
 {
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
  */
 static void parse_cmdline(int argc, char** argv)
 {
-    const char * optstring = "dh?v:t:i:u:";
+    const char * optstring = "dnh?v:t:i:u:";
     int opt;
 
     while (0 < (opt = getopt(argc, argv, optstring)))
@@ -173,6 +173,10 @@ static void parse_cmdline(int argc, char** argv)
 
 	case 'i':
 	    mmod_id = optarg;
+	    break;
+
+	case 'n':
+	    skip_lost_node_messages = 1;
 	    break;
 	    
 	case 't':
@@ -209,6 +213,7 @@ static void print_usage(FILE* fout)
 	    "    -d     run as a daemon\n"
 	    "    -h -?  display this help\n"
 	    "    -i     HAB ID (mmod)\n"
+	    "    -n     suppress \"lost node\" messages\n"
 	    "    -t     seconds between required mote heartbeats\n"
 	    "    -u     USB serial device (/dev/ttyUSB1)\n"
 	    "    -v     verbose logging\n");

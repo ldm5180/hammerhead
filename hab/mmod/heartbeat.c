@@ -17,7 +17,7 @@
 #define MAX_MISSED_HEARTBEATS 3
 
 extern bionet_hab_t *mmod_hab;
-
+extern int skip_lost_node_messages;
 
 int timeval_subtract (struct timeval *result, 
 		      struct timeval *x, 
@@ -90,7 +90,9 @@ void heartbeat_check(void)
 
 	(void)timeval_subtract(&diff, 
 			       &tv, bionet_datapoint_get_timestamp(datapoint));
-	if (diff.tv_sec > (MAX_MISSED_HEARTBEATS*hb_time))
+	//only report this if we are not skipping lost node messages
+	if ((diff.tv_sec > (MAX_MISSED_HEARTBEATS*hb_time)) 
+	    && (0 == skip_lost_node_messages))
 	{
 	    /* this node has been lost! */
 	    const char * node_id = bionet_node_get_id(node);
