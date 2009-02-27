@@ -30,7 +30,8 @@
 #include "bionetmodel.h"
 #include "bionetio.h"
 #include "resourceview.h"
-#include "samplehistory.h"
+#include "archive.h"
+#include "history.h"
 #include "plotwindow.h"
 
 extern "C" {
@@ -52,7 +53,6 @@ class MainWindow : public QWidget {
         void about();
         void cuts();
         void changeHostname();
-        void changeSample();
         void makePlot(QString key);
         void updatePlot(bionet_datapoint_t* datapoint);
         void lostPlot(QString key);
@@ -67,7 +67,7 @@ class MainWindow : public QWidget {
         BionetIO* bionet;
         ResourceView *resourceView;
         QWidget *resViewHolder;
-        SampleHistory *history;
+        Archive *archive;
         QHash<QString, PlotWindow*> plots;
 
         QAction* quitAction;
@@ -88,7 +88,7 @@ class MainWindow : public QWidget {
         void setupBionetModel();
         void setupTreeView();
         void setupResourceView();
-        void setupSampleHistory(int sampleSize);
+        void setupArchive();
         void setupWindow();
 
         QTimer* timer;

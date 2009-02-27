@@ -36,7 +36,7 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     setupBionetModel();
     setupTreeView();
     setupResourceView();
-    setupSampleHistory(sampleSize);
+    setupArchive();
     
     menuBar = new QMenuBar(this);
     createActions();
@@ -121,13 +121,13 @@ void MainWindow::setupResourceView() {
 }
 
 
-void MainWindow::setupSampleHistory(int sampleSize) {
-    history = new SampleHistory(sampleSize, this);
+void MainWindow::setupArchive() {
+    archive = new Archive(this);
 
-    // Connecting everything to the sample history
-    connect(model, SIGNAL(newResource(QString)), history, SLOT(addResource(QString)));
-    connect(model, SIGNAL(lostResource(QString)), history, SLOT(removeResource(QString)));
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), history, SLOT(recordSample(bionet_datapoint_t*)));
+    // Connecting everything to the sample archive
+    connect(model, SIGNAL(newResource(QString)), archive, SLOT(addResource(QString)));
+    connect(model, SIGNAL(lostResource(QString)), archive, SLOT(removeResource(QString)));
+    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), archive, SLOT(recordSample(bionet_datapoint_t*)));
 
     return;
 }
@@ -161,17 +161,17 @@ void MainWindow::setupWindow() {
 
 void MainWindow::closeEvent(QCloseEvent* event) {
 
-    history->disconnect();
+    archive->disconnect();
     resourceView->disconnect();
     view->disconnect();
     model->disconnect();
     bionet->disconnect();
-    
-    history->clear();
 
     foreach(PlotWindow* p, plots) {
         delete p;
     }
+    
+    delete archive;
 
     event->accept();
 }
@@ -189,18 +189,6 @@ void MainWindow::changeHostname() {
 }
 
 
-void MainWindow::changeSample() {
-    bool ok;
-    
-    int i = QInputDialog::getInteger(this, "BioNet Monitor", 
-            "Desired sample history size:", 
-            history->getSampleSize(), 0, 2147483647, 1, &ok);
-    if ( ok ) {
-        history->setSampleSize(i);
-    }
-}
-
-
 void MainWindow::createActions() {
     quitAction = new QAction(tr("&Quit"), this);
     quitAction->setShortcut(tr("Ctrl+Q"));
@@ -209,9 +197,6 @@ void MainWindow::createActions() {
     plotAction = new QAction(tr("&Plot"), this);
     plotAction->setShortcut(tr("Ctrl+P"));
     connect(plotAction, SIGNAL(triggered()), resourceView, SLOT(plotClicked()));
-    
-    sampleAction = new QAction(tr("Change Sample Size"), this);
-    connect(sampleAction, SIGNAL(triggered()), this, SLOT(changeSample()));
     
     //hostnameAction = new QAction(tr("Change Nag Hostname"), this);
     //connect(hostnameAction, SIGNAL(triggered()), this, SLOT(changeHostname()));
@@ -235,7 +220,7 @@ void MainWindow::createMenus() {
 
     fileMenu = menuBar->addMenu(tr("&File"));
     fileMenu->addAction(plotAction);
-    fileMenu->addAction(sampleAction);
+    //fileMenu->addAction(sampleAction);
     //fileMenu->addAction(hostnameAction);
     fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
@@ -312,11 +297,11 @@ Ctrl-Q\t Quit");
 
 void MainWindow::makePlot(QString key) {
     
-    if (history->isEmpty(key))
+    if (( !archive->contains(key) ) || ( archive->history(key)->size() == 0 ))
         return;
 
     if ( ! plots.contains(key) ) {
-        PlotWindow* p = new PlotWindow(key, history->getTimes(key), history->getValues(key), history->getSize(key), this);
+        PlotWindow* p = new PlotWindow(key, archive->history(key), this);
         plots.insert(key, p);
         connect(p, SIGNAL(destroyed(QObject*)), this, SLOT(destroyPlot(QObject*)));
     }
@@ -325,16 +310,12 @@ void MainWindow::makePlot(QString key) {
 
 void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
     bionet_resource_t* resource;
-    bionet_node_t* node;
-    bionet_hab_t* hab;
     const char *resource_name;
 
     if (datapoint == NULL)
         return;
 
     resource = bionet_datapoint_get_resource(datapoint);
-    node = bionet_datapoint_get_node(datapoint);
-    hab = bionet_datapoint_get_hab(datapoint);
 
     resource_name = bionet_resource_get_name(resource);
     if (resource_name == NULL) {
@@ -346,7 +327,7 @@ void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
     PlotWindow* p = plots.value(key);
 
     if ( p != NULL ) {
-        p->updatePlot(history->getTimes(key), history->getValues(key), history->getSize(key));
+        p->updatePlot();
     }
 }
 

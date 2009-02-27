@@ -6,11 +6,13 @@
 
 include $(top_srcdir)/common.am
 
-qtmake_moc_objects = moc_mainwindow.o moc_plotwindow.o moc_resourceview.o moc_samplehistory.o
+qtmake_moc_objects = moc_mainwindow.o moc_plotwindow.o moc_resourceview.o moc_history.o moc_archive.o
 
-qtmake_sources = mainwindow.cxx plotwindow.cxx resourceview.cxx samplehistory.cxx main.cxx
+qtmake_headers = mainwindow.h plotwindow.h resourceview.h history.h archive.h
 
-qtmake_objects = mainwindow.o plotwindow.o resourceview.o samplehistory.o main.o 
+qtmake_sources = mainwindow.cxx plotwindow.cxx resourceview.cxx history.cxx archive.cxx main.cxx
+
+qtmake_objects = mainwindow.o plotwindow.o resourceview.o history.o archive.o main.o 
 
 
 
@@ -30,7 +32,7 @@ bionet_monitor_LDADD = $(AM_LDADD) -lpthread -lm -lqwt-qt4 ${qtmake_moc_objects}
 
 
 makefile.qt: $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_CAL_CLIENT) $(LIBS_BIONET_CLIENT_QT4)
-	qmake-qt4 -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/qwt-qt4 ../libbionet-qt4" "HEADERS+= mainwindow.h plotwindow.h resourceview.h samplehistory.h" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=app" "QT+=network" "CONFIG+=link_pkgconfig debug" 
+	qmake-qt4 -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/qwt-qt4 ../libbionet-qt4" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=app" "QT+=network" "CONFIG+=link_pkgconfig debug" 
 	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects} 
 
 clean-local:
