@@ -31,52 +31,62 @@
 
 #include "history.h"
 
-// Assuming 2's complement, 32 bit integer
-#define SIGNEDMINSPINBOX (-2147483647)
-#define SIGNEDMAXSPINBOX (2147483646)
-#define UNSIGNEDMINSPINBOX (0)
-#define UNSIGNEDMAXSPINBOX (494967295)
-
-using namespace std;
 
 class PlotWindow : public QWidget {
     Q_OBJECT
 
     public:
+        enum XScaleType { 
+            AUTOSCALE, 
+            MANUAL, 
+            SLIDING_TIME_WINDOW, 
+            SLIDING_DATAPOINT_WINDOW
+        };
         PlotWindow(QString key, History *history, QWidget* parent = 0);
         QString createXLabel(time_t t);
         void subtractStart(time_t *arr, int size);
         double* time_tToDouble(time_t* arr, int size);
 
+        void changeYScale(bool autoscale, int min, int max);
+
+        void setXScaleType(XScaleType type);
+        void stopXScales();
+        void startXAutoscale();
+        void startXManual();
+        void startXSWTime();
+        void startXSWDatapoints();
+
+        void setXManual(int min, int max);
+        void setXTimer(int size);
+        void setXDatapoints(int size);
+
+    signals:
+        void newPreferences(PlotWindow *pw);
+
     public slots:
         void updatePlot();
-        void changeYAutoscale();
-
-        /* Radio Buttons Functions */
-        void xManualUpdate(bool checked=true);
-        void xSWTimeUpdate(bool checked=true);
-        void xSWDataPointsUpdate(bool checked=true);
-        void xAutoscaleUpdate(bool checked=true);
 
         /* For the sliding window protocol */
         void slideWindow();
+
+        void openOptions();
 
     private:
         QwtPlot* p;
         QwtPlotCurve* c;
         QAction* closeAction;
 
-        QSpinBox *yMin, *yMax;
-        QCheckBox *yAutoscale;
-        QRadioButton *xManual, *xSlidingWindowTime, 
-                     *xSlidingWindowDataPoints, *xAutoscale;
-        QSpinBox *xMin, *xMax, *xSeconds, *xDataPoints;
-
         History *history;
 
-        void createActions();
-
+        XScaleType xScale;
         QTimer *timer;
+        int datapointWindowSize;
+        int xMin, xMax;
+        int timeWindowSize;
+        bool datapointWindowEnabled;
+
+        void createActions();
+        QAction *options;
 };
 
 #endif

@@ -33,6 +33,7 @@
 #include "archive.h"
 #include "history.h"
 #include "plotwindow.h"
+#include "plotpreferences.h"
 
 extern "C" {
 #include "bionet.h"
@@ -58,6 +59,7 @@ class MainWindow : public QWidget {
         void lostPlot(QString key);
         void destroyPlot(QObject* obj);
         void updateMenus();
+        void openPrefs(PlotWindow *pw=NULL);
 
     private:
         QHBoxLayout* layout;
@@ -69,12 +71,14 @@ class MainWindow : public QWidget {
         QWidget *resViewHolder;
         Archive *archive;
         QHash<QString, PlotWindow*> plots;
+        QList<PlotPreferences*> preferences;
 
         QAction* quitAction;
         QAction* plotAction;
         QAction* aboutAction;
         QAction* shortcuts;
         QAction* sampleAction;
+        QAction* preferencesAction;
         //QAction* hostnameAction;
 
         QMenuBar* menuBar;

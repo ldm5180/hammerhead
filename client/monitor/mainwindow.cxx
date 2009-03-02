@@ -213,6 +213,8 @@ void MainWindow::createActions() {
     shortcuts = new QAction(tr("&Shortcuts"), this);
     connect(shortcuts, SIGNAL(triggered()), this, SLOT(cuts()));
 
+    preferencesAction = new QAction(tr("&Plot Preferences"), this);
+    connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openPrefs()));
 }
 
 
@@ -220,6 +222,7 @@ void MainWindow::createMenus() {
 
     fileMenu = menuBar->addMenu(tr("&File"));
     fileMenu->addAction(plotAction);
+    fileMenu->addAction(preferencesAction);
     //fileMenu->addAction(sampleAction);
     //fileMenu->addAction(hostnameAction);
     fileMenu->addSeparator();
@@ -302,6 +305,7 @@ void MainWindow::makePlot(QString key) {
 
     if ( ! plots.contains(key) ) {
         PlotWindow* p = new PlotWindow(key, archive->history(key), this);
+        connect(p, SIGNAL(newPreferences(PlotWindow*)), this, SLOT(openPrefs(PlotWindow*)));
         plots.insert(key, p);
         connect(p, SIGNAL(destroyed(QObject*)), this, SLOT(destroyPlot(QObject*)));
     }
@@ -345,6 +349,31 @@ void MainWindow::destroyPlot(QObject* obj) {
     QString key = obj->objectName();
     PlotWindow* p = plots.take(key);
     p->disconnect();
+    foreach (PlotPreferences *pp, preferences) {
+        if ( pp->lostPW(p) ) {
+            int i;
+            i = preferences.indexOf(pp);
+            pp = preferences.takeAt(i);
+            delete pp;
+        }
+    }
+}
+
+
+void MainWindow::openPrefs(PlotWindow *pw) {
+    PlotPreferences *pp;
+    if (pw == NULL) {
+        QList<PlotWindow*> windows = plots.values();
+        pp = new PlotPreferences(windows, this);
+        pp->show();
+        preferences.append(pp);
+    } else {
+        QList<PlotWindow*> window;
+        window.append(pw);
+        pp = new PlotPreferences(window, this);
+        pp->show();
+        preferences.append(pp);
+    }
 }
 
 
