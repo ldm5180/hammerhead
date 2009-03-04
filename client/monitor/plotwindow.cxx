@@ -29,22 +29,25 @@ PlotWindow::PlotWindow(QString key, History *history, QWidget* parent)
     QwtSymbol s(QwtSymbol::Ellipse, QBrush(), QPen(), QSize());
     c->setStyle(QwtPlotCurve::Lines);
     c->setSymbol(s); 
-    xLabel = createXLabel(x[0]);
+    xLabel = createXLabel();
+    p->setAxisTitle(QwtPlot::xBottom, xLabel);
 
     //subtractStart(x, size);
     //d = time_tToDouble(x, size);
 
-    time_t start = x[0];
+    startTime = x[0];
     for (int i = 0; i < size; i++) {
-        d[i] = (double)(x[i] - start);
+        d[i] = (double)(x[i] - startTime);
     }
 
     c->setData(d, y, size);
     c->attach(p);
  
     /* Setting up the entire window's layout */
-    QGridLayout *layout = new QGridLayout(this);
-    layout->addWidget(p, 0, 0);
+    //QGridLayout *layout = new QGridLayout(this);
+    //layout->addWidget(p, 0, 0);
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->addWidget(p);
     setLayout(layout);
     resize(600, 400);
 
@@ -97,8 +100,8 @@ void PlotWindow::updatePlot() {
     c->setData(d, y, size);
     c->attach(p);
 
-    //xLabel = createXLabel(x[0]);
-    //p->setAxisTitle(2, xLabel);
+    xLabel = createXLabel();
+    p->setAxisTitle(QwtPlot::xBottom, xLabel);
     p->replot();
 
     delete x;
@@ -114,9 +117,9 @@ void PlotWindow::createActions() {
 }
 
 
-QString PlotWindow::createXLabel(time_t t) {
+QString PlotWindow::createXLabel() {
     QString label = QString("Seconds Since: ");
-    label += asctime(gmtime(&t));
+    label += asctime(gmtime(&startTime));
     return label;
 }
 
@@ -214,9 +217,16 @@ void PlotWindow::setXDatapoints(int size) {
 
 
 void PlotWindow::slideWindow() {
-    int max, min;
+    int max, min, r;
+    struct timeval tv;
 
-    max = p->axisScaleDiv(QwtPlot::xBottom)->interval().maxValue() + 1;
+    r = gettimeofday(&tv, NULL);
+    if (r != 0) {
+        qWarning("gettimeofday error: %s", strerror(errno));
+        return;
+    }
+
+    max = tv.tv_sec - startTime;
     min = max - timeWindowSize;
 
     p->setAxisScale(QwtPlot::xBottom, min, max);

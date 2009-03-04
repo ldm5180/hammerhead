@@ -22,6 +22,8 @@
 #include <QtGlobal>
 
 #include <iostream>
+#include <sys/time.h>
+#include <errno.h>
 
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
@@ -43,7 +45,7 @@ class PlotWindow : public QWidget {
             SLIDING_DATAPOINT_WINDOW
         };
         PlotWindow(QString key, History *history, QWidget* parent = 0);
-        QString createXLabel(time_t t);
+        QString createXLabel();
         void subtractStart(time_t *arr, int size);
         double* time_tToDouble(time_t* arr, int size);
 
@@ -84,6 +86,7 @@ class PlotWindow : public QWidget {
         int xMin, xMax;
         int timeWindowSize;
         bool datapointWindowEnabled;
+        time_t startTime;
 
         void createActions();
         QAction *options;
