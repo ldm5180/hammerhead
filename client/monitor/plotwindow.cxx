@@ -183,6 +183,7 @@ void PlotWindow::startXSWTime() {
 
 void PlotWindow::startXSWDatapoints() {
     stopXScales();
+    startXAutoscale();
     datapointWindowEnabled = true;
     updatePlot();
 }
