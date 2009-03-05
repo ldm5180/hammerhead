@@ -14,6 +14,8 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     argv ++;
     setWindowTitle(QString("BioNet Monitor"));
 
+    defaultPreferences = NULL;
+
     // 
     // Parsing the Command Line Args
     //
@@ -51,6 +53,8 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     connect(model, SIGNAL(nodeSelected(bionet_node_t*)), resourceView, SLOT(clearView()));
     connect(model, SIGNAL(streamSelected(bionet_stream_t*)), resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
     connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), this, SLOT(updatePlot(bionet_datapoint_t*)));
+
+    scaleInfoTemplate = new ScaleInfo;
 }
 
 
@@ -213,8 +217,8 @@ void MainWindow::createActions() {
     shortcuts = new QAction(tr("&Shortcuts"), this);
     connect(shortcuts, SIGNAL(triggered()), this, SLOT(cuts()));
 
-    preferencesAction = new QAction(tr("&Plot Preferences"), this);
-    connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openPrefs()));
+    preferencesAction = new QAction(tr("&Default Plot Preferences"), this);
+    connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openDefaultPlotPreferences()));
 }
 
 
@@ -304,10 +308,16 @@ void MainWindow::makePlot(QString key) {
         return;
 
     if ( ! plots.contains(key) ) {
-        PlotWindow* p = new PlotWindow(key, archive->history(key), this);
+        PlotWindow* p = new PlotWindow(key, archive->history(key), 
+                scaleInfoTemplate, 
+                this);
         connect(p, SIGNAL(newPreferences(PlotWindow*)), this, SLOT(openPrefs(PlotWindow*)));
         plots.insert(key, p);
         connect(p, SIGNAL(destroyed(QObject*)), this, SLOT(destroyPlot(QObject*)));
+
+        /* if default preferences exists, add the plot to the plots it updates */
+        if (defaultPreferences != NULL)
+            defaultPreferences->addPlot(p);
     }
 }
 
@@ -347,33 +357,58 @@ void MainWindow::lostPlot(QString key) {
 
 void MainWindow::destroyPlot(QObject* obj) {
     QString key = obj->objectName();
-    PlotWindow* p = plots.take(key);
-    p->disconnect();
-    foreach (PlotPreferences *pp, preferences) {
-        if ( pp->lostPW(p) ) {
-            int i;
-            i = preferences.indexOf(pp);
-            pp = preferences.takeAt(i);
-            delete pp;
-        }
+    plots.take(key); // its already going to be deleted so dont worry about it
+}
+
+
+void MainWindow::openDefaultPlotPreferences() {
+    if (defaultPreferences == NULL) {
+        QList<PlotWindow*> windows = plots.values();
+        defaultPreferences = new PlotPreferences(windows, QString("All"), this);
+        defaultPreferences->show();
+        connect(defaultPreferences, SIGNAL(applyChanges(ScaleInfo*)), 
+                this, SLOT(updateScaleInfo(ScaleInfo*)));
+        connect(defaultPreferences, SIGNAL(destroyed(QObject*)),
+                this, SLOT(closedDefaultPlotPreferences()));
     }
+}
+
+
+void MainWindow::closedDefaultPlotPreferences() {
+    defaultPreferences = NULL;
+}
+
+
+void MainWindow::updateScaleInfo(ScaleInfo *si) {
+    if (scaleInfoTemplate != NULL)
+        delete scaleInfoTemplate;
+    scaleInfoTemplate = si->copy();
 }
 
 
 void MainWindow::openPrefs(PlotWindow *pw) {
     PlotPreferences *pp;
+
     if (pw == NULL) {
-        QList<PlotWindow*> windows = plots.values();
-        pp = new PlotPreferences(windows, this);
-        pp->show();
-        preferences.append(pp);
-    } else {
-        QList<PlotWindow*> window;
-        window.append(pw);
-        pp = new PlotPreferences(window, this);
-        pp->show();
-        preferences.append(pp);
+        return;
     }
+
+    QList<PlotWindow*> window;
+    QList<QString> keys;
+    QString key;
+
+    keys = plots.keys(pw);
+    if (keys.isEmpty()) {
+        qDebug("Tried to open preferences for a non-existant plot window");
+        return;
+    }
+    key = keys.first();
+
+    window.append(pw);
+
+    pp = new PlotPreferences(window, key, this);
+    pp->show();
+    preferences.append(pp);
 }
 
 

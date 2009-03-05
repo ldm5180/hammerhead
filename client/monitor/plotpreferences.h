@@ -14,6 +14,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPushButton>
 #include <QRadioButton>
 #include <QSpinBox>
 #include <QString>
@@ -32,6 +33,7 @@
 #include <qwt_double_interval.h>
 
 #include "plotwindow.h"
+#include "scaleinfo.h"
 
 // Assuming 2's complement, 32 bit integer
 #define SIGNEDMINSPINBOX (-2147483647)
@@ -44,8 +46,9 @@ class PlotPreferences : public QWidget {
     Q_OBJECT
 
     public:
-        PlotPreferences(QList<PlotWindow*> pws, QWidget *parent = 0);
+        PlotPreferences(QList<PlotWindow*> pws, QString key, QWidget *parent = 0);
         ~PlotPreferences();
+        void addPlot(PlotWindow *plot);
 
     public slots:
         void changeYAutoscale(bool checked);
@@ -61,6 +64,14 @@ class PlotPreferences : public QWidget {
         void adjustXSWDatapoints();
 
         bool lostPW(PlotWindow *pw);
+        
+        void applyOk();
+        void apply();
+
+        void plotClosed(QObject *obj);
+
+    signals:
+        void applyChanges(ScaleInfo *si);
 
     private:
         QGroupBox *yAxis, *xAxis;
@@ -72,10 +83,14 @@ class PlotPreferences : public QWidget {
                      *xManual, *xAutoscale, *xSlidingWindowDataPoints;
 
         QHBoxLayout *yManualLayout,
-                    *xManualLayout, *xSWTime, *xSWDataPoints;
+                    *xManualLayout, *xSWTime, *xSWDataPoints,
+                    *buttonLayout;
         QVBoxLayout *yAxisLayout, *xAxisLayout, *layout;
 
+        QPushButton *okButton, *applyButton, *cancelButton;
+
         QList<PlotWindow*> pws;
+        ScaleInfo *scaleInfo;
 };
 
 #endif

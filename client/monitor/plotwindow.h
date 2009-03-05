@@ -12,6 +12,8 @@
 #include <QSpinBox>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QMenuBar>
+#include <QMenu>
 #include <QRadioButton>
 #include <QSpinBox>
 #include <QString>
@@ -21,18 +23,12 @@
 
 #include <QtGlobal>
 
-#include <iostream>
-#include <sys/time.h>
-#include <errno.h>
-
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_symbol.h>
-#include <qwt_scale_div.h>
-#include <qwt_double_interval.h>
 
 #include "history.h"
-
+#include "scaleinfo.h"
 
 class PlotWindow : public QWidget {
     Q_OBJECT
@@ -44,52 +40,31 @@ class PlotWindow : public QWidget {
             SLIDING_TIME_WINDOW, 
             SLIDING_DATAPOINT_WINDOW
         };
-        PlotWindow(QString key, History *history, QWidget* parent = 0);
+        PlotWindow(QString key, History *history, ScaleInfo *scale=0, QWidget* parent = 0);
         QString createXLabel();
-        void subtractStart(time_t *arr, int size);
-        double* time_tToDouble(time_t* arr, int size);
-
-        void changeYScale(bool autoscale, int min, int max);
-
-        void setXScaleType(XScaleType type);
-        void stopXScales();
-        void startXAutoscale();
-        void startXManual();
-        void startXSWTime();
-        void startXSWDatapoints();
-
-        void setXManual(int min, int max);
-        void setXTimer(int size);
-        void setXDatapoints(int size);
+        void setScaleInfo(ScaleInfo *newScale);
 
     signals:
         void newPreferences(PlotWindow *pw);
 
     public slots:
         void updatePlot();
-
-        /* For the sliding window protocol */
-        void slideWindow();
-
         void openOptions();
 
     private:
         QwtPlot* p;
         QwtPlotCurve* c;
-        QAction* closeAction;
+        QAction *closeAction, *options;
+        QHBoxLayout *layout;
+        time_t start;
 
         History *history;
-
-        XScaleType xScale;
-        QTimer *timer;
-        int datapointWindowSize;
-        int xMin, xMax;
-        int timeWindowSize;
-        bool datapointWindowEnabled;
-        time_t startTime;
+        ScaleInfo *scale;
+        QMenuBar *menuBar;
+        QMenu *fileMenu;
 
         void createActions();
-        QAction *options;
+        void createMenu();
 };
 
 #endif

@@ -6,72 +6,62 @@
 
 #include "plotwindow.h"
 
-PlotWindow::PlotWindow(QString key, History *history, QWidget* parent) 
-    : QWidget(parent) {
-    // This assumes that the History has >= 1 entry 
+PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget* parent) 
+    : QWidget(parent) 
+{
+    // This assumes that the History has >= 1 entry;
+    time_t *times;
     QString xLabel;
-    double d[history->size()];
-    time_t *x = history->getTimes();
-    double *y = history->getValues();
-    int size = history->size();
 
+    /* Setup the plot window attributes */
     setObjectName(key);
     setWindowFlags(Qt::Window);
     setWindowTitle(QString("BioNet Monitor: ") + key);
     setAttribute(Qt::WA_DeleteOnClose);
-    createActions();
 
     this->history = history;
 
+    /* Creating & Setting up the Plot & PlotCurve */
     p = new QwtPlot();
     c = new QwtPlotCurve(key);
-
     QwtSymbol s(QwtSymbol::Ellipse, QBrush(), QPen(), QSize());
     c->setStyle(QwtPlotCurve::Lines);
     c->setSymbol(s); 
+    
+    /* We need to set the ScaleInfo start time in order for it to work properly */
+    times = history->getTimes();
+    start = times[0];
+    
+    /* setup the x-/y-axis scale */
+    this->scale = NULL;
+    if (scale == NULL) {
+        this->scale = new ScaleInfo(
+                ScaleInfo::AUTOSCALE, 
+                ScaleInfo::AUTOSCALE, 
+                this);
+        this->scale->setPlotStartTime(start);
+        connect(this->scale, SIGNAL(updateRequest()), this, SLOT(updatePlot()));
+    } else
+        setScaleInfo(scale);
+
+    /* Actually plot everything */
+    updatePlot();
+    
     xLabel = createXLabel();
     p->setAxisTitle(QwtPlot::xBottom, xLabel);
+    delete times;
 
-    //subtractStart(x, size);
-    //d = time_tToDouble(x, size);
-
-    startTime = x[0];
-    for (int i = 0; i < size; i++) {
-        d[i] = (double)(x[i] - startTime);
-    }
-
-    c->setData(d, y, size);
-    c->attach(p);
- 
     /* Setting up the entire window's layout */
-    //QGridLayout *layout = new QGridLayout(this);
-    //layout->addWidget(p, 0, 0);
-    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout = new QHBoxLayout(this);
     layout->addWidget(p);
     setLayout(layout);
+
+    createActions();
+    createMenu();
+    
     resize(600, 400);
 
     show();
-
-    /* initialze the x-scale options */
-    xScale = AUTOSCALE;
-    timer = new QTimer(this);
-    timer->setInterval(1000);
-    timer->setSingleShot(false);
-    connect(timer, SIGNAL(timeout()), this, SLOT(slideWindow()));
-    datapointWindowSize = 100;
-    xMin = 0;
-    xMax = 255;
-    datapointWindowEnabled = false;
-    timeWindowSize = 100;
-
-    QAction *options = new QAction(tr("&Options"), this);
-    options->setShortcut(tr("Ctrl+o"));
-    connect(options, SIGNAL(triggered()), this, SLOT(openOptions()));
-    addAction(options);
-
-    delete x;
-    delete y;
 }
 
 
@@ -79,20 +69,14 @@ void PlotWindow::updatePlot() {
     QString xLabel;
     time_t *x;
     double *y;
-    int size = datapointWindowSize;
+    int size;
 
-    if (datapointWindowEnabled && (size > 0) && (size < history->size())) {
-        x = history->getTimes(size);
-        y = history->getValues(size);
-    } else {
-        x = history->getTimes();
-        y = history->getValues();
-        size = history->size();
-    }
-
-    double d[size];
+    x = history->getTimes();
+    y = history->getValues();
+    size = history->size();
     
     time_t start = x[0];
+    double d[size];
 
     for (int i=0; i < size; i++)
         d[i] = (double)(x[i] - start);
@@ -100,8 +84,7 @@ void PlotWindow::updatePlot() {
     c->setData(d, y, size);
     c->attach(p);
 
-    xLabel = createXLabel();
-    p->setAxisTitle(QwtPlot::xBottom, xLabel);
+    scale->update(p, d, size);
     p->replot();
 
     delete x;
@@ -109,131 +92,53 @@ void PlotWindow::updatePlot() {
 }
 
 
+void PlotWindow::setScaleInfo(ScaleInfo *newScale) {
+    /* plotwindow copies the scale info */
+    if (newScale == NULL) {
+        qDebug("tried to set NULL scale info, returning");
+        return;
+    }
+    if (scale != NULL) {
+        delete scale;
+    }
+
+    scale = newScale->copy();
+    scale->setParent(this);
+    scale->setPlotStartTime(start);
+    connect(scale, SIGNAL(updateRequest()), this, SLOT(updatePlot()));
+
+    updatePlot();
+}
+
+
 void PlotWindow::createActions() {
-    closeAction = new QAction(this);
+    closeAction = new QAction(tr("Close"), this);
     closeAction->setShortcut(tr("Ctrl+W"));
     connect(closeAction, SIGNAL(triggered()), this, SLOT(close()));
     addAction(closeAction);
+    
+    options = new QAction(tr("&Plot Preferences"), this);
+    options->setShortcut(tr("Ctrl+o"));
+    connect(options, SIGNAL(triggered()), this, SLOT(openOptions()));
+    addAction(options);
+}
+
+
+void PlotWindow::createMenu() {
+    menuBar = new QMenuBar(this);
+    layout->setMenuBar(menuBar);
+
+    fileMenu = menuBar->addMenu(tr("&File"));
+    fileMenu->addAction(options);
+    fileMenu->addAction(closeAction);
 }
 
 
 QString PlotWindow::createXLabel() {
     QString label = QString("Seconds Since: ");
-    label += asctime(gmtime(&startTime));
+    label += asctime(gmtime(&start));
     return label;
 }
-
-
-void PlotWindow::changeYScale(bool autoscale, int min, int max) {
-    if (!autoscale) {
-        /* to disable autoscale you have to set manually set the axis scale */
-        p->setAxisScale(QwtPlot::yLeft, min, max);
-    } else {
-        /* re-enable the autoscaling */
-        p->setAxisAutoScale(QwtPlot::yLeft);
-    }
-    /* you have to replot to update the axes */
-    p->replot();
-}
-
-
-void PlotWindow::setXScaleType(XScaleType type) {
-    xScale = type;
-    switch (xScale) {
-        case MANUAL: startXManual(); break;
-        case SLIDING_TIME_WINDOW: startXSWTime(); break;
-        case SLIDING_DATAPOINT_WINDOW: startXSWDatapoints(); break;
-        case AUTOSCALE:
-        default:
-            startXAutoscale();
-    }
-}
-
-
-void PlotWindow::stopXScales() {
-    datapointWindowEnabled = false;
-    timer->stop();
-}
-
-
-void PlotWindow::startXAutoscale() {
-    stopXScales();
-    p->setAxisAutoScale(QwtPlot::xBottom);
-    p->replot();
-}
-
-
-void PlotWindow::startXManual() {
-    stopXScales();
-    datapointWindowEnabled = false;
-    timer->stop();
-    p->setAxisScale(QwtPlot::xBottom, xMin, xMax);
-    p->replot();
-}
-
-
-void PlotWindow::startXSWTime() {
-    stopXScales();
-    if ( !timer->isActive() ) {
-        timer->start();
-    }
-    slideWindow();
-}
-
-
-void PlotWindow::startXSWDatapoints() {
-    stopXScales();
-    startXAutoscale();
-    datapointWindowEnabled = true;
-    updatePlot();
-}
-
-
-void PlotWindow::setXManual(int min, int max) {
-    xMin = min;
-    xMax = max;
-    p->setAxisScale(QwtPlot::xBottom, xMin, xMax);
-    p->replot();
-}
-
-
-void PlotWindow::setXTimer(int size) {
-    if (size <= 0) {
-        qWarning("Unable to set Sliding Time Window interval: can't have less than zero ms");
-        return;
-    }
-    timeWindowSize = size;
-    slideWindow();
-}
-
-
-void PlotWindow::setXDatapoints(int size) {
-    if (size <= 0) {
-        qWarning("Unable to set Sliding DataPoint Window interval: can't have less than 0 points");
-        return;
-    }
-    datapointWindowSize = size;
-    updatePlot();
-}
-
-
-void PlotWindow::slideWindow() {
-    int max, min, r;
-    struct timeval tv;
-
-    r = gettimeofday(&tv, NULL);
-    if (r != 0) {
-        qWarning("gettimeofday error: %s", strerror(errno));
-        return;
-    }
-
-    max = tv.tv_sec - startTime;
-    min = max - timeWindowSize;
-
-    p->setAxisScale(QwtPlot::xBottom, min, max);
-    p->replot();
-}
-
 
 void PlotWindow::openOptions() {
     emit(newPreferences(this));

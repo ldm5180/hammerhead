@@ -34,6 +34,7 @@
 #include "history.h"
 #include "plotwindow.h"
 #include "plotpreferences.h"
+#include "scaleinfo.h"
 
 extern "C" {
 #include "bionet.h"
@@ -60,6 +61,9 @@ class MainWindow : public QWidget {
         void destroyPlot(QObject* obj);
         void updateMenus();
         void openPrefs(PlotWindow *pw=NULL);
+        void openDefaultPlotPreferences();
+        void closedDefaultPlotPreferences();
+        void updateScaleInfo(ScaleInfo *si);
 
     private:
         QHBoxLayout* layout;
@@ -70,8 +74,11 @@ class MainWindow : public QWidget {
         ResourceView *resourceView;
         QWidget *resViewHolder;
         Archive *archive;
+
         QHash<QString, PlotWindow*> plots;
         QList<PlotPreferences*> preferences;
+        PlotPreferences *defaultPreferences;
+        ScaleInfo *scaleInfoTemplate;
 
         QAction* quitAction;
         QAction* plotAction;

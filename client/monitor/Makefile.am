@@ -6,13 +6,13 @@
 
 include $(top_srcdir)/common.am
 
-qtmake_moc_objects = moc_mainwindow.o moc_plotwindow.o moc_plotpreferences.o moc_resourceview.o moc_history.o moc_archive.o
+qtmake_moc_objects = moc_mainwindow.o moc_scaleinfo.o moc_plotwindow.o moc_plotpreferences.o moc_resourceview.o moc_history.o moc_archive.o
 
-qtmake_headers = mainwindow.h plotpreferences.h plotwindow.h resourceview.h history.h archive.h
+qtmake_headers = mainwindow.h scaleinfo.h plotpreferences.h plotwindow.h resourceview.h history.h archive.h
 
-qtmake_sources = mainwindow.cxx plotpreferences.cxx plotwindow.cxx resourceview.cxx history.cxx archive.cxx main.cxx
+qtmake_sources = mainwindow.cxx scaleinfo.cxx plotpreferences.cxx plotwindow.cxx resourceview.cxx history.cxx archive.cxx main.cxx
 
-qtmake_objects = mainwindow.o plotpreferences.o plotwindow.o resourceview.o history.o archive.o main.o 
+qtmake_objects = mainwindow.o scaleinfo.o plotpreferences.o plotwindow.o resourceview.o history.o archive.o main.o 
 
 
 

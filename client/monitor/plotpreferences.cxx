@@ -5,9 +5,14 @@
 
 #include "plotpreferences.h"
 
-PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, QWidget *parent) : QWidget(parent) {
+PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, QString key, QWidget *parent) : QWidget(parent) {
     setWindowFlags(Qt::Window);
+    setAttribute(Qt::WA_DeleteOnClose);
+    setWindowTitle(QString(tr("Plot Preferences: ")) + key);
     this->pws = pws;
+
+    scaleInfo = new ScaleInfo;
+    scaleInfo->setParent(this);
 
     /* Y-Axis Group Box */
     yAxis = new QGroupBox(tr("Y-Axis Options"), this);
@@ -142,11 +147,31 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, QWidget *parent) : QWid
     xAxisLayout->addWidget(xAutoscale);
     xAxis->setLayout(xAxisLayout);
 
+    /* Setup the buttons at the bottom */
+    okButton = new QPushButton(tr("&Ok"), this);
+    connect(okButton, SIGNAL(released()), this, SLOT(applyOk()));
+
+    applyButton = new QPushButton(tr("&Apply"), this);
+    connect(applyButton, SIGNAL(released()), this, SLOT(apply()));
+
+    cancelButton = new QPushButton(tr("&Cancel"), this);
+    connect(cancelButton, SIGNAL(released()), this, SLOT(close()));
+
+    /* setup button layout */
+    buttonLayout = new QHBoxLayout;
+    buttonLayout->addWidget(okButton);
+    buttonLayout->addWidget(applyButton);
+    buttonLayout->addWidget(cancelButton);
+
     /* Setting up the entire window's layout */
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(yAxis);
     layout->addWidget(xAxis);
+    layout->addLayout(buttonLayout);
     setLayout(layout);
+        
+    foreach (PlotWindow *p, pws)
+        connect(p, SIGNAL(destroyed(QObject*)), this, SLOT(plotClosed(QObject*)));
 
     //resize(400, 375);
     show();
@@ -157,11 +182,14 @@ PlotPreferences::~PlotPreferences() {
     disconnect();
 }
 
+void PlotPreferences::addPlot(PlotWindow *plot) {
+    pws.append(plot);
+    connect(plot, SIGNAL(destroyed(QObject*)), this, SLOT(plotClosed(QObject*)));
+}
 
 void PlotPreferences::changeYAutoscale(bool checked) {
     if ( checked )
-        foreach (PlotWindow *pw, pws)
-            pw->changeYScale(true, 0, 0);
+        scaleInfo->setYScaleType(ScaleInfo::AUTOSCALE);
 }
 
 
@@ -173,8 +201,8 @@ void PlotPreferences::changeYManual() {
         yMax->setEnabled(true);
         yMinLabel->setEnabled(true);
         yMaxLabel->setEnabled(true);
-        foreach (PlotWindow *pw, pws)
-            pw->changeYScale(false, yMin->value(), yMax->value());
+        scaleInfo->setYScaleType(ScaleInfo::MANUAL);
+        scaleInfo->setYMinMax(yMin->value(), yMax->value());
     } else {
         yMin->setEnabled(false);
         yMax->setEnabled(false);
@@ -185,8 +213,7 @@ void PlotPreferences::changeYManual() {
 
 void PlotPreferences::updateXAutoscale(bool checked) {
     if (checked) 
-        foreach (PlotWindow *pw, pws)
-            pw->setXScaleType(PlotWindow::AUTOSCALE);
+        scaleInfo->setXScaleType(ScaleInfo::AUTOSCALE);
 }
 
 void PlotPreferences::updateXManual(bool checked) {
@@ -196,8 +223,7 @@ void PlotPreferences::updateXManual(bool checked) {
         xMinLabel->setEnabled(true);
         xMaxLabel->setEnabled(true);
         adjustXInterval();
-        foreach (PlotWindow *pw, pws)
-            pw->setXScaleType(PlotWindow::MANUAL);
+        scaleInfo->setXScaleType(ScaleInfo::MANUAL);
     } else {
         xMin->setEnabled(false);
         xMax->setEnabled(false);
@@ -211,8 +237,7 @@ void PlotPreferences::updateXSWTime(bool checked) {
         xSeconds->setEnabled(true);
         xSecondsLabel->setEnabled(true);
         adjustXSWTime();
-        foreach (PlotWindow *pw, pws)
-            pw->setXScaleType(PlotWindow::SLIDING_TIME_WINDOW);
+        scaleInfo->setXScaleType(ScaleInfo::SLIDING_TIME_WINDOW);
     } else {
         xSeconds->setEnabled(false);
         xSecondsLabel->setEnabled(false);
@@ -223,9 +248,7 @@ void PlotPreferences::updateXSWDatapoints(bool checked) {
     if (checked) {
         xDataPoints->setEnabled(true);
         xDataPointsLabel->setEnabled(true);
-        adjustXSWDatapoints();
-        foreach (PlotWindow *pw, pws)
-            pw->setXScaleType(PlotWindow::SLIDING_DATAPOINT_WINDOW);
+        scaleInfo->setXScaleType(ScaleInfo::SLIDING_DATAPOINT_WINDOW);
     } else {
         xDataPoints->setEnabled(false);
         xDataPointsLabel->setEnabled(false);
@@ -234,18 +257,15 @@ void PlotPreferences::updateXSWDatapoints(bool checked) {
 
 
 void PlotPreferences::adjustXInterval() {
-    foreach (PlotWindow *pw, pws)
-        pw->setXManual(xMin->value(), xMax->value());
+    scaleInfo->setXMinMax(xMin->value(), xMax->value());
 }
 
 void PlotPreferences::adjustXSWTime() {
-    foreach (PlotWindow *pw, pws)
-        pw->setXTimer(xSeconds->value()); // convert to seconds
+    scaleInfo->setXTimer(xSeconds->value()); // convert to seconds
 }
 
 void PlotPreferences::adjustXSWDatapoints() {
-    foreach (PlotWindow *pw, pws)
-        pw->setXDatapoints(xDataPoints->value());
+    scaleInfo->setXDatapoints(xDataPoints->value());
 }
 
 
@@ -257,4 +277,30 @@ bool PlotPreferences::lostPW(PlotWindow *pw) {
     if (pws.isEmpty())
         return true;
     return false;
+}
+
+
+void PlotPreferences::apply() {
+    emit applyChanges(scaleInfo);
+    foreach (PlotWindow *pw, pws)
+        pw->setScaleInfo(scaleInfo);
+}
+
+void PlotPreferences::applyOk() {
+    apply();
+    close();
+}
+
+
+void PlotPreferences::plotClosed(QObject *obj) {
+    QString name = obj->objectName();
+
+    foreach (PlotWindow *plot, pws) {
+        if (plot->objectName() == name) {
+            pws.removeAll(plot);
+            if ( pws.isEmpty() )
+                close();
+            break;
+        }
+    }
 }
