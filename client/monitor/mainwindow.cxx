@@ -14,7 +14,7 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     argv ++;
     setWindowTitle(QString("BioNet Monitor"));
 
-    defaultPreferences = NULL;
+    defaultPreferencesIsOpen = false;
 
     // 
     // Parsing the Command Line Args
@@ -311,12 +311,12 @@ void MainWindow::makePlot(QString key) {
         PlotWindow* p = new PlotWindow(key, archive->history(key), 
                 scaleInfoTemplate, 
                 this);
-        connect(p, SIGNAL(newPreferences(PlotWindow*)), this, SLOT(openPrefs(PlotWindow*)));
+        connect(p, SIGNAL(newPreferences(PlotWindow*, ScaleInfo*)), this, SLOT(openPrefs(PlotWindow*, ScaleInfo*)));
         plots.insert(key, p);
         connect(p, SIGNAL(destroyed(QObject*)), this, SLOT(destroyPlot(QObject*)));
 
         /* if default preferences exists, add the plot to the plots it updates */
-        if (defaultPreferences != NULL)
+        if (defaultPreferencesIsOpen)
             defaultPreferences->addPlot(p);
     }
 }
@@ -362,20 +362,21 @@ void MainWindow::destroyPlot(QObject* obj) {
 
 
 void MainWindow::openDefaultPlotPreferences() {
-    if (defaultPreferences == NULL) {
+    if (!defaultPreferencesIsOpen) {
+        defaultPreferencesIsOpen = true;
         QList<PlotWindow*> windows = plots.values();
-        defaultPreferences = new PlotPreferences(windows, QString("All"), this);
+        defaultPreferences = new PlotPreferences(windows, scaleInfoTemplate, QString("All"), this);
+
+        connect(defaultPreferences, SIGNAL(applyChanges(ScaleInfo*)), this, SLOT(updateScaleInfo(ScaleInfo*)));
+        connect(defaultPreferences, SIGNAL(destroyed(QObject*)), this, SLOT(closedDefaultPlotPreferences()));
+
         defaultPreferences->show();
-        connect(defaultPreferences, SIGNAL(applyChanges(ScaleInfo*)), 
-                this, SLOT(updateScaleInfo(ScaleInfo*)));
-        connect(defaultPreferences, SIGNAL(destroyed(QObject*)),
-                this, SLOT(closedDefaultPlotPreferences()));
     }
 }
 
 
 void MainWindow::closedDefaultPlotPreferences() {
-    defaultPreferences = NULL;
+    defaultPreferencesIsOpen = false;
 }
 
 
@@ -386,7 +387,7 @@ void MainWindow::updateScaleInfo(ScaleInfo *si) {
 }
 
 
-void MainWindow::openPrefs(PlotWindow *pw) {
+void MainWindow::openPrefs(PlotWindow *pw, ScaleInfo *current) {
     PlotPreferences *pp;
 
     if (pw == NULL) {
@@ -406,7 +407,7 @@ void MainWindow::openPrefs(PlotWindow *pw) {
 
     window.append(pw);
 
-    pp = new PlotPreferences(window, key, this);
+    pp = new PlotPreferences(window, current, key, pw);
     pp->show();
     preferences.append(pp);
 }

@@ -46,8 +46,10 @@ class PlotPreferences : public QWidget {
     Q_OBJECT
 
     public:
-        PlotPreferences(QList<PlotWindow*> pws, QString key, QWidget *parent = 0);
-        ~PlotPreferences();
+        PlotPreferences(QList<PlotWindow*> pws, 
+                ScaleInfo *defaultValues, 
+                QString key, 
+                QWidget *parent = 0);
         void addPlot(PlotWindow *plot);
 
     public slots:

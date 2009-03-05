@@ -141,5 +141,5 @@ QString PlotWindow::createXLabel() {
 }
 
 void PlotWindow::openOptions() {
-    emit(newPreferences(this));
+    emit(newPreferences(this, scale));
 }

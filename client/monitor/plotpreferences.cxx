@@ -5,13 +5,16 @@
 
 #include "plotpreferences.h"
 
-PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, QString key, QWidget *parent) : QWidget(parent) {
+PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, 
+        ScaleInfo *defaultValues,
+        QString key, 
+        QWidget *parent) : QWidget(parent) {
     setWindowFlags(Qt::Window);
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(QString(tr("Plot Preferences: ")) + key);
     this->pws = pws;
 
-    scaleInfo = new ScaleInfo;
+    scaleInfo = defaultValues->copy();
     scaleInfo->setParent(this);
 
     /* Y-Axis Group Box */
@@ -27,25 +30,40 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, QString key, QWidget *p
     /* y-max value doublespin box */
     yMin = new QSpinBox(this);
     yMin->setRange(SIGNEDMINSPINBOX, SIGNEDMAXSPINBOX);
-    yMin->setValue(0);
+    yMin->setValue(scaleInfo->getYMin());
     yMin->setEnabled(false);
-    connect(yMin, SIGNAL(valueChanged(int)), this, SLOT(changeYManual()));
 
     /* y-min value doublespin box */
     yMax = new QSpinBox(this);
     yMax->setRange(SIGNEDMINSPINBOX, SIGNEDMAXSPINBOX);
-    yMax->setValue(255);
+    yMax->setValue(scaleInfo->getYMax());
     yMax->setEnabled(false);
-    connect(yMax, SIGNAL(valueChanged(int)), this, SLOT(changeYManual()));
 
     /* check box for turning stuff on/off */
     yManual = new QRadioButton(tr("Manual: "), yAxis);
-    connect(yManual, SIGNAL(toggled(bool)), this, SLOT(changeYManual()));
 
     /* check box for turning autoscaling on/off */
     yAutoscale = new QRadioButton(tr("Autoscale"), yAxis);
-    yAutoscale->setChecked(true);
+
+    switch (scaleInfo->getYScaleType()) {
+        case ScaleInfo::MANUAL: 
+            yAutoscale->setChecked(true);
+            yManual->setChecked(true); 
+            yMin->setEnabled(true);
+            yMax->setEnabled(true);
+            yMinLabel->setEnabled(true);
+            yMaxLabel->setEnabled(true);
+            break;
+        case ScaleInfo::AUTOSCALE: 
+        default: 
+            yAutoscale->setChecked(true); 
+            break;
+    }
+    
+    connect(yMin, SIGNAL(valueChanged(int)), this, SLOT(changeYManual()));
+    connect(yMax, SIGNAL(valueChanged(int)), this, SLOT(changeYManual()));
     connect(yAutoscale, SIGNAL(toggled(bool)), this, SLOT(changeYAutoscale(bool)));
+    connect(yManual, SIGNAL(toggled(bool)), this, SLOT(changeYManual()));
 
     /* Create the H-axis layout */
     yManualLayout = new QHBoxLayout();
@@ -74,18 +92,16 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, QString key, QWidget *p
     /* create the manual x-scaling row */
     xMin = new QSpinBox(this);
     xMin->setRange(SIGNEDMINSPINBOX, SIGNEDMAXSPINBOX);
-    xMin->setValue(0);
+    xMin->setValue(scaleInfo->getXMin());
     xMin->setEnabled(false);
-    connect(xMin, SIGNAL(valueChanged(int)), this, SLOT(adjustXInterval()));
     
     xMax = new QSpinBox(this);
     xMax->setRange(SIGNEDMINSPINBOX, SIGNEDMAXSPINBOX);
-    xMax->setValue(100);
+    xMax->setValue(scaleInfo->getXMax());
     xMax->setEnabled(false);
     connect(xMax, SIGNAL(valueChanged(int)), this, SLOT(adjustXInterval()));
 
     xManual = new QRadioButton(tr("Manual"), xAxis);
-    connect(xManual, SIGNAL(toggled(bool)), this, SLOT(updateXManual(bool)));
 
     xManualLayout = new QHBoxLayout;
     xManualLayout->addWidget(xManual);
@@ -97,16 +113,14 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, QString key, QWidget *p
 
     /* create the manual x-axis time-based sliding window */
     xSlidingWindowTime = new QRadioButton(tr("Sliding Time Window: "), xAxis);
-    connect(xSlidingWindowTime, SIGNAL(toggled(bool)), this, SLOT(updateXSWTime(bool)));
 
     xSecondsLabel = new QLabel(tr("Seconds"));
     xSecondsLabel->setEnabled(false);
 
     xSeconds = new QSpinBox(this);
     xSeconds->setRange(UNSIGNEDMINSPINBOX, UNSIGNEDMAXSPINBOX);
-    xSeconds->setValue(100);
+    xSeconds->setValue(scaleInfo->getXTimer());
     xSeconds->setEnabled(false);
-    connect(xSeconds, SIGNAL(valueChanged(int)), this, SLOT(adjustXSWTime()));
 
     xSWTime = new QHBoxLayout;
     xSWTime->addWidget(xSlidingWindowTime);
@@ -117,17 +131,15 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, QString key, QWidget *p
     /* create the manual x-axis datapoint based sliding window */
     xSlidingWindowDataPoints = new QRadioButton(tr("Sliding Data Point Window: "),
             xAxis);
-    connect(xSlidingWindowDataPoints, SIGNAL(toggled(bool)), this, SLOT(updateXSWDatapoints(bool)));
     
     xDataPointsLabel = new QLabel(tr("Data Points"));
     xDataPointsLabel->setEnabled(false);
 
     xDataPoints = new QSpinBox(this);
     xDataPoints->setRange(UNSIGNEDMINSPINBOX+1, UNSIGNEDMAXSPINBOX);
-    xDataPoints->setValue(10);
+    xDataPoints->setValue(scaleInfo->getXDatapoints());
     xDataPoints->setEnabled(false);
     connect(xDataPoints, SIGNAL(valueChanged(int)), this, SLOT(adjustXSWDatapoints()));
-
     xSWDataPoints = new QHBoxLayout;
     xSWDataPoints->addWidget(xSlidingWindowDataPoints);
     xSWDataPoints->addWidget(xDataPoints);
@@ -136,15 +148,45 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, QString key, QWidget *p
 
     /* create the default autoscale functionality */
     xAutoscale = new QRadioButton(tr("X-Autoscale"), xAxis);
-    xAutoscale->setChecked(true);
+    
+    switch (scaleInfo->getXScaleType()) {
+        case ScaleInfo::MANUAL:
+            xManual->setChecked(true); 
+            xMin->setEnabled(true);
+            xMax->setEnabled(true);
+            xMinLabel->setEnabled(true);
+            xMaxLabel->setEnabled(true);
+            break;
+        case ScaleInfo::SLIDING_TIME_WINDOW: 
+            xSlidingWindowTime->setChecked(true); 
+            xSeconds->setEnabled(true);
+            xSecondsLabel->setEnabled(true);
+            break;
+        case ScaleInfo::SLIDING_DATAPOINT_WINDOW: 
+            xSlidingWindowDataPoints->setChecked(true); 
+            xDataPoints->setEnabled(true);
+            xDataPointsLabel->setEnabled(true);
+            break;
+        case ScaleInfo::AUTOSCALE: 
+        default: 
+            xAutoscale->setChecked(true); 
+            break;
+    }
+    
     connect(xAutoscale, SIGNAL(toggled(bool)), this, SLOT(updateXAutoscale(bool)));
+    connect(xSlidingWindowDataPoints, SIGNAL(toggled(bool)), this, SLOT(updateXSWDatapoints(bool)));
+    connect(xSeconds, SIGNAL(valueChanged(int)), this, SLOT(adjustXSWTime()));
+    connect(xSlidingWindowTime, SIGNAL(toggled(bool)), this, SLOT(updateXSWTime(bool)));
+    connect(xMin, SIGNAL(valueChanged(int)), this, SLOT(adjustXInterval()));
+    connect(xManual, SIGNAL(toggled(bool)), this, SLOT(updateXManual(bool)));
+
 
     /* setup x-axis layout */
     xAxisLayout = new QVBoxLayout(xAxis);
+    xAxisLayout->addWidget(xAutoscale);
     xAxisLayout->addLayout(xManualLayout);
     xAxisLayout->addLayout(xSWTime);
     xAxisLayout->addLayout(xSWDataPoints);
-    xAxisLayout->addWidget(xAutoscale);
     xAxis->setLayout(xAxisLayout);
 
     /* Setup the buttons at the bottom */
@@ -177,10 +219,6 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, QString key, QWidget *p
     show();
 }
 
-
-PlotPreferences::~PlotPreferences() {
-    disconnect();
-}
 
 void PlotPreferences::addPlot(PlotWindow *plot) {
     pws.append(plot);
@@ -298,8 +336,6 @@ void PlotPreferences::plotClosed(QObject *obj) {
     foreach (PlotWindow *plot, pws) {
         if (plot->objectName() == name) {
             pws.removeAll(plot);
-            if ( pws.isEmpty() )
-                close();
             break;
         }
     }

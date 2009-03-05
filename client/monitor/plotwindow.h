@@ -45,7 +45,7 @@ class PlotWindow : public QWidget {
         void setScaleInfo(ScaleInfo *newScale);
 
     signals:
-        void newPreferences(PlotWindow *pw);
+        void newPreferences(PlotWindow *pw, ScaleInfo *current);
 
     public slots:
         void updatePlot();

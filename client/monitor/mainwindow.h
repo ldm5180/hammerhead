@@ -60,7 +60,7 @@ class MainWindow : public QWidget {
         void lostPlot(QString key);
         void destroyPlot(QObject* obj);
         void updateMenus();
-        void openPrefs(PlotWindow *pw=NULL);
+        void openPrefs(PlotWindow *pw=NULL, ScaleInfo *current=NULL);
         void openDefaultPlotPreferences();
         void closedDefaultPlotPreferences();
         void updateScaleInfo(ScaleInfo *si);
@@ -79,6 +79,7 @@ class MainWindow : public QWidget {
         QList<PlotPreferences*> preferences;
         PlotPreferences *defaultPreferences;
         ScaleInfo *scaleInfoTemplate;
+        bool defaultPreferencesIsOpen;
 
         QAction* quitAction;
         QAction* plotAction;
