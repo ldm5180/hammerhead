@@ -58,6 +58,17 @@ char syshealth_pid_file_name[]="/tmp/syshealth.pid";
 
 
 
+void usage(void) {
+    printf("usage: syshealth-hab [OPTIONS]\n\
+OPTIONS:\n\
+    --delay N    Wait N seconds between updates.  Default is 30.\n\
+    --help       Show this help and exit.\n\
+");
+}
+
+
+
+
 int main(int argc, char **argv) {
     int seconds_to_sleep = 300;
 
@@ -89,8 +100,14 @@ int main(int argc, char **argv) {
                 i ++;
                 seconds_to_sleep = atoi(argv[i]);
 
+            } else if ((strcmp(argv[i], "--help") == 0) || (strcmp(argv[i], "-h") == 0)) {
+                usage();
+                exit(0);
+
             } else {
-                g_log("", G_LOG_LEVEL_WARNING, "unknown extenstion: %s", argv[1]);
+                printf("unknown command-line argument: %s", argv[i]);
+                usage();
+                exit(1);
             }
         }
     }
