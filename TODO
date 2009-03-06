@@ -12,5 +12,5 @@ ensure names and abbreviations are consistent across APIs
 consumer streams need authn/authz (explicit connect/disconnect)
 
 
-add stream_unsubscribe
+add stream_unsubscribe (marek's working on this)
 
