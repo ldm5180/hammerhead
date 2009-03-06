@@ -371,6 +371,9 @@ void MainWindow::openDefaultPlotPreferences() {
         connect(defaultPreferences, SIGNAL(destroyed(QObject*)), this, SLOT(closedDefaultPlotPreferences()));
 
         defaultPreferences->show();
+    } else {
+        /* Don't open twice! raise it instead */
+        defaultPreferences->raise();
     }
 }
 
@@ -405,11 +408,30 @@ void MainWindow::openPrefs(PlotWindow *pw, ScaleInfo *current) {
     }
     key = keys.first();
 
+    if (preferences.contains(key)) {
+        /* Don't open twice! raise it instead */
+        pp = preferences[key];
+        pp->raise();
+        return;
+    }
+
     window.append(pw);
 
     pp = new PlotPreferences(window, current, key, pw);
+    pp->setObjectName(key);
     pp->show();
-    preferences.append(pp);
+    preferences.insert(key, pp);
+
+    connect(pp, SIGNAL(destroyed(QObject*)), 
+            this, SLOT(closedPreferences(QObject*)));
+}
+
+
+void MainWindow::closedPreferences(QObject* obj) {
+    QString key = obj->objectName();
+    preferences.take(key);
+    // PlotPreferences are already being deleted, we just need to remove them from
+    // the hash manually
 }
 
 

@@ -14,7 +14,7 @@
 #include <QHBoxLayout>
 #include <QMenuBar>
 #include <QMenu>
-#include <QRadioButton>
+#include <QPushButton>
 #include <QSpinBox>
 #include <QString>
 #include <QTimer>
@@ -55,16 +55,15 @@ class PlotWindow : public QWidget {
         QwtPlot* p;
         QwtPlotCurve* c;
         QAction *closeAction, *options;
-        QHBoxLayout *layout;
+        QPushButton *prefButton, *closeButton;
+        QVBoxLayout *layout;
+        QHBoxLayout *bottom;
         time_t start;
 
         History *history;
         ScaleInfo *scale;
-        QMenuBar *menuBar;
-        QMenu *fileMenu;
 
         void createActions();
-        void createMenu();
 };
 
 #endif

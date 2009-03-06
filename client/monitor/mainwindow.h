@@ -58,11 +58,12 @@ class MainWindow : public QWidget {
         void makePlot(QString key);
         void updatePlot(bionet_datapoint_t* datapoint);
         void lostPlot(QString key);
-        void destroyPlot(QObject* obj);
+        void destroyPlot(QObject *obj);
         void updateMenus();
         void openPrefs(PlotWindow *pw=NULL, ScaleInfo *current=NULL);
         void openDefaultPlotPreferences();
         void closedDefaultPlotPreferences();
+        void closedPreferences(QObject *obj);
         void updateScaleInfo(ScaleInfo *si);
 
     private:
@@ -76,7 +77,7 @@ class MainWindow : public QWidget {
         Archive *archive;
 
         QHash<QString, PlotWindow*> plots;
-        QList<PlotPreferences*> preferences;
+        QHash<QString, PlotPreferences*> preferences;
         PlotPreferences *defaultPreferences;
         ScaleInfo *scaleInfoTemplate;
         bool defaultPreferencesIsOpen;

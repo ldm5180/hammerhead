@@ -51,14 +51,26 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
     p->setAxisTitle(QwtPlot::xBottom, xLabel);
     delete times;
 
+    /* Create two push buttons for preferences & plotting */
+    prefButton = new QPushButton(tr("&Plot Preferences"), this);
+    connect(prefButton, SIGNAL(released()), this, SLOT(openOptions()));
+    closeButton = new QPushButton(tr("&Close"), this); 
+    connect(closeButton, SIGNAL(released()), this, SLOT(close()));
+
+    bottom = new QHBoxLayout();
+    bottom->addStretch();
+    bottom->addWidget(prefButton);
+    bottom->addWidget(closeButton);
+
     /* Setting up the entire window's layout */
-    layout = new QHBoxLayout(this);
+    layout = new QVBoxLayout(this);
     layout->addWidget(p);
+    layout->addLayout(bottom);
+    layout->setSpacing(1);
     setLayout(layout);
 
     createActions();
-    createMenu();
-    
+
     resize(600, 400);
 
     show();
@@ -116,21 +128,6 @@ void PlotWindow::createActions() {
     closeAction->setShortcut(tr("Ctrl+W"));
     connect(closeAction, SIGNAL(triggered()), this, SLOT(close()));
     addAction(closeAction);
-    
-    options = new QAction(tr("&Plot Preferences"), this);
-    options->setShortcut(tr("Ctrl+o"));
-    connect(options, SIGNAL(triggered()), this, SLOT(openOptions()));
-    addAction(options);
-}
-
-
-void PlotWindow::createMenu() {
-    menuBar = new QMenuBar(this);
-    layout->setMenuBar(menuBar);
-
-    fileMenu = menuBar->addMenu(tr("&File"));
-    fileMenu->addAction(options);
-    fileMenu->addAction(closeAction);
 }
 
 
