@@ -6,8 +6,8 @@
 
 include $(top_srcdir)/common.am
 
-if TINYOSMIG_DISABLED
-else
+if ENABLE_TINYOSMIG
+
 BUILT_SOURCES = mmodaccelmsg.c mmodgenmsg.c mmodsettingsmsg.c mmodaccelmsg.h mmodgenmsg.h mmodsettingsmsg.h
 
 mmodaccelmsg.c: mmod_node/mmod_msg.h
@@ -36,6 +36,7 @@ mmodsettingsmsg.h: mmod_node/mmod_msg.h
 
 clean-local:
 	rm -f mmodaccelmsg.* mmodgenmsg.* mmodsettingsmsg.*
+
 endif
 
 bin_PROGRAMS = mmod-hab

@@ -1,6 +1,6 @@
 diff -ur LTK-1.0.0.5.orig/LTKC/Library/ltkc_platform.h LTK-1.0.0.5/LTKC/Library/ltkc_platform.h
---- LTK-1.0.0.5.orig/LTKC/Library/ltkc_platform.h	2008-01-29 18:56:24.000000000 -0600
-+++ LTK-1.0.0.5/LTKC/Library/ltkc_platform.h	2009-01-16 09:07:49.000000000 -0600
+--- LTK-1.0.0.5.orig/LTKC/Library/ltkc_platform.h	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.5/LTKC/Library/ltkc_platform.h	2009-03-05 15:32:59.000000000 -0700
 @@ -28,8 +28,13 @@
  #include <stdlib.h>         /* malloc() */
  #include <string.h>         /* memcpy() */
@@ -15,9 +15,23 @@ diff -ur LTK-1.0.0.5.orig/LTKC/Library/ltkc_platform.h LTK-1.0.0.5/LTKC/Library/
  
  /*
   * Typedefs of simple types.
+@@ -39,8 +44,6 @@
+  * good to go.
+  */
+ 
+-#ifdef _STDINT_H
+-
+ typedef uint8_t                 llrp_u8_t;
+ typedef int8_t                  llrp_s8_t;
+ typedef uint16_t                llrp_u16_t;
+@@ -55,4 +58,3 @@
+ typedef int                     llrp_bool_t;
+ typedef uint8_t                 llrp_byte_t;
+ 
+-#endif /* _STDINT_H */
 diff -ur LTK-1.0.0.5.orig/LTKC/Library/ltkc_xmltextencode.c LTK-1.0.0.5/LTKC/Library/ltkc_xmltextencode.c
---- LTK-1.0.0.5.orig/LTKC/Library/ltkc_xmltextencode.c	2008-10-17 12:51:50.000000000 -0500
-+++ LTK-1.0.0.5/LTKC/Library/ltkc_xmltextencode.c	2009-01-16 09:07:49.000000000 -0600
+--- LTK-1.0.0.5.orig/LTKC/Library/ltkc_xmltextencode.c	2008-10-17 11:51:50.000000000 -0600
++++ LTK-1.0.0.5/LTKC/Library/ltkc_xmltextencode.c	2009-03-05 15:31:44.000000000 -0700
 @@ -1498,7 +1498,7 @@
          return;
      }
@@ -37,8 +51,8 @@ diff -ur LTK-1.0.0.5.orig/LTKC/Library/ltkc_xmltextencode.c LTK-1.0.0.5/LTKC/Lib
      {
          strcpy(pBuffer, "ERROR: XMLTextEncoder_construct failed\n");
 diff -ur LTK-1.0.0.5.orig/LTKC/Tests/dx101.c LTK-1.0.0.5/LTKC/Tests/dx101.c
---- LTK-1.0.0.5.orig/LTKC/Tests/dx101.c	2008-01-29 18:56:24.000000000 -0600
-+++ LTK-1.0.0.5/LTKC/Tests/dx101.c	2009-01-16 09:07:49.000000000 -0600
+--- LTK-1.0.0.5.orig/LTKC/Tests/dx101.c	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.5/LTKC/Tests/dx101.c	2009-03-05 15:31:44.000000000 -0700
 @@ -287,7 +287,7 @@
              char                    aBuf[100*1024];
              LLRP_tSXMLTextEncoder * pEncoder;
@@ -49,8 +63,8 @@ diff -ur LTK-1.0.0.5.orig/LTKC/Tests/dx101.c LTK-1.0.0.5/LTKC/Tests/dx101.c
                      &pMessage->elementHdr);
              if(!pEncoder->bOverflow)
 diff -ur LTK-1.0.0.5.orig/LTKC/Tests/dx201.c LTK-1.0.0.5/LTKC/Tests/dx201.c
---- LTK-1.0.0.5.orig/LTKC/Tests/dx201.c	2008-01-29 18:56:24.000000000 -0600
-+++ LTK-1.0.0.5/LTKC/Tests/dx201.c	2009-01-16 09:08:20.000000000 -0600
+--- LTK-1.0.0.5.orig/LTKC/Tests/dx201.c	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.5/LTKC/Tests/dx201.c	2009-03-05 15:31:44.000000000 -0700
 @@ -259,7 +259,7 @@
          char *              pMemHiwatAtEnd = (char*)sbrk(0);
  

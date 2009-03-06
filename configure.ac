@@ -181,17 +181,18 @@ fi
 #   fi
 #fi
 if test "x$HAVE_LINUX" = "xyes"; then
-AM_CONDITIONAL(ENABLE_QT4, test "x$ENABLE_QT4" = "xyes")
+AM_CONDITIONAL(ENABLE_QT4, [test "x$ENABLE_QT4" = "xyes"])
 else
-AM_CONDITIONAL(ENABLE_QT4, test "xyes" = "xno") #this will always be false
+AM_CONDITIONAL(ENABLE_QT4, [test "xyes" = "xno"]) #this will always be false
 fi
 
 if test "x$HAVE_DARWIN" = "xno"; then
-AC_PATH_PROG(TINYOSMIG, mig, no)
+	AC_PATH_PROG([TINYOSMIG], mig, no)
+	AM_CONDITIONAL([ENABLE_TINYOSMIG], [test "x$TINYOSMIG" != "xno"])
 else
-TINYOSMIG = "xno"
+	echo "mig disabled under Darwin...."
+	AM_CONDITIONAL([ENABLE_TINYOSMIG], [test "xno" != "xno"])
 fi
-AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TINYOSMIG" = "xno"])
 
 #doxygen
 AC_PATH_PROG(DOXYGEN, doxygen, no)
@@ -210,6 +211,7 @@ AC_PATH_PROG(DOT, dot, no)
 AM_CONDITIONAL([DISABLE_DOT], [test "x$DOT" = "xno"])
 		      
 #bluetooth
+if test "x$HAVE_DARWIN" = "xno"; then
 AC_ARG_ENABLE(bluetooth, AC_HELP_STRING([--disable-bluetooth],
       [disable bluetooth dependent parts]),
       [ENABLE_BLUETOOTH=$enableval],
@@ -218,10 +220,9 @@ if test "x$ENABLE_BLUETOOTH" = "xyes"; then
 PKG_CHECK_MODULES(BLUEZ, [ bluez >= 0.22 ])
 AC_SUBST(BLUEZ_CFLAGS)
 AC_SUBST(BLUEZ_LIBS)
-AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
-else
-AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
 fi
+fi
+AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
 
 #xsltproc
 AC_ARG_ENABLE(xslt, AC_HELP_STRING([--disable-xslt],
