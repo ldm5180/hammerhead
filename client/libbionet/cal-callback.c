@@ -20,7 +20,7 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
     bionet_node_t *node;
     bionet_hab_t *hab;
 
-    int r;
+    int r, i;
 
     r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
     if (r != 0) {
@@ -48,6 +48,32 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
 
     if (libbionet_callback_new_node != NULL) {
         libbionet_callback_new_node(node);
+    }
+
+    // Walk through and report all datapoints
+    for (i = 0; i < bionet_node_get_num_resources(node); i++) {
+        bionet_resource_t* resource;
+        int j;
+
+        resource = bionet_node_get_resource_by_index(node, i);
+        if (resource == NULL) {
+            // an error has been logged already
+            continue;
+        }
+
+        for (j = 0; j < bionet_resource_get_num_datapoints(resource); j++) {
+            bionet_datapoint_t *new_dp;
+
+            new_dp = bionet_resource_get_datapoint_by_index(resource, j);
+            if (new_dp == NULL) {
+                // an error has been logged already
+                continue;
+            }
+
+            if (libbionet_callback_datapoint != NULL) {
+                libbionet_callback_datapoint(new_dp);
+            }
+        }
     }
 }
 

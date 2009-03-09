@@ -153,6 +153,41 @@ void add_node(bionet_hab_t* random_hab) {
         }
     }
 
+    if (output_mode == OM_BIONET_WATCHER) {
+        // we have to walk through all the resources again to correctly report the
+        // datapoints
+        for (i = 0; i < num_resources; i ++) {
+            int j;
+            bionet_resource_t* resource;
+
+            resource = bionet_node_get_resource_by_index(node, i);
+            if (resource == NULL)
+                continue;
+
+            for (j = 0; j < bionet_resource_get_num_datapoints(resource); j++) {
+                bionet_datapoint_t* dp;
+                char *value_str;
+
+                dp = bionet_resource_get_datapoint_by_index(resource, j);
+                if (dp == NULL)
+                    continue;
+
+                value_str = bionet_value_to_str(bionet_datapoint_get_value(dp));
+
+                g_message(
+                    "%s = %s %s %s @ %s",
+                    bionet_resource_get_name(resource),
+                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                    value_str,
+                    bionet_datapoint_timestamp_to_string(dp)
+                );
+
+                free(value_str);
+            }
+        }
+    }
+
     if (bionet_hab_add_node(random_hab, node) != 0) {
 	fprintf(stderr, "HAB failed to add Node\n");
 	return;
