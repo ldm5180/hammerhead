@@ -41,9 +41,11 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws,
 
     /* check box for turning stuff on/off */
     yManual = new QRadioButton(tr("Manual: "), yAxis);
+    yManual->setToolTip(tr("Manually set the minimum and maximum y-axis values"));
 
     /* check box for turning autoscaling on/off */
     yAutoscale = new QRadioButton(tr("Autoscale"), yAxis);
+    yAutoscale->setToolTip(tr("Automatically scale the y-axis to show the entire range of datapoints"));
 
     switch (scaleInfo->getYScaleType()) {
         case ScaleInfo::MANUAL: 
@@ -102,6 +104,7 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws,
     connect(xMax, SIGNAL(valueChanged(int)), this, SLOT(adjustXInterval()));
 
     xManual = new QRadioButton(tr("Manual"), xAxis);
+    xManual->setToolTip(tr("Manually set the minimum and maximum x-axis values"));
 
     xManualLayout = new QHBoxLayout;
     xManualLayout->addWidget(xManual);
@@ -113,6 +116,7 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws,
 
     /* create the manual x-axis time-based sliding window */
     xSlidingWindowTime = new QRadioButton(tr("Sliding Time Window: "), xAxis);
+    xSlidingWindowTime->setToolTip(tr("Automatically scale the x-axis to show the last \'N\' seconds worth of data"));
 
     xSecondsLabel = new QLabel(tr("Seconds"));
     xSecondsLabel->setEnabled(false);
@@ -131,6 +135,7 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws,
     /* create the manual x-axis datapoint based sliding window */
     xSlidingWindowDataPoints = new QRadioButton(tr("Sliding Data Point Window: "),
             xAxis);
+    xSlidingWindowDataPoints->setToolTip(tr("Automatically scale the x-axis to show the last \'N\' datapoints"));
     
     xDataPointsLabel = new QLabel(tr("Data Points"));
     xDataPointsLabel->setEnabled(false);
@@ -148,6 +153,7 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws,
 
     /* create the default autoscale functionality */
     xAutoscale = new QRadioButton(tr("Autoscale"), xAxis);
+    xAutoscale->setToolTip(tr("Automatically scale the x-axis to show all x-datapoints"));
     
     switch (scaleInfo->getXScaleType()) {
         case ScaleInfo::MANUAL:

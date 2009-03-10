@@ -217,7 +217,7 @@ void MainWindow::createActions() {
     shortcuts = new QAction(tr("&Shortcuts"), this);
     connect(shortcuts, SIGNAL(triggered()), this, SLOT(cuts()));
 
-    preferencesAction = new QAction(tr("&Default Plot Preferences"), this);
+    preferencesAction = new QAction(tr("&All/Default Plot Preferences"), this);
     connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openDefaultPlotPreferences()));
 }
 
