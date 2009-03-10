@@ -1,22 +1,5 @@
 
 {
-   glibc/getaddrinfo
-   Memcheck:Leak
-   fun:malloc
-   obj:/lib/libc-2.*
-   fun:getaddrinfo
-   fun:bip_net_connect
-   fun:bip_peer_connect
-   fun:send_subscriptions
-   fun:resolve_callback
-   obj:/usr/lib/libdns_sd.so.1.*
-   fun:avahi_service_resolver_event
-   obj:/usr/lib/libavahi-client.so.3.2.4
-   fun:dbus_connection_dispatch
-   obj:/usr/lib/libavahi-client.so.3.2.4
-}
-
-{
    glibc/pthread_create
    Memcheck:Leak
    fun:calloc

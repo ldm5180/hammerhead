@@ -8,23 +8,6 @@
 }
 
 {
-   glibc/getaddrinfo
-   Memcheck:Leak
-   fun:malloc
-   obj:/lib/libc-2.8.90.so
-   fun:getaddrinfo
-   fun:bip_net_connect
-   fun:bip_peer_connect
-   fun:send_subscriptions
-   fun:resolve_callback
-   obj:/usr/lib/libdns_sd.so.1.0.0
-   fun:avahi_service_resolver_event
-   obj:/usr/lib/libavahi-client.so.3.2.4
-   fun:dbus_connection_dispatch
-   obj:/usr/lib/libavahi-client.so.3.2.4
-}
-
-{
    glib/main-loop-new
    Memcheck:Leak
    fun:memalign
