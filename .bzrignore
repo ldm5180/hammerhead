@@ -5,3 +5,7 @@
 ./data-manager/**/Makefile.in
 ./hab/**/Makefile.in
 ./util/**/Makefile.in
+*.lo
+*.la
+.deps
+.libs
