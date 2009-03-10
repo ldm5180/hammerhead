@@ -63,6 +63,7 @@ int bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
     ((struct sockaddr_in *)ai->ai_addr)->sin_port = htons(net->port);
 
     r = connect(s, ai->ai_addr, ai->ai_addrlen);
+    freeaddrinfo(ai);
     if (r != 0) {
 #if 0
         struct sockaddr_in *sin = (struct sockaddr_in *)ai->ai_addr;
