@@ -258,11 +258,9 @@ void bionet_value_free(bionet_value_t *value);
  *         representation of the Value
  * @return NULL Failure
  *
- * @note All passed-in strings are considered the property of the
- *       caller.  The caller is free to overwrite or free the
- *       strings on return from this function.
- *
- * @note Caller must free this pointer returned.
+ * @note The returned string becomes the property (and responsibility) of
+ *       the caller.  The caller must free the returned string or leak
+ *       memory.
  */
 char *bionet_value_to_str(const bionet_value_t *value);
 
