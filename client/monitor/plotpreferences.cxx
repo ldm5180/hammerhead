@@ -147,7 +147,7 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws,
     xSWDataPoints->addStretch();
 
     /* create the default autoscale functionality */
-    xAutoscale = new QRadioButton(tr("X-Autoscale"), xAxis);
+    xAutoscale = new QRadioButton(tr("Autoscale"), xAxis);
     
     switch (scaleInfo->getXScaleType()) {
         case ScaleInfo::MANUAL:
