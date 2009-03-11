@@ -1,21 +1,51 @@
 
-in mainline: update ChangeLog & common.am, commit
+in mainline:
 
-in mainline: tag with the release number: "bzr tag 2.1.1"
+    update ChangeLog (look at the log since the previous release)
 
-on the server: branch trunk to a release-branch with "bzr branch trunk
-    bionet-2.1.1"
+    update common.am (BIONET_INTERFACE_VERSION and BIONET_RELEASE_VERSION
+    at the bottom)
+
+    make clean ; ./autogen.sh && ./configure && make clean all check test
+
+    commit ChangeLog and common.am
+
+    tag with the release number: "bzr tag 2.1.1"
+
+    push to the server (this step is only needed if you're working in
+    a stand-alone branch, it's not needed if you're working in a "bound
+    branch" aka a "checkout")
+
+
+on the repo server:
+
+    branch trunk to a release-branch with "bzr branch trunk bionet-2.1.1"
+
 
 check out the release branch
 
-in the branch: ./autogen.sh
 
-in the branch: export VERSION=$(grep BIONET_RELEASE_VERSION common.am | cut -d '=' -f 2) ; cd .. ; tar --exclude .bzr -cjf bionet-$VERSION.tar.bz2 bionet-$VERSION
+in the release branch:
 
-build the docs, install on our webserver
+    ./autogen.sh
 
-send out an announcement email with links to the tarball and the API docs,
-and the top of the changelog
+    export VERSION=$(grep BIONET_RELEASE_VERSION common.am | cut -d '=' -f 2) ; cd .. ; tar --exclude .bzr -cjf bionet-$VERSION.tar.bz2 bionet-$VERSION
 
-in mainline: update ChangeLog & common.am, commit
+    test the tarball:
+
+        untar it someplace out of the way
+
+        ./configure && make all check test
+
+    building the release tarball also builds the docs, install them on our webserver: rsync -av doxygen/html/ bioserve.colorado.edu:/var/www/bionet/doc/2.1.2
+
+    upload the tarball to someplace secret
+
+    send out an announcement email with links to the tarball and the
+    API docs, and the top of the changelog
+
+
+in mainline:
+
+    update ChangeLog & common.am, commit
 
