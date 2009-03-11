@@ -78,4 +78,4 @@ LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`
 BIONET_INTERFACE_VERSION=1:1:0
 
 #Purely aesthetic marketing version number
-BIONET_RELEASE_VERSION=2.1.2
+BIONET_RELEASE_VERSION=2.1.2+epsilon
