@@ -75,7 +75,7 @@ LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`
 # Interface is bumped on API breaking events
 # Revision is bumped on each change like a bug fix
 # Age is bumped on every addition to the API
-BIONET_INTERFACE_VERSION=1:0:0
+BIONET_INTERFACE_VERSION=1:1:0
 
 #Purely aesthetic marketing version number
-BIONET_RELEASE_VERSION=2.1.1+epsilon
+BIONET_RELEASE_VERSION=2.1.2

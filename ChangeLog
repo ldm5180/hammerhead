@@ -1,8 +1,27 @@
 
-Bionet 2.1.2, TBD
+Bionet 2.1.2, 2009 March 11
+
+    * Fixed a bug in the subscription model: Clients subscribed to
+      datapoints now get their new-datapoint callback called for all
+      the datapoints in the new-node message.
+
+    * Lots of bionet-monitor improvements: plots now have a Preferences
+      dialog box where the user can control plot scaling.
 
     * Added capability to skip "lost node" messages in MMOD HAB.
-	
+
+    * Lots of fixes to the Bluetooth Stethoscope HAB.
+
+    * Lots of bug fixes and documentation improvements.
+
+    * Updated copyright notices based on lawyer input...
+
+    * The build system will now use ccache if available.
+
+    * Started adding unit testing with Check.  Need to write more tests.
+
+    * Started porting the stream-manager GUI - not complete yet.
+
 
 Bionet 2.1.1, 2009 January 27
 
