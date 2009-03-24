@@ -28,6 +28,9 @@
  *
  */
 
+llrp_u16_t rf_sensitivity = 0;
+
+
 int main(int argc, char *argv[]) {
     int i = 0;
     int bionet_fd;
@@ -35,7 +38,6 @@ int main(int argc, char *argv[]) {
     char* hab_type = "speedway";
     char* hab_id = NULL;
     char* reader_ip = NULL;
-
 
     for (i = 1; i < argc; i ++) {
         if (strcmp(argv[i], "--id") == 0) {
@@ -53,6 +55,10 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[i], "--num-scans") == 0) {
             i ++;
             num_scans = atoi(argv[i]);
+	    
+	} else if (strcmp(argv[i], "--rfsensitivity") == 0) {
+	    i ++;
+	    rf_sensitivity = atoi(argv[i]);
 
         } else if (strcmp(argv[i], "--scan-idle") == 0) {
             i ++;

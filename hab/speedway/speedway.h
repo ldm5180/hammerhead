@@ -28,6 +28,8 @@ extern int num_scans;
 extern int scan_idle;
 extern int scan_timeout;
 
+extern llrp_u16_t rf_sensitivity;
+
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
 
@@ -48,6 +50,7 @@ int read_gpis(int gpi[4]);
 int checkConnectionStatus();
 int scrubConfiguration();
 void get_reader_config(void);
+int get_reader_capabilities (void);
 
 /**
  * @brief Poll for messages from the Speedway, process if found.

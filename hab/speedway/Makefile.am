@@ -15,6 +15,7 @@ speedway_SOURCES =         \
     make-reader-node.c     \
     read-from-bionet.c     \
     get-reader-config.c    \
+    get-reader-capabilities.c    \
     poll-reader.c          \
     handle-tag-report-data.c  \
     connect.c              \
