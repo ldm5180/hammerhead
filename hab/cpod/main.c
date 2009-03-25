@@ -269,6 +269,7 @@ connecting:
 
     fcntl(cpod_fd, F_SETFL, O_NONBLOCK);
 
+    reset_bookkeeping();
 
     send_next_packet_streaming(cpod_fd);
 

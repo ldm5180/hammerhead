@@ -96,6 +96,6 @@ int send_status( int fd );
 
 int shake_hands(int fd);
 
-
+void reset_bookkeeping( );
 
 #endif

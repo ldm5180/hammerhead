@@ -103,11 +103,17 @@ extern bionet_node_t *node;
 
 extern int print_ecg;
 
+static int middle_of_packet = 0;
+static unsigned char count = 0;
+
+void reset_bookkeeping()
+{
+    middle_of_packet = 0;
+    count = 0;
+}
 
 int read_next_packet(int fd)
 {
-    static int middle_of_packet = 0;
-    static unsigned char count = 0;
     static unsigned char buffer[256];
 
     int r, size;
