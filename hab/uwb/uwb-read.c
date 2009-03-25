@@ -22,14 +22,13 @@
 #include "uwb.h"
 
 /*
- * Send the RESPONDER message to the UWB.exe program.
+ * Read the message from the UWB.exe program.
  */
 int uwb_read(int fd, char* buffer) 
 {
 	int bytes = 0;
-	double x, y;
 	bionet_node_t *node;
-	bionet_resource_t *resource;
+	bionet_resource_t *x_resource, *y_resource;
 	struct timeval timestamp;
 
 	memset(buffer, '\0', BUFFER_SZ);
@@ -44,59 +43,81 @@ int uwb_read(int fd, char* buffer)
 	buffer[BUFFER_SZ - 1] = '\0';
 
 	// Format sent is really simple
-	// <x[double]><y[double]><timestamp[tv.tv_sec]>
+	// <x[double]><y[double]><timestamp[double(?)]>	
 
-	if (sscanf(buffer, "%lf%lf%lu", &x, &y, &(timestamp.tv_sec))) {
-        g_warning("Cannot parse the incoming data, continuing...");
-        return 0;
-	}
 
+	timestamp.tv_sec = *((time_t*)(&buffer[16]));
 	timestamp.tv_usec = 0;
 
-	if (bionet_hab_get_num_nodes(uwb_hab) == 0) {
+        node = bionet_hab_get_node_by_id(uwb_hab, node_id);
+
+	if (node == NULL) {
         // Initialize the first node.
         node = bionet_node_new(uwb_hab, node_id);
 		bionet_hab_add_node(uwb_hab, node);
-		resource = bionet_resource_new(node,
-									   BIONET_RESOURCE_DATA_TYPE_DOUBLE, 
-									   BIONET_RESOURCE_FLAVOR_SENSOR,
-									   "X");
+		x_resource = bionet_resource_new(node,
+                                                 BIONET_RESOURCE_DATA_TYPE_DOUBLE, 
+                                                 BIONET_RESOURCE_FLAVOR_SENSOR,
+                                                 "X");
 
-		if (resource == NULL) {
+		if (x_resource == NULL) {
 		    g_error("Failed to create resource: X for id %s", node_id);
 			return -1;
 		}
 
-		if (bionet_node_add_resource(node, resource)) {
+		if (bionet_node_add_resource(node, x_resource)) {
 		    g_error("Failed to add X resource to node %s", node_id);
 			return -1;
 		}
 
-		if (bionet_resource_set_double(resource, x, &timestamp)) {
-		    g_error("Failed to set X resource after creation for node %s", node_id);
-			return -1;
-		}
+		y_resource = bionet_resource_new(node,
+                                                 BIONET_RESOURCE_DATA_TYPE_DOUBLE, 
+                                                 BIONET_RESOURCE_FLAVOR_SENSOR,
+                                                 "Y");
 
-		resource = bionet_resource_new(node,
-									   BIONET_RESOURCE_DATA_TYPE_DOUBLE, 
-									   BIONET_RESOURCE_FLAVOR_SENSOR,
-									   "Y");
-
-		if (resource == NULL) {
+		if (y_resource == NULL) {
 		    g_error("Failed to create resource: Y for id %s", node_id);
 			return -1;
 		}
 
-		if (bionet_node_add_resource(node, resource)) {
+		if (bionet_node_add_resource(node, y_resource)) {
 		    g_error("Failed to add Y resource to node %s", node_id);
 			return -1;
 		}
 
-		if (bionet_resource_set_double(resource, y, &timestamp)) {
-		    g_error("Failed to set Y resource after creation for node %s", node_id);
-			return -1;
-		}
-	}
+                if(hab_report_new_node(node) == 0) {
+                    g_error("Failed to report new node");
+                    bionet_node_free(node);
+                    return -1;
+                }
+	} 
+        
+	x_resource = bionet_node_get_resource_by_id(node, "X");
+        if (x_resource == NULL) {
+            g_error("failed to find Resource 'X' in Node '%s'!", node_id);
+            return -1;
+        }
+
+        y_resource = bionet_node_get_resource_by_id(node, "Y");
+        if (y_resource == NULL) {
+            g_error("failed to find Resource 'Y' in Node '%s'!", node_id);
+            return -1;
+        }
+        
+        if (bionet_resource_set_double(x_resource, *((double*)(&buffer[0])), &timestamp)) {
+            g_error("Failed to set Resource X");
+            return -1;
+        }
+
+        if (bionet_resource_set_double(y_resource, *((double*)(&buffer[8])), &timestamp)) {
+            g_error("Failed to set Resource Y");
+            return -1;
+        }
+
+	if (hab_report_datapoints(node) != 0) {
+            g_error("Failed to report datapoints.");
+            return -1;
+        }
 
 	return bytes;
 }
