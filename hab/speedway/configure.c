@@ -26,6 +26,12 @@ int speedway_configure() {
         return -1;
     }
 
+    r = get_reader_capabilities();
+    if (r != 0) {
+	g_warning("Error getting reader capabilities");
+	return -1;
+    }
+
     r = configure_reader();
     if (r != 0) {
         // an error has been logged

@@ -27,6 +27,8 @@ void get_reader_config(void) {
     LLRP_tSMessage *pRspMsg;
     LLRP_tSGET_READER_CONFIG_RESPONSE *pRsp;
 
+    
+
     // Send the message, expect the response of certain type
     pRspMsg = transact(&GetReaderConfig.hdr);
     if(pRspMsg == NULL) {

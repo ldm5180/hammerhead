@@ -13,6 +13,7 @@
 #include "ltkc.h"
 #include "speedway.h"
 
+extern LLRP_tSGET_READER_CAPABILITIES_RESPONSE *pRspCapabilities;
 
 //
 // This function configures the reader for the JSC "Trashcan" and "Portal" demos.
@@ -49,6 +50,30 @@ int configure_reader(void) {
         }
     };
 
+    LLRP_tSReceiveSensitivityTableEntry * cur_table_entry =
+	pRspCapabilities->pGeneralDeviceCapabilities->listReceiveSensitivityTableEntry;
+    llrp_u16_t rf_sensitivity_index = 0;
+    while (cur_table_entry) {
+	if (cur_table_entry->ReceiveSensitivityValue == rf_sensitivity) {
+	    rf_sensitivity_index = cur_table_entry->Index;
+	    break;
+	}
+	cur_table_entry = LLRP_GeneralDeviceCapabilities_nextReceiveSensitivityTableEntry(cur_table_entry); 
+    }
+
+    LLRP_tSRFReceiver rfreceiver_sensitivity = {
+	.hdr.elementHdr.pType = &LLRP_tdRFReceiver,
+	.ReceiverSensitivity = rf_sensitivity_index
+    };
+
+    LLRP_tSAntennaConfiguration antenna_config = {
+	    .hdr.elementHdr.pType = &LLRP_tdAntennaConfiguration,
+	    .AntennaID = 0,
+	    .pRFReceiver = &rfreceiver_sensitivity,
+	    .pRFTransmitter = NULL,
+	    .listAirProtocolInventoryCommandSettings = NULL
+    };
+
     LLRP_tSEventNotificationState notifications[] = {
         {
             .hdr.elementHdr.pType = &LLRP_tdEventNotificationState,
@@ -67,7 +92,7 @@ int configure_reader(void) {
         .ResetToFactoryDefault = 0,
         .pReaderEventNotificationSpec = &events,
         .listAntennaProperties = NULL,
-        .listAntennaConfiguration = NULL,
+        .listAntennaConfiguration = &antenna_config,
         .pROReportSpec = NULL,
         .pAccessReportSpec = NULL,
         .pKeepaliveSpec = NULL,
