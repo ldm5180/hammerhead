@@ -85,8 +85,8 @@ int uwb_read(int fd, char* buffer)
 			return -1;
 		}
 
-                if(hab_report_new_node(node) == 0) {
-                    g_error("Failed to report new node");
+                if(hab_report_new_node(node) != 0) {
+                    g_warning("Failed to report new node");
                     bionet_node_free(node);
                     return -1;
                 }
