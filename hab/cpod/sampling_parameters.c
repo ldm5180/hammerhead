@@ -114,7 +114,7 @@ int sampling_parameters(int fd)
 
     r = patient_read(fd, &response, sizeof(response));
 
-    g_debug("r = %d", r);
+    //g_debug("r = %d", r);
 
     if (r == -1 ||
         verify_response((char*)&command, (char*)&response))
