@@ -30,7 +30,7 @@ libbionet_qt4_la_LIBADD = $(AM_LDADD) -lpthread -lm ${qtmake_moc_objects} ${qtma
 
 
 makefile.qt:
-	qmake-qt4 -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=lib" "QT+=network" "CONFIG+=link_pkgconfig debug"
+	${QT4_PATH} -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=lib" "QT+=network" "CONFIG+=link_pkgconfig debug"
 	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects} 
 
 clean-local:

@@ -21,5 +21,7 @@ SUBDIRS += libamedevice stethoscope cpod
 endif
 
 if HAVE_XSLTPROC
+if ENABLE_LTKC
 SUBDIRS += speedway
+endif
 endif

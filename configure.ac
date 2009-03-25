@@ -171,6 +171,15 @@ if test "x$HAVE_LINUX" = "xyes"; then
       fi
    fi
 fi
+if test "x$HAVE_DARWIN" = "xyes"; then
+   if test "x$ENABLE_QT4" = "xyes" ; then
+      AC_PATH_PROG(QT4_PATH, qmake-4.4, no)
+      if test "x$QT4_PATH" = xno; then
+       	 AC_MSG_ERROR([could not find QT4 executables])
+      fi
+   fi
+fi
+
 # need libqwt5 for mac...
 #if test "x$HAVE_DARWIN" = "xyes"; then
 #   if test "x$ENABLE_QT4" = "xyes" ; then
@@ -186,12 +195,20 @@ else
 AM_CONDITIONAL(ENABLE_QT4, test "xyes" = "xno") #this will always be false
 fi
 
-if test "x$HAVE_DARWIN" = "xno"; then
-AC_PATH_PROG(TINYOSMIG, mig, no)
+if test "x$HAVE_DARWIN" = "xyes"; then
+    echo "checking for LTKC... disabled"
+    AM_CONDITIONAL(ENABLE_LTKC, test "x$HAVE_DARWIN" = "false")
 else
-TINYOSMIG = "xno"
+    echo "checking for LTKC... yes"
+    AM_CONDITIONAL(ENABLE_LTKC, test "x$HAVE_LINUX" = "x$HAVE_LINUX")
 fi
-AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TINYOSMIG" = "xno"])
+
+if test "x$TOSROOT" = "x"; then
+echo "checking for TinyOS... no"
+else
+echo "checking for TinyOS... yes"
+fi
+AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TOSROOT" = "x"])
 
 #doxygen
 AC_PATH_PROG(DOXYGEN, doxygen, no)
@@ -214,13 +231,17 @@ AC_ARG_ENABLE(bluetooth, AC_HELP_STRING([--disable-bluetooth],
       [disable bluetooth dependent parts]),
       [ENABLE_BLUETOOTH=$enableval],
       [ENABLE_BLUETOOTH=yes])
-if test "x$ENABLE_BLUETOOTH" = "xyes"; then
-PKG_CHECK_MODULES(BLUEZ, [ bluez >= 0.22 ])
-AC_SUBST(BLUEZ_CFLAGS)
-AC_SUBST(BLUEZ_LIBS)
-AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
+if test "x$HAVE_LINUX" = "xyes"; then
+    if test "x$ENABLE_BLUETOOTH" = "xyes"; then
+        PKG_CHECK_MODULES(BLUEZ, [ bluez >= 0.22 ])
+        AC_SUBST(BLUEZ_CFLAGS)
+        AC_SUBST(BLUEZ_LIBS)
+        AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])	
+    else
+        AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
+    fi
 else
-AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
+    AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "false"])
 fi
 
 #xsltproc
