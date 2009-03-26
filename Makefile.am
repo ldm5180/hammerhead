@@ -48,4 +48,4 @@ delversion:
 	rm -f version.h
 
 version.h:
-	bzr version-info --custom --template="#define VERSION_INFO \"Bionet {branch_nick} {revision_id}\"\n" > version.h
+	bzr version-info --custom --template="#define VERSION_INFO \"Bionet {branch_nick} {revision_id}\"\n\n#define SHORT_VERSION_INFO \"Bionet {branch_nick} r{revno}\"\n" > version.h
