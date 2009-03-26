@@ -27,7 +27,7 @@ if DISABLE_DOT
 DOXYFILE = Doxyfile.nodot
 endif
 
-all-local: $(DOXYGEN_INPUT) $(doc_DATA)
+all-local: delversion $(DOXYGEN_INPUT) $(doc_DATA) 
 
 doxygen/html/index.html: $(DOXYGEN_INPUT)
 	doxygen $(DOXYFILE)
@@ -42,4 +42,10 @@ install-exec-hook:
 test:
 	(cd test; ./do-test)
 
+release: all-local version.h
 
+delversion:
+	rm -f version.h
+
+version.h:
+	bzr version-info --custom --template="#define VERSION_INFO \"Bionet {branch_nick} {revision_id}\"\n" > version.h
