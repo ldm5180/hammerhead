@@ -146,9 +146,8 @@ void net_leaves(bip_peer_t *peer, bip_peer_network_info_t *net) {
         return;
     }
 
-    bip_net_destroy(net);
-
     g_ptr_array_remove(peer->nets, net);
+    bip_net_destroy(net);
 }
 
 
