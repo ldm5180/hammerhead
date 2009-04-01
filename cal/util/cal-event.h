@@ -127,7 +127,7 @@ typedef enum {
 
 typedef struct {
     char *buffer;
-    int size;
+    int size;     // FIXME: CAL should specify the size of this.  Probably uint32_t, to match what BIP currently wants to send across the wire?
 } cal_message_t;
 
 
