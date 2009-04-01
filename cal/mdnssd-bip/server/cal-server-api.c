@@ -422,6 +422,16 @@ int cal_server_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
         return 0;
     }
 
+    if (msg == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: called with NULL msg!");
+        return 0;
+    }
+
+    if (size < 1) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: called with invalid size %d!", size);
+        return 0;
+    }
+
     event = cal_event_new(CAL_EVENT_MESSAGE);
     if (event == NULL) {
         return 0;
@@ -458,6 +468,16 @@ void cal_server_mdnssd_bip_publish(const char *topic, const void *msg, int size)
 
     if (cal_server_mdnssd_bip_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: called before init!");
+        return;
+    }
+
+    if (msg == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: called with NULL msg!");
+        return;
+    }
+
+    if (size < 1) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: called with invalid size %d!", size);
         return;
     }
 

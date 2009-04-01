@@ -90,6 +90,16 @@ static int read_from_user(void) {
                 break;
             }
 
+            if (event->msg.buffer == NULL) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user requested to send message to peer '%s' with NULL buffer, dropping", event->peer_name);
+                break;
+            }
+
+            if (event->msg.size < 1) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user requested to send message to peer '%s' with invalid size %d, dropping", event->peer_name, event->msg.size);
+                break;
+            }
+
             bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
             // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
 
@@ -116,6 +126,21 @@ static int read_from_user(void) {
             GHashTableIter iter;
             const char *name;
             bip_peer_t *client;
+
+            if (event->topic == NULL) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user requested to publish message with NULL topic, dropping");
+                break;
+            }
+
+            if (event->msg.buffer == NULL) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user requested to publish message on topic '%s' with NULL buffer, dropping", event->topic);
+                break;
+            }
+
+            if (event->msg.size < 1) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user requested to publish message on topic '%s' with invalid size, dropping", event->topic);
+                break;
+            }
 
             g_hash_table_iter_init(&iter, clients);
             while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&client)) {

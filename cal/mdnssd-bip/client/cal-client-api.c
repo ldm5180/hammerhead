@@ -305,6 +305,16 @@ int cal_client_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
         return 0;
     }
 
+    if (msg == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: NULL msg passed in");
+        return 0;
+    }
+
+    if (size < 1) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: invalid size %d passed in", size);
+        return 0;
+    }
+
     event = cal_event_new(CAL_EVENT_MESSAGE);
     if (event == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "sendto: out of memory");

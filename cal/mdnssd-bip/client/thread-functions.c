@@ -257,6 +257,16 @@ static void read_from_user(void) {
         case CAL_EVENT_MESSAGE: {
             bip_peer_t *peer;
 
+            if (event->msg.buffer == NULL) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user Message event has NULL msg buffer, ignoring");
+                break;
+            }
+
+            if (event->msg.size < 1) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user Message event has invalid size %d, ignoring", event->msg.size);
+                break;
+            }
+
             peer = get_peer_by_name(event->peer_name);
             if (peer == NULL) break;
             if (peer->nets->len == 0) break;
