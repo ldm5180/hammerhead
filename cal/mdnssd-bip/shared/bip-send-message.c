@@ -27,6 +27,16 @@
 
 
 
+//
+// We're currently not limiting the size of BIP messages.  This sometimes
+// worries Coverity.
+//
+// Maybe in the future we'll limit max message sizes in some configurable
+// way, as part of a security mechanism to try to resist DOS attacks.
+//
+// FIXME: Also see Issue #343 at <http://bioserve.colorado.edu/issue-tracker/?module=issues&action=view&issueid=343>
+//
+// coverity[ -tainted_data_sink : arg-4 ]
 int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size) {
     int r;
 
