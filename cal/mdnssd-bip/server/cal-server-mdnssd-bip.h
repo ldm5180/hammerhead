@@ -21,7 +21,7 @@
 
 
 
-#define ID "mDNS-SD/BIP "
+#define ID "mDNS-SD/BIP Server "
 
 
 // describes "this" server
