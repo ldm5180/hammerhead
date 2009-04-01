@@ -1,5 +1,8 @@
 
 
+better handling of device plug and play
+
+
 Mixer controls should be exported as Resources (Parameters).
 
 
