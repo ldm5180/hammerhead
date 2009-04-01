@@ -256,7 +256,7 @@ int cal_client_mdnssd_bip_read(struct timeval * timeout) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: short read from client thread");
         return 0;
     } else if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got NULL event!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: ignoring NULL event from CAL Client thread!");
         return 0;
     }
 

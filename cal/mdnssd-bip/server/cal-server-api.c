@@ -180,7 +180,7 @@ int cal_server_mdnssd_bip_init(
             // this indicates the CAL thread refused to start up
             return -1;
         } else if (event == NULL) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: got NULL event!");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: ignoring NULL event from CAL Server thread!");
             cal_server_mdnssd_bip_shutdown();
             return -1;
         } else if (event->type != CAL_EVENT_INIT) {
@@ -355,7 +355,7 @@ int cal_server_mdnssd_bip_read(struct timeval *timeout) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: short read of event pointer!");
         return 0;
     } else if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got NULL event!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: ignoring NULL event from CAL Server thread!");
         return 0;
     }
 

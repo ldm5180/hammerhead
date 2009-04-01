@@ -74,6 +74,11 @@ static int read_from_user(void) {
         return -1;
     }
 
+    if (event == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: ignoring NULL event from user!");
+        return -1;
+    }
+
     switch (event->type) {
 
         case CAL_EVENT_MESSAGE: {
