@@ -19,6 +19,7 @@ int hab_report_new_node(const bionet_node_t *node) {
     bionet_asn_buffer_t buf;
     int r;
     char topic[BIONET_NAME_COMPONENT_MAX_LEN + 2];
+    bionet_hab_t *hab;
 
     //
     // sanity checks
@@ -28,8 +29,8 @@ int hab_report_new_node(const bionet_node_t *node) {
         goto fail0;
     }
 
-    bionet_hab_t * hab = bionet_node_get_hab(node);
-    
+    hab = bionet_node_get_hab(node);
+
     if (hab != libhab_this) {
 	if (NULL == hab)
 	{
