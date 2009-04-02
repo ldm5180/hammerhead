@@ -110,8 +110,11 @@ int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
         goto cleanup;
     }
 
-
-    sprintf(peer_name, "%s.%s", hab_type, hab_id);
+    r = snprintf(peer_name, sizeof(peer_name), "%s.%s", hab_type, hab_id);
+    if (r >= sizeof(peer_name)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_set_resource_by_habtype_habid_nodeid_resourceid(): HAB Name %s.%s too long", hab_type, hab_id);
+        goto cleanup;
+    }
 
     // send the command to the HAB
     // Note: cal_client.sendto steals the dynamically-allocated buffer
