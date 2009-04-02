@@ -30,7 +30,7 @@ extern cal_client_t cal_client;
 void cal_callback(const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_JOIN: {
-            char *msg = strdup("hey there!");
+            char *msg;
 
             printf("Join event from '%s'\n", event->peer_name);
 
@@ -38,7 +38,15 @@ void cal_callback(const cal_event_t *event) {
                 break;
             }
 
+            msg = strdup("hey there!");
+            if (msg == NULL) {
+                printf("out of memory!\n");
+                break;
+            }
+
             printf("found a time-publisher, sending it a message\n");
+
+            // the 'msg' buffer becomes the property of .sendto(), it's no longer ours to free or modify
             cal_client.sendto(event->peer_name, msg, strlen(msg));
 
             break;
