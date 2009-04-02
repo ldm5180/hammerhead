@@ -455,12 +455,17 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
     r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: error writing to user thread!!");
+        cal_event_free(event);
         return -1;
     } else if (r < sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: short write to user thread!!");
+        cal_event_free(event);
         return -1;
     }
 
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
     return 0;
 }
 
