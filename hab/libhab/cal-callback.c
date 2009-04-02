@@ -31,6 +31,10 @@ static void libhab_set_resource(const char *peer_name, SetResourceValue_t *set_r
             resource = bionet_node_get_resource_by_index(node, ri);
             if (! bionet_resource_matches_id(resource, (char *)set_resource_value->resourceId.buf)) continue;
 
+            // 
+            // if we get here, 'node:resource' should be set to 'set_resource_value->value'
+            //
+
 	    bionet_value_t * value;
 	    switch (bionet_resource_get_data_type(resource))
 	    {
@@ -96,7 +100,7 @@ static void libhab_set_resource(const char *peer_name, SetResourceValue_t *set_r
 	    default:
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "libhab_set_resource(): Invalid datatype");
-		break;
+		continue;
 	    }
 	    datapoint = bionet_datapoint_new(resource, value, NULL);
 
