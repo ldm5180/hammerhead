@@ -251,10 +251,17 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
     r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection(): error writing Connect event: %s", strerror(errno));
+        cal_event_free(event);
+        return;
     } else if (r != sizeof(cal_event_t*)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection(): short write of Connect event!");
+        cal_event_free(event);
+        return;
     }
 
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
     return;
 
 
@@ -318,6 +325,7 @@ static void handle_client_disconnect(const char *peer_name) {
         }
     }
 
+
     event = cal_event_new(CAL_EVENT_DISCONNECT);
     if (event == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "handle_client_disconnect: out of memory");
@@ -335,10 +343,17 @@ static void handle_client_disconnect(const char *peer_name) {
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: error writing Disconnect event: %s", strerror(errno));
         cal_event_free(event);
+        return;
     } else if (r != sizeof(cal_event_t*)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: short write of Disconnect event!");
         cal_event_free(event);
+        return;
     }
+
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
+    return;
 }
 
 

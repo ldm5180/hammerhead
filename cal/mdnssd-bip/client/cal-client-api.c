@@ -205,13 +205,18 @@ int cal_client_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
     r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: error writing to client thread: %s", strerror(errno));
+        cal_event_free(event);
         return 0;
     }
     if (r < sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: short write to client thread!!");
+        cal_event_free(event);
         return 0;
     }
 
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
     return 1;
 }
 
@@ -334,13 +339,18 @@ int cal_client_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
     r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: error writing to client thread: %s", strerror(errno));
+        cal_event_free(event);
         return 0;
     }
     if (r < sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: short write to client thread!!");
+        cal_event_free(event);
         return 0;
     }
 
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
     return 1;
 }
 

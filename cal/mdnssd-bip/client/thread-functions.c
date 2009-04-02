@@ -127,9 +127,18 @@ void report_peer_lost(const char *peer_name, bip_peer_t *peer) {
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "browser_callback: error writing event: %s", strerror(errno));
+        cal_event_free(event);
+        return;
     } else if (r != sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "browser_callback: short write while writing event");
+        cal_event_free(event);
+        return;
     }
+
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
+    return;
 }
 
 
@@ -436,9 +445,18 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer, bip_pee
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_publisher: error writing to user thread!!");
+        cal_event_free(event);
+        return;
     } else if (r < sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_publisher: short write to user thread!!");
+        cal_event_free(event);
+        return;
     }
+
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
+    return;
 }
 
 
