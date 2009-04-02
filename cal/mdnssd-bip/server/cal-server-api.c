@@ -250,6 +250,11 @@ void cal_server_mdnssd_bip_shutdown(void) {
         return;
     }
 
+
+    //
+    // first tell the CAL thread to shut itself down
+    //
+
     event = cal_event_new(CAL_EVENT_SHUTDOWN);
     if (event == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: out of memory!");
@@ -259,12 +264,19 @@ void cal_server_mdnssd_bip_shutdown(void) {
     r = write(cal_server_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: error writing to server thread: %s", strerror(errno));
+        cal_event_free(event);
         return;
     }
     if (r < sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: short write to server thread!!");
+        cal_event_free(event);
         return;
     }
+
+    // we don't leak the memory assigned to 'event' here because we have
+    // successfully sent a pointer to it to the CAL Server thread
+    // coverity[leaked_storage]
+    event = NULL;
 
 
     // read any pending events from the CAL thread, until it closes the pipe
