@@ -275,11 +275,15 @@ void cal_server_mdnssd_bip_shutdown(void) {
 
     // we don't leak the memory assigned to 'event' here because we have
     // successfully sent a pointer to it to the CAL Server thread
-    // coverity[leaked_storage]
+    // coverity[overwrite_var]
     event = NULL;
 
 
-    // read any pending events from the CAL thread, until it closes the pipe
+    //
+    // read and handle any pending events from the CAL thread,
+    // until it closes the pipe
+    //
+
     while(1) {
         fd_set readers;
         int r;
@@ -311,6 +315,7 @@ void cal_server_mdnssd_bip_shutdown(void) {
 
         cal_event_free(event);
     }
+
 
     //
     // when we get here, the CAL thread has closed the pipe
