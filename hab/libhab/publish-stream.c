@@ -16,7 +16,7 @@
 
 
 int hab_publish_stream(const bionet_stream_t *stream, const void *buf, size_t count) {
-    char topic[BIONET_NAME_COMPONENT_MAX_LEN + 2];
+    char topic[BIONET_NAME_COMPONENT_MAX_LEN * 2];
     bionet_node_t *node;
     int r;
 
@@ -77,7 +77,7 @@ int hab_publish_stream(const bionet_stream_t *stream, const void *buf, size_t co
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_publish_stream: passed-in Stream has NULL Node!");
         goto fail1;
     }
-    snprintf(topic, BIONET_NAME_COMPONENT_MAX_LEN * 2 + 1,
+    snprintf(topic, BIONET_NAME_COMPONENT_MAX_LEN * 2,
 	     "S %s", bionet_stream_get_local_name(stream));
 
 
