@@ -70,7 +70,11 @@ void str_to_timeval(const char *str, struct timeval *tv) {
     old_tz = getenv("TZ");
     setenv("TZ", "UTC", 1);
     tv->tv_sec = mktime(&tm);
-    setenv("TZ", old_tz, 1);
+    if (old_tz) {
+      setenv("TZ", old_tz, 1);
+    } else {
+      unsetenv("TZ");
+    }
 }
 
 

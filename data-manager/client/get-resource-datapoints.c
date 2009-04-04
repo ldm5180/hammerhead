@@ -104,6 +104,9 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct
     int r;
     asn_enc_rval_t enc_rval;
 
+    BDM_S2C_Message_t *message = NULL;
+    int index = 0;
+    int total_bytes_read = 0;
 
     memset(&m, 0x00, sizeof(BDM_C2S_Message_t));
     m.present = BDM_C2S_Message_PR_resourceDatapointsQuery;
@@ -159,11 +162,8 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct
 
 
     // FIXME: bogus loop to read the reply
-    BDM_S2C_Message_t *message = NULL;
-    unsigned char buf[10 * 1024];
-    int index = 0;
+    unsigned char buf[1024];
     asn_dec_rval_t dec_rval;
-    int total_bytes_read = 0;
 
     do {
         int r;
@@ -213,16 +213,24 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct
 
 
 cleanup4:
-    OCTET_STRING_fromString(&rdpq->resourceId, NULL);
+    if (OCTET_STRING_fromString(&rdpq->resourceId, NULL)) {
+	g_warning("clearing resourceId failed");
+    }
 
 cleanup3:
-    OCTET_STRING_fromString(&rdpq->nodeId, NULL);
+    if (OCTET_STRING_fromString(&rdpq->nodeId, NULL)) {
+	g_warning("clearing nodeId failed");
+    }
 
 cleanup2:
-    OCTET_STRING_fromString(&rdpq->habId, NULL);
+    if (OCTET_STRING_fromString(&rdpq->habId, NULL)) {
+	g_warning("clearing habId failed");
+    }
 
 cleanup1:
-    OCTET_STRING_fromString(&rdpq->habType, NULL);
+    if (OCTET_STRING_fromString(&rdpq->habType, NULL)) {
+	g_warning("clearing habType failed");
+    }
 
 cleanup0:
     return retval;
