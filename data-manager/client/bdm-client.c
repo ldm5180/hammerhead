@@ -5,7 +5,7 @@
 
 
 #define _XOPEN_SOURCE
-#define _POSIX_C_SOURCE 200112L
+#define _BSD_SOURCE
 
 #include <errno.h>
 #include <math.h>
@@ -71,11 +71,11 @@ void str_to_timeval(const char *str, struct timeval *tv) {
     setenv("TZ", "UTC", 1);
     tv->tv_sec = mktime(&tm);
     if (old_tz) {
-      char sanitized[128];
-      snprintf(sanitized, 128, "%s", old_tz);
-      setenv("TZ", sanitized, 1);
+	char sanitized[128];
+	snprintf(sanitized, 128, "%s", old_tz);
+	setenv("TZ", sanitized, 1);
     } else {
-      unsetenv("TZ");
+	unsetenv("TZ");
     }
 }
 
