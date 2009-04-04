@@ -59,7 +59,7 @@ int hab_report_lost_node(const char *node_id) {
         goto fail1;
     }
 
-    snprintf(topic, BIONET_NAME_COMPONENT_MAX_LEN, "N %s", node_id);
+    snprintf(topic, sizeof(topic), "N %s", node_id);
 
     cal_server.publish(topic, buf.buf, buf.size);
 

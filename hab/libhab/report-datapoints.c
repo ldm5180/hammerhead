@@ -40,7 +40,7 @@ int hab_report_datapoints(const bionet_node_t *node) {
 
         bionet_resource_make_clean(resource);
 
-        snprintf(topic, BIONET_NAME_COMPONENT_MAX_LEN * 2 + 1, 
+        snprintf(topic, sizeof(topic), 
 		 "D %s", bionet_resource_get_local_name(resource));
 
         // publish the message to any connected subscribers
