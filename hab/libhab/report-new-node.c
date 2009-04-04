@@ -62,7 +62,7 @@ int hab_report_new_node(const bionet_node_t *node) {
         goto fail1;
     }
 
-    sprintf(topic, "N %s", bionet_node_get_id(node));
+    snprintf(topic, BIONET_NAME_COMPONENT_MAX_LEN, "N %s", bionet_node_get_id(node));
 
     // publish the message to any connected subscribers
     cal_server.publish(topic, buf.buf, buf.size);
