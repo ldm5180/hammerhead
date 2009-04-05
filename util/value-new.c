@@ -131,15 +131,6 @@ static bionet_value_t * bionet_value_new_internal(bionet_resource_t *resource,
 	return NULL;
     }
 
-    if ((BIONET_RESOURCE_DATA_TYPE_MIN > datatype) 
-	|| (BIONET_RESOURCE_DATA_TYPE_MAX < datatype))
-    {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_value_new_*(): Invalid datatype passed in");
-	errno = EINVAL;
-	return NULL;
-    }
-
     if (resource->data_type != datatype)
     {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -224,7 +215,7 @@ static bionet_value_t * bionet_value_new_internal(bionet_resource_t *resource,
     }
     default:
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_value_new_*(): Invalid datatype");
+	      "bionet_value_new_*(): Invalid datatype %d", datatype);
 	errno = EINVAL;
 	free(value);
 	return NULL;

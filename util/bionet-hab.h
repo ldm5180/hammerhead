@@ -15,8 +15,6 @@
 
 #include <glib.h>
 
-#include "bionet-util.h"
-
 
 /**
  * @file bionet-hab.h 
