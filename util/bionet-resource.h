@@ -18,9 +18,6 @@
 
 #include <glib.h>
 
-#include "bionet-util.h"
-
-
 
 /**
  * @typedef bionet_resource_flavor_t

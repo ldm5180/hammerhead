@@ -18,8 +18,6 @@
 
 #include <glib.h>
 
-#include "bionet-util.h"
-
 
 /**
  * @brief Get the value's associated resource

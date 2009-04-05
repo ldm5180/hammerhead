@@ -18,8 +18,6 @@
 
 #include <glib.h>
 
-#include "bionet-util.h"
-
 
 /**
  * @brief Allocates and initializes a new datapoint.  

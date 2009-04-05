@@ -19,8 +19,6 @@
 
 #include <glib.h>
 
-#include "bionet-util.h"
-
 
 /**
  * @brief Create a new node

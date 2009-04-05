@@ -17,9 +17,6 @@
 
 #include <stdint.h>
 
-#include "bionet-util.h"
-
-
 
 
 typedef enum {
