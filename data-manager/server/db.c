@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <sqlite3.h>
 #include <openssl/sha.h>
@@ -263,11 +264,11 @@ static int add_resource_to_db(bionet_resource_t *resource) {
     {
         int i;
 
-        sprintf(blob, "X'");
+        snprintf(blob, sizeof(blob), "X'");
         for (i = 0; i < 8; i ++) {
-            sprintf(&blob[2+(2*i)], "%02X", sha_digest[i]);
+            snprintf(&blob[2+(2*i)], sizeof(blob) - (2+(2*i)), "%02X", sha_digest[i]);
         }
-        sprintf(&blob[2+(2*8)], "'");
+        snprintf(&blob[2+(2*8)], sizeof(blob) - (2+(2*8)), "'");
     }
 
 
@@ -723,7 +724,7 @@ static int db_get_resource_datapoints_callback(
 	break; 
     case BIONET_RESOURCE_DATA_TYPE_STRING:
 	tmpstr = malloc(strlen(argv[6]) + 1);
-	strcpy(tmpstr, argv[6]);
+	strncpy(tmpstr, argv[6], strlen(argv[6]) + 1);
 	value = bionet_value_new_str(resource, tmpstr);
 	break; 
     case BIONET_RESOURCE_DATA_TYPE_INVALID:
@@ -773,7 +774,7 @@ GPtrArray *db_get_resource_datapoints(
     struct timeval *end
 ) {
     int r;
-    char sql[2048];
+    char *sql;
     char *zErrMsg = NULL;
 
     char hab_type_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
@@ -865,7 +866,12 @@ GPtrArray *db_get_resource_datapoints(
         }
     }
 
-
+    sql = malloc(2048);
+    if (NULL == sql) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "db_get_resource_datapoints(): malloc failed - %s", strerror(errno));
+	return NULL;
+    }
     r = snprintf(
         sql,
         sizeof(sql),
@@ -917,8 +923,9 @@ GPtrArray *db_get_resource_datapoints(
         resource_id_restriction
     );
     if (r >= sizeof(sql)) {
+	//FIXME go back and realloc()
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
-        return NULL;
+        goto cleanup;
     }
 
 
@@ -941,17 +948,20 @@ GPtrArray *db_get_resource_datapoints(
     if (r == SQLITE_BUSY) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "failed to get datapoints because the database is busy (\"%s\")", zErrMsg);
         sqlite3_free(zErrMsg);
-        return NULL;
+        goto cleanup;
     }
 
     if (r != SQLITE_OK) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL error: %s", zErrMsg);
         sqlite3_free(zErrMsg);
-        return NULL;
+        goto cleanup;
     }
 
-
     return hab_list;
+
+cleanup:
+    free(sql);
+    return NULL;
 }
 
 
