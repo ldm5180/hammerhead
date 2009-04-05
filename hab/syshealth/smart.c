@@ -34,20 +34,20 @@ static int smart_get(char* drive) {
     int disk_number;
 
     // First pass: "normal" device
-    sprintf(command, "which smartctl > /dev/null && smartctl -A /dev/%s | grep -i temperature | perl -ne 'split && print \"$_[9]\n\"'", drive);
+    snprintf(command, sizeof(command), "which smartctl > /dev/null && smartctl -A /dev/%s | grep -i temperature | perl -ne 'split && print \"$_[9]\n\"'", drive);
     temperature = parse_for_temperature(command);
     if (temperature > -275)
         return temperature;
     
     //  Second pass: ata device
-    sprintf(command, "which smartctl > /dev/null && smartctl -A -d ata /dev/%s | grep -i temperature | perl -ne 'split && print \"$_[9]\n\"'", drive);
+    snprintf(command, sizeof(command), "which smartctl > /dev/null && smartctl -A -d ata /dev/%s | grep -i temperature | perl -ne 'split && print \"$_[9]\n\"'", drive);
     temperature = parse_for_temperature(command);
     if (temperature > -275)
         return temperature;
     
     
     // Third Pass: 3ware device
-    sprintf(command, "which smartctl > /dev/null && smartctl -a /dev/%s | grep -i Logical | perl -ne 'split && print \"$_[4]\"'", drive);
+    snprintf(command, sizeof(command), "which smartctl > /dev/null && smartctl -a /dev/%s | grep -i Logical | perl -ne 'split && print \"$_[4]\"'", drive);
     fd = popen(command, "r");
     if (fd == NULL) 
 	g_log("", G_LOG_LEVEL_WARNING, "Problem using popen: %s", strerror(errno));
@@ -58,7 +58,7 @@ static int smart_get(char* drive) {
     if (r == 1) {
     	// (device is 3ware), so use this command:
 	
-	sprintf(command, "which smartctl > /dev/null && smartctl -A -d 3ware,%d /dev/twe0 | grep -i temperature | perl -ne 'split && print \"$_[9]\n\"'", disk_number);
+	snprintf(command, sizeof(command), "which smartctl > /dev/null && smartctl -A -d 3ware,%d /dev/twe0 | grep -i temperature | perl -ne 'split && print \"$_[9]\n\"'", disk_number);
 	temperature = parse_for_temperature(command);
 	if (temperature > -275)
 	    return temperature;
@@ -104,6 +104,7 @@ int smart_init(bionet_node_t *node) {
 
     int r;
     DIR* directory;
+    FILE* fd;
 
     number_of_blocks = 0;
 
@@ -120,7 +121,6 @@ int smart_init(bionet_node_t *node) {
 
     while (1) {
 	char name[256], removable_drive_location[100];
-        FILE* fd;
 	struct dirent* directory_info;
 	int temperature, is_removable;
         bionet_resource_t *resource;
@@ -129,7 +129,7 @@ int smart_init(bionet_node_t *node) {
 	if (directory_info == NULL)
 	    break;
 
-	if (directory_info->d_name == NULL) {
+	if (directory_info->d_name[0] == '\0') {
 	    g_log("", G_LOG_LEVEL_ERROR, "directory name is NULL");
 	    break;
 	}
@@ -138,7 +138,7 @@ int smart_init(bionet_node_t *node) {
 	    continue;
 	
 	// If the drive is removable, skip it
-	r = sprintf(removable_drive_location, "/sys/block/%s/removable", directory_info->d_name);
+	r = snprintf(removable_drive_location, sizeof(removable_drive_location), "/sys/block/%s/removable", directory_info->d_name);
 	if (r == 0) {
 	    g_log("", G_LOG_LEVEL_ERROR, "sprintf unable to create the filename");
 	} else {
@@ -157,7 +157,7 @@ int smart_init(bionet_node_t *node) {
 	}
 
 
-	r = sprintf(name, "%s-temperature", directory_info->d_name);
+	r = snprintf(name, sizeof(name), "%s-temperature", directory_info->d_name);
 	if (r == 0) {
 	    g_log("", G_LOG_LEVEL_ERROR, "unable to create resource name");
 	}
@@ -181,6 +181,7 @@ int smart_init(bionet_node_t *node) {
                 name);
         if (resource == NULL) {
             g_log("", G_LOG_LEVEL_WARNING, "smart_init(): error creating resource '%s'", name);
+	    closedir(directory);
             return -1;
         }
 
@@ -228,7 +229,7 @@ void smart_update(bionet_node_t *node) {
 	//printf("%s\n", block_names[i]);
 	temperature_value = smart_get(block_names[i]);
 
-	r = sprintf(resource_name, "%s-temperature", block_names[i]);
+	r = snprintf(resource_name, sizeof(resource_name), "%s-temperature", block_names[i]);
 	if (r == 0) {
 	    g_log("", G_LOG_LEVEL_ERROR, "smart_update(): unable to create resource name");
 	}
