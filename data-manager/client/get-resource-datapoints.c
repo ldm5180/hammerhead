@@ -162,7 +162,7 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct
 
 
     // FIXME: bogus loop to read the reply
-    unsigned char buf[1024];
+    unsigned char buf[10 * 1024];
     asn_dec_rval_t dec_rval;
 
     do {

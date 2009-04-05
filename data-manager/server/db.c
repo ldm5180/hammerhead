@@ -20,7 +20,7 @@
 #include "bdm-util.h"
 
 
-#define DATAPOINTS_SQL_LEN 2048
+
 
 static sqlite3 *db = NULL;
 
@@ -264,11 +264,11 @@ static int add_resource_to_db(bionet_resource_t *resource) {
     {
         int i;
 
-        snprintf(blob, sizeof(blob), "X'");
+        sprintf(blob, "X'");
         for (i = 0; i < 8; i ++) {
-            snprintf(&blob[2+(2*i)], sizeof(blob) - (2+(2*i)), "%02X", sha_digest[i]);
+            sprintf(&blob[2+(2*i)], "%02X", sha_digest[i]);
         }
-        snprintf(&blob[2+(2*8)], sizeof(blob) - (2+(2*8)), "'");
+        sprintf(&blob[2+(2*8)], "'");
     }
 
 
@@ -774,8 +774,7 @@ GPtrArray *db_get_resource_datapoints(
     struct timeval *end
 ) {
     int r;
-    char *sql = NULL;
-    size_t sql_len = 0;
+    char sql[2048];
     char *zErrMsg = NULL;
 
     char hab_type_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
@@ -867,72 +866,62 @@ GPtrArray *db_get_resource_datapoints(
         }
     }
 
-    do {
-	sql_len += DATAPOINTS_SQL_LEN;
-	sql = realloc(sql, sql_len);
-	if (NULL == sql) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "db_get_resource_datapoints(): realloc failed - %s", strerror(errno));
-	    return NULL;
-	}
-	
-	r = snprintf(
-	    sql,
-	    sql_len,
-	    "SELECT"
-	    "    Hardware_Abstractors.HAB_TYPE,"
-	    "    Hardware_Abstractors.HAB_ID,"
-	    "    Nodes.Node_ID,"
-	    "    Resource_Data_Types.Data_Type,"
-	    "    Resource_Flavors.Flavor,"
-	    "    Resources.Resource_ID,"
-	    "    Datapoints.Value,"
-	    "    Datapoints.Timestamp_Sec,"
-	    "    Datapoints.Timestamp_Usec"
-	    " FROM"
-	    "    Hardware_Abstractors,"
-	    "    Nodes,"
-	    "    Resources,"
-	    "    Resource_Data_Types,"
-	    "    Resource_Flavors,"
-	    "    Datapoints"
-	    " WHERE"
-	    "    Nodes.HAB_Key=Hardware_Abstractors.Key"
-	    "    AND Resources.Node_Key=Nodes.Key"
-	    "    AND Resource_Data_Types.Key=Resources.Data_Type_Key"
-	    "    AND Resource_Flavors.Key=Resources.Flavor_Key"
-	    "    AND Datapoints.Resource_Key=Resources.Key"
-	    "    AND ("
-	    "        (Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)"
-	    "        OR (Datapoints.Timestamp_Sec > %d AND Datapoints.Timestamp_Sec < %d)"
-	    "        OR (Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec <= %d)"
-	    "    )"
-	    "    %s"
-	    "    %s"
-	    "    %s"
-	    "    %s"
-	    " ORDER BY"
-	    "     Datapoints.Timestamp_Sec ASC,"
-	    "     Datapoints.Timestamp_Usec ASC"
-	    ";",
-	    (int)start->tv_sec,
-	    (int)start->tv_usec,
-	    (int)start->tv_sec,
-	    (int)end->tv_sec,
-	    (int)end->tv_sec,
-	    (int)end->tv_usec,
-	    hab_type_restriction,
-	    hab_id_restriction,
-	    node_id_restriction,
-	    resource_id_restriction
-	    );
-    } while ((r >= sql_len) && (sql_len <= (5*DATAPOINTS_SQL_LEN)));
 
-    if (sql_len > (5*DATAPOINTS_SQL_LEN)) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "db_get_resource_datapoints(): sql too large for buffer");
-	goto cleanup;
+    r = snprintf(
+        sql,
+        sizeof(sql),
+        "SELECT"
+        "    Hardware_Abstractors.HAB_TYPE,"
+        "    Hardware_Abstractors.HAB_ID,"
+        "    Nodes.Node_ID,"
+        "    Resource_Data_Types.Data_Type,"
+        "    Resource_Flavors.Flavor,"
+        "    Resources.Resource_ID,"
+        "    Datapoints.Value,"
+        "    Datapoints.Timestamp_Sec,"
+        "    Datapoints.Timestamp_Usec"
+        " FROM"
+        "    Hardware_Abstractors,"
+        "    Nodes,"
+        "    Resources,"
+        "    Resource_Data_Types,"
+        "    Resource_Flavors,"
+        "    Datapoints"
+        " WHERE"
+        "    Nodes.HAB_Key=Hardware_Abstractors.Key"
+        "    AND Resources.Node_Key=Nodes.Key"
+        "    AND Resource_Data_Types.Key=Resources.Data_Type_Key"
+        "    AND Resource_Flavors.Key=Resources.Flavor_Key"
+        "    AND Datapoints.Resource_Key=Resources.Key"
+        "    AND ("
+        "        (Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)"
+        "        OR (Datapoints.Timestamp_Sec > %d AND Datapoints.Timestamp_Sec < %d)"
+        "        OR (Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec <= %d)"
+        "    )"
+        "    %s"
+        "    %s"
+        "    %s"
+        "    %s"
+        " ORDER BY"
+        "     Datapoints.Timestamp_Sec ASC,"
+        "     Datapoints.Timestamp_Usec ASC"
+        ";",
+        (int)start->tv_sec,
+        (int)start->tv_usec,
+        (int)start->tv_sec,
+        (int)end->tv_sec,
+        (int)end->tv_sec,
+        (int)end->tv_usec,
+        hab_type_restriction,
+        hab_id_restriction,
+        node_id_restriction,
+        resource_id_restriction
+    );
+    if (r >= sizeof(sql)) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
+        return NULL;
     }
+
 
     g_log(
         BDM_LOG_DOMAIN,
@@ -953,20 +942,17 @@ GPtrArray *db_get_resource_datapoints(
     if (r == SQLITE_BUSY) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "failed to get datapoints because the database is busy (\"%s\")", zErrMsg);
         sqlite3_free(zErrMsg);
-        goto cleanup;
+        return NULL;
     }
 
     if (r != SQLITE_OK) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL error: %s", zErrMsg);
         sqlite3_free(zErrMsg);
-        goto cleanup;
+        return NULL;
     }
 
-    return hab_list;
 
-cleanup:
-    free(sql);
-    return NULL;
+    return hab_list;
 }
 
 
