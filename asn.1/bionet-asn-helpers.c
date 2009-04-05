@@ -140,6 +140,7 @@ Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d) {
     bionet_resource_t * resource = bionet_value_get_resource(dval);
     bionet_resource_data_type_t datatype = bionet_resource_get_data_type(resource);
     Datapoint_t *asn_datapoint;
+    bionet_value_t *value;
 
     asn_datapoint = (Datapoint_t *)calloc(1, sizeof(Datapoint_t));
     if (asn_datapoint == NULL) {
@@ -153,7 +154,7 @@ Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d) {
         goto cleanup;
     }
 
-    bionet_value_t * value = bionet_datapoint_get_value(d);
+    value = bionet_datapoint_get_value(d);
 
     switch (datatype) {
         case BIONET_RESOURCE_DATA_TYPE_BINARY: {
