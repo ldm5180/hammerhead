@@ -249,8 +249,6 @@ void BionetModel::lostNode(bionet_node_t* node) {
 void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
     QModelIndex res;
     bionet_resource_t *resource;
-    bionet_node_t *node;
-    bionet_hab_t *hab;
     bionet_value_t *value;
     const char *resource_name;
     
@@ -259,8 +257,6 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
         return;
     }
 
-    hab = bionet_datapoint_get_hab(datapoint);
-    node = bionet_datapoint_get_node(datapoint);
     resource = bionet_datapoint_get_resource(datapoint);
 
     resource_name = bionet_resource_get_name(resource);
