@@ -187,6 +187,24 @@ int bionet_hab_matches_type_and_id(const bionet_hab_t *hab,
 				   const char *id);
 
 
+/**
+ * @brief Set the user-data annotation of a Hab
+ *
+ * @param[in] hab The Hab
+ * @param[in] user_data The data to annotate the Hab with.
+ */
+void bionet_hab_set_user_data(bionet_hab_t *hab, const void *user_data);
+
+
+/**
+ * @brief Get the user-data annotation of a Hab
+ *
+ * @param[in] hab The Hab
+ *
+ * @return The user_data pointer, or NULL if none has been set.
+ */
+void *bionet_hab_get_user_data(const bionet_hab_t *hab);
+
 #endif //  BIONET_HAB_H
 
 
