@@ -86,7 +86,7 @@ REAL__dump(double d, int canonical, asn_app_consume_bytes_f *cb, void *app_key) 
 		buf = specialRealValue[SRV__NOT_A_NUMBER].string;
 		buflen = specialRealValue[SRV__NOT_A_NUMBER].length;
 		return (cb(buf, buflen, app_key) < 0) ? -1 : buflen;
-	} else if(!finite(d)) {
+	} else if(!isfinite(d)) {
 		if(copysign(1.0, d) < 0.0) {
 			buf = specialRealValue[SRV__MINUS_INFINITY].string;
 			buflen = specialRealValue[SRV__MINUS_INFINITY].length;
@@ -396,7 +396,7 @@ asn_REAL2double(const REAL_t *st, double *dbl_value) {
 		assert(st->buf[st->size - 1] == 0); /* Security, vashu mat' */
 
 		d = strtod((char *)st->buf, 0);
-		if(finite(d)) {
+		if(isfinite(d)) {
 			*dbl_value = d;
 			return 0;
 		} else {
@@ -478,7 +478,7 @@ asn_REAL2double(const REAL_t *st, double *dbl_value) {
 	m = ldexp(m, scaleF) * pow(pow(2, base), expval);
 	 */
 	m = ldexp(m, expval * baseF + scaleF);
-	if(finite(m)) {
+	if(isfinite(m)) {
 		*dbl_value = sign ? -m : m;
 	} else {
 		errno = ERANGE;
@@ -539,7 +539,7 @@ asn_double2REAL(REAL_t *st, double dbl_value) {
 			st->buf[0] = 0x42;	/* NaN */
 			st->buf[1] = 0;
 			st->size = 1;
-		} else if(!finite(dbl_value)) {
+		} else if(!isfinite(dbl_value)) {
 			if(copysign(1.0, dbl_value) < 0.0) {
 				st->buf[0] = 0x41;	/* MINUS-INFINITY */
 			} else {

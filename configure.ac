@@ -25,21 +25,28 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.9.2])
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_LIBTOOL
 
 AC_CHECK_TOOL([STRIP],[strip])
 
+AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
+AC_SUBST(LDFLAGS)
+
+PKG_PROG_PKG_CONFIG
+
 # Checks for libraries.
-AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
-      [disable check unit testing]),
-      [ENABLE_CHECK=$enableval],
-      [ENABLE_CHECK=yes])
-if test "x$ENABLE_CHECK" = "xyes"; then
-PKG_CHECK_MODULES(CHECK, [check >= 0.9.5])
-AC_SUBST(CHECK_CFLAGS)
-AC_SUBST(CHECK_LIBS)
-fi
+#AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
+#      [disable check unit testing]),
+#      [ENABLE_CHECK=$enableval],
+#      [ENABLE_CHECK=yes])
+#if test "x$ENABLE_CHECK" = "xyes"; then
+#PKG_CHECK_MODULES(CHECK, [check >= 0.9.5])
+#AC_SUBST(CHECK_CFLAGS)
+#AC_SUBST(CHECK_LIBS)
+#fi
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -223,6 +230,13 @@ AC_SUBST(BLUEZ_LIBS)
 fi
 fi
 AM_CONDITIONAL([ENABLE_BLUETOOTH], [test "x$ENABLE_BLUETOOTH" = "xyes"])
+
+#speedway
+AC_ARG_ENABLE(speedway, AC_HELP_STRING([--disable-speedway],
+      [disable speedway hab]),
+      [ENABLE_SPEEDWAY=$enableval],
+      [ENABLE_SPEEDWAY=yes])
+AM_CONDITIONAL([ENABLE_SPEEDWAY], [test "x$ENABLE_SPEEDWAY" = "xyes"])
 
 #xsltproc
 AC_ARG_ENABLE(xslt, AC_HELP_STRING([--disable-xslt],

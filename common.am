@@ -4,7 +4,7 @@
 # NNC07CB47C.
 
 
-AM_CFLAGS=-Wall -Werror -g 
+AM_CFLAGS=@CFLAGS@
 
 if ENABLE_DARWIN
     AM_CFLAGS += -DMACOSX
