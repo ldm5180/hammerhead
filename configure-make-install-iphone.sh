@@ -2,7 +2,7 @@
 
 set -e
 
-if echo "$0" | grep -q 'configure-iphone-sim.sh$'; then
+if [[ "$0" =~  -iphone-sim.sh$ ]]; then
 	echo "Configuring for iPhone Simulator"
 
 	XARCH=i686
@@ -31,13 +31,16 @@ else
 	XLDFLAGS="-arch $XARCH -pipe -std=c99 -gdwarf-2 -mthumb -L$XDIR/SDKs/$XSDK/usr/lib -L$XPORTROOT/usr/lib -isysroot /$XDIR/SDKs/$XSDK"
 
 	XDESTDIR=$PWD/client/iphone/bionet_sdk
+	XCACHEFILE=--cache-file=arm-apple-darwin.cache
 
 fi
 
 export PATH=/opt/local/bin:/opt/local/sbin:$XDIR/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin
 
-export PKG_CONFIG_PATH=$XSYSROOT/usr/lib/pkgconfig:$XPORTROOT/lib/pkgconfig
-export PKG_CONFIG_LIBDIR=$XSYSROOT/usr/lib/pkgconfig:$XPORTROOT/lib/pkgconfig
+#export PKG_CONFIG_PATH=$XSYSROOT/usr/lib/pkgconfig:$XPORTROOT/lib/pkgconfig
+#export PKG_CONFIG_LIBDIR=$XSYSROOT/usr/lib/pkgconfig:$XPORTROOT/lib/pkgconfig
+export PKG_CONFIG_PATH=$XPORTROOT/lib/pkgconfig:$XSYSROOT/usr/lib/pkgconfig
+export PKG_CONFIG_LIBDIR=$XPORTROOT/lib/pkgconfig:$XSYSROOT/usr/lib/pkgconfig
 export PKG_CONFIG=/opt/local/bin/pkg-config
 
 #This is autogen.sh with custom aclocal flags...
@@ -57,17 +60,20 @@ autoreconf --force --install
 ./configure \
 	--host=$XHOST \
 	--enable-static \
-	--cache-file=arm-apple-darwin.cache \
 	--disable-python \
 	--disable-speedway \
+	"$XCACHEFILE" \
 	CFLAGS="$XCFLAGS" \
 	LDFLAGS="$XLDFLAGS" \
 	CXXFLAGS="$XCFLAGS" \
-	CC="$XPORTROOT/bin/$XHOST-gcc"
-	CPP="$XPORTROOT/bin/$XHOST-gcc -E"
-	CXX="$XPORTROOT/bin/$XHOST-gcc"
-	AR="$XPORTROOT/bin/$XHOST-ar"
-	NM="$XPORTROOT/bin/$XHOST-nm"
+	CC="/opt/local/bin/$XHOST-gcc" \
+	CPP="/opt/local/bin/$XHOST-gcc -E" \
+	CXX="/opt/local/bin/$XHOST-gcc" \
+	AR="/opt/local/bin/$XHOST-ar" \
+	NM="/opt/local/bin/$XHOST-nm" \
+	PKG_CONFIG_PATH="$PKG_CONFIG_PATH" \
+	PKG_CONFIG_LIBDIR="$PKG_CONFIG_LIBDIR" \
+	PKG_CONFIG="$PKG_CONFIG" \
 	$@
 
 
