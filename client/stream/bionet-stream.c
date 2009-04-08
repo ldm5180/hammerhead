@@ -242,26 +242,6 @@ int main(int argc, char *argv[]) {
 	}
     }
 
-#if 0
-    for (i = 1; argv[i] != NULL; i ++) {
-
-        if (strcmp(argv[i], "--help") == 0) {
-            usage();
-            exit(0);
-
-        } else {
-            if (i != (argc - 1)) {
-                // multiple arguments!
-                fprintf(stderr, "unknown argument '%s'\n", argv[i]);
-                usage();
-                exit(1);
-            }
-
-            stream_name = argv[i];
-        }
-    }
-#endif
-
     bionet_fd = bionet_connect();
     if (bionet_fd < 0) {
         fprintf(stderr, "error connecting to Bionet\n");
