@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "bionet.h"
-
 
 
 
@@ -21,23 +21,26 @@ int bionet_fd;
 
 
 void usage(void) {
-    fprintf(stderr, "usage: bionet-stream OPTIONS [STREAM]\n\
-\n\
-If STREAM is specified, it connects to the named stream.  For Producer\n\
-Streams, the stream data is printed to stdout.  For Consumer Streams, the\n\
-data is read from stdin.\n\
-\n\
-If STREAM is not specified, it prints a continuously updating list of the\n\
-available streams.\n\
-\n\
-OPTIONS:\n\
-\n\
-    --help  Show this help.\n\
-\n\
-");
+    fprintf(stderr, 
+	    "'bionet-stream' connects to Bionet streams.\n"
+	    "\n"							  
+	    "Usage: bionet-stream [OPTIONS] [STREAM]\n"
+	    "\n"
+	    " -s,--stream <STREAM> The strea of concern\n"
+	    " -h,--help            Show this help\n"
+	    " -v,--version         Show version number\n"
+	    "\n"
+	    "If STREAM is specified, it connects to the named stream.  For Producer\n"
+	    "Streams, the stream data is printed to stdout.  For Consumer Streams, the\n"
+	    "data is read from stdin.\n"
+	    "\n"
+	    "If STREAM is not specified, it prints a continuously updating list of the\n"
+	    "available streams.\n");
 }
     
-
+void version(void) {
+    fprintf(stderr, "version info unavailable\n");
+}
 
 
 void cb_lost_node(bionet_node_t *node) {
@@ -190,7 +193,7 @@ void deal_with_stream(bionet_stream_t *stream) {
 
 
 int main(int argc, char *argv[]) {
-    int i;
+    //int i;
     int r;
     char *stream_name = NULL;
 
@@ -199,10 +202,47 @@ int main(int argc, char *argv[]) {
     char *node_id;
     char *stream_id;
 
+    int c;
 
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
 
+    while(1) {
+	int i = 0;
+	static struct option long_options[] = {
+	    {"stream", 1, 0, 's'},
+	    {"help", 0, 0, 'h'},
+	    {"version", 0, 0, 'v'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
+	c = getopt_long(argc, argv, "hv?s:", long_options, &i);
+	if (c == -1) {
+	    break;
+	}
+
+	switch (c) {
+	case 's':
+	    stream_name = optarg;
+	    fprintf(stderr, "stream_name = %s\n", optarg);
+	    break;
+
+	case 'h':
+	case '?':
+	    usage();
+	    return 0;
+
+	case 'v':
+	    version();
+	    return 0;
+
+    	default:
+	    fprintf(stderr, "Incorrect usage.\n\n");
+	    usage();
+	    return -1;
+	}
+    }
+
+#if 0
     for (i = 1; argv[i] != NULL; i ++) {
 
         if (strcmp(argv[i], "--help") == 0) {
@@ -220,7 +260,7 @@ int main(int argc, char *argv[]) {
             stream_name = argv[i];
         }
     }
-
+#endif
 
     bionet_fd = bionet_connect();
     if (bionet_fd < 0) {
@@ -237,7 +277,6 @@ int main(int argc, char *argv[]) {
     // 
     // if we get here, we're going to connect to a stream
     //
-
     r = bionet_split_resource_name(stream_name, &hab_type, &hab_id, &node_id, &stream_id);
     if (r != 0) exit(1);
 

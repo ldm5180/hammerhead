@@ -42,10 +42,10 @@ fi
 
 
 if echo $IN_TYPE | egrep -q '(WAVE audio)|(Sun/NeXT audio data)'; then
-    sox "$SOUND_FILE" $BIOSERVE_AUDIO_FORMAT - | $BSTREAM "$STREAM"
+    sox "$SOUND_FILE" $BIOSERVE_AUDIO_FORMAT - | $BSTREAM --stream="$STREAM"
 
 elif echo $IN_TYPE | egrep -q '(MPEG.*layer III)|(MP3)'; then
-    mpg123 --au - "$SOUND_FILE" | sox -t au - $BIOSERVE_AUDIO_FORMAT - | $BSTREAM "$STREAM"
+    mpg123 --au - "$SOUND_FILE" | sox -t au - $BIOSERVE_AUDIO_FORMAT - | $BSTREAM --stream="$STREAM"
 
 else
     echo "unknown sound file format: $IN_TYPE"
