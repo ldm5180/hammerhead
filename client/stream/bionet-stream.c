@@ -26,7 +26,6 @@ void usage(void) {
 	    "\n"							  
 	    "Usage: bionet-stream [OPTIONS] [STREAM]\n"
 	    "\n"
-	    " -s,--stream <STREAM> The strea of concern\n"
 	    " -h,--help            Show this help\n"
 	    " -v,--version         Show version number\n"
 	    "\n"
@@ -209,23 +208,17 @@ int main(int argc, char *argv[]) {
     while(1) {
 	int i = 0;
 	static struct option long_options[] = {
-	    {"stream", 1, 0, 's'},
 	    {"help", 0, 0, 'h'},
 	    {"version", 0, 0, 'v'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "hv?s:", long_options, &i);
+	c = getopt_long(argc, argv, "hv?", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
 
 	switch (c) {
-	case 's':
-	    stream_name = optarg;
-	    fprintf(stderr, "stream_name = %s\n", optarg);
-	    break;
-
 	case 'h':
 	case '?':
 	    usage();
@@ -242,6 +235,10 @@ int main(int argc, char *argv[]) {
 	}
     }
 
+    if (argc > 1) {
+	stream_name = argv[argc-1];
+    }
+
     bionet_fd = bionet_connect();
     if (bionet_fd < 0) {
         fprintf(stderr, "error connecting to Bionet\n");
@@ -249,17 +246,12 @@ int main(int argc, char *argv[]) {
     }
     fprintf(stderr, "connected to Bionet\n");
 
-
     // if no stream name was specified, we just list all the streams as they come and goo
     if (stream_name == NULL) list_streams();
 
-
-    // 
     // if we get here, we're going to connect to a stream
-    //
     r = bionet_split_resource_name(stream_name, &hab_type, &hab_id, &node_id, &stream_id);
     if (r != 0) exit(1);
-
 
     // we need to subscribe to the node-list so we discover the Stream, so we can learn if it's a Producer or Consumer
     {
