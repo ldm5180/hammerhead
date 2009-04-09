@@ -1,0 +1,53 @@
+The iphone platform directory contains the sources and scripts to configure a Mac OS X machine to build bionet 2 for the iPhone and iPhoneSimulator using the
+xcode iPhone SDK.
+
+==================================================================
+Background:
+==================================================================
+In general, to buid open source software build using the iPhone SDK tools, 
+the following needs to happen:
+
+    * Add --host=arm-apple-darwin flag to ./configure
+    * Tell configure to use the tools (gcc, nm, ld, ...) provided by the 
+      iPhone SDK
+    * Tell the tools to use the iPhone SDK directory as a sysroot, instead of 
+      the default. (the Apple versions of the standard tools want to build 
+      universal targets, so this also needs to handled)
+
+To help automate all this, 2 patched copies of macports will be installed to manage the bionet2 dependencies for iPhone Simulator and the iPhone Device. In addition, 2 port overlays will be installed. One for the base macports install adds a cross-compile toolchain that wraps the XCode 3.1 tools, and another that fixes some of the bionet iPhone dependencies to build with that toolchain.
+
+Since the iPhone macports are cross compiling, the build tools will be used from the base macports install. (For example, if perl is needed to build openssl, the perl interpreter must run on the build host, not the one that was cross compiled for arm). As such, the list of cross-compiled dependencies is much shorted than for the standard Mac build environment.
+
+If an additional library is needed in the future, it can be installed with the port-iphone and/or port-iphone-sim macports varients.
+
+==================================================================
+INSTALL INSTRUCTIONS:
+==================================================================
+Follow these instructions to setup a Mac Computer to build bionet2 for the iPhone:
+1 - Setup Mac OS computer as if building bionet2 for MAc (See Bionet2
+    Checkout Instructions on Wiki). This includes installing macports and all
+    bionet2 dependencies.
+
+2 - Install macports overlay to /usr/local/ports, and additional macports 
+    instalations for iphone and iphone simulator:
+
+    $ make install
+
+3 - Configure base macports to use overlay by editing 
+    /opt/local/etc/macports/sources.conf and adding the following line before
+    the default rsync line:
+
+      file:///usr/local/ports/base
+
+    WARNING: Do not add the 'iphone' ports overlay to the base macports install
+    becuase those packages will override the standard ones, and they do not
+    work with non-iphone platforms
+
+4 - Install iphone-dev tools in base macports: 
+
+    $ sudo port install iphone-dev
+
+5 - Install the bionet dependencies:
+
+    $ sudo port-iphone-sim install glib2 openssl
+    $ sudo port-iphone install glib2 openssl

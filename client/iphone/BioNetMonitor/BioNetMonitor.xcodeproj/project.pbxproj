@@ -1,0 +1,372 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
+		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
+		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
+		2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */; };
+		2899E5600DE3E45000AC0155 /* RootViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2899E55F0DE3E45000AC0155 /* RootViewController.xib */; };
+		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
+		7406B0490F71566A007126DA /* libbionet-asn.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0450F71566A007126DA /* libbionet-asn.a */; };
+		7406B04A0F71566A007126DA /* libbionet-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0460F71566A007126DA /* libbionet-util.a */; };
+		7406B04B0F71566A007126DA /* libbionet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0470F71566A007126DA /* libbionet.a */; };
+		7406B04C0F71566A007126DA /* libcal-mdnssd-bip-client.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0480F71566A007126DA /* libcal-mdnssd-bip-client.a */; };
+		7406B0720F715A60007126DA /* libgio-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B06D0F715A60007126DA /* libgio-2.0.a */; };
+		7406B0730F715A60007126DA /* libglib-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B06E0F715A60007126DA /* libglib-2.0.a */; };
+		7406B0740F715A60007126DA /* libgmodule-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B06F0F715A60007126DA /* libgmodule-2.0.a */; };
+		7406B0750F715A60007126DA /* libgobject-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0700F715A60007126DA /* libgobject-2.0.a */; };
+		7406B0760F715A60007126DA /* libgthread-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0710F715A60007126DA /* libgthread-2.0.a */; };
+		74724FD60F7856680061BF62 /* BionetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC50F7856680061BF62 /* BionetManager.m */; };
+		74724FD70F7856680061BF62 /* BioNetMonitorAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC70F7856680061BF62 /* BioNetMonitorAppDelegate.m */; };
+		74724FD80F7856680061BF62 /* DataController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC90F7856680061BF62 /* DataController.m */; };
+		74724FD90F7856680061BF62 /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FCB0F7856680061BF62 /* DetailViewController.m */; };
+		74724FDA0F7856680061BF62 /* Hab.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FCD0F7856680061BF62 /* Hab.m */; };
+		74724FDD0F7856680061BF62 /* Node.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FD30F7856680061BF62 /* Node.m */; };
+		74724FDE0F7856680061BF62 /* RootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FD50F7856680061BF62 /* RootViewController.m */; };
+		74724FF60F7857490061BF62 /* HabType.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FF50F7857490061BF62 /* HabType.m */; };
+		74912E0B0F86BB2700261D63 /* libintl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0A0F86BB2700261D63 /* libintl.a */; };
+		74912E0E0F86BB7000261D63 /* libiconv.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0D0F86BB7000261D63 /* libiconv.2.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		1D6058910D05DD3D006BFB54 /* BioNetMonitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BioNetMonitor.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		2899E55F0DE3E45000AC0155 /* RootViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RootViewController.xib; sourceTree = "<group>"; };
+		28A0AAE50D9B0CCF005BE974 /* BioNetMonitor_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BioNetMonitor_Prefix.pch; sourceTree = "<group>"; };
+		28AD735F0D9D9599002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
+		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		7406B0450F71566A007126DA /* libbionet-asn.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libbionet-asn.a"; path = "../bionet_simulator_sdk/usr/local/lib/libbionet-asn.a"; sourceTree = SOURCE_ROOT; };
+		7406B0460F71566A007126DA /* libbionet-util.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libbionet-util.a"; path = "../bionet_simulator_sdk/usr/local/lib/libbionet-util.a"; sourceTree = SOURCE_ROOT; };
+		7406B0470F71566A007126DA /* libbionet.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libbionet.a; path = ../bionet_simulator_sdk/usr/local/lib/libbionet.a; sourceTree = "<group>"; };
+		7406B0480F71566A007126DA /* libcal-mdnssd-bip-client.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libcal-mdnssd-bip-client.a"; path = "../bionet_simulator_sdk/usr/local/lib/libcal-mdnssd-bip-client.a"; sourceTree = SOURCE_ROOT; };
+		7406B06D0F715A60007126DA /* libgio-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgio-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgio-2.0.a"; sourceTree = "<absolute>"; };
+		7406B06E0F715A60007126DA /* libglib-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libglib-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libglib-2.0.a"; sourceTree = "<absolute>"; };
+		7406B06F0F715A60007126DA /* libgmodule-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgmodule-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgmodule-2.0.a"; sourceTree = "<absolute>"; };
+		7406B0700F715A60007126DA /* libgobject-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgobject-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgobject-2.0.a"; sourceTree = "<absolute>"; };
+		7406B0710F715A60007126DA /* libgthread-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgthread-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgthread-2.0.a"; sourceTree = "<absolute>"; };
+		74724FC40F7856680061BF62 /* BionetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BionetManager.h; sourceTree = "<group>"; };
+		74724FC50F7856680061BF62 /* BionetManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BionetManager.m; sourceTree = "<group>"; };
+		74724FC60F7856680061BF62 /* BioNetMonitorAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BioNetMonitorAppDelegate.h; sourceTree = "<group>"; };
+		74724FC70F7856680061BF62 /* BioNetMonitorAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BioNetMonitorAppDelegate.m; sourceTree = "<group>"; };
+		74724FC80F7856680061BF62 /* DataController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataController.h; sourceTree = "<group>"; };
+		74724FC90F7856680061BF62 /* DataController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataController.m; sourceTree = "<group>"; };
+		74724FCA0F7856680061BF62 /* DetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
+		74724FCB0F7856680061BF62 /* DetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
+		74724FCC0F7856680061BF62 /* Hab.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Hab.h; sourceTree = "<group>"; };
+		74724FCD0F7856680061BF62 /* Hab.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Hab.m; sourceTree = "<group>"; };
+		74724FD20F7856680061BF62 /* Node.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Node.h; sourceTree = "<group>"; };
+		74724FD30F7856680061BF62 /* Node.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Node.m; sourceTree = "<group>"; };
+		74724FD40F7856680061BF62 /* RootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RootViewController.h; sourceTree = "<group>"; };
+		74724FD50F7856680061BF62 /* RootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RootViewController.m; sourceTree = "<group>"; };
+		74724FF40F7857490061BF62 /* HabType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HabType.h; sourceTree = "<group>"; };
+		74724FF50F7857490061BF62 /* HabType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HabType.m; sourceTree = "<group>"; };
+		74912E0A0F86BB2700261D63 /* libintl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libintl.a; path = "/opt/local/arm-apple-darwin/lib/libintl.a"; sourceTree = "<absolute>"; };
+		74912E0D0F86BB7000261D63 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
+		74CA85760F71674F00FEE5E2 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
+		74CA857C0F7167F700FEE5E2 /* libintl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libintl.a; path = "/opt/local/i686-apple-darwin/lib/libintl.a"; sourceTree = "<absolute>"; };
+		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1D60588F0D05DD3D006BFB54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
+				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
+				2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */,
+				7406B0490F71566A007126DA /* libbionet-asn.a in Frameworks */,
+				7406B04A0F71566A007126DA /* libbionet-util.a in Frameworks */,
+				7406B04B0F71566A007126DA /* libbionet.a in Frameworks */,
+				7406B04C0F71566A007126DA /* libcal-mdnssd-bip-client.a in Frameworks */,
+				7406B0720F715A60007126DA /* libgio-2.0.a in Frameworks */,
+				7406B0730F715A60007126DA /* libglib-2.0.a in Frameworks */,
+				7406B0740F715A60007126DA /* libgmodule-2.0.a in Frameworks */,
+				7406B0750F715A60007126DA /* libgobject-2.0.a in Frameworks */,
+				7406B0760F715A60007126DA /* libgthread-2.0.a in Frameworks */,
+				74912E0B0F86BB2700261D63 /* libintl.a in Frameworks */,
+				74912E0E0F86BB7000261D63 /* libiconv.2.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1D6058910D05DD3D006BFB54 /* BioNetMonitor.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
+			isa = PBXGroup;
+			children = (
+				74912E0D0F86BB7000261D63 /* libiconv.2.dylib */,
+				74912E0A0F86BB2700261D63 /* libintl.a */,
+				74724FBF0F7855D60061BF62 /* Classes */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = CustomTemplate;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				28A0AAE50D9B0CCF005BE974 /* BioNetMonitor_Prefix.pch */,
+				29B97316FDCFA39411CA2CEA /* main.m */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2899E55F0DE3E45000AC0155 /* RootViewController.xib */,
+				28AD735F0D9D9599002E5188 /* MainWindow.xib */,
+				8D1107310486CEB800E47090 /* Info.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				74CA857C0F7167F700FEE5E2 /* libintl.a */,
+				7406B0450F71566A007126DA /* libbionet-asn.a */,
+				7406B0460F71566A007126DA /* libbionet-util.a */,
+				7406B0470F71566A007126DA /* libbionet.a */,
+				7406B0480F71566A007126DA /* libcal-mdnssd-bip-client.a */,
+				7406B06E0F715A60007126DA /* libglib-2.0.a */,
+				7406B06D0F715A60007126DA /* libgio-2.0.a */,
+				7406B06F0F715A60007126DA /* libgmodule-2.0.a */,
+				7406B0700F715A60007126DA /* libgobject-2.0.a */,
+				7406B0710F715A60007126DA /* libgthread-2.0.a */,
+				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
+				1D30AB110D05D00D00671497 /* Foundation.framework */,
+				2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */,
+				74CA85760F71674F00FEE5E2 /* libiconv.2.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		74724FBF0F7855D60061BF62 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				74724FC40F7856680061BF62 /* BionetManager.h */,
+				74724FC50F7856680061BF62 /* BionetManager.m */,
+				74724FC60F7856680061BF62 /* BioNetMonitorAppDelegate.h */,
+				74724FC70F7856680061BF62 /* BioNetMonitorAppDelegate.m */,
+				74724FC80F7856680061BF62 /* DataController.h */,
+				74724FC90F7856680061BF62 /* DataController.m */,
+				74724FCA0F7856680061BF62 /* DetailViewController.h */,
+				74724FCB0F7856680061BF62 /* DetailViewController.m */,
+				74724FCC0F7856680061BF62 /* Hab.h */,
+				74724FCD0F7856680061BF62 /* Hab.m */,
+				74724FD20F7856680061BF62 /* Node.h */,
+				74724FD30F7856680061BF62 /* Node.m */,
+				74724FD40F7856680061BF62 /* RootViewController.h */,
+				74724FD50F7856680061BF62 /* RootViewController.m */,
+				74724FF40F7857490061BF62 /* HabType.h */,
+				74724FF50F7857490061BF62 /* HabType.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1D6058900D05DD3D006BFB54 /* BioNetMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "BioNetMonitor" */;
+			buildPhases = (
+				1D60588D0D05DD3D006BFB54 /* Resources */,
+				1D60588E0D05DD3D006BFB54 /* Sources */,
+				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BioNetMonitor;
+			productName = BioNetMonitor;
+			productReference = 1D6058910D05DD3D006BFB54 /* BioNetMonitor.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "BioNetMonitor" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+				en,
+			);
+			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D6058900D05DD3D006BFB54 /* BioNetMonitor */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1D60588D0D05DD3D006BFB54 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */,
+				2899E5600DE3E45000AC0155 /* RootViewController.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1D60588E0D05DD3D006BFB54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
+				74724FD60F7856680061BF62 /* BionetManager.m in Sources */,
+				74724FD70F7856680061BF62 /* BioNetMonitorAppDelegate.m in Sources */,
+				74724FD80F7856680061BF62 /* DataController.m in Sources */,
+				74724FD90F7856680061BF62 /* DetailViewController.m in Sources */,
+				74724FDA0F7856680061BF62 /* Hab.m in Sources */,
+				74724FDD0F7856680061BF62 /* Node.m in Sources */,
+				74724FDE0F7856680061BF62 /* RootViewController.m in Sources */,
+				74724FF60F7857490061BF62 /* HabType.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1D6058940D05DD3E006BFB54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = BioNetMonitor_Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"/opt/local/arm-apple-darwin/lib\"",
+				);
+				PRODUCT_NAME = BioNetMonitor;
+			};
+			name = Debug;
+		};
+		1D6058950D05DD3E006BFB54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = BioNetMonitor_Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../libbionet/usr/local/lib\"",
+					"\"$(SRCROOT)/../bionet_simulator_sdk/usr/local/lib\"",
+					"\"/opt/local/i686-apple-darwin/lib\"",
+					"\"/opt/local/arm-apple-darwin/lib\"",
+				);
+				PRODUCT_NAME = BioNetMonitor;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Don't Code Sign";
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"${macport_sdk}/lib/glib-2.0/include",
+					"${bionet_sdk}/usr/local/include",
+					"${macport_sdk}/include/glib-2.0",
+					"${macport_sdk}/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"${bionet_sdk}/usr/local/lib",
+					"${macport_sdk}/lib/glib-2.0",
+					"${macport_sdk}/lib",
+				);
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-lintl";
+				PREBINDING = NO;
+				SDKROOT = iphonesimulator2.2;
+				bionet_sdk = "";
+				"bionet_sdk[sdk=iphoneos*][arch=*]" = ../bionet_sdk;
+				"bionet_sdk[sdk=iphonesimulator*][arch=*]" = ../bionet_simulator_sdk;
+				macport_sdk = "";
+				"macport_sdk[sdk=iphoneos*][arch=*]" = "/opt/local/arm-apple-darwin";
+				"macport_sdk[sdk=iphonesimulator*][arch=*]" = "/opt/local/i686-apple-darwin";
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = iphoneos2.2.1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "BioNetMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D6058940D05DD3E006BFB54 /* Debug */,
+				1D6058950D05DD3E006BFB54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "BioNetMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}

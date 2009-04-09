@@ -1,0 +1,220 @@
+diff -ruN ports.orig/devel/gettext/Portfile ports/devel/gettext/Portfile
+--- ports.orig/devel/gettext/Portfile	2009-01-29 22:07:47.000000000 -0700
++++ ports/devel/gettext/Portfile	2009-04-08 14:40:49.000000000 -0600
+@@ -36,17 +36,17 @@
+     -no-cpp-precomp
+ 
+ configure.args \
++    --enable-static \
++    --disable-shared \
++    --disable-python \
+     --disable-csharp \
+     --without-emacs \
+     --with-included-gettext \
+-    --with-included-glib \
+     --with-included-libcroco \
+     --with-included-libxml
+ 
+-depends_lib \
+-    port:libiconv \
+-    port:ncurses \
+-    port:expat
++#depends_lib \
++#    port:libiconv
+ 
+ test.run                yes
+ test.target             check
+diff -ruN ports.orig/devel/glib2/Portfile ports/devel/glib2/Portfile
+--- ports.orig/devel/glib2/Portfile	2009-02-22 04:15:44.000000000 -0700
++++ ports/devel/glib2/Portfile	2009-04-08 14:41:34.000000000 -0600
+@@ -35,16 +35,18 @@
+     patch-glib-2.0.pc.in.diff \
+     patch-gutils.c.diff \
+     patch-gi18n.h.diff \
+-    patch-which.diff
++    patch-which.diff \
++    glib-iphone.patch
+ 
+-depends_build \
+-    port:pkgconfig
++#depends_build \
++#    port:libiconv
++
++#    port:pkgconfig
+ 
+ depends_lib \
+-    port:gettext \
+-    port:libiconv \
+-    path:bin/perl:perl5 \
+-    bin:python:python_select
++    port:gettext
++   # path:bin/perl:perl5 \
++   # bin:python:python_select
+ 
+ configure.ldflags-append \
+     -bind_at_load
+@@ -54,14 +56,32 @@
+     -fstrict-aliasing
+ 
+ configure.args \
+-    --enable-static
++    --disable-python \
++    --enable-static  \
++    --disable-shared \
++    --cache-file=arm.cache
++
+ 
+ configure.perl    ${prefix}/bin/perl
+ configure.env-append  PERL_PATH=${configure.perl}
++configure.env-append  LIBS="-Wl,-framework -Wl,CoreFoundation"
++
++variant iphone_sim {
++    configure.args-append --host=${iphone_host}
++#    configure.cflags-append -arch ${iphone_arch} ${iphone_flags}
++#    configure.ldflags-append -arch ${iphone_arch} ${iphone_flags}
++}
+ 
+ post-patch {
+     reinplace "s|data_dirs = \"/usr|data_dirs = \"${prefix}/share:/usr|g" ${worksrcpath}/glib/gutils.c
+     reinplace "s|path = \"/bin|path = \"${prefix}/bin:/bin|g" ${worksrcpath}/glib/gutils.c ${worksrcpath}/glib/gspawn.c
++    reinplace "s|^#error|#warning|" ${worksrcpath}/glib/gconvert.c
++    set armcache [open "${worksrcpath}/arm.cache" "w"]
++    puts $armcache "glib_cv_stack_grows=no"
++    puts $armcache "glib_cv_uscore=yes"
++    puts $armcache "ac_cv_func_posix_getpwuid_r=yes"
++    puts $armcache "ac_cv_func_posix_getgrgid_r=yes"
++    close $armcache
+ }
+ 
+ platform darwin {
+diff -ruN ports.orig/devel/glib2/files/glib-iphone.patch ports/devel/glib2/files/glib-iphone.patch
+--- ports.orig/devel/glib2/files/glib-iphone.patch	1969-12-31 17:00:00.000000000 -0700
++++ ports/devel/glib2/files/glib-iphone.patch	2009-04-08 14:40:49.000000000 -0600
+@@ -0,0 +1,28 @@
++--- gio/gdesktopappinfo.c	2009-01-08 22:36:09.000000000 -0700
+++++ gio/gdesktopappinfo.c	2009-03-26 16:58:10.000000000 -0600
++@@ -30,6 +30,11 @@
++ 
++ #ifdef HAVE_CRT_EXTERNS_H
++ #include <crt_externs.h>
+++#else
+++extern char ***_NSGetArgv(void);
+++extern int *_NSGetArgc(void);
+++extern char ***_NSGetEnviron(void);
+++extern char **_NSGetProgname(void);
++ #endif
++ 
++ #include "gcontenttypeprivate.h"
++--- glib/gutils.c	2009-03-12 14:02:48.000000000 -0600
+++++ glib/gutils.c	2009-03-26 16:48:54.000000000 -0600
++@@ -52,6 +52,11 @@
++ #ifdef HAVE_CRT_EXTERNS_H 
++ #include <crt_externs.h> /* for _NSGetEnviron */
++ #define HAVE__NSGETENVIRON
+++#else
+++extern char ***_NSGetArgv(void);
+++extern int *_NSGetArgc(void);
+++extern char ***_NSGetEnviron(void);
+++extern char **_NSGetProgname(void);
++ #endif
++ 
++ /* implement gutils's inline functions
+diff -ruN ports.orig/devel/openssl/Portfile ports/devel/openssl/Portfile
+--- ports.orig/devel/openssl/Portfile	2009-01-12 02:13:25.000000000 -0700
++++ ports/devel/openssl/Portfile	2009-04-08 14:49:45.000000000 -0600
+@@ -25,7 +25,7 @@
+ depends_lib		port:zlib
+ 
+ platform darwin {
+-	patchfiles	patch-Makefile.org.diff patch-crypto-Makefile.diff
++	patchfiles	patch-Makefile.org.diff patch-crypto-Makefile.diff 
+ }
+ 
+ configure.cmd	./config
+@@ -56,8 +56,23 @@
+ }
+ set first_arch [lindex ${universal_archs} 0]
+ 
++variant darwin {
++	patchfiles-append patch-Configure-sysroot.diff
++	patchfiles-append patch-Configure-iphone.diff
++	patchfiles-append patch-ui_openssl.c.diff
++
++	post-patch {
++		reinplace "s|__UNIVERSAL_SYSROOT__|${universal_sysroot}|" ${worksrcpath}/Configure
++	}
++
++	configure {
++		system "cd ${worksrcpath} && ./Configure ${configure_host} ${configure.pre_args} ${configure.args}"
++	}
++}
++
+ variant universal {
+     patchfiles-append patch-Configure-sysroot.diff
++    patchfiles-append patch-Configure-iphone.diff
+ 	post-patch {
+ 	    reinplace "s|__UNIVERSAL_SYSROOT__|${universal_sysroot}|" ${worksrcpath}/Configure
+ 		foreach arch ${universal_archs} {
+@@ -84,11 +99,11 @@
+ 		}
+ 	}
+ 
+-	build {
+-		foreach arch ${universal_archs} {
+-			system "cd ${workpath}/${arch} && make all"
+-		}
+-	}
++	#build {
++	#	foreach arch ${universal_archs} {
++	#		system "cd ${workpath}/${arch} && make all"
++	#	}
++	#}
+ 
+ 	destroot {
+ # in port 1.7, just call:
+diff -ruN ports.orig/devel/openssl/files/patch-Configure-iphone.diff ports/devel/openssl/files/patch-Configure-iphone.diff
+--- ports.orig/devel/openssl/files/patch-Configure-iphone.diff	1969-12-31 17:00:00.000000000 -0700
++++ ports/devel/openssl/files/patch-Configure-iphone.diff	2009-04-08 14:48:09.000000000 -0600
+@@ -0,0 +1,26 @@
++--- Configure.orig	2009-04-01 17:39:33.000000000 -0600
+++++ Configure	2009-04-08 14:46:50.000000000 -0600
++@@ -518,6 +518,12 @@
++ "darwin64-x86_64-cc","cc:-arch x86_64 -isysroot __UNIVERSAL_SYSROOT__ -O3 -fomit-frame-pointer -DL_ENDIAN -DMD32_REG_T=int -Wall::-D_REENTRANT:MACOSX:-Wl,-search_paths_first%:SIXTY_FOUR_BIT_LONG RC4_CHAR RC4_CHUNK BF_PTR2 DES_INT DES_UNROLL:${no_asm}:dlfcn:darwin-shared:-fPIC -fno-common:-arch x86_64 -dynamiclib:.\$(SHLIB_MAJOR).\$(SHLIB_MINOR).dylib",
++ "debug-darwin-ppc-cc","cc:-DBN_DEBUG -DREF_CHECK -DCONF_DEBUG -DCRYPTO_MDEBUG -DB_ENDIAN -g -Wall -O::-D_REENTRANT:MACOSX::BN_LLONG RC4_CHAR RC4_CHUNK DES_UNROLL BF_PTR::osx_ppc32.o::::::::::dlfcn:darwin-shared:-fPIC -fno-common:-dynamiclib:.\$(SHLIB_MAJOR).\$(SHLIB_MINOR).dylib",
++ 
+++#### MacOS X iPhone setup
+++#simulator
+++"i686-apple-darwin","i686-apple-darwin-gcc:-arch i686 -isysroot __UNIVERSAL_SYSROOT__ -O3 -fomit-frame-pointer -DL_ENDIAN::-D_REENTRANT:MACOSX:-Wl,-search_paths_first%:BN_LLONG RC4_CHAR RC4_CHUNK DES_UNROLL BF_PTR:${no_asm}:dlfcn:darwin-shared:-fPIC -fno-common:-arch i686 -dynamiclib:.\$(SHLIB_MAJOR).\$(SHLIB_MINOR).dylib:i686-apple-darwin-ranlib:",
+++#device
+++"arm-apple-darwin","arm-apple-darwin-gcc:-arch armv6 -isysroot __UNIVERSAL_SYSROOT__ -O3 -fomit-frame-pointer -DL_ENDIAN::-D_REENTRANT:MACOSX:-Wl,-search_paths_first%:BN_LLONG RC4_CHAR RC4_CHUNK DES_UNROLL BF_PTR:${no_asm}:dlfcn:darwin-shared:-fPIC -fno-common:-arch armv6 -dynamiclib:.\$(SHLIB_MAJOR).\$(SHLIB_MINOR).dylib:arm-apple-darwin-ranlib:",
+++
++ ##### A/UX
++ "aux3-gcc","gcc:-O2 -DTERMIO::(unknown):AUX:-lbsd:RC4_CHAR RC4_CHUNK DES_UNROLL BF_PTR:::",
++ 
++@@ -839,6 +845,10 @@
++ 				{
++ 				$baseaddr="$1";
++ 				}
+++			elsif (/^--host=(.*)$/)
+++				{
+++				print STDERR "Ignoring --host argument";
+++				}
++ 			else
++ 				{
++ 				print STDERR $usage;
+diff -ruN ports.orig/devel/openssl/files/patch-ui_openssl.c.diff ports/devel/openssl/files/patch-ui_openssl.c.diff
+--- ports.orig/devel/openssl/files/patch-ui_openssl.c.diff	1969-12-31 17:00:00.000000000 -0700
++++ ports/devel/openssl/files/patch-ui_openssl.c.diff	2009-04-08 14:40:49.000000000 -0600
+@@ -0,0 +1,12 @@
++--- crypto/ui/ui_openssl.c.orig	2009-04-02 16:41:59.000000000 -0600
+++++ crypto/ui/ui_openssl.c	2009-04-02 16:42:43.000000000 -0600
++@@ -259,6 +259,9 @@
++ #ifdef OPENSSL_SYS_SUNOS
++ 	typedef int sig_atomic_t;
++ #endif
+++#ifdef OPENSSL_SYS_MACOSX
+++	typedef int sig_atomic_t;
+++#endif
++ 
++ #if defined(OPENSSL_SYS_MACINTOSH_CLASSIC) || defined(MAC_OS_GUSI_SOURCE) || defined(OPENSSL_SYS_NETWARE)
++ /*

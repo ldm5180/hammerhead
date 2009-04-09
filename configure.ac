@@ -25,10 +25,19 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.9.2])
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_LIBTOOL
 
 AC_CHECK_TOOL([STRIP],[strip])
+
+CFLAGS=-Wall -Werror -g
+
+AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
+AC_SUBST(LDFLAGS)
+
+PKG_PROG_PKG_CONFIG
 
 # Checks for libraries.
 AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
@@ -141,6 +150,14 @@ AC_CHECK_LIB(
 )
 
 
+#
+# Check for isfinite() in <math.h>. isfinite() is a c99 standard,
+# but finite() is the older BSD standard is isfinite is not availble
+AC_CHECK_DECL(isfinite, 
+  [AC_DEFINE([HAVE_ISFINITE],[1],[<math.h> provides isfinite])], 
+  , 
+  [[#include <math.h>]])
+
 
 
 AC_ARG_ENABLE(python, AC_HELP_STRING([--disable-python],
@@ -190,9 +207,9 @@ fi
 #   fi
 #fi
 if test "x$HAVE_LINUX" = "xyes"; then
-AM_CONDITIONAL(ENABLE_QT4, test "x$ENABLE_QT4" = "xyes")
+AM_CONDITIONAL(ENABLE_QT4, [test "x$ENABLE_QT4" = "xyes"])
 else
-AM_CONDITIONAL(ENABLE_QT4, test "xyes" = "xno") #this will always be false
+AM_CONDITIONAL(ENABLE_QT4, [test "xyes" = "xno"]) #this will always be false
 fi
 
 if test "x$HAVE_DARWIN" = "xyes"; then

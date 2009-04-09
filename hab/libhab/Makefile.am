@@ -8,6 +8,8 @@ include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libhab.la
 
+include_HEADERS = hardware-abstractor.h
+
 libhab_la_SOURCES =      \
     connect.c            \
     disconnect.c         \

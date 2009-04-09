@@ -8,6 +8,8 @@ include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libbionet.la
 
+include_HEADERS = bionet.h
+
 libbionet_la_SOURCES =        \
     set-id.c                  \
     connect.c                 \

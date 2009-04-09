@@ -8,6 +8,9 @@ include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libbionet-util.la
 
+include_HEADERS = bionet-util.h bionet-node.h bionet-stream.h bionet-resource.h bionet-datapoint.h bionet-value.h bionet-hab.h
+
+
 libbionet_util_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I ../asn.1
 
 libbionet_util_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS)
@@ -19,6 +22,7 @@ libbionet_util_la_SOURCES =    \
     hab-new.c                  \
     hab-free.c                 \
     hab-get-node.c             \
+    hab-user-data.c            \
     hab-name.c                 \
     node-new.c                 \
     node-add-resource.c        \
