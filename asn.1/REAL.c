@@ -26,7 +26,7 @@ static volatile double real_zero __attribute__ ((unused)) = 0.0;
 #define	INFINITY	(1.0/real_zero)
 #endif
 
-#if ! HAVE_ISFINITE
+#ifndef HAVE_ISFINITE
 #define isfinite finite
 #endif
 
