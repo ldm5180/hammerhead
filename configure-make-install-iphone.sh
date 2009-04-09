@@ -76,7 +76,6 @@ autoreconf --force --install
 	PKG_CONFIG="$PKG_CONFIG" \
 	$@
 
-
 make
 echo Installing...
 make DESTDIR=$XDESTDIR install
