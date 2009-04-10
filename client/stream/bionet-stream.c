@@ -13,8 +13,6 @@
 
 #include "bionet.h"
 
-
-
 int bionet_fd;
 
 
@@ -38,7 +36,7 @@ void usage(void) {
 }
     
 void version(void) {
-    fprintf(stderr, "version info unavailable\n");
+    fprintf(stdout, "No version info available.\n");
 }
 
 

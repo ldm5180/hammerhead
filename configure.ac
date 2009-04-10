@@ -42,13 +42,8 @@ CXXFLAGS="$USERCXXFLAGS"
 
 AC_CHECK_TOOL([STRIP],[strip])
 
-CFLAGS=-Wall -Werror -g
-
-AC_SUBST(CFLAGS)
-AC_SUBST(CXXFLAGS)
-AC_SUBST(LDFLAGS)
-
-PKG_PROG_PKG_CONFIG
+test "$BIONET_VERSION_TAG" == "" && BIONET_VERSION_TAG="devel-$USER-`date '+%s'`"
+AC_ARG_VAR([BIONET_VERSION_TAG], [Bionet unique version ID])
 
 # Checks for libraries.
 AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
@@ -250,6 +245,10 @@ if test "x$CCACHE" != "xno"; then
    CXX="ccache $CXX"
 fi
 
+#bazaar
+AC_PATH_PROG(BAZAAR, bzr, no)
+AM_CONDITIONAL([DISABLE_BZR], [test "x$BAZAAR" = "xno"])
+AM_CONDITIONAL([RELEASE], [test "x$BAZAAR" != "xno"])
 
 AC_PATH_PROG(DOT, dot, no)
 AM_CONDITIONAL([DISABLE_DOT], [test "x$DOT" = "xno"])
