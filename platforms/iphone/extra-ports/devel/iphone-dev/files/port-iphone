@@ -1,0 +1,32 @@
+#!/bin/sh
+
+XARCH=armv6
+XHOST=arm-apple-darwin
+XDIR=/Developer/Platforms/iPhoneOS.platform/Developer
+XSDK=iPhoneOS2.2.sdk
+XPORTROOT=/opt/local/arm-apple-darwin
+
+XCFLAGS="-arch $XARCH -pipe -std=c99 -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -Wreturn-type -Wunused-variable -fmessage-length=0 -miphoneos-version-min=2.0 -gdwarf-2 -mthumb -miphoneos-version-min=2.0 -I$XDIR/SDKs/$XSDK/usr/include -I$XPORTROOT/usr/include -isysroot /$XDIR/SDKs/$XSDK"
+	
+XLDFLAGS="-arch $XARCH -pipe -std=c99 -gdwarf-2 -mthumb -L$XDIR/SDKs/$XSDK/usr/lib -L$XPORTROOT/usr/lib -isysroot /$XDIR/SDKs/$XSDK"
+
+export PATH=$XPORTROOT/bin:$XPORTROOT/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin
+#export CFLAGS="$XCFLAGS"
+#export LDFLAGS="$XLDFLAGS"
+#export CPPFLAGS="$XCFLAGS"
+
+SYSROOT=$XDIR/SDKs/$SDK
+
+export PKG_CONFIG_PATH=$SYSROOT/usr/lib/pkgconfig:$XPORTROOT/lib/pkgconfig
+export PKG_CONFIG_LIBDIR=$SYSROOT/usr/lib/pkgconfig:$XPORTROOT/lib/pkgconfig
+export PKG_CONFIG=/opt/local/bin/pkg-config
+
+#export PERL="$XPORTROOT/bin/perl"
+#export CPP="$XDIR/usr/bin/cpp"
+#export CXX="$XDIR/usr/bin/gcc"
+#export INSTALL='/usr/bin/install -c'
+#export AR="$XDIR/usr/bin/ar"
+#export NM="$XDIR/usr/bin/nm"
+
+$XPORTROOT/bin/port $@
+

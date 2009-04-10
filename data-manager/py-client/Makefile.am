@@ -20,7 +20,7 @@ libbdm_la_SOURCES = bdm-client_wrap.c bdm-client-interface.c ../client/connect.c
 
 libbdm_la_LIBADD = $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(GLIB20_LIBS)
 
-libbdm_la_CFLAGS = $(CFLAGS_BIONET_UTIL) -I/usr/include/python2.5 $(CFLAGS_BIONET_ASN1) -I../include $(GLIB20_CFLAGS) -I../client
+libbdm_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BIONET_UTIL) -I/usr/include/python2.5 $(CFLAGS_BIONET_ASN1) -I../include $(GLIB20_CFLAGS) -I../client
 
 libbdm_la_LDFLAGS = $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1) -version-info $(BIONET_INTERFACE_VERSION) 
 

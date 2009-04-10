@@ -37,7 +37,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     bionet_node_t *node;
     char node_id[8];
     struct timeval tv;
-    uint32_t mv;
+    uint32_t mv = 0;
     bionet_resource_t * resource;
 
 #if DEBUG

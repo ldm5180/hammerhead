@@ -1,0 +1,201 @@
+diff -ruN MacPorts-1.7.0.orig/doc/macports.conf.in MacPorts-1.7.0/doc/macports.conf.in
+--- MacPorts-1.7.0.orig/doc/macports.conf.in	2008-10-31 23:49:19.000000000 -0600
++++ MacPorts-1.7.0/doc/macports.conf.in	2009-04-08 09:24:42.000000000 -0600
+@@ -17,6 +17,7 @@
+ # PATH settings that are used for external tools (configure, make, etc.) while installing ports. The default
+ # paths are given in the example; it need not be uncommented.  Customizing binpath is intended for advanced users only.
+ #binpath		@prefix_expanded@/bin:@prefix_expanded@/sbin:/bin:/sbin:/usr/bin:/usr/sbin:@x11prefix@/bin
++binpath                  /opt/local/bin:/opt/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin:@x11prefix@/bin:@prefix_expanded@/bin:@prefix_expanded@/sbin
+ 
+ # Directory containing the X11 installation.
+ x11prefix		@x11prefix@
+@@ -104,7 +105,12 @@
+ # are installed.
+ startupitem_type	default
+ 
++configure_cflags     -pipe -fpascal-strings -fasm-blocks -O2 -fmessage-length=0 -miphoneos-version-min=2.0 -gdwarf-2 -I@prefix_expanded@/include -I/@UNIVERSAL_SYSROOT@/usr/include -isysroot @UNIVERSAL_SYSROOT@ -funroll-loops -fstrict-aliasing
++
++configure_ldflags    -pipe -gdwarf-2 -L@prefix_expanded@/lib -L/@UNIVERSAL_SYSROOT@/usr/lib -isysroot @UNIVERSAL_SYSROOT@
++
++configure_host @UNIVERSAL_ARCHS@-apple-darwin
+ # Extra environment variables to keep. Any variables listed here are added
+ # to the list of variables that are not removed from the environment used
+ # while processing ports
+-# extra_env		KEEP_THIS THIS_TOO
++extra_env		PKG_CONFIG_PATH PKG_CONFIG_LIBDIR PKG_CONFIG
+diff -ruN MacPorts-1.7.0.orig/doc/sources.conf MacPorts-1.7.0/doc/sources.conf
+--- MacPorts-1.7.0.orig/doc/sources.conf	2008-11-28 16:18:50.000000000 -0700
++++ MacPorts-1.7.0/doc/sources.conf	2009-04-08 09:24:54.000000000 -0600
+@@ -24,4 +24,5 @@
+ #  To get it from the mirror in Trondheim, Norway use:
+ #      rsync://trd.no.rsync.macports.org/release/ports/
+ #  A current list of mirrors is available at http://trac.macports.org/wiki/Mirrors
++file:///usr/local/ports/iphone
+ rsync://rsync.macports.org/release/ports/ [default]
+diff -ruN MacPorts-1.7.0.orig/src/macports1.0/macports.tcl MacPorts-1.7.0/src/macports1.0/macports.tcl
+--- MacPorts-1.7.0.orig/src/macports1.0/macports.tcl	2008-11-30 09:09:10.000000000 -0700
++++ MacPorts-1.7.0/src/macports1.0/macports.tcl	2009-04-08 09:15:03.000000000 -0600
+@@ -45,7 +45,7 @@
+         porttrace portverbose destroot_umask variants_conf rsync_server rsync_options \
+         rsync_dir startupitem_type place_worksymlink xcodeversion xcodebuildcmd \
+         mp_remote_url mp_remote_submit_url configureccache configuredistcc configurepipe buildnicevalue buildmakejobs \
+-        applications_dir frameworks_dir universal_target universal_sysroot universal_archs"
++        applications_dir frameworks_dir universal_target universal_sysroot universal_archs configure_cflags configure_ldflags configure_host"
+     variable user_options "submitter_name submitter_email submitter_key"
+     variable portinterp_options "\
+         portdbpath porturl portpath portbuildpath auto_path prefix prefix_frozen x11prefix portsharepath \
+@@ -53,7 +53,7 @@
+         portarchivetype portautoclean porttrace portverbose destroot_umask rsync_server \
+         rsync_options rsync_dir startupitem_type place_worksymlink \
+         mp_remote_url mp_remote_submit_url configureccache configuredistcc configurepipe buildnicevalue buildmakejobs \
+-        applications_dir frameworks_dir universal_target universal_sysroot universal_archs $user_options"
++        applications_dir frameworks_dir universal_target universal_sysroot universal_archs configure_cflags configure_ldflags configure_host $user_options"
+     
+     # deferred options are only computed when needed.
+     # they are not exported to the trace thread.
+@@ -349,6 +349,8 @@
+     global macports::universal_target
+     global macports::universal_sysroot
+     global macports::universal_archs
++    global macports::configure_cflags
++    global macports::configure_ldflags
+ 
+     # Set the system encoding to utf-8
+     encoding system utf-8
+@@ -658,7 +660,7 @@
+     if {![info exists macports::universal_archs]} {
+         set macports::universal_archs {ppc i386}
+     }
+-    
++
+     # ENV cleanup.
+     set keepenvkeys {
+         DISPLAY DYLD_FALLBACK_FRAMEWORK_PATH
+diff -ruN MacPorts-1.7.0.orig/src/port1.0/portconfigure.tcl MacPorts-1.7.0/src/port1.0/portconfigure.tcl
+--- MacPorts-1.7.0.orig/src/port1.0/portconfigure.tcl	2008-11-29 13:38:10.000000000 -0700
++++ MacPorts-1.7.0/src/port1.0/portconfigure.tcl	2009-04-08 09:15:03.000000000 -0600
+@@ -39,11 +39,12 @@
+ target_requires ${org.macports.configure} main fetch extract checksum patch
+ target_prerun ${org.macports.configure} configure_start
+ 
++global configure_host
+ # define options
+ commands configure autoreconf automake autoconf xmkmf libtool
+ # defaults
+ default configure.env       ""
+-default configure.pre_args  {--prefix=${prefix}}
++default configure.pre_args  {"--prefix=${prefix} --host=${configure_host}"}
+ default configure.cmd       ./configure
+ default configure.dir       {${worksrcpath}}
+ default autoreconf.dir      {${worksrcpath}}
+@@ -61,13 +62,13 @@
+ default configure.mtune     {}
+ # We could have debug/optimizations be global configurable at some point.
+ options configure.optflags configure.cflags configure.cppflags configure.cxxflags configure.objcflags configure.ldflags configure.libs configure.fflags configure.f90flags configure.fcflags configure.classpath
+-default configure.optflags  {-O2}
++default configure.optflags  {"-O2"}
+ # compiler flags section
+ default configure.cflags    {[configure_get_cflags]}
+-default configure.cppflags  {"-I${prefix}/include"}
++default configure.cppflags  {[configure_get_cflags]}
+ default configure.cxxflags  {[configure_get_cflags]}
+ default configure.objcflags {[configure_get_cflags]}
+-default configure.ldflags   {"-L${prefix}/lib"}
++default configure.ldflags   {[configure_get_ldflags]}
+ default configure.libs      {}
+ default configure.fflags    {[configure_get_cflags]}
+ default configure.f90flags  {[configure_get_cflags]}
+@@ -77,9 +78,12 @@
+ # internal function to return the system value for CFLAGS/CXXFLAGS/etc
+ proc configure_get_cflags {args} {
+     global configure.optflags
++    global configure_cflags
+     global configure.m32 configure.m64 configure.march configure.mtune
+     set flags "${configure.optflags}"
+-    if {[tbool configure.m64]} {
++    if {[info exists configure_cflags] && $configure_cflags != {}} {
++        set flags ${configure_cflags}
++    } elseif {[tbool configure.m64]} {
+         set flags "-m64 ${flags}"
+     } elseif {[tbool configure.m32]} {
+         set flags "-m32 ${flags}"
+@@ -93,6 +97,17 @@
+     return $flags
+ }
+ 
++# internal function to return system value for LDFLAGS
++proc configure_get_ldflags {args} {
++    global prefix
++    global configure_ldflags
++    set flags "-L${prefix}/lib"
++    if {[info exists configure_ldflags] && $configure_ldflags != {}} {
++        set flags ${configure_ldflags}
++    }
++    return $flags
++}
++
+ # tools section
+ options configure.perl configure.python configure.ruby configure.install configure.awk configure.bison configure.pkg_config configure.pkg_config_path
+ default configure.perl              {}
+@@ -159,6 +174,8 @@
+         macports-gcc-4.2 { set name "MacPorts gcc 4.2" }
+         macports-gcc-4.3 { set name "MacPorts gcc 4.3" }
+         macports-gcc-4.4 { set name "MacPorts gcc 4.4" }
++        iphone-sim-gcc { set name "Mac iPhoneSimulator gcc" }
++        iphone-gcc { set name "Mac iPhone gcc" }
+         default { return -code error "Invalid value for configure.compiler" }
+     }
+     ui_debug "Using compiler '$name'"
+@@ -254,12 +271,19 @@
+ 
+ # internal function to determine the default compiler
+ proc configure_get_default_compiler {args} {
+-    global os.platform os.major
++    global os.platform os.major configure_host
+     set compiler ""
+     switch -exact "${os.platform} ${os.major}" {
+         "darwin 7" { set compiler gcc-3.3 }
+         "darwin 8" { set compiler gcc-4.0 }
+-        "darwin 9" { set compiler gcc-4.0 }
++        "darwin 9" { 
++            switch -exact "${configure_host}" {
++                "arm-apple-darwin" { set compiler iphone-gcc }
++                "i686-apple-darwin" { set compiler iphone-sim-gcc }
++                "i386-apple-darwin" { set compiler iphone-sim-gcc }
++                }
++	}
++
+         "darwin 10" { set compiler llvm-gcc-4.2 }
+     }
+     return $compiler
+@@ -269,6 +293,7 @@
+ proc configure_get_compiler {type} {
+     global configure.compiler prefix
+     set ret ""
++    
+     switch -exact ${configure.compiler} {
+         gcc-3.3 {
+             switch -exact ${type} {
+@@ -384,6 +409,22 @@
+                 f90  { set ret ${prefix}/bin/gfortran-mp-4.4 }
+             }
+         }
++        iphone-sim-gcc {
++            switch -exact ${type} {
++                cc   { set ret /opt/local/bin/i686-apple-darwin-gcc}
++                objc { set ret /opt/local/bin/i686-apple-darwin-gcc}
++                cxx  { set ret /opt/local/bin/i686-apple-darwin-g++}
++                cpp  { set ret "/opt/local/bin/i686-apple-darwin-gcc -E"}
++            }
++        }
++        iphone-gcc {
++            switch -exact ${type} {
++                cc   { set ret /opt/local/bin/arm-apple-darwin-gcc}
++                objc { set ret /opt/local/bin/arm-apple-darwin-gcc}
++                cxx  { set ret /opt/local/bin/arm-apple-darwin-g++}
++                cpp  { set ret "/opt/local/bin/arm-apple-darwin-gcc -E"}
++            }
++        }
+     }
+     return $ret
+ }

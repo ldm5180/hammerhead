@@ -24,11 +24,31 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.9.2])
 #AC_CANONICAL_SYSTEM
 
 # Checks for programs.
+# We don't want to use the default AC_PROG_* flags set by these macros,
+# but we do want to allow the user to specify custom flags.
+# Save the user's settings, and override the default set by AC_PROG_*
+USERCFLAGS="$CFLAGS"
+USERCPPFLAGS="$CFLAGS"
+USERCXXFLAGS="$CFLAGS"
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_LIBTOOL
 
+CFLAGS="$USERCFLAGS"
+CPPFLAGS="$USERCPPFLAGS"
+CXXFLAGS="$USERCXXFLAGS"
+
+
 AC_CHECK_TOOL([STRIP],[strip])
+
+CFLAGS=-Wall -Werror -g
+
+AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
+AC_SUBST(LDFLAGS)
+
+PKG_PROG_PKG_CONFIG
 
 # Checks for libraries.
 AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
@@ -141,6 +161,14 @@ AC_CHECK_LIB(
 )
 
 
+#
+# Check for isfinite() in <math.h>. isfinite() is a c99 standard,
+# but finite() is the older BSD standard is isfinite is not availble
+AC_CHECK_DECL(isfinite, 
+  [AC_DEFINE([HAVE_ISFINITE],[1],[<math.h> provides isfinite])], 
+  , 
+  [[#include <math.h>]])
+
 
 
 AC_ARG_ENABLE(python, AC_HELP_STRING([--disable-python],
@@ -173,7 +201,7 @@ if test "x$HAVE_LINUX" = "xyes"; then
 fi
 if test "x$HAVE_DARWIN" = "xyes"; then
    if test "x$ENABLE_QT4" = "xyes" ; then
-      AC_PATH_PROG(QT4_PATH, qmake-4.4, no)
+      AC_PATH_PROGS(QT4_PATH, [qmake-4.4 qmake-mac], no)
       if test "x$QT4_PATH" = xno; then
        	 AC_MSG_ERROR([could not find QT4 executables])
       fi
@@ -190,9 +218,9 @@ fi
 #   fi
 #fi
 if test "x$HAVE_LINUX" = "xyes"; then
-AM_CONDITIONAL(ENABLE_QT4, test "x$ENABLE_QT4" = "xyes")
+AM_CONDITIONAL(ENABLE_QT4, [test "x$ENABLE_QT4" = "xyes"])
 else
-AM_CONDITIONAL(ENABLE_QT4, test "xyes" = "xno") #this will always be false
+AM_CONDITIONAL(ENABLE_QT4, [test "xyes" = "xno"]) #this will always be false
 fi
 
 if test "x$HAVE_DARWIN" = "xyes"; then

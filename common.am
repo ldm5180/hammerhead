@@ -4,7 +4,7 @@
 # NNC07CB47C.
 
 
-AM_CFLAGS=-Wall -Werror -g 
+AM_CFLAGS=-Wall -Werror -g
 
 if ENABLE_DARWIN
     AM_CFLAGS += -DMACOSX
@@ -14,8 +14,6 @@ if ENABLE_LINUX
     AM_CFLAGS += -DLINUX
 endif
  
-CFLAGS=$(AM_CFLAGS)
-
 INCLUDES_BIONET_UTIL = $(top_srcdir)/util/bionet-util.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-datapoint.h $(top_srcdir)/util/bionet-value.h
 CFLAGS_BIONET_UTIL = -I$(top_srcdir)/util 
 LDFLAGS_BIONET_UTIL = -L$(top_srcdir)/util 
