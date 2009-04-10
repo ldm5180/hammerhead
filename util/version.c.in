@@ -5,6 +5,8 @@
 
 #include "bionet-version.h"
 
+#define BIONET_BUILD_STR "@BIONET_BUILD_TAG@"
+
 void print_bionet_version(FILE *stream) {
     fprintf(stream, "%s%s\n", BIONET_VERSION, BIONET_BUILD_STR);
 } /* print_bionet_version() */

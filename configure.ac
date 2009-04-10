@@ -300,7 +300,7 @@ AC_CONFIG_FILES([Makefile
 		 cal/examples/Makefile
                  asn.1/Makefile
                  util/Makefile
-		 util/bionet-version.h
+		 util/version.c
                  client/Makefile
                  client/libbionet/Makefile
                  client/libbionet-qt4/Makefile

@@ -9,7 +9,7 @@
 
 #include <stdio.h>
 
-#define BIONET_BUILD_STR "@BIONET_BUILD_TAG@"
+#define BIONET_BUILD_STR "+814+lenny"
 
 void print_bionet_version(FILE *stream);
 
