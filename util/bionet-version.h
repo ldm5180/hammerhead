@@ -9,8 +9,6 @@
 
 #include <stdio.h>
 
-#define BIONET_BUILD_STR "+814+lenny"
-
 void print_bionet_version(FILE *stream);
 
 #endif /* BIONET_VERSION_H */
