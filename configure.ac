@@ -249,7 +249,7 @@ AM_CONDITIONAL([DISABLE_BZR], [test "x$BAZAAR" = "xno"])
 if test "x$BAZAAR" = "xno"; then
    test "$BIONET_BUILD_TAG" == "" && BIONET_BUILD_TAG="+$USER"
 else
-   test "$BIONET_BUILD_TAG" == "" && BIONET_BUILD_TAG="+`bzr revno`+$USER`perl -e '\$status=\`bzr status -V\`;if(\$status){print "+diff"}'`"
+   test "$BIONET_BUILD_TAG" == "" && BIONET_BUILD_TAG="+`bzr revno`+$USER"
 fi
 AC_ARG_VAR([BIONET_BUILD_TAG], [Bionet build ID])
 
