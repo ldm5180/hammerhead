@@ -24,16 +24,23 @@ If an additional library is needed in the future, it can be installed with the p
 INSTALL INSTRUCTIONS:
 ==================================================================
 Follow these instructions to setup a Mac Computer to build bionet2 for the iPhone:
-1 - Setup Mac OS computer as if building bionet2 for MAc (See Bionet2
-    Checkout Instructions on Wiki). This includes installing macports and all
-    bionet2 dependencies.
+1 - Setup Mac OS computer as if building bionet2 for Mac (See Bionet2
+    Checkout Instructions on Wiki). When you're done, you should have:
+      - XCode 3.1 or greater installed
+      - Macports installed (Using the Mac OS X package from the macports 
+        website). This is refered to as the "base" macports by this document
+      - All the build dependencies for bionet installed into macports
 
-2 - Install macports overlay to /usr/local/ports, and additional macports 
-    instalations for iphone and iphone simulator:
+2 - Install the iPhone SDK 2.2.19 or greater 
+    (http://developer.apple.com/iphone)
+
+3 - Install macports overlay to /usr/local/ports, and additional macports 
+    instalations for iphone and iphone simulator. From the platforms/iphone 
+    directory, run the following command:
 
     $ make install
 
-3 - Configure base macports to use overlay by editing 
+4 - Configure base macports to use overlay by editing 
     /opt/local/etc/macports/sources.conf and adding the following line before
     the default rsync line:
 
@@ -43,11 +50,27 @@ Follow these instructions to setup a Mac Computer to build bionet2 for the iPhon
     becuase those packages will override the standard ones, and they do not
     work with non-iphone platforms
 
-4 - Install iphone-dev tools in base macports: 
+5 - Install iphone-dev tools in base macports: 
 
     $ sudo port install iphone-dev
 
-5 - Install the bionet dependencies:
+6 - Install the bionet dependencies:
 
     $ sudo port-iphone-sim install glib2 openssl
     $ sudo port-iphone install glib2 openssl
+
+    NOTE: If either of the above fails due to missing symbols, verify that
+          there aren't any dangling sym-links. The iPhone SDK 2.2.1 is known
+          to have a dangling libiconv.dylib symlink. If a dangling symlink is 
+          found in /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk/usr/lib, follow these steps:
+	  
+	  1 - Clean the port that failed (It may not be the port that was 
+	      requested):
+	      
+	      sudo port-iphone clean gettext
+	       
+	  2 - Fix the simlink(s) (Assuming libiconv.dylib points to 
+	      libiconv.2.4.0.dylib which doesn't exist):
+
+	      cd  /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk/usr/lib && ln -s libiconv.2.dylib libiconv.2.4.0.dylib
+     

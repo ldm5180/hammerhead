@@ -8,7 +8,6 @@
 
 MACPORTS_VERS=1.7.0
 
-ARCH=arm
 SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk
 
 all:
@@ -74,21 +73,17 @@ MacPorts-$(MACPORTS_VERS).patch: MacPorts-$(MACPORTS_VERS) MacPorts-$(MACPORTS_V
 #
 # Install both versions of macports
 #
-install-macports-iphone: install-macports-iphone-device install-macports-iphone-sim 
+install-macports-iphone: install-macports-iphone-arm install-macports-iphone-i686 
 
 #
 # Install macports for iphone device
 #
-install-macports-iphone-device: ARCH=arm
-install-macports-iphone-device: SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk
-install-macports-iphone-device: install-macports-iphoneX
+install-macports-iphone-arm: SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk
 
 #
 # Install macports for iphone simulator
 #
-install-macports-iphone-sim: ARCH=i686
-install-macports-iphone-sim: SYSROOT=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator2.2.sdk
-install-macports-iphone-sim: install-macports-iphoneX
+install-macports-iphone-i686: SYSROOT=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator2.2.sdk
 
 
 #	rm -rf tmp_macports
@@ -107,26 +102,28 @@ install-macports-iphone-sim: install-macports-iphoneX
 
 
 # 
-# Install macports into the architecture specified by 
-# ARCH and SYSROOT
+# Install macports into the architecture specified by %
+# and the SDK specified by SYSROOT
+#
 # NOT AND EXTERNAL TARGET
 #
-install-macports-iphoneX: 
+install-macports-iphone-%:
+	#@echo "macports install $* ${SYSROOT}"
 	rm -rf tmp_macports
 	mkdir tmp_macports
 	(cd tmp_macports && tar xjf ../MacPorts-$(MACPORTS_VERS).tar.bz2)
 	(cd tmp_macports/MacPorts-$(MACPORTS_VERS) && patch -p1) \
 		< MacPorts-$(MACPORTS_VERS).patch
 	(cd tmp_macports/MacPorts-$(MACPORTS_VERS) && \
-		./configure --prefix=/opt/local/${ARCH}-apple-darwin \
+		./configure --prefix=/opt/local/$*-apple-darwin \
 		      --with-universal-target="10.5" \
 		      --with-universal-sysroot="${SYSROOT}" \
-		      --with-universal-archs=${ARCH} \
-		      --with-tclpackage=/Library/Tcl/${ARCH}-apple-darwin)
+		      --with-universal-archs=$* \
+		      --with-tclpackage=/Library/Tcl/$*-apple-darwin)
 	(cd tmp_macports/MacPorts-$(MACPORTS_VERS) && make)
-	@echo "Using sudo to install macports into /opt/local/${ARCH}-apple-darwin"
+	@echo "Using sudo to install macports into /opt/local/$*-apple-darwin"
 	(cd tmp_macports/MacPorts-$(MACPORTS_VERS) && sudo make install)
-	sudo /opt/local/${ARCH}-apple-darwin/bin/port sync
+	sudo /opt/local/$*-apple-darwin/bin/port sync
 	#rm -rf tmp_macports
 
 
