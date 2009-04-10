@@ -61,7 +61,6 @@ autoreconf --force --install
 	--host=$XHOST \
 	--enable-static \
 	--disable-python \
-	--disable-speedway \
 	--disable-check \
 	"$XCACHEFILE" \
 	CFLAGS="$XCFLAGS" \
