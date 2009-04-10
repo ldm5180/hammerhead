@@ -3,8 +3,23 @@
 # This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 # NNC07CB47C.
 
+#
+# Set The SDL Version.
+#
+# For detailed explanation of this versioning scheme, 
+# See: http://sourceware.org/autobook/autobook/autobook_91.html#SEC91
+#
+# INTERFACE:REVISION:AGE
+#
+# Interface is bumped on API breaking events
+# Revision is bumped on each change like a bug fix
+# Age is bumped on every addition to the API
+BIONET_INTERFACE_VERSION=1:1:0
 
-AM_CFLAGS=-Wall -Werror -g
+#Purely aesthetic marketing version number
+BIONET_RELEASE_VERSION=2.1.2
+
+AM_CFLAGS=-Wall -Werror -g -DBIONET_VERSION=\"$(BIONET_RELEASE_VERSION)\"
 
 if ENABLE_DARWIN
     AM_CFLAGS += -DMACOSX
@@ -14,7 +29,7 @@ if ENABLE_LINUX
     AM_CFLAGS += -DLINUX
 endif
  
-INCLUDES_BIONET_UTIL = $(top_srcdir)/util/bionet-util.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-datapoint.h $(top_srcdir)/util/bionet-value.h
+INCLUDES_BIONET_UTIL = $(top_srcdir)/util/bionet-util.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-datapoint.h $(top_srcdir)/util/bionet-value.h $(top_srcdir)/util/bionet-version.h
 CFLAGS_BIONET_UTIL = -I$(top_srcdir)/util 
 LDFLAGS_BIONET_UTIL = -L$(top_srcdir)/util 
 LIBS_BIONET_UTIL = $(top_srcdir)/util/libbionet-util.la
@@ -62,18 +77,3 @@ LIBS_BIONET_ASN1 = $(top_srcdir)/asn.1/libbionet-asn.la
 INCLUDES_QT = `pkg-config --cflags QtCore` `pkg-config --cflags QtGui`
 LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`
 
-#
-# Set The SDL Version.
-#
-# For detailed explanation of this versioning scheme, 
-# See: http://sourceware.org/autobook/autobook/autobook_91.html#SEC91
-#
-# INTERFACE:REVISION:AGE
-#
-# Interface is bumped on API breaking events
-# Revision is bumped on each change like a bug fix
-# Age is bumped on every addition to the API
-BIONET_INTERFACE_VERSION=1:1:0
-
-#Purely aesthetic marketing version number
-BIONET_RELEASE_VERSION=2.1.2+epsilon

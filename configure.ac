@@ -42,8 +42,6 @@ CXXFLAGS="$USERCXXFLAGS"
 
 AC_CHECK_TOOL([STRIP],[strip])
 
-test "$BIONET_VERSION_TAG" == "" && BIONET_VERSION_TAG="devel-$USER-`date '+%s'`"
-AC_ARG_VAR([BIONET_VERSION_TAG], [Bionet unique version ID])
 
 # Checks for libraries.
 AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
@@ -248,7 +246,12 @@ fi
 #bazaar
 AC_PATH_PROG(BAZAAR, bzr, no)
 AM_CONDITIONAL([DISABLE_BZR], [test "x$BAZAAR" = "xno"])
-AM_CONDITIONAL([RELEASE], [test "x$BAZAAR" != "xno"])
+if test "x$BAZAAR" = "xno"; then
+   test "$BIONET_BUILD_TAG" == "" && BIONET_BUILD_TAG="+$USER"
+else
+   test "$BIONET_BUILD_TAG" == "" && BIONET_BUILD_TAG="+`bzr revno`+$USER`perl -e '\$status=\`bzr status -V\`;if(\$status){print "+diff"}'`"
+fi
+AC_ARG_VAR([BIONET_BUILD_TAG], [Bionet build ID])
 
 AC_PATH_PROG(DOT, dot, no)
 AM_CONDITIONAL([DISABLE_DOT], [test "x$DOT" = "xno"])
@@ -297,6 +300,7 @@ AC_CONFIG_FILES([Makefile
 		 cal/examples/Makefile
                  asn.1/Makefile
                  util/Makefile
+		 util/bionet-version.h
                  client/Makefile
                  client/libbionet/Makefile
                  client/libbionet-qt4/Makefile

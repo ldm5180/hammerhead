@@ -32,7 +32,7 @@ typedef struct bionet_value_opaque_t     bionet_value_t;
 #include "bionet-resource.h"
 #include "bionet-datapoint.h"
 #include "bionet-value.h"
-
+#include "bionet-version.h"
 
 /**
  * The bionet code uses glib's logging facility to log internal messages,

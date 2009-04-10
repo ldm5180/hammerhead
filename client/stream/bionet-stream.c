@@ -36,7 +36,7 @@ void usage(void) {
 }
     
 void version(void) {
-    fprintf(stdout, "No version info available.\n");
+    print_bionet_version(stdout);
 }
 
 

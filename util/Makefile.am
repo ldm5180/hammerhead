@@ -8,7 +8,7 @@ include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libbionet-util.la
 
-include_HEADERS = bionet-util.h bionet-node.h bionet-stream.h bionet-resource.h bionet-datapoint.h bionet-value.h bionet-hab.h
+include_HEADERS = bionet-util.h bionet-node.h bionet-stream.h bionet-resource.h bionet-datapoint.h bionet-value.h bionet-hab.h bionet-version.h
 
 
 libbionet_util_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I ../asn.1
@@ -70,7 +70,8 @@ libbionet_util_la_SOURCES =    \
     value-get-resource.c \
     value-new.c \
     value-set.c \
-    value-to-string.c 
+    value-to-string.c \
+    version.c
 
 
 libbionet_util_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION)
