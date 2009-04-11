@@ -257,7 +257,14 @@ int main(int argc, char** argv)
     g_log("", G_LOG_LEVEL_INFO, "trying to connect to stethoscope device");
 
 connecting:
-    s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+    do {
+	s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	if (0 > s) {
+	    g_log("", G_LOG_LEVEL_ERROR, "failed to open Bluetooth socket: %m");
+	    sleep(1);
+	    g_log("", G_LOG_LEVEL_DEBUG, "trying socket() again...");
+	}
+    } while (0 > s);
 
     addr.rc_family = AF_BLUETOOTH;
     addr.rc_channel = (uint8_t) AME_CHANNEL_NUMBER;
