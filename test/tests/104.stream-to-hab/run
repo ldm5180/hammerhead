@@ -5,7 +5,7 @@
 # NNC07CB47C.
 #
 
-MAC=`perl -e 'if (\`uname -a\` =~ m/^Darwin/) { print "true" };'`
+MAC=`perl -e 'if (\`uname -a\` =~ m/^Darwin/) { print "true" } else { print "false" };'`
 if $MAC; then
     echo "Skipping on OSX for now"
     exit 2
