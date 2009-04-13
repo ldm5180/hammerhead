@@ -30,6 +30,7 @@ for FILE in test-pattern-*; do
         hd $FILE > hd.$FILE
         hd out.$FILE > hd.out.$FILE
         diff -u hd.$FILE hd.out.$FILE
+	kill %1
         exit 1
     fi
     echo "files are identical, yay"
