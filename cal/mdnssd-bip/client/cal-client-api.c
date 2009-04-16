@@ -184,6 +184,16 @@ int cal_client_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
         return 0;
     }
 
+    if (!cal_peer_name_is_valid(peer_name)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: called with invalid peer_name!");
+        return 0;
+    }
+
+    if (!cal_topic_is_valid(topic)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: called with invalid topic!");
+        return 0;
+    }
+
     event = cal_event_new(CAL_EVENT_SUBSCRIBE);
     if (event == NULL) {
         return 0;
@@ -307,6 +317,11 @@ int cal_client_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
 
     if (cal_client_mdnssd_bip_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: called before init()!");
+        return 0;
+    }
+
+    if (!cal_peer_name_is_valid(peer_name)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: called with invalid peer_name!");
         return 0;
     }
 
