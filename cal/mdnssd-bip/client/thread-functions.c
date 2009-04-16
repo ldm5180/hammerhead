@@ -266,8 +266,8 @@ static void read_from_user(void) {
         case CAL_EVENT_MESSAGE: {
             bip_peer_t *peer;
 
-            if (event->peer_name == NULL) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user Message event has NULL peer_name, ignoring");
+            if (!cal_peer_name_is_valid(event->peer_name)) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user Message event has invalid peer_name, ignoring");
                 break;
             }
 
@@ -302,6 +302,17 @@ static void read_from_user(void) {
 
         case CAL_EVENT_SUBSCRIBE: {
             cal_client_mdnssd_bip_subscription_t *s;
+
+
+            if (!cal_peer_name_is_valid(event->peer_name)) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user Subscribe event has invalid peer_name, ignoring");
+                break;
+            }
+
+            if (!cal_topic_is_valid(event->topic)) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user Subscribe event has invalid topic, ignoring");
+                break;
+            }
 
 
             //
