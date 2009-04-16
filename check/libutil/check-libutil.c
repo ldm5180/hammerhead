@@ -13,6 +13,7 @@
 #include "check-common.h"
 #include "bionet-util.h"
 #include "check-libutil-hab-tests.h"
+#include "check-libutil-split-hab-name.h"
 
 int main(int argc, char * argv[])
 {
@@ -21,6 +22,7 @@ int main(int argc, char * argv[])
     suite_t func_unit_test_suite[] = 
         {
             { "Bionet Util HAB Tests", &libutil_hab_tests_suite },
+            { "Bionet Util Split HAB Name", &libutil_split_hab_name_suite },
         };
 
     /* run all the integration test suites */
