@@ -58,6 +58,18 @@ START_TEST (test_libutil_split_hab_name_1) {
     r = bionet_split_hab_name(name, &hab_type, &hab_id);
     fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
 
+    name = "*.*";
+    r = bionet_split_hab_name(name, &hab_type, &hab_id);
+    fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
+
+    name = "type.*";
+    r = bionet_split_hab_name(name, &hab_type, &hab_id);
+    fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
+
+    name = "*.id";
+    r = bionet_split_hab_name(name, &hab_type, &hab_id);
+    fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
+
     name = "1.2";
     r = bionet_split_hab_name(name, &hab_type, &hab_id);
     fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
