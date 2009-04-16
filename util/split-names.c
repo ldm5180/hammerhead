@@ -381,6 +381,11 @@ int bionet_split_hab_name(
     memcpy(internal_hab_type, p, size);
     internal_hab_type[size] = '\0';
 
+    if (! bionet_is_valid_name_component_or_wildcard(internal_hab_type)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name(): HAB-Type of HAB Name '%s' is not a valid name component or a wildcard", hab_name);
+        return -1;
+    }
+
 
     // get the HAB-ID
     p = separator + 1;
@@ -395,6 +400,11 @@ int bionet_split_hab_name(
     }
     memcpy(internal_hab_id, p, size);
     internal_hab_id[size] = '\0';
+
+    if (! bionet_is_valid_name_component_or_wildcard(internal_hab_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name(): HAB-ID of HAB Name '%s' is not a valid name component or a wildcard", hab_name);
+        return -1;
+    }
 
 
     // set returned values
