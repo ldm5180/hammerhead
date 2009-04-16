@@ -264,11 +264,11 @@ static int add_resource_to_db(bionet_resource_t *resource) {
     {
         int i;
 
-        sprintf(blob, "X'");
+        snprintf(blob, sizeof(blob), "X'");
         for (i = 0; i < 8; i ++) {
-            sprintf(&blob[2+(2*i)], "%02X", sha_digest[i]);
+            snprintf(&blob[2+(2*i)], sizeof(blob) - 2+(2*i),"%02X", sha_digest[i]);
         }
-        sprintf(&blob[2+(2*8)], "'");
+        snprintf(&blob[2+(2*8)], sizeof(blob) - 2+(2*8), "'");
     }
 
 
