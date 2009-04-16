@@ -11,6 +11,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #ifdef WINDOWS
     #include <windows.h>
@@ -206,10 +207,16 @@ int main (int argc, char *argv[]) {
     }
 
 
+    int urandom_fd;
+    urandom_fd = open ("/dev/urandom", O_RDONLY);
+    if (0 > urandom_fd) {
+	g_message("Failed to open /dev/urandom: %m");
+	exit(1);
+    }
+
     // 
     // main loop
     // 
-
     while (1) {
         fd_set readers;
         struct timeval timeout;
@@ -233,7 +240,14 @@ int main (int argc, char *argv[]) {
             destroy_node(hab);
         }
 
-        rnd = rand() % 100;
+	if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+	    continue;
+	}
+	else
+	{
+	    rnd = rnd % 100;
+	}
         if (rnd < 10) {
             destroy_node(hab);
         } else if (rnd < 20) {
@@ -245,7 +259,12 @@ int main (int argc, char *argv[]) {
         FD_ZERO(&readers);
         FD_SET(bionet_fd, &readers);
 
-        ms_delay = rand() % (max_delay * 1000);
+	if (sizeof(ms_delay) != read(urandom_fd, &ms_delay, sizeof(ms_delay))) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+	    continue;
+	} else {
+	    ms_delay = ms_delay % (max_delay * 1000);
+	}
         timeout.tv_sec = ms_delay / 1000;
         timeout.tv_usec = (ms_delay % 1000) * 1000;
 
