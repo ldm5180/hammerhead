@@ -266,6 +266,11 @@ static void read_from_user(void) {
         case CAL_EVENT_MESSAGE: {
             bip_peer_t *peer;
 
+            if (event->peer_name == NULL) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user Message event has NULL peer_name, ignoring");
+                break;
+            }
+
             if (event->msg.buffer == NULL) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user Message event has NULL msg buffer, ignoring");
                 break;
