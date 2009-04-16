@@ -18,7 +18,7 @@ lib_LTLIBRARIES = libhab-py.la
 
 libhab_py_la_SOURCES = hab_wrap.c
 
-libhab_py_la_CFLAGS = `pkg-config --cflags glib-2.0` -I/usr/include/python2.5 ${SWIG_INCDIR}
+libhab_py_la_CFLAGS = $(AM_CFLAGS) `pkg-config --cflags glib-2.0` -I/usr/include/python2.5 ${SWIG_INCDIR}
 libhab_py_la_LDFLAGS = $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_CAL_SERVER) -version-info $(BIONET_INTERFACE_VERSION)
 libhab_py_la_LIBADD = $(LIBS_BIONET_HAB) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_SERVER) -lpthread -lm
 libhab_py_la_DEPENDENCIES = $(INCLUDES_BIONET_HAB) $(INCLUDES_BIONET_UTIL) 
