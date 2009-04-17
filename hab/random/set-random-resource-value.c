@@ -62,7 +62,7 @@ void set_random_resource_value(bionet_resource_t* resource) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
 		return;
 	    }
-	    value = bionet_value_new_binary(resource, rnd % 2);
+	    value = bionet_value_new_binary(resource, abs(rnd) % 2);
             break;
         }
 
