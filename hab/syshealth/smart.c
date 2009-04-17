@@ -49,8 +49,10 @@ static int smart_get(char* drive) {
     // Third Pass: 3ware device
     snprintf(command, sizeof(command), "which smartctl > /dev/null && smartctl -a /dev/%s | grep -i Logical | perl -ne 'split && print \"$_[4]\"'", drive);
     fd = popen(command, "r");
-    if (fd == NULL) 
+    if (fd == NULL) {
 	g_log("", G_LOG_LEVEL_WARNING, "Problem using popen: %s", strerror(errno));
+        return -275;  // FIXME: bogus
+    }
 
     r = fscanf(fd, "%d", &disk_number);
     pclose(fd);
@@ -84,8 +86,10 @@ int parse_for_temperature(char* system_command) {
     int r, temperature;
     
     fd = popen(system_command, "r");
-    if (fd == NULL) 
+    if (fd == NULL) {
 	g_log("", G_LOG_LEVEL_WARNING, "Problem using popen: %s", strerror(errno));
+        return -275; // FIXME: -275 < absolute zero; this test failed
+    }
     
     r = fscanf(fd, "%d", &temperature);
     pclose(fd);
