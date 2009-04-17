@@ -122,7 +122,11 @@ static void parse_line(char* line) {
                 return;
             }
 
-            bionet_hab_add_node(this_hab, node);
+            if (bionet_hab_add_node(this_hab, node)) {
+		g_log("", G_LOG_LEVEL_WARNING, "parse_line(): Failed to add node to hab.");
+		bionet_node_free(node);
+		return;
+	    }
 
             hab_report_new_node(node);
             return;
