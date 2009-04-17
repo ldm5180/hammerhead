@@ -122,8 +122,8 @@ int main ( int argc, char** argv )
             i++;
 
             if ((i < argc) &&
-		(0 != (period = strtol(argv[i], NULL, 0))) ||
-		((0 == period) && (EINVAL != errno)))
+		((0 != (period = strtol(argv[i], NULL, 0))) ||
+		 ((0 == period) && (EINVAL != errno))))
             { }
             else
             {
