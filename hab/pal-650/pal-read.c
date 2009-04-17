@@ -130,7 +130,11 @@ static bionet_node_t *get_node(const char *node_id) {
         }
         bionet_node_set_user_data(node, node_data);
 
-        bionet_hab_add_node(hab, node);
+        if (bionet_hab_add_node(hab, node)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "get_node(): Failed to add node to hab.");
+	    bionet_node_free(node);
+	    return NULL;
+	}
 
         hab_report_new_node(node);
     }
@@ -309,6 +313,7 @@ int pal_read(int pal_fd) {
     }
 
     index += r;
+    buffer[index] = '\0'; //ensure the string ends with a NULL
 
     // Parse all data within the buffer.
     while (1) {
