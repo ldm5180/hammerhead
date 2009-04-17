@@ -46,7 +46,10 @@ void libbionet_cache_add_node(bionet_node_t *node) {
         libbionet_cache_add_hab(hab);
     }
 
-    bionet_hab_add_node(hab, node);
+    if (bionet_hab_add_node(hab, node)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "libbionet_cache_add_node(): Failed to add node to hab.");
+    }
 }
 
 
