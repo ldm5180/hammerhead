@@ -140,13 +140,8 @@ void set_random_resource_value(bionet_resource_t* resource) {
             new_string[0] = '\0';
             num_words = (rnd % 4) + 1;
             for (i = 0; i < num_words; i ++) {
-		const char * new_word = get_random_word();
-		if (strlen(new_word) + strlen(new_string) >= sizeof(new_string)) {
-		    break;
-		} else {
-		    strcat(new_string, get_random_word());
-		    strcat(new_string, " ");
-		}
+		strncat(new_string, get_random_word(), sizeof(new_string) - strlen(new_string));
+		strncat(new_string, " ", sizeof(new_string) - strlen(new_string));
             }
             new_string[strlen(new_string) - 1] = '\0';
 	    value = bionet_value_new_str(resource, strdup(new_string)); 

@@ -141,8 +141,8 @@ void add_resource(bionet_node_t *node) {
 
 void add_node(bionet_hab_t* random_hab) {
     bionet_node_t *node;
-    char *node_id;
-    int num_resources;
+    char *node_id = NULL;
+    int num_resources = 0;
     int i;
     int rnd;
 
@@ -151,7 +151,7 @@ void add_node(bionet_hab_t* random_hab) {
         int num_node_ids = sizeof(random_node_ids) / sizeof(char*);
 	if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
-	    break;
+	    return;
 	}
         node_id = random_node_ids[abs(rnd) % num_node_ids];
         if (bionet_hab_get_node_by_id(random_hab, node_id) == NULL) break;

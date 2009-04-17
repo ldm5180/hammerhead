@@ -24,11 +24,16 @@
 
 #include "resource-ids.h"
 
-
+extern int urandom_fd;
 
 
 const char *get_random_word(void) {
     int num_resource_ids = sizeof(random_resource_ids) / sizeof(char*);
-    return random_resource_ids[rand() % num_resource_ids];
+    int rnd;
+    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+	return NULL;
+    }
+    return random_resource_ids[abs(rnd) % num_resource_ids];
 }
 
