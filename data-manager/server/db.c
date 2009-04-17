@@ -649,7 +649,11 @@ static bionet_resource_t *find_resource(bionet_node_t *node, const char *data_ty
         return NULL;
     }
 
-    bionet_node_add_resource(node, resource);
+    if (bionet_node_add_resource(node, resource)) {
+	g_log("", G_LOG_LEVEL_WARNING, "find_resource(): Failed to add resource to node.");
+	bionet_resource_free(resource);
+	return NULL;
+    }
 
     return resource;
 }
