@@ -143,17 +143,17 @@ int smart_init(bionet_node_t *node) {
 	    g_log("", G_LOG_LEVEL_ERROR, "sprintf unable to create the filename");
 	} else {
 	    fd = fopen(removable_drive_location, "r");
-	    if (fd == NULL)
+	    if (fd == NULL) {
 		g_log("", G_LOG_LEVEL_ERROR, "unable to open: %s", removable_drive_location);
-	    else {
+	    } else {
 		r = fscanf(fd, "%d", &is_removable);
-		if (r != 1)
+		if (r != 1) {
 		    g_log("", G_LOG_LEVEL_ERROR, "unable to scan %s (fscanf status: %s)", removable_drive_location, strerror(errno));
-		else
-		    if (is_removable == 1)
-		        continue;
+		} else {
+		    if (is_removable == 1) continue;
+                }
+                fclose(fd);
 	    }
-            fclose(fd);
 	}
 
 
