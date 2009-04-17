@@ -206,6 +206,7 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: error accepting a connection: %s", strerror(errno));
         goto fail1;
     }
+    net->socket_bio = BIO_new_socket(net->socket, BIO_CLOSE);
 
     event = cal_event_new(CAL_EVENT_CONNECT);
     if (event == NULL) {
@@ -270,6 +271,9 @@ fail3:
 
 fail2:
     close(net->socket);
+    BIO_free_all(net->socket_bio);
+    net->socket_bio = NULL;
+    net->socket = -1;
 
 fail1:
     bip_net_destroy(net);

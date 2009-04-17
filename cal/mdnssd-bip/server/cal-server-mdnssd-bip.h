@@ -18,6 +18,7 @@
 
 #include "cal-mdnssd-bip.h"
 
+#include <openssl/bio.h>
 
 
 
@@ -29,6 +30,7 @@ typedef struct {
     char *name;
     uint16_t port;
     int socket;
+    BIO * socket_bio;
     int (*topic_matches)(const char *a, const char *b);
 } cal_server_mdnssd_bip_t;
 

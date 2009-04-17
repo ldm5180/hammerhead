@@ -17,12 +17,13 @@ void bip_net_disconnect(bip_peer_network_info_t *net) {
 
     bip_net_clear(net);
 
-    if (net->socket == -1) {
+    if (NULL == net->socket_bio) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_net_disconnect: passed-in net does not have a connected socket");
         return;
     }
 
-    close(net->socket);
+    BIO_free_all(net->socket_bio); // Free and close entire chain
+    net->socket_bio = NULL;
     net->socket = -1;
 }
 

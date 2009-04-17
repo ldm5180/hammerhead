@@ -66,19 +66,19 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
 
     // FIXME: this should be one write
 
-    r = write(net->socket, &msg_type, sizeof(msg_type));
+    r = BIO_write(net->socket_bio, &msg_type, sizeof(msg_type));
     if (r != sizeof(msg_type)) {
         return -1;
     }
 
-    r = write(net->socket, &msg_size, sizeof(msg_size));
+    r = BIO_write(net->socket_bio, &msg_size, sizeof(msg_size));
     if (r != sizeof(msg_size)) {
         return -1;
     }
 
     if (size == 0) return 0;
 
-    r = write(net->socket, msg, size);
+    r = BIO_write(net->socket_bio, msg, size);
     if (r != size) {
         return -1;
     }
