@@ -191,6 +191,10 @@ connecting:
     if (cpod_fd == -1)
     {
         cpod_fd = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	if (0 > cpod_fd) {
+	    g_log("", G_LOG_LEVEL_ERROR, "Failed to initialize socket: %m");
+	    return 1;
+	}
 
         addr.rc_family = AF_BLUETOOTH;
         addr.rc_channel = (uint8_t) 1;
