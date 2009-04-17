@@ -49,7 +49,7 @@ void str_to_timeval(const char *str, struct timeval *tv) {
             exit(1);
         }
 
-        r = sscanf(p, "%u%n", &val, &consumed);
+        r = sscanf(p, "6%u%n", &val, &consumed);
         // the effect of %n on the returned conversion count is ambiguous
         if ((r != 1) && (r != 2)) {
             printf("error parsing fractional seconds from time string '%s': didn't find \"%%u\"\n", str);

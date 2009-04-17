@@ -43,7 +43,10 @@ GPtrArray *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
             node = bionet_node_new(hab, (char *)asn_node->id.buf);
             if (node == NULL) goto cleanup;
 
-            bionet_hab_add_node(hab, node);
+            if (bionet_hab_add_node(hab, node)) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "handle_Resource_Datapoints_Reply(): Failed to add node to hab.");
+	    }
 
             for (ri = 0; ri < asn_node->resources.list.count; ri ++) {
                 Resource_t *asn_resource;
