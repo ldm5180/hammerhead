@@ -22,7 +22,7 @@
 
 #include "random-hab.h"
 
-
+extern int urandom_fd;
 
 
 //  
@@ -49,19 +49,23 @@ void update_node(bionet_hab_t* random_hab) {
 	bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
         bionet_datapoint_t *datapoint;
         char *val_str;
-
+	uint8_t rnd;
         // resources are only updated 50% of the time
-        if ((rand() % 2) == 0) {
-            if (output_mode == OM_NORMAL) {
-                g_message(
-                    "    %s %s %s = *** skipped!",
-                    bionet_resource_get_id(resource),
-                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
-                );
-            }
-            continue;
-        }
+
+	if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+	    continue;
+	} else if ((rnd % 2) == 0) {
+	    if (output_mode == OM_NORMAL) {
+		g_message(
+		    "    %s %s %s = *** skipped!",
+		    bionet_resource_get_id(resource),
+		    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+		    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
+		    );
+	    }
+	    continue;
+	}
 
         set_random_resource_value(resource);
 

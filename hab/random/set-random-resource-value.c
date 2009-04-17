@@ -25,13 +25,20 @@
 
 #include "random-hab.h"
 
-
+extern int urandom_fd;
 
 
 void randomize_buffer(void *buffer, int size) {
     unsigned char *b = buffer;
+    unsigned char rnd;
+
+    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+	return;
+    }
+
     for ( ; size > 0; size --) {
-        *b = rand() & 0xFF;
+        *b = rnd & 0xFF;
         b ++;
     }
 }
@@ -42,6 +49,7 @@ void randomize_buffer(void *buffer, int size) {
 void set_random_resource_value(bionet_resource_t* resource) {
     bionet_datapoint_t *datapoint = NULL;
     bionet_value_t *value = NULL;
+    int rnd;
 
     switch (bionet_resource_get_data_type(resource)) {
         case BIONET_RESOURCE_DATA_TYPE_INVALID: {
@@ -50,7 +58,11 @@ void set_random_resource_value(bionet_resource_t* resource) {
         }
 
         case BIONET_RESOURCE_DATA_TYPE_BINARY: {
-	    value = bionet_value_new_binary(resource, rand() % 2);
+	    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+		return;
+	    }
+	    value = bionet_value_new_binary(resource, rnd % 2);
             break;
         }
 
@@ -120,11 +132,21 @@ void set_random_resource_value(bionet_resource_t* resource) {
             int num_words;
             int i;
 
+	    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+		return;
+	    }
+
             new_string[0] = '\0';
-            num_words = (rand() % 4) + 1;
+            num_words = (rnd % 4) + 1;
             for (i = 0; i < num_words; i ++) {
-                strcat(new_string, get_random_word());
-                strcat(new_string, " ");
+		const char * new_word = get_random_word();
+		if (strlen(new_word) + strlen(new_string) >= sizeof(new_string)) {
+		    break;
+		} else {
+		    strcat(new_string, get_random_word());
+		    strcat(new_string, " ");
+		}
             }
             new_string[strlen(new_string) - 1] = '\0';
 	    value = bionet_value_new_str(resource, strdup(new_string)); 

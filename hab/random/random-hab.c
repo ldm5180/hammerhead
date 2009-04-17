@@ -33,7 +33,7 @@ int should_exit = 0;
 om_t output_mode = OM_NORMAL;
 bionet_hab_t *hab;
 
-
+int urandom_fd;
 
 
 void show_stuff_going_away(void) {
@@ -57,13 +57,15 @@ void signal_handler(int unused) {
 
 
 void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value) {
+    char *value_str = bionet_value_to_str(value);
     if (output_mode == OM_NORMAL) {
         printf(
             "callback: should set %s to '%s'\n",
             bionet_resource_get_local_name(resource),
-            bionet_value_to_str(value)
+            value_str
         );
     }
+    free(value_str);
 }
 
 
@@ -86,14 +88,7 @@ int main (int argc, char *argv[]) {
 
     g_log_set_default_handler(bionet_glib_log_handler, &log_context);
 
-
-
-    //
-    //  Seed the random function
-    //
-
     srand(time(NULL));
-
 
     // handle command line arguments
     for (i = 1; i < argc; i ++) {
@@ -206,8 +201,6 @@ int main (int argc, char *argv[]) {
         } while(1);
     }
 
-
-    int urandom_fd;
     urandom_fd = open ("/dev/urandom", O_RDONLY);
     if (0 > urandom_fd) {
 	g_message("Failed to open /dev/urandom: %m");
@@ -263,7 +256,7 @@ int main (int argc, char *argv[]) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
 	    continue;
 	} else {
-	    ms_delay = ms_delay % (max_delay * 1000);
+	    ms_delay = abs(ms_delay) % (max_delay * 1000);
 	}
         timeout.tv_sec = ms_delay / 1000;
         timeout.tv_usec = (ms_delay % 1000) * 1000;
@@ -284,6 +277,8 @@ int main (int argc, char *argv[]) {
 
         hab_read();
     }
+
+    close(urandom_fd);
 
     return 0;
 }

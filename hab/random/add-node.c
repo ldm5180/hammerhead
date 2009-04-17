@@ -24,7 +24,7 @@
 
 #include "node-ids.h"
 
-
+extern int urandom_fd;
 
 
 void add_resource(bionet_node_t *node) {
@@ -34,14 +34,24 @@ void add_resource(bionet_node_t *node) {
     const char *resource_id;
     bionet_resource_t *resource;
     int r;
+    unsigned int rnd;
 
     do {
         resource_id = get_random_word();
         if (bionet_node_get_resource_by_id(node, resource_id) == NULL) break;
     } while(1);
+    
+    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+	return;
+    }
+    flavor = rnd % (BIONET_RESOURCE_FLAVOR_MAX + 1);
 
-    flavor = rand() % (BIONET_RESOURCE_FLAVOR_MAX + 1);
-    data_type = rand() % (BIONET_RESOURCE_DATA_TYPE_MAX + 1);
+    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+	return;
+    }
+    data_type = rnd % (BIONET_RESOURCE_DATA_TYPE_MAX + 1);
 
     resource = bionet_resource_new(
         node,
@@ -63,7 +73,11 @@ void add_resource(bionet_node_t *node) {
     // half of the resources start out without a datapoint
     // the other half of the resources get an initial datapoint
     //
-    if ((rand() % 2) == 0) {
+    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+	return;
+    }
+    if ((rnd % 2) == 0) {
         if (output_mode == OM_NORMAL) {
             g_message(
                 "    %s %s %s = (starts with no value)",
@@ -130,11 +144,16 @@ void add_node(bionet_hab_t* random_hab) {
     char *node_id;
     int num_resources;
     int i;
+    int rnd;
 
 
     do {
         int num_node_ids = sizeof(random_node_ids) / sizeof(char*);
-        node_id = random_node_ids[rand() % num_node_ids];
+	if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+	    break;
+	}
+        node_id = random_node_ids[abs(rnd) % num_node_ids];
         if (bionet_hab_get_node_by_id(random_hab, node_id) == NULL) break;
     } while(1);
 
@@ -145,12 +164,16 @@ void add_node(bionet_hab_t* random_hab) {
     if (output_mode == OM_BIONET_WATCHER) g_message("new node: %s", bionet_node_get_name(node));
 
     // add 0-29 resources
-    num_resources = rand() % 30;
-    if (num_resources > 0) {
-        if (output_mode == OM_BIONET_WATCHER) g_message("    Resources:");
-        for (i = 0; i < num_resources; i ++) {
-            add_resource(node);
-        }
+    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+    } else {
+	num_resources = rnd % 30;
+	if (num_resources > 0) {
+	    if (output_mode == OM_BIONET_WATCHER) g_message("    Resources:");
+	    for (i = 0; i < num_resources; i ++) {
+		add_resource(node);
+	    }
+	}
     }
 
     if (output_mode == OM_BIONET_WATCHER) {
