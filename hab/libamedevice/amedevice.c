@@ -257,7 +257,8 @@ char* ame_response_return_name(int fd)
 
 
     if (name[1] == ((char)CMD_RETURN_NAME) &&
-        name[2] == ((char)RSP_STATUS_SUCCESS))
+        name[2] == ((char)RSP_STATUS_SUCCESS) &&
+	(name <= UINT_MAX-3))
         return name+3;
 
 
