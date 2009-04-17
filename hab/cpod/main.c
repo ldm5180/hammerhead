@@ -121,15 +121,16 @@ int main ( int argc, char** argv )
         {
             i++;
 
-            if ((i < argc) &&
-		((0 != (period = strtol(argv[i], NULL, 0))) ||
-		 ((0 == period) && (EINVAL != errno))))
-            { }
-            else
-            {
-                print_help(argv[0]);
-                exit(2);
-            }
+	    if (i >= argc) {
+		print_help(argv[0]);
+		exit(2);
+	    }
+
+	    period = strtol(argv[i], NULL, 0);
+	    if ((0 == period) && (EINVAL == errno)) {
+		print_help(argv[0]);
+		exit(2);
+	    }
         }
         else if (strlen(argv[i]) == 17 &&
                  str2ba(argv[i], &device) == 0 &&
