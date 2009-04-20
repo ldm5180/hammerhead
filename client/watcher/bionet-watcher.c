@@ -86,7 +86,16 @@ void signal_handler(int signo) {
 
 void cb_datapoint(bionet_datapoint_t *datapoint) {
     bionet_value_t * value = bionet_datapoint_get_value(datapoint);
+    if (NULL == value) {
+	g_log("", G_LOG_LEVEL_WARNING, "Failed to get value from datapoint.");
+	return;
+    }
+
     bionet_resource_t * resource = bionet_value_get_resource(value);
+    if (NULL == resource) {
+	g_log("", G_LOG_LEVEL_WARNING, "Failed to get resource from value.");
+	return;
+    }
 
     char * value_str = bionet_value_to_str(value);
 
@@ -118,6 +127,10 @@ void cb_new_node(bionet_node_t *node) {
 
         for (i = 0; i < bionet_node_get_num_resources(node); i++) {
             bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
+	    if (NULL == resource) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to get resource at index %d from node", i);
+		continue;
+	    }
             bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
 
             if (datapoint == NULL) {
@@ -150,6 +163,10 @@ void cb_new_node(bionet_node_t *node) {
 
         for (i = 0; i < bionet_node_get_num_streams(node); i++) {
             bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
+	    if (NULL == stream) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to get stream at index %d from node", i);
+	    }
+
             g_message(
                 "        %s %s %s", 
                 bionet_stream_get_id(stream),
