@@ -99,7 +99,7 @@ int main (int argc, char *argv[]) {
 	    {"id", 1, 0, 'i'},
 	    {"min-nodes", 1, 0, 'm'},
 	    {"max-delay", 1, 0, 'x'},
-	    {"output", 1, 0, 'o'},
+	    {"output-mode", 1, 0, 'o'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
