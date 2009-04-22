@@ -30,15 +30,20 @@ void usage() {
 	    "\n"
 	    " -h,--help                     Show this usage information.\n"
 	    " -v,--version                  Show the version number\n"
+	    " -e,--require-security         Require security\n"
 	    " -i,--id <ID>                  Use ID as the HAB-ID (defaults to\n"
 	    "                               hostname if omitted).\n"
 	    " -m,--min-nodes <N>            If there are fewer than N nodes, make up\n"
 	    "                               some more.\n"
+	    " -o,--output-mode <mode>       Available modes are 'normal',\n"
+	    "                               'bdm-client', and 'bionet-watcher'\n"
+	    " -s,--security-dir <dir>       Directory containing security certificates\n"
 	    " -x,--max-delay <X>            After taking each action (adding or\n"
 	    "                               removing a Node, or updating a Resource),\n"
 	    "                               the random-hab sleeps up to this long (in\n"
 	    "                               seconds).\n"
-	    " -o,--output-mode <mode>       Available modes are 'normal',\n"
-	    "                               'bdm-client', and 'bionet-watcher'\n");
+	    "\n"
+	    "Security can only be required when a security directory has been specified.\n"
+	    "  random-hab [--security-dir <dir> [--require-security]]\n");
 }
 

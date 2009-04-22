@@ -280,10 +280,6 @@ int main(int argc, char *argv[]) {
 
 	case 's':
 	    security_dir = optarg;
-	    if (NULL == security_dir) {
-		g_log("", G_LOG_LEVEL_ERROR, "Failed to assign security directory: %m");
-		return (-1);
-	    }
 	    break;
 	    
 	case 'v':

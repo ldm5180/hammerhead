@@ -82,14 +82,15 @@ int main (int argc, char *argv[]) {
     char *hab_type = HAB_TYPE;
     char *hab_id = NULL;
 
+    char * security_dir;
+    int require_security = 0;
+
     bionet_log_context_t log_context = {
         destination: BIONET_LOG_TO_STDOUT,
         log_limit: G_LOG_LEVEL_INFO
     };
 
     g_log_set_default_handler(bionet_glib_log_handler, &log_context);
-
-    srand(time(NULL));
 
     while(1) {
 	int c;
@@ -100,10 +101,12 @@ int main (int argc, char *argv[]) {
 	    {"min-nodes", 1, 0, 'm'},
 	    {"max-delay", 1, 0, 'x'},
 	    {"output-mode", 1, 0, 'o'},
+	    {"security-dir", 1, 0, 's'},
+	    {"require-security", 0, 0, 'e'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?hvi:m:x:o:", long_options, &i);
+	c = getopt_long(argc, argv, "?hvei:m:x:o:s:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -114,6 +117,15 @@ int main (int argc, char *argv[]) {
 	case 'h':
 	    usage();
 	    return 0;
+
+	case 'e':
+	    if (security_dir) {
+		require_security++;
+	    } else {
+		usage();
+		return (-1);
+	    }
+	    break;
 
 	case 'i':
 	    hab_id = optarg;
@@ -132,6 +144,10 @@ int main (int argc, char *argv[]) {
                 usage();
 		return 1;
             }
+	    break;
+
+	case 's':
+	    security_dir = optarg;
 	    break;
 
 	case 'v':
@@ -154,6 +170,12 @@ int main (int argc, char *argv[]) {
     
     hab = bionet_hab_new(hab_type, hab_id);
 
+
+    if (security_dir) {
+	if (hab_init_security(security_dir, require_security)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+	}
+    }
 
     //
     //  Connecting to Bionet 
