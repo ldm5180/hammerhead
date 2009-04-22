@@ -195,7 +195,7 @@ void usage(void) {
     fprintf(stderr,
 	    "'bionet-watcher' displays data from Bionet HABs.\n"
 	    "\n"
-	    "Usage: bionet-watcher OPTIONS...\n"
+	    "Usage: bionet-watcher [OPTIONS]\n"
 	    "\n"
 	    " --help                                            Show this help\n"
 	    " -e, --require-security                            Require security\n"

@@ -12,6 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <getopt.h>
 
 #ifdef WINDOWS
     #include <windows.h>
@@ -90,51 +91,61 @@ int main (int argc, char *argv[]) {
 
     srand(time(NULL));
 
-    // handle command line arguments
-    for (i = 1; i < argc; i ++) {
+    while(1) {
+	int c;
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'v'},
+	    {"id", 1, 0, 'i'},
+	    {"min-nodes", 1, 0, 'm'},
+	    {"max-delay", 1, 0, 'x'},
+	    {"output", 1, 0, 'o'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-        if (
-            (strcmp(argv[i], "--min-nodes") == 0)
-        ) {
-            i ++;
-            min_nodes = atoi(argv[i]);
+	c = getopt_long(argc, argv, "?hvi:m:x:o:", long_options, &i);
+	if (c == -1) {
+	    break;
+	}
 
-        } else if (
-            (strcmp(argv[i], "--max-delay") == 0)
-        ) {
-            i ++;
-            max_delay = atoi(argv[i]);
+	switch (c) {
 
-        } else if (
-            (strcmp(argv[i], "--id") == 0) ||
-            (strcmp(argv[i], "-i") == 0)
-        ) {
-            i++;
-            hab_id = argv[i];
+	case '?':
+	case 'h':
+	    usage();
+	    return 0;
 
-        } else if (
-            (strcmp(argv[i], "--output-mode") == 0)
-        ) {
-            i ++;
-            if (strcmp(argv[i], "normal") == 0) output_mode = OM_NORMAL;
-            else if (strcmp(argv[i], "bdm-client") == 0) output_mode = OM_BDM_CLIENT;
-            else if (strcmp(argv[i], "bionet-watcher") == 0) output_mode = OM_BIONET_WATCHER;
+	case 'i':
+	    hab_id = optarg;
+	    break;
+
+	case 'm':
+	    min_nodes = atoi(optarg);
+	    break;
+
+	case 'o':
+            if (strcmp(optarg, "normal") == 0) output_mode = OM_NORMAL;
+            else if (strcmp(optarg, "bdm-client") == 0) output_mode = OM_BDM_CLIENT;
+            else if (strcmp(optarg, "bionet-watcher") == 0) output_mode = OM_BIONET_WATCHER;
             else {
-                fprintf(stderr, "unknown output mode %s\n", argv[i]);
-                exit(1);
+                fprintf(stderr, "unknown output mode %s\n", optarg);
+                usage();
+		return 1;
             }
+	    break;
 
-        } else if (
-            (strcmp(argv[i], "--help") == 0) ||
-            (strcmp(argv[i], "-h") == 0)
-        ) {
-            usage(0);
+	case 'v':
+	    print_bionet_version(stdout);
+	    return 0;
 
-        } else {
-            fprintf(stderr, "unknown command-line argument: %s\n", argv[i]);
-            exit(1);
-        }
-    }
+	case 'x':
+	    max_delay = atoi(optarg);
+	    break;
+
+	default:
+	    break;
+	}
+    } //while(1)
 
 
     //  
