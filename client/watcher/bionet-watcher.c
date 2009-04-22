@@ -215,9 +215,11 @@ void usage(void) {
 
 int main(int argc, char *argv[]) {
     int bionet_fd;
-    int subscribed_to_something = 0;
     char * security_dir = NULL;
     int require_security = 0;
+    char * hab_list = "*.*";
+    char * node_list = "*.*.*";
+    char * dp_list = "*.*.*:*";
 
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
 
@@ -262,18 +264,15 @@ int main(int argc, char *argv[]) {
 	    break;
 
 	case 'h':
-            bionet_subscribe_hab_list_by_name(optarg);
-            subscribed_to_something = 1;
+	    hab_list = optarg;
 	    break;
 
 	case 'n':
-            bionet_subscribe_node_list_by_name(optarg);
-            subscribed_to_something = 1;
+	    node_list = optarg;
 	    break;
 
 	case 'r':
-            bionet_subscribe_datapoints_by_name(optarg);
-            subscribed_to_something = 1;
+	    dp_list = optarg;
 	    break;
 
 	case 's':
@@ -317,11 +316,9 @@ int main(int argc, char *argv[]) {
     bionet_register_callback_datapoint(cb_datapoint);
 
 
-    if (!subscribed_to_something) {
-        bionet_subscribe_hab_list_by_name("*.*");
-        bionet_subscribe_node_list_by_name("*.*.*");
-        bionet_subscribe_datapoints_by_name("*.*.*:*");
-    }
+    bionet_subscribe_hab_list_by_name(hab_list);
+    bionet_subscribe_node_list_by_name(node_list);
+    bionet_subscribe_datapoints_by_name(dp_list);
 
 
     signal(SIGUSR1, signal_handler);
