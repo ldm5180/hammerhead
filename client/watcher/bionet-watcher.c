@@ -217,10 +217,10 @@ int main(int argc, char *argv[]) {
     int bionet_fd;
     char * security_dir = NULL;
     int require_security = 0;
-    char * hab_list = "*.*";
-    char * node_list = "*.*.*";
-    char * dp_list = "*.*.*:*";
-
+    GSList * hab_list = NULL;
+    GSList * node_list = NULL;
+    GSList * dp_list = NULL;
+    int subscribed_to_something = 0;
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
 
     //
@@ -264,15 +264,18 @@ int main(int argc, char *argv[]) {
 	    break;
 
 	case 'h':
-	    hab_list = optarg;
+	    hab_list = g_slist_append(hab_list, optarg);
+	    subscribed_to_something = 1;
 	    break;
 
 	case 'n':
-	    node_list = optarg;
+	    node_list = g_slist_append(node_list, optarg);
+	    subscribed_to_something = 1;
 	    break;
 
 	case 'r':
-	    dp_list = optarg;
+	    dp_list = g_slist_append(dp_list, optarg);
+	    subscribed_to_something = 1;
 	    break;
 
 	case 's':
@@ -315,11 +318,22 @@ int main(int argc, char *argv[]) {
 
     bionet_register_callback_datapoint(cb_datapoint);
 
-
-    bionet_subscribe_hab_list_by_name(hab_list);
-    bionet_subscribe_node_list_by_name(node_list);
-    bionet_subscribe_datapoints_by_name(dp_list);
-
+    if (subscribed_to_something) {
+	int i;
+	for (i = 0; i < g_slist_length(hab_list); i++) {
+	    bionet_subscribe_hab_list_by_name(g_slist_nth_data(hab_list, i));
+	}
+	for (i = 0; i < g_slist_length(node_list); i++) {
+	    bionet_subscribe_node_list_by_name(g_slist_nth_data(node_list, i));
+	}
+	for (i = 0; i < g_slist_length(dp_list); i++) {
+	    bionet_subscribe_datapoints_by_name(g_slist_nth_data(dp_list, i));
+	}
+    } else {
+	bionet_subscribe_hab_list_by_name("*.*");
+	bionet_subscribe_node_list_by_name("*.*.*");
+	bionet_subscribe_datapoints_by_name("*.*.*:*");
+    }
 
     signal(SIGUSR1, signal_handler);
 
