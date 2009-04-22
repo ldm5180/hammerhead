@@ -240,16 +240,18 @@ int main(int argc, char *argv[]) {
 	static struct option long_options[] = {
 	    {"help", 0, 0, '?'},
 	    {"version", 0, 0, 'v'},
-	    {"hab", 0, 0, 'h'},
-	    {"habs", 0, 0, 'h'},
-	    {"node", 0, 0, 'n'},
-	    {"nodes", 0, 0, 'n'},
-	    {"resource", 0, 0, 'r'},
-	    {"resources", 0, 0, 'r'},
+	    {"hab", 1, 0, 'h'},
+	    {"habs", 1, 0, 'h'},
+	    {"node", 1, 0, 'n'},
+	    {"nodes", 1, 0, 'n'},
+	    {"resource", 1, 0, 'r'},
+	    {"resources", 1, 0, 'r'},
+	    {"security-dir", 1, 0, 's'},
+	    {"require-security", 0, 0, 'e'}, 
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?vh:n:r:", long_options, &i);
+	c = getopt_long(argc, argv, "?veh:n:r:s:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
