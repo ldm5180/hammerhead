@@ -198,38 +198,28 @@ void usage(void) {
 	    "Usage: bionet-watcher OPTIONS...\n"
 	    "\n"
 	    " --help                                            Show this help\n"
-	    " -h, --hab, --habs \"HAB-Type.Hab-ID\n             Subscribe to a HAB list.\n"
-	    " -n, --node, --nodes \"HAB-Type.HAB-ID.Node-ID\"   Subscribe to a Node list\n"
+	    " -e, --require-security                            Require security\n"
+	    " -h, --hab, --habs \"HAB-Type.Hab-ID\"               Subscribe to a HAB list.\n"
+	    " -n, --node, --nodes \"HAB-Type.HAB-ID.Node-ID\"     Subscribe to a Node list\n"
 	    " -r, --resource, --resources \"HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
 	    "                                                   Subscribe to Resource values.\n"
-	    " -v, --version                                     Show the version number\n");
+	    " -s, --security-dir <dir>                          Directory containing security\n"
+	    "                                                   certificates\n"
+	    " -v, --version                                     Show the version number\n"
+	    "\n"
+	    "Security can only be required when a security directory has been specified.\n"
+	    "  bionet-watcher [--security-dir <dir> [--require-security]]\n"
+);
 }
 
 
 int main(int argc, char *argv[]) {
     int bionet_fd;
     int subscribed_to_something = 0;
-
+    char * security_dir = NULL;
+    int require_security = 0;
 
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
-
-
-    // this must happen before anything else
-    bionet_fd = bionet_connect();
-    if (bionet_fd < 0) {
-        fprintf(stderr, "error connecting to Bionet");
-        exit(1);
-    }
-
-
-    bionet_register_callback_new_hab(cb_new_hab);
-    bionet_register_callback_lost_hab(cb_lost_hab);
-
-    bionet_register_callback_new_node(cb_new_node);
-    bionet_register_callback_lost_node(cb_lost_node);
-
-    bionet_register_callback_datapoint(cb_datapoint);
-
 
     //
     // parse command-line arguments
@@ -262,6 +252,15 @@ int main(int argc, char *argv[]) {
 	    usage();
 	    return 0;
 
+	case 'e':
+	    if (security_dir) {
+		require_security++;
+	    } else {
+		usage();
+		return (-1);
+	    }
+	    break;
+
 	case 'h':
             bionet_subscribe_hab_list_by_name(optarg);
             subscribed_to_something = 1;
@@ -276,6 +275,14 @@ int main(int argc, char *argv[]) {
             bionet_subscribe_datapoints_by_name(optarg);
             subscribed_to_something = 1;
 	    break;
+
+	case 's':
+	    security_dir = optarg;
+	    if (NULL == security_dir) {
+		g_log("", G_LOG_LEVEL_ERROR, "Failed to assign security directory: %m");
+		return (-1);
+	    }
+	    break;
 	    
 	case 'v':
 	    print_bionet_version(stdout);
@@ -286,6 +293,28 @@ int main(int argc, char *argv[]) {
 	}
        
     } //while(1)
+
+    if (security_dir) {
+	if (bionet_init_security(security_dir, require_security)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+	}
+    }
+
+    // this must happen before anything else
+    bionet_fd = bionet_connect();
+    if (bionet_fd < 0) {
+        fprintf(stderr, "error connecting to Bionet");
+        exit(1);
+    }
+
+
+    bionet_register_callback_new_hab(cb_new_hab);
+    bionet_register_callback_lost_hab(cb_lost_hab);
+
+    bionet_register_callback_new_node(cb_new_node);
+    bionet_register_callback_lost_node(cb_lost_node);
+
+    bionet_register_callback_datapoint(cb_datapoint);
 
 
     if (!subscribed_to_something) {

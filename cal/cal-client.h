@@ -132,6 +132,20 @@ typedef struct {
 
     int (*sendto)(const char *peer_name, void *msg, int size);
 
+
+    /**
+     * @brief Initialize security parameters.
+     *
+     * @param[in] dir Directory containing security certificates 
+     * and configuration
+     * @param[in] require 0 for optional security, 1 for required 
+     * security. (default: 0)
+     *
+     * @return 1 Succes
+     * @return 0 Failure
+     */
+    int (*init_security)(const char * dir, int require);
+
 } cal_client_t;
 
 

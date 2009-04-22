@@ -227,6 +227,19 @@ void hab_register_callback_stream_subscription(void (*cb_stream_subscription)(co
 void hab_register_callback_stream_unsubscription(void (*cb_stream_unsubscription)(const char *client_id, const bionet_stream_t *stream));
 
 
+/**
+ * @brief Initialize security data structures for the HAB.
+ *
+ * @param[in] dir Directory containing keys, certificates,
+ * and other security configuration data.
+ * @param[in] require 0 for optional security, 1 for required security
+ * 
+ * @return 0 Success
+ * @return -1 Failure
+ *
+ * @note Security must be initialized prior to call hab_connect()
+ */
+int hab_init_security(const char * dir, int require);
 
 
 #endif // __HARDWARE_ABSTRACTOR_H

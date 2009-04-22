@@ -572,6 +572,10 @@ void cal_server_mdnssd_bip_publish(const char *topic, const void *msg, int size)
 }
 
 
+int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
+    g_message("TODO: cal_server_mdnssd_bip_init_security() implement security init");
+    return 1;
+} /* cal_client_mdnssd_bip_init_security() */
 
 
 cal_server_t cal_server = {
@@ -583,6 +587,8 @@ cal_server_t cal_server = {
     .read = cal_server_mdnssd_bip_read,
     .subscribe = cal_server_mdnssd_bip_subscribe,
     .sendto = cal_server_mdnssd_bip_sendto,
-    .publish = cal_server_mdnssd_bip_publish
+    .publish = cal_server_mdnssd_bip_publish,
+
+    .init_security = cal_server_mdnssd_bip_init_security
 };
 
