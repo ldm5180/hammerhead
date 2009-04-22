@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #ifdef WINDOWS
     #include <winsock2.h>
@@ -191,23 +192,17 @@ void cb_new_hab(bionet_hab_t *hab) {
 
 
 void usage(void) {
-    printf("usage: bionet-watcher OPTIONS...\n\
-\n\
-OPTIONS:\n\
-\n\
-    --help\n\
-        Show this help.\n\
-\n\
-    -h, --hab, --habs HAB-Type.Hab-ID\n\
-        Subscribe to a HAB list.\n\
-\n\
-    -n, --node, --nodes HAB-Type.HAB-ID.Node-ID\n\
-        Subscribe to a Node list.\n\
-\n\
-    -r, --resource, --resources HAB-Type.HAB-ID.Node-ID:Resource-ID\n\
-        Subscribe to Resource values.\n\
-\n\
-");
+    fprintf(stderr,
+	    "'bionet-watcher' displays data from Bionet HABs.\n"
+	    "\n"
+	    "Usage: bionet-watcher OPTIONS...\n"
+	    "\n"
+	    " --help                                            Show this help\n"
+	    " -h, --hab, --habs \"HAB-Type.Hab-ID\n             Subscribe to a HAB list.\n"
+	    " -n, --node, --nodes \"HAB-Type.HAB-ID.Node-ID\"   Subscribe to a Node list\n"
+	    " -r, --resource, --resources \"HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
+	    "                                                   Subscribe to Resource values.\n"
+	    " -v, --version                                     Show the version number\n");
 }
 
 
@@ -239,34 +234,57 @@ int main(int argc, char *argv[]) {
     //
     // parse command-line arguments
     //
+    int i = 0;
+    int c;
+    while(1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'v'},
+	    {"hab", 0, 0, 'h'},
+	    {"habs", 0, 0, 'h'},
+	    {"node", 0, 0, 'n'},
+	    {"nodes", 0, 0, 'n'},
+	    {"resource", 0, 0, 'r'},
+	    {"resources", 0, 0, 'r'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-    argv ++;
+	c = getopt_long(argc, argv, "?vh:n:r:", long_options, &i);
+	if ((-1) == c) {
+	    break;
+	}
 
-    for ( ; *argv != NULL; argv ++) {
-        if ((strcmp(*argv, "-h") == 0) || (strcmp(*argv, "--hab") == 0) || (strcmp(*argv, "--habs") == 0)) {
-            argv ++;
-            bionet_subscribe_hab_list_by_name(*argv);
-            subscribed_to_something = 1;;
+	switch (c) {
 
-        } else if ((strcmp(*argv, "-n") == 0) || (strcmp(*argv, "--node") == 0) || (strcmp(*argv, "--nodes") == 0)) {
-            argv ++;
-            bionet_subscribe_node_list_by_name(*argv);
-            subscribed_to_something = 1;;
+	case '?':
+	    usage();
+	    return 0;
 
-        } else if ((strcmp(*argv, "-r") == 0) || (strcmp(*argv, "--resource") == 0) || (strcmp(*argv, "--resources") == 0)) {
-            argv ++;
-            bionet_subscribe_datapoints_by_name(*argv);
-            subscribed_to_something = 1;;
+	case 'h':
+            bionet_subscribe_hab_list_by_name(optarg);
+            subscribed_to_something = 1;
+	    break;
 
-        } else if (strcmp(*argv, "--help") == 0) {
-            usage();
-            exit(0);
+	case 'n':
+            bionet_subscribe_node_list_by_name(optarg);
+            subscribed_to_something = 1;
+	    break;
 
-        } else {
-            usage();
-            exit(1);
-        }
-    }
+	case 'r':
+            bionet_subscribe_datapoints_by_name(optarg);
+            subscribed_to_something = 1;
+	    break;
+	    
+	case 'v':
+	    print_bionet_version(stdout);
+	    return 0;
+
+	default:
+	    break;
+	}
+       
+    } //while(1)
+
 
     if (!subscribed_to_something) {
         bionet_subscribe_hab_list_by_name("*.*");
