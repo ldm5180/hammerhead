@@ -82,7 +82,7 @@ int main (int argc, char *argv[]) {
     char *hab_type = HAB_TYPE;
     char *hab_id = NULL;
 
-    char * security_dir;
+    char * security_dir = NULL;
     int require_security = 0;
 
     bionet_log_context_t log_context = {
