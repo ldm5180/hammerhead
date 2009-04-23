@@ -54,21 +54,24 @@ static int mem_free_get(void) {
 	g_log("", G_LOG_LEVEL_WARNING, "Unable to open file: /proc/meminfo\n");
 	return -1;
     }
-    while (fscanf(fb, "%s", temp_loc) != EOF)
+    while (fscanf(fb, "%1000s", temp_loc) != EOF)
     {
 	if (!strncmp(temp_loc, "MemFree:", 8)) {
-            if (fscanf(fb, "%d", &total_mem_free) != 1) {
+            if (fscanf(fb, "%9d", &total_mem_free) != 1) {
                 g_log("", G_LOG_LEVEL_WARNING, "unable to read MemFree value from /proc/meminfo\n");
+		fclose(fb);
                 return -1;
             }
         } else if (!strncmp(temp_loc, "Buffers:", 8)) {
-            if (fscanf(fb, "%d", &buffers_free) != 1) {
+            if (fscanf(fb, "%9d", &buffers_free) != 1) {
                 g_log("", G_LOG_LEVEL_WARNING, "unable to read Buffers value from /proc/meminfo\n");
+		fclose(fb);
                 return -1;
             }
 	} else if (!strncmp(temp_loc, "Cached:", 7)) {
-            if (fscanf(fb, "%d", &cache) != 1) {
+            if (fscanf(fb, "%9d", &cache) != 1) {
                 g_log("", G_LOG_LEVEL_WARNING, "unable to read Cached value from /proc/meminfo\n");
+		fclose(fb);
                 return -1;
             }
         }

@@ -3,6 +3,7 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
+#define _ISOC99_SOURCE
 
 #include <errno.h>
 #include <stdio.h>
@@ -32,9 +33,11 @@ static float load_average(void) {
     // averaged over the past 15 minutes.
     
     FILE *fd;
-    float avgload;
+    float avgload[3];
+    char loadavg[1000];
+    
     int r;
-
+    int i;
     
     fd=fopen("/proc/loadavg", "r");
     if (!fd) {
@@ -44,16 +47,26 @@ static float load_average(void) {
 
     // this reads the first three floats in the file, discards the first
     // two, and assigns the third one to avgload
-    r = fscanf(fd, "%*f %*f %f", &avgload);
-
-    fclose(fd);
-
-    if (r != 1) {
+    r = fread(loadavg, 1, 1000, fd);
+    if (0 == r) {
 	g_log("", G_LOG_LEVEL_WARNING, "Unable to read load average from /proc/loadavg");
+	fclose(fd);
 	return -1;
     }
-    
-    return avgload;
+
+    char *str = loadavg;
+    for (i = 0; i < 3; i++) {
+	char * saveptr = NULL;
+	avgload[i] = strtof(str, &saveptr);
+	if ((avgload[i] == 0) && (str == saveptr)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "Unable to convert load average from /proc/loadavg");
+	    fclose(fd);
+	    return -1;
+	}
+	str = saveptr;
+    }
+
+    return avgload[2];
 }
 
 
