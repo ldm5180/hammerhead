@@ -85,7 +85,22 @@ static int mem_free_get(void) {
 	return -1;
     }
     
-    return (total_mem_free + buffers_free + cache);
+    //ensure against rollover
+    int ret = 0;
+    ret += total_mem_free;
+    if (ret < 0) {
+	return -1;
+    }
+    ret += buffers_free;
+    if (ret < 0) {
+	return -1;
+    }
+    ret += cache;
+    if (ret < 0) {
+	return -1;
+    }
+
+    return ret;
 }
 
 
