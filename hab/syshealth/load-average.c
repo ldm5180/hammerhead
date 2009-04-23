@@ -66,6 +66,8 @@ static float load_average(void) {
 	str = saveptr;
     }
 
+    fclose(fd);
+
     return avgload[2];
 }
 

@@ -3,10 +3,12 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
+#define _ISOC99_SOURCE
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <glib.h>
 #include <hardware-abstractor.h>
@@ -30,7 +32,7 @@ static float uptime_get(void) {
     FILE *fd;
     float time;
     int r;
-
+    char timestr[256];
     
     fd=fopen("/proc/uptime", "r");
     if (!fd)
@@ -39,7 +41,8 @@ static float uptime_get(void) {
 	return -1;
     }
     
-    r = fscanf(fd, "%f", &time);
+    r = fscanf(fd, "%256s", timestr);
+    time = strtof(timestr, NULL);
     fclose(fd);
 
     if (r != 1) {
