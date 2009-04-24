@@ -21,7 +21,8 @@ libcal_mdnssd_bip_shared_la_SOURCES =   \
     bip-peer-connect.c                  \
     bip-peer-disconnect.c               \
     bip-peer-get-connected-net.c        \
-    bip-peer-free.c
+    bip-peer-free.c                     \
+    bip-security.c
 
 libcal_mdnssd_bip_shared_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../.. -I../../util
 libcal_mdnssd_bip_shared_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_CFLAGS) 

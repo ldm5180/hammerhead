@@ -17,11 +17,13 @@
 
 #include <glib.h>
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/rand.h>
+#include <openssl/x509v3.h>
 #include <openssl/bio.h>
 
 #include "cal-util.h"
-
-
 
 
 #define BIP_MSG_MAX_SIZE (1024 * 1024)
@@ -36,6 +38,14 @@
 #define BIP_MSG_TYPE_PUBLISH   (2)
 
 
+/* security configuration files */
+#define BIP_PUBLIC_CERT     "pub.cert"
+#define BIP_PRIVATE_KEY     "prv.cert"
+#define BIP_CA_DIR          "ca-dir"
+#define BIP_SECURITY_SERIAL "serial"
+#define BIP_SSL_CONF        "bionet-ssl.conf"
+#define BIP_CA_FILE         NULL
+#define BIP_CA_CERTFILE     "ca-dir/ca-cert.pem"
 
 
 typedef struct {
@@ -285,7 +295,7 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
 
 
 
-/** 
+/**
  * @brief Reads data from a peer, up to one complete packet.
  *
  * @param peer_name The name of the peer we're reading from.
@@ -306,6 +316,17 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
 int bip_read_from_peer(const char *peer_name, bip_peer_t *peer);
 
 
+
+/**
+ * @brief Verifies an X509 certificate
+ *
+ * @param[in] ok TRUE if the certificate is ok so far
+ * @param[in] store The store of current certificates
+ *
+ * @return 0 Failure
+ * @return Non-zero Success
+ */
+int bip_ssl_verify_callback(int ok, X509_STORE_CTX *store);
 
 
 #endif  // __CAL_MDNSSD_BIP_H

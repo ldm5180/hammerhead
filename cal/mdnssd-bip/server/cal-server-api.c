@@ -25,8 +25,7 @@
 #include "cal-mdnssd-bip.h"
 #include "cal-server-mdnssd-bip.h"
 
-
-
+SSL_CTX * ssl_ctx_server = NULL;
 
 int cal_server_mdnssd_bip_init(
     const char *network_type,
@@ -574,6 +573,70 @@ void cal_server_mdnssd_bip_publish(const char *topic, const void *msg, int size)
 
 int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
     g_message("TODO: cal_server_mdnssd_bip_init_security() implement security init");
+
+    SSL_load_error_strings();
+    
+    if (!RAND_load_file("/dev/random", 1024)) {
+	if (require) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+		  "Failed to init PRNG.");
+	    return 0;
+	} else {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to init PRNG - continuing without security.");
+	    return 1;
+	}
+    }
+
+    ssl_ctx_server = SSL_CTX_new(SSLv23_method());
+
+    //verify the SSL dir
+    if (1 != SSL_CTX_load_verify_locations(ssl_ctx_server, BIP_CA_FILE, dir)) {
+	ERR_print_errors_fp(stderr);
+	if (require) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+		  "Failed to load CA directory.");
+	    return 0;
+	} else {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to load CA directory - continuing without security.");
+	    return 1;
+	}
+    }
+
+    //load the trusted CA list
+    if (1 != SSL_CTX_use_certificate_chain_file(ssl_ctx_server, BIP_CA_CERTFILE)) {
+	ERR_print_errors_fp(stderr);
+	if (require) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+		  "Failed to load certificate.");
+	    return 0;
+	} else {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to load certificate - continuing without security.");
+	    return 1;
+	}
+    }
+
+    //load the private key
+    if (1 != SSL_CTX_use_PrivateKey_file(ssl_ctx_server, BIP_PRIVATE_KEY, SSL_FILETYPE_PEM)) {
+	ERR_print_errors_fp(stderr);
+	if (require) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+		  "Failed to load private key.");
+	    return 0;
+	} else {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to load private key - continuing without security.");
+	    return 1;
+	}
+    }
+
+    SSL_CTX_set_verify(ssl_ctx_server, 
+		       SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, 
+		       bip_ssl_verify_callback);
+    SSL_CTX_set_verify_depth(ssl_ctx_server, 9); //arbitrary right now
+
     return 1;
 } /* cal_client_mdnssd_bip_init_security() */
 
