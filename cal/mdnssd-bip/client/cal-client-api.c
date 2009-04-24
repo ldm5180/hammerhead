@@ -172,6 +172,11 @@ void cal_client_mdnssd_bip_shutdown(void) {
     close(cal_client_mdnssd_bip_fds_from_user[1]);
 
     cal_client.callback = NULL;
+
+    if (ssl_ctx_client) {
+	SSL_CTX_free(ssl_ctx_client);
+	ssl_ctx_client = NULL;
+    }
 }
 
 

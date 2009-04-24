@@ -333,6 +333,11 @@ void cal_server_mdnssd_bip_shutdown(void) {
     close(cal_server_mdnssd_bip_fds_from_user[1]);
 
     cal_server.callback = NULL;
+
+    if (ssl_ctx_server) {
+	SSL_CTX_free(ssl_ctx_server);
+	ssl_ctx_server = NULL;
+    }
 }
 
 
