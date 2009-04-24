@@ -27,7 +27,7 @@
 #include "cal-client-mdnssd-bip.h"
 
 
-SSL_CTX * ssl_ctx_client = NULL;
+extern SSL_CTX * ssl_ctx_client;
 
 
 int cal_client_mdnssd_bip_init(

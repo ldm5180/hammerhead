@@ -24,6 +24,7 @@
 
 #include <openssl/err.h>
 
+extern SSL_CTX * ssl_ctx_client;
 
 BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
     int s;
@@ -82,8 +83,24 @@ BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
         return NULL;
     }
     BIO * bio = BIO_new_socket(s, BIO_CLOSE);
+    BIO * bio_ssl;
 
     net->socket = s;
+
+    if (ssl_ctx_client) {
+	bio_ssl = BIO_new_ssl(ssl_ctx_client, 1);
+	if (!bio_ssl) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to create an SSL.");
+	    BIO_free_all(bio);
+	    return NULL;
+	}
+	bio = BIO_push(bio_ssl, bio);
+	if (1 != BIO_do_handshake(bio)) {
+	    BIO_free_all(bio);
+	    return NULL;
+	}
+    }
+
     net->socket_bio = bio;
 
     return bio;

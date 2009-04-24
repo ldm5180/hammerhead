@@ -5,6 +5,8 @@
 
 #include "cal-mdnssd-bip.h"
 
+SSL_CTX * ssl_ctx_client = NULL;
+SSL_CTX * ssl_ctx_server = NULL;
 
 int bip_ssl_verify_callback(int ok, X509_STORE_CTX *store) {
     char data[256];

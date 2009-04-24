@@ -25,7 +25,7 @@
 #include "cal-mdnssd-bip.h"
 #include "cal-server-mdnssd-bip.h"
 
-SSL_CTX * ssl_ctx_server = NULL;
+extern SSL_CTX * ssl_ctx_server;
 
 int cal_server_mdnssd_bip_init(
     const char *network_type,
