@@ -28,7 +28,7 @@
 #include "cal-server-mdnssd-bip.h"
 
 
-
+extern SSL_CTX * ssl_ctx_server;
 
 // key is a bip peer name "bip://$HOST:$PORT"
 // value is a bip_peer_t*
@@ -186,7 +186,7 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
     cal_event_t *event;
     bip_peer_t *client;
     bip_peer_network_info_t *net;
-
+    BIO * bio_ssl;
 
     client = bip_peer_new();
     if (client == NULL) {
@@ -206,7 +206,20 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: error accepting a connection: %s", strerror(errno));
         goto fail1;
     }
+
     net->socket_bio = BIO_new_socket(net->socket, BIO_CLOSE);
+    
+    if (ssl_ctx_server) {
+	bio_ssl = BIO_new_ssl(ssl_ctx_server, 0);
+	if (!bio_ssl) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to create an SSL.");
+	    goto fail2;
+	}
+	net->socket_bio = BIO_push(bio_ssl, net->socket_bio);
+	if (1 != BIO_do_handshake(net->socket_bio)) {
+	    goto fail2;
+	}
+    }
 
     event = cal_event_new(CAL_EVENT_CONNECT);
     if (event == NULL) {

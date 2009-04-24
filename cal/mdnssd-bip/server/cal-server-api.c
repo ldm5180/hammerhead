@@ -333,6 +333,11 @@ void cal_server_mdnssd_bip_shutdown(void) {
     close(cal_server_mdnssd_bip_fds_from_user[1]);
 
     cal_server.callback = NULL;
+
+    if (ssl_ctx_server) {
+	SSL_CTX_free(ssl_ctx_server);
+	ssl_ctx_server = NULL;
+    }
 }
 
 
@@ -572,10 +577,9 @@ void cal_server_mdnssd_bip_publish(const char *topic, const void *msg, int size)
 
 
 int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
-    g_message("TODO: cal_server_mdnssd_bip_init_security() implement security init");
-
     SSL_load_error_strings();
-    
+
+    //seed the PRNG
     if (!RAND_load_file("/dev/random", 1024)) {
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
@@ -596,11 +600,11 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to load CA directory.");
-	    return 0;
+	    goto security_fail;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to load CA directory - continuing without security.");
-	    return 1;
+	    goto insecure_fallback;
 	}
     }
 
@@ -610,11 +614,11 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to load certificate.");
-	    return 0;
+	    goto security_fail;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to load certificate - continuing without security.");
-	    return 1;
+	    goto insecure_fallback;
 	}
     }
 
@@ -624,11 +628,11 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to load private key.");
-	    return 0;
+	    goto security_fail;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to load private key - continuing without security.");
-	    return 1;
+	    goto insecure_fallback;
 	}
     }
 
@@ -638,6 +642,19 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
     SSL_CTX_set_verify_depth(ssl_ctx_server, 9); //arbitrary right now
 
     return 1;
+
+//security failed and was required so free and fail
+security_fail:
+    SSL_CTX_free(ssl_ctx_server);
+    ssl_ctx_server = NULL;
+    return 0;
+
+//security failed but was option so free and succeed
+insecure_fallback:
+    SSL_CTX_free(ssl_ctx_server);
+    ssl_ctx_server = NULL;
+    return 1;
+
 } /* cal_client_mdnssd_bip_init_security() */
 
 
