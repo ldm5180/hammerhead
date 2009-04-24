@@ -572,10 +572,9 @@ void cal_server_mdnssd_bip_publish(const char *topic, const void *msg, int size)
 
 
 int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
-    g_message("TODO: cal_server_mdnssd_bip_init_security() implement security init");
-
     SSL_load_error_strings();
-    
+
+    //seed the PRNG
     if (!RAND_load_file("/dev/random", 1024)) {
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
