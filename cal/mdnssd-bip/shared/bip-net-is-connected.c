@@ -15,7 +15,7 @@ int bip_net_is_connected(bip_peer_network_info_t *net) {
         return 0;
     }
 
-    if (net->socket != -1) return 1;
+    if (NULL != net->socket_bio) return 1;
     return 0;
 }
 

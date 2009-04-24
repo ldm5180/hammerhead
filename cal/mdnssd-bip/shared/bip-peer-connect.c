@@ -28,7 +28,7 @@
 
 
 int bip_peer_connect(const char *peer_name, bip_peer_t *peer) {
-    int r;
+    BIO * bio;
     bip_peer_network_info_t *net;
 
     if (peer == NULL) {
@@ -41,8 +41,8 @@ int bip_peer_connect(const char *peer_name, bip_peer_t *peer) {
 
     while (peer->nets->len > 0) {
         net = g_ptr_array_index(peer->nets, 0);
-        r = bip_net_connect(peer_name, net);
-        if (r >= 0) return 0;
+        bio = bip_net_connect(peer_name, net);
+        if (NULL != bio) return 0;
         g_ptr_array_remove_fast(peer->nets, net);
         bip_net_destroy(net);
     }

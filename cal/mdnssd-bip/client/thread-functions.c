@@ -23,6 +23,10 @@
 #include <glib.h>
 #include <dns_sd.h>
 
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #include "cal-client.h"
 #include "cal-mdnssd-bip.h"
 #include "cal-client-mdnssd-bip.h"
@@ -737,6 +741,11 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+
+    // Initialize SSL library
+    //SSL_load_error_strings();
+    ERR_load_BIO_strings();
+    // TODO: Lots more
 
     browse = malloc(sizeof(struct cal_client_mdnssd_bip_service_context));
     if (browse == NULL) {

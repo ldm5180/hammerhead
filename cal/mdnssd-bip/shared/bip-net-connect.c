@@ -22,9 +22,10 @@
 #include "cal-mdnssd-bip.h"
 
 
+#include <openssl/err.h>
 
 
-int bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
+BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
     int s;
     int r;
 
@@ -34,17 +35,16 @@ int bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
 
     if (net == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_net_connect: NULL net passed in");
-        return -1;
+        return NULL;
     }
 
 
-    if (net->socket != -1) return net->socket;
-
+    if (NULL != net->socket_bio) return net->socket_bio;
 
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_net_connect: error making socket: %s", strerror(errno));
-        return -1;
+        return NULL;
     }
 
     memset(&ai_hints, 0, sizeof(ai_hints));
@@ -53,11 +53,11 @@ int bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
     r = getaddrinfo(net->hostname, NULL, &ai_hints, &ai);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_net_connect: error with getaddrinfo(\"%s\", ...): %s", net->hostname, gai_strerror(r));
-        return -1;
+        return NULL;
     }
     if (ai == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_net_connect: no results from getaddrinfo(\"%s\", ...)", net->hostname);
-        return -1;
+        return NULL;
     }
 
     ((struct sockaddr_in *)ai->ai_addr)->sin_port = htons(net->port);
@@ -79,11 +79,13 @@ int bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
         );
 #endif
 
-        return -1;
+        return NULL;
     }
+    BIO * bio = BIO_new_socket(s, BIO_CLOSE);
 
     net->socket = s;
+    net->socket_bio = bio;
 
-    return s;
+    return bio;
 }
 

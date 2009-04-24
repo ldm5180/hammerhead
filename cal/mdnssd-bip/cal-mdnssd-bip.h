@@ -17,6 +17,8 @@
 
 #include <glib.h>
 
+#include <openssl/bio.h>
+
 #include "cal-util.h"
 
 
@@ -41,6 +43,8 @@ typedef struct {
     uint16_t port;   //!< in host byte order
 
     int socket;      //!< the socket connected to this peer, or -1 if we're not currently connected
+    BIO * socket_bio; //!< the BIO that wraps the socket connected to this peer, or NULL if not connected
+    
 
     //! the header of the packet we're currently receiving
     char header[BIP_MSG_HEADER_SIZE];
@@ -107,7 +111,7 @@ bip_peer_network_info_t *bip_net_new(const char *hostname, uint16_t port);
  * @return -1 on failure (in which case the caller should destroy the net).
  */
 
-int bip_net_connect(const char *peer_name, bip_peer_network_info_t *net);
+BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net);
 
 
 

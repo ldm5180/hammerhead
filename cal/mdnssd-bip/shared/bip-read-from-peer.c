@@ -52,7 +52,7 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
 
     if (net->header_index < BIP_MSG_HEADER_SIZE) {
         max_bytes_to_read = BIP_MSG_HEADER_SIZE - net->header_index;
-        r = read(net->socket, &net->header[net->header_index], max_bytes_to_read);
+        r = BIO_read(net->socket_bio, &net->header[net->header_index], max_bytes_to_read);
         if (r < 0) {
             // g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s", peer_name, strerror(errno));
             return -1;
@@ -97,7 +97,7 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
 
     max_bytes_to_read = net->msg_size - net->index;
     if (max_bytes_to_read > 0) {
-        r = read(net->socket, &net->buffer[net->index], max_bytes_to_read);
+        r = BIO_read(net->socket_bio, &net->buffer[net->index], max_bytes_to_read);
         if (r < 0) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s", peer_name, strerror(errno));
             return -1;
