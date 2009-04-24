@@ -22,6 +22,8 @@
 		7406B0740F715A60007126DA /* libgmodule-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B06F0F715A60007126DA /* libgmodule-2.0.a */; };
 		7406B0750F715A60007126DA /* libgobject-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0700F715A60007126DA /* libgobject-2.0.a */; };
 		7406B0760F715A60007126DA /* libgthread-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0710F715A60007126DA /* libgthread-2.0.a */; };
+		7442AE730FA2572F007F436B /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7442AE720FA2572F007F436B /* libssl.a */; };
+		7442AE840FA258E0007F436B /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7442AE830FA258E0007F436B /* libcrypto.a */; };
 		74724FD60F7856680061BF62 /* BionetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC50F7856680061BF62 /* BionetManager.m */; };
 		74724FD70F7856680061BF62 /* BioNetMonitorAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC70F7856680061BF62 /* BioNetMonitorAppDelegate.m */; };
 		74724FD80F7856680061BF62 /* DataController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC90F7856680061BF62 /* DataController.m */; };
@@ -52,6 +54,8 @@
 		7406B06F0F715A60007126DA /* libgmodule-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgmodule-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgmodule-2.0.a"; sourceTree = "<absolute>"; };
 		7406B0700F715A60007126DA /* libgobject-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgobject-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgobject-2.0.a"; sourceTree = "<absolute>"; };
 		7406B0710F715A60007126DA /* libgthread-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgthread-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgthread-2.0.a"; sourceTree = "<absolute>"; };
+		7442AE720FA2572F007F436B /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "/opt/local/i686-apple-darwin/lib/libssl.a"; sourceTree = "<absolute>"; };
+		7442AE830FA258E0007F436B /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "/opt/local/i686-apple-darwin/lib/libcrypto.a"; sourceTree = "<absolute>"; };
 		74724FC40F7856680061BF62 /* BionetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BionetManager.h; sourceTree = "<group>"; };
 		74724FC50F7856680061BF62 /* BionetManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BionetManager.m; sourceTree = "<group>"; };
 		74724FC60F7856680061BF62 /* BioNetMonitorAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BioNetMonitorAppDelegate.h; sourceTree = "<group>"; };
@@ -94,6 +98,8 @@
 				7406B0760F715A60007126DA /* libgthread-2.0.a in Frameworks */,
 				74912E0B0F86BB2700261D63 /* libintl.a in Frameworks */,
 				74912E0E0F86BB7000261D63 /* libiconv.2.dylib in Frameworks */,
+				7442AE730FA2572F007F436B /* libssl.a in Frameworks */,
+				7442AE840FA258E0007F436B /* libcrypto.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -144,6 +150,8 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7442AE830FA258E0007F436B /* libcrypto.a */,
+				7442AE720FA2572F007F436B /* libssl.a */,
 				74CA857C0F7167F700FEE5E2 /* libintl.a */,
 				7406B0450F71566A007126DA /* libbionet-asn.a */,
 				7406B0460F71566A007126DA /* libbionet-util.a */,
@@ -274,6 +282,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"/opt/local/arm-apple-darwin/lib\"",
+					"\"/opt/local/i686-apple-darwin/lib\"",
 				);
 				PRODUCT_NAME = BioNetMonitor;
 			};
