@@ -26,6 +26,7 @@ static void parse_line(char* line) {
     int i_1, i_2, i_3, i_4, i_5, i_6, i_7, i_8, i_9, i_10, i_11, i_12, i_13, i_14, i_15, i_16, i_17, i_18, i_19, i_20, i_21;
     float o2;
     int s_success;
+    int ret;
     struct tm csa_time;
 
     static int base_day, base_year, base_month;
@@ -44,13 +45,16 @@ static void parse_line(char* line) {
     if (line[0] == ';') {
         //  sets the time off set
 
-        sscanf(
+        ret = sscanf(
             line,
-            ";%d %d %d",
+            ";%2d %2d %4d",
             &base_month,
             &base_day,
             &base_year
         );
+	if (3 != ret) {
+	    g_log("", G_LOG_LEVEL_WARNING, "parse_line(): Failed to parse date.");
+	}
         g_log("", G_LOG_LEVEL_DEBUG, "base_day: %d\nbase_month: %d\nbase_year: %d\n", base_day, base_month, base_year);
 
         return;
@@ -118,7 +122,11 @@ static void parse_line(char* line) {
                 return;
             }
 
-            bionet_hab_add_node(this_hab, node);
+            if (bionet_hab_add_node(this_hab, node)) {
+		g_log("", G_LOG_LEVEL_WARNING, "parse_line(): Failed to add node to hab.");
+		bionet_node_free(node);
+		return;
+	    }
 
             hab_report_new_node(node);
             return;
@@ -152,7 +160,7 @@ static void parse_line(char* line) {
 int download_session(serial_handle_t serial_handle, int session_number, int record_raw_data) {
     char init_download[4];
     char line[1000];
-    char received[3];
+    char received[3] = { '\0' };
     int r, i = 0, j = 0, k = 0, num_chars = 0;
 
     FILE* fp = NULL;

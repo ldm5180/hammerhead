@@ -268,7 +268,8 @@ static int add_resource_to_db(bionet_resource_t *resource) {
         for (i = 0; i < 8; i ++) {
             snprintf(&blob[2+(2*i)], sizeof(blob) - 2+(2*i),"%02X", sha_digest[i]);
         }
-        snprintf(&blob[2+(2*8)], sizeof(blob) - 2+(2*8), "'");
+        blob[2+(2*8)] = '\'';
+        blob[2+(2*8)+1] = '\0';
     }
 
 
@@ -623,7 +624,12 @@ static bionet_node_t *find_node(bionet_hab_t *hab, const char *node_id) {
         return NULL;
     }
 
-    bionet_hab_add_node(hab, node);
+    if (bionet_hab_add_node(hab, node)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "find_node(): Failed to add node to hab.");
+	bionet_node_free(node);
+	return NULL;
+    }
 
     return node;
 }
@@ -643,7 +649,11 @@ static bionet_resource_t *find_resource(bionet_node_t *node, const char *data_ty
         return NULL;
     }
 
-    bionet_node_add_resource(node, resource);
+    if (bionet_node_add_resource(node, resource)) {
+	g_log("", G_LOG_LEVEL_WARNING, "find_resource(): Failed to add resource to node.");
+	bionet_resource_free(resource);
+	return NULL;
+    }
 
     return resource;
 }

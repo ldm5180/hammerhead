@@ -24,7 +24,7 @@ void new_node_with_resources(bionet_hab_t* random_hab);
 void destroy_node(bionet_hab_t* random_hab);
 
 
-void usage(int exit_val);
+void usage();
 const char *get_random_word(void);
 bionet_node_t *pick_random_node(bionet_hab_t *random_hab);
 void add_node(bionet_hab_t* random_hab);

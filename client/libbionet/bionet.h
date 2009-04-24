@@ -502,6 +502,21 @@ int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
 int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const char *value);
 
 
+/**
+ * @brief Initialize security data structures for the Client.
+ *
+ * @param[in] dir Directory containing keys, certificates,
+ * and other security configuration data.
+ * @param[in] require 0 for optional security, 1 for required security
+ * 
+ * @return 0 Success
+ * @return -1 Failure
+ *
+ * @note Security must be initialized prior to call bionet_connect()
+ */
+int bionet_init_security(const char * dir, int require);
+
+
 #endif // __BIONET_H
 
 

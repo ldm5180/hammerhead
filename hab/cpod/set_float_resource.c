@@ -16,6 +16,8 @@ void set_float_resource(bionet_node_t* node, char *id, float value, struct timev
 		return;
 	}
 
-	bionet_resource_set_float(resource, value, tv);
+	if (bionet_resource_set_float(resource, value, tv)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "set_float_resource(): Failed to set float.");
+	}
 }
 

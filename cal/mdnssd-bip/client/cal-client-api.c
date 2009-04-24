@@ -370,6 +370,11 @@ int cal_client_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
 }
 
 
+int cal_client_mdnssd_bip_init_security(const char * dir, int require) {
+    g_message("TODO: cal_client_mdnssd_bip_init_security() implement security init");
+    return 1;
+} /* cal_client_mdnssd_bip_init_security() */
+
 
 
 cal_client_t cal_client = {
@@ -382,6 +387,8 @@ cal_client_t cal_client = {
 
     .read = cal_client_mdnssd_bip_read,
 
-    .sendto = cal_client_mdnssd_bip_sendto
+    .sendto = cal_client_mdnssd_bip_sendto,
+
+    .init_security = cal_client_mdnssd_bip_init_security
 };
 

@@ -785,6 +785,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
         int r;
         GSList *ptr;
 
+SELECT_LOOP_CONTINUE:
 
         FD_ZERO(&readers);
         max_fd = -1;
@@ -840,7 +841,9 @@ void *cal_client_mdnssd_bip_function(void *arg) {
                 }
 
                 // since the service_list has changed, we should stop iterating over it
-                break;
+		// Also, the open file descriptors may have changed, so we need to 
+		// check select() again
+		goto SELECT_LOOP_CONTINUE;
             }
         }
 
