@@ -71,7 +71,12 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    fprintf(stderr, "Failed to create new node\n");
 	    return 1;
 	}
-	bionet_hab_add_node(mmod_hab, node);
+
+	if (bionet_hab_add_node(mmod_hab, node)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "msg_gen_process(): Failed to add node to hab.");
+	    bionet_node_free(node);
+	    return 1;
+	}
 
 	/* create voltage resource */
 	resource = bionet_resource_new(node, 

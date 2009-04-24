@@ -266,7 +266,11 @@ int discover_alsa_hardware(void) {
             exit(1);
         }
 
-        bionet_hab_add_node(this_hab, node);
+        if (bionet_hab_add_node(this_hab, node)) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "discover_alsa_hardware(): Failed to add node to hab.");
+	    exit(1);
+	}
 
         node_user_data = (node_user_data_t *)malloc(sizeof(node_user_data_t));
         if (node_user_data == NULL) {

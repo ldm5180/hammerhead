@@ -44,7 +44,10 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
         return;
     }
 
-    bionet_hab_add_node(hab, node);
+    if (bionet_hab_add_node(hab, node)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "handle_new_node(): Failed to add node to hab.");
+    }
 
     if (libbionet_callback_new_node != NULL) {
         libbionet_callback_new_node(node);

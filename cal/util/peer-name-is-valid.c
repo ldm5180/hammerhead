@@ -13,6 +13,7 @@
 #include "cal-util.h"
 
 
+// coverity[ -tainted_data_sink : arg-0 ]
 int cal_peer_name_is_valid(const char *peer_name) {
     int i;
 

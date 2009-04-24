@@ -12,6 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <getopt.h>
 
 #ifdef WINDOWS
     #include <windows.h>
@@ -81,6 +82,9 @@ int main (int argc, char *argv[]) {
     char *hab_type = HAB_TYPE;
     char *hab_id = NULL;
 
+    char * security_dir = NULL;
+    int require_security = 0;
+
     bionet_log_context_t log_context = {
         destination: BIONET_LOG_TO_STDOUT,
         log_limit: G_LOG_LEVEL_INFO
@@ -88,53 +92,76 @@ int main (int argc, char *argv[]) {
 
     g_log_set_default_handler(bionet_glib_log_handler, &log_context);
 
-    srand(time(NULL));
+    while(1) {
+	int c;
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'v'},
+	    {"id", 1, 0, 'i'},
+	    {"min-nodes", 1, 0, 'm'},
+	    {"max-delay", 1, 0, 'x'},
+	    {"output-mode", 1, 0, 'o'},
+	    {"security-dir", 1, 0, 's'},
+	    {"require-security", 0, 0, 'e'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-    // handle command line arguments
-    for (i = 1; i < argc; i ++) {
+	c = getopt_long(argc, argv, "?hvei:m:x:o:s:", long_options, &i);
+	if (c == -1) {
+	    break;
+	}
 
-        if (
-            (strcmp(argv[i], "--min-nodes") == 0)
-        ) {
-            i ++;
-            min_nodes = atoi(argv[i]);
+	switch (c) {
 
-        } else if (
-            (strcmp(argv[i], "--max-delay") == 0)
-        ) {
-            i ++;
-            max_delay = atoi(argv[i]);
+	case '?':
+	case 'h':
+	    usage();
+	    return 0;
 
-        } else if (
-            (strcmp(argv[i], "--id") == 0) ||
-            (strcmp(argv[i], "-i") == 0)
-        ) {
-            i++;
-            hab_id = argv[i];
+	case 'e':
+	    if (security_dir) {
+		require_security++;
+	    } else {
+		usage();
+		return (-1);
+	    }
+	    break;
 
-        } else if (
-            (strcmp(argv[i], "--output-mode") == 0)
-        ) {
-            i ++;
-            if (strcmp(argv[i], "normal") == 0) output_mode = OM_NORMAL;
-            else if (strcmp(argv[i], "bdm-client") == 0) output_mode = OM_BDM_CLIENT;
-            else if (strcmp(argv[i], "bionet-watcher") == 0) output_mode = OM_BIONET_WATCHER;
+	case 'i':
+	    hab_id = optarg;
+	    break;
+
+	case 'm':
+	    min_nodes = atoi(optarg);
+	    break;
+
+	case 'o':
+            if (strcmp(optarg, "normal") == 0) output_mode = OM_NORMAL;
+            else if (strcmp(optarg, "bdm-client") == 0) output_mode = OM_BDM_CLIENT;
+            else if (strcmp(optarg, "bionet-watcher") == 0) output_mode = OM_BIONET_WATCHER;
             else {
-                fprintf(stderr, "unknown output mode %s\n", argv[i]);
-                exit(1);
+                fprintf(stderr, "unknown output mode %s\n", optarg);
+                usage();
+		return 1;
             }
+	    break;
 
-        } else if (
-            (strcmp(argv[i], "--help") == 0) ||
-            (strcmp(argv[i], "-h") == 0)
-        ) {
-            usage(0);
+	case 's':
+	    security_dir = optarg;
+	    break;
 
-        } else {
-            fprintf(stderr, "unknown command-line argument: %s\n", argv[i]);
-            exit(1);
-        }
-    }
+	case 'v':
+	    print_bionet_version(stdout);
+	    return 0;
+
+	case 'x':
+	    max_delay = atoi(optarg);
+	    break;
+
+	default:
+	    break;
+	}
+    } //while(1)
 
 
     //  
@@ -143,6 +170,12 @@ int main (int argc, char *argv[]) {
     
     hab = bionet_hab_new(hab_type, hab_id);
 
+
+    if (security_dir) {
+	if (hab_init_security(security_dir, require_security)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+	}
+    }
 
     //
     //  Connecting to Bionet 

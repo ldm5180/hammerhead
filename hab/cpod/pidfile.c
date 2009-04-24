@@ -46,7 +46,7 @@ int kill_kin()
 
 
     r = read(pid_fd, buffer, sizeof(buffer));
-    r = sscanf(buffer, "%d", &pid);
+    r = sscanf(buffer, "%9d", &pid);
     close(pid_fd);
 
     if (r != 1)

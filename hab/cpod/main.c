@@ -121,14 +121,16 @@ int main ( int argc, char** argv )
         {
             i++;
 
-            if ((i < argc) &&
-                (sscanf(argv[i], "%d", &period) == 1))
-            { }
-            else
-            {
-                print_help(argv[0]);
-                exit(2);
-            }
+	    if (i >= argc) {
+		print_help(argv[0]);
+		exit(2);
+	    }
+
+	    period = strtol(argv[i], NULL, 0);
+	    if ((0 == period) && (EINVAL == errno)) {
+		print_help(argv[0]);
+		exit(2);
+	    }
         }
         else if (strlen(argv[i]) == 17 &&
                  str2ba(argv[i], &device) == 0 &&
@@ -189,6 +191,10 @@ connecting:
     if (cpod_fd == -1)
     {
         cpod_fd = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	if (0 > cpod_fd) {
+	    g_log("", G_LOG_LEVEL_ERROR, "Failed to initialize socket: %m");
+	    return 1;
+	}
 
         addr.rc_family = AF_BLUETOOTH;
         addr.rc_channel = (uint8_t) 1;
