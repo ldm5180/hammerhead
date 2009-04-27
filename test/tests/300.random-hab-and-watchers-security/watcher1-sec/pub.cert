@@ -1,0 +1,90 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 39 (0x27)
+        Signature Algorithm: sha1WithRSAEncryption
+        Issuer: CN=Bionet CA, C=US, ST=Colorado, L=Boulder, O=BioServe Space Technologies/emailAddress=bionet@bioserve.colorado.edu
+        Validity
+            Not Before: Apr 27 22:25:07 2009 GMT
+            Not After : Apr 27 22:25:07 2010 GMT
+        Subject: C=US, ST=Colorado, O=BioServe Space Technologies, OU=Node or Client, CN=ENV::HOSTNAME/emailAddress=bionet@bioserve.colorado.edu
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+            RSA Public Key: (2048 bit)
+                Modulus (2048 bit):
+                    00:cf:fb:f1:d9:15:e0:8d:d5:71:e5:cf:1e:2d:9a:
+                    c4:05:cc:13:8d:d1:e4:00:7e:7f:71:57:3e:3c:6c:
+                    10:b0:7a:17:56:9b:f4:b9:61:37:b1:a6:5e:36:ba:
+                    26:70:2b:ee:08:43:5b:c5:cd:5f:32:89:97:46:de:
+                    5e:54:31:5f:f6:2a:d7:aa:42:4b:55:47:3b:c8:2c:
+                    9c:0b:42:23:c2:4e:f3:c5:9a:3a:c1:1b:b8:1d:9e:
+                    df:8b:92:14:0d:a9:6c:93:9c:a1:9b:72:50:0c:2d:
+                    a8:e8:71:c3:87:a2:f7:c5:75:77:45:49:18:38:ac:
+                    ca:15:3c:4b:fa:4b:0e:28:e8:f7:d0:a1:c2:ce:80:
+                    83:1e:3d:40:9f:36:cb:cf:9f:6d:eb:3d:dc:ba:53:
+                    51:25:91:59:37:f0:77:af:50:5e:fe:ec:55:c9:ac:
+                    07:df:27:f1:95:6d:cc:7c:6d:d4:b5:b9:a7:77:42:
+                    54:66:9a:6e:38:a7:6e:ed:ee:ff:4c:cf:21:78:55:
+                    96:19:21:3b:21:d5:6c:5c:11:48:5b:24:1b:0b:fd:
+                    ef:b8:c3:e3:d4:f5:d8:da:2a:f9:8d:aa:81:bc:93:
+                    f9:4b:44:bc:2c:95:03:f0:a1:5a:42:5b:94:3e:8c:
+                    83:bd:0b:7a:7c:4b:02:1c:0c:7b:30:eb:9d:a3:a3:
+                    1e:3b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Subject Key Identifier: 
+                FF:D9:A4:D6:01:47:9B:08:EB:C2:AA:1F:DE:C0:D2:82:BE:5C:DA:E4
+            X509v3 Authority Key Identifier: 
+                keyid:5D:91:47:A4:76:79:AA:9E:84:2E:A5:C8:10:61:51:7B:B4:B0:0C:B3
+                DirName:/CN=Bionet CA/C=US/ST=Colorado/L=Boulder/O=BioServe Space Technologies/emailAddress=bionet@bioserve.colorado.edu
+                serial:C2:23:EA:31:71:CE:51:D9
+
+            Netscape CA Revocation Url: 
+                https://bioserve.colrado.edu/ca-crl.pem
+    Signature Algorithm: sha1WithRSAEncryption
+        5d:34:ba:69:86:ed:7b:30:2c:5f:98:9d:7d:41:85:ab:33:e2:
+        d5:d3:a7:9d:5e:b0:a1:fe:d5:fc:ba:41:35:42:e7:c8:4e:36:
+        a4:71:ef:6d:96:19:0c:48:e0:cb:7a:31:52:98:fc:36:65:70:
+        19:e5:6f:b9:74:bc:77:5d:e8:6d:23:38:83:0d:fe:28:6c:2b:
+        62:52:cf:61:53:48:38:d0:89:fa:85:29:10:1c:7d:b0:64:5d:
+        4e:a2:91:b0:21:ae:39:1c:91:95:41:37:7e:9f:7c:a0:04:41:
+        f8:a7:04:35:4c:09:3a:a0:d6:75:12:35:2e:fc:c3:cb:e8:c3:
+        69:9d:8d:99:22:c8:9c:b7:56:88:86:be:76:a3:b0:66:d8:9f:
+        62:12:d5:3b:1c:1d:df:28:72:48:0c:c4:ca:4e:e8:2d:01:e0:
+        93:18:0e:9d:7f:26:0b:7d:b9:38:37:7a:cc:c8:4f:e2:b5:3e:
+        90:7b:19:b1:9a:ee:54:e4:4b:e3:54:3a:3f:b4:16:6a:76:a9:
+        62:18:19:1b:c5:2c:26:23:f1:bc:37:0f:5f:fc:c2:1d:76:37:
+        6a:0d:2a:87:5c:27:44:a3:78:b8:1c:40:d0:16:9b:cc:30:91:
+        53:f5:cb:25:b5:dd:9b:1c:1d:63:ed:16:67:a9:79:28:e4:be:
+        97:0b:69:a1
+-----BEGIN CERTIFICATE-----
+MIIE8zCCA9ugAwIBAgIBJzANBgkqhkiG9w0BAQUFADCBmTESMBAGA1UEAxMJQmlv
+bmV0IENBMQswCQYDVQQGEwJVUzERMA8GA1UECBMIQ29sb3JhZG8xEDAOBgNVBAcT
+B0JvdWxkZXIxJDAiBgNVBAoTG0Jpb1NlcnZlIFNwYWNlIFRlY2hub2xvZ2llczEr
+MCkGCSqGSIb3DQEJARYcYmlvbmV0QGJpb3NlcnZlLmNvbG9yYWRvLmVkdTAeFw0w
+OTA0MjcyMjI1MDdaFw0xMDA0MjcyMjI1MDdaMIGkMQswCQYDVQQGEwJVUzERMA8G
+A1UECBMIQ29sb3JhZG8xJDAiBgNVBAoTG0Jpb1NlcnZlIFNwYWNlIFRlY2hub2xv
+Z2llczEXMBUGA1UECxMOTm9kZSBvciBDbGllbnQxFjAUBgNVBAMTDUVOVjo6SE9T
+VE5BTUUxKzApBgkqhkiG9w0BCQEWHGJpb25ldEBiaW9zZXJ2ZS5jb2xvcmFkby5l
+ZHUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDP+/HZFeCN1XHlzx4t
+msQFzBON0eQAfn9xVz48bBCwehdWm/S5YTexpl42uiZwK+4IQ1vFzV8yiZdG3l5U
+MV/2KteqQktVRzvILJwLQiPCTvPFmjrBG7gdnt+LkhQNqWyTnKGbclAMLajoccOH
+ovfFdXdFSRg4rMoVPEv6Sw4o6PfQocLOgIMePUCfNsvPn23rPdy6U1ElkVk38Hev
+UF7+7FXJrAffJ/GVbcx8bdS1uad3QlRmmm44p27t7v9MzyF4VZYZITsh1WxcEUhb
+JBsL/e+4w+PU9djaKvmNqoG8k/lLRLwslQPwoVpCW5Q+jIO9C3p8SwIcDHsw652j
+ox47AgMBAAGjggE3MIIBMzAJBgNVHRMEAjAAMB0GA1UdDgQWBBT/2aTWAUebCOvC
+qh/ewNKCvlza5DCBzgYDVR0jBIHGMIHDgBRdkUekdnmqnoQupcgQYVF7tLAMs6GB
+n6SBnDCBmTESMBAGA1UEAxMJQmlvbmV0IENBMQswCQYDVQQGEwJVUzERMA8GA1UE
+CBMIQ29sb3JhZG8xEDAOBgNVBAcTB0JvdWxkZXIxJDAiBgNVBAoTG0Jpb1NlcnZl
+IFNwYWNlIFRlY2hub2xvZ2llczErMCkGCSqGSIb3DQEJARYcYmlvbmV0QGJpb3Nl
+cnZlLmNvbG9yYWRvLmVkdYIJAMIj6jFxzlHZMDYGCWCGSAGG+EIBBAQpFidodHRw
+czovL2Jpb3NlcnZlLmNvbHJhZG8uZWR1L2NhLWNybC5wZW0wDQYJKoZIhvcNAQEF
+BQADggEBAF00ummG7XswLF+YnX1Bhasz4tXTp51esKH+1fy6QTVC58hONqRx722W
+GQxI4Mt6MVKY/DZlcBnlb7l0vHdd6G0jOIMN/ihsK2JSz2FTSDjQifqFKRAcfbBk
+XU6ikbAhrjkckZVBN36ffKAEQfinBDVMCTqg1nUSNS78w8vow2mdjZkiyJy3VoiG
+vnajsGbYn2IS1TscHd8ockgMxMpO6C0B4JMYDp1/Jgt9uTg3eszIT+K1PpB7GbGa
+7lTkS+NUOj+0Fmp2qWIYGRvFLCYj8bw3D1/8wh12N2oNKodcJ0SjeLgcQNAWm8ww
+kVP1yyW13ZscHWPtFmepeSjkvpcLaaE=
+-----END CERTIFICATE-----

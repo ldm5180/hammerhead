@@ -19,20 +19,12 @@ UNIQUE=$$
 RETVAL=0
 
 
-#create security directories
-echo creating random-hab security directory
-$ROOT/security/setup-sec.sh bioserve.local $PWD/$UNIQUE-random-sec
-
-echo creating watchers security directories
-$ROOT/security/setup-sec.sh bioserve.local $PWD/$UNIQUE-watcher1-sec
-$ROOT/security/setup-sec.sh bioserve.local $PWD/$UNIQUE-watcher2-sec
-
 echo starting random-hab with security required
-$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 --security-dir $PWD/$UNIQUE-random-sec --require-security >| out.random-hab &
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 --security-dir $PWD/random-sec --require-security >| out.random-hab &
 
 echo starting two bionet-watchers with security required
-$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --security-dir $PWD/$UNIQUE-watcher1-sec --require-security >| out.watcher.0 &
-$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --security-dir $PWD/$UNIQUE-watcher2-sec --require-security >| out.watcher.1 &
+$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --security-dir $PWD/watcher1-sec --require-security >| out.watcher.0 &
+$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --security-dir $PWD/watcher2-sec --require-security >| out.watcher.1 &
 
 
 sleep $TEST_DURATION
@@ -66,9 +58,6 @@ if ! diff -q out.watcher.0 out.random-hab; then
 else
     echo "watcher outputs are identical to random-hab output, yay"
 fi
-
-#get rid of security dirs
-rm -rf $UNIQUE-random-sec $UNIQUE-watcher1-sec $UNIQUE-watcher2-sec
 
 exit $RETVAL
 
