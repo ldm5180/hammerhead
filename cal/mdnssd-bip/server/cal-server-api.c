@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/stat.h>
 
 #include <arpa/inet.h>
 
@@ -578,7 +577,6 @@ void cal_server_mdnssd_bip_publish(const char *topic, const void *msg, int size)
 
 
 int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
-    struct stat buffer;
     char cadir[1024];
     char pubcert[1024];
     char prvkey[1024];
@@ -660,18 +658,6 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
     }
  
     //verify the SSL dir
-    if (stat(cadir, &buffer)) {
-	if (require) {
-	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-		  "CA Directory %s error: %m", cadir);
-	    goto security_fail;
-	} else {
-	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "CA Directory %s error: %m", cadir);
-	    goto insecure_fallback;
-	}
-    }
-
     if (1 != SSL_CTX_load_verify_locations(ssl_ctx_server, NULL, cadir)) {
 	ERR_print_errors_fp(stderr);
 	if (require) {
