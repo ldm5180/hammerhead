@@ -1,0 +1,184 @@
+
+{
+   glibc/pthread_create
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.*
+   fun:cal_server_mdnssd_bip_init
+   fun:hab_connect
+   fun:main
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:memalign
+   fun:valloc
+   fun:slab_allocator_alloc_chunk
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:g_strsplit
+   fun:g_get_language_names
+   fun:cal_server_mdnssd_bip_init
+   fun:hab_connect
+   fun:main
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_get_filename_charsets
+   fun:_g_convert_thread_init
+   fun:g_thread_init_glib
+   fun:cal_server_mdnssd_bip_init
+   fun:hab_connect
+   fun:main
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:realloc
+   fun:g_realloc
+   fun:g_array_maybe_expand
+   fun:g_array_set_size
+   fun:g_static_private_set
+   fun:g_get_language_names
+   fun:cal_server_mdnssd_bip_init
+   fun:hab_connect
+   fun:main
+}
+
+{
+    glib/g_thread_init
+    Memcheck:Leak
+    fun:memalign
+    fun:posix_memalign
+    obj:/usr/lib/libglib-2.*
+    fun:g_slice_alloc
+    fun:g_array_sized_new
+    fun:g_array_new
+    fun:g_static_private_set
+    fun:g_get_filename_charsets
+    obj:/usr/lib/libglib-2.*
+    fun:g_thread_init_glib
+    fun:g_thread_init
+    fun:cal_server_mdnssd_bip_init
+    fun:hab_connect
+    fun:main
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_get_charset
+   fun:g_get_filename_charsets
+   fun:_g_convert_thread_init
+   fun:g_thread_init_glib
+   fun:cal_server_mdnssd_bip_init
+   fun:hab_connect
+   fun:main
+}
+
+{
+    avahi-thread-startup
+    fun:calloc
+    fun:_dl_allocate_tls
+    fun:pthread_create@@GLIBC_2.*
+    obj:/usr/lib/libdns_sd.*
+    fun:DNSServiceRegister (in /usr/lib/libdns_sd.so.1.0.0)
+    fun:cal_server_mdnssd_bip_function (thread-functions.c:515)
+    fun:start_thread (in /lib/libpthread-2.7.so)
+    fun:clone
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   fun:_ZNSs12_S_constructIPKcEEPcT_S3_RKSaIcESt20forward_iterator_tag
+   fun:_ZNSsC2EPKcRKSaIcE
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
+   fun:_ZN4dyld24initializeMainExecutableEv
+   fun:_ZN4dyld5_mainEPK11mach_headermiPPKcS5_S5_
+   fun:_ZN13dyldbootstrap5startEPK11mach_headeriPPKcl
+   fun:_dyld_start
+   obj:*
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:calloc
+   fun:bionet_node_new
+   fun:add_node
+   fun:main
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:bionet_node_new
+   fun:add_node
+   fun:main
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:calloc
+   fun:bionet_resource_new
+   fun:add_resource
+   fun:add_node
+   fun:main
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:calloc
+   fun:bionet_value_new_internal
+   fun:bionet_value_new_*
+   fun:set_random_resource_value
+   fun:add_resource
+   fun:add_node
+   fun:main
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:g_realloc
+   fun:g_ptr_array_maybe_expand
+   fun:g_ptr_array_add
+   fun:bionet_resource_add_datapoint
+   fun:set_random_resource_value
+   fun:add_resource
+   fun:add_node
+   fun:main
+}
+
+

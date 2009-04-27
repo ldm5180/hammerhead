@@ -16,6 +16,9 @@ AC_CONFIG_SRCDIR([cal/cal-server.h])
 # place to put some extra build scripts installed
 AC_CONFIG_AUX_DIR([build-aux])
 
+# local m4 scripts
+AC_CONFIG_MACRO_DIR([build-aux/m4])
+
 # fairly severe build strictness
 # change foreign to gnu or gnits to comply with gnu standards
 AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.9.2])
@@ -34,6 +37,11 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_LIBTOOL
+
+AM_PATH_PYTHON([2.5])
+AC_PROG_SWIG
+SWIG_ENABLE_C
+SWIG_PYTHON
 
 CFLAGS="$USERCFLAGS"
 CPPFLAGS="$USERCPPFLAGS"
@@ -331,6 +339,7 @@ AC_CONFIG_FILES([Makefile
                  data-manager/py-client/Makefile
 		 security/Makefile
 		 security/ca/Makefile
+		 test/config.sh
 		 check/Makefile
 		 check/libutil/Makefile
                  ])

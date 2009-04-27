@@ -5,12 +5,6 @@
 # NNC07CB47C.
 #
 
-MAC=`perl -e 'if (\`uname -a\` =~ m/^Darwin/) { print "true" } else { print "false" };'`
-if $MAC; then
-    echo "Skipping on OSX for now"
-    exit 2
-fi
-
 UNIQUE=$$
 
 if [ -z "$ROOT" ]; then
@@ -31,8 +25,8 @@ for FILE in test-pattern-*; do
     mv incoming:incoming out.$FILE
     if ! cmp  $FILE out.$FILE ; then
         echo "ERROR: $FILE differs from out.$FILE:"
-        hd $FILE > hd.$FILE
-        hd out.$FILE > hd.out.$FILE
+        hexdump $FILE > hd.$FILE
+        hexdump out.$FILE > hd.out.$FILE
         diff -u hd.$FILE hd.out.$FILE
 	kill %1
         exit 1

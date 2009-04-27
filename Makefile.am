@@ -11,6 +11,8 @@
 
 include $(top_srcdir)/common.am
 
+ACLOCAL_AMFLAGS = -I build-aux/m4
+
 SUBDIRS = cal util asn.1 client hab data-manager security check
 
 if ENABLE_LINUX

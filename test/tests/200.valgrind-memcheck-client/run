@@ -15,11 +15,15 @@ if [ -z "$TEST_DURATION" ]; then
     TEST_DURATION=30
 fi
 
+. $ROOT/test/config.sh
+
 UNIQUE=$$
 RETVAL=0
 
+
+
 echo starting bionet-watcher under valgrind memcheck
-libtool --mode=execute valgrind --suppressions=valgrind.suppressions --quiet --log-file=out.valgrind.watcher --num-callers=25 --tool=memcheck --trace-children=yes --leak-check=full $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher &
+$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.watcher --num-callers=25 --tool=memcheck --trace-children=yes --leak-check=full $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher &
 
 sleep 2  # let the client come up before starting the hab (valgrind makes it slow)
 
@@ -51,7 +55,7 @@ else
     echo "watcher output is identical to random-hab output, yay"
 fi
 
-if [ $(wc -l < out.valgrind.watcher) -gt 0 ]; then
+if grep -q '^==' out.valgrind.watcher; then
     echo "valgrind memcheck output:"
     cat out.valgrind.watcher
     RETVAL=1

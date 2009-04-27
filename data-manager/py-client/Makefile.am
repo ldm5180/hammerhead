@@ -12,26 +12,29 @@ endif
 
 LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.version_info[0]) + \".\" + str(sys.version_info[1])" | python`
 
-lib_LTLIBRARIES = libbdm.la
+pkgpython_PYTHON = bdm-client.py
+pkgpyexec_LTLIBRARIES = _bdm_client.la
 
-libbdm_la_DEPENDENCIES = $(INCLUDES_BIONET_UTIL)
+_bdm_client_la_DEPENDENCIES = $(INCLUDES_BIONET_UTIL)
 
-libbdm_la_SOURCES = bdm-client_wrap.c bdm-client-interface.c ../client/connect.c ../client/disconnect.c ../client/get-resource-datapoints.c ../client/send-asn.c  
+BUILT_SOURCES = bdm-client_wrap.c
+_bdm_client_la_SOURCES = bdm-client_wrap.c bdm-client-interface.c ../client/connect.c ../client/disconnect.c ../client/get-resource-datapoints.c ../client/send-asn.c  
+#SWIG_SOURCES = bdm-client.i
 
-libbdm_la_LIBADD = $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(GLIB20_LIBS)
+_bdm_client_la_LIBADD = $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(GLIB20_LIBS)
 
-libbdm_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BIONET_UTIL) -I/usr/include/python2.5 $(CFLAGS_BIONET_ASN1) -I../include $(GLIB20_CFLAGS) -I../client
+_bdm_client_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BIONET_UTIL) -I/usr/include/python2.5 $(CFLAGS_BIONET_ASN1) -I../include $(GLIB20_CFLAGS) -I../client
 
-libbdm_la_LDFLAGS = $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1) -version-info $(BIONET_INTERFACE_VERSION) 
+_bdm_client_la_LDFLAGS = -module $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1) -version-info $(BIONET_INTERFACE_VERSION) 
 
-install-exec-hook: setup.py
-	python setup.py install
-	cp _bdm_client.so $(LIB_INST_DIR)/.
-	$(LDCONFIG_EXE)
+
+#install-exec-hook: setup.py
+#	python setup.py install
+#	cp _bdm_client.so $(LIB_INST_DIR)/.
+#	$(LDCONFIG_EXE)
 
 bdm-client_wrap.c: bdm-client.i bdm-client-interface.c $(INCLUDES_BIONET_UTIL)
-	swig -python $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) -I../include -I../client bdm-client.i
-	ln -sf .libs/libbdm.so _bdm_client.so
+	$(SWIG) $(SWIG_PYTHON_OPT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) -I../include -I../client -o $@ $<
 
 clean-local:
 	rm -f *.so bdm-client_wrap.c bdm_client.*

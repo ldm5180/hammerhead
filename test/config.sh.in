@@ -1,0 +1,11 @@
+#!/bin/sh
+
+export SHELL="@SHELL@"
+export top_builddir="$ROOT"
+
+@ENABLE_DARWIN_TRUE@export ENABLE_DARWIN=1
+@ENABLE_LINUX_TRUE@export ENABLE_LINUX=1
+
+export LIBTOOL="$top_builddir/libtool"
+
+@ENABLE_DARWIN_TRUE@export VGSUPPRESSIONS_SUFFIX=.darwin
