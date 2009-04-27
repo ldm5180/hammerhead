@@ -29,6 +29,7 @@
 
 
 extern SSL_CTX * ssl_ctx_server;
+extern int server_require_security;
 
 // key is a bip peer name "bip://$HOST:$PORT"
 // value is a bip_peer_t*
@@ -212,16 +213,27 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
     if (ssl_ctx_server) {
 	bio_ssl = BIO_new_ssl(ssl_ctx_server, 0);
 	if (!bio_ssl) {
-	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to create an SSL.");
-	    goto fail2;
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to create an SSL.");
+	    if (server_require_security) {
+		goto fail2;
+	    } else {
+		goto skip_security;
+	    }
 	}
 	net->socket_bio = BIO_push(bio_ssl, net->socket_bio);
 	if (1 != BIO_do_handshake(net->socket_bio)) {
-	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to complete SSL handshake.");
-	    goto fail2;
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to complete SSL handshake.");
+	    if (server_require_security) {
+		goto fail2;
+	    } else {
+		BIO_free_all(net->socket_bio);
+		net->socket_bio = BIO_new_socket(net->socket, BIO_CLOSE);
+		goto skip_security;
+	    }
 	}
     }
 
+skip_security:
     event = cal_event_new(CAL_EVENT_CONNECT);
     if (event == NULL) {
         // an error has been logged already
