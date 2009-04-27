@@ -1,7 +1,7 @@
 #!/bin/sh
 
-SECDIR=$1
-SIGN_SERVER=bioserve.local
+SECDIR=$2
+SIGN_SERVER=$1
 MYLOC=`dirname $0`
 
 if [ -z "$SECDIR" ]; then

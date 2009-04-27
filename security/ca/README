@@ -14,6 +14,6 @@ chmod 0700 private
 chown root:root private 
 
 # grant access to anybody in the caadmins group permission to sign CSRs
-chown root:caadmins ca-serve
+chown root:automation ca-serve
 chmod 4750 ca-serve
 

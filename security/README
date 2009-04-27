@@ -1,7 +1,7 @@
 These tools should be used by any client or hab that needs to create a 
 security dir.
 
-Assuming the CA has been installed on bioserve, to create a security dir, run
+Assuming the CA has been installed on <CAserver>, to create a security dir, run
 the following command to create <DIR>:
 
-$ ./setup-sec.sh <DIR> 
+$ ./setup-sec.sh <CAserver> <DIR> 
