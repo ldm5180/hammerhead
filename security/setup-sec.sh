@@ -2,6 +2,7 @@
 
 SECDIR=$1
 SIGN_SERVER=bioserve.local
+MYLOC=`dirname $0`
 
 if [ -z "$SECDIR" ]; then
 	echo "Please specify a security directory to create"
@@ -11,7 +12,7 @@ fi
 mkdir -p $SECDIR
 cd $SECDIR || exit 1
 
-openssl req -config ../bionet-ssl.conf -batch -newkey rsa:2048 -nodes -out pub.csr
+openssl req -config $MYLOC/bionet-ssl.conf -batch -newkey rsa:2048 -nodes -out pub.csr
 
 # Send the CRS to the signing server
 ssh $SIGN_SERVER "/data/bionet-ca/ca-serve" < pub.csr > pub.cert
