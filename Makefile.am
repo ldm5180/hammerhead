@@ -11,7 +11,7 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = cal util asn.1 client hab data-manager check
+SUBDIRS = cal util asn.1 client hab data-manager security check
 
 if ENABLE_LINUX
 LDCONFIG_EXE = /sbin/ldconfig

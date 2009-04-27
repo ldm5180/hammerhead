@@ -329,6 +329,8 @@ AC_CONFIG_FILES([Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
                  data-manager/py-client/Makefile
+		 security/Makefile
+		 security/ca/Makefile
 		 check/Makefile
 		 check/libutil/Makefile
                  ])

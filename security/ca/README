@@ -1,0 +1,19 @@
+Tools for bionet CA
+
+The files in relroot should be copied as is to /data/bionet-ca on
+bioserve
+
+ca-serve should be build, and copied to the same directory
+
+On bioserve:
+# Setup the CA database
+make init
+
+# Prevent anybody but root from seeing the private key
+chmod 0700 private  
+chown root:root private 
+
+# grant access to anybody in the caadmins group permission to sign CSRs
+chown root:caadmins ca-serve
+chmod 4750 ca-serve
+
