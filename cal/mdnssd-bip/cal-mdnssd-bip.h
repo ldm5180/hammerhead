@@ -40,12 +40,12 @@
 
 /* security configuration files */
 #define BIP_PUBLIC_CERT     "pub.cert"
-#define BIP_PRIVATE_KEY     "prv.cert"
+#define BIP_PRIVATE_KEY     "prv.key"
 #define BIP_CA_DIR          "ca-dir"
 #define BIP_SECURITY_SERIAL "serial"
 #define BIP_SSL_CONF        "bionet-ssl.conf"
 #define BIP_CA_FILE         NULL
-#define BIP_CA_CERTFILE     "ca-dir/ca-cert.pem"
+#define BIP_CA_CERTFILE     "ca-cert.pem"
 
 
 typedef struct {

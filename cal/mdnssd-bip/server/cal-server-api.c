@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include <arpa/inet.h>
 
@@ -577,10 +578,61 @@ void cal_server_mdnssd_bip_publish(const char *topic, const void *msg, int size)
 
 
 int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
+    struct stat buffer;
+    char cadir[1024];
+    char pubcert[1024];
+    char prvkey[1024];
+    int r;
+
+    if (NULL == dir) {
+	g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "cal_server_mdnssd_bip_init_security(): NULL dir passed in.");
+	return 0;
+    }
+
+    r = snprintf(cadir, 1024, "%s/%s", dir, BIP_CA_DIR);
+    if (0 >= r || r == 1024) {
+	if (require) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "Failed to make CA Dir variable.");
+	    return 0;
+	} else {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to make CA Dir variable.");
+	    return 1;
+	}
+    }
+
+    snprintf(pubcert, 1024, "%s/%s", dir, BIP_PUBLIC_CERT);
+    if (0 >= r || r == 1024) {
+	if (require) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "Failed to make CA Cert variable.");
+	    return 0;
+	} else {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to make CA Cert variable.");
+	    return 1;
+	}
+    }
+
+    snprintf(prvkey, 1024, "%s/%s", dir, BIP_PRIVATE_KEY);
+    if (0 >= r || r == 1024) {
+	if (require) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "Failed to make Private Key variable.");
+	    return 0;
+	} else {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to make Private Key variable.");
+	    return 1;
+	}
+    }
+
     SSL_load_error_strings();
 
     //seed the PRNG
-    if (!RAND_load_file("/dev/random", 1024)) {
+    if (!RAND_load_file("/dev/urandom", 1024)) {
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to init PRNG.");
@@ -592,10 +644,35 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
 	}
     }
 
-    ssl_ctx_server = SSL_CTX_new(SSLv23_method());
-
+    SSLeay_add_ssl_algorithms();
+    ssl_ctx_server = SSL_CTX_new(SSLv23_server_method());
+    if (NULL == ssl_ctx_server) {
+	ERR_print_errors_fp(stderr);
+	if (require) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+		  "Failed to get a new SSL context");
+	    return 0;
+	} else {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "Failed to get a new SSL context");
+	    return 1;
+	}
+    }
+ 
     //verify the SSL dir
-    if (1 != SSL_CTX_load_verify_locations(ssl_ctx_server, BIP_CA_FILE, dir)) {
+    if (stat(cadir, &buffer)) {
+	if (require) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+		  "CA Directory %s error: %m", cadir);
+	    goto security_fail;
+	} else {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "CA Directory %s error: %m", cadir);
+	    goto insecure_fallback;
+	}
+    }
+
+    if (1 != SSL_CTX_load_verify_locations(ssl_ctx_server, NULL, cadir)) {
 	ERR_print_errors_fp(stderr);
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
@@ -609,7 +686,7 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
     }
 
     //load the trusted CA list
-    if (1 != SSL_CTX_use_certificate_chain_file(ssl_ctx_server, BIP_CA_CERTFILE)) {
+    if (1 != SSL_CTX_use_certificate_chain_file(ssl_ctx_server, pubcert)) {
 	ERR_print_errors_fp(stderr);
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
@@ -623,7 +700,7 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
     }
 
     //load the private key
-    if (1 != SSL_CTX_use_PrivateKey_file(ssl_ctx_server, BIP_PRIVATE_KEY, SSL_FILETYPE_PEM)) {
+    if (1 != SSL_CTX_use_PrivateKey_file(ssl_ctx_server, prvkey, SSL_FILETYPE_PEM)) {
 	ERR_print_errors_fp(stderr);
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 

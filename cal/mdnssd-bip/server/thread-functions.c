@@ -217,6 +217,7 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
 	}
 	net->socket_bio = BIO_push(bio_ssl, net->socket_bio);
 	if (1 != BIO_do_handshake(net->socket_bio)) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to complete SSL handshake.");
 	    goto fail2;
 	}
     }
