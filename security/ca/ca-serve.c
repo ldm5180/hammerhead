@@ -67,7 +67,7 @@ int main (int argc, char * argv[], char * envp[]){
 	"ca", 
 	"-batch",
 	"-config",
-	"openssl.cnf",
+	"ca-ssl.conf",
 	"-in", "/dev/stdin", "-out", "/dev/stdout", NULL};
 
     execve("/usr/bin/openssl", new_argv, envp);
