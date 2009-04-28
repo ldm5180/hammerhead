@@ -90,6 +90,8 @@ extern char *node_list_name_patterns[MAX_SUBSCRIPTIONS];
 extern int resource_index;
 extern char *resource_name_patterns[MAX_SUBSCRIPTIONS];
 
+extern char * security_dir;
+extern int require_security;
 
 int try_to_connect_to_bionet(void *unused);
 

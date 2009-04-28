@@ -24,7 +24,8 @@ char *node_list_name_patterns[MAX_SUBSCRIPTIONS];
 int resource_index = 0;
 char *resource_name_patterns[MAX_SUBSCRIPTIONS];
 
-
+char * security_dir = NULL;
+int require_security = 0;
 
 
 // 

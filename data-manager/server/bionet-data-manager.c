@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include <glib.h>
 
@@ -26,22 +27,24 @@ char * database_file = DB_NAME;
 
 
 void usage(void) {
-    printf("usage: bionet-data-manager OPTIONS...\n\
-\n\
-OPTIONS:\n\
-\n\
-    --habs HAB-Type.Hab-ID\n\
-        Subscribe to a HAB list.\n\
-\n\
-    --nodes HAB-Type.HAB-ID.Node-ID\n\
-        Subscribe to a Node list.\n\
-\n\
-    -r, --resource, --resources HAB-Type.HAB-ID.Node-ID:Resource-ID\n\
-        Subscribe to Resource values.\n\
-\n\
-    -f, --file /Path/to/database/file.db\n\
-        Full path of database file (default: bdm.db)\n\
-");
+    printf(
+	"'bionet-data-manager' records Bionet traffic to a database.\n"
+	"\n"
+	"usage: bionet-data-manager [OPTIONS]\n"
+	"\n"
+	" -?,--help                                      Show this help\n"
+	" -e,--require-security                          Require security\n"
+	" -f,--file /Path/to/database/file.db            Full path of database file (bdm.db)\n"
+	" -h,--hab,--habs \"HAB-Type.Hab-ID\"              Subscribe to a HAB list.\n"
+	" -n,--node,--nodes \"HAB-Type.HAB-ID.Node-ID\"    Subscribe to a Node list.\n"
+	" -r,--resource,--resources \"HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
+	"                                                Subscribe to Resource values.\n"
+	" -s,--security-dir <dir>                        Directory containing security\n"
+	"                                                certificates\n"
+	" -v,--version                                   Show the version number\n"
+	"\n"
+	"Security can only be required when a security directory has been specified.\n"
+	"  bionet-data-manager [--security-dir <dir> [--require-security]]\n");
 }
 
 
@@ -63,54 +66,97 @@ int main(int argc, char *argv[]) {
     //
     // parse command-line arguments
     //
+    int i = 0;
+    int c;
+    while(1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'v'},
+	    {"file", 1, 0, 'f'},
+	    {"habs", 1, 0, 'h'},
+	    {"hab", 1, 0, 'h'},
+	    {"nodes", 1, 0, 'n'},
+	    {"node", 1, 0, 'n'},
+	    {"resources", 1, 0, 'r'},
+	    {"resource", 1, 0, 'r'},
+	    {"require-security", 0, 0, 'e'},
+	    {"security-dir", 1, 0, 's'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-    {
-        argv ++;
+	c= getopt_long(argc, argv, "?vef:h:n:r:s:", long_options, &i);
+	if ((-1) == c) {
+	    break;
+	}
 
-        for ( ; *argv != NULL; argv ++) {
-            if (strcmp(*argv, "--habs") == 0) {
-                argv ++;
-                if (hab_list_index < MAX_SUBSCRIPTIONS) {
-                    hab_list_name_patterns[hab_list_index] = *argv;
-                    hab_list_index ++;
-                } else {
-                    g_warning("skipping HAB subscription %s, only %d are handled", *argv, MAX_SUBSCRIPTIONS);
-                    argv ++;
-                }
+	switch (c) {
 
-            } else if (strcmp(*argv, "--nodes") == 0) {
-                argv ++;
-                if (node_list_index < MAX_SUBSCRIPTIONS) {
-                    node_list_name_patterns[node_list_index] = *argv;
-                    node_list_index ++;
-                } else {
-                    g_warning("skipping Node subscription %s, only %d are handled", *argv, MAX_SUBSCRIPTIONS);
-                    argv ++;
-                }
+	case '?':
+	    usage();
+	    return 0;
 
-            } else if ((strcmp(*argv, "-r") == 0) || (strcmp(*argv, "--resource") == 0) || (strcmp(*argv, "--resources") == 0)) {
-                argv ++;
-                if (resource_index < MAX_SUBSCRIPTIONS) {
-                    resource_name_patterns[resource_index] = *argv;
-                    resource_index ++;
-                } else {
-                    g_warning("skipping Resource subscription %s, only %d are handled", *argv, MAX_SUBSCRIPTIONS);
-                    argv ++;
-                }
-
-            } else if ((strcmp(*argv, "-f") == 0) 
-		       || (strcmp(*argv, "--file") == 0)) {
-		argv++;
-		database_file = *argv;
+	case 'e':
+	    if (security_dir) {
+		require_security++;
 	    } else {
-                usage();
-                exit(1);
-            }
-        }
+		usage();
+		return (-1);
+	    }
+	    break;
+
+	case 'f':
+	    database_file = optarg;
+	    break;
+
+	case 'h':
+	    if (hab_list_index < MAX_SUBSCRIPTIONS) {
+		hab_list_name_patterns[hab_list_index] = optarg;
+		hab_list_index++;
+	    } else {
+		g_warning("skipping HAB subscription %s, only %d are handled", 
+			  *argv, MAX_SUBSCRIPTIONS);
+	    }
+	    break;
+
+	case 'n':
+	    if (node_list_index < MAX_SUBSCRIPTIONS) {
+		node_list_name_patterns[node_list_index] = optarg;
+		node_list_index++;
+	    } else {
+		g_warning("skipping Node subscription %s, only %d are handled", 
+			  *argv, MAX_SUBSCRIPTIONS);
+	    }
+	    break;
+
+	case 'r':
+	    if (resource_index < MAX_SUBSCRIPTIONS) {
+		resource_name_patterns[resource_index] = optarg;
+		resource_index++;
+	    } else {
+		g_warning("skipping Resource subscription %s, only %d are handled", 
+			  *argv, MAX_SUBSCRIPTIONS);
+	    }
+	    break;
+
+	case 's':
+	    security_dir = optarg;
+	    break;
+
+	case 'v':
+	    print_bionet_version(stdout);
+	    return 0;
+	    
+	default:
+	    break;
+	}
+    } //while(1)
+
+
+    if (security_dir) {
+	if (bionet_init_security(security_dir, require_security)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+	}
     }
-
-
-
 
     if (db_init() != 0) {
         // an informative error message has already been logged by db_init()
