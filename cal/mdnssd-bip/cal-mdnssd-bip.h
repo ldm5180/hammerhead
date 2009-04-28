@@ -47,6 +47,15 @@
 #define BIP_CA_FILE         NULL
 #define BIP_CA_CERTFILE     "ca-cert.pem"
 
+/* BIP mDNS-SD Txt record values */
+#define BIP_TXTVERS 1
+typedef uint8_t bip_txtvers_t;
+
+typedef enum {
+    BIP_SEC_NONE,
+    BIP_SEC_REQ,
+    BIP_SEC_OPT
+} bip_sec_type_t;
 
 typedef struct {
     char *hostname;  //!< DNS hostname, or IP address as a dotted quad ascii string
@@ -54,6 +63,7 @@ typedef struct {
 
     int socket;      //!< the socket connected to this peer, or -1 if we're not currently connected
     BIO * socket_bio; //!< the BIO that wraps the socket connected to this peer, or NULL if not connected
+    bip_sec_type_t sectype; //!< the type of security adversited by this peer
     
 
     //! the header of the packet we're currently receiving

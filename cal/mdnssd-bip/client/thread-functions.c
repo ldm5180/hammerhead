@@ -526,6 +526,24 @@ static void resolve_callback(
         goto fail0;
     }
 
+    const void * value;
+    uint8_t valueLen;
+    value = TXTRecordGetValuePtr(txtLen, txtRecord, "txtvers", &valueLen);
+    if( value
+    &&  valueLen == sizeof(bip_txtvers_t) 
+    &&  BIP_TXTVERS >= *((bip_txtvers_t*)value))
+    {
+	value = TXTRecordGetValuePtr(txtLen, txtRecord, "sec", &valueLen);
+	if( value ) {
+	    if ( 0 == strncmp(value, "req", valueLen) ) {
+		net->sectype = BIP_SEC_REQ;	
+	    } else if ( 0 == strncmp(value, "opt", valueLen) ) {
+		net->sectype = BIP_SEC_OPT;
+	    }
+	}
+    }
+
+
     g_ptr_array_add(peer->nets, net);
 
 

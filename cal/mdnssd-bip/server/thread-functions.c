@@ -627,6 +627,40 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     }
 #endif
 
+    if ( ssl_ctx_server ) {
+	bip_txtvers_t value = BIP_TXTVERS;
+
+        error = TXTRecordSetValue ( 
+            &txt_ref,                          // TXTRecordRef *txtRecord, 
+            "txtvers",                         // const char *key, 
+            sizeof(value),                     // uint8_t valueSize, /* may be zero */
+            &value                             // const void *value /* may be NULL */
+        );  
+
+        if (error != kDNSServiceErr_NoError) {
+            free(advertisedRef);
+            advertisedRef = NULL;
+            TXTRecordDeallocate(&txt_ref);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dnssd: Error registering service: %d", error);
+            return 0;
+        }
+
+        error = TXTRecordSetValue ( 
+            &txt_ref,                          // TXTRecordRef *txtRecord, 
+            "sec",                             // const char *key, 
+            3,                                 // uint8_t valueSize, /* may be zero */
+            "req"                              // const void *value /* may be NULL */
+        );  
+
+        if (error != kDNSServiceErr_NoError) {
+            free(advertisedRef);
+            advertisedRef = NULL;
+            TXTRecordDeallocate(&txt_ref);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dnssd: Error registering service: %d", error);
+            return 0;
+        }
+    }
+
     error = DNSServiceRegister(
         advertisedRef,                        // DNSServiceRef *sdRef
         0,                                    // DNSServiceFlags flags

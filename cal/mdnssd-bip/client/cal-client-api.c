@@ -28,7 +28,7 @@
 
 
 extern SSL_CTX * ssl_ctx_client;
-int client_require_security = 0;
+extern bip_sec_type_t client_require_security;
 
 int cal_client_mdnssd_bip_init(
     const char *network_type,
@@ -494,7 +494,11 @@ int cal_client_mdnssd_bip_init_security(const char * dir, int require) {
 		       bip_ssl_verify_callback);
     SSL_CTX_set_verify_depth(ssl_ctx_client, 9); //arbitrary right now
 
-    client_require_security = require;
+    if(require) {
+	    client_require_security = BIP_SEC_REQ;
+    } else {
+	    client_require_security = BIP_SEC_OPT;
+    }
     return 1;
 } /* cal_client_mdnssd_bip_init_security() */
 

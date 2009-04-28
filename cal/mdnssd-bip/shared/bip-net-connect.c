@@ -25,6 +25,7 @@
 #include <openssl/err.h>
 
 extern SSL_CTX * ssl_ctx_client;
+extern bip_sec_type_t client_require_security;
 
 BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
     int s;
@@ -41,6 +42,15 @@ BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
 
 
     if (NULL != net->socket_bio) return net->socket_bio;
+
+    if (client_require_security == BIP_SEC_REQ && net->sectype == BIP_SEC_NONE){
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "bip_net_connect: Security required but not supported on peer '%s'. Refusing to connect", peer_name);
+	return NULL;
+    }
+    if (client_require_security == BIP_SEC_NONE && net->sectype == BIP_SEC_REQ){
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "bip_net_connect: Security disabled, but required on peer '%s'. Refusing to connect", peer_name);
+	return NULL;
+    }
 
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0) {
@@ -87,7 +97,7 @@ BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
 
     net->socket = s;
 
-    if (ssl_ctx_client) {
+    if (ssl_ctx_client && (net->sectype == BIP_SEC_OPT || net->sectype == BIP_SEC_REQ)) {
 	bio_ssl = BIO_new_ssl(ssl_ctx_client, 1);
 	if (!bio_ssl) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to create an SSL.");
