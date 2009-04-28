@@ -27,8 +27,8 @@ for FILE in test-pattern-*; do
 
     if ! cmp  $FILE out.$FILE ; then
         echo "ERROR: $FILE differs from out.$FILE:"
-        hd $FILE > hd.$FILE
-        hd out.$FILE > hd.out.$FILE
+        hexdump $FILE > hd.$FILE
+        hexdump out.$FILE > hd.out.$FILE
         diff -u hd.$FILE hd.out.$FILE
 	kill %1
         exit 1
