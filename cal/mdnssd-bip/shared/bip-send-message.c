@@ -70,10 +70,16 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
     if (r != sizeof(msg_type)) {
         return -1;
     }
+    if (1 != BIO_flush(net->socket_bio)) {
+	ERR_print_errors_fp(stderr);
+    }
 
     r = BIO_write(net->socket_bio, &msg_size, sizeof(msg_size));
     if (r != sizeof(msg_size)) {
         return -1;
+    }
+    if (1 != BIO_flush(net->socket_bio)) {
+	ERR_print_errors_fp(stderr);
     }
 
     if (size == 0) return 0;
@@ -81,6 +87,9 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
     r = BIO_write(net->socket_bio, msg, size);
     if (r != size) {
         return -1;
+    }
+    if (1 != BIO_flush(net->socket_bio)) {
+	ERR_print_errors_fp(stderr);
     }
 
     return 0;
