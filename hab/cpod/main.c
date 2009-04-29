@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "cpod.h"
 #include "hardware-abstractor.h"
@@ -30,17 +31,20 @@ int kill_kin();
 int write_pidfile();
 
 
-void print_help(char* name)
+void print_help(FILE *fp)
 {
-    printf("Usage: %s [options] bdaddr\n", name);
-    printf("Options are the following:\n");
-    printf("-d,--daemon\t\tRun program as a daemon\n");
-    printf("-e,--ecg\t\tParse and report the ECG output\n");
-    printf("-h,--hab-id name\tSets the hab id\n");
-    printf("-?,--help\t\tPrint this help message\n");
-    printf("-k,--kill\t\tSearch for a running instance of processs and kill it\n");
-    printf("-p,--period time\tPeriod between battery queries in seconds\n");
-    printf("-v,--verbose\t\tTurn on verbose logging\n");
+    printf(
+	"'cpod-hab' CPOD Bionet Hardware Abstractor."
+	"\n"
+	"Usage: cpod-hab [options] [bdaddr]\n"
+	" -d,--daemon                 Run program as a daemon\n"
+	" -e,--ecg                    Parse and report the ECG output\n"
+	" -h,--hab-id <name>          Sets the hab id\n"
+	" -?,--help                   Print this help message\n"
+	" -k,--kill                   Search for a running instance of process and kill it\n"
+	" -p,--period-time <seconds>  Period between battery queries in seconds\n"
+	" -s,--security-dir <dir>     Directory containing security certificates\n"
+	" -v,--verbose                Turn on verbose logging\n");
 }
 
 bionet_node_t *node;
@@ -51,8 +55,8 @@ int print_ecg;
 
 int main ( int argc, char** argv )
 {
-    int cpod_fd, i, verbose, hab_fd, period, streaming, daemon;
-
+    int cpod_fd, verbose, hab_fd, period, streaming, daemon;
+    char * security_dir = NULL;
     bdaddr_t device;
 
     struct sockaddr_rc addr = {0};
@@ -67,82 +71,83 @@ int main ( int argc, char** argv )
     bacpy(&device, BDADDR_ANY);
     period = 10;
 
+    int i;
+    int c;
+    int r;
+    while(1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"daemon", 0, 0, 'd'},
+	    {"ecg", 0, 0, 'e'},
+	    {"hab-id", 1, 0, 'h'},
+	    {"kill", 0, 0, 'k'},
+	    {"period-time", 1, 0, 'p'},
+	    {"security-dir", 1, 0, 's'},
+	    {"version", 0, 0, 'n'},
+	    {"verbose", 0, 0, 'v'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-    //  Parse command line arguments
-    for(i = 1; i < argc; i++ )
-    {
-        if (strcmp(argv[i], "--verbose") == 0 ||
-            strcmp(argv[i], "-v") == 0)
-        {
-            verbose = 1;
-        }
-        else if (strcmp(argv[i], "--daemon") == 0 ||
-                 strcmp(argv[i], "--demon") == 0 ||
-                 strcmp(argv[i], "-d") == 0)
-        {
-            daemon = 1;
-        }
-        else if (strcmp(argv[i], "--ecg") == 0 ||
-                 strcmp(argv[i], "-e") == 0)
-        {
-            print_ecg = 1;
-        }
-        else if (strcmp(argv[i], "--help") == 0 ||
-                 strcmp(argv[i], "-?") == 0)
-        {
-            print_help(argv[0]);
-            exit(0);
-        }
-        else if (strcmp(argv[i], "--kill") == 0 ||
-                 strcmp(argv[i], "-k") == 0)
-        {
-            int r;
+	c = getopt_long(argc, argv, "?ndekvh:p:s:", long_options, &i);
+	if ((-1) == c) {
+	    break;
+	}
 
+	switch (c) {
+	    
+	case '?':
+	    print_help(stdout);
+	    return 0;
+
+	case 'd':
+	    daemon = 1;
+	    break;
+
+	case 'e':
+	    print_ecg = 1;
+	    break;
+
+	case 'h':
+	    hab_id = optarg;
+	    break;
+
+	case 'k':
             if ((r = kill_kin()))
                 g_log("", G_LOG_LEVEL_WARNING, "Can't kill process: %s", strerror(errno));
 
             return r;
-        }
-        else if (strcmp(argv[i], "--hab-id") == 0 ||
-                 strcmp(argv[i], "-h") == 0)
-        {
-            i++;
 
-            if (i < argc)
-                hab_id = argv[i];
-            else
-            {
-                print_help(argv[0]);
-                exit(2);
-            }
-        }
-        else if (strcmp(argv[i], "--period") == 0 ||
-                 strcmp(argv[i], "-p") == 0)
-        {
-            i++;
+	case 'n':
+	    print_bionet_version(stdout);
+	    return 0;
 
-	    if (i >= argc) {
-		print_help(argv[0]);
-		exit(2);
-	    }
-
-	    period = strtol(argv[i], NULL, 0);
+	case 'p':
+	    period = strtol(optarg, NULL, 0);
 	    if ((0 == period) && (EINVAL == errno)) {
-		print_help(argv[0]);
-		exit(2);
+		print_help(stderr);
+		return(2);
 	    }
-        }
-        else if (strlen(argv[i]) == 17 &&
-                 str2ba(argv[i], &device) == 0 &&
-                 bacmp(&device, BDADDR_ANY) != 0)
-        {
-                g_log("", G_LOG_LEVEL_DEBUG, "Connecting to %s", argv[i]);
-        }
-        else
-        {
-            print_help(argv[0]);
-            exit(2);
-        }
+	    break;
+	    
+	case 's':
+	    security_dir = optarg;
+	    break;
+
+	case 'v':
+	    verbose = 1;
+	    break;
+
+	default:
+	    break;
+
+	}
+
+    } //while(1)
+
+    if (strlen(argv[argc-1]) == 17 &&
+	str2ba(argv[argc-1], &device) == 0 &&
+	bacmp(&device, BDADDR_ANY) != 0) {
+	g_log("", G_LOG_LEVEL_DEBUG, "Connecting to %s", argv[argc-1]);
     }
 
     if (daemon)
@@ -172,6 +177,13 @@ int main ( int argc, char** argv )
     if (hab == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "Unable to create a new hab...");
         exit(1);
+    }
+
+    if (security_dir) {
+	if (hab_init_security(security_dir, 1)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+	    return 1;
+	}
     }
 
     //  Connect
