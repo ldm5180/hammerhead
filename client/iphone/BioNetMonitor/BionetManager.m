@@ -281,9 +281,8 @@ void cb_lost_node(bionet_node_t *c_node) {
 		rootDictionary = [[NSMutableDictionary alloc]init];
 
 		NSString *secpath = [[NSBundle mainBundle] pathForResource:@"sec-dir" ofType:nil];
-		if(0 == bionet_init_security([secpath UTF8String], 1)){
-			fprintf(stderr, "Security enabled");
-		}
+		bool sec_required = [[NSUserDefaults standardUserDefaults] boolForKey:@"ssl_required"];
+		bionet_init_security([secpath UTF8String], sec_required);
 		
 		// this must happen before anything else
 		bionet_fd = bionet_connect();
