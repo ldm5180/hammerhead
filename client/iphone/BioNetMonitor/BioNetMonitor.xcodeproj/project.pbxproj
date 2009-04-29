@@ -32,6 +32,7 @@
 		74724FDD0F7856680061BF62 /* Node.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FD30F7856680061BF62 /* Node.m */; };
 		74724FDE0F7856680061BF62 /* RootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FD50F7856680061BF62 /* RootViewController.m */; };
 		74724FF60F7857490061BF62 /* HabType.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FF50F7857490061BF62 /* HabType.m */; };
+		7474509A0FA8E2220033B682 /* sec-dir in Resources */ = {isa = PBXBuildFile; fileRef = 747450920FA8E2220033B682 /* sec-dir */; };
 		74912E0B0F86BB2700261D63 /* libintl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0A0F86BB2700261D63 /* libintl.a */; };
 		74912E0E0F86BB7000261D63 /* libiconv.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0D0F86BB7000261D63 /* libiconv.2.dylib */; };
 /* End PBXBuildFile section */
@@ -72,6 +73,7 @@
 		74724FD50F7856680061BF62 /* RootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RootViewController.m; sourceTree = "<group>"; };
 		74724FF40F7857490061BF62 /* HabType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HabType.h; sourceTree = "<group>"; };
 		74724FF50F7857490061BF62 /* HabType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HabType.m; sourceTree = "<group>"; };
+		747450920FA8E2220033B682 /* sec-dir */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "sec-dir"; path = "../sec-dir"; sourceTree = SOURCE_ROOT; };
 		74912E0A0F86BB2700261D63 /* libintl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libintl.a; path = "/opt/local/arm-apple-darwin/lib/libintl.a"; sourceTree = "<absolute>"; };
 		74912E0D0F86BB7000261D63 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
 		74CA85760F71674F00FEE5E2 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
@@ -140,6 +142,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				747450920FA8E2220033B682 /* sec-dir */,
 				2899E55F0DE3E45000AC0155 /* RootViewController.xib */,
 				28AD735F0D9D9599002E5188 /* MainWindow.xib */,
 				8D1107310486CEB800E47090 /* Info.plist */,
@@ -244,6 +247,7 @@
 			files = (
 				28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */,
 				2899E5600DE3E45000AC0155 /* RootViewController.xib in Resources */,
+				7474509A0FA8E2220033B682 /* sec-dir in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

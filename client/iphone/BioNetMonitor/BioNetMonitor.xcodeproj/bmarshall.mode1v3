@@ -267,10 +267,9 @@
 								<string>74724FBF0F7855D60061BF62</string>
 								<string>29B97315FDCFA39411CA2CEA</string>
 								<string>29B97317FDCFA39411CA2CEA</string>
-								<string>29B97323FDCFA39411CA2CEA</string>
 								<string>1C37FBAC04509CD000000102</string>
+								<string>747450A60FA8E5FE0033B682</string>
 								<string>1C37FAAC04509CD000000102</string>
-								<string>1C08E77C0454961000C914BD</string>
 								<string>1C37FABC05509CD000000102</string>
 								<string>1CC0EA4004350EF90044410B</string>
 								<string>1CC0EA4004350EF90041110B</string>
@@ -278,11 +277,11 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>49</integer>
+									<integer>37</integer>
 								</array>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateVisibleRectKey</key>
-							<string>{{0, 477}, {289, 764}}</string>
+							<string>{{0, 171}, {289, 764}}</string>
 						</dict>
 						<key>PBXTopSmartGroupGIDs</key>
 						<array/>
@@ -312,12 +311,14 @@
 					<key>Dock</key>
 					<array>
 						<dict>
+							<key>BecomeActive</key>
+							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>Node.h</string>
+								<string>BionetManager.m</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -325,11 +326,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>Node.h</string>
+										<string>BionetManager.m</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>7442AE980FA2591F007F436B</string>
+										<string>747450D90FA8EA5C0033B682</string>
 										<key>history</key>
 										<array>
 											<string>7435E3F30F61E5A300A615B8</string>
@@ -361,7 +362,14 @@
 											<string>7413CEB00F7AA58D00CABD08</string>
 											<string>74912DEF0F86B7B700261D63</string>
 											<string>7442AE950FA2591F007F436B</string>
-											<string>7442AE960FA2591F007F436B</string>
+											<string>747450A70FA8E5FE0033B682</string>
+											<string>747450C10FA8E9FA0033B682</string>
+											<string>747450C30FA8E9FA0033B682</string>
+											<string>747450D40FA8EA140033B682</string>
+										</array>
+										<key>nextStack</key>
+										<array>
+											<string>747450C80FA8E9FA0033B682</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -394,7 +402,8 @@
 											<string>747250E00F789B750061BF62</string>
 											<string>7413CE440F7A96F900CABD08</string>
 											<string>7413CE4D0F7A96F900CABD08</string>
-											<string>7442AE970FA2591F007F436B</string>
+											<string>747450A90FA8E5FE0033B682</string>
+											<string>747450C60FA8E9FA0033B682</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -416,8 +425,6 @@
 							<string>664pt</string>
 						</dict>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
@@ -454,9 +461,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>7442AE990FA2591F007F436B</string>
+				<string>747450890FA8E1B40033B682</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>7442AE9A0FA2591F007F436B</string>
+				<string>7474508A0FA8E1B40033B682</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -590,9 +597,12 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
+		<string>747450DA0FA8EA5C0033B682</string>
+		<string>747450B30FA8E76A0033B682</string>
+		<string>747450B40FA8E76A0033B682</string>
 		<string>1C78EAAD065D492600B07095</string>
-		<string>1CD10A99069EF8BA00B06720</string>
 		<string>7435E2DF0F61CAD100A615B8</string>
+		<string>1CD10A99069EF8BA00B06720</string>
 		<string>/Users/bmarshall/src/bionet2/iphone/client/iphone/BioNetMonitor/BioNetMonitor.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
@@ -634,8 +644,6 @@
 							<string>402pt</string>
 						</dict>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXBuildLogShowsTranscriptDefaultKey</key>
@@ -677,7 +685,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>7435E2DF0F61CAD100A615B8</string>
-				<string>7442AE880FA258E9007F436B</string>
+				<string>7474509D0FA8E23B0033B682</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
@@ -797,13 +805,13 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1CD10A99069EF8BA00B06720</string>
-				<string>7442AE890FA258E9007F436B</string>
+				<string>7474508B0FA8E1B40033B682</string>
 				<string>1C162984064C10D400B95A72</string>
-				<string>7442AE8A0FA258E9007F436B</string>
-				<string>7442AE8B0FA258E9007F436B</string>
-				<string>7442AE8C0FA258E9007F436B</string>
-				<string>7442AE8D0FA258E9007F436B</string>
-				<string>7442AE8E0FA258E9007F436B</string>
+				<string>7474508C0FA8E1B40033B682</string>
+				<string>7474508D0FA8E1B40033B682</string>
+				<string>7474508E0FA8E1B40033B682</string>
+				<string>7474508F0FA8E1B40033B682</string>
+				<string>747450900FA8E1B40033B682</string>
 			</array>
 			<key>ToolbarConfiguration</key>
 			<string>xcode.toolbar.config.debugV3</string>
@@ -957,7 +965,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1C78EAAD065D492600B07095</string>
-				<string>7442AE8F0FA258E9007F436B</string>
+				<string>7474509E0FA8E23B0033B682</string>
 				<string>1C78EAAC065D492600B07095</string>
 			</array>
 			<key>ToolbarConfiguration</key>

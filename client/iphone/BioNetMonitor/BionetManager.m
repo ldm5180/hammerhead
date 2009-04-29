@@ -279,6 +279,11 @@ void cb_lost_node(bionet_node_t *c_node) {
 		//tableViewToUpdate = nil;
 		
 		rootDictionary = [[NSMutableDictionary alloc]init];
+
+		NSString *secpath = [[NSBundle mainBundle] pathForResource:@"sec-dir" ofType:nil];
+		if(0 == bionet_init_security([secpath UTF8String], 1)){
+			fprintf(stderr, "Security enabled");
+		}
 		
 		// this must happen before anything else
 		bionet_fd = bionet_connect();
