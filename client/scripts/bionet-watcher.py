@@ -22,6 +22,12 @@ parser.add_option("-n", "--node", "--nodes", dest="node_name",
 parser.add_option("-r", "--resource", "--resources", dest="resource_name",
                   help="Subscribe to a Node list.", 
                   metavar="HAB-Type.HAB-ID.Node-ID:Resource-ID")
+parser.add_option("-s", "--security-dir", dest="security_dir",
+                  help="Directory containing security certificates.",
+                  metavar="dir", default=None)
+parser.add_option("-e", "--require-security", dest="require_security",
+                  help="Require secured connections.",
+                  action="store_true", default=False)
 
 (options, args) = parser.parse_args()
 
@@ -68,8 +74,8 @@ def cb_new_node(node):
 
     if (bionet_node_get_num_streams(node)):
         print("    Streams:")
-	    
-        for i in range(bionet_node_get_num_stream(node)):
+    
+        for i in range(bionet_node_get_num_streams(node)):
             stream = bionet_node_get_stream_by_index(node, i)
             print("        " + bionet_stream_get_id(stream) + " " + bionet_stream_get_type(stream) + " " + bionet_stream_direction_to_string(bionet_stream_get_direction(stream)))
 
@@ -89,7 +95,8 @@ def cb_datapoint(datapoint):
     #"%s.%s.%s:%s = %s %s %s @ %s"    
     print(bionet_resource_get_name(resource) + " = " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
     
-
+if (options.security_dir != None):
+    bionet_init_security(options.security_dir, options.require_security)
 
 bionet_fd = bionet_connect()
 if (0 > bionet_fd):
