@@ -112,6 +112,32 @@
    fun:_dyld_start
    obj:*
 }
+{
+   <insert a suppression name here>
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:__setenv
+   fun:setenv$UNIX2003
+   fun:CFStringGetSystemEncoding
+   fun:__CFInitialize
+   fun:_ZN16ImageLoaderMachO16doInitializationERKN11ImageLoader11LinkContextE
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
+   fun:_ZN4dyld24initializeMainExecutableEv
+   fun:_ZN4dyld5_mainEPK11mach_headermiPPKcS5_S5_
+   fun:_ZN13dyldbootstrap5startEPK11mach_headeriPPKcl
+   fun:_dyld_start
+   obj:*
+}
+
 
 
 {
