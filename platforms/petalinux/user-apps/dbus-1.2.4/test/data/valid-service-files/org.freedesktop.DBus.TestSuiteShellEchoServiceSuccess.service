@@ -1,4 +1,4 @@
 [D-BUS Service]
 Name=org.freedesktop.DBus.TestSuiteShellEchoServiceSuccess
-Exec=/src/jhbuild/checkout/dbus/test/test-shell-service -test "that" 'we get' back --what "we put in"
+Exec=/home/lenny/bionet2/mdacs/platforms/petalinux/user-apps/dbus-1.2.4/test/test-shell-service -test "that" 'we get' back --what "we put in"
 
