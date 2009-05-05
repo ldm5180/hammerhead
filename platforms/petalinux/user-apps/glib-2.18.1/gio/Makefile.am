@@ -66,12 +66,12 @@ else
 endif
 
 gio-marshal.h: gio-marshal.list
-	$(glib_genmarshal) --prefix=_gio_marshal $(srcdir)/gio-marshal.list --header --internal > $@.tmp && \
+	$(glib_genmarshal) --prefix=_gio_marshal $(srcdir)/gio-marshal.list --header > $@.tmp && \
 	  mv $@.tmp $@
 
 gio-marshal.c: gio-marshal.h gio-marshal.list
 	(echo "#include \"gio-marshal.h\""; \
-	$(glib_genmarshal) --prefix=_gio_marshal $(srcdir)/gio-marshal.list --body --internal) > $@.tmp && \
+	$(glib_genmarshal) --prefix=_gio_marshal $(srcdir)/gio-marshal.list --body ) > $@.tmp && \
 	  mv $@.tmp $@
 
 local_sources = \
