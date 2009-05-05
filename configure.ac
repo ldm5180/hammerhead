@@ -96,18 +96,35 @@ esac
 #                 [Define if you have want featureX support])
 #    ])
 
+if test "x$host_alias" != x; then
+  if test "x$build_alias" = x; then
+    cross_compiling=maybe
+    $as_echo "$as_me: WARNING: If you wanted to set the --build type, don't use --host.
+    If a cross compiler is detected then cross compile mode will be used." >&2
+  elif test "x$build_alias" != "x$host_alias"; then
+    cross_compiling=yes
+    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "x")
+  fi
+fi
+
+if test "$cross_compiling" == no; then
 PKG_CHECK_MODULES(GLIB20, [ gthread-2.0 >= 2.4.0 ])
+fi
 AC_SUBST(GLIB20_CFLAGS)
 AC_SUBST(GLIB20_LIBS)
 
+if test "$cross_compiling" == no; then
 PKG_CHECK_MODULES(OPENSSL, [ openssl >= 0.9.8 ])
+fi
 AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
 
+if test "$cross_compiling" == no; then
 if test "x$HAVE_DARWIN" = "xno"; then
     PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
     AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
     AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)
+fi
 fi
 
 AM_CONDITIONAL(ENABLE_DARWIN, test "x$HAVE_DARWIN" = "xyes")
@@ -147,7 +164,13 @@ AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
 # make sure there is sqlite3 (required for BDM)
 #
 ###
-
+AC_ARG_ENABLE(
+    bdm,
+    AC_HELP_STRING([--disable-bdm], [disable Bionet Data Manager]),
+        [ENABLE_BDM=$enableval],
+        [ENABLE_BDM=yes]
+    )
+if test "x$ENABLE_BDM" = "xyes"; then
 AC_CHECK_LIB(
     sqlite3,
     sqlite3_libversion_number,
@@ -155,7 +178,8 @@ AC_CHECK_LIB(
     [ AC_MSG_ERROR([could not find libsqlite3-dev]) ],
     [ ]
 )
-
+fi
+AM_CONDITIONAL(ENABLE_BDM, test "x$ENABLE_BDM" = "xyes")
 
 #
 # Check for isfinite() in <math.h>. isfinite() is a c99 standard,
@@ -274,6 +298,7 @@ else
 fi
 
 #xsltproc
+AM_CONDITIONAL([HAVE_XSLTPROC], [test "x" == "y"])
 AC_ARG_ENABLE(xslt, AC_HELP_STRING([--disable-xslt],
       [disable xslt dependent parts]),
       [ENABLE_XSLT=$enableval],

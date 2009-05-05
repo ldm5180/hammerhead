@@ -13,8 +13,8 @@ SHLIB_MAJOR=0
 SHLIB_MINOR=9.8
 SHLIB_EXT=
 PLATFORM=gcc
-OPTIONS=--prefix=/opt/petalinux/software/petalinux-dist/openssl --install_prefix=/opt/petalinux/software/petalinux-dist/openssl 386 no-camellia no-capieng no-cms no-dso no-gmp no-jpake no-krb5 no-mdc2 no-montasm no-rc5 no-rfc3779 no-seed no-shared no-sse2 no-zlib no-zlib-dynamic
-CONFIGURE_ARGS=no-shared no-dso no-krb5 --prefix=/opt/petalinux/software/petalinux-dist/openssl --install_prefix=/opt/petalinux/software/petalinux-dist/openssl 386 gcc
+OPTIONS=--prefix=/opt/petalinux/software/petalinux-dist/openssl 386 no-camellia no-capieng no-cms no-dso no-gmp no-jpake no-krb5 no-mdc2 no-montasm no-rc5 no-rfc3779 no-seed no-shared no-sse2 no-zlib no-zlib-dynamic
+CONFIGURE_ARGS=no-shared no-dso no-krb5 --prefix=/opt/petalinux/software/petalinux-dist/openssl 386 gcc
 SHLIB_TARGET=
 
 # HERE indicates where this Makefile lives.  This can be used to indicate
@@ -25,7 +25,7 @@ HERE=.
 # INSTALL_PREFIX is for package builders so that they can configure
 # for, say, /usr/ and yet have everything installed to /tmp/somedir/usr/.
 # Normally it is left empty.
-INSTALL_PREFIX=/opt/petalinux/software/petalinux-dist/openssl
+INSTALL_PREFIX=
 INSTALLTOP=/opt/petalinux/software/petalinux-dist/openssl
 
 # Do not edit this manually. Use Configure --openssldir=DIR do change this!
