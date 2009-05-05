@@ -309,7 +309,9 @@ if test "x$ENABLE_XSLT" = "xyes"; then
 fi
 
 # Checks for library functions.
+if test "$cross_compiling" == no; then
 AC_FUNC_MALLOC
+fi
 
 # Output files
 AC_CONFIG_HEADERS([config.h])
