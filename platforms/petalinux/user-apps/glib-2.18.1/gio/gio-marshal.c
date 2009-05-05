@@ -51,10 +51,10 @@
 /* VOID:STRING,STRING,STRING,FLAGS (./gio-marshal.list:1) */
 void
 _gio_marshal_VOID__STRING_STRING_STRING_FLAGS (GClosure     *closure,
-                                               GValue       *return_value G_GNUC_UNUSED,
+                                               GValue       *return_value,
                                                guint         n_param_values,
                                                const GValue *param_values,
-                                               gpointer      invocation_hint G_GNUC_UNUSED,
+                                               gpointer      invocation_hint,
                                                gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__STRING_STRING_STRING_FLAGS) (gpointer     data1,
@@ -92,10 +92,10 @@ _gio_marshal_VOID__STRING_STRING_STRING_FLAGS (GClosure     *closure,
 /* VOID:STRING,BOXED (./gio-marshal.list:2) */
 void
 _gio_marshal_VOID__STRING_BOXED (GClosure     *closure,
-                                 GValue       *return_value G_GNUC_UNUSED,
+                                 GValue       *return_value,
                                  guint         n_param_values,
                                  const GValue *param_values,
-                                 gpointer      invocation_hint G_GNUC_UNUSED,
+                                 gpointer      invocation_hint,
                                  gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__STRING_BOXED) (gpointer     data1,
@@ -129,10 +129,10 @@ _gio_marshal_VOID__STRING_BOXED (GClosure     *closure,
 /* VOID:BOOLEAN,POINTER (./gio-marshal.list:3) */
 void
 _gio_marshal_VOID__BOOLEAN_POINTER (GClosure     *closure,
-                                    GValue       *return_value G_GNUC_UNUSED,
+                                    GValue       *return_value,
                                     guint         n_param_values,
                                     const GValue *param_values,
-                                    gpointer      invocation_hint G_GNUC_UNUSED,
+                                    gpointer      invocation_hint,
                                     gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__BOOLEAN_POINTER) (gpointer     data1,
@@ -166,10 +166,10 @@ _gio_marshal_VOID__BOOLEAN_POINTER (GClosure     *closure,
 /* VOID:OBJECT,OBJECT,ENUM (./gio-marshal.list:4) */
 void
 _gio_marshal_VOID__OBJECT_OBJECT_ENUM (GClosure     *closure,
-                                       GValue       *return_value G_GNUC_UNUSED,
+                                       GValue       *return_value,
                                        guint         n_param_values,
                                        const GValue *param_values,
-                                       gpointer      invocation_hint G_GNUC_UNUSED,
+                                       gpointer      invocation_hint,
                                        gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__OBJECT_OBJECT_ENUM) (gpointer     data1,

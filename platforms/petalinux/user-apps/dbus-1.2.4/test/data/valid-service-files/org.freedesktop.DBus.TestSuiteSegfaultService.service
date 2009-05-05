@@ -1,4 +1,4 @@
 [D-BUS Service]
 Name=org.freedesktop.DBus.TestSuiteSegfaultService
-Exec=/src/jhbuild/checkout/dbus/test/test-segfault
+Exec=/home/lenny/bionet2/mdacs/platforms/petalinux/user-apps/dbus-1.2.4/test/test-segfault
 

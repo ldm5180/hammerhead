@@ -30,9 +30,9 @@ a different configuration file.
 
 .PP
 The \-\-session option is equivalent to
-"\-\-config-file=/src/build/jhbuild/etc/dbus-1/session.conf" and the \-\-system
+"\-\-config-file=/opt/petalinux/software/petalinux-dist/dbus/etc/dbus-1/session.conf" and the \-\-system
 option is equivalent to
-"\-\-config-file=/src/build/jhbuild/etc/dbus-1/system.conf". By creating 
+"\-\-config-file=/opt/petalinux/software/petalinux-dist/dbus/etc/dbus-1/system.conf". By creating 
 additional configuration files and using the \-\-config-file option,
 additional special-purpose message bus daemons could be created.
 
@@ -106,8 +106,8 @@ document is documentation, not specification.
 
 .PP
 The standard systemwide and per-session message bus setups are
-configured in the files "/src/build/jhbuild/etc/dbus-1/system.conf" and
-"/src/build/jhbuild/etc/dbus-1/session.conf".  These files normally
+configured in the files "/opt/petalinux/software/petalinux-dist/dbus/etc/dbus-1/system.conf" and
+"/opt/petalinux/software/petalinux-dist/dbus/etc/dbus-1/session.conf".  These files normally
 <include> a system-local.conf or session-local.conf; you can put local
 overrides in those files to avoid modifying the primary configuration
 files.
@@ -183,7 +183,7 @@ Only files ending in ".conf" are included.
 This is intended to allow extension of the system bus by particular
 packages. For example, if CUPS wants to be able to send out
 notification of printer queue changes, it could install a file to
-/src/build/jhbuild/etc/dbus-1/system.d that allowed all apps to receive
+/opt/petalinux/software/petalinux-dist/dbus/etc/dbus-1/system.d that allowed all apps to receive
 this message and allowed the printer daemon user to send it.
 
 .TP
@@ -312,7 +312,7 @@ otherwise try your favorite search engine.
 .PP
 The <standard_session_servicedirs/> option is only relevant to the
 per-user-session bus daemon defined in
-/src/build/jhbuild/etc/dbus-1/session.conf. Putting it in any other
+/opt/petalinux/software/petalinux-dist/dbus/etc/dbus-1/session.conf. Putting it in any other
 configuration file would probably be nonsense.
 
 .TP
@@ -321,12 +321,12 @@ configuration file would probably be nonsense.
 .PP
 <standard_system_servicedirs/> specifies the standard system-wide
 activation directories that should be searched for service files.
-This option defaults to /src/build/jhbuild/share/dbus-1/system-services.
+This option defaults to /opt/petalinux/software/petalinux-dist/dbus/share/dbus-1/system-services.
 
 .PP
 The <standard_system_servicedirs/> option is only relevant to the
 per-system bus daemon defined in
-/src/build/jhbuild/etc/dbus-1/system.conf. Putting it in any other
+/opt/petalinux/software/petalinux-dist/dbus/etc/dbus-1/system.conf. Putting it in any other
 configuration file would probably be nonsense.
 
 .TP
@@ -339,7 +339,7 @@ the dbus-daemon-launch-helper executable in located in libexec.
 
 .PP
 The <servicehelper/> option is only relevant to the per-system bus daemon
-defined in /src/build/jhbuild/etc/dbus-1/system.conf. Putting it in any other
+defined in /opt/petalinux/software/petalinux-dist/dbus/etc/dbus-1/system.conf. Putting it in any other
 configuration file would probably be nonsense.
 
 .TP

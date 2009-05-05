@@ -228,7 +228,9 @@ pid_t daemon_fork(void) {
             goto fail;
 
         } else if (pid == 0) {
+#ifdef TIOCNOTTY
             int tty_fd;
+#endif
             /* Second child */
 
             if (sigaction(SIGCHLD, &sa_old, NULL) < 0) {
