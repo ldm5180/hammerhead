@@ -111,19 +111,19 @@ else
     AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
 fi
 
-if test "$cross_compiling" == no; then
+if test "$cross_compiling" != yes; then
 PKG_CHECK_MODULES(GLIB20, [ gthread-2.0 >= 2.4.0 ])
 fi
 AC_SUBST(GLIB20_CFLAGS)
 AC_SUBST(GLIB20_LIBS)
 
-if test "$cross_compiling" == no; then
+if test "$cross_compiling" != yes; then
 PKG_CHECK_MODULES(OPENSSL, [ openssl >= 0.9.8 ])
 fi
 AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
 
-if test "$cross_compiling" == no; then
+if test "$cross_compiling" != yes; then
 if test "x$HAVE_DARWIN" = "xno"; then
     PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
     AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
@@ -358,7 +358,7 @@ if test "x$ENABLE_XSLT" = "xyes"; then
 fi
 
 # Checks for library functions.
-if test "$cross_compiling" == no; then
+if test "$cross_compiling" != yes; then
 AC_FUNC_MALLOC
 fi
 
