@@ -6,8 +6,12 @@
 
 include $(top_srcdir)/common.am
 
+if ENABLE_BDM
+
 SUBDIRS = server client
 
 if ENABLE_PYTHON
 SUBDIRS += py-client
+endif
+
 endif

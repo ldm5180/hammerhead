@@ -31,8 +31,31 @@ LIBCAL_MDNSSD_BIP_SHARED_SOURCES =          \
 
 lib_LTLIBRARIES = libcal-mdnssd-bip-client.la
 
-libcal_mdnssd_bip_client_la_CFLAGS = $(AM_CFLAGS) $(OPENSSL_CFLAGS) $(GLIB20_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../.. -I../../util
-libcal_mdnssd_bip_client_la_SOURCES = cal-client-api.c global.c thread-functions.c $(LIBCAL_MDNSSD_BIP_SHARED_SOURCES) $(LIBCAL_UTIL_SOURCES)
-libcal_mdnssd_bip_client_la_LIBADD = $(AM_LDADD) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(GLIB20_LIBS) $(DBUS_LIBS) $(OPENSSL_LIBS)
+libcal_mdnssd_bip_client_la_CFLAGS = \
+	$(AM_CFLAGS) \
+	$(OPENSSL_CFLAGS) \
+	$(GLIB20_CFLAGS) \
+	$(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) \
+	$(DBUS_CFLAGS) \
+	-I.. \
+	$(CFLAGS_BIONET_CAL_CLIENT) \
+	$(CFLAGS_BIONET_CAL_UTIL) \
+	$(OPENSSL_CFLAGS)
 
-libcal_mdnssd_bip_client_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION) 
+libcal_mdnssd_bip_client_la_SOURCES = \
+	cal-client-api.c \
+	global.c \
+	thread-functions.c \
+	$(LIBCAL_MDNSSD_BIP_SHARED_SOURCES) \
+	$(LIBCAL_UTIL_SOURCES)
+
+libcal_mdnssd_bip_client_la_LIBADD = \
+	$(AM_LDADD) \
+	$(AVAHI_COMPAT_LIBDNS_SD_LIBS) \
+	$(GLIB20_LIBS) \
+	$(DBUS_LIBS) \
+	$(OPENSSL_LIBS)
+
+libcal_mdnssd_bip_client_la_LDFLAGS = \
+	-version-info \
+	$(BIONET_INTERFACE_VERSION) 

@@ -124,11 +124,11 @@ lib_LTLIBRARIES=libbionet-asn.la
 
 libbionet_asn_la_SOURCES=$(SRC) $(ASN_MODULE_HEADS)
 
-libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I../util
+libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(CFLAGS_BIONET_UTIL)
 
-libbionet_asn_la_LIBADD = $(AM_LDADD)
+libbionet_asn_la_LIBADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) -lm
 
-libbionet_asn_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION) 
+libbionet_asn_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION) $(LDFLAGS_BIONET_UTIL) 
 
 
 bin_PROGRAMS = test-asn-h2c test-asn-c2h test-asn-bdm-c2s test-asn-bdm-s2c

@@ -6,7 +6,7 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = libhab random csa-cp mmod syshealth parsec pal-650 uwb streamy
+SUBDIRS = libhab random csa-cp syshealth pal-650 streamy
 
 if ENABLE_ALSA
 SUBDIRS += alsa
@@ -18,6 +18,18 @@ endif
 
 if ENABLE_BLUETOOTH
 SUBDIRS += libamedevice stethoscope cpod
+endif
+
+if ENABLE_MMOD
+SUBDIRS += mmod
+endif
+
+if ENABLE_PARSEC
+SUBDIRS += parsec
+endif
+
+if ENABLE_UWB
+SUBDIRS += uwb
 endif
 
 if HAVE_XSLTPROC

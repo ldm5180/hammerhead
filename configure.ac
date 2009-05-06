@@ -45,6 +45,7 @@ CXXFLAGS="$USERCXXFLAGS"
 
 AC_CHECK_TOOL([STRIP],[strip])
 
+AC_SUBST(docdir)
 
 # Checks for libraries.
 AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
@@ -96,18 +97,37 @@ esac
 #                 [Define if you have want featureX support])
 #    ])
 
+if test "x$host_alias" != x; then
+  if test "x$build_alias" = x; then
+    cross_compiling=maybe
+    $as_echo "$as_me: WARNING: If you wanted to set the --build type, don't use --host.
+    If a cross compiler is detected then cross compile mode will be used." >&2
+  elif test "x$build_alias" != "x$host_alias"; then
+    cross_compiling=yes
+    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "x")
+  fi
+else
+    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
+fi
+
+if test "$cross_compiling" == no; then
 PKG_CHECK_MODULES(GLIB20, [ gthread-2.0 >= 2.4.0 ])
+fi
 AC_SUBST(GLIB20_CFLAGS)
 AC_SUBST(GLIB20_LIBS)
 
+if test "$cross_compiling" == no; then
 PKG_CHECK_MODULES(OPENSSL, [ openssl >= 0.9.8 ])
+fi
 AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
 
+if test "$cross_compiling" == no; then
 if test "x$HAVE_DARWIN" = "xno"; then
     PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
     AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
     AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)
+fi
 fi
 
 AM_CONDITIONAL(ENABLE_DARWIN, test "x$HAVE_DARWIN" = "xyes")
@@ -147,7 +167,13 @@ AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
 # make sure there is sqlite3 (required for BDM)
 #
 ###
-
+AC_ARG_ENABLE(
+    bdm,
+    AC_HELP_STRING([--disable-bdm], [disable Bionet Data Manager]),
+        [ENABLE_BDM=$enableval],
+        [ENABLE_BDM=yes]
+    )
+if test "x$ENABLE_BDM" = "xyes"; then
 AC_CHECK_LIB(
     sqlite3,
     sqlite3_libversion_number,
@@ -155,6 +181,43 @@ AC_CHECK_LIB(
     [ AC_MSG_ERROR([could not find libsqlite3-dev]) ],
     [ ]
 )
+fi
+AM_CONDITIONAL(ENABLE_BDM, test "x$ENABLE_BDM" = "xyes")
+
+#
+# optionally compile the mmod hab
+#
+AC_ARG_ENABLE(
+    mmod,
+    AC_HELP_STRING([--disable-mmod], [disable MMOD HAB]),
+        [ENABLE_MMOD=$enableval],
+        [ENABLE_MMOD=yes]
+    )
+AM_CONDITIONAL(ENABLE_MMOD, test "x$ENABLE_MMOD" = "xyes")
+
+
+#
+# optionally compile the parsec hab
+#
+AC_ARG_ENABLE(
+    parsec,
+    AC_HELP_STRING([--disable-parsec], [disable Parsec HAB]),
+        [ENABLE_PARSEC=$enableval],
+        [ENABLE_PARSEC=yes]
+    )
+AM_CONDITIONAL(ENABLE_PARSEC, test "x$ENABLE_PARSEC" = "xyes")
+
+
+#
+# optionally compile the uwb hab
+#
+AC_ARG_ENABLE(
+    uwb,
+    AC_HELP_STRING([--disable-uwb], [disable UWB HAB]),
+        [ENABLE_UWB=$enableval],
+        [ENABLE_UWB=yes]
+    )
+AM_CONDITIONAL(ENABLE_UWB, test "x$ENABLE_UWB" = "xyes")
 
 
 #
@@ -231,8 +294,17 @@ fi
 AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TOSROOT" = "x"])
 
 #doxygen
-AC_PATH_PROG(DOXYGEN, doxygen, no)
-AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
+AC_ARG_ENABLE(doxygen, AC_HELP_STRING([--disable-doxygen],
+      [disable doxygen documentation generation]),
+      [ENABLE_DOXYGEN=$enableval],
+      [ENABLE_DOXYGEN=yes])
+if test "x$ENABLE_DOXYGEN" = "xyes" ; then
+   AC_PATH_PROG(DOXYGEN, doxygen, no)
+   AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
+else
+   AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x" = "y"])
+fi
+
 
 #ccache
 AC_PATH_PROG(CCACHE, ccache, no)
@@ -274,6 +346,7 @@ else
 fi
 
 #xsltproc
+AM_CONDITIONAL([HAVE_XSLTPROC], [test "x" == "y"])
 AC_ARG_ENABLE(xslt, AC_HELP_STRING([--disable-xslt],
       [disable xslt dependent parts]),
       [ENABLE_XSLT=$enableval],
@@ -284,7 +357,9 @@ if test "x$ENABLE_XSLT" = "xyes"; then
 fi
 
 # Checks for library functions.
+if test "$cross_compiling" == no; then
 AC_FUNC_MALLOC
+fi
 
 # Output files
 AC_CONFIG_HEADERS([config.h])
