@@ -106,6 +106,8 @@ if test "x$host_alias" != x; then
     cross_compiling=yes
     AM_CONDITIONAL(CROSS_COMPILING, test "x" = "x")
   fi
+else
+    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
 fi
 
 if test "$cross_compiling" == no; then
