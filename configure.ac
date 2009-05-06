@@ -102,6 +102,7 @@ if test "x$host_alias" != x; then
     cross_compiling=maybe
     $as_echo "$as_me: WARNING: If you wanted to set the --build type, don't use --host.
     If a cross compiler is detected then cross compile mode will be used." >&2
+    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
   elif test "x$build_alias" != "x$host_alias"; then
     cross_compiling=yes
     AM_CONDITIONAL(CROSS_COMPILING, test "x" = "x")
