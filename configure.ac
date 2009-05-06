@@ -182,6 +182,42 @@ fi
 AM_CONDITIONAL(ENABLE_BDM, test "x$ENABLE_BDM" = "xyes")
 
 #
+# optionally compile the mmod hab
+#
+AC_ARG_ENABLE(
+    mmod,
+    AC_HELP_STRING([--disable-mmod], [disable MMOD HAB]),
+        [ENABLE_MMOD=$enableval],
+        [ENABLE_MMOD=yes]
+    )
+AM_CONDITIONAL(ENABLE_MMOD, test "x$ENABLE_MMOD" = "xyes")
+
+
+#
+# optionally compile the parsec hab
+#
+AC_ARG_ENABLE(
+    parsec,
+    AC_HELP_STRING([--disable-parsec], [disable Parsec HAB]),
+        [ENABLE_PARSEC=$enableval],
+        [ENABLE_PARSEC=yes]
+    )
+AM_CONDITIONAL(ENABLE_PARSEC, test "x$ENABLE_PARSEC" = "xyes")
+
+
+#
+# optionally compile the uwb hab
+#
+AC_ARG_ENABLE(
+    uwb,
+    AC_HELP_STRING([--disable-uwb], [disable UWB HAB]),
+        [ENABLE_UWB=$enableval],
+        [ENABLE_UWB=yes]
+    )
+AM_CONDITIONAL(ENABLE_UWB, test "x$ENABLE_UWB" = "xyes")
+
+
+#
 # Check for isfinite() in <math.h>. isfinite() is a c99 standard,
 # but finite() is the older BSD standard is isfinite is not availble
 AC_CHECK_DECL(isfinite, 

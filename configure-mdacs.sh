@@ -17,6 +17,9 @@
     --disable-bluetooth \
     --disable-xslt \
     --disable-bdm \
+    --disable-mmod \
+    --disable-parsec \
+    --disable-uwb \
     CC='ucfront microblaze-uclinux-gcc' \
     LDFLAGS='-Wl, -elf2flt' \
     GLIB20_CFLAGS=-I$PETALINUX/software/petalinux-dist/glib/include/glib-2.0 \

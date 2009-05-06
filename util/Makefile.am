@@ -11,9 +11,17 @@ lib_LTLIBRARIES = libbionet-util.la
 include_HEADERS = bionet-util.h bionet-node.h bionet-stream.h bionet-resource.h bionet-datapoint.h bionet-value.h bionet-hab.h bionet-version.h
 
 
-libbionet_util_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) -I ../asn.1
+libbionet_util_la_CFLAGS = \
+	$(AM_CFLAGS) \
+	$(GLIB20_CFLAGS) \
+	$(CFLAGS_BIONET_CAL_UTIL) \
+	$(CFLAGS_BIONET_CAL_CLIENT) \
+	$(CFLAGS_BIONET_CAL_SERVER) \
+	$(CFLAGS_BIONET_ASN1)
 
-libbionet_util_la_LIBADD = $(AM_LDADD) $(GLIB20_LIBS)
+libbionet_util_la_LIBADD = \
+	$(AM_LDADD) \
+	$(GLIB20_LIBS) 
 
 libbionet_util_la_SOURCES =    \
     hab-add-node.c             \

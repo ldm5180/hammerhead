@@ -34,14 +34,14 @@ if ENABLE_LINUX
 endif
  
 INCLUDES_BIONET_UTIL = $(top_srcdir)/util/bionet-util.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-datapoint.h $(top_srcdir)/util/bionet-value.h $(top_srcdir)/util/bionet-version.h
-CFLAGS_BIONET_UTIL = -I$(top_srcdir)/util 
+CFLAGS_BIONET_UTIL = -I$(top_srcdir)/util $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_UTIL = -L$(top_srcdir)/util 
-LIBS_BIONET_UTIL = $(top_srcdir)/util/libbionet-util.la
+LIBS_BIONET_UTIL = $(top_srcdir)/util/libbionet-util.la $(OPENSSL_LIBS)
 
 INCLUDES_BIONET_CLIENT = $(top_srcdir)/client/libbionet/bionet.h
-CFLAGS_BIONET_CLIENT = -I$(top_srcdir)/client/libbionet 
+CFLAGS_BIONET_CLIENT = -I$(top_srcdir)/client/libbionet $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_CLIENT = -L$(top_srcdir)/client/libbionet
-LIBS_BIONET_CLIENT = $(top_srcdir)/client/libbionet/libbionet.la
+LIBS_BIONET_CLIENT = $(top_srcdir)/client/libbionet/libbionet.la $(OPENSSL_LIBS)
 
 INCLUDES_BIONET_CLIENT_QT4 = $(top_srcdir)/client/libbionet-qt4/bionetio.h $(top_srcdir)/client/libbionet-qt4/bionetmodel.h
 CFLAGS_BIONET_CLIENT_QT4 = -I$(top_srcdir)/client/libbionet-qt4
@@ -74,9 +74,9 @@ LDFLAGS_BIONET_HAB_AME = -L$(top_srcdir)/hab/libamedevice
 LIBS_BIONET_HAB_AME = $(top_srcdir)/hab/libamedevice/libamedevice.la
 
 INCLUDES_BIONET_ASN1 = $(top_srcdir)/asn.1/bionet-asn.h
-CFLAGS_BIONET_ASN1 = -I$(top_srcdir)/asn.1
+CFLAGS_BIONET_ASN1 = -I$(top_srcdir)/asn.1 $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_ASN1 = -L$(top_srcdir)/asn.1
-LIBS_BIONET_ASN1 = $(top_srcdir)/asn.1/libbionet-asn.la
+LIBS_BIONET_ASN1 = $(top_srcdir)/asn.1/libbionet-asn.la $(OPENSSL_LIBS)
 
 INCLUDES_QT = `pkg-config --cflags QtCore` `pkg-config --cflags QtGui`
 LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`
