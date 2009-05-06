@@ -20,6 +20,7 @@
     --disable-mmod \
     --disable-parsec \
     --disable-uwb \
+    --disable-doxygen \
     CC='ucfront microblaze-uclinux-gcc' \
     LDFLAGS='-Wl, -elf2flt' \
     GLIB20_CFLAGS=-I$PETALINUX/software/petalinux-dist/glib/include/glib-2.0 \

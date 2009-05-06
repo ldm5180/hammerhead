@@ -20,7 +20,6 @@ LDCONFIG_EXE = /sbin/ldconfig
 endif
 
 if ENABLE_DOXYGEN
-docdir = doxygen
 doc_DATA = doxygen/html/index.html
 DOXYGEN_INPUT = $(top_srcdir)/client/libbionet/bionet.h $(top_srcdir)/hab/libhab/hardware-abstractor.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-util.h
 DOXYFILE = Doxyfile

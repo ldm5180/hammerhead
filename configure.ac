@@ -45,6 +45,7 @@ CXXFLAGS="$USERCXXFLAGS"
 
 AC_CHECK_TOOL([STRIP],[strip])
 
+AC_SUBST(docdir)
 
 # Checks for libraries.
 AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
@@ -291,8 +292,17 @@ fi
 AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TOSROOT" = "x"])
 
 #doxygen
-AC_PATH_PROG(DOXYGEN, doxygen, no)
-AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
+AC_ARG_ENABLE(doxygen, AC_HELP_STRING([--disable-doxygen],
+      [disable doxygen documentation generation]),
+      [ENABLE_DOXYGEN=$enableval],
+      [ENABLE_DOXYGEN=yes])
+if test "x$ENABLE_DOXYGEN" = "xyes" ; then
+   AC_PATH_PROG(DOXYGEN, doxygen, no)
+   AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
+else
+   AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x" = "y"])
+fi
+
 
 #ccache
 AC_PATH_PROG(CCACHE, ccache, no)
