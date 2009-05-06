@@ -41,3 +41,8 @@ echo ""
 cd $MYPWD/avahi*
 ./easy_configure.sh && make clean && make && make install
 
+echo ""
+echo Building OpenSSL
+echo ""
+cd $MYPWD/openssl*
+./easy_configure.sh && make clean && make && make install

@@ -19,7 +19,11 @@ BIONET_INTERFACE_VERSION=1:1:0
 #Purely aesthetic marketing version number
 BIONET_RELEASE_VERSION=2.1.2
 
+if CROSS_COMPILING
+AM_CFLAGS=-Wall -g -DBIONET_VERSION=\"$(BIONET_RELEASE_VERSION)\"
+else
 AM_CFLAGS=-Wall -Werror -g -DBIONET_VERSION=\"$(BIONET_RELEASE_VERSION)\"
+endif
 
 if ENABLE_DARWIN
     AM_CFLAGS += -DMACOSX
@@ -45,19 +49,19 @@ LDFLAGS_BIONET_CLIENT_QT4 = -L$(top_srcdir)/client/libbionet-qt4
 LIBS_BIONET_CLIENT_QT4 = $(top_srcdir)/client/libbionet-qt4/libbionet-qt4.la
 
 INCLUDES_BIONET_CAL_UTIL = $(top_srcdir)/cal/cal-event.h $(top_srcdir)/cal/cal-util.h
-CFLAGS_BIONET_CAL_UTIL = -I$(top_srcdir)/cal/util
-LDFLAGS_BIONET_CAL_UTIL = -L$(top_srcdir)/cal/util
-LIBS_BIONET_CAL_UTIL = $(top_srcdir)/cal/util/libevent.la
+CFLAGS_BIONET_CAL_UTIL = -I$(top_srcdir)/cal/util $(OPENSSL_CFLAGS)
+LDFLAGS_BIONET_CAL_UTIL = -L$(top_srcdir)/cal/util 
+LIBS_BIONET_CAL_UTIL = $(top_srcdir)/cal/util/libevent.la $(OPENSSL_LIBS)
 
-INCLUDES_BIONET_CAL_SERVER = $(top_srcdir)/cal/cal-server.h
-CFLAGS_BIONET_CAL_SERVER = -I$(top_srcdir)/cal
+INCLUDES_BIONET_CAL_SERVER = $(top_srcdir)/cal/cal-server.h 
+CFLAGS_BIONET_CAL_SERVER = -I$(top_srcdir)/cal $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_CAL_SERVER = -L$(top_srcdir)/cal
-LIBS_BIONET_CAL_SERVER = $(top_srcdir)/cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la
+LIBS_BIONET_CAL_SERVER = $(top_srcdir)/cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la $(OPENSSL_LIBS)
 
 INCLUDES_BIONET_CAL_CLIENT = $(top_srcdir)/cal/cal-client.h
-CFLAGS_BIONET_CAL_CLIENT = -I$(top_srcdir)/cal
+CFLAGS_BIONET_CAL_CLIENT = -I$(top_srcdir)/cal $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_CAL_CLIENT = -L$(top_srcdir)/cal
-LIBS_BIONET_CAL_CLIENT = $(top_srcdir)/cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la
+LIBS_BIONET_CAL_CLIENT = $(top_srcdir)/cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la $(OPENSSL_LIBS)
 
 INCLUDES_BIONET_HAB = $(top_srcdir)/hab/libhab/hardware-abstractor.h
 CFLAGS_BIONET_HAB = -I$(top_srcdir)/hab/libhab
