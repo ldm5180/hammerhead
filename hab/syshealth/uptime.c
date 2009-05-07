@@ -42,6 +42,7 @@ static float uptime_get(void) {
     
     if (NULL == fgets(timestr, sizeof(timestr), fd)) {
 	g_log("", G_LOG_LEVEL_WARNING, "Unable to read uptime from /proc/uptime");
+	fclose(fd);
 	return -1;
     }
     time = strtof(timestr, NULL);

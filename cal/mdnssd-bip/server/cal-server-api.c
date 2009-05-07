@@ -590,7 +590,7 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
     }
 
     r = snprintf(cadir, 1024, "%s/%s", dir, BIP_CA_DIR);
-    if (0 >= r || r == 1024) {
+    if (0 >= r || r >= 1024) {
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Failed to make CA Dir variable.");
@@ -603,7 +603,7 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
     }
 
     r = snprintf(pubcert, 1024, "%s/%s", dir, BIP_PUBLIC_CERT);
-    if (0 >= r || r == 1024) {
+    if (0 >= r || r >= 1024) {
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Failed to make CA Cert variable.");
@@ -616,7 +616,7 @@ int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
     }
 
     r = snprintf(prvkey, 1024, "%s/%s", dir, BIP_PRIVATE_KEY);
-    if (0 >= r || r == 1024) {
+    if (0 >= r || r >= 1024) {
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Failed to make Private Key variable.");
