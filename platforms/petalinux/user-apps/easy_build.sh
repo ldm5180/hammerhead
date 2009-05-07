@@ -46,3 +46,5 @@ echo Building OpenSSL
 echo ""
 cd $MYPWD/openssl*
 ./easy_configure.sh && make clean && make && make install
+
+cd $MYPWD
