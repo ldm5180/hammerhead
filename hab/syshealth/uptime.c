@@ -31,7 +31,6 @@ static float uptime_get(void) {
 
     FILE *fd;
     float time;
-    int r;
     char timestr[256];
     
     fd=fopen("/proc/uptime", "r");
@@ -41,14 +40,12 @@ static float uptime_get(void) {
 	return -1;
     }
     
-    r = fscanf(fd, "%256s", timestr);
-    time = strtof(timestr, NULL);
-    fclose(fd);
-
-    if (r != 1) {
+    if (NULL == fgets(timestr, sizeof(timestr), fd)) {
 	g_log("", G_LOG_LEVEL_WARNING, "Unable to read uptime from /proc/uptime");
 	return -1;
     }
+    time = strtof(timestr, NULL);
+    fclose(fd);
 
     return time;
 }
