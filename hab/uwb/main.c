@@ -21,12 +21,14 @@
 bionet_hab_t *uwb_hab;
 struct sockaddr_in uwb_address;
 
+char * security_dir = NULL;
+
 static GOptionEntry entries[] = {
-	{"port", 'p', 0, G_OPTION_ARG_INT, &port, "UWB port", NULL}, 
-	{"node", 'n', 0, G_OPTION_ARG_STRING, &node_id, "UWB node name", NULL}, 
-	{"timeout", 't', 0, G_OPTION_ARG_INT, &timeout, 
-		"Seconds of absense before reporting no data.", NULL}, 
-	{NULL}
+    {"port", 'p', 0, G_OPTION_ARG_INT, &port, "UWB port", NULL}, 
+    {"node", 'n', 0, G_OPTION_ARG_STRING, &node_id, "UWB node name", NULL},
+    {"security-dir", 's', G_OPTION_FLAG_FILENAME, G_OPTION_ARG_STRING, &security_dir, NULL},
+    {"timeout", 't', 0, G_OPTION_ARG_INT, &timeout, "Seconds of absense before reporting no data.", NULL}, 
+    {NULL}
 };
 
 int main(int argc, char *argv[]) {
@@ -68,6 +70,14 @@ int main(int argc, char *argv[]) {
 		g_warning("UWB port not secified.");
 		exit(1);
 	}
+
+	if (security_dir) {
+	    if (hab_init_security(security_dir, 1)) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+	    }
+	}
+
+
 
 	uwb_hab = bionet_hab_new("UWB", NULL);
 	hab_fd = hab_connect(uwb_hab);	
