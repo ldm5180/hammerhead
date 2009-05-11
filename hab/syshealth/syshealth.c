@@ -24,6 +24,7 @@
 #include <string.h>
 #include <sys/statvfs.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include <glib.h>
 #include <hardware-abstractor.h>
@@ -58,12 +59,16 @@ char syshealth_pid_file_name[]="/tmp/syshealth.pid";
 
 
 
-void usage(void) {
-    printf("usage: syshealth-hab [OPTIONS]\n\
-OPTIONS:\n\
-    --delay N    Wait N seconds between updates.  Default is 30.\n\
-    --help       Show this help and exit.\n\
-");
+void usage(FILE * fp) {
+    fprintf(fp,
+	    "'syshealth-hab' reports system health information to Bionet\n"
+	    "\n"
+	    "usage: syshealth-hab [OPTIONS]\n"
+	    "\n"
+	    "-d,--delay <sec>         Wait N seconds between updates.  Default is 30\n"
+	    "-h,--help                Show this help and exit\n"
+	    "-s,--security-dir <dir>  Directory containing security certificates\n"
+	    "-v,--version             Show the version number\n");
 }
 
 
@@ -76,7 +81,7 @@ int main(int argc, char **argv) {
     bionet_hab_t *hab;
 
     int bionet_fd;
-
+    char * security_dir = NULL;
 
     bionet_log_context_t log_context = {
         destination: BIONET_LOG_TO_SYSLOG,
@@ -90,26 +95,54 @@ int main(int argc, char **argv) {
     // 
     // check command-line arguments
     //
-    
-    {
-        int i;
+    int i;
+    int c;
+    while(1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"verison", 0, 0, 'v'},
+	    {"delay", 1, 0, 'd'},
+	    {"security-dir", 1, 0, 's'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-        for (i = 1; i < argc; i ++) {
+	c = getopt_long(argc, argv, "?vhd:s:", long_options, &i);
+	if (c == -1) {
+	    break;
+	}
 
-            if (strcmp(argv[i], "--delay") == 0) {
-                i ++;
-                seconds_to_sleep = atoi(argv[i]);
+	switch (c) {
 
-            } else if ((strcmp(argv[i], "--help") == 0) || (strcmp(argv[i], "-h") == 0)) {
-                usage();
-                exit(0);
+	case '?':
+	case 'h':
+	    usage(stdout);
+	    return 0;
 
-            } else {
-                printf("unknown command-line argument: %s", argv[i]);
-                usage();
-                exit(1);
-            }
-        }
+	case 'd':
+	    seconds_to_sleep = strtol(optarg, NULL, 0);
+	    if (LONG_MIN == seconds_to_sleep || LONG_MAX == seconds_to_sleep) {
+		g_log("", G_LOG_LEVEL_ERROR, "Failed to convert delay: %m");
+		return 1;
+	    }
+	    break;
+
+	case 's':
+	    security_dir = optarg;
+	    break;
+	    
+	case 'v':
+	    print_bionet_version(stdout);
+	    return 0;
+
+	default:
+	    break;
+	}
+    }
+
+    if (security_dir) {
+	if (hab_init_security(security_dir, 1)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+	}
     }
 
     // 
