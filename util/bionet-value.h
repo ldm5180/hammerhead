@@ -567,6 +567,19 @@ int bionet_value_get_str(bionet_value_t *value,
 			 char ** content);
 
 
+/**
+ * @brief Duplicates a value. 
+ * 
+ * @param[in] value The Value
+ * 
+ * @retval NULL Failure
+ * @return Pointer to a value
+ *
+ * @note The returned value is owned and must be free'd by the caller
+ */
+bionet_value_t * bionet_value_dup(bionet_resource_t *resource, bionet_value_t *value);
+
+
 #endif /* __BIONET_VALUE_H */
 
 // Emacs cruft

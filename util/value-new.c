@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 #include "bionet-util.h"
 #include "internal.h"
@@ -106,6 +107,54 @@ bionet_value_t *bionet_value_new_str(bionet_resource_t *resource,
 				     content, 
 				     BIONET_RESOURCE_DATA_TYPE_STRING);
 } /* bionet_value_new_float() */
+
+
+bionet_value_t * bionet_value_dup(bionet_resource_t *resource, bionet_value_t *value)
+{
+
+    switch (resource->data_type) {
+	
+    case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	return bionet_value_new_internal(resource, &value->content.binary_v, BIONET_RESOURCE_DATA_TYPE_BINARY);
+
+    case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	return bionet_value_new_internal(resource, &value->content.uint8_v, BIONET_RESOURCE_DATA_TYPE_UINT8);
+
+    case BIONET_RESOURCE_DATA_TYPE_INT8:
+	return bionet_value_new_internal(resource, &value->content.int8_v, BIONET_RESOURCE_DATA_TYPE_INT8);
+
+    case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	return bionet_value_new_internal(resource, &value->content.uint16_v, BIONET_RESOURCE_DATA_TYPE_UINT16);
+
+    case BIONET_RESOURCE_DATA_TYPE_INT16:
+	return bionet_value_new_internal(resource, &value->content.int16_v, BIONET_RESOURCE_DATA_TYPE_INT16);
+
+    case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	return bionet_value_new_internal(resource, &value->content.uint32_v, BIONET_RESOURCE_DATA_TYPE_UINT32);
+
+    case BIONET_RESOURCE_DATA_TYPE_INT32:
+	return bionet_value_new_internal(resource, &value->content.int32_v, BIONET_RESOURCE_DATA_TYPE_INT32);
+
+    case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	return bionet_value_new_internal(resource, &value->content.float_v, BIONET_RESOURCE_DATA_TYPE_FLOAT);
+
+    case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	return bionet_value_new_internal(resource, &value->content.double_v, BIONET_RESOURCE_DATA_TYPE_DOUBLE);
+
+    case BIONET_RESOURCE_DATA_TYPE_STRING:
+    {
+	char * temp_str = NULL;
+	temp_str = strdup(value->content.string_v);
+	return bionet_value_new_internal(resource, temp_str, BIONET_RESOURCE_DATA_TYPE_STRING);
+    }
+
+    default:
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Invalid data type %d", resource->data_type);
+	break;
+    }
+
+    return NULL;
+} /* bionet_value_dup() */
 
 
 static bionet_value_t * bionet_value_new_internal(bionet_resource_t *resource,
