@@ -24,6 +24,7 @@
 #include <string.h>
 #include <glib/gtimer.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "hardware-abstractor.h"
 #include "mmod.h"
@@ -39,6 +40,7 @@ static void print_usage(FILE* fout);
 static int verbose = 0;
 static int daemon_mode = 0;
 static char * usb_dev = DEFAULT_USB_DEV;
+static char * security_dir = NULL;
 
 uint16_t heartbeat_time = DEFAULT_HEARTBEAT_TIME;
 serial_source gw_src;
@@ -52,6 +54,12 @@ int main(int argc, char** argv)
     int bionet_fd;
 
     parse_cmdline(argc, argv);
+
+    if (security_dir) {
+        if (hab_init_security(security_dir, 1)) {
+            g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+        }
+    }
 
     /* do some HAB setup */
     mmod_hab = bionet_hab_new(MMOD_HAB_TYPE, mmod_id);
@@ -154,13 +162,34 @@ int main(int argc, char** argv)
  */
 static void parse_cmdline(int argc, char** argv)
 {
-    const char * optstring = "dnh?v:t:i:u:";
-    int opt;
+    const char * optstring = "ds:bnh?vt:i:u:";
+    int c;
+    int i;
 
-    while (0 < (opt = getopt(argc, argv, optstring)))
-    {
-	switch (opt)
+    while (1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'b'},
+	    {"daemon", 0, 0, 'd'},
+	    {"id", 1, 0, 'i'},
+	    {"no-lost-node", 0, 0, 'n'},
+	    {"heartbeat", 1, 0, 't'},
+	    {"usb-dev", 1, 0, 'u'},
+	    {"verbose", 0, 0, 'v'},
+	    {"security-dir", 1, 0, 's'}
+	};
+
+	c = getopt_long(argc, argv, optstring, long_options, &i);
+	if (c == -1) {
+	    break;
+	}
+
+	switch (c)
 	{
+	case 'b':
+	    print_bionet_version(stdout);
+	    exit(0);
+
 	case 'd':
 	    daemon_mode = 1;
 	    break;
@@ -179,6 +208,10 @@ static void parse_cmdline(int argc, char** argv)
 	    skip_lost_node_messages = 1;
 	    break;
 	    
+	case 's':
+	    security_dir = optarg;
+	    break;
+
 	case 't':
 	    heartbeat_time = strtol(optarg, NULL, 0);
 	    break;
@@ -209,14 +242,18 @@ static void parse_cmdline(int argc, char** argv)
 static void print_usage(FILE* fout)
 {
     fprintf(fout,
-	    "Usage: mmod-hab [-v] [-d] [-h] [-?] [-i id] [-t sec] [-u dev]\n"
-	    "    -d     run as a daemon\n"
-	    "    -h -?  display this help\n"
-	    "    -i     HAB ID (mmod)\n"
-	    "    -n     suppress \"lost node\" messages\n"
-	    "    -t     seconds between required mote heartbeats\n"
-	    "    -u     USB serial device (/dev/ttyUSB1)\n"
-	    "    -v     verbose logging\n");
+	    "mmod-hab' MMOD hardware abstractor\n"
+	    "\n"
+	    "Usage: mmod-hab [--version] [-s dir] [-v] [-d] [-?] [-i id] [-t sec] [-u dev]\n"
+	    " -?,-h,--help             display this help\n"
+	    " -d,--daemon              run as a daemon\n"
+	    " -i,--id                  HAB ID (mmod)\n"
+	    " -n,--no-lost-node        suppress \"lost node\" messages\n"
+	    " -s,--security-dir <dir>  Directory containing security certificates\n"
+	    " -t,--heartbeat <sec>     seconds between required mote heartbeats\n"
+	    " -u,--usb-dev <dev>       USB serial device (/dev/ttyUSB1)\n"
+	    " -v,--verbose             Verbose logging\n"
+	    " --version                Print version info\n");
 } /* print_usage() */
 
 
