@@ -65,7 +65,7 @@ static char *get_tag_id (LLRP_tSTagReportData *pTagReportData) {
             node_id_index ++;
         }
 
-        sprintf(&node_id[node_id_index], "%02X", pValue[i]);
+        snprintf(&node_id[node_id_index], sizeof(node_id) - node_id_index, "%02X", pValue[i]);
         node_id_index += 2;
     }
 
@@ -102,7 +102,7 @@ bionet_node_t *make_new_node(const char *node_id) {
     for (i = 1; i <= 4; i ++) {
         char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
-        sprintf(resource_id, "Antenna-%d", i);
+        snprintf(resource_id, sizeof(resource_id), "Antenna-%d", i);
         resource = bionet_resource_new(
             node,
             BIONET_RESOURCE_DATA_TYPE_BINARY,
@@ -119,7 +119,7 @@ bionet_node_t *make_new_node(const char *node_id) {
             return NULL;
         }
 
-        sprintf(resource_id, "Antenna-%d-PeakRSSI", i);
+        snprintf(resource_id, sizeof(resource_id), "Antenna-%d-PeakRSSI", i);
         resource = bionet_resource_new(
             node,
             BIONET_RESOURCE_DATA_TYPE_INT8,
@@ -197,7 +197,7 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
 
     node_data->still_here = 1;
 
-    sprintf(resource_id, "Antenna-%d", antenna);
+    snprintf(resource_id, sizeof(resource_id), "Antenna-%d", antenna);
     resource = bionet_node_get_resource_by_id(node, resource_id);
     if (resource == NULL) {
         g_warning("error getting Resource %s:%s", node_id, resource_id);
@@ -205,7 +205,7 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
     }
     bionet_resource_set_binary(resource, 1, NULL);
 
-    sprintf(resource_id, "Antenna-%d-PeakRSSI", antenna);
+    snprintf(resource_id, sizeof(resource_id), "Antenna-%d-PeakRSSI", antenna);
     resource = bionet_node_get_resource_by_id(node, resource_id);
     if (resource == NULL) {
         g_warning("error getting Resource %s:%s", node_id, resource_id);

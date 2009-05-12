@@ -24,7 +24,7 @@ void handle_gpi_event(LLRP_tSGPIEvent *pGPIEvent) {
     gpi_num = pGPIEvent->GPIPortNumber;
     new_level = pGPIEvent->GPIEvent;
 
-    sprintf(resource_id, "GPI%d", gpi_num);
+    snprintf(resource_id, sizeof(resource_id), "GPI%d", gpi_num);
     resource = bionet_node_get_resource_by_id(reader_node, resource_id);
     if (resource == NULL) {
         g_warning("can't find reader resource %s, ignoring GPI event", resource_id);
