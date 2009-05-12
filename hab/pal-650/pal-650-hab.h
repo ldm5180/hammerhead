@@ -27,7 +27,7 @@ extern char *pal_ip;
 extern int pal_port;
 extern int tag_timeout;
 extern int show_messages;
-
+extern char * security_dir;
 
 int pal_connect(const char *pal_ip, const int pal_port);
 int pal_read(int pal_fd);

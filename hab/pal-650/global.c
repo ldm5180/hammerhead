@@ -15,3 +15,4 @@ int pal_port = 5117;
 int tag_timeout = 5;
 int show_messages = 0;
 
+char * security_dir = NULL;
