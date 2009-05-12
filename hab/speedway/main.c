@@ -113,6 +113,10 @@ int main(int argc, char *argv[]) {
 	    }
 	    break;
 
+	case 's':
+	    security_dir = optarg;
+	    break;
+
 	case 't':
 	    scan_timeout = strtol(optarg, NULL, 0);
 	    if (LONG_MAX == scan_timeout) {
