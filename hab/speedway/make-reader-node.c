@@ -38,7 +38,7 @@ int make_reader_node(void) {
     for (i = 1; i < 5; i++) {
         char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
-        sprintf(resource_id, "GPI%d", i);
+        snprintf(resource_id, sizeof(resource_id), "GPI%d", i);
         resource = bionet_resource_new(
             reader_node,
             BIONET_RESOURCE_DATA_TYPE_BINARY,

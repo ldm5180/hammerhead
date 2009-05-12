@@ -41,7 +41,7 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
             char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
             bionet_resource_t *resource;
 
-            sprintf(resource_id, "Antenna-%d", i);
+            snprintf(resource_id, sizeof(resource_id), "Antenna-%d", i);
             resource = bionet_node_get_resource_by_id(node, resource_id);
             if (resource == NULL) {
                 g_warning("error getting Resource %s:%s", bionet_node_get_id(node), resource_id);
