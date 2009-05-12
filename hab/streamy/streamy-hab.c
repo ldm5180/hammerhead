@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 
 #include <glib.h>
 
@@ -21,12 +22,23 @@ bionet_hab_t *this_hab = NULL;
 GMainLoop *main_loop = NULL;
 
 
+void usage(FILE *fp) {
+    fprintf(fp,
+	    "'streamy-hab' Hardware Abstractor for streaming data.\n"
+	    "\n"
+	    "usage: streamy-hab [OPTIONS]\n"
+	    " -?,-h,--help               Print this help\n"
+	    " -i,--id <ID>               Set the HAB-ID (hostname)\n"
+	    " -s,--security-dir <dir>    Directory containing security certificates\n"
+	    " -v,--version               Print the version number\n");
 
+    return;
+} /* usage() */
 
 int main(int argc, char *argv[]) {
     int bionet_fd;
     char *id = NULL;
-
+    char * security_dir = NULL;
 
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
 
@@ -34,23 +46,51 @@ int main(int argc, char *argv[]) {
     // 
     // handle command-line arguments
     //
+    int c;
+    int i;
+    while(1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'v'},
+	    {"id", 1, 0, 'i'},
+	    {"security-dir", 1, 0, 's'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-    {
-        int i;
+	c = getopt_long(argc, argv, "?hvi:s:", long_options, &i);
+	if (c == -1) {
+	    break;
+	}
 
-        for (i = 1; i < argc; i ++) {
-            if (strcmp(argv[i], "--id") == 0) {
-                i ++;
-                id = argv[i];
-                break;
+	switch (c) {
 
-            } else {
-                fprintf(stderr, "unknown command-line argument: %s\n", argv[i]);
-                exit(1);
-            }
-        }
+	case '?':
+	case 'h':
+	    usage(stdout);
+	    exit(0);
+
+	case 'i':
+	    id = optarg;
+	    break;
+
+	case 's':
+	    security_dir = optarg;
+	    break;
+
+	case 'v':
+	    print_bionet_version(stdout);
+	    exit(0);
+
+	default:
+	    break;
+	}
     }
 
+    if (security_dir) {
+        if (hab_init_security(security_dir, 1)) {
+            g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+        }
+    }
 
     //
     //  Initialize the HAB & connect to Bionet
