@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 
 #include <glib.h>
 
@@ -30,6 +31,7 @@ int main (int argc, char* argv[]) {
 
     serial_handle_t serial_handle;
 
+    char * security_dir = NULL;
 
     //
     //  This connects writes the error messages to the correct location
@@ -45,39 +47,64 @@ int main (int argc, char* argv[]) {
     //
     // parse command-line arguments
     //
+    int i;
+    int c;
+    while (1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'v'},
+	    {"clear-files", 0, 0, 'c'},
+	    {"debug", 0, 0, 'b'},
+	    {"device-file", 1, 0, 'd'},
+	    {"id", 1, 0, 'i'},
+	    {"no-files", 0, 0, 'n'},
+	    {"security-dir", 1, 0, 's'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-    {
-        int i;
+	c = getopt_long(argc, argv, "?hvcbnd:i:s:", long_options, &i);
+	if (c == -1) {
+	    break;
+	}
 
-        for (i = 1; i < argc; i++) {
-            if ((strcmp("-i", argv[i]) == 0) || (strcmp("--id", argv[i]) == 0)) {
-                i++;
-                if (argv[i] == NULL) {
-                    print_help();
-                    return 1;
-                }
-                hab_id = argv[i];
-            } else if ((strcmp("-d", argv[i]) == 0) || (strcmp("--device-file", argv[i]) == 0)) {
-                i++;
-                if (argv[i] == NULL) {
-                    print_help();
-                    return 1;
-                }
-                device_file = argv[i];
-            } else if (strcmp("--no-files", argv[i]) == 0) {
-                record_raw_data = 0;
-            } else if ((strcmp("-c", argv[i]) == 0) || (strcmp("--clear-files", argv[i]) == 0)) {
-                clear_files = 0;
-            } else if (strcmp("--debug", argv[i]) == 0) {
-                log_context.log_limit = G_LOG_LEVEL_DEBUG;
-            } else if ((strcmp("-?", argv[i]) == 0) || (strcmp("--help", argv[i]) == 0)) {
-                print_help();
-                return 0;
-            } else {
-                print_help();
-                return 1;
-            }
-        }
+	switch (c) {
+	    
+	case '?':
+	case 'h':
+	    print_help();
+	    return 0;
+
+	case 'b':
+	    log_context.log_limit = G_LOG_LEVEL_DEBUG;
+	    break;
+
+	case 'c':
+	    clear_files = 0;
+	    break;
+
+	case 'd':
+	    device_file = optarg;
+	    break;
+
+	case 'i':
+	    hab_id = optarg;
+	    break;
+
+	case 'n':
+	    record_raw_data = 0;
+	    break;
+
+	case 's':
+	    security_dir = optarg;
+	    break;
+
+	case 'v':
+	    print_bionet_version(stdout);
+	    return 0;
+
+	default:
+	    break;
+	}
     }
 
     if (device_file == NULL) {
@@ -85,6 +112,11 @@ int main (int argc, char* argv[]) {
         return 1;
     }
 
+    if (security_dir) {
+        if (hab_init_security(security_dir, 1)) {
+            g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+        }
+    }
 
     //
     //  This sets up the HAB...

@@ -8,30 +8,18 @@
 
 
 void print_help(void) {
-    printf("usage: csa-cp-hab\n\
-\n\
-    command line arguments are: \n\
-\n\
-        -?, --help \n\
-          prints this help\n\
-\n\
-        -i ID, --id ID \n\
-          set the HAB-ID to ID, ex. \'-i \"briar-patch\"\'\n\
-          defaults to hostname if omitted\n\
-\n\
-        --no-files\n\
-          Do not record the raw CSA-CP data to disk.\n\
-\n\
-        -d DF, --device-file DF\n\
-          talk to relay node through devie file DF\n\
-          required\n\
-\n\
-        -c, --clear-files\n\
-          clears the files on the device\n\
-          (default is off)\n\
-\n\
-        --debug\n\
-          Enable debugging output.\n\
-\n");
+    fprintf(stdout, 
+	    "'csa-cp-hab' exports data from CSA-CP device to Bionet\n"
+	    "\n"
+	    "usage: csa-cp-hab [OPTIONS] --device-file <DF>\n"
+	    "\n"
+	    "-?,-h,--help              Print this help\n"
+	    "-b,--debug	               Enable debugging output.\n"
+	    "-c,--clear-files          Clears the files on the device\n"
+	    "-d,--device-file <DF>     Talk to relay node through device file DF (required)\n"
+	    "-i,--id <ID>              Set the HAB-ID to ID (default: hostname)\n"
+	    "-n,--no-files             Do not record the raw CSA-CP data to disk.\n"
+	    "-s,--security-dir <dir>   Directory containing security certificates\n"
+	    "-v,--version              Print version number\n");
 }
 
