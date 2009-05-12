@@ -176,7 +176,8 @@ static void parse_cmdline(int argc, char** argv)
 	    {"heartbeat", 1, 0, 't'},
 	    {"usb-dev", 1, 0, 'u'},
 	    {"verbose", 0, 0, 'v'},
-	    {"security-dir", 1, 0, 's'}
+	    {"security-dir", 1, 0, 's'},
+	    {0, 0, 0, 0} //this must be last in the list
 	};
 
 	c = getopt_long(argc, argv, optstring, long_options, &i);
@@ -225,8 +226,6 @@ static void parse_cmdline(int argc, char** argv)
 	    break;
 
 	default:
-	    print_usage(stderr);
-	    exit(1);
 	    break;
 	}
     }
