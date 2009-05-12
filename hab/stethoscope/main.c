@@ -18,7 +18,7 @@
 #include <string.h>
 #include <sys/select.h>
 #include <unistd.h>
-
+#include <getopt.h>
 
 #include "amedevice.h"
 #include "hardware-abstractor.h"
@@ -65,19 +65,24 @@ void cb_stream_subscription(const char *client_id, const bionet_stream_t *stream
 void cb_stream_unsubscription(const char *client_id, const bionet_stream_t *stream);
 void cb_stream_data(const char *client_id, bionet_stream_t *stream, const void *data, unsigned int size);
 
-void print_help(char* name)
+void print_help(FILE *fp)
 {
-    printf("Usage: %s [options] bdaddr\n", name);
-    printf("=======================================================================================================\n");
-    printf("bdaddr\t\t\tBDADDR of the device you'd like to connect to\n\n");
-    printf("Options are the following:\n");
-    printf("-d,--daemon\t\tBackground process as daemon\n");
-    printf("-g,--gain x\t\tSets the amplifier gain to integer x\n");
-    printf("-h,--hab-id name\tSets the hab id\n");
-    printf("-?,--help\t\tPrint this help message\n");
-    printf("-k,--kill\t\tSearch for a running instance of processs and kill it\n");
-    printf("-p,--period time\tPeriod between battery queries in seconds\n");
-    printf("-v,--verbose\t\tTurn on verbose logging\n");
+    fprintf(fp,
+	    "'stethoscope-hab' Hardware Abstractor\n"
+	    "\n"
+	    "Usage: stethoscope-hab [options] bdaddr\n"
+	    "\n"
+	    " -?,-h--help                Print this help message\n"
+	    " -d,--daemon                Run as a daemon\n"
+	    " -g,--gain <x>              Sets the amplifier gain to x\n"
+	    " -i,--id <ID>               Sets the HAB ID\n"
+	    " -k,--kill                  Kill a running instance of stethoscope-hab\n"
+	    " -p,--period <sec>          Period between battery queries in seconds\n"
+	    " -s,--security-dir <dir>    Directory containing security certificates\n"
+	    " -v,--verbose               Turn on verbose logging\n"
+	    " --version                  Print version number\n"
+	    "\n"
+	    "bdaddr\t\t\tBDADDR of the device you'd like to connect to\n");
 }
 
 
@@ -85,7 +90,7 @@ void print_help(char* name)
 
 int main(int argc, char** argv)
 {
-    int i, daemon, verbose, s, bionet_fd, period, streaming;
+    int i, c, daemon, verbose, s, bionet_fd, period, streaming;
 
     struct sigaction sa;
     struct sockaddr_rc addr = { 0 };
@@ -98,6 +103,8 @@ int main(int argc, char** argv)
     bionet_hab_t * this_hab;
     bionet_resource_t * resource;
 
+    char * security_dir = NULL;
+
     verbose = 0;
     daemon = 0;
     streaming = 0;
@@ -106,88 +113,94 @@ int main(int argc, char** argv)
     period = 10;
 
 
-    // Parse command line arguments
-    for (i = 1; i < argc; i++)
-    {
-        if (strcmp(argv[i], "--verbose") == 0 ||
-            strcmp(argv[i], "-v") == 0)
-        {
-            verbose = 1;
-        }
-        else if (strcmp(argv[i], "--daemon") == 0 ||
-                 strcmp(argv[i], "--demon") == 0 ||
-                 strcmp(argv[i], "-d") == 0)
-        {
-            daemon = 1;
-        }
-        else if (strcmp(argv[i], "--gain") == 0 ||
-                 strcmp(argv[i], "-g") == 0)
-        {
-            i++;
+    while(1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'b'},
+	    {"daemon", 0, 0, 'd'},
+	    {"gain", 1, 0, 'g'},
+	    {"id", 1, 0, 'i'},
+	    {"kill", 0, 0, 'k'},
+	    {"period", 1, 0, 'p'},
+	    {"security-dir", 1, 0, 's'},
+	    {"verbose", 0, 0, 'v'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-            if ((i < argc) && (sscanf(argv[i], "%d", &gain) == 1)) {
-                ; // ok
-                // g_message("Set the gain to %d", gain);
-            }
-            else
-            {
-                print_help(argv[0]);
-                exit(2);
-            }
-        }
-        else if (strcmp(argv[i], "--kill") == 0 ||
-                 strcmp(argv[i], "-k") == 0)
-        {
-            int r;
+	c = getopt_long(argc, argv, "?hbdg:i:kp:vs:", long_options, &i);
+	if (c == -1) {
+	    break;
+	}
 
-            if ((r = kill_kin()))
+	switch (c) {
+
+	case '?':
+	case 'h':
+	    print_help(stdout);
+	    exit(0);
+
+	case 'b':
+	    print_bionet_version(stdout);
+	    exit(0);
+
+	case 'd':
+	    daemon = 1;
+	    break;
+
+	case 'g':
+	    gain = strtol(optarg, NULL, 0);
+	    if (LONG_MAX == gain) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse gain: %m");
+		print_help(stderr);
+		exit(1);
+	    }
+	    break;
+
+	case 'i':
+	    hab_id = optarg;
+	    break;
+
+	case 'k':
+	{
+	    int r;
+            if ((r = kill_kin())) {
                 g_log("", G_LOG_LEVEL_WARNING, "Can't kill process: %s", strerror(errno));
-
+	    }
             return r;
-        }
-        else if (strcmp(argv[i], "--help") == 0 ||
-                 strcmp(argv[i], "-?") == 0)
-        {
-            print_help(argv[0]);
-            exit(0);
-        }
-        else if (strcmp(argv[i], "--hab-id") == 0 ||
-                 strcmp(argv[i], "-h") == 0)
-        {
-            i++;
+	}
 
-            if (i < argc)
-                hab_id = argv[i];
-            else
-            {
-                print_help(argv[0]);
-                exit(2);
-            }
-        }
-        else if (strcmp(argv[i], "--period") == 0 ||
-                 strcmp(argv[i], "-p") == 0)
-        {
-            i++;
+	case 'p':
+	    period = strtol(optarg, NULL, 0);
+	    if (LONG_MAX == gain) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse period: %m");
+		print_help(stderr);
+		exit(1);
+	    }
+	    break;
 
-            if ((i < argc) &&
-                (sscanf(argv[i], "%d", &period) == 1))
-            { }
-            else
-            {
-                print_help(argv[0]);
-                exit(2);
-            }
-        }
-        else if (strlen(argv[i]) == 17 &&
-                 str2ba(argv[i], &device) == 0 &&
-                 bacmp(&device, BDADDR_ANY) != 0)
-        {
-                g_log("", G_LOG_LEVEL_DEBUG, "Connecting to %s", argv[i]);
-        }
-        else
-        {
-            print_help(argv[0]);
-            exit(2);
+	case 's':
+	    security_dir = optarg;
+	    break;
+
+	case 'v':
+	    verbose = 1;
+	    break;
+
+	default:
+	    break;
+	}
+    }
+
+    if (strlen(argv[argc - 1]) == 17 &&
+	str2ba(argv[argc - 1], &device) == 0 &&
+	bacmp(&device, BDADDR_ANY) != 0)
+    {
+	g_log("", G_LOG_LEVEL_DEBUG, "Connecting to %s", argv[argc - 1]);
+    }
+
+    if (security_dir) {
+        if (hab_init_security(security_dir, 1)) {
+            g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
         }
     }
 
