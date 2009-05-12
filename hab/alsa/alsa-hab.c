@@ -9,6 +9,7 @@
 #include <alsa/asoundlib.h>
 #include <sys/poll.h>
 #include <glib.h>
+#include <getopt.h>
 
 #include "hardware-abstractor.h"
 #include "alsa-hab.h"
@@ -59,7 +60,17 @@ void cb_lost_client(const char *client_id) {
 }
 
 
-
+static void usage(FILE * fp) {
+    fprintf(fp,
+	    "'alsa-hab' exports ALSA devices to Bionet\n"
+	    "\n"
+	    "usage: alsa-hab [OPTIONS]\n"
+	    "\n"
+	    " -?,-h,--help                Print this help\n"
+	    " -s,--security-dir <dir>     Directory containing security certificates\n"
+	    " -v,--version                Print the version number\n");
+    return;
+} /* usage() */
 
 int main(int argc, char *argv[]) {
     int r;
@@ -68,6 +79,48 @@ int main(int argc, char *argv[]) {
 
     struct timeval start_of_cycle;
 
+    char * security_dir = NULL;
+    int i;
+    int c;
+    while(1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'v'},
+	    {"security-dir", 1, 0, 's'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
+
+	c = getopt_long(argc, argv, "?hvs:", long_options, &i);
+	if (c == -1) {
+	    break;
+	}
+
+	switch (c) {
+
+	case '?':
+	case 'h':
+	    usage(stdout);
+	    return 0;
+
+	case 's':
+	    security_dir = optarg;
+	    break;
+
+	case 'v':
+	    print_bionet_version(stdout);
+	    return 0;
+
+	default:
+	    break;
+	}
+    }
+
+
+    if (security_dir) {
+	if (hab_init_security(security_dir, 1)) {
+            g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+        }
+    }
 
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
 
