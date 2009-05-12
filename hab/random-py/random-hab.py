@@ -28,6 +28,8 @@ parser.add_option("-t", "--test", dest="test", default=None,
                   metavar="FILE")
 parser.add_option("-l", "--loop", dest="loops", default=0,
                   help="Number of times to do node updates before quitting.")
+parser.add_option("-s", "--security-dir", dest="security_dir", default=None,
+                  help="Directory containing security certificates.")
 
 (options, args) = parser.parse_args()
 
@@ -48,6 +50,12 @@ import update_node
 
 def pycb_set_resource(resource, value):
     print "callback: should set " + bionet_resource_get_local_name(resource) + " to " + bionet_value_to_str(value)
+
+
+#initialize bionet security
+if (options.security_dir != None):
+    if (hab_init_security(options.security_dir, 1)):
+        logger.warning("Failed to initialize security.")
 
 
 #connect to bionet
