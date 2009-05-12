@@ -36,7 +36,7 @@ static const char* hab_type = "parsec";
 
 static int verbose = 0;
 static int daemon_mode = 0;
-static uint16_t port = 61557;
+static unsigned int port = 61557;
 static unsigned int timeout = 10;
 bionet_hab_t * parsec_hab;
 char * parsec_id = NULL;
@@ -170,6 +170,9 @@ static void parse_cmdline(int argc, char** argv)
 	    port = strtoul(optarg, NULL, 0);
 	    if (ULONG_MAX == port) {
 		g_error("Unable to interpret port: %s - %m\n", optarg);
+	    }
+	    if (65535 < port) {
+		g_error("Invalid port: %u", port);
 	    }
 	    break;
 	    
