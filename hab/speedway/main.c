@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include <glib.h>
 
@@ -32,61 +33,120 @@ llrp_u16_t rf_sensitivity = 0;
 
 
 int main(int argc, char *argv[]) {
-    int i = 0;
+    int i;
     int bionet_fd;
 
     char* hab_type = "speedway";
     char* hab_id = NULL;
     char* reader_ip = NULL;
+    char* security_dir = NULL;
 
-    for (i = 1; i < argc; i ++) {
-        if (strcmp(argv[i], "--id") == 0) {
-            i ++;
-            hab_id = argv[i];
+    int c;
+    while(1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'v'},
+	    {"id", 0, 0, 'i'},
+	    {"gpi-delay", 1, 0, 'd'},
+	    {"gpi-polarity", 1, 0, 'p'},
+	    {"num-scans", 1, 0, 'n'},
+	    {"rfsensitivity", 1, 0, 'r'},
+	    {"scan-idle", 1, 0, 'l'},
+	    {"scan-timeout", 1, 0, 't'},
+	    {"show-messages", 0, 0, 'm'},
+	    {"security-dir", 1, 0, 's'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-        } else if (strcmp(argv[i], "--gpi-delay") == 0) {
-            i ++;
-            gpi_delay = atoi(argv[i]);
+	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:", long_options, &i);
+	if (c == -1) {
+	    break;
+	}
 
-        } else if (strcmp(argv[i], "--gpi-polarity") == 0) {
-            i ++;
-            gpi_polarity = atoi(argv[i]);
+	switch (c) {
 
-        } else if (strcmp(argv[i], "--num-scans") == 0) {
-            i ++;
-            num_scans = atoi(argv[i]);
-	    
-	} else if (strcmp(argv[i], "--rfsensitivity") == 0) {
-	    i ++;
-	    rf_sensitivity = atoi(argv[i]);
+	case '?':
+	case 'h':
+	    usage();
+	    exit(0);
 
-        } else if (strcmp(argv[i], "--scan-idle") == 0) {
-            i ++;
-            scan_idle = atoi(argv[i]);
+	case 'd':
+	    gpi_delay = strtol(optarg, NULL, 0);
+	    if (LONG_MAX == gpi_delay) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse GPI Delay: %m");
+	    }
+	    break;
 
-        } else if (strcmp(argv[i], "--scan-timeout") == 0) {
-            i ++;
-            scan_timeout = atoi(argv[i]);
+	case 'i':
+	    hab_id = optarg;
+	    break;
 
-        } else if (strcmp(argv[i], "--show-messages") == 0) {
-            show_messages = 1;
+	case 'l':
+	    scan_idle = strtol(optarg, NULL, 0);
+	    if (LONG_MAX == scan_idle) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse Scan Idle: %m");
+	    }
+	    break;
 
-        } else if (strcmp(argv[i], "--help") == 0) {
-            usage();
-            exit(0);
+	case 'm':
+	    show_messages = 1;
+	    break;
 
-        } else {
-            if (i != (argc-1)) {
-                g_warning("unknown command-line argument '%s'", argv[i]);
-                exit(1);
-            }
-            reader_ip = argv[i];
-        }
+	case 'n':
+	    num_scans = strtol(optarg, NULL, 0);
+	    if (LONG_MAX == num_scans) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse Num Scans: %m");
+	    }
+	    break;
+
+	case 'p':
+	    gpi_polarity = strtol(optarg, NULL, 0);
+	    if (LONG_MAX == gpi_polarity) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse GPI Polarity: %m");
+	    }
+	    break;
+
+	case 'r':
+	    rf_sensitivity = strtol(optarg, NULL, 0);
+	    if (LONG_MAX == rf_sensitivity) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse RF Sensitivity: %m");
+	    }
+	    break;
+
+	case 't':
+	    scan_timeout = strtol(optarg, NULL, 0);
+	    if (LONG_MAX == scan_timeout) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse Scan Timeout: %m");
+	    }
+	    break;
+
+	case 'v':
+	    print_bionet_version(stdout);
+	    exit(0);
+
+	default:
+	    break;
+	}
+    }
+
+    if (argv[argc-1][0] == '-') {
+	g_warning("unknown command-line argument '%s'", argv[i]);
+	exit(1);
+    } else {
+	reader_ip = argv[i];
     }
 
     if (reader_ip == NULL) {
-        g_warning("no reader IP specified (use --target)");
+        g_warning("no reader IP specified");
+	usage();
         exit(1);
+    }
+
+
+    if (security_dir) {
+        if (hab_init_security(security_dir, 1)) {
+            g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
+        }
     }
 
 
