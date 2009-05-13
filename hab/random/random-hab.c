@@ -174,7 +174,7 @@ int main (int argc, char *argv[]) {
     if (security_dir) {
 	if (hab_init_security(security_dir, require_security)) {
 	    g_log("", G_LOG_LEVEL_WARNING, "Failed to initialize security.");
-	}
+	} 
     }
 
     //
@@ -191,6 +191,9 @@ int main (int argc, char *argv[]) {
 
     if (output_mode == OM_BIONET_WATCHER) {
         g_message("new hab: %s", bionet_hab_get_name(hab));
+	if (security_dir) {
+	    g_message("    %s: security enabled", bionet_hab_get_name(hab));
+	}
     }
 
     signal(SIGTERM, signal_handler);
