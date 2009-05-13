@@ -74,6 +74,7 @@ BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
     ((struct sockaddr_in *)ai->ai_addr)->sin_port = htons(net->port);
 
     r = connect(s, ai->ai_addr, ai->ai_addrlen);
+    net->security_status = BIP_SEC_NONE;
     freeaddrinfo(ai);
     if (r != 0) {
 #if 0
@@ -108,6 +109,8 @@ BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
 	if (1 != BIO_do_handshake(bio)) {
 	    BIO_free_all(bio);
 	    return NULL;
+	} else {
+	    net->security_status = BIP_SEC_REQ;
 	}
     }
 
