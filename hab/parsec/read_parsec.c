@@ -42,7 +42,10 @@ void read_parsec(int fd) {
   bionet_resource_t *resource;
 
   size = recvfrom(fd, buffer, BUFFER_SIZE, 0, 0, 0);
-  gettimeofday(&timestamp, NULL);
+  if (gettimeofday(&timestamp, NULL)) {
+      g_warning("Failed to get time of day: %m");
+      return;
+  }
   buffer[BUFFER_SIZE - 1] = '\0';
   new_message = &(buffer[0]);
 
@@ -61,7 +64,12 @@ void read_parsec(int fd) {
 	if (node == NULL) {
 	  // Add the node
 	  node = bionet_node_new(parsec_hab, char_id);
-	  bionet_hab_add_node(parsec_hab, node);
+	  if (bionet_hab_add_node(parsec_hab, node)) {
+	      g_error("Failed to add node %s to hab %s.", 
+		      bionet_hab_get_name(parsec_hab), 
+		      bionet_node_get_name(node));
+	      return;
+	  }
 	  resource = bionet_resource_new(node, 
 									 BIONET_RESOURCE_DATA_TYPE_FLOAT, 
 									 BIONET_RESOURCE_FLAVOR_SENSOR, 

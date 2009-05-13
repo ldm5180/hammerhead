@@ -45,21 +45,25 @@ char * parsec_id = NULL;
 int main(int argc, char** argv) {
     int parsec_fd;
     int bionet_fd;
-	struct sockaddr_in server;
+    struct sockaddr_in server;
 
+    memset(&server, 0, sizeof(struct sockaddr_in));
 
     parse_cmdline(argc, argv);
 
     // do some HAB setup
     parsec_hab = bionet_hab_new(hab_type, parsec_id);
     if (NULL == parsec_hab) {
-        fprintf(stderr, "Failed to maje a new hab\n");
+        fprintf(stderr, "Failed to make a new hab\n");
 	    return(1);
     }
 
     // daemonize if requested
     if (daemon_mode) {
-        daemonize(&verbose);
+        if (daemonize(&verbose)) {
+	    g_error("Failed to daemonize: %m");
+	    return(4);
+	}
     }
 
     bionet_fd = hab_connect(parsec_hab);
@@ -72,6 +76,10 @@ int main(int argc, char** argv) {
     // open UDP port
 
 	parsec_fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (-1 == parsec_fd) {
+	    g_log("", G_LOG_LEVEL_ERROR, "Failed to create socket: %m");
+	    return(3);
+	}
 
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
