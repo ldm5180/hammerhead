@@ -570,6 +570,7 @@ int bionet_value_get_str(bionet_value_t *value,
 /**
  * @brief Duplicates a value. 
  * 
+ * @param[in] resource The resource the value is for
  * @param[in] value The Value
  * 
  * @retval NULL Failure
