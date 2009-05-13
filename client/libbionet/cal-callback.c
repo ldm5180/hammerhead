@@ -375,6 +375,13 @@ void libbionet_cal_callback(const cal_event_t *event) {
             }
 
             hab = bionet_hab_new(type, id);
+	    if (NULL == hab) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "Failed to get a new HAB.");
+		return;
+	    }
+
+	    bionet_hab_set_secure(hab, event->is_secure);
 
             // add the hab to the bionet library's list of known habs
             libbionet_habs = g_slist_prepend(libbionet_habs, hab);

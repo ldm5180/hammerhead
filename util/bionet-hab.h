@@ -203,6 +203,31 @@ void bionet_hab_set_user_data(bionet_hab_t *hab, const void *user_data);
  */
 void *bionet_hab_get_user_data(const bionet_hab_t *hab);
 
+
+/**
+ * @brief Check if communicating with the HAB over a secure connection
+ * 
+ * @param[in] hab The HAB
+ * 
+ * @retval 0 Insecure
+ * @retval 1 Secure
+ *
+ * @note This function does not make sense for HABs, only Bionet Clients.
+ */
+int bionet_hab_is_secure(const bionet_hab_t *hab);
+
+
+/**
+ * @brief Set the security flag on a HAB
+ * 
+ * @param[in] hab The HAB
+ * @param[in] is_secure 0 = Insecure, 1 = Secure
+ * 
+ * @note This function is used exclusively by the Bionet Client library.
+ */
+void bionet_hab_set_secure(bionet_hab_t *hab, int is_secure);
+
+
 #endif //  BIONET_HAB_H
 
 
