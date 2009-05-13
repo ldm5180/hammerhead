@@ -25,5 +25,6 @@ void bip_net_disconnect(bip_peer_network_info_t *net) {
     BIO_free_all(net->socket_bio); // Free and close entire chain
     net->socket_bio = NULL;
     net->socket = -1;
+    net->security_status = BIP_SEC_NOT_CONNECTED;
 }
 

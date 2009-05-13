@@ -566,6 +566,7 @@ static void resolve_callback(
         goto fail0;
     }
 
+    event->is_secure = bip_peer_is_secure(peer);
 
     // send the Join event
     // the event becomes the responsibility of the callback now, so they might leak memory but we're not

@@ -18,6 +18,8 @@ struct bionet_hab_opaque_t {
     GSList *nodes;
 
     const void *user_data;
+
+    int is_secure;
 };
 
 

@@ -137,8 +137,10 @@ typedef struct {
 
     char *peer_name;        //!< the name of the peer that the event concerns
 
+    //fixme: below should be a union accessed by event type
     char *topic;            //!< for the Publish & Subscribe events, the subscription topic (NULL terminated ASCII string)
     cal_message_t msg;      ///< the message sent (only the CAL_EVENT_MESSAGE event type has this)
+    int is_secure;
 } cal_event_t;
 
 

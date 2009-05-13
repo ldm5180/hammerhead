@@ -186,6 +186,9 @@ void cb_lost_hab(bionet_hab_t *hab) {
 
 void cb_new_hab(bionet_hab_t *hab) {
     g_message("new hab: %s", bionet_hab_get_name(hab));
+    if (bionet_hab_is_secure(hab)) {
+	g_message("    %s: security enabled", bionet_hab_get_name(hab));
+    }
 }
 
 

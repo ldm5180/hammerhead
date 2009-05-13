@@ -31,6 +31,7 @@ bip_peer_network_info_t *bip_net_new(const char *hostname, uint16_t port) {
     net->port = port;
 
     net->socket = -1;  // not connected yet
+    net->security_status = BIP_SEC_NOT_CONNECTED;
     // bio already NULL
 
     return net;

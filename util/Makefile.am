@@ -32,6 +32,7 @@ libbionet_util_la_SOURCES =    \
     hab-get-node.c             \
     hab-user-data.c            \
     hab-name.c                 \
+    hab-is-secure.c            \
     node-new.c                 \
     node-add-resource.c        \
     node-get-resource.c        \

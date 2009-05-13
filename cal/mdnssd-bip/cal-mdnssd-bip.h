@@ -52,9 +52,10 @@
 typedef uint8_t bip_txtvers_t;
 
 typedef enum {
-    BIP_SEC_NONE,
-    BIP_SEC_REQ,
-    BIP_SEC_OPT
+    BIP_SEC_NOT_CONNECTED = -1,
+    BIP_SEC_NONE          = 0,
+    BIP_SEC_REQ           = 1,
+    BIP_SEC_OPT           = 2
 } bip_sec_type_t;
 
 typedef struct {
@@ -64,6 +65,7 @@ typedef struct {
     int socket;      //!< the socket connected to this peer, or -1 if we're not currently connected
     BIO * socket_bio; //!< the BIO that wraps the socket connected to this peer, or NULL if not connected
     bip_sec_type_t sectype; //!< the type of security adversited by this peer
+    bip_sec_type_t security_status;
     
 
     //! the header of the packet we're currently receiving
@@ -278,6 +280,15 @@ void bip_peer_disconnect(bip_peer_t *peer);
 bip_peer_network_info_t *bip_peer_get_connected_net(const bip_peer_t *peer);
 
 
+/**
+ * @brief Check if the peer is using a secure connection
+ *
+ * @param[in] peer The peer to examine
+ *
+ * @retval 0 Insecure or invalid peer or no connected net.
+ * @retval 1 Secure
+ */
+int bip_peer_is_secure(bip_peer_t *peer);
 
 
 /**
