@@ -891,6 +891,25 @@ int bionet_resource_is_dirty(const bionet_resource_t *resource);
  */
 void bionet_resource_make_clean(bionet_resource_t *resource);
 
+/**
+ * @brief Set the user-data annotation of a Resource
+ *
+ * @param[in] resource The Resource
+ * @param[in] user_data The data to annotate the Resource with.
+ */
+void bionet_resource_set_user_data(bionet_resource_t *resource, const void *user_data);
+
+
+/**
+ * @brief Get the user-data annotation of a Resource
+ *
+ * @param[in] resource The Resource
+ *
+ * @return The user_data pointer, or NULL if none has been set.
+ */
+void *bionet_resource_get_user_data(const bionet_resource_t *resource);
+
+
 
 #endif // __BIONET_RESOURCE_H
 

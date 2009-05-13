@@ -95,7 +95,7 @@ struct bionet_resource_opaque_t {
 
     GPtrArray *datapoints;
 
-    void *user_data;
+    const void *user_data;
 };
 
 struct bionet_value_opaque_t {

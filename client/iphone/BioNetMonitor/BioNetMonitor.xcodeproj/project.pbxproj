@@ -22,11 +22,13 @@
 		7406B0740F715A60007126DA /* libgmodule-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B06F0F715A60007126DA /* libgmodule-2.0.a */; };
 		7406B0750F715A60007126DA /* libgobject-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0700F715A60007126DA /* libgobject-2.0.a */; };
 		7406B0760F715A60007126DA /* libgthread-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0710F715A60007126DA /* libgthread-2.0.a */; };
+		7436ADDD0FBB3B9300D805A4 /* lock.png in Resources */ = {isa = PBXBuildFile; fileRef = 7436ADDB0FBB3B9300D805A4 /* lock.png */; };
+		7436ADDE0FBB3B9300D805A4 /* unlock.png in Resources */ = {isa = PBXBuildFile; fileRef = 7436ADDC0FBB3B9300D805A4 /* unlock.png */; };
 		7442AE730FA2572F007F436B /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7442AE720FA2572F007F436B /* libssl.a */; };
 		7442AE840FA258E0007F436B /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7442AE830FA258E0007F436B /* libcrypto.a */; };
+		74609D500FB4734E00A8B792 /* ResourceDetailCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 74609D4F0FB4734E00A8B792 /* ResourceDetailCell.m */; };
 		74724FD60F7856680061BF62 /* BionetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC50F7856680061BF62 /* BionetManager.m */; };
 		74724FD70F7856680061BF62 /* BioNetMonitorAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC70F7856680061BF62 /* BioNetMonitorAppDelegate.m */; };
-		74724FD80F7856680061BF62 /* DataController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC90F7856680061BF62 /* DataController.m */; };
 		74724FD90F7856680061BF62 /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FCB0F7856680061BF62 /* DetailViewController.m */; };
 		74724FDA0F7856680061BF62 /* Hab.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FCD0F7856680061BF62 /* Hab.m */; };
 		74724FDD0F7856680061BF62 /* Node.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FD30F7856680061BF62 /* Node.m */; };
@@ -37,6 +39,11 @@
 		7474510A0FA909BE0033B682 /* bionet_inverse.png in Resources */ = {isa = PBXBuildFile; fileRef = 747451090FA909BE0033B682 /* bionet_inverse.png */; };
 		74912E0B0F86BB2700261D63 /* libintl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0A0F86BB2700261D63 /* libintl.a */; };
 		74912E0E0F86BB7000261D63 /* libiconv.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0D0F86BB7000261D63 /* libiconv.2.dylib */; };
+		74F1AC170FAF58EE00CA2664 /* GraphView.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC160FAF58EE00CA2664 /* GraphView.m */; };
+		74F1AC1F0FAF597F00CA2664 /* GraphViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 74F1AC1E0FAF597F00CA2664 /* GraphViewController.xib */; };
+		74F1AC270FAF5BC900CA2664 /* GraphViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC260FAF5BC900CA2664 /* GraphViewController.m */; };
+		74F1AC540FAF784900CA2664 /* DataPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC530FAF784900CA2664 /* DataPoint.m */; };
+		74F1AC780FAF813600CA2664 /* Resource.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC770FAF813600CA2664 /* Resource.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,14 +64,16 @@
 		7406B06F0F715A60007126DA /* libgmodule-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgmodule-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgmodule-2.0.a"; sourceTree = "<absolute>"; };
 		7406B0700F715A60007126DA /* libgobject-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgobject-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgobject-2.0.a"; sourceTree = "<absolute>"; };
 		7406B0710F715A60007126DA /* libgthread-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgthread-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgthread-2.0.a"; sourceTree = "<absolute>"; };
+		7436ADDB0FBB3B9300D805A4 /* lock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lock.png; sourceTree = "<group>"; };
+		7436ADDC0FBB3B9300D805A4 /* unlock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unlock.png; sourceTree = "<group>"; };
 		7442AE720FA2572F007F436B /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "/opt/local/i686-apple-darwin/lib/libssl.a"; sourceTree = "<absolute>"; };
 		7442AE830FA258E0007F436B /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "/opt/local/i686-apple-darwin/lib/libcrypto.a"; sourceTree = "<absolute>"; };
+		74609D4E0FB4734E00A8B792 /* ResourceDetailCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceDetailCell.h; sourceTree = "<group>"; };
+		74609D4F0FB4734E00A8B792 /* ResourceDetailCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ResourceDetailCell.m; sourceTree = "<group>"; };
 		74724FC40F7856680061BF62 /* BionetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BionetManager.h; sourceTree = "<group>"; };
 		74724FC50F7856680061BF62 /* BionetManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BionetManager.m; sourceTree = "<group>"; };
 		74724FC60F7856680061BF62 /* BioNetMonitorAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BioNetMonitorAppDelegate.h; sourceTree = "<group>"; };
 		74724FC70F7856680061BF62 /* BioNetMonitorAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BioNetMonitorAppDelegate.m; sourceTree = "<group>"; };
-		74724FC80F7856680061BF62 /* DataController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataController.h; sourceTree = "<group>"; };
-		74724FC90F7856680061BF62 /* DataController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataController.m; sourceTree = "<group>"; };
 		74724FCA0F7856680061BF62 /* DetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
 		74724FCB0F7856680061BF62 /* DetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
 		74724FCC0F7856680061BF62 /* Hab.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Hab.h; sourceTree = "<group>"; };
@@ -82,6 +91,15 @@
 		74912E0D0F86BB7000261D63 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
 		74CA85760F71674F00FEE5E2 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
 		74CA857C0F7167F700FEE5E2 /* libintl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libintl.a; path = "/opt/local/i686-apple-darwin/lib/libintl.a"; sourceTree = "<absolute>"; };
+		74F1AC160FAF58EE00CA2664 /* GraphView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GraphView.m; sourceTree = "<group>"; };
+		74F1AC180FAF58F900CA2664 /* GraphView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphView.h; sourceTree = "<group>"; };
+		74F1AC1E0FAF597F00CA2664 /* GraphViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GraphViewController.xib; sourceTree = "<group>"; };
+		74F1AC250FAF5BC900CA2664 /* GraphViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphViewController.h; sourceTree = "<group>"; };
+		74F1AC260FAF5BC900CA2664 /* GraphViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GraphViewController.m; sourceTree = "<group>"; };
+		74F1AC520FAF784900CA2664 /* DataPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataPoint.h; sourceTree = "<group>"; };
+		74F1AC530FAF784900CA2664 /* DataPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataPoint.m; sourceTree = "<group>"; };
+		74F1AC760FAF813600CA2664 /* Resource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Resource.h; sourceTree = "<group>"; };
+		74F1AC770FAF813600CA2664 /* Resource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Resource.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -123,6 +141,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				74F1AC2E0FAF5C5000CA2664 /* Bionet Classes */,
 				74912E0D0F86BB7000261D63 /* libiconv.2.dylib */,
 				74912E0A0F86BB2700261D63 /* libintl.a */,
 				74724FBF0F7855D60061BF62 /* Classes */,
@@ -146,12 +165,15 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				7436ADDB0FBB3B9300D805A4 /* lock.png */,
+				7436ADDC0FBB3B9300D805A4 /* unlock.png */,
 				747451090FA909BE0033B682 /* bionet_inverse.png */,
 				747450920FA8E2220033B682 /* sec-dir */,
 				2899E55F0DE3E45000AC0155 /* RootViewController.xib */,
 				28AD735F0D9D9599002E5188 /* MainWindow.xib */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				747450E10FA8FA110033B682 /* Settings.bundle */,
+				74F1AC1E0FAF597F00CA2664 /* GraphViewController.xib */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -186,20 +208,35 @@
 				74724FC50F7856680061BF62 /* BionetManager.m */,
 				74724FC60F7856680061BF62 /* BioNetMonitorAppDelegate.h */,
 				74724FC70F7856680061BF62 /* BioNetMonitorAppDelegate.m */,
-				74724FC80F7856680061BF62 /* DataController.h */,
-				74724FC90F7856680061BF62 /* DataController.m */,
 				74724FCA0F7856680061BF62 /* DetailViewController.h */,
 				74724FCB0F7856680061BF62 /* DetailViewController.m */,
+				74F1AC180FAF58F900CA2664 /* GraphView.h */,
+				74F1AC160FAF58EE00CA2664 /* GraphView.m */,
+				74F1AC250FAF5BC900CA2664 /* GraphViewController.h */,
+				74F1AC260FAF5BC900CA2664 /* GraphViewController.m */,
+				74724FD40F7856680061BF62 /* RootViewController.h */,
+				74724FD50F7856680061BF62 /* RootViewController.m */,
+				74609D4E0FB4734E00A8B792 /* ResourceDetailCell.h */,
+				74609D4F0FB4734E00A8B792 /* ResourceDetailCell.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		74F1AC2E0FAF5C5000CA2664 /* Bionet Classes */ = {
+			isa = PBXGroup;
+			children = (
 				74724FCC0F7856680061BF62 /* Hab.h */,
 				74724FCD0F7856680061BF62 /* Hab.m */,
 				74724FD20F7856680061BF62 /* Node.h */,
 				74724FD30F7856680061BF62 /* Node.m */,
-				74724FD40F7856680061BF62 /* RootViewController.h */,
-				74724FD50F7856680061BF62 /* RootViewController.m */,
 				74724FF40F7857490061BF62 /* HabType.h */,
 				74724FF50F7857490061BF62 /* HabType.m */,
+				74F1AC520FAF784900CA2664 /* DataPoint.h */,
+				74F1AC530FAF784900CA2664 /* DataPoint.m */,
+				74F1AC760FAF813600CA2664 /* Resource.h */,
+				74F1AC770FAF813600CA2664 /* Resource.m */,
 			);
-			name = Classes;
+			name = "Bionet Classes";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -256,6 +293,9 @@
 				7474509A0FA8E2220033B682 /* sec-dir in Resources */,
 				747450E20FA8FA110033B682 /* Settings.bundle in Resources */,
 				7474510A0FA909BE0033B682 /* bionet_inverse.png in Resources */,
+				74F1AC1F0FAF597F00CA2664 /* GraphViewController.xib in Resources */,
+				7436ADDD0FBB3B9300D805A4 /* lock.png in Resources */,
+				7436ADDE0FBB3B9300D805A4 /* unlock.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,12 +309,16 @@
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				74724FD60F7856680061BF62 /* BionetManager.m in Sources */,
 				74724FD70F7856680061BF62 /* BioNetMonitorAppDelegate.m in Sources */,
-				74724FD80F7856680061BF62 /* DataController.m in Sources */,
 				74724FD90F7856680061BF62 /* DetailViewController.m in Sources */,
 				74724FDA0F7856680061BF62 /* Hab.m in Sources */,
 				74724FDD0F7856680061BF62 /* Node.m in Sources */,
 				74724FDE0F7856680061BF62 /* RootViewController.m in Sources */,
 				74724FF60F7857490061BF62 /* HabType.m in Sources */,
+				74F1AC170FAF58EE00CA2664 /* GraphView.m in Sources */,
+				74F1AC270FAF5BC900CA2664 /* GraphViewController.m in Sources */,
+				74F1AC540FAF784900CA2664 /* DataPoint.m in Sources */,
+				74F1AC780FAF813600CA2664 /* Resource.m in Sources */,
+				74609D500FB4734E00A8B792 /* ResourceDetailCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

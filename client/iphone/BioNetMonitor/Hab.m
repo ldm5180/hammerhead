@@ -87,4 +87,10 @@
 	return name;
 }
 
+- (BOOL) isSecure {
+	if(c_hab) {
+	return bionet_hab_is_secure(c_hab);
+	}
+	return NO;
+}
 @end

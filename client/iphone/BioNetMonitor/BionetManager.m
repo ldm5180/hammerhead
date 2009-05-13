@@ -11,6 +11,8 @@
 #import "Hab.h"
 #import "HabType.h"
 #import "Node.h"
+#import "Resource.h"
+#import "DataPoint.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -27,47 +29,38 @@ static BionetManager * instanceRef = NULL;
 
 void cb_lost_node(bionet_node_t *node);
 
-void cb_datapoint(bionet_datapoint_t *datapoint) {
+void cb_datapoint(bionet_datapoint_t *c_datapoint) {
+	NSAutoreleasePool *cbPool = [[NSAutoreleasePool alloc] init];
 	BionetManager * sself = instanceRef;
 	
-    bionet_value_t * value = bionet_datapoint_get_value(datapoint);
-	bionet_resource_t * resource = bionet_value_get_resource(value);
+    bionet_value_t * value = bionet_datapoint_get_value(c_datapoint);
+	bionet_resource_t * c_resource = bionet_value_get_resource(value);
 	
 	if(sself.resourceController
-	   && bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, 
+	   && bionet_resource_matches_habtype_habid_nodeid_resourceid(c_resource, 
 												   [[sself.resourceController hab_type_filter] UTF8String],
 												   [[sself.resourceController hab_id_filter] UTF8String],
 												   [[sself.resourceController node_id_filter] UTF8String],
-												   "*"))
+												   [[sself.resourceController resource_id_filter] UTF8String]))
 	{
 
+		NSString * resourceId = [[NSString alloc] initWithCString:bionet_resource_get_id(c_resource)];
 
-		NSString * resourceName = [[NSString alloc] initWithCString: bionet_resource_get_name(resource)]; 
-		NSString * dataPointStr = nil;
-		char * value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
-		dataPointStr = [[NSString alloc] initWithCString: value_str];
-		NSDictionary * sectionDict = [[NSDictionary alloc] initWithObjectsAndKeys:resourceName, @"title", [NSArray arrayWithObject: dataPointStr], @"cells", nil]; 
-
+		Resource * resource = [sself.resourceDictionary  objectForKey:resourceId];
+		if(nil == resource){
+			resource = [Resource createWrapper: c_resource];
+		}
 		
-		[[sself resourceController] performSelectorOnMainThread:@selector(updateItem:) withObject:sectionDict waitUntilDone: YES];
+		[resource pushDataPoint:c_datapoint];
+		
+		[[sself resourceController] performSelectorOnMainThread:@selector(updateItem:) withObject:resource waitUntilDone: YES];
 	}
 	
-	
-    char * value_str = bionet_value_to_str(value);
-	
-    g_message(
-			  "%s = %s %s %s @ %s",
-			  bionet_resource_get_name(resource),
-			  bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-			  bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-			  value_str,
-			  bionet_datapoint_timestamp_to_string(datapoint)
-			  );
-	
-    free(value_str);
+	[cbPool drain];
 }
 
 void cb_new_hab(bionet_hab_t *c_hab) {
+	NSAutoreleasePool *cbPool = [[NSAutoreleasePool alloc] init];
 
 	BionetManager * sself = instanceRef;
 	
@@ -118,10 +111,13 @@ void cb_new_hab(bionet_hab_t *c_hab) {
 	
 
 	g_message("new hab: %s", bionet_hab_get_name(c_hab));
-	
+	[cbPool drain];
+
 }
 
 void cb_lost_hab(bionet_hab_t *c_hab) {
+	NSAutoreleasePool *cbPool = [[NSAutoreleasePool alloc] init];
+
 	BionetManager * sself = instanceRef;
 	
 	// Trigger cb_lost_nodes for each active node...
@@ -156,18 +152,22 @@ void cb_lost_hab(bionet_hab_t *c_hab) {
 			// Remove type from View
 			HabType * habType = [[sself rootDictionary] objectForKey:habTypeId];
 			[[sself habTypeController] performSelectorOnMainThread:@selector(delItem:) withObject:habType waitUntilDone: YES];
-			[habsDict removeObjectForKey:habId];
+			[[sself rootDictionary] removeObjectForKey:habTypeId];
 		}
 	}
 	[habTypeId release];
 	[habId release];
 	
     g_message("lost hab: %s", bionet_hab_get_name(c_hab));
+	[cbPool drain];
+
 }
 
 
 
 void cb_new_node(bionet_node_t *c_node) {
+	NSAutoreleasePool *cbPool = [[NSAutoreleasePool alloc] init];
+
 	BionetManager * sself = instanceRef;
 	
 	//const char * nodeIdConst   = bionet_node_get_id(c_node);
@@ -233,10 +233,13 @@ void cb_new_node(bionet_node_t *c_node) {
         }
     }
 	 */
-	 
+	[cbPool drain];
+
 }
 
 void cb_lost_node(bionet_node_t *c_node) {
+	NSAutoreleasePool *cbPool = [[NSAutoreleasePool alloc] init];
+
     g_message("lost node: %s", bionet_node_get_name(c_node));
 	BionetManager * sself = instanceRef;
 	
@@ -254,6 +257,8 @@ void cb_lost_node(bionet_node_t *c_node) {
 		[[sself nodeController] performSelectorOnMainThread:@selector(delItem:) withObject:node waitUntilDone: YES];
 		[node release];
 	}
+	[cbPool drain];
+
 }
 
 
@@ -262,7 +267,7 @@ void cb_lost_node(bionet_node_t *c_node) {
 
 @implementation BionetManager
 
-@synthesize rootDictionary, habTypeController, habController, nodeController, resourceController;
+@synthesize rootDictionary, habTypeController, habController, nodeController, resourceController, resourceDictionary;
 
 - (id)init {
     if (self = [super init]) {
@@ -279,6 +284,7 @@ void cb_lost_node(bionet_node_t *c_node) {
 		//tableViewToUpdate = nil;
 		
 		rootDictionary = [[NSMutableDictionary alloc]init];
+		resourceDictionary = [[NSMutableDictionary alloc]init];
 
 		NSString *secpath = [[NSBundle mainBundle] pathForResource:@"sec-dir" ofType:nil];
 		bool sec_required = [[NSUserDefaults standardUserDefaults] boolForKey:@"ssl_required"];
@@ -405,6 +411,7 @@ void cb_lost_node(bionet_node_t *c_node) {
 
 - (void)bionetEventLoop {
 	while(isRunning) {
+		NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
 		int r;
 		fd_set readers;
 		
@@ -457,6 +464,7 @@ void cb_lost_node(bionet_node_t *c_node) {
 		 [habList release];
 		 }	
 		 */
+		[loopPool drain];
 		
 	}
 

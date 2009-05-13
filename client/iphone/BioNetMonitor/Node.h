@@ -19,8 +19,8 @@
 
 + (Node*) createWrapper: (bionet_node_t *)ptr;
 
-- (Node*) initWithPtr: (bionet_node_t*)c_node;
-- (NSMutableArray*) contentsAsArrayOfSections;
+- (Node*) initWithPtr: (bionet_node_t*)ptr;
+- (NSMutableArray*) contentsAsArrayOfResources;
 - (NSComparisonResult)compare:(Node *)indexPath;
 - (void)wentAway;
 

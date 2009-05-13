@@ -55,6 +55,7 @@ libbionet_util_la_SOURCES =    \
     resource-get-datapoint.c   \
     resource-set.c             \
     resource-name.c            \
+    resource-user-data.c       \
     datapoint-new.c            \
     datapoint-free.c	\
     datapoint-value.c          \

@@ -8,7 +8,7 @@
 
 #import "BioNetMonitorAppDelegate.h"
 #import "RootViewController.h"
-#import "DataController.h"
+#import "GraphViewController.h"
 #import "BionetManager.h"
 
 
@@ -17,7 +17,7 @@
 @synthesize window;
 @synthesize navigationController;
 @synthesize rootViewController;
-@synthesize dataController;
+@synthesize graphViewController;
 @synthesize bionetManager;
 
 
@@ -39,7 +39,6 @@
     [navigationController release];
 	[rootViewController release];
     [window release];
-    [dataController release];
 	[bionetManager release];
 	[super dealloc];
 }

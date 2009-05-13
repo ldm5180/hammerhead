@@ -27,6 +27,7 @@
 @property (assign,readonly) bionet_hab_t* c_hab;
 @property (assign, readonly) NSString* ident;
 @property (assign, readonly) NSString* name;
+@property (assign, readonly) BOOL isSecure;
 
 
 @end

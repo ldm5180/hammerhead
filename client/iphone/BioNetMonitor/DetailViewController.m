@@ -46,13 +46,27 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 */
 
 #import "DetailViewController.h"
-
+#import "GraphViewController.h"
+#import "GraphView.h"
+#import "ResourceDetailCell.h"
+#import "BionetManager.h"
 
 
 @implementation DetailViewController
 
-@synthesize sectionList, subTitle, hab_type_filter, hab_id_filter, node_id_filter;
+@synthesize resList, subTitle, hab_type_filter, hab_id_filter, node_id_filter, resource_id_filter;
 
+- (id)initWithStyle:(UITableViewStyle)style {
+	if (self = [super initWithStyle:style]) {
+		self.title = NSLocalizedString(@"Node Resources", @"Resources");
+		self.tableView.rowHeight = kResourceDetailRowHeight;
+		
+		dateFormater = [[NSDateFormatter alloc] init];
+		[dateFormater setDateStyle:NSDateFormatterShortStyle];
+		[dateFormater setTimeStyle:NSDateFormatterMediumStyle];
+	}
+	return self;
+}
 
 - (void)viewWillAppear:(BOOL)animated {
     // Update the view with current data before it is displayed
@@ -60,8 +74,10 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
     
     // Scroll the table view to the top before it appears
     [self.tableView reloadData];
-    [self.tableView setContentOffset:CGPointZero animated:NO];
-	self.title = NSLocalizedString(@"Node Resources", @"Resources");
+	
+	self.resource_id_filter = @"*";
+
+	graphViewController = nil;
 }
 
 // Override to allow orientations other than the default portrait orientation.
@@ -72,27 +88,15 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 			|| interfaceOrientation == UIInterfaceOrientationLandscapeRight);
 }
 
-// Standard table view data source and delegate methods
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    NSInteger sections;
-	sections = [sectionList count];
-	if(sections < 1){
-		sections = 1;
+- (void)updateItem: (Resource*)theItem {
+	if(graphViewController){
+		[graphViewController.graphView updateItem:theItem];
+		return;
 	}
-    return sections;
-}
-
-
-- (void)updateItem: (NSDictionary*)theItem {
 	int i;
-	NSString * newTitle = [theItem objectForKey:@"title"];
-	for(i=0;i<sectionList.count; i++){
-		NSMutableDictionary *sectionDict = [sectionList objectAtIndex:i];
-		NSString *title = [sectionDict objectForKey:@"title"];
-		if([newTitle isEqualToString:title]){
-			[sectionDict setObject:[theItem objectForKey:@"cells"] forKey:@"cells"];
-			NSArray * indexPaths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:i+1 inSection: 0]];
+	for(i=0;i<resList.count; i++){
+		Resource * res = (Resource*)[resList objectAtIndex:i];
+		if(res == theItem){
 			[self.tableView reloadData];
 			//UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPaths];
 			//[cell setSelected:YES animated:YES];
@@ -102,54 +106,105 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 }
 
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    
-    NSInteger rows = 0;
-	if(section < sectionList.count){
-		rows = [[[sectionList objectAtIndex:section] objectForKey:@"cells"] count];
-	}
-    return rows;
+#pragma mark Table view methods
+// Standard table view data source and delegate methods
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+	return 1;
 }
 
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    return subTitle;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {    
+	return [resList count];
+}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    static NSString *CellIdentifier = @"tvc";
-    
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    static NSString *CellIdentifier = @"ResCell";
+    ResourceDetailCell *cell = (ResourceDetailCell*)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
-        cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:CellIdentifier] autorelease];
+		CGRect startingRect = CGRectMake(0.0, 0.0, 320.0, kResourceDetailRowHeight);
+        cell = [[[ResourceDetailCell alloc] initWithFrame:startingRect reuseIdentifier:CellIdentifier] autorelease];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
 
-    NSString *cellText = nil;
-	if(indexPath.section < sectionList.count){
-		NSDictionary* sectionDict = [sectionList objectAtIndex:indexPath.section];
-		NSArray * cellList = [sectionDict objectForKey:@"cells"];
-		
-		// Set the text in the cell for the section/row
-		if(indexPath.row < cellList.count){
-			cellText = [cellList objectAtIndex:indexPath.row];
-		}
-	}	
-	cell.text = cellText;
+	Resource  *res = nil;
+	if(indexPath.row < resList.count){
+		res = (Resource*)[resList objectAtIndex:indexPath.row];
+	}
+
+	cell.res = res;
+	cell.habName.text = res.habName;
+	cell.localName.text = res.ident;
+	cell.dataType.text = res.dataType;
+	cell.writable = (res.flavor >= BIONET_RESOURCE_FLAVOR_ACTUATOR);
+	
+	cell.timestamp.text = [dateFormater stringFromDate:res.timestamp]; 
+
+	cell.value.text = res.valueStr;
+	cell.value.delegate = self;
+	cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     return cell;
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	Resource * resource = nil;
+	if(indexPath.row < resList.count){
+		resource = (Resource*)[resList objectAtIndex:indexPath.row];
+	}	
 
-/*
- Provide section titles
- HIG note: In this case, since the content of each section is obvious, there's probably no need to provide a title, but the code is useful for illustration.
- */
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
- 
-	NSString * title = nil;
-	if(section < sectionList.count){
-		NSDictionary* sectionDict = [sectionList objectAtIndex:section];
-		title = [sectionDict objectForKey:@"title"];
+	if(resource){
+		graphViewController = [[GraphViewController alloc] init];
+		graphViewController.title = [resource name];
+
+		NSArray*    topLevelObjs = nil;
+		topLevelObjs = [[NSBundle mainBundle] loadNibNamed:@"GraphViewController" owner:graphViewController	options:nil];
+			
+		[graphViewController.graphView setResource: resource];
+		
+		[[self navigationController] pushViewController:graphViewController animated:YES];
 	}
-    return title;
 }
 
+#pragma mark Edit control
+
+- (BOOL) textFieldShouldReturn: (UITextField *)textField {
+	ResourceDetailCell * cell = (ResourceDetailCell*)textField.superview.superview;
+	Resource * res = cell.res;
+	if(res && cell.writable){
+		if([res commandValue:textField.text]){
+			[textField resignFirstResponder];	
+		}
+		return NO;
+	}
+	// Should never happen, but go away in case
+	[textField resignFirstResponder];
+	return NO;
+}
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+	ResourceDetailCell * cell = (ResourceDetailCell*)textField.superview.superview;	
+	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemCancel target: cell action: @selector( cancelEditing )];
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+	self.navigationItem.rightBarButtonItem = nil;
+}
+
+- (BOOL) textFieldShouldEndEditing: (UITextField *)textField {
+	//ResourceDetailCell * cell = (ResourceDetailCell*)textField.superview.superview;	
+	return YES;
+}
+
+- (BOOL) textFieldShouldBeginEditing: (UITextField *)textField {
+	ResourceDetailCell * cell = (ResourceDetailCell*)textField.superview.superview;	
+	if(cell.writable){
+		return YES;
+	} else {
+		return NO;
+	}
+}
 
 @end

@@ -18,6 +18,7 @@
 	id resourceController;
 	
 	NSMutableDictionary *rootDictionary;
+	NSMutableDictionary *resourceDictionary;
 	
 	int bionet_fd;
 }
@@ -28,6 +29,7 @@
 @property (retain, readwrite) id resourceController;
 
 @property (nonatomic, copy, readwrite) NSMutableDictionary *rootDictionary;
+@property (nonatomic, copy, readwrite) NSMutableDictionary *resourceDictionary;
 
 
 - (NSMutableArray*) genNodeListWithNodeFilter: (NSString*)node_id_filter habTypeFilter:(NSString*)hab_type_filter habIdFilter:(NSString*)node_id_filter;

@@ -1,9 +1,12 @@
 /*
 
-File: DetailViewController.h
-Abstract: Creates a grouped table view to act as an inspector.
+File: GraphView.h
+Abstract: This class is responsible for updating and drawing the accelerometer
+history of values. The history is a circular buffer implementation, with a
+pointer moving repeatedly through the buffer, resetting to zero each time it
+reaches the end.
 
-Version: 2.6
+Version: 1.7
 
 Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple Inc.
 ("Apple") in consideration of your agreement to the following terms, and your
@@ -45,29 +48,35 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 */
 
-#import <UIKit/UIkit.h>
+#import <UIKit/UIKit.h>
 #import "Resource.h"
-#import "DataPoint.h"
-#import "GraphViewController.h"
 
-@interface DetailViewController : UITableViewController  <UITextFieldDelegate>  {
-	NSMutableArray *resList;
-	NSString *subTitle;
-	NSString *hab_type_filter;
-	NSString *hab_id_filter;
-	NSString *node_id_filter;	
-	NSString *resource_id_filter;	
-	GraphViewController * graphViewController;
-	NSDateFormatter * dateFormater;
+// Constant for the number of acceleration samples kept in history.
+#define kHistorySize 150
+
+// GraphView class interface.
+
+@interface GraphView : UIView 
+{
+	Resource *resource;
+	double leftEdgeX;
+	double rightEdgeX;
+	double maxX; // The maximum time we knew last time we updated
+	int update_mode;
+	
+	// Touch tracking vars
+	CGFloat initialDistance;
+	NSTimeInterval lastTouchTime;
+	NSTimer *timer;
+	
 }
 
-@property (nonatomic, retain) NSMutableArray *resList;
+@property (assign) Resource* resource;
 
-@property (nonatomic, retain) NSString *subTitle;
-@property (nonatomic, retain) NSString *hab_type_filter;
-@property (nonatomic, retain) NSString *hab_id_filter;
-@property (nonatomic, retain) NSString *node_id_filter;
-@property (nonatomic, retain) NSString *resource_id_filter;
+- (void)updateItem: (Resource*)resource;
+
+// Touch handling 
+- (void) clearTouches;
 
 
 @end

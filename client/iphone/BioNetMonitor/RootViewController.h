@@ -10,14 +10,16 @@
 
 #import "BionetManager.h"
 
-@interface RootViewController : UITableViewController {
+@interface RootViewController : UITableViewController{
 	NSMutableArray *list;
 	BionetManager *bionetManager;
 	int depth;
+	BOOL hab_secure;
 	NSString *subTitle;
 	NSString *hab_type_filter;
 	NSString *hab_id_filter;
 	NSString *node_id_filter;
+	NSString *resource_id_filter;	
 }
 
 - (void)reloadTable:(id)sender;
@@ -31,6 +33,8 @@
 @property (nonatomic, retain) NSString *hab_type_filter;
 @property (nonatomic, retain) NSString *hab_id_filter;
 @property (nonatomic, retain) NSString *node_id_filter;
+@property (nonatomic, retain) NSString *resource_id_filter;
+@property (nonatomic) BOOL hab_secure;
 
 
 - (unsigned)countOfList;

@@ -12,9 +12,11 @@
 
 #include "Node.h"
 
+
+#define addFakeItems 0
 @implementation RootViewController
 
-@synthesize list, bionetManager, subTitle, hab_type_filter, hab_id_filter, node_id_filter;
+@synthesize list, bionetManager, subTitle, hab_type_filter, hab_id_filter, node_id_filter, resource_id_filter, hab_secure;
 
 
 - (void)viewDidLoad {
@@ -132,7 +134,7 @@
 			[tableView beginUpdates];
 
 			[list insertObject:theItem atIndex:i];
-			NSArray * indexPaths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:i+1 inSection: 0]];	
+			NSArray * indexPaths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:i+addFakeItems inSection: 0]];	
 			[tableView insertRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationLeft];
 			
 			[tableView endUpdates];
@@ -145,7 +147,7 @@
 	[tableView beginUpdates];
 
 	[list addObject:theItem];	
-	NSArray * indexPaths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:i+1 inSection: 0]];	
+	NSArray * indexPaths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:i+addFakeItems inSection: 0]];	
 	[tableView insertRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationFade];
 	
 	[tableView endUpdates];
@@ -162,7 +164,7 @@
 			[tableView beginUpdates];
 
 			[list removeObjectAtIndex:i];
-			NSArray * indexPaths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:i+1 inSection: 0]];	
+			NSArray * indexPaths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:i+addFakeItems inSection: 0]];	
 			[tableView deleteRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationFade];			
 			[tableView endUpdates];
 			break;
@@ -212,28 +214,82 @@
 
 // Customize the number of rows in the table view.
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-	return [list count] + 1;
+	return [list count] + addFakeItems;
 }
 
 
 // Customize the appearance of table view cells.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-	static NSString *CellIdentifier = @"rvc";
+
+	NSString * CellIdentifier;
+	if(depth >= 1){
+		CellIdentifier = @"rvcLock";
+	}else{
+		CellIdentifier = @"rvcOther";
+	}
+		
 
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
         cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:CellIdentifier] autorelease];
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+		cell.font = [UIFont boldSystemFontOfSize:18];
+		if(depth >= 1){
+			// Add sub-views
+			UILabel *label;
+
+			CGRect rectCell = CGRectInset(cell.bounds, 10, 10);
+
+			// Image
+			CGRect rect = rectCell;			
+			rect.size.width = rect.size.height;
+			UIImageView *image = [[UIImageView alloc] initWithFrame:rect];
+			image.tag = 0;
+			[cell.contentView addSubview:image];
+			[image release];
+			
+			// Name
+			rect = rectCell;			
+			rect.size.width -= (rect.size.height + 10);
+			rect.origin.x += (rect.size.height + 10);
+
+			label = [[UILabel alloc] initWithFrame:rect];
+			label.tag = 1;
+			label.font = [UIFont boldSystemFontOfSize:18];
+			label.adjustsFontSizeToFitWidth = YES;
+			[cell.contentView addSubview:label];
+			[label release];
+		}
     }
+	
     
-    // Get the object to display and set the value in the cell
+	// Get the object to display and set the value in the cell
+	id itemAtIndex;
+#if addFakeItems
 	if(indexPath.row == 0){
 		cell.text = @"All";
-	} else {
+	} else 
+#endif
+	{
 		int i = indexPath.row;
-		id itemAtIndex = [list objectAtIndex:i - 1];
-		cell.text = [itemAtIndex ident];
+		itemAtIndex = [list objectAtIndex:i - addFakeItems];
+		if( depth >= 1){
+			UILabel * label = (UILabel *)[cell viewWithTag:1];
+			label.text = [itemAtIndex ident];
+
+			UIImageView *image = (UIImageView *)[cell viewWithTag:0];
+			if(hab_secure || (depth == 1 && [itemAtIndex isSecure])){
+				image.image = [UIImage imageNamed:@"lock.png"];
+			} else {
+				image.image = [UIImage imageNamed:@"unlock.png"];
+			}
+			
+		} else {
+			cell.text = [itemAtIndex ident];
+		}
+
 		cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+		
 	}
 
     return cell;
@@ -247,10 +303,13 @@
 	UITableViewController *nextViewController;
 	NSString *myTitle;
 	id itemAtIndex = nil;
+#if addFakeItems
 	if(indexPath.row == 0){
 		myTitle = @"*" ;
-	} else {
-		itemAtIndex = [list objectAtIndex:indexPath.row - 1];
+	} else 
+#endif
+	{
+		itemAtIndex = [list objectAtIndex:indexPath.row - addFakeItems];
 		myTitle = [itemAtIndex ident];
 	}	
 	if(depth < 2){
@@ -265,16 +324,18 @@
 			rootViewController.hab_id_filter = myTitle;
 			rootViewController.node_id_filter = @"*";
 			rootViewController.subTitle = [NSString localizedStringWithFormat:@"%@.%@", hab_type_filter, myTitle];
+			rootViewController.hab_secure = [itemAtIndex isSecure];
 		}
 		[rootViewController setDepth:depth+1];
 		nextViewController = rootViewController;
 		//nextViewController populate:
     } else {
 		Node * node = itemAtIndex;
-		DetailViewController *detailViewController = [[DetailViewController alloc] initWithStyle:UITableViewStyleGrouped];
+		DetailViewController *detailViewController = [[DetailViewController alloc] initWithStyle:UITableViewStylePlain];
 		bionetManager.resourceController = detailViewController;
-		detailViewController.sectionList = [node contentsAsArrayOfSections];
-		detailViewController.subTitle = node.ident;
+		detailViewController.resList = [node contentsAsArrayOfResources];
+		//detailViewController.subTitle = node.ident;
+		detailViewController.subTitle = [NSString localizedStringWithFormat:@"%@.%@.%@", hab_type_filter, myTitle, node.ident];
 		detailViewController.hab_type_filter = hab_type_filter;
 		detailViewController.hab_id_filter = hab_id_filter;
 		detailViewController.node_id_filter = myTitle;
@@ -326,6 +387,7 @@
     return YES;
 }
 */
+
 
 
 - (void)dealloc {
