@@ -16,7 +16,10 @@ void expire_old_nodes(unsigned int timeout_secs) {
 
   struct timeval now;
 
-  gettimeofday(&now, 0);
+  if (gettimeofday(&now, 0)) {
+      g_warning("Failed to get time of day: %m");
+      return;
+  }
 
   for (i = 0; i < bionet_hab_get_num_nodes(parsec_hab); i++) {
 	bionet_node_t *node;
