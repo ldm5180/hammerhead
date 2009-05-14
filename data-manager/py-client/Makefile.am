@@ -12,7 +12,7 @@ endif
 
 LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.version_info[0]) + \".\" + str(sys.version_info[1])" | python`
 
-pkgpython_PYTHON = bdm-client.py
+pkgpython_PYTHON = bdm_client.py
 pkgpyexec_LTLIBRARIES = _bdm_client.la
 
 _bdm_client_la_DEPENDENCIES = $(INCLUDES_BIONET_UTIL)
@@ -27,11 +27,6 @@ _bdm_client_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BIONET_UTIL) $(SWIG_PYTHON_CPPFLAG
 
 _bdm_client_la_LDFLAGS = -module $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1) -version-info $(BIONET_INTERFACE_VERSION) 
 
-
-#install-exec-hook: setup.py
-#	python setup.py install
-#	cp _bdm_client.so $(LIB_INST_DIR)/.
-#	$(LDCONFIG_EXE)
 
 bdm-client_wrap.c: bdm-client.i bdm-client-interface.c $(INCLUDES_BIONET_UTIL)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) -I../include -I../client -o $@ $<

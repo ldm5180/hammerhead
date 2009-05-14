@@ -31,5 +31,3 @@ bionet_wrap.c: bionet.i $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_UTIL)
 
 clean-local:
 	rm -f bionet.py _bionet.so bionet_wrap.c libbionet*
-
-EXTRA_DIST = bionet.py .libs/libbionet-py.so* libbionet-py.a

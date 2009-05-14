@@ -28,10 +28,3 @@ hab_wrap.c: hab.i $(INCLUDES_BIONET_HAB) $(INCLUDES_BIONET_UTIL)
 
 clean-local:
 	rm -f hab.py _hab.so hab_wrap.c libbionet*
-
-#install-exec-hook:
-#	python setup.py install
-#	cp _hab.so $(LIB_INST_DIR)/.
-#	$(LDCONFIG_EXE)
-
-EXTRA_DIST = hab.py .libs/hab-py.so* hab-py.a
