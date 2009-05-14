@@ -49,7 +49,7 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
     
     xLabel = createXLabel();
     p->setAxisTitle(QwtPlot::xBottom, xLabel);
-    delete times;
+    delete[] times;
 
     /* Create two push buttons for preferences & plotting */
     prefButton = new QPushButton(tr("&Plot Preferences"), this);
@@ -99,8 +99,8 @@ void PlotWindow::updatePlot() {
     scale->update(p, d, size);
     p->replot();
 
-    delete x;
-    delete y;
+    delete[] x;
+    delete[] y;
 }
 
 
