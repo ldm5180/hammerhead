@@ -63,7 +63,6 @@ class BionetIO : public QObject {
         void subscribe();
 
         QPointer<QSocketNotifier> nagSocketReader;
-        QByteArray* nxio_message;
         
         QList<QString> habList;
         QList<QString> nodeList;
