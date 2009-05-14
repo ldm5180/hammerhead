@@ -23,6 +23,7 @@
 #include <stdint.h>
 #endif
 
+
 /* C implementation of the mote serial protocol. See
    net.tinyos.packet.Packetizer for more details */
 
@@ -342,7 +343,10 @@ static int source_wait(serial_source src, struct timeval *deadline)
     {
       if (deadline)
 	{
-	  gettimeofday(&tv, NULL);
+	  if (gettimeofday(&tv, NULL)) {
+	      fprintf(stderr, "Failed to get time of day: %m");
+	      return -1;
+	  }
 	  tv.tv_sec = deadline->tv_sec - tv.tv_sec;
 	  tv.tv_usec = deadline->tv_usec - tv.tv_usec;
 	  if (tv.tv_usec < 0)
@@ -772,7 +776,10 @@ int write_serial_packet(serial_source src, const void *packet, int len)
   if (write_framed_packet(src, P_PACKET_ACK, src->send.seqno, packet, len) < 0)
     return -1;
 
-  gettimeofday(&deadline, NULL);
+  if (gettimeofday(&deadline, NULL)) {
+      fprintf(stderr, "Failed to get time of day: %m");
+      return -1;
+  }
   add_timeval(&deadline, ACK_TIMEOUT);
   for (;;) 
     {
