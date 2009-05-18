@@ -12,6 +12,7 @@ import re
 
 # parse options 
 parser = optparse.OptionParser()
+
 parser.add_option("-o", "--output", dest="output", default="csv", 
                   help="Output format",
                   metavar="csv|matlab|chrono")
@@ -31,7 +32,7 @@ parser.add_option("-r", "--resource", dest="resource", default="*.*.*:*",
 (options, args) = parser.parse_args()
 
 if ((None == options.starttime) or (None == options.endtime)):
-    parser.usage()
+    parser.error("Must define start and end times.")
 
 #init logger
 logger = logging.getLogger("BDM Client Output Formatter")
