@@ -36,8 +36,16 @@ void BionetModel::newHab(bionet_hab_t *hab) {
     QList<QStandardItem*> list = findItems(name);
 
     if ( list.isEmpty() ) {
+        QIcon icon;
         item = new QStandardItem(name);
+
+        if (bionet_hab_is_secure(hab))
+            icon = QIcon(QString(":/icons/lock.png"));
+        else
+            icon = QIcon(QString(":/icons/unlock.png"));
+
         item->setData(name, Qt::UserRole);
+        item->setData(QVariant(icon), Qt::DecorationRole);
         item->setColumnCount(5);
         invisibleRootItem()->appendRow(item);
     }

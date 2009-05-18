@@ -10,9 +10,9 @@ qtmake_moc_objects = moc_bionetio.o moc_bionetmodel.o
 
 qtmake_headers = bionetio.h bionetmodel.h
 
-qtmake_sources = bionetio.cxx bionetmodel.cxx
+qtmake_sources = bionetio.cxx bionetmodel.cxx qrc_icons.cpp
 
-qtmake_objects = bionetio.o bionetmodel.o
+qtmake_objects = bionetio.o bionetmodel.o qrc_icons.o
 
 
 
@@ -28,10 +28,17 @@ libbionet_qt4_la_LDFLAGS = $(AM_LDFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(LDFLAG
 
 libbionet_qt4_la_LIBADD = $(AM_LDADD) -lpthread -lm ${qtmake_moc_objects} ${qtmake_objects} $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_CLIENT)
 
-
 makefile.qt:
-	${QT4_PATH} -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=lib" "QT+=network" "CONFIG+=link_pkgconfig debug"
-	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects} 
+	${QT4_PATH} -Wall -o makefile.qt \
+	"INCLUDEPATH+=../libbionet ../../util /usr/include/" \
+	"HEADERS+=${qtmake_headers}" \
+	"LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" \
+	"SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" \
+	"TEMPLATE=lib" \
+	"QT+=network" \
+	"CONFIG+=link_pkgconfig debug" \
+	"RESOURCES = icons.qrc"
+	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects}
 
 clean-local:
 	rm -f makefile.qt *.o moc*.cpp

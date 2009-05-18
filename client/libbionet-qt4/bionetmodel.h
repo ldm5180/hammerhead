@@ -7,8 +7,10 @@
 #ifndef BIONETMODEL_H
 #define BIONETMODEL_H
 
+#include <QIcon>
 #include <QModelIndex>
 #include <QRegExp>
+#include <QResource>
 #include <QStandardItemModel>
 #include <QString>
 #include <QtDebug>
