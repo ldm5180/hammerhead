@@ -240,6 +240,64 @@ int cal_client_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
 
 
 
+int cal_client_mdnssd_bip_unsubscribe(const char *peer_name, const char *topic) {
+    int r;
+    cal_event_t *event;
+
+    if (cal_client_mdnssd_bip_thread == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: called before init()!");
+        return 0;
+    }
+
+    if (!cal_peer_name_is_valid(peer_name)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: called with invalid peer_name!");
+        return 0;
+    }
+
+    if (!cal_topic_is_valid(topic)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: called with invalid topic!");
+        return 0;
+    }
+
+    event = cal_event_new(CAL_EVENT_UNSUBSCRIBE);
+    if (event == NULL) {
+        return 0;
+    }
+
+    event->topic = strdup(topic);
+    if (event->topic == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "unsubscribe: out of memory");
+        return 0;
+    }
+
+    event->peer_name = strdup(peer_name);
+    if (event->peer_name == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: out of memory");
+        cal_event_free(event);
+        return 0;
+    }
+
+    r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    if (r < 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: error writing to client thread: %s", strerror(errno));
+        cal_event_free(event);
+        return 0;
+    }
+    if (r < sizeof(event)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: short write to client thread!!");
+        cal_event_free(event);
+        return 0;
+    }
+
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
+    return 1;
+}
+
+
+
+
 int cal_client_mdnssd_bip_read(struct timeval * timeout) {
     cal_event_t *event;
     int r;
@@ -511,6 +569,7 @@ cal_client_t cal_client = {
     .shutdown = cal_client_mdnssd_bip_shutdown,
 
     .subscribe = cal_client_mdnssd_bip_subscribe,
+    .unsubscribe = cal_client_mdnssd_bip_unsubscribe,
 
     .read = cal_client_mdnssd_bip_read,
 

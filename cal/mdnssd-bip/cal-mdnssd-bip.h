@@ -33,9 +33,10 @@
 #define BIP_MSG_HEADER_TYPE_OFFSET (0)
 #define BIP_MSG_HEADER_SIZE_OFFSET (1)
 
-#define BIP_MSG_TYPE_MESSAGE   (0)
-#define BIP_MSG_TYPE_SUBSCRIBE (1)
-#define BIP_MSG_TYPE_PUBLISH   (2)
+#define BIP_MSG_TYPE_MESSAGE       (0)
+#define BIP_MSG_TYPE_SUBSCRIBE     (1)
+#define BIP_MSG_TYPE_PUBLISH       (2)
+#define BIP_MSG_TYPE_UNSUBSCRIBE   (3)
 
 
 /* security configuration files */

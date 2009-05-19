@@ -224,8 +224,9 @@ void StreamView::disconnectEndpointsWithoutRemoving(bionet_stream_t *pro, bionet
         delete streamInfo;
         bionet_stream_set_user_data(pro, NULL);
 
-        // actually unsubscribe (when unsubscribe works)
-        // bionet_unsubscribe_stream_by_name(bionet_stream_get_name(pro));
+        // actually unsubscribe
+        qDebug("unsubscribing from producer");
+        bionet_unsubscribe_stream_by_name(bionet_stream_get_name(pro));
     }
 
     streamInfo = (struct stream_info_t*)bionet_stream_get_user_data(con);

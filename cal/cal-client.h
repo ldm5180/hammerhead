@@ -97,6 +97,20 @@ typedef struct {
 
 
     //!
+    //! \brief Remove a subscription topic from a server.
+    //!
+    //! \param peer_name The name of the server to unsubscribe from.
+    //!
+    //! \param topic The topic to remove.  A NULL-terminated ASCII
+    //!     string.
+    //!
+    //! \return True (non-zero) on success, False (zero) on failure.
+    //!
+
+    int (*unsubscribe)(const char *peer_name, const char *topic);
+
+
+    //!
     //! \brief Service the CAL-Client file descriptor.
     //!
     //! This function should be called whenever the file descriptor

@@ -428,6 +428,25 @@ int bionet_subscribe_stream_by_name(const char *stream_name);
 
 
 /**
+ * @brief Removes a client's subcription to the contents of the 
+ * named Producer Stream.
+ *
+ * If the specified stream name matches a previous subscription, the 
+ * matched subscription is removed (the client will no longer recieve
+ * data published to the named Producer Stream). Otherwise, this function
+ * does nothing.
+ *
+ * @param stream_name A string in the form 
+ *"<HAB-Type>.<HAB-ID>.<Node-ID>:<Stream-ID>" where any component may be
+ * the wildcard "*".
+ *
+ * @retval 0 Success
+ * @retval -1 Error
+ */
+int bionet_unsubscribe_stream_by_name(const char *stream_name);
+
+
+/**
  * @brief Sends a chunk of data to a Consumer Stream
  *
  * @param[in] stream Stream to write to (must be a Consumer stream)

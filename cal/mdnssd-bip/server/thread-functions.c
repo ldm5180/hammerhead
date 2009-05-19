@@ -58,6 +58,41 @@ static void register_callback(
 }
 
 
+// returns 0 on succes, -1 if the requested subscription is invalid
+static int valid_subscription_type_check(bip_peer_network_info_t *net, cal_event_t *event, const char *peer_name) {
+    int i;
+
+    for (i = 0; i < (net->msg_size-1); i ++) {
+        if (!isprint(net->buffer[i])) {
+            g_log(
+                CAL_LOG_DOMAIN,
+                G_LOG_LEVEL_WARNING,
+                ID "read_from_client: peer %s requested subscription topic with nonprintable character, ignoring request",
+                peer_name
+            );
+
+            cal_event_free(event);
+            bip_net_clear(net);
+            return -1;
+        }
+    }
+    if (net->buffer[net->msg_size-1] != (char)0) {
+        g_log(
+            CAL_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            ID "read_from_client: peer %s requested subscription topic without terminating NULL, ignoring request",
+            peer_name
+        );
+
+        cal_event_free(event);
+        bip_net_clear(net);
+        return -1;
+    }
+
+    return 0;
+}
+
+
 
 
 // returns 0 on succes, -1 if it's time to die
@@ -118,6 +153,38 @@ static int read_from_user(void) {
 
             peer->subscriptions = g_slist_prepend(peer->subscriptions, event->topic);
             event->topic = NULL;
+
+            break;
+        }
+
+        case CAL_EVENT_UNSUBSCRIBE: {
+            GSList *cursor;
+            bip_peer_t *peer;
+
+            peer = g_hash_table_lookup(clients, event->peer_name);
+            if (peer == NULL) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping Unsubscribe event", event->peer_name);
+                break;
+            }
+
+            //
+            // Walk through the subscriptions and remove any matching ones
+            //
+
+            cursor = peer->subscriptions;
+            while (cursor != NULL) {
+                GSList *topic_link = cursor;
+
+                cursor = cursor->next;
+
+                if (this->topic_matches((char*)topic_link->data, event->topic) == 0) {
+                    peer->subscriptions = g_slist_remove_link(peer->subscriptions, topic_link);
+
+                    if (topic_link->data != NULL) free((char*)topic_link->data);
+                    topic_link->data = NULL;
+                    g_slist_free(topic_link);
+                }
+            }
 
             break;
         }
@@ -432,39 +499,11 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
         }
 
         case BIP_MSG_TYPE_SUBSCRIBE: {
-            int i;
 
-            // 
-            // sanity-check the requested subscription
-            //
-
-            for (i = 0; i < (net->msg_size-1); i ++) {
-                if (!isprint(net->buffer[i])) {
-                    g_log(
-                        CAL_LOG_DOMAIN,
-                        G_LOG_LEVEL_WARNING,
-                        ID "read_from_client: peer %s requested subscription topic with nonprintable character, ignoring request",
-                        peer_name
-                    );
-
-                    cal_event_free(event);
-                    bip_net_clear(net);
-                    return -1;
-                }
-            }
-            if (net->buffer[net->msg_size-1] != (char)0) {
-                g_log(
-                    CAL_LOG_DOMAIN,
-                    G_LOG_LEVEL_WARNING,
-                    ID "read_from_client: peer %s requested subscription topic without terminating NULL, ignoring request",
-                    peer_name
-                );
-
-                cal_event_free(event);
-                bip_net_clear(net);
+            if (valid_subscription_type_check(net, event, peer_name) != 0) {
+                // error message should have already been logged
                 return -1;
             }
-
 
             //
             // looks like a valid subscription request, pass it up to the user thread
@@ -476,6 +515,49 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
             // the event steals the BIP message buffer as the topic
             event->topic = net->buffer;
             net->buffer = NULL;
+
+            break;
+        }
+
+        case BIP_MSG_TYPE_UNSUBSCRIBE: {
+            GSList *cursor;
+            bip_peer_t *peer;
+            
+            if (valid_subscription_type_check(net, event, peer_name) != 0) {
+                // error message should have already been logged
+                return -1;
+            }
+
+            event->type = CAL_EVENT_UNSUBSCRIBE;
+
+            event->topic = net->buffer;
+            net->buffer = NULL;
+
+
+            //
+            // Walk through the subscriptions and remove any matching ones
+            //
+
+            peer = g_hash_table_lookup(clients, peer_name);
+            if (peer == NULL) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping Unsubscribe event", event->peer_name);
+                break;
+            }
+
+            cursor = peer->subscriptions;
+            while (cursor != NULL) {
+                GSList *topic_link = cursor;
+
+                cursor = cursor->next;
+
+                if (this->topic_matches((char*)topic_link->data, event->topic) == 0) {
+                    peer->subscriptions = g_slist_remove_link(peer->subscriptions, topic_link);
+
+                    if (topic_link->data != NULL) free((char*)topic_link->data);
+                    topic_link->data = NULL;
+                    g_slist_free(topic_link);
+                }
+            }
 
             break;
         }
