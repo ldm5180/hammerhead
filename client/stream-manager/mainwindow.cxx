@@ -127,7 +127,6 @@ void MainWindow::setupBionet() {
 
     bionet->addHabSubscription("*.*");
     bionet->addNodeSubscription("*.*.*");
-    bionet->addStreamSubscription("*.*.*:*");
 }
 
 void MainWindow::setupModel() {
