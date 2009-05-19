@@ -94,13 +94,11 @@
 	
 	unsigned int i;
 
-	@synchronized([BionetManager getInstance]){
-		if(c_node){
-			for (i = 0; i < bionet_node_get_num_resources(c_node); i++) {
-				bionet_resource_t *c_resource = bionet_node_get_resource_by_index(c_node, i);
-				Resource * resource = [Resource createWrapper:c_resource];
-				[resList addObject:resource];
-			}
+	if(c_node){
+		for (i = 0; i < bionet_node_get_num_resources(c_node); i++) {
+			bionet_resource_t *c_resource = bionet_node_get_resource_by_index(c_node, i);
+			Resource * resource = [Resource createWrapper:c_resource];
+			[resList addObject:resource];
 		}
 	}
 	

@@ -129,7 +129,7 @@
 		NSComparisonResult cmpResult = [[theItem ident] localizedCompare:title];
 		if(NSOrderedSame== cmpResult){
 			return;
-		} else if (NSOrderedDescending == cmpResult) {
+		} else if (NSOrderedAscending == cmpResult) {
 			// Goes before this item. Insert here
 			[tableView beginUpdates];
 
