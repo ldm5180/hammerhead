@@ -1,5 +1,17 @@
 
-Bionet 2.1.3, TBD
+Bionet 2.2.0-rc0, 2009 May 19
+
+    * Standardized the command-line interfaces of all the HABs and
+      Clients.  This might break existing scripts & finger muscle
+      memories...
+
+    * Added support for security - basic authentication and
+      confidentiality.  Uses OpenSSL.  This is still a work in progress.
+
+    * Added support for running Bionet Clients on the iPhone.  There is
+      now an iPhone app similar to bionet-monitor.
+
+    * Lots of bug fixes all over.
 
 
 Bionet 2.1.2, 2009 March 11
