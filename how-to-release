@@ -29,7 +29,7 @@ in the release branch:
 
     ./autogen.sh
 
-    export VERSION=$(grep BIONET_RELEASE_VERSION common.am | cut -d '=' -f 2) ; cd .. ; tar --exclude .bzr -cjf bionet-$VERSION.tar.bz2 bionet-$VERSION
+    export VERSION=$(egrep ^BIONET_RELEASE_VERSION common.am | cut -d '=' -f 2) ; cd .. ; tar --exclude .bzr -cjf bionet-$VERSION.tar.bz2 bionet-$VERSION
 
     test the tarball:
 
