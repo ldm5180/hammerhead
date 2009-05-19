@@ -68,6 +68,8 @@ void cb_new_hab(bionet_hab_t *c_hab) {
 	const char * habIdConst   = bionet_hab_get_id(c_hab);
 	NSString * habTypeId = [[NSString alloc] initWithCString:habTypeConst];
 	NSString * habId = [[NSString alloc] initWithCString:habIdConst];
+	NSMutableDictionary *habsDict = nil;
+	Hab *hab = nil;
 	
 	// Update hab and habType dictionaries
 	HabType *habType = [[sself rootDictionary] objectForKey:habTypeId];
@@ -75,35 +77,29 @@ void cb_new_hab(bionet_hab_t *c_hab) {
 	if(habType == nil){
 		habType = [[HabType alloc] init];
 		habType.ident = habTypeId;
-		NSMutableDictionary *habsDict = habType.habs;
+		habsDict = habType.habs;
 
-		Hab *hab = [Hab createWrapper:c_hab];
-		[habsDict setObject:hab forKey:habId];
 		[[sself rootDictionary] setObject:habType forKey:habTypeId];
-		
 		[[sself habTypeController] performSelectorOnMainThread:@selector(newItem:) withObject:habType waitUntilDone: YES];
-		//[[sself habTypeController] newItem:habTypeId]; // There is no actual habType c type, so we'll clean up when the last node of a type goes away
-		[[sself habController] performSelectorOnMainThread:@selector(newItem:) withObject:hab waitUntilDone: YES];
-		//id newItem = [[sself habController] newItem:habId];
-		//if(newItem){
-		//	bionet_hab_set_user_data(c_hab, newItem);
-		//}
+		
 		[habType release];
-		[hab release];
 	} else {
-		NSMutableDictionary *habsDict = habType.habs;
-		Hab * hab = [habsDict objectForKey:habId];
-		if(NULL == hab){
-			hab = [Hab createWrapper:c_hab];
-			[habsDict setObject:hab forKey: habId]; 
-			
+		habsDict = habType.habs;
+		hab = [habsDict objectForKey:habId];
+	}
+
+	if(nil == hab){
+		hab = [Hab createWrapper:c_hab];
+		[habsDict setObject:hab forKey: habId]; 
+		
+		if(sself.habController
+		   && bionet_hab_matches_type_and_id(c_hab, [[sself.habController hab_type_filter] UTF8String], "*"))
+		{
 			[[sself habController] performSelectorOnMainThread:@selector(newItem:) withObject:hab waitUntilDone: YES];
-			//id newItem = [[sself habController] newItem:habId];
-			//if(newItem){
-			//	bionet_hab_set_user_data(c_hab, newItem);
-			//}		
-			[hab release];
 		}
+		
+		//[[sself habController] performSelectorOnMainThread:@selector(newItem:) withObject:hab waitUntilDone: YES];
+		[hab release];
 	}
 	
 	[habId release];

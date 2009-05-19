@@ -85,8 +85,12 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 		if(0 == gettimeofday(&tv, NULL)){
 			rightEdgeX = (double)tv.tv_sec + ((double)tv.tv_usec * 1.0e-6);
 			leftEdgeX = rightEdgeX - 1.0;
-		}			
+		}
+		resource = new_resource;
+		[resource retain];
+		[self maybeUpdateDisplay];
 		[self setNeedsDisplay];
+		return;
 	}
 	if(new_resource != resource){
 		Resource * old = resource;
@@ -99,14 +103,16 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 - (void) scaleRange: (float) amount inBounds:(CGRect)bounds {
 	float timeAdjust = (amount  / (bounds.size.width)) * (rightEdgeX - leftEdgeX); 
-	// Split the difference ober left and right to keep centered
+	// Split the difference over left and right to keep centered, unless in scroll mode
 	leftEdgeX -= timeAdjust / 2.0;
-	rightEdgeX += timeAdjust / 2.0;
+	if(update_mode != kScrollMode){
+		rightEdgeX += timeAdjust / 2.0;
+	}
 	
 	if(leftEdgeX < resource.minTime){
 		leftEdgeX = resource.minTime;
 	}
-	if(rightEdgeX > resource.maxTime){
+	if(update_mode == kScrollMode || rightEdgeX > resource.maxTime){
 		rightEdgeX = resource.maxTime;
 		update_mode = kScrollMode;
 	} else {
@@ -220,21 +226,19 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
     CGContextSetGrayStrokeColor(context, 0.5, 1.0);
     CGContextBeginPath(context);
 	double increment = (resource.maxValue - resource.minValue) / 10.0;
-	if( 0 == increment ){
-		increment = 0.1;
-	}
-	
-	for (value = resource.minValue; value <= resource.maxValue; value += increment) {
-		float y = roundf(bounds.origin.y + (value - resource.minValue ) / (resource.maxValue - resource.minValue) * bounds.size.height);
-		CGContextMoveToPoint(context, bounds.origin.x, y);
-		CGContextAddLineToPoint(context, bounds.origin.x + bounds.size.width, y);
+	if( increment > 0 ){
+		for (value = resource.minValue; value <= resource.maxValue; value += increment) {
+			float y = roundf(bounds.origin.y + (value - resource.minValue ) / (resource.maxValue - resource.minValue) * bounds.size.height);
+			CGContextMoveToPoint(context, bounds.origin.x, y);
+			CGContextAddLineToPoint(context, bounds.origin.x + bounds.size.width, y);
+		}
 	}
     CGContextStrokePath(context);
 	
 	// Draw the labels
     CGContextSetGrayFillColor(context, 1.0, 1.0);
     CGContextSetAllowsAntialiasing(context, true);
-	if(increment){
+	if(increment > 0){
 		for (value = resource.minValue; value <= resource.maxValue; value += increment) {
 			float y = roundf(bounds.origin.y + (resource.maxValue - value) / (resource.maxValue - resource.minValue) * bounds.size.height);
 			// NOTE: We need to draw upside-down as UIView referential has the Y axis going down
@@ -267,7 +271,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 	// Create an array of points
 	for (i = 0; i < resource.dataPoints.count; ++i) {
 		DataPoint * dpoint = (DataPoint*)[resource.dataPoints objectAtIndex:i];
-		if(dpoint.timestamp >= leftEdgeX && dpoint.timestamp <= rightEdgeX){
+		if(dpoint.timestamp >= leftEdgeX){
 			if (firstPoint) {
 				firstPoint = NO;
 				if(i>0){
@@ -320,6 +324,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 		CGContextFillPath(context);
 
     }
+	free(aPoints);
 	
 	CGContextSetLineWidth(context, 1.0);
 }

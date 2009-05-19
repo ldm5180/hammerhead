@@ -113,6 +113,8 @@ void StreamView::connectEndpoints(Node* proNode, Node* conNode) {
        streamInfo->center = new QPoint(proNode->getCenter());
        streamInfo->count = 1;
        bionet_stream_set_user_data(pro, (void*)streamInfo);
+
+       bionet_subscribe_stream_by_name(bionet_stream_get_name(pro));
     }
 
     streamInfo = (struct stream_info_t*) bionet_stream_get_user_data(con);
@@ -221,6 +223,9 @@ void StreamView::disconnectEndpointsWithoutRemoving(bionet_stream_t *pro, bionet
         delete streamInfo->center;
         delete streamInfo;
         bionet_stream_set_user_data(pro, NULL);
+
+        // actually unsubscribe (when unsubscribe works)
+        // bionet_unsubscribe_stream_by_name(bionet_stream_get_name(pro));
     }
 
     streamInfo = (struct stream_info_t*)bionet_stream_get_user_data(con);
@@ -236,8 +241,14 @@ void StreamView::disconnectEndpointsWithoutRemoving(bionet_stream_t *pro, bionet
 }
 
 
-void StreamView::read(bionet_stream_t* /*stream*/, void* /*buf*/, int size) {
-    cout << "would write " << size << "bytes here ..." << endl;
+void StreamView::read(bionet_stream_t* stream, void* buf, int size) {
+    QList<bionet_stream_t*> subscribers;
+
+    subscribers = connections->values(stream);
+
+    foreach (bionet_stream_t* consumer, subscribers) {
+        bionet_stream_write(consumer, buf, size);
+    }
 }
 
 
