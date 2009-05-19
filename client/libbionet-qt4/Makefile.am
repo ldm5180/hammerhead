@@ -10,7 +10,7 @@ qtmake_moc_objects = moc_bionetio.o moc_bionetmodel.o
 
 qtmake_headers = bionetio.h bionetmodel.h
 
-qtmake_sources = bionetio.cxx bionetmodel.cxx qrc_icons.cpp
+qtmake_sources = bionetio.cxx bionetmodel.cxx
 
 qtmake_objects = bionetio.o bionetmodel.o qrc_icons.o
 
@@ -39,4 +39,4 @@ makefile.qt:
 	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects}
 
 clean-local:
-	rm -f makefile.qt *.o moc*.cpp
+	rm -f makefile.qt *.o moc*.cpp qrc*.cpp
