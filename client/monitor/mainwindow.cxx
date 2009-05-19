@@ -9,6 +9,8 @@
 
 MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     int sampleSize = -1;
+    int require_security = 0;
+    QString security_dir;
 
     setAttribute(Qt::WA_QuitOnClose);
     argv ++;
@@ -24,9 +26,24 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
         if (strcmp(*argv, "--sample-size") == 0) {
             argv ++;
             sampleSize = atoi(*argv);
+        } else if ((strcmp(*argv, "-s") == 0) || (strcmp(*argv, "--security-dir") == 0)) {
+            argv++;
+            security_dir = QString(*argv);
+        } else if ((strcmp(*argv, "-e") == 0) || (strcmp(*argv, "--require-security") == 0)) {
+            require_security = 1;
         } else {
             usage();
             exit(1);
+        }
+    }
+
+    if ((require_security == 1) && ( security_dir.isEmpty() )) {
+        qWarning("Security required but no security directory specified, continuing without security");
+    }
+
+    if ( !security_dir.isEmpty() ) {
+        if (bionet_init_security(qPrintable(security_dir), require_security)) {
+            qWarning("Failed to initialize security.");
         }
     }
     
@@ -259,6 +276,12 @@ void MainWindow::usage(void) {
     cout << "usage: bionet-monitor OPTIONS...\n\
 \n\
 OPTIONS:\n\
+\n\
+    -e, --require-security\n\
+        Require security\n\
+\n\
+    -s <DIR>, --security-dir <DIR>\n\
+        Set the directory containing the security certificates\n\
 \n\
     --sample-size\n\
         Set the number of samples to store for plotting (default: 10,000)\n\
