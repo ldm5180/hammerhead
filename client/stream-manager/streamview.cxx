@@ -93,7 +93,7 @@ void StreamView::createActions() {
 
 void StreamView::connectEndpoints(Node* proNode, Node* conNode) {
     bionet_stream_t *pro, *con;
-    struct stream_info_t *streamInfo;
+    struct stream_info_t *proStreamInfo, *conStreamInfo;
 
     if ((proNode == NULL) || (conNode == NULL))
         return;
@@ -102,7 +102,7 @@ void StreamView::connectEndpoints(Node* proNode, Node* conNode) {
     con = (bionet_stream_t*)conNode->getBionetPtr();
 
     /* There are three cases for each endpoint, it is: 
-     * (1) already connected to the other node -> return (do nothing)
+     * (1) already connected to the other stream -> return (do nothing)
      *     (the connections hash already contains this data)
      * (2) not connected to anything: create & set a stream_info_t 
      *     (user_data == NULL)
@@ -114,27 +114,35 @@ void StreamView::connectEndpoints(Node* proNode, Node* conNode) {
     if (connections->contains(pro, con))
         return;
 
-    streamInfo = (struct stream_info_t*) bionet_stream_get_user_data(pro);
-    if (streamInfo != NULL) {  /* increment it, since we've already subscribed */
-       streamInfo->count++;
-    } else {  /* create the streamInfo struct & subscribe to the stream */
-       streamInfo = new struct stream_info_t;
-       streamInfo->center = new QPoint(proNode->getCenter());
-       streamInfo->count = 1;
-       bionet_stream_set_user_data(pro, (void*)streamInfo);
+    /* if the producer stream has not yet been created & subscribed to, do it */
+    proStreamInfo = (struct stream_info_t*) bionet_stream_get_user_data(pro);
+    if (proStreamInfo == NULL) {
+       proStreamInfo = new struct stream_info_t;
+       proStreamInfo->center = new QPoint(proNode->getCenter());
+       proStreamInfo->count = 0;
+       bionet_stream_set_user_data(pro, (void*)proStreamInfo);
 
        bionet_subscribe_stream_by_name(bionet_stream_get_name(pro));
     }
 
-    streamInfo = (struct stream_info_t*) bionet_stream_get_user_data(con);
-    if (streamInfo != NULL) { /* increment it, since we've already subscribed */
-       streamInfo->count++;
-    } else { /* create the streamInfo struct */
-       streamInfo = new struct stream_info_t;
-       streamInfo->center = new QPoint(conNode->getCenter());
-       streamInfo->count = 1;
-       bionet_stream_set_user_data(con, (void*)streamInfo);
+    /* if the consumer stream has not yet been created, create it */
+    conStreamInfo = (struct stream_info_t*) bionet_stream_get_user_data(con);
+    if (conStreamInfo == NULL) {
+       conStreamInfo = new struct stream_info_t;
+       conStreamInfo->center = new QPoint(conNode->getCenter());
+       conStreamInfo->count = 0;
+       bionet_stream_set_user_data(con, (void*)conStreamInfo);
     }
+
+    /* increment the connection count of each stream */
+    proStreamInfo->count++;
+    conStreamInfo->count++;
+
+    /*
+    qDebug("connecting producer '%s' (%d) and consumer '%s' (%d)", 
+        bionet_stream_get_name(pro), proStreamInfo->count,
+        bionet_stream_get_name(con), conStreamInfo->count);
+    */
     
     connections->insert(pro, con);
 }
@@ -179,8 +187,7 @@ void StreamView::disconnectEndpoint(bionet_stream_t* stream) {
 
         i = connections->find(stream);
         while (i != connections->end() && i.key() == stream) {
-            disconnectEndpointsWithoutRemoving(stream, i.value());
-            connections->remove(stream);
+            disconnectEndpoints(stream, i.value());
             i = connections->find(stream);
         }
 
@@ -195,13 +202,7 @@ void StreamView::disconnectEndpoint(bionet_stream_t* stream) {
 
 
 void StreamView::disconnectEndpoints(bionet_stream_t *pro, bionet_stream_t *con) {
-    disconnectEndpointsWithoutRemoving(pro, con);
-    connections->remove(pro, con);
-}
-
-
-void StreamView::disconnectEndpointsWithoutRemoving(bionet_stream_t *pro, bionet_stream_t *con) {
-    struct stream_info_t *streamInfo;
+    struct stream_info_t *proStreamInfo, *conStreamInfo;
 
     if ((pro == NULL) || (con == NULL)) {
         cout << "received NULL endpoints, can't disconnect!" << endl;
@@ -214,28 +215,43 @@ void StreamView::disconnectEndpointsWithoutRemoving(bionet_stream_t *pro, bionet
      * In either case, remove it from the hash
      */
 
-    streamInfo = (struct stream_info_t*)bionet_stream_get_user_data(pro);
-    if (streamInfo == NULL) {
-        cout << "attempted to remove nonexistant producer connection!?!" << endl;
-    } else if (streamInfo->count > 1) {
-        streamInfo->count--;
-    } else {
-        delete streamInfo->center;
-        delete streamInfo;
-        bionet_stream_set_user_data(pro, NULL);
+    proStreamInfo = (struct stream_info_t*)bionet_stream_get_user_data(pro);
+    conStreamInfo = (struct stream_info_t*)bionet_stream_get_user_data(con);
 
-        // actually unsubscribe
-        bionet_unsubscribe_stream_by_name(bionet_stream_get_name(pro));
+    /* if either streamInfo == NULL, something is seriously wrong! */
+    if (proStreamInfo == NULL) {
+        qWarning("attempted to remove nonexistant producer connection!?!");
+        return;
+    }
+    if (conStreamInfo == NULL) {
+        qWarning("attempted to remove nonexistant consumer connection!?!");
+        return;
     }
 
-    streamInfo = (struct stream_info_t*)bionet_stream_get_user_data(con);
-    if (streamInfo == NULL) {
-        cout << "attempted to remove nonexistant consumer connection!?!" << endl;
-    } else if (streamInfo->count > 1) {
-        streamInfo->count--;
-    } else {
-        delete streamInfo->center;
-        delete streamInfo;
+    /* remove the connection & decrement the number of occurences */
+    connections->remove(pro, con);
+    proStreamInfo->count--;
+    conStreamInfo->count--;
+
+    /*
+    qDebug("disconnecting producer '%s' (%d) and consumer '%s' (%d)", 
+        bionet_stream_get_name(pro), proStreamInfo->count,
+        bionet_stream_get_name(con), conStreamInfo->count);
+    */
+
+    /* if the producer and/or consumer have no more connections, 
+     * remove the stream_info_t struct,
+     * and in the case of the producer, unsubscribe */
+    if (proStreamInfo->count <= 0) {
+        delete proStreamInfo->center;
+        delete proStreamInfo;
+        bionet_stream_set_user_data(pro, NULL);
+
+        bionet_unsubscribe_stream_by_name(bionet_stream_get_name(pro));
+    }
+    if (conStreamInfo->count <= 0)  {
+        delete conStreamInfo->center;
+        delete conStreamInfo;
         bionet_stream_set_user_data(con, NULL);
     }
 }

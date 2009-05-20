@@ -32,6 +32,7 @@ MainWindow::MainWindow(char* argv[], QWidget* parent) : QWidget(parent) {
             */
     }
 
+    resize(700, 500);
 
     setupBionet();
     setupModel();

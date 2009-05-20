@@ -61,7 +61,6 @@ public:
     void disconnectNodes(Node* proNode, Node* conNode);
     void disconnectEndpoint(bionet_stream_t* stream);
     void disconnectEndpoints(bionet_stream_t *pro, bionet_stream_t *con);
-    void disconnectEndpointsWithoutRemoving(bionet_stream_t *pro, bionet_stream_t *con);
 
     bool isStreamCurrent();
     int numStreamsSelected();
