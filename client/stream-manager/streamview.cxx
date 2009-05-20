@@ -477,6 +477,7 @@ void StreamView::connectAll() {
 void StreamView::disconnectAll() {
     foreach (bionet_stream_t* key, connections->keys())
         disconnectEndpoints(key, connections->value(key));
+    viewport()->update();
 }
 
 
