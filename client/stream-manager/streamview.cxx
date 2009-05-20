@@ -29,6 +29,11 @@ StreamView::StreamView(QWidget* parent) : QAbstractItemView(parent) {
 }
 
 
+StreamView::~StreamView() {
+    disconnectAll();
+}
+
+
 QModelIndex StreamView::indexAt(const QPoint &point) const {
     Node* node = root->find(point);
     return nodeToIndex(node);
@@ -64,8 +69,12 @@ void StreamView::createActions() {
     connect(connectAction, SIGNAL(triggered()), 
             this, SLOT(connectSelected()));
 
-    disconnectAction = new QAction(tr("Delete Connection"), this);
-    connect(disconnectAction, SIGNAL(triggered()), 
+    deleteAction = new QAction(tr("Delete Connection"), this);
+    connect(deleteAction, SIGNAL(triggered()), 
+            this, SLOT(deleteConnection()));
+
+    disconnectAction = new QAction(tr("Disconnect Selected"), this);
+    connect(disconnectAction, SIGNAL(triggered()),
             this, SLOT(disconnectSelected()));
 
     clearAction = new QAction(tr("Disconnect Endpoint"), this);
@@ -106,9 +115,9 @@ void StreamView::connectEndpoints(Node* proNode, Node* conNode) {
         return;
 
     streamInfo = (struct stream_info_t*) bionet_stream_get_user_data(pro);
-    if (streamInfo != NULL) {  /* increment it */
+    if (streamInfo != NULL) {  /* increment it, since we've already subscribed */
        streamInfo->count++;
-    } else {  /* create it */
+    } else {  /* create the streamInfo struct & subscribe to the stream */
        streamInfo = new struct stream_info_t;
        streamInfo->center = new QPoint(proNode->getCenter());
        streamInfo->count = 1;
@@ -118,9 +127,9 @@ void StreamView::connectEndpoints(Node* proNode, Node* conNode) {
     }
 
     streamInfo = (struct stream_info_t*) bionet_stream_get_user_data(con);
-    if (streamInfo != NULL) { /* increment it */
+    if (streamInfo != NULL) { /* increment it, since we've already subscribed */
        streamInfo->count++;
-    } else { /* create it */
+    } else { /* create the streamInfo struct */
        streamInfo = new struct stream_info_t;
        streamInfo->center = new QPoint(conNode->getCenter());
        streamInfo->count = 1;
@@ -176,20 +185,11 @@ void StreamView::disconnectEndpoint(bionet_stream_t* stream) {
         }
 
     } else if (bionet_stream_get_direction(stream) == BIONET_STREAM_DIRECTION_CONSUMER) {
-        //QMultiHash<bionet_stream_t*, bionet_stream_t*>::iterator i;
 
         foreach (bionet_stream_t* key, connections->keys()) {
             if (connections->contains(key, stream))
                 disconnectEndpoints(key, stream);
         }
-        /*
-        for (i = connections->begin(); i != connections->end(); ++i) {
-            if (i.value() == stream) {
-                disconnectEndpoints(i.key(), stream);
-                //connections->erase(i);
-            }
-        }
-        */
     }
 }
 
@@ -204,7 +204,7 @@ void StreamView::disconnectEndpointsWithoutRemoving(bionet_stream_t *pro, bionet
     struct stream_info_t *streamInfo;
 
     if ((pro == NULL) || (con == NULL)) {
-        cout << "received NULL endpoints, can'd disconnect!" << endl;
+        cout << "received NULL endpoints, can't disconnect!" << endl;
         return;
     }
 
@@ -378,31 +378,39 @@ void StreamView::connectSelected() {
 }
 
 
-void StreamView::disconnectSelected() {
-    QModelIndexList selected;
-    QList<Node*> producers;
-    QList<Node*> consumers;
-
-    selected = selectionModel()->selectedIndexes();
-
-    if ( checkIntersection() ) { // FIXME: re-enable this when it works
+void StreamView::deleteConnection() {
+    if ( checkIntersection() )
         deleteIntersection();
-    }
+}
 
-    // Generate a producers/consumers list
+
+void StreamView::disconnectSelected() {
+    QList<bionet_stream_t*> producers;
+    QList<bionet_stream_t*> consumers;
+    Node* node;
+
+    QModelIndexList selected = selectionModel()->selectedIndexes();
     foreach (QModelIndex index, selected) {
-        Node* node = NULL;
-
         node = indexToNode(index);
 
-        if (node == NULL)
-            continue;
+        EndpointTypeT type = node->getEndpointType();
 
-        if (node->getBionetType() != STREAM)
-            continue;
-
-        disconnectNode(node);
+        if (type  == PRODUCER)
+            producers.append((bionet_stream_t*)node->getBionetPtr());
+        else if (type == CONSUMER)
+            consumers.append((bionet_stream_t*)node->getBionetPtr());
     }
+
+    foreach (bionet_stream_t* pro, producers) {
+        foreach (bionet_stream_t* con, consumers) {
+            if ( connections->contains(pro, con) ) {
+                disconnectEndpoints(pro, con);
+            }
+        }
+    }
+
+    producers.clear();
+    consumers.clear();
 
     viewport()->update();
 }
@@ -452,7 +460,8 @@ void StreamView::connectAll() {
 
 
 void StreamView::disconnectAll() {
-    connections->clear();
+    foreach (bionet_stream_t* key, connections->keys())
+        disconnectEndpoints(key, connections->value(key));
 }
 
 
@@ -461,10 +470,8 @@ void StreamView::contextMenuEvent(QContextMenuEvent *event) {
 
     connectAction->setEnabled(differentEndpointsSelected());
 
-    disconnectAction->setEnabled( numConnectionsSelected() || 
-                    (!disconnectAction->isEnabled() && 
-                    (root->find(event->pos()) == NULL) &&
-                    (checkIntersection())));
+    disconnectAction->setEnabled(numConnectionsSelected());
+    deleteAction->setEnabled(checkIntersection());
 
     clearAction->setEnabled(selectedEndpointHasConnections());
     startConnectorAction->setEnabled( isStreamCurrent() && !active );
@@ -474,6 +481,7 @@ void StreamView::contextMenuEvent(QContextMenuEvent *event) {
     menu.addAction(stopConnectorAction);
     menu.addSeparator();
     menu.addAction(connectAction);
+    menu.addAction(deleteAction);
     menu.addAction(disconnectAction);
     menu.addAction(clearAction);
 
@@ -1137,7 +1145,8 @@ void StreamView::deleteIntersection() {
 
         QLineF line(*a->center, *b->center);
         if (intersects(line, mouseRegion)) {
-            connections->remove(i.key(), i.value());
+            disconnectEndpoints(i.key(), i.value());
+            //connections->remove(i.key(), i.value());
             return;
         }
     }

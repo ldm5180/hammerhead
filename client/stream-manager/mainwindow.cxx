@@ -58,7 +58,7 @@ void MainWindow::createActions () {
     connect(connectAction, SIGNAL(triggered()),
             view, SLOT(connectSelected()));
 
-    disconnectAction = new QAction(tr("Delete Connection"), this);
+    disconnectAction = new QAction(tr("Delete Selected"), this);
     disconnectAction->setShortcut(Qt::Key_Backspace);
     disconnectAction->setStatusTip(tr("Delete the connections between selected endpoints"));
     connect(disconnectAction, SIGNAL(triggered()),

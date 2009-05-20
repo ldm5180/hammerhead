@@ -49,6 +49,7 @@ class StreamView : public QAbstractItemView {
 
 public:
     StreamView(QWidget* parent = 0);
+    ~StreamView();
 
     QModelIndex indexAt(const QPoint &point) const;
     void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible);
@@ -74,6 +75,7 @@ public slots:
 
     void connectSelected();
     void disconnectSelected();
+    void deleteConnection();
     void clearSelected();
     void startConnector();
     void stopConnector();
@@ -135,6 +137,7 @@ private:
 
     QAction *connectAction;
     QAction *disconnectAction;
+    QAction *deleteAction;
     QAction *clearAction;
     QAction *startConnectorAction;
     QAction *stopConnectorAction;
