@@ -67,13 +67,13 @@ void BionetModel::lostHab(bionet_hab_t* hab) {
 
     habList = findItems(name);
     if ( habList.isEmpty() ) {
-        cout << "Unable to delete hab (" << qPrintable(name) << "): hab does not exist" << endl;
+        qWarning() << "Unable to delete hab (" << qPrintable(name) << "): hab does not exist" << endl;
         return;
     }
 
     habItem = habList.first();
     if ( !removeRow(habItem->row(), indexFromItem(habItem->parent())) ) {
-        cout << "Unable to delete hab (" << qPrintable(name) << "): hab could not be removed" << endl;
+        qWarning() << "Unable to delete hab (" << qPrintable(name) << "): hab could not be removed" << endl;
     }
 }
 
@@ -103,7 +103,7 @@ void BionetModel::newNode(bionet_node_t* node) {
 
     //QList<QStandardItem*> list = findItems(id);
     if ( habs.isEmpty() ) {
-        cout << "Unable to insert node (" << qPrintable(nodeName) << 
+        qWarning() << "Unable to insert node (" << qPrintable(nodeName) << 
             "): could not find parent hab (" << qPrintable(habName) << ")" 
             << endl;
         return;
@@ -237,7 +237,7 @@ void BionetModel::lostNode(bionet_node_t* node) {
             Qt::MatchExactly | Qt::MatchRecursive);
 
     if ( nodes.isEmpty() ) {
-        cout << "Unable to delete node (" << qPrintable(nodeName) 
+        qWarning() << "Unable to delete node (" << qPrintable(nodeName) 
             << "): " << "node was not found in model" << endl;
         return;
     }
@@ -247,7 +247,7 @@ void BionetModel::lostNode(bionet_node_t* node) {
     removeRows(0, rowCount(nodeIndex), nodeIndex);
 
     if ( !removeRow(nodeIndex.row(), nodeIndex.parent()) ) {
-        cout << "Unable to delete node (" << qPrintable(nodeIndex.data(Qt::UserRole).toString()) 
+        qWarning() << "Unable to delete node (" << qPrintable(nodeIndex.data(Qt::UserRole).toString()) 
             << "): error removing row" << endl;
         return;
     }
@@ -261,7 +261,7 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
     const char *resource_name;
     
     if (datapoint == NULL) {
-        cout << "newDatapoint(): received NULL datapoint!?!" << endl;
+        qWarning() << "newDatapoint(): received NULL datapoint!?!" << endl;
         return;
     }
 
@@ -280,7 +280,7 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
             Qt::MatchExactly | Qt::MatchRecursive);
     
     if ( resourceList.isEmpty() ) {
-        cout << "Cannot update (unable to find resource:" << qPrintable(name) << ")" << endl;
+        qWarning() << "Cannot update (unable to find resource:" << qPrintable(name) << ")" << endl;
         return;
     }
 
@@ -291,7 +291,7 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
 
     value = bionet_datapoint_get_value(datapoint);
     if (value == NULL) {
-        cout << "newDatapoint(): recieved good datapoint with NULL value?!?!" << endl;
+        qWarning() << "newDatapoint(): recieved good datapoint with NULL value?!?!" << endl;
         return;
     }
 
@@ -343,7 +343,7 @@ void BionetModel::lineActivated(QModelIndex current) {
 
         // If the selected line was didn't exist then....???
         
-        cout << "Actived Index has resource/stream name but does not exist: " 
+        qWarning() << "Actived Index has resource/stream name but does not exist: " 
              << qPrintable(name) 
              << endl;
 
