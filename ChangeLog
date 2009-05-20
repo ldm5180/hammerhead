@@ -1,4 +1,13 @@
+Bionet 2.2.0-rc1, 2009 May 20
+    
+    * Added STTR Rights Notice
+    
+    * Added notes about using Bionet on Ubuntu 9.04 (Jaunty Jackalope)
 
+    * Added stream unsubscribe feature and delete connection capabilities
+      to stream-manager
+	
+	
 Bionet 2.2.0-rc0, 2009 May 19
 
     * Standardized the command-line interfaces of all the HABs and

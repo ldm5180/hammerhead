@@ -25,3 +25,8 @@ To see it do something:
     ./random-hab
 
 
+Known issues:
+    avahi-daemon does not work correctly in Ubuntu 9.04 (Jaunty Jackalope) and
+    possibly other distributions due to misconfiguration. If the service
+    discovery is not working or working inconsistently, edit
+    /etc/default/avahi-daemon so that AVAHI_DAEMON_DETECT_LOCAL is set to 0.
