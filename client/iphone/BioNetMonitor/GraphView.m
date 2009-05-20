@@ -102,17 +102,15 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 }
 
 - (void) scaleRange: (float) amount inBounds:(CGRect)bounds {
-	float timeAdjust = (amount  / (bounds.size.width)) * (rightEdgeX - leftEdgeX); 
+	float timeAdjust = -1.0 * ((amount  / (bounds.size.width)) * (rightEdgeX - leftEdgeX)); 
 	// Split the difference over left and right to keep centered, unless in scroll mode
 	leftEdgeX -= timeAdjust / 2.0;
-	if(update_mode != kScrollMode){
-		rightEdgeX += timeAdjust / 2.0;
-	}
+	rightEdgeX += timeAdjust / 2.0;
 	
 	if(leftEdgeX < resource.minTime){
 		leftEdgeX = resource.minTime;
 	}
-	if(update_mode == kScrollMode || rightEdgeX > resource.maxTime){
+	if(update_mode == kScrollMode || rightEdgeX > resource.maxTime)	{
 		rightEdgeX = resource.maxTime;
 		update_mode = kScrollMode;
 	} else {
@@ -183,14 +181,14 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 	switch (update_mode) {
 		case kSquashMode:
 			// Squash in new points
-			if(resource.maxTime > rightEdgeX){
+			//if(resource.maxTime > rightEdgeX){
 				rightEdgeX= resource.maxTime;
 				bUpdate = YES;
-			}
-			if(resource.minTime < leftEdgeX){
+			//}
+			//if(resource.minTime < leftEdgeX){
 				leftEdgeX = resource.minTime;
 				bUpdate = YES;
-			}
+			//}
 			break;
 			
 		case kScrollMode:
@@ -359,6 +357,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 		}
 		[self maybeUpdateDisplay];
 	}
+	[self clearTouches];
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -374,16 +373,6 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 			break;
 		}
 			
-		case 2:  //Double Touch
-		{
-			//Track the initial distance between two fingers.
-			UITouch *touch1 = [[allTouches allObjects] objectAtIndex:0];
-			UITouch *touch2 = [[allTouches allObjects] objectAtIndex:1];
-			
-			initialDistance = [self distanceBetweenTwoPoints:[touch1 locationInView:self]
-													 toPoint:[touch2 locationInView:self]];
-			break;
-		}
 		default:
 			break;
 	}
@@ -439,29 +428,45 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 			UITouch *touch1 = [[allTouches allObjects] objectAtIndex:0];
 			UITouch *touch2 = [[allTouches allObjects] objectAtIndex:1];
 			
+			/*
+			printf("%6.0fx%6.0f %6.0fx%6.0f -> %6.0fx%6.0f %6.0fx%6.0f (1: %x)\n",
+				[touch1 previousLocationInView:self].x, [touch1 previousLocationInView:self].y,
+				[touch2 previousLocationInView:self].x,	[touch2 previousLocationInView:self].y,
+				[touch1 locationInView:self].x, [touch1 locationInView:self].y,
+				   [touch2 locationInView:self].x, [touch2 locationInView:self].y, touch1);
+			 */
+			
+			
 			//Calculate the distance between the two fingers.
+			CGFloat initialDistance = [self distanceBetweenTwoPoints:[touch1 previousLocationInView:self]
+														   toPoint:[touch2 previousLocationInView:self]];
 			CGFloat finalDistance = [self distanceBetweenTwoPoints:[touch1 locationInView:self]
 														   toPoint:[touch2 locationInView:self]];
+
 			
 			[self scaleRange: finalDistance - initialDistance inBounds:[self bounds]];
 			
 		} 
 		break;
 	}
+	[self clearTouches];
 	
+}
+
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+	[self clearTouches];
 }
 
 
 - (CGFloat)distanceBetweenTwoPoints:(CGPoint)fromPoint toPoint:(CGPoint)toPoint {
 	
-	float x = toPoint.x - fromPoint.x;
-	float y = toPoint.y - fromPoint.y;
-	
-	return sqrt(x * x + y * y);
+	float x = fabs(toPoint.x - fromPoint.x);
+	//float y = fabs(toPoint.y - fromPoint.y);
+	return x;
+	//return sqrt(x * x + y * y);
 }
 
 - (void) clearTouches {
-	initialDistance=-1;
 	lastTouchTime = -1;
 }
 

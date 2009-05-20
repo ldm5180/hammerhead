@@ -65,7 +65,6 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 	int update_mode;
 	
 	// Touch tracking vars
-	CGFloat initialDistance;
 	NSTimeInterval lastTouchTime;
 	NSTimer *timer;
 	

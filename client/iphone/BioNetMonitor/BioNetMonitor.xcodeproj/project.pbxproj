@@ -24,8 +24,6 @@
 		7406B0760F715A60007126DA /* libgthread-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0710F715A60007126DA /* libgthread-2.0.a */; };
 		7436ADDD0FBB3B9300D805A4 /* lock.png in Resources */ = {isa = PBXBuildFile; fileRef = 7436ADDB0FBB3B9300D805A4 /* lock.png */; };
 		7436ADDE0FBB3B9300D805A4 /* unlock.png in Resources */ = {isa = PBXBuildFile; fileRef = 7436ADDC0FBB3B9300D805A4 /* unlock.png */; };
-		7442AE730FA2572F007F436B /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7442AE720FA2572F007F436B /* libssl.a */; };
-		7442AE840FA258E0007F436B /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7442AE830FA258E0007F436B /* libcrypto.a */; };
 		74609D500FB4734E00A8B792 /* ResourceDetailCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 74609D4F0FB4734E00A8B792 /* ResourceDetailCell.m */; };
 		74724FD60F7856680061BF62 /* BionetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC50F7856680061BF62 /* BionetManager.m */; };
 		74724FD70F7856680061BF62 /* BioNetMonitorAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC70F7856680061BF62 /* BioNetMonitorAppDelegate.m */; };
@@ -44,6 +42,8 @@
 		74F1AC270FAF5BC900CA2664 /* GraphViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC260FAF5BC900CA2664 /* GraphViewController.m */; };
 		74F1AC540FAF784900CA2664 /* DataPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC530FAF784900CA2664 /* DataPoint.m */; };
 		74F1AC780FAF813600CA2664 /* Resource.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC770FAF813600CA2664 /* Resource.m */; };
+		74FB74710FC35C9B009146AD /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74FB74700FC35C9B009146AD /* libssl.a */; };
+		74FB74730FC35CB5009146AD /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74FB74720FC35CB5009146AD /* libcrypto.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -66,8 +66,6 @@
 		7406B0710F715A60007126DA /* libgthread-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgthread-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgthread-2.0.a"; sourceTree = "<absolute>"; };
 		7436ADDB0FBB3B9300D805A4 /* lock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lock.png; sourceTree = "<group>"; };
 		7436ADDC0FBB3B9300D805A4 /* unlock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unlock.png; sourceTree = "<group>"; };
-		7442AE720FA2572F007F436B /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "/opt/local/i686-apple-darwin/lib/libssl.a"; sourceTree = "<absolute>"; };
-		7442AE830FA258E0007F436B /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "/opt/local/i686-apple-darwin/lib/libcrypto.a"; sourceTree = "<absolute>"; };
 		74609D4E0FB4734E00A8B792 /* ResourceDetailCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceDetailCell.h; sourceTree = "<group>"; };
 		74609D4F0FB4734E00A8B792 /* ResourceDetailCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ResourceDetailCell.m; sourceTree = "<group>"; };
 		74724FC40F7856680061BF62 /* BionetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BionetManager.h; sourceTree = "<group>"; };
@@ -100,6 +98,8 @@
 		74F1AC530FAF784900CA2664 /* DataPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataPoint.m; sourceTree = "<group>"; };
 		74F1AC760FAF813600CA2664 /* Resource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Resource.h; sourceTree = "<group>"; };
 		74F1AC770FAF813600CA2664 /* Resource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Resource.m; sourceTree = "<group>"; };
+		74FB74700FC35C9B009146AD /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "/opt/local/arm-apple-darwin/lib/libssl.a"; sourceTree = "<absolute>"; };
+		74FB74720FC35CB5009146AD /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "/opt/local/arm-apple-darwin/lib/libcrypto.a"; sourceTree = "<absolute>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -122,8 +122,8 @@
 				7406B0760F715A60007126DA /* libgthread-2.0.a in Frameworks */,
 				74912E0B0F86BB2700261D63 /* libintl.a in Frameworks */,
 				74912E0E0F86BB7000261D63 /* libiconv.2.dylib in Frameworks */,
-				7442AE730FA2572F007F436B /* libssl.a in Frameworks */,
-				7442AE840FA258E0007F436B /* libcrypto.a in Frameworks */,
+				74FB74710FC35C9B009146AD /* libssl.a in Frameworks */,
+				74FB74730FC35CB5009146AD /* libcrypto.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,8 +181,6 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				7442AE830FA258E0007F436B /* libcrypto.a */,
-				7442AE720FA2572F007F436B /* libssl.a */,
 				74CA857C0F7167F700FEE5E2 /* libintl.a */,
 				7406B0450F71566A007126DA /* libbionet-asn.a */,
 				7406B0460F71566A007126DA /* libbionet-util.a */,
@@ -197,6 +195,8 @@
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
 				2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */,
 				74CA85760F71674F00FEE5E2 /* libiconv.2.dylib */,
+				74FB74700FC35C9B009146AD /* libssl.a */,
+				74FB74720FC35CB5009146AD /* libcrypto.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -335,11 +335,6 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = BioNetMonitor_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"/opt/local/arm-apple-darwin/lib\"",
-					"\"/opt/local/i686-apple-darwin/lib\"",
-				);
 				PRODUCT_NAME = BioNetMonitor;
 			};
 			name = Debug;
@@ -363,7 +358,7 @@
 			};
 			name = Release;
 		};
-		C01FCF4F08A954540054247B /* Debug */ = {
+		74E200B10FC49EF10099CC44 /* Buildbot */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
@@ -385,7 +380,61 @@
 					"${macport_sdk}/lib",
 				);
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = "-lintl";
+				OTHER_LDFLAGS = (
+					"-lintl",
+					"-lz",
+				);
+				PREBINDING = NO;
+				SDKROOT = iphonesimulator2.2;
+				bionet_sdk = "";
+				"bionet_sdk[sdk=iphoneos*][arch=*]" = ../bionet_sdk;
+				"bionet_sdk[sdk=iphonesimulator*][arch=*]" = ../bionet_simulator_sdk;
+				macport_sdk = "";
+				"macport_sdk[sdk=iphoneos*][arch=*]" = "/opt/local/arm-apple-darwin";
+				"macport_sdk[sdk=iphonesimulator*][arch=*]" = "/opt/local/i686-apple-darwin";
+			};
+			name = Buildbot;
+		};
+		74E200B20FC49EF10099CC44 /* Buildbot */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = BioNetMonitor_Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_NAME = BioNetMonitor;
+			};
+			name = Buildbot;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Brian Marshall";
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"${macport_sdk}/lib/glib-2.0/include",
+					"${bionet_sdk}/usr/local/include",
+					"${macport_sdk}/include/glib-2.0",
+					"${macport_sdk}/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"${bionet_sdk}/usr/local/lib",
+					"${macport_sdk}/lib/glib-2.0",
+					"${macport_sdk}/lib",
+				);
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"-lintl",
+					"-lz",
+				);
 				PREBINDING = NO;
 				SDKROOT = iphonesimulator2.2;
 				bionet_sdk = "";
@@ -417,19 +466,21 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1D6058940D05DD3E006BFB54 /* Debug */,
+				74E200B20FC49EF10099CC44 /* Buildbot */,
 				1D6058950D05DD3E006BFB54 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Buildbot;
 		};
 		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "BioNetMonitor" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
+				74E200B10FC49EF10099CC44 /* Buildbot */,
 				C01FCF5008A954540054247B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Buildbot;
 		};
 /* End XCConfigurationList section */
 	};
