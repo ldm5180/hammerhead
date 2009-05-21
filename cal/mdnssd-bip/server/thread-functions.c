@@ -608,7 +608,7 @@ void cleanup_advertisedRef(void *unused) {
 }
 
 
-void free_peer(void *peer_as_void) {
+static void free_peer(void *peer_as_void) {
     bip_peer_t *peer = peer_as_void;
     if (peer == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "free_peer: NULL peer passed in!");

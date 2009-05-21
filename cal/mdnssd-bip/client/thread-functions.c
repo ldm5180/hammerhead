@@ -783,7 +783,7 @@ void cleanup_subscriptions(void *unused) {
 }
 
 
-void free_peer(void *peer_as_void) {
+static void free_peer(void *peer_as_void) {
     bip_peer_t *peer = peer_as_void;
 
     if (peer == NULL) return;
