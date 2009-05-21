@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -56,6 +57,26 @@ BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
     if (s < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_net_connect: error making socket: %s", strerror(errno));
         return NULL;
+    }
+
+    //enable keep-alives
+    {
+	int one = 1;
+	if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, &one, sizeof(one))) {
+	    g_warning("bip_net_connect: error setting SO_KEEPALIVE: %m");
+	}
+#ifdef LINUX
+	int idle = 10, intvl = 10, cnt = 3;
+	if (setsockopt(s, SOL_TCP, TCP_KEEPIDLE, &idle, sizeof(idle))) {
+	    g_warning("bip_net_connect: error setting TCP_KEEPIDLE: %m");
+	}
+	if (setsockopt(s, SOL_TCP, TCP_KEEPINTVL, &intvl, sizeof(intvl))) {
+	    g_warning("bip_net_connect: error setting SO_KEEPINTVL: %m");
+	}
+	if (setsockopt(s, SOL_TCP, TCP_KEEPCNT, &cnt, sizeof(cnt))) {
+	    g_warning("bip_net_connect: error setting SO_KEEPCNT: %m");
+	}
+#endif
     }
 
     memset(&ai_hints, 0, sizeof(ai_hints));
