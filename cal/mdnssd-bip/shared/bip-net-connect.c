@@ -61,10 +61,12 @@ BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
 
     //enable keep-alives
     {
-	int one = 1, idle = 10, intvl = 10, cnt = 3;
+	int one = 1;
 	if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, &one, sizeof(one))) {
 	    g_warning("bip_net_connect: error setting SO_KEEPALIVE: %m");
 	}
+#ifdef LINUX
+	int idle = 10, intvl = 10, cnt = 3;
 	if (setsockopt(s, SOL_TCP, TCP_KEEPIDLE, &idle, sizeof(idle))) {
 	    g_warning("bip_net_connect: error setting TCP_KEEPIDLE: %m");
 	}
@@ -74,6 +76,7 @@ BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net) {
 	if (setsockopt(s, SOL_TCP, TCP_KEEPCNT, &cnt, sizeof(cnt))) {
 	    g_warning("bip_net_connect: error setting SO_KEEPCNT: %m");
 	}
+#endif
     }
 
     memset(&ai_hints, 0, sizeof(ai_hints));
