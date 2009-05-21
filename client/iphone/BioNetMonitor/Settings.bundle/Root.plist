@@ -22,7 +22,41 @@
 			<key>Key</key>
 			<string>ssl_required</string>
 			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Hab</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Hab Enabled</string>
+			<key>Key</key>
+			<string>hab_enabled</string>
+			<key>DefaultValue</key>
 			<true/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Hab Secure</string>
+			<key>Key</key>
+			<string>hab_secure</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTextFieldSpecifier</string>
+			<key>Title</key>
+			<string>Status</string>
+			<key>Key</key>
+			<string>status_msg</string>
 		</dict>
 	</array>
 </dict>

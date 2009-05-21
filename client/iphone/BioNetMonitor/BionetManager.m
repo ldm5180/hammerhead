@@ -294,22 +294,19 @@ static void cleanUTF8String(char * str) {
 		habController = nil;
 		nodeController = nil;
 
-		//bool hab_enabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"hab_enabled"];
-		bool hab_enabled = TRUE;
-		//hab_type_filter = NULL;
-		//hab_filter = NULL;
-		//node_filter = NULL;
-		
-		//tableViewToUpdate = nil;
-		
+		bool hab_enabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"hab_enabled"];
+		//bool hab_enabled = TRUE;
+				
 		rootDictionary = [[NSMutableDictionary alloc]init];
 		resourceDictionary = [[NSMutableDictionary alloc]init];
 
 		NSString *secpath = [[NSBundle mainBundle] pathForResource:@"sec-dir" ofType:nil];
 		
 		bool sec_required = [[NSUserDefaults standardUserDefaults] boolForKey:@"ssl_required"];
-		//bool hab_secure = [[NSUserDefaults standardUserDefaults] boolForKey:@"hab_secure"];
-		bool hab_secure = FALSE;
+		bool hab_secure = [[NSUserDefaults standardUserDefaults] boolForKey:@"hab_secure"];
+		//bool hab_secure = FALSE;
+
+		NSString * status_msg = [[NSUserDefaults standardUserDefaults] stringForKey:@"status_msg"];
 
 		
 		bionet_init_security([secpath UTF8String], sec_required);
@@ -348,17 +345,21 @@ static void cleanUTF8String(char * str) {
 			const char * c_name = [dev.name UTF8String]; 			
 			const char * c_sys_vers = [[NSString stringWithFormat:@"%@ %@", dev.systemName, dev.systemVersion] UTF8String];  
 			const char * c_uuid = [[UIDevice currentDevice].uniqueIdentifier UTF8String];  			
+			const char * c_status = [status_msg UTF8String];  			
+
 			
 			const char * vals[] = {
 				c_name,
 				c_sys_vers,
-				c_uuid
+				c_uuid,
+				c_status
 			};
 			
 			const char * names[] = {
 				"name",
 				"system",
-				"dev-id"
+				"dev-id",
+				"status"
 			};
 			
 			int i;
@@ -377,7 +378,12 @@ static void cleanUTF8String(char * str) {
 				}
 				
 
-				bionet_value_t * c_value = bionet_value_new_str(c_resource, strdup(vals[i]));
+				bionet_value_t * c_value;
+				if(vals[i]){
+					c_value =  bionet_value_new_str(c_resource, strdup(vals[i]));
+				} else {
+					c_value =  bionet_value_new_str(c_resource, "");
+				}
 				
 				bionet_datapoint_t * c_datapoint = bionet_datapoint_new(c_resource, c_value, NULL);
 				bionet_resource_add_datapoint(c_resource, c_datapoint);
