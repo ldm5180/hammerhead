@@ -22,7 +22,10 @@
 
 #include <glib.h>
 #include "bionet.h"
+#include "hardware-abstractor.h"
 #include "bionet-util.h"
+
+#define SIZEOF(x) (sizeof(x)/sizeof(x[0]))
 
 // Class variable to allow c callbacks access to the data modle object
 static BionetManager * instanceRef = NULL;
@@ -265,6 +268,25 @@ void cb_lost_node(bionet_node_t *c_node) {
 
 @synthesize rootDictionary, habTypeController, habController, nodeController, resourceController, resourceDictionary;
 
+static void cleanUTF8String(char * str) {
+	char *p = str;
+	char *w = str;
+	while(*p != '\0'){
+		if(0x80 & *p){
+			// Drop multi-byte chars
+			p++;
+			continue;
+		}
+		*w = tolower(*p);
+		if(!isalnum(*w)) {
+			*w = '-';
+		}
+		p++;
+		w++;
+	}
+	*w = '\0';
+}
+
 - (id)init {
     if (self = [super init]) {
 		
@@ -272,7 +294,8 @@ void cb_lost_node(bionet_node_t *c_node) {
 		habController = nil;
 		nodeController = nil;
 
-		
+		//bool hab_enabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"hab_enabled"];
+		bool hab_enabled = TRUE;
 		//hab_type_filter = NULL;
 		//hab_filter = NULL;
 		//node_filter = NULL;
@@ -283,8 +306,97 @@ void cb_lost_node(bionet_node_t *c_node) {
 		resourceDictionary = [[NSMutableDictionary alloc]init];
 
 		NSString *secpath = [[NSBundle mainBundle] pathForResource:@"sec-dir" ofType:nil];
+		
 		bool sec_required = [[NSUserDefaults standardUserDefaults] boolForKey:@"ssl_required"];
+		//bool hab_secure = [[NSUserDefaults standardUserDefaults] boolForKey:@"hab_secure"];
+		bool hab_secure = FALSE;
+
+		
 		bionet_init_security([secpath UTF8String], sec_required);
+		
+		if(hab_enabled){			
+			UIDevice *dev = [UIDevice currentDevice];
+			char * c_habtype = strdup([dev.model UTF8String]);
+			char * c_hostname = strdup([dev.name UTF8String]);
+			cleanUTF8String(c_habtype);
+			cleanUTF8String(c_hostname);
+			
+			bionet_hab_t * c_hab = bionet_hab_new(c_habtype, c_hostname);
+			if(NULL == c_hab) {
+				fprintf(stderr, "error creating hab");
+				exit(1);
+			}
+			
+			if(hab_secure) {
+				hab_init_security([secpath UTF8String], sec_required);
+			}
+			
+			hab_fd = hab_connect(c_hab);
+			if(hab_fd < 0) {
+				fprintf(stderr, "error connecting to hab");
+				exit(1);
+			}
+			
+			hab_read();
+			
+			bionet_node_t * c_node = bionet_node_new(c_hab, "info");
+			if (c_node == NULL) {
+				fprintf(stderr, "Error creating node\n");
+				exit(1);
+			}
+			
+			const char * c_name = [dev.name UTF8String]; 			
+			const char * c_sys_vers = [[NSString stringWithFormat:@"%@ %@", dev.systemName, dev.systemVersion] UTF8String];  
+			const char * c_uuid = [[UIDevice currentDevice].uniqueIdentifier UTF8String];  			
+			
+			const char * vals[] = {
+				c_name,
+				c_sys_vers,
+				c_uuid
+			};
+			
+			const char * names[] = {
+				"name",
+				"system",
+				"dev-id"
+			};
+			
+			int i;
+			for(i=0;i<SIZEOF(names);i++){
+				bionet_resource_t * c_resource = bionet_resource_new(c_node, 
+											   BIONET_RESOURCE_DATA_TYPE_STRING, 
+											   BIONET_RESOURCE_FLAVOR_SENSOR, names[i]);
+				if (c_resource == NULL) {
+					fprintf(stderr, "Error creating Resource\n");
+					exit(1);
+				}
+				
+				int r = bionet_node_add_resource(c_node, c_resource);
+				if (r != 0) {
+					fprintf(stderr, "Error adding Resource\n");
+				}
+				
+
+				bionet_value_t * c_value = bionet_value_new_str(c_resource, strdup(vals[i]));
+				
+				bionet_datapoint_t * c_datapoint = bionet_datapoint_new(c_resource, c_value, NULL);
+				bionet_resource_add_datapoint(c_resource, c_datapoint);
+			}
+			
+			if (bionet_hab_add_node(c_hab, c_node) != 0) {
+				fprintf(stderr, "HAB failed to add Node\n");
+				exit(1);
+			}
+			
+			if (hab_report_new_node(c_node) != 0) {
+				// printf("error reporting Node to the NAG: %s\n", hab_get_nag_error());
+			}
+			
+			
+			
+			hab_read();
+			
+		}
 		
 		// this must happen before anything else
 		bionet_fd = bionet_connect();
@@ -406,6 +518,8 @@ void cb_lost_node(bionet_node_t *c_node) {
 }
 
 - (void)bionetEventLoop {
+	int fdsel = bionet_fd>hab_fd?bionet_fd:hab_fd;
+	
 	while(isRunning) {
 		NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
 		int r;
@@ -413,8 +527,11 @@ void cb_lost_node(bionet_node_t *c_node) {
 		
 		FD_ZERO(&readers);
 		FD_SET(bionet_fd, &readers);
+		FD_SET(hab_fd, &readers);
 		
-		r = select(bionet_fd + 1, &readers, NULL, NULL, NULL);
+		//struct timeval timeout = { 1, 0 } ;
+		
+		r = select(fdsel + 1, &readers, NULL, NULL, NULL);
 		
 		if ((r < 0) && (errno != EINTR)) {
 			fprintf(stderr, "error from select: %s", strerror(errno));
@@ -424,6 +541,7 @@ void cb_lost_node(bionet_node_t *c_node) {
 		
 		@synchronized(self) {
 			bionet_read();
+			hab_read();
 		}
 		
 		/*

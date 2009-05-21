@@ -22,6 +22,8 @@ ac_cv_env_AVAHI_COMPAT_LIBDNS_SD_CFLAGS_set=
 ac_cv_env_AVAHI_COMPAT_LIBDNS_SD_CFLAGS_value=
 ac_cv_env_AVAHI_COMPAT_LIBDNS_SD_LIBS_set=
 ac_cv_env_AVAHI_COMPAT_LIBDNS_SD_LIBS_value=
+ac_cv_env_BIONET_BUILD_TAG_set=
+ac_cv_env_BIONET_BUILD_TAG_value=
 ac_cv_env_BLUEZ_CFLAGS_set=
 ac_cv_env_BLUEZ_CFLAGS_value=
 ac_cv_env_BLUEZ_LIBS_set=
@@ -60,6 +62,8 @@ ac_cv_env_OPENSSL_LIBS_set=
 ac_cv_env_OPENSSL_LIBS_value=
 ac_cv_env_PKG_CONFIG_set=set
 ac_cv_env_PKG_CONFIG_value=/opt/local/bin/pkg-config
+ac_cv_env_PYTHON_VERSION_set=
+ac_cv_env_PYTHON_VERSION_value=
 ac_cv_env_build_alias_set=
 ac_cv_env_build_alias_value=
 ac_cv_env_host_alias_set=set
@@ -82,6 +86,7 @@ ac_cv_header_unistd_h=${ac_cv_header_unistd_h=yes}
 ac_cv_host=${ac_cv_host=arm-apple-darwin}
 ac_cv_lib_sqlite3_sqlite3_libversion_number=${ac_cv_lib_sqlite3_sqlite3_libversion_number=yes}
 ac_cv_objext=${ac_cv_objext=o}
+ac_cv_path_BAZAAR=${ac_cv_path_BAZAAR=/usr/bin/bzr}
 ac_cv_path_CCACHE=${ac_cv_path_CCACHE=no}
 ac_cv_path_DOT=${ac_cv_path_DOT=/opt/local/bin/dot}
 ac_cv_path_DOXYGEN=${ac_cv_path_DOXYGEN=no}

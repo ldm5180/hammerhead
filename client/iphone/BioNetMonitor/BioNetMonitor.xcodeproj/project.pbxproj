@@ -24,6 +24,8 @@
 		7406B0760F715A60007126DA /* libgthread-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7406B0710F715A60007126DA /* libgthread-2.0.a */; };
 		7436ADDD0FBB3B9300D805A4 /* lock.png in Resources */ = {isa = PBXBuildFile; fileRef = 7436ADDB0FBB3B9300D805A4 /* lock.png */; };
 		7436ADDE0FBB3B9300D805A4 /* unlock.png in Resources */ = {isa = PBXBuildFile; fileRef = 7436ADDC0FBB3B9300D805A4 /* unlock.png */; };
+		7443CB840FC4A7D4007A17A0 /* libhab.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7443CB830FC4A7D4007A17A0 /* libhab.a */; };
+		744F268A0FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 744F26890FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a */; };
 		74609D500FB4734E00A8B792 /* ResourceDetailCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 74609D4F0FB4734E00A8B792 /* ResourceDetailCell.m */; };
 		74724FD60F7856680061BF62 /* BionetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC50F7856680061BF62 /* BionetManager.m */; };
 		74724FD70F7856680061BF62 /* BioNetMonitorAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC70F7856680061BF62 /* BioNetMonitorAppDelegate.m */; };
@@ -66,6 +68,8 @@
 		7406B0710F715A60007126DA /* libgthread-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libgthread-2.0.a"; path = "/opt/local/i686-apple-darwin/lib/libgthread-2.0.a"; sourceTree = "<absolute>"; };
 		7436ADDB0FBB3B9300D805A4 /* lock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lock.png; sourceTree = "<group>"; };
 		7436ADDC0FBB3B9300D805A4 /* unlock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unlock.png; sourceTree = "<group>"; };
+		7443CB830FC4A7D4007A17A0 /* libhab.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhab.a; path = ../bionet_sdk/usr/local/lib/libhab.a; sourceTree = SOURCE_ROOT; };
+		744F26890FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libcal-mdnssd-bip-server.a"; path = "../bionet_sdk/usr/local/lib/libcal-mdnssd-bip-server.a"; sourceTree = "<group>"; };
 		74609D4E0FB4734E00A8B792 /* ResourceDetailCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceDetailCell.h; sourceTree = "<group>"; };
 		74609D4F0FB4734E00A8B792 /* ResourceDetailCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ResourceDetailCell.m; sourceTree = "<group>"; };
 		74724FC40F7856680061BF62 /* BionetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BionetManager.h; sourceTree = "<group>"; };
@@ -124,6 +128,8 @@
 				74912E0E0F86BB7000261D63 /* libiconv.2.dylib in Frameworks */,
 				74FB74710FC35C9B009146AD /* libssl.a in Frameworks */,
 				74FB74730FC35CB5009146AD /* libcrypto.a in Frameworks */,
+				7443CB840FC4A7D4007A17A0 /* libhab.a in Frameworks */,
+				744F268A0FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -185,7 +191,9 @@
 				7406B0450F71566A007126DA /* libbionet-asn.a */,
 				7406B0460F71566A007126DA /* libbionet-util.a */,
 				7406B0470F71566A007126DA /* libbionet.a */,
+				7443CB830FC4A7D4007A17A0 /* libhab.a */,
 				7406B0480F71566A007126DA /* libcal-mdnssd-bip-client.a */,
+				744F26890FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a */,
 				7406B06E0F715A60007126DA /* libglib-2.0.a */,
 				7406B06D0F715A60007126DA /* libgio-2.0.a */,
 				7406B06F0F715A60007126DA /* libgmodule-2.0.a */,
@@ -335,6 +343,10 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = BioNetMonitor_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../bionet_sdk/usr/local/lib\"",
+				);
 				PRODUCT_NAME = BioNetMonitor;
 			};
 			name = Debug;
@@ -353,6 +365,7 @@
 					"\"$(SRCROOT)/../bionet_simulator_sdk/usr/local/lib\"",
 					"\"/opt/local/i686-apple-darwin/lib\"",
 					"\"/opt/local/arm-apple-darwin/lib\"",
+					"\"$(SRCROOT)/../bionet_sdk/usr/local/lib\"",
 				);
 				PRODUCT_NAME = BioNetMonitor;
 			};
@@ -405,6 +418,10 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = BioNetMonitor_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../bionet_sdk/usr/local/lib\"",
+				);
 				PRODUCT_NAME = BioNetMonitor;
 			};
 			name = Buildbot;

@@ -335,7 +335,7 @@
 		bionetManager.resourceController = detailViewController;
 		detailViewController.resList = [node contentsAsArrayOfResources];
 		//detailViewController.subTitle = node.ident;
-		detailViewController.subTitle = [NSString localizedStringWithFormat:@"%@.%@.%@", hab_type_filter, myTitle, node.ident];
+		detailViewController.subTitle = [NSString localizedStringWithFormat:@"%@.%@.%@", hab_type_filter, hab_id_filter, node.ident];
 		detailViewController.hab_type_filter = hab_type_filter;
 		detailViewController.hab_id_filter = hab_id_filter;
 		detailViewController.node_id_filter = myTitle;

@@ -145,7 +145,9 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 	cell.value.text = res.valueStr;
 	cell.value.delegate = self;
-	cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+	if(res.isNumeric){
+		cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+	}
     return cell;
 }
 
@@ -155,7 +157,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 		resource = (Resource*)[resList objectAtIndex:indexPath.row];
 	}	
 
-	if(resource){
+	if(resource && resource.isNumeric){
 		graphViewController = [[GraphViewController alloc] init];
 		graphViewController.title = [resource name];
 

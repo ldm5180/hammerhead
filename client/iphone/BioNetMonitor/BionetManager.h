@@ -21,6 +21,7 @@
 	NSMutableDictionary *resourceDictionary;
 	
 	int bionet_fd;
+	int hab_fd;
 }
 
 @property (retain, readwrite) id habTypeController;

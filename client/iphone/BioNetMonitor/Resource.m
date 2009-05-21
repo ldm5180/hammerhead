@@ -67,7 +67,7 @@
 
 
 - (void) pushDataPoint: (bionet_datapoint_t*) ptr {
-	self.valueStr = [[NSString alloc] initWithCString: bionet_value_to_str(bionet_datapoint_get_value(ptr))];	
+	self.valueStr = [[NSString alloc] initWithUTF8String: bionet_value_to_str(bionet_datapoint_get_value(ptr))];	
 	DataPoint* datapoint = [[DataPoint alloc] initWithPtr: (bionet_datapoint_t*)ptr];
 	self.timestamp = [NSDate dateWithTimeIntervalSince1970: datapoint.timestamp];
 	[dataPoints addObject:datapoint];
