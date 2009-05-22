@@ -66,6 +66,7 @@ void usage(FILE * fp) {
 	    "usage: syshealth-hab [OPTIONS]\n"
 	    "\n"
 	    "-d,--delay <sec>         Wait N seconds between updates.  Default is 30\n"
+	    "-i,--info                Publish Bionet library information\n"
 	    "-h,--help                Show this help and exit\n"
 	    "-s,--security-dir <dir>  Directory containing security certificates\n"
 	    "-v,--version             Show the version number\n");
@@ -82,6 +83,7 @@ int main(int argc, char **argv) {
 
     int bionet_fd;
     char * security_dir = NULL;
+    int publish_info = 0;
 
     bionet_log_context_t log_context = {
         destination: BIONET_LOG_TO_SYSLOG,
@@ -103,10 +105,11 @@ int main(int argc, char **argv) {
 	    {"verison", 0, 0, 'v'},
 	    {"delay", 1, 0, 'd'},
 	    {"security-dir", 1, 0, 's'},
+	    {"info", 0, 0, 'i'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?vhd:s:", long_options, &i);
+	c = getopt_long(argc, argv, "?vhid:s:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -124,6 +127,10 @@ int main(int argc, char **argv) {
 		g_log("", G_LOG_LEVEL_ERROR, "Failed to convert delay: %m");
 		return 1;
 	    }
+	    break;
+
+	case 'i':
+	    publish_info = 1;
 	    break;
 
 	case 's':
@@ -165,7 +172,6 @@ int main(int argc, char **argv) {
         }
     }
 
-
     // 
     // make the Node and add the Resources
     //
@@ -192,9 +198,13 @@ int main(int argc, char **argv) {
 
 
     // 
-    // report the new Node to the NAG
+    // report the new Node 
     // 
-
+    if (publish_info) {
+	if (hab_publish_info(hab, BIONET_INFO_VERSION_FLAG)) {
+	    g_log("", G_LOG_LEVEL_ERROR, "hab error adding a node!");
+	}
+    }
     if (bionet_hab_add_node(hab, node)) g_log("", G_LOG_LEVEL_ERROR, "hab error adding a node!");
     if (hab_report_new_node(node)) g_log("", G_LOG_LEVEL_ERROR, "hab error reporting a new node!");
     if (hab_report_datapoints(node)) g_log("", G_LOG_LEVEL_ERROR, "hab error reporting datapoints!");
@@ -206,7 +216,6 @@ int main(int argc, char **argv) {
     //
     // main loop
     //
-
 
     while (1) {
         int i, r;
