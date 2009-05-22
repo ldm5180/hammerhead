@@ -11,6 +11,6 @@
 
 void print_bionet_version(FILE *stream);
 
-void bionet_version_get(char * version);
+void bionet_version_get(char ** version);
 
 #endif /* BIONET_VERSION_H */

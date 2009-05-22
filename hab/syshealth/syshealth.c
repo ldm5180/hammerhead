@@ -165,8 +165,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    hab_publish_version(hab, 1);
-
     // 
     // make the Node and add the Resources
     //
@@ -193,9 +191,10 @@ int main(int argc, char **argv) {
 
 
     // 
-    // report the new Node to the NAG
+    // report the new Node 
     // 
 
+    if (hab_publish_info(hab, BIONET_INFO_VERSION_FLAG)) g_log("", G_LOG_LEVEL_ERROR, "hab error adding a node!");
     if (bionet_hab_add_node(hab, node)) g_log("", G_LOG_LEVEL_ERROR, "hab error adding a node!");
     if (hab_report_new_node(node)) g_log("", G_LOG_LEVEL_ERROR, "hab error reporting a new node!");
     if (hab_report_datapoints(node)) g_log("", G_LOG_LEVEL_ERROR, "hab error reporting datapoints!");
@@ -207,7 +206,6 @@ int main(int argc, char **argv) {
     //
     // main loop
     //
-
 
     while (1) {
         int i, r;

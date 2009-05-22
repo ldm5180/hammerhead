@@ -247,10 +247,11 @@ int hab_init_security(const char * dir, int require);
  * 
  * @param[in] hab Pointer to HAB structure to represent this process to
  * the Bionet network.
- * @param[in] publish 0 Do not publish, 1 publish (default: 0)
+ * @param[in] flags Union of flags of Bionet info to publish
  *
  */
-void hab_publish_version(bionet_hab_t * hab, const int publish);
+#define BIONET_INFO_VERSION_FLAG 0x00000001
+int hab_publish_info(bionet_hab_t * hab, const uint32_t flags);
 
 
 #endif // __HARDWARE_ABSTRACTOR_H
