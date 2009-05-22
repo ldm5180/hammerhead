@@ -10,3 +10,9 @@
 void print_bionet_version(FILE *stream) {
     fprintf(stream, "%s%s\n", BIONET_VERSION, BIONET_BUILD_STR);
 } /* print_bionet_version() */
+
+
+void bionet_version_get(char * version) {
+    snprintf(version, 256,
+	     "%s%s", BIONET_VERSION, BIONET_BUILD_STR);
+}

@@ -21,8 +21,9 @@ libhab_la_SOURCES =      \
     register-callback.c  \
     cal-callback.c       \
     cal-topic-matches.c  \
-    global.c \
-    security.c
+    global.c             \
+    security.c           \
+    version.c
 
 libhab_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(CFLAGS_BIONET_CAL_SERVER) $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) 
 libhab_la_LIBADD = $(AM_LDADD) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(GLIB20_LIBS) $(DBUS_LIBS)

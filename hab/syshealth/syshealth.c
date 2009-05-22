@@ -165,6 +165,7 @@ int main(int argc, char **argv) {
         }
     }
 
+    hab_publish_version(hab, 1);
 
     // 
     // make the Node and add the Resources

@@ -242,6 +242,17 @@ void hab_register_callback_stream_unsubscription(void (*cb_stream_unsubscription
 int hab_init_security(const char * dir, int require);
 
 
+/**
+ * @brief Publish the Bionet version information
+ * 
+ * @param[in] hab Pointer to HAB structure to represent this process to
+ * the Bionet network.
+ * @param[in] publish 0 Do not publish, 1 publish (default: 0)
+ *
+ */
+void hab_publish_version(bionet_hab_t * hab, const int publish);
+
+
 #endif // __HARDWARE_ABSTRACTOR_H
 
 
