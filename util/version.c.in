@@ -3,6 +3,9 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
 #include "bionet-version.h"
 
 #define BIONET_BUILD_STR "@BIONET_BUILD_TAG@"
@@ -12,7 +15,10 @@ void print_bionet_version(FILE *stream) {
 } /* print_bionet_version() */
 
 
-void bionet_version_get(char * version) {
-    snprintf(version, 256,
+void bionet_version_get(char ** version) {
+    if (NULL == *version) {
+	*version = malloc(strlen(BIONET_VERSION) + strlen(BIONET_BUILD_STR) + 1);
+    }
+    snprintf(*version, strlen(BIONET_VERSION) + strlen(BIONET_BUILD_STR) + 1,
 	     "%s%s", BIONET_VERSION, BIONET_BUILD_STR);
 }
