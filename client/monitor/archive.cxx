@@ -73,7 +73,7 @@ void Archive::recordSample(bionet_datapoint_t* dp) {
 
     hist = archive->value(key);
     if (hist == NULL) {
-        qDebug("unable to recored sample, %s does not exist in archive", 
+        qDebug("unable to record sample, %s does not exist in archive", 
                 qPrintable(key));
         return;
     }
