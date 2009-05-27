@@ -46,8 +46,12 @@ int kill_kin()
 
 
     r = read(pid_fd, buffer, sizeof(buffer));
-    r = sscanf(buffer, "%9d", &pid);
     close(pid_fd);
+
+    r = strtol(buffer, NULL, 0);
+    if (LONG_MIN == r || LONG_MAX == r) {
+	g_error("Error reading PID: %m");
+    }
 
     if (r != 1)
     {
@@ -80,7 +84,9 @@ int write_pidfile()
     struct sigaction sa;
 
 
-    kill_kin();
+    if (kill_kin()) {
+	g_warning("Can't kill process: %m");
+    }
 
     pid_fd = open(PIDFILE_NAME, O_WRONLY | O_CREAT | O_EXCL, 0644);
     if (pid_fd < 0)
