@@ -334,7 +334,7 @@ static void cleanUTF8String(char * str) {
 				exit(1);
 			}
 			
-			hab_read();
+			//hab_read();
 			
 			bionet_node_t * c_node = bionet_node_new(c_hab, "info");
 			if (c_node == NULL) {
@@ -546,8 +546,12 @@ static void cleanUTF8String(char * str) {
 		}
 		
 		@synchronized(self) {
-			bionet_read();
-			hab_read();
+			if(FD_ISSET(bionet_fd, &readers)) {
+				bionet_read();
+			}
+			if(FD_ISSET(hab_fd, &readers)) {
+				hab_read();
+			}
 		}
 		
 		/*

@@ -186,7 +186,11 @@
 }
 
 - (id)objectInListAtIndex:(unsigned)theIndex {
-    return [list objectAtIndex:theIndex];
+	if(theIndex < list.count){
+		return [list objectAtIndex:theIndex];
+	} else {
+		return nil;
+	}
 }
 
 			/*
@@ -221,6 +225,10 @@
 // Customize the appearance of table view cells.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 
+	if(indexPath.row >= list.count){
+		return nil;
+	}
+	
 	NSString * CellIdentifier;
 	if(depth >= 1){
 		CellIdentifier = @"rvcLock";

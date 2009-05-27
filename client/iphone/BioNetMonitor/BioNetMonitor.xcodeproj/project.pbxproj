@@ -39,6 +39,7 @@
 		7474510A0FA909BE0033B682 /* bionet_inverse.png in Resources */ = {isa = PBXBuildFile; fileRef = 747451090FA909BE0033B682 /* bionet_inverse.png */; };
 		74912E0B0F86BB2700261D63 /* libintl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0A0F86BB2700261D63 /* libintl.a */; };
 		74912E0E0F86BB7000261D63 /* libiconv.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0D0F86BB7000261D63 /* libiconv.2.dylib */; };
+		74E85C430FCCEC5C0015C37B /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 74E85C420FCCEC5C0015C37B /* Entitlements.plist */; };
 		74F1AC170FAF58EE00CA2664 /* GraphView.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC160FAF58EE00CA2664 /* GraphView.m */; };
 		74F1AC1F0FAF597F00CA2664 /* GraphViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 74F1AC1E0FAF597F00CA2664 /* GraphViewController.xib */; };
 		74F1AC270FAF5BC900CA2664 /* GraphViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC260FAF5BC900CA2664 /* GraphViewController.m */; };
@@ -93,6 +94,7 @@
 		74912E0D0F86BB7000261D63 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
 		74CA85760F71674F00FEE5E2 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
 		74CA857C0F7167F700FEE5E2 /* libintl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libintl.a; path = "/opt/local/i686-apple-darwin/lib/libintl.a"; sourceTree = "<absolute>"; };
+		74E85C420FCCEC5C0015C37B /* Entitlements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Entitlements.plist; sourceTree = "<group>"; };
 		74F1AC160FAF58EE00CA2664 /* GraphView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GraphView.m; sourceTree = "<group>"; };
 		74F1AC180FAF58F900CA2664 /* GraphView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphView.h; sourceTree = "<group>"; };
 		74F1AC1E0FAF597F00CA2664 /* GraphViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GraphViewController.xib; sourceTree = "<group>"; };
@@ -155,6 +157,7 @@
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
+				74E85C420FCCEC5C0015C37B /* Entitlements.plist */,
 			);
 			name = CustomTemplate;
 			sourceTree = "<group>";
@@ -304,6 +307,7 @@
 				74F1AC1F0FAF597F00CA2664 /* GraphViewController.xib in Resources */,
 				7436ADDD0FBB3B9300D805A4 /* lock.png in Resources */,
 				7436ADDE0FBB3B9300D805A4 /* unlock.png in Resources */,
+				74E85C430FCCEC5C0015C37B /* Entitlements.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -359,17 +363,57 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = BioNetMonitor_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../libbionet/usr/local/lib\"",
-					"\"$(SRCROOT)/../bionet_simulator_sdk/usr/local/lib\"",
-					"\"/opt/local/i686-apple-darwin/lib\"",
-					"\"/opt/local/arm-apple-darwin/lib\"",
-					"\"$(SRCROOT)/../bionet_sdk/usr/local/lib\"",
-				);
 				PRODUCT_NAME = BioNetMonitor;
 			};
 			name = Release;
+		};
+		745E68030FCCF2A700041E04 /* AdHoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CODE_SIGN_ENTITLEMENTS = Entitlements.plist;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: BioServe Space Technologies";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"${macport_sdk}/lib/glib-2.0/include",
+					"${bionet_sdk}/usr/local/include",
+					"${macport_sdk}/include/glib-2.0",
+					"${macport_sdk}/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"${bionet_sdk}/usr/local/lib",
+					"${macport_sdk}/lib/glib-2.0",
+					"${macport_sdk}/lib",
+				);
+				OTHER_LDFLAGS = (
+					"-lintl",
+					"-lz",
+				);
+				PREBINDING = NO;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "EACFB0BA-A527-48D3-A6AD-E11A3FB776B0";
+				SDKROOT = iphoneos2.2.1;
+				bionet_sdk = "";
+				"bionet_sdk[sdk=iphoneos*][arch=*]" = ../bionet_sdk;
+				"bionet_sdk[sdk=iphonesimulator*][arch=*]" = ../bionet_simulator_sdk;
+				macport_sdk = "";
+				"macport_sdk[sdk=iphoneos*][arch=*]" = "/opt/local/arm-apple-darwin";
+				"macport_sdk[sdk=iphonesimulator*][arch=*]" = "/opt/local/i686-apple-darwin";
+			};
+			name = AdHoc;
+		};
+		745E68040FCCF2A700041E04 /* AdHoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = BioNetMonitor_Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_NAME = BioNetMonitor;
+			};
+			name = AdHoc;
 		};
 		74E200B10FC49EF10099CC44 /* Buildbot */ = {
 			isa = XCBuildConfiguration;
@@ -467,12 +511,35 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_ENTITLEMENTS = Entitlements.plist;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: BioServe Space Technologies";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"${macport_sdk}/lib/glib-2.0/include",
+					"${bionet_sdk}/usr/local/include",
+					"${macport_sdk}/include/glib-2.0",
+					"${macport_sdk}/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"${bionet_sdk}/usr/local/lib",
+					"${macport_sdk}/lib/glib-2.0",
+					"${macport_sdk}/lib",
+				);
+				OTHER_LDFLAGS = (
+					"-lintl",
+					"-lz",
+				);
 				PREBINDING = NO;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "EACFB0BA-A527-48D3-A6AD-E11A3FB776B0";
 				SDKROOT = iphoneos2.2.1;
+				bionet_sdk = "";
+				"bionet_sdk[sdk=iphoneos*][arch=*]" = ../bionet_sdk;
+				"bionet_sdk[sdk=iphonesimulator*][arch=*]" = ../bionet_simulator_sdk;
+				macport_sdk = "";
+				"macport_sdk[sdk=iphoneos*][arch=*]" = "/opt/local/arm-apple-darwin";
+				"macport_sdk[sdk=iphonesimulator*][arch=*]" = "/opt/local/i686-apple-darwin";
 			};
 			name = Release;
 		};
@@ -485,6 +552,7 @@
 				1D6058940D05DD3E006BFB54 /* Debug */,
 				74E200B20FC49EF10099CC44 /* Buildbot */,
 				1D6058950D05DD3E006BFB54 /* Release */,
+				745E68040FCCF2A700041E04 /* AdHoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Buildbot;
@@ -495,6 +563,7 @@
 				C01FCF4F08A954540054247B /* Debug */,
 				74E200B10FC49EF10099CC44 /* Buildbot */,
 				C01FCF5008A954540054247B /* Release */,
+				745E68030FCCF2A700041E04 /* AdHoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Buildbot;
