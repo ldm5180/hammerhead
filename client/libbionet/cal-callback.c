@@ -64,6 +64,8 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
             continue;
         }
 
+        // FIXME: see if the resource matches any of the client's datapoint subscriptions
+
         for (j = 0; j < bionet_resource_get_num_datapoints(resource); j++) {
             bionet_datapoint_t *new_dp;
 
