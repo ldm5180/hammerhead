@@ -80,7 +80,10 @@ int write_pidfile()
     struct sigaction sa;
 
 
-    kill_kin();
+    if (kill_kin()) {
+	g_warning("Can't kill process: %m");
+	return -5;
+    }
 
     pid_fd = open(PIDFILE_NAME, O_WRONLY | O_CREAT | O_EXCL, 0644);
     if (pid_fd < 0)
