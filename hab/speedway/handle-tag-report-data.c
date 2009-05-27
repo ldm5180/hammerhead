@@ -61,7 +61,7 @@ static char *get_tag_id (LLRP_tSTagReportData *pTagReportData) {
 
     for (i = 0; i < num_data_bytes; i++) {
         if ((i > 0) && (i%2 == 0)) {
-            strcat(node_id, "-");
+            strncat(node_id, "-", BIONET_NAME_COMPONENT_MAX_LEN - strlen(node_id) - 1);
             node_id_index ++;
         }
 
