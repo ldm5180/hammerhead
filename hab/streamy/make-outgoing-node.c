@@ -70,5 +70,7 @@ void make_outgoing_node(bionet_hab_t *this_hab) {
     bionet_hab_add_node(this_hab, node);
 
     hab_report_new_node(node);
+
+    closedir(d);
 }
 
