@@ -72,7 +72,10 @@ int main(int argc, char** argv)
     /* daemonize if requested */
     if (daemon_mode)
     {
-	daemonize(&verbose);
+	if (daemonize(&verbose)) {
+	    g_error("Can't daemonize. Aborting: %m");
+	    exit(1);
+	}
     }
 
     bionet_fd = hab_connect(mmod_hab);
