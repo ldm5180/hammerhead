@@ -46,8 +46,13 @@ int kill_kin()
 
 
     r = read(pid_fd, buffer, sizeof(buffer));
-    r = sscanf(buffer, "%d", &pid);
     close(pid_fd);
+    if (read <= 0) {
+	g_warning("Error reading %s: %m", PIDFILE_NAME);
+	return -4;
+    }
+
+    r = strtol(buffer, NULL, 0);
 
     if (r != 1)
     {
