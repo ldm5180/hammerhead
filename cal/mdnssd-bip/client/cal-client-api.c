@@ -473,7 +473,7 @@ int cal_client_mdnssd_bip_init_security(const char * dir, int require) {
 	}
     }
 
-    snprintf(prvkey, 1024, "%s/%s", dir, BIP_PRIVATE_KEY);
+    r = snprintf(prvkey, 1024, "%s/%s", dir, BIP_PRIVATE_KEY);
     if (0 >= r || r == 1024) {
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
