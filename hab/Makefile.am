@@ -6,7 +6,7 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = libhab random csa-cp syshealth pal-650 streamy
+SUBDIRS = libhab random csa-cp syshealth pal-650 streamy test-pattern
 
 if ENABLE_ALSA
 SUBDIRS += alsa

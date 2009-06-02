@@ -37,6 +37,8 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_LIBTOOL
+AC_PROG_YACC
+AM_PROG_LEX
 
 CFLAGS="$USERCFLAGS"
 CPPFLAGS="$USERCPPFLAGS"
@@ -392,6 +394,7 @@ AC_CONFIG_FILES([Makefile
                  hab/cpod/Makefile
 		 hab/mmod/Makefile
                  hab/random/Makefile
+                 hab/test-pattern/Makefile
                  hab/alsa/Makefile
                  hab/parsec/Makefile
 		 hab/stethoscope/Makefile

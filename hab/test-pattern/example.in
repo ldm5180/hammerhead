@@ -1,0 +1,25 @@
+
+2009-05-27 15:00:32.361742 + node
+    foo binary Sensor ?
+    goo Float Sensor '10672'
+    hoo String Parameter 'yes'
+    koo int8 Actuator 'yes'
+
+2009-05-27 15:00:33.361742 + name
+    alpha uint8 Sensor '255'
+    beta uint32 Sensor ?
+    gamma int32 Sensor '-8000000'
+
+
+2009-05-27 15:00:33.361742 node foo '1'
+2009-05-27 15:00:33.361742 node goo '.1'
+
+2009-05-27 15:00:34.361742 node foo '10'
+2009-05-27 15:00:34.361742 node goo '.01'
+
+2009-05-27 15:00:35.361742 node hoo 'with some spaces'
+2009-05-27 15:00:35.361742 node foo '0'
+
+2009-05-27 15:00:36.000000 - node 
+2009-05-27 15:00:37.000000 - name 
+
