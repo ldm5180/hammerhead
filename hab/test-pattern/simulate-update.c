@@ -20,6 +20,9 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
     node = bionet_node_new(hab, event->id);
     bionet_hab_add_node(hab, node);
 
+    if (output_mode == OM_BIONET_WATCHER) 
+        g_message("new node: %s", bionet_node_get_name(node));
+
     for (cursor = event->resources; cursor != NULL; cursor = cursor->next) {
         struct resource_info_t* res_info;
         bionet_resource_t *resource;
@@ -34,6 +37,24 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
             value = str_to_value(resource, res_info->data_type, res_info->value);
             dp = bionet_datapoint_new(resource, value, tv);
             bionet_resource_add_datapoint(resource, dp);
+
+            if (output_mode == OM_BIONET_WATCHER) {
+                g_message(
+                    "        %s %s %s = %s @ %s",
+                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                    bionet_resource_get_id(resource),
+                    bionet_value_to_str(value),
+                    bionet_datapoint_timestamp_to_string(dp)
+                );
+            }
+        } else if (output_mode == OM_BIONET_WATCHER) {
+            g_message(
+                "        %s %s %s (no known value)",
+                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                bionet_resource_get_id(resource)
+            );
         }
 
         bionet_node_add_resource(node, resource);
@@ -67,6 +88,17 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
     value = str_to_value(resource, bionet_resource_get_data_type(resource), event->value);
     dp = bionet_datapoint_new(resource, value, tv);
     bionet_resource_add_datapoint(resource, dp);
+
+    if (output_mode == OM_BIONET_WATCHER) {
+        g_message(
+            "%s = %s %s %s @ %s",
+            bionet_resource_get_name(resource),
+            bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+            bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+            bionet_value_to_str(value),
+            bionet_datapoint_timestamp_to_string(dp)
+        );
+    }
 
     hab_report_datapoints(node);
 }
@@ -117,8 +149,13 @@ void simulate_updates(gpointer data, gpointer user_data) {
             struct lost_node_event_t* lost_event;
 
             lost_event = (struct lost_node_event_t*)event->event;
+
+            if (output_mode == OM_BIONET_WATCHER)
+                g_message("lost node: %s", bionet_node_get_name(bionet_hab_get_node_by_id(hab, lost_event->id)));
+
             bionet_hab_remove_node_by_id(hab, lost_event->id);
             hab_report_lost_node(lost_event->id);
+
             break;
         }
         case DATAPOINT_UPDATE: {

@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,10 +26,10 @@ om_t output_mode = OM_NORMAL;
 
 
 void usage(void) {
-    printf("usage: test-pattern-hab [-i ID] [-o OUTPUT_MODE] Filename\n");
+    printf("usage: test-pattern-hab [-i ID] [-o OUTPUT_MODE] FILENAME\n");
     printf("       test-pattern-hab --help\n");
     printf("\n");
-    printf("    Filename is the name of the file containing the config info for the file\n");
+    printf("    FILENAME is the name of the file containing the config info for the file\n");
     printf("    ID is the desired HAB ID\n");
     printf("    OUTPUT_MODE is either \"normal\" (default) or \"bionet-watcher\"\n");
     printf("\n");
@@ -38,19 +39,37 @@ void usage(void) {
 
 
 int main(int argc, char *argv[]) {
-    int opt, bionet_fd;
+    int bionet_fd, i;
     char *file_name;
     char *id = NULL;
     //GSList *events = NULL;
     FILE *fd;
     struct timeval *tv;
 
-    while ((opt = getopt(argc, argv, "ih:")) != -1) {
-        switch (opt) {
+    bionet_log_context_t log_context = {
+        destination: BIONET_LOG_TO_STDOUT,
+        log_limit: G_LOG_LEVEL_INFO
+    };
+    g_log_set_default_handler(bionet_glib_log_handler, &log_context);
+
+    while (1) {
+        int c;
+        static struct option long_options[] = {
+            {"help", 0, 0, 'h'},
+            {"id", 1, 0, 'i'},
+            {"output-mode", 1, 0, 'o'},
+            {0, 0, 0, 0}
+        };
+
+        c = getopt_long(argc, argv, "?hi:o:", long_options, &i);
+        if (c == -1)
+            break;
+
+        switch (c) {
             case 'i':
                 id = optarg;
                 break;
-            case 'o':
+            case 'o': {
                 if (strcmp(optarg, "normal") == 0) 
                     output_mode = OM_NORMAL;
                 if (strcmp(optarg, "bionet-watcher") == 0) 
@@ -59,15 +78,30 @@ int main(int argc, char *argv[]) {
                     g_log("", G_LOG_LEVEL_WARNING, "unknown output mode %s", optarg);
                     usage();
                 }
+                break;
+            }
+            case '?':
             case 'h':
-            default:
                 usage();
+                break;
+            default:
+                break;
         }
     }
 
-    file_name = argv[optind];
-    if (file_name == NULL) {
-        g_log("", G_LOG_LEVEL_WARNING, "need an input file\n");
+    if (optind == argc-1) {
+        file_name = argv[optind];
+        if (file_name == NULL) {
+            g_log("", G_LOG_LEVEL_WARNING, "need an input file");
+            usage();
+            exit(1);
+        }
+    } else if (optind < argc-1 ) {
+        g_log("", G_LOG_LEVEL_WARNING, "too many input files");
+        usage();
+        exit(1);
+    } else {
+        g_log("", G_LOG_LEVEL_WARNING, "need at least a single input file");
         usage();
         exit(1);
     }
@@ -108,7 +142,7 @@ int main(int argc, char *argv[]) {
             hab_read();
 
             now = time(NULL);
-        } while (now - start < 2);
+        } while (now - start < 1);
     }
 
     //
@@ -116,8 +150,14 @@ int main(int argc, char *argv[]) {
     // 
 
     yyin = fopen(file_name, "r");
+    if (yyin == NULL) {
+        g_log("", G_LOG_LEVEL_ERROR, "unable to open file '%s': %s", file_name, strerror(errno));
+    }
     yyrestart(yyin);
     yyparse(fd);
+
+    if (output_mode == OM_BIONET_WATCHER)
+        g_message("new hab: %s", bionet_hab_get_name(hab));
 
     //
     // dump for each node
@@ -125,6 +165,9 @@ int main(int argc, char *argv[]) {
 
     tv = NULL;
     g_slist_foreach(events, simulate_updates, &tv);
+
+    if (output_mode == OM_BIONET_WATCHER)
+        g_message("lost hab: %s", bionet_hab_get_name(hab));
 
     hab_disconnect();
 
