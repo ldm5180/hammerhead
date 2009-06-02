@@ -163,7 +163,6 @@ fi
 AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
 
 
-o
 ###
 # 
 # make sure there is sqlite3 (required for BDM)
