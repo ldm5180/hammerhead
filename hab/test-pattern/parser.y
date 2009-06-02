@@ -6,8 +6,7 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include "bionet.h"
-//#include "bionet-resource.h"
+#include "bionet-util.h"
 #include "test-pattern-hab.h"
 
 int yylex();
@@ -47,6 +46,9 @@ line:
     TIMEVAL REMOVE NAME { 
         $<event_v>$ = remove_node_event($<tv_v>1, $<string_v>3); 
     }
+  | TIMEVAL ADD NAME { 
+        $<event_v>$ = add_node_event($<tv_v>1, $<string_v>3, NULL); 
+    }
   | TIMEVAL ADD NAME resources { 
         $<event_v>$ = add_node_event($<tv_v>1, $<string_v>3, $<gslist_v>4); 
     }
@@ -56,8 +58,7 @@ line:
     ;
 
 resources:
-    /* empty */ { $<gslist_v>$ = NULL; }
-  | resource { 
+    resource { 
         GSList *resources = NULL;
         resources = g_slist_append(resources, $<resource_info_v>1);
         $<gslist_v>$ = resources;

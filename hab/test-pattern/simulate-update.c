@@ -9,8 +9,8 @@
 #include <glib.h>
 
 #include "test-pattern-hab.h"
-#include "bionet.h"
 #include "bionet-util.h"
+#include "hardware-abstractor.h"
 
 
 void new_node(struct new_node_event_t *event, struct timeval *tv) {

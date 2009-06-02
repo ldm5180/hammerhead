@@ -18,16 +18,19 @@
 
 #include "test-pattern-hab.h"
 #include "hardware-abstractor.h"
-#include "bionet.h"
+#include "bionet-util.h"
 
+
+om_t output_mode = OM_NORMAL;
 
 
 void usage(void) {
-    printf("usage: test-pattern-hab [-i ID] Filename\n");
+    printf("usage: test-pattern-hab [-i ID] [-o OUTPUT_MODE] Filename\n");
     printf("       test-pattern-hab --help\n");
     printf("\n");
     printf("    Filename is the name of the file containing the config info for the file\n");
     printf("    ID is the desired HAB ID\n");
+    printf("    OUTPUT_MODE is either \"normal\" (default) or \"bionet-watcher\"\n");
     printf("\n");
 }
 
@@ -47,6 +50,15 @@ int main(int argc, char *argv[]) {
             case 'i':
                 id = optarg;
                 break;
+            case 'o':
+                if (strcmp(optarg, "normal") == 0) 
+                    output_mode = OM_NORMAL;
+                if (strcmp(optarg, "bionet-watcher") == 0) 
+                    output_mode = OM_BIONET_WATCHER;
+                else {
+                    g_log("", G_LOG_LEVEL_WARNING, "unknown output mode %s", optarg);
+                    usage();
+                }
             case 'h':
             default:
                 usage();

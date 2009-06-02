@@ -14,28 +14,22 @@
 #include <glib.h>
 
 #include "hardware-abstractor.h"
-#include "bionet.h"
+#include "bionet-util.h"
 
 #include "parser.h"
+
+typedef enum {
+    OM_NORMAL,
+    OM_BDM_CLIENT,
+    OM_BIONET_WATCHER
+} om_t;
+
 
 typedef enum {
     NEW_NODE,
     DATAPOINT_UPDATE,
     LOST_NODE
 } event_type;
-
-typedef enum {
-    BINARY,
-    UINT8,
-    INT8,
-    UINT16,
-    INT16,
-    UINT32,
-    INT32,
-    FLOAT,
-    DOUBLE,
-    STRING
-} value_type;
 
 struct event_t {
     event_type type;
@@ -66,9 +60,10 @@ struct datapoint_event_t {
     char *value;
 };
 
-/* globals...booo */
 bionet_hab_t *hab;
 GSList *events;
+
+extern om_t output_mode;
 
 gint timeval_diff(gconstpointer a, gconstpointer b);
 gboolean dump_tree(gpointer key, gpointer value, gpointer data);

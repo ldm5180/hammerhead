@@ -4,7 +4,7 @@
 #include <string.h>
 
 
-#include "bionet.h"
+#include "bionet-util.h"
 
 bionet_value_t *str_to_value(bionet_resource_t *resource, bionet_resource_data_type_t data_type, char *str) {
     bionet_value_t *value;

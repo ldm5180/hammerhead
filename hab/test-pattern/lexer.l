@@ -7,7 +7,7 @@
 #include <glib.h>
 
 
-#include "bionet.h"
+#include "bionet-util.h"
 #include "test-pattern-hab.h"
 #include "parser.h"
 
