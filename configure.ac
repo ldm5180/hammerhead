@@ -163,8 +163,7 @@ fi
 AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
 
 
-
-
+o
 ###
 # 
 # make sure there is sqlite3 (required for BDM)
@@ -358,6 +357,11 @@ if test "x$ENABLE_XSLT" = "xyes"; then
    AC_PATH_PROG(XSLTPROC, xsltproc, no)
    AM_CONDITIONAL([HAVE_XSLTPROC], [test "x$XSLTPROC" != "xno"])
 fi
+
+#bison & flex
+AM_CONDITIONAL([ENABLE_BISON], [test "x$ac_cv_prog_YACC" != "x"])
+AM_CONDITIONAL([ENABLE_FLEX], [test "x$ac_cv_prog_LEX" != "x"])
+
 
 # Checks for library functions.
 if test "$cross_compiling" != yes; then
