@@ -39,6 +39,7 @@ int line_num = 0;
 [Bb][Ii][Nn][Aa][Rr][Yy]                { yylval.datatype_v = BIONET_RESOURCE_DATA_TYPE_BINARY; return DATATYPE; }
 [-a-zA-Z0-9/._:?*]+                     { yylval.string_v = strdup(yytext); return NAME; }
 \n                                      { line_num ++; }
+[ \t]                                   { }
 
 %%
 
