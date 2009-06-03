@@ -56,7 +56,7 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
     // Walk through and report all datapoints
     for (i = 0; i < bionet_node_get_num_resources(node); i++) {
         bionet_resource_t* resource;
-        int j;
+        GSList *j;
 
         resource = bionet_node_get_resource_by_index(node, i);
         if (resource == NULL) {
@@ -64,19 +64,27 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
             continue;
         }
 
-        // FIXME: see if the resource matches any of the client's datapoint subscriptions
+        // does the resource match any of the client's datapoint subscriptions?
+        for (j = libbionet_datapoint_subscriptions; j != NULL; j = j->next) {
+            libbionet_datapoint_subscription_t *sub = j->data;
 
-        for (j = 0; j < bionet_resource_get_num_datapoints(resource); j++) {
-            bionet_datapoint_t *new_dp;
+            if (bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, 
+                sub->hab_type, sub->hab_id, sub->node_id, sub->resource_id)) {
+                int k;
 
-            new_dp = bionet_resource_get_datapoint_by_index(resource, j);
-            if (new_dp == NULL) {
-                // an error has been logged already
-                continue;
-            }
+                for (k = 0; k < bionet_resource_get_num_datapoints(resource); k++) {
+                    bionet_datapoint_t *new_dp;
 
-            if (libbionet_callback_datapoint != NULL) {
-                libbionet_callback_datapoint(new_dp);
+                    new_dp = bionet_resource_get_datapoint_by_index(resource, k);
+                    if (new_dp == NULL) {
+                        // an error has been logged already
+                        continue;
+                    }
+
+                    if (libbionet_callback_datapoint != NULL) {
+                        libbionet_callback_datapoint(new_dp);
+                    }
+                }
             }
         }
     }
