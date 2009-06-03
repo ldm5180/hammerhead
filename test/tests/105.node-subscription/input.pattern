@@ -1,0 +1,59 @@
+
+2009-06-03 15:00:00.000000 + greek
+    alpha binary Sensor ?
+    beta uint8 Sensor ?
+    gamma int8 Sensor ?
+    delta uint16 Sensor ?
+    epsilon int16 Sensor ?
+    zeta uint32 Sensor ?
+    eta int32 Sensor ?
+    theta double Sensor ?
+    iota float Sensor ?
+    kappa string Sensor 'yes'
+
+2009-06-03 15:00:01.000000 + planets
+    mercury binary parameter '0'
+    venus uint8 Parameter '1'
+    earth int8 paRAmeTEr '-10'
+    mars uint16 PARAMETER '100'
+    jupiter int16 Actuator '-1000'
+    saturn uint32 ACTUATOR '10000'
+    uranus int32 ActuatoR '-100000'
+    neptune double ACtuaTOR '-100000.1'
+    pluto string actuator 'not really'
+
+2009-06-03 15:00:02.000000 greek alpha '0'
+2009-06-03 15:00:02.000000 greek beta '-1'
+2009-06-03 15:00:02.000000 greek gamma '-1'
+2009-06-03 15:00:02.000000 greek delta '-1'
+2009-06-03 15:00:02.000000 greek epsilon '-1'
+2009-06-03 15:00:02.000000 greek zeta '-1'
+2009-06-03 15:00:03.000000 greek alpha '1'
+
+2009-06-03 15:00:04.000000 + dwarves
+    doc int32 sensor '1'
+    grumpy int32 sensor '1'
+    happy int32 sensor '2'
+    sleepy int32 sensor '3'
+    bashful int32 sensor '5'
+    sneezy int32 sensor '8'
+    dopey int32 sensor '13'
+
+2009-06-03 15:00:04.000000 dwarves sneezy '21'
+2009-06-03 15:00:04.000000 dwarves dopey '34'
+2009-06-03 15:00:04.000000 greek zeta '0'
+2009-06-03 15:00:04.000000 planets mercury '1'
+2009-06-03 15:00:04.000000 planets pluto 'a planet,'
+2009-06-03 15:00:04.000000 greek kappa 'k'
+
+2009-06-03 15:00:05.000000 - greek
+
+2009-06-03 15:00:06.000000 dwarves grumpy '55'
+2009-06-03 15:00:06.000000 dwarves sleepy '89'
+2009-06-03 15:00:06.000000 dwarves bashful '144'
+2009-06-03 15:00:06.000000 dwarves sneezy '233'
+2009-06-03 15:00:07.000000 planets pluto 'shhhh'
+2009-06-03 15:00:07.000000 dwarves sleepy '377'
+
+2009-06-03 15:00:09.000000 - dwarves
+2009-06-03 15:00:10.000000 - planets
