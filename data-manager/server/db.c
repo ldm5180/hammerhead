@@ -25,6 +25,7 @@
 static sqlite3 *db = NULL;
 
 extern char * database_file;
+char bdm_id[256] = { 0 };
 
 
 int db_init(void) {
@@ -376,6 +377,8 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
 //	    bionet_resource_get_name(resource),
 //	    bionet_value_to_str(value));
 
+//BDM-BP TODO add bdm_id when doing a datapoint insert
+//BDM-BP TODO add entry timestamp when doing a datapoint insert
     r = snprintf(
         sql,
         sizeof(sql),
