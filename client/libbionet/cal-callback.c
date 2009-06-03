@@ -184,7 +184,7 @@ static void handle_lost_node(const cal_event_t *event, const PrintableString_t *
 
     hab = bionet_cache_lookup_hab(hab_type, hab_id);
     if (hab == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got lost-node message for Node '%s.%s', but that HAB doesn appear in the cache", event->peer_name, (char*)nodeId->buf);
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "got lost-node message for Node '%s.%s', but that HAB doesnt appear in the cache", event->peer_name, (char*)nodeId->buf);
         return;
     }
 
