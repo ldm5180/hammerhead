@@ -72,8 +72,10 @@ GPtrArray *db_get_resource_datapoints(
     const unsigned char *hab_id,
     const unsigned char *node_id,
     const unsigned char *resource_id,
-    struct timeval *start,
-    struct timeval *end
+    struct timeval *datapoint_start,
+    struct timeval *datapoint_end,
+    struct timeval *entry_start,
+    struct timeval *entry_end
 );
 
 

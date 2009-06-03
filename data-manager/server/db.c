@@ -783,8 +783,10 @@ GPtrArray *db_get_resource_datapoints(
     const char *hab_id,
     const char *node_id,
     const char *resource_id,
-    struct timeval *start,
-    struct timeval *end
+    struct timeval *datapoint_start,
+    struct timeval *datapoint_end,
+    struct timeval *entry_start,
+    struct timeval *entry_end
 ) {
     int r;
     char sql[2048];
@@ -919,12 +921,12 @@ GPtrArray *db_get_resource_datapoints(
         "     Datapoints.Timestamp_Sec ASC,"
         "     Datapoints.Timestamp_Usec ASC"
         ";",
-        (int)start->tv_sec,
-        (int)start->tv_usec,
-        (int)start->tv_sec,
-        (int)end->tv_sec,
-        (int)end->tv_sec,
-        (int)end->tv_usec,
+        (int)datapoint_start->tv_sec,
+        (int)datapoint_start->tv_usec,
+        (int)datapoint_start->tv_sec,
+        (int)datapoint_end->tv_sec,
+        (int)datapoint_end->tv_sec,
+        (int)datapoint_end->tv_usec,
         hab_type_restriction,
         hab_id_restriction,
         node_id_restriction,

@@ -60,7 +60,7 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 
 
     // do that database lookup
-    hab_list = db_get_resource_datapoints(rdpq->habType.buf, rdpq->habId.buf, rdpq->nodeId.buf, rdpq->resourceId.buf, &start, &end);
+    hab_list = db_get_resource_datapoints(rdpq->habType.buf, rdpq->habId.buf, rdpq->nodeId.buf, rdpq->resourceId.buf, &start, &end, NULL, NULL);
 
 
     memset(&reply, 0x00, sizeof(BDM_S2C_Message_t));
