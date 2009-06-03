@@ -449,6 +449,7 @@ void libbionet_cal_callback(const cal_event_t *event) {
             hab = bionet_cache_lookup_hab(type, id);
             if (hab != NULL) {
                 GSList *j;
+
                 if (libbionet_callback_lost_node != NULL) {
 		    int i;
                     for (i = 0; i < bionet_hab_get_num_nodes(hab); i++) {
@@ -459,12 +460,13 @@ void libbionet_cal_callback(const cal_event_t *event) {
 
                 bionet_hab_remove_all_nodes(hab);
 
-                for (j = libbionet_hab_subscriptions; j != NULL; j = j->next) {
-                    libbionet_hab_subscription_t *sub = j->data;
+                if (libbionet_callback_lost_hab != NULL) {
+                    for (j = libbionet_hab_subscriptions; j != NULL; j = j->next) {
+                        libbionet_hab_subscription_t *sub = j->data;
 
-                    if (bionet_hab_matches_type_and_id(hab, sub->hab_type, sub->hab_id)) {
-                        if (libbionet_callback_lost_hab != NULL) {
+                        if (bionet_hab_matches_type_and_id(hab, sub->hab_type, sub->hab_id)) {
                             libbionet_callback_lost_hab(hab);
+                            break;
                         }
                     }
                 }
