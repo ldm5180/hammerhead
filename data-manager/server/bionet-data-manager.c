@@ -24,7 +24,7 @@ GMainLoop *bdm_main_loop = NULL;
 #define DB_NAME "bdm.db"
 
 char * database_file = DB_NAME;
-
+extern char bdm_id[256];
 
 void usage(void) {
     printf(
@@ -36,6 +36,7 @@ void usage(void) {
 	" -e,--require-security                          Require security\n"
 	" -f,--file /Path/to/database/file.db            Full path of database file (bdm.db)\n"
 	" -h,--hab,--habs \"HAB-Type.Hab-ID\"              Subscribe to a HAB list.\n"
+	" -i,--id <ID>                                   ID of Bionet Data Manager\n"
 	" -n,--node,--nodes \"HAB-Type.HAB-ID.Node-ID\"    Subscribe to a Node list.\n"
 	" -r,--resource,--resources \"HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
 	"                                                Subscribe to Resource values.\n"
@@ -75,6 +76,7 @@ int main(int argc, char *argv[]) {
 	    {"file", 1, 0, 'f'},
 	    {"habs", 1, 0, 'h'},
 	    {"hab", 1, 0, 'h'},
+	    {"id", 1, 0, 'i'},
 	    {"nodes", 1, 0, 'n'},
 	    {"node", 1, 0, 'n'},
 	    {"resources", 1, 0, 'r'},
@@ -84,7 +86,7 @@ int main(int argc, char *argv[]) {
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c= getopt_long(argc, argv, "?vef:h:n:r:s:", long_options, &i);
+	c= getopt_long(argc, argv, "?vef:h:i:n:r:s:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -116,6 +118,10 @@ int main(int argc, char *argv[]) {
 		g_warning("skipping HAB subscription %s, only %d are handled", 
 			  *argv, MAX_SUBSCRIPTIONS);
 	    }
+	    break;
+
+	case 'i':
+	    strncpy(bdm_id, optarg, sizeof(bdm_id));
 	    break;
 
 	case 'n':
@@ -151,6 +157,15 @@ int main(int argc, char *argv[]) {
 	}
     } //while(1)
 
+
+    if (0 == bdm_id[0]) {
+	int r;
+	r = gethostname(bdm_id, sizeof(bdm_id));
+	if (r < 0) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Error getting hostname: %m");
+	    exit(1);
+	}
+    }
 
     if (security_dir) {
 	if (bionet_init_security(security_dir, require_security)) {

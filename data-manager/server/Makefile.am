@@ -19,7 +19,8 @@ bionet_data_manager_SOURCES =     \
     disconnect-client.c           \
     make-listening-socket.c       \
     make-shutdowns-clean.c        \
-    keepalive.c
+    keepalive.c                   \
+    sync-send.c
 
 bionet_data_manager_CFLAGS = $(AM_CFLAGS) $(OPENSSL_CFLAGS) $(GLIB20_CFLAGS) $(OPENSSL_CFLAGS) -I../include $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) 
 

@@ -22,7 +22,10 @@ extern char *bdm_pidfile;
 extern GMainLoop *bdm_main_loop;
 
 
-
+typedef struct {
+    struct timeval entry_ts;
+    bionet_datapoint_t * datapoint;
+} bdm_record_t;
 
 // 
 // interface to the database backend
@@ -74,8 +77,6 @@ GPtrArray *db_get_resource_datapoints(
 );
 
 
-
-
 // 
 // stuff for being a bionet client
 //
@@ -125,5 +126,15 @@ void keepalive(int socket, int idle, int count, int interval);
 void make_shutdowns_clean(void);
 
 
+// BDM sync'ing
+int sync_send_metadata();
+int sync_send_datapoints();
+
+
 #endif //  BIONET_DATA_MANAGER_H
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
