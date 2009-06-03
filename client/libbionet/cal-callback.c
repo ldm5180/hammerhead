@@ -53,38 +53,47 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
         libbionet_callback_new_node(node);
     }
 
-    // Walk through and report all datapoints
-    for (i = 0; i < bionet_node_get_num_resources(node); i++) {
-        bionet_resource_t* resource;
-        GSList *j;
+    if (libbionet_callback_datapoint != NULL) {
 
-        resource = bionet_node_get_resource_by_index(node, i);
-        if (resource == NULL) {
-            // an error has been logged already
-            continue;
-        }
+        // Walk through and report all datapoints
+        for (i = 0; i < bionet_node_get_num_resources(node); i++) {
+            bionet_resource_t* resource;
+            int k, found_datapoint_subscriptions = 0;
+            GSList *j;
 
-        // does the resource match any of the client's datapoint subscriptions?
-        for (j = libbionet_datapoint_subscriptions; j != NULL; j = j->next) {
-            libbionet_datapoint_subscription_t *sub = j->data;
+            resource = bionet_node_get_resource_by_index(node, i);
+            if (resource == NULL) {
+                // an error has been logged already
+                continue;
+            }
 
-            if (bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, 
-                sub->hab_type, sub->hab_id, sub->node_id, sub->resource_id)) {
-                int k;
+            // does the resource match any of the client's datapoint subscriptions?
+            for (j = libbionet_datapoint_subscriptions; j != NULL; j = j->next) {
+                libbionet_datapoint_subscription_t *sub = j->data;
 
-                for (k = 0; k < bionet_resource_get_num_datapoints(resource); k++) {
-                    bionet_datapoint_t *new_dp;
+                if (bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, 
+                    sub->hab_type, sub->hab_id, sub->node_id, sub->resource_id)) {
 
-                    new_dp = bionet_resource_get_datapoint_by_index(resource, k);
-                    if (new_dp == NULL) {
-                        // an error has been logged already
-                        continue;
-                    }
-
-                    if (libbionet_callback_datapoint != NULL) {
-                        libbionet_callback_datapoint(new_dp);
-                    }
+                    found_datapoint_subscriptions = 1;
+                    break;
                 }
+            }
+
+            // nope, don't do anything
+            if ( !found_datapoint_subscriptions )
+                continue;
+
+            // yep, report all the datapoints once
+            for (k = 0; k < bionet_resource_get_num_datapoints(resource); k++) {
+                bionet_datapoint_t *new_dp;
+
+                new_dp = bionet_resource_get_datapoint_by_index(resource, k);
+                if (new_dp == NULL) {
+                    // an error has been logged already
+                    continue;
+                }
+
+                libbionet_callback_datapoint(new_dp);
             }
         }
     }
