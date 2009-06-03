@@ -32,6 +32,7 @@ void usage(void) {
     printf("    FILENAME is the name of the file containing the config info for the file\n");
     printf("    ID is the desired HAB ID\n");
     printf("    OUTPUT_MODE is either \"normal\" (default) or \"bionet-watcher\"\n");
+    printf("                or \"nodes-only\" or \"resources-only\"\n");
     printf("\n");
 }
 
@@ -72,8 +73,12 @@ int main(int argc, char *argv[]) {
             case 'o': {
                 if (strcmp(optarg, "normal") == 0) 
                     output_mode = OM_NORMAL;
-                if (strcmp(optarg, "bionet-watcher") == 0) 
+                else if (strcmp(optarg, "bionet-watcher") == 0) 
                     output_mode = OM_BIONET_WATCHER;
+                else if (strcmp(optarg, "nodes-only") == 0) 
+                    output_mode = OM_NODES_ONLY;
+                else if (strcmp(optarg, "resources-only") == 0) 
+                    output_mode = OM_RESOURCES_ONLY;
                 else {
                     g_log("", G_LOG_LEVEL_WARNING, "unknown output mode %s", optarg);
                     usage();
@@ -142,7 +147,7 @@ int main(int argc, char *argv[]) {
             hab_read();
 
             now = time(NULL);
-        } while (now - start < 1);
+        } while (now - start < 2);
     }
 
     //

@@ -16,8 +16,9 @@
 
 typedef enum {
     OM_NORMAL,
-    OM_BDM_CLIENT,
-    OM_BIONET_WATCHER
+    OM_BIONET_WATCHER,
+    OM_NODES_ONLY,
+    OM_RESOURCES_ONLY
 } om_t;
 
 

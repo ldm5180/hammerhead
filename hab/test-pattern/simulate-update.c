@@ -21,8 +21,10 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
     node = bionet_node_new(hab, event->id);
     bionet_hab_add_node(hab, node);
 
-    if (output_mode == OM_BIONET_WATCHER) 
+    if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
         g_message("new node: %s", bionet_node_get_name(node));
+    if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
+        g_message("    Resources:");
 
     for (cursor = event->resources; cursor != NULL; cursor = cursor->next) {
         struct resource_info_t* res_info;
@@ -39,7 +41,7 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
             dp = bionet_datapoint_new(resource, value, tv);
             bionet_resource_add_datapoint(resource, dp);
 
-            if (output_mode == OM_BIONET_WATCHER) {
+            if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY)) {
                 g_message(
                     "        %s %s %s = %s @ %s",
                     bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
@@ -49,7 +51,7 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
                     bionet_datapoint_timestamp_to_string(dp)
                 );
             }
-        } else if (output_mode == OM_BIONET_WATCHER) {
+        } else if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY)) {
             g_message(
                 "        %s %s %s (no known value)",
                 bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
@@ -58,7 +60,30 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
             );
         }
 
-        bionet_node_add_resource(node, resource);
+       bionet_node_add_resource(node, resource);
+    }
+    
+    if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_RESOURCES_ONLY)) {
+        for (cursor = event->resources; cursor != NULL; cursor = cursor->next) {
+            struct resource_info_t* res_info;
+            bionet_resource_t *resource;
+            bionet_datapoint_t *dp;
+
+            res_info = (struct resource_info_t*)cursor->data;
+            resource = bionet_node_get_resource_by_id(node, res_info->id);
+            dp = bionet_resource_get_datapoint_by_index(resource, 0);
+
+            if (dp != NULL) {
+                g_message(
+                    "%s = %s %s %s @ %s",
+                    bionet_resource_get_name(resource),
+                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                    bionet_value_to_str(bionet_datapoint_get_value(dp)),
+                    bionet_datapoint_timestamp_to_string(dp)
+                );
+            }
+        }         
     }
     
     hab_read();
@@ -91,7 +116,7 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
     dp = bionet_datapoint_new(resource, value, tv);
     bionet_resource_add_datapoint(resource, dp);
 
-    if (output_mode == OM_BIONET_WATCHER) {
+    if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_RESOURCES_ONLY)) {
         g_message(
             "%s = %s %s %s @ %s",
             bionet_resource_get_name(resource),
@@ -154,7 +179,7 @@ void simulate_updates(gpointer data, gpointer user_data) {
 
             lost_event = (struct lost_node_event_t*)event->event;
 
-            if (output_mode == OM_BIONET_WATCHER)
+            if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
                 g_message("lost node: %s", bionet_node_get_name(bionet_hab_get_node_by_id(hab, lost_event->id)));
 
             node = bionet_hab_remove_node_by_id(hab, lost_event->id);

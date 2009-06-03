@@ -1,25 +1,60 @@
 
-2009-05-27 15:00:32.361742 + node
-    foo binary Sensor ?
-    goo Float Sensor '10672'
-    hoo String Parameter 'yes'
-    koo int8 Actuator 'yes'
+2009-06-03 15:00:00.000000 + greek
+    alpha binary Sensor ?
+    beta uint8 Sensor ?
+    gamma int8 Sensor ?
+    delta uint16 Sensor ?
+    epsilon int16 Sensor ?
+    zeta uint32 Sensor ?
+    eta int32 Sensor ?
+    theta double Sensor ?
+    iota float Sensor ?
+    kappa string Sensor 'yes'
 
-2009-05-27 15:00:33.361742 + name
-    alpha uint8 Sensor '255'
-    beta uint32 Sensor ?
-    gamma int32 Sensor '-8000000'
+2009-06-03 15:00:01.000000 + planets
+    mercury binary parameter '0'
+    venus uint8 Parameter '1'
+    earth int8 paRAmeTEr '-10'
+    mars uint16 PARAMETER '100'
+    jupiter int16 Actuator '-1000'
+    saturn uint32 ACTUATOR '10000'
+    uranus int32 ActuatoR '-100000'
+    neptune double ACtuaTOR '-100000.1'
+    pluto string actuator 'not really'
 
+2009-06-03 15:00:02.000000 greek alpha '0'
+2009-06-03 15:00:02.000000 greek beta '-1'
+2009-06-03 15:00:02.000000 greek gamma '-1'
+2009-06-03 15:00:02.000000 greek delta '-1'
+2009-06-03 15:00:02.000000 greek epsilon '-1'
+2009-06-03 15:00:02.000000 greek zeta '-1'
+2009-06-03 15:00:03.000000 greek alpha '1'
 
-2009-05-27 15:00:33.361742 node foo '1'
-2009-05-27 15:00:33.361742 node goo '.1'
+2009-06-03 15:00:04.000000 + dwarves
+    doc int32 sensor '1'
+    grumpy int32 sensor '1'
+    happy int32 sensor '2'
+    sleepy int32 sensor '3'
+    bashful int32 sensor '5'
+    sneezy int32 sensor '8'
+    dopey int32 sensor '13'
 
-2009-05-27 15:00:34.361742 node foo '10'
-2009-05-27 15:00:34.361742 node goo '.01'
+2009-06-03 15:00:04.000000 dwarves doc '21'
+2009-06-03 15:00:04.000000 dwarves dopey '34'
+2009-06-03 15:00:04.000000 greek zeta '0'
+2009-06-03 15:00:04.000000 planets mercury '1'
+2009-06-03 15:00:04.000000 planets pluto 'a planet,'
+2009-06-03 15:00:04.000000 greek kappa 'k'
 
-2009-05-27 15:00:35.361742 node hoo 'with some spaces'
-2009-05-27 15:00:35.361742 node foo '0'
+2009-06-03 15:00:05.000000 - greek
 
-2009-05-27 15:00:36.000000 - node 
-2009-05-27 15:00:37.000000 - name 
+2009-06-03 15:00:06.000000 dwarves grumpy '55'
+2009-06-03 15:00:06.000000 dwarves sleepy '89'
+2009-06-03 15:00:06.000000 dwarves bashful '144'
+2009-06-03 15:00:06.000000 dwarves sneezy '233'
+2009-06-03 15:00:07.000000 planets pluto 'shhhh'
+2009-06-03 15:00:07.000000 dwarves sleepy '377'
+
+2009-06-03 15:00:09.000000 - dwarves
+2009-06-03 15:00:10.000000 - planets
 
