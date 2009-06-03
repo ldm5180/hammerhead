@@ -17,6 +17,7 @@ test_pattern_hab_SOURCES =      \
     lexer.l                     \
     create-resource.c           \
     new-event.c                 \
+    free-event.c                \
     simulate-update.c           \
     str-to-timeval.c            \
     str-to-value.c              \

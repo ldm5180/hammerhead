@@ -65,7 +65,6 @@ bionet_value_t *str_to_value(bionet_resource_t *resource, bionet_resource_data_t
 
     str--;
     str[strlen(str)-1] = '\'';
-    free(str);
 
     return value;
 }

@@ -170,6 +170,13 @@ int main(int argc, char *argv[]) {
         g_message("lost hab: %s", bionet_hab_get_name(hab));
 
     hab_disconnect();
+    bionet_hab_free(hab);
+
+    while (events != NULL) {
+        free_event((struct event_t*)events->data);
+        events->data = NULL;
+        events = g_slist_delete_link(events, events);
+    }
 
     return 0;
 }

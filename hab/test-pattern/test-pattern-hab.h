@@ -4,10 +4,6 @@
 // NNC07CB47C.
 
 
-#ifndef __BDM_H
-#define __BDM_H
-
-
 #include <stdint.h>
 #include <unistd.h>
 
@@ -89,9 +85,10 @@ struct event_t *add_node_event(struct timeval *tv, char *id, GSList *resources);
 struct event_t *remove_node_event(struct timeval *tv, char *id);
 struct event_t *update_event(struct timeval *tv, char *node, char *resource, char *value);
 
+void free_event(struct event_t *event);
+
 
 extern int yyparse();
 extern FILE* yyin;
 extern void yyrestart(FILE *input_file);
 
-#endif
