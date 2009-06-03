@@ -79,6 +79,11 @@ BEGIN
         nodes    SEQUENCE OF Node
     }
 
+    BDMRecord ::= SEQUENCE {
+        timestamp      GeneralizedTime,
+	resourceKey    OCTET STRING,
+        datapoints     SEQUENCE OF Datapoint
+    }
 
     -- 
     -- Helper structs
@@ -185,5 +190,25 @@ BEGIN
         resourceDatapointsReply ResourceDatapointsReply
     }
 
+
+    -- 
+    -- BDM Sync Metadata Messages
+    -- 
+    -- note: there will never be datapoints in a BDM Sync Metadata 
+    -- message. They belong in the BDM Sync Update message.
+    --
+
+    BDM-Sync-Metadata-Message ::= SEQUENCE OF HardwareAbstractor
+
+
+
+    --
+    -- BDM Sync Datapoints Messages
+    --
+    -- note: the metadata associated with the datapoints needs to have
+    -- already been received and processed before this message.
+    --
+
+    BDM-Sync-Datapoints-Message ::= SEQUENCE OF BDMRecord
 END
 

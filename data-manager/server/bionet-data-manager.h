@@ -22,7 +22,10 @@ extern char *bdm_pidfile;
 extern GMainLoop *bdm_main_loop;
 
 
-
+typedef struct {
+    struct timeval entry_ts;
+    bionet_datapoint_t * datapoint;
+} bdm_record_t;
 
 // 
 // interface to the database backend
@@ -127,3 +130,8 @@ void make_shutdowns_clean(void);
 
 #endif //  BIONET_DATA_MANAGER_H
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

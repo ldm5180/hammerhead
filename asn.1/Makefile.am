@@ -10,48 +10,54 @@ include $(top_srcdir)/common.am
 ASN_SOURCE = bionet-protocol-0.asn1
 
 
-ASN_MODULE_SOURCES =            \
-    ResourceFlavor.c            \
-    ResourceDataType.c          \
-    Value.c                     \
-    Datapoint.c                 \
-    Resource.c                  \
-    StreamDirection.c           \
-    Stream.c                    \
-    Node.c                      \
-    HardwareAbstractor.c        \
-    ResourceMetadata.c          \
-    ResourceDatapoints.c        \
-    ResourceDatapointsQuery.c   \
-    ResourceDatapointsReply.c   \
-    SetResourceValue.c          \
-    StreamData.c                \
-    C2H-Message.c               \
-    H2C-Message.c               \
-    BDM-C2S-Message.c           \
-    BDM-S2C-Message.c
+ASN_MODULE_SOURCES =              \
+    ResourceFlavor.c              \
+    ResourceDataType.c            \
+    Value.c                       \
+    Datapoint.c                   \
+    Resource.c                    \
+    StreamDirection.c             \
+    Stream.c                      \
+    Node.c                        \
+    HardwareAbstractor.c          \
+    ResourceMetadata.c            \
+    ResourceDatapoints.c          \
+    ResourceDatapointsQuery.c     \
+    ResourceDatapointsReply.c     \
+    SetResourceValue.c            \
+    StreamData.c                  \
+    C2H-Message.c                 \
+    H2C-Message.c                 \
+    BDM-C2S-Message.c             \
+    BDM-S2C-Message.c             \
+    BDM-Sync-Metadata-Message.c   \
+    BDM-Sync-Datapoints-Message.c \
+    BDMRecord.c
 
 # FIXME: autoreconf doesnt work if this variable is called ASN_MODULE_HEADS
-ASN_MODULE_HEADS =              \
-    ResourceFlavor.h            \
-    ResourceDataType.h          \
-    Value.h                     \
-    Datapoint.h                 \
-    Resource.h                  \
-    StreamDirection.h           \
-    Stream.h                    \
-    Node.h                      \
-    HardwareAbstractor.h        \
-    ResourceMetadata.h          \
-    ResourceDatapoints.h        \
-    ResourceDatapointsQuery.h   \
-    ResourceDatapointsReply.h   \
-    SetResourceValue.h          \
-    StreamData.h                \
-    C2H-Message.h               \
-    H2C-Message.h               \
-    BDM-C2S-Message.h           \
-    BDM-S2C-Message.h
+ASN_MODULE_HEADS =                \
+    ResourceFlavor.h              \
+    ResourceDataType.h            \
+    Value.h                       \
+    Datapoint.h                   \
+    Resource.h                    \
+    StreamDirection.h             \
+    Stream.h                      \
+    Node.h                        \
+    HardwareAbstractor.h          \
+    ResourceMetadata.h            \
+    ResourceDatapoints.h          \
+    ResourceDatapointsQuery.h     \
+    ResourceDatapointsReply.h     \
+    SetResourceValue.h            \
+    StreamData.h                  \
+    C2H-Message.h                 \
+    H2C-Message.h                 \
+    BDM-C2S-Message.h             \
+    BDM-S2C-Message.h             \
+    BDM-Sync-Metadata-Message.h   \
+    BDM-Sync-Datapoints-Message.h \
+    BDMRecord.h
 
 
 ASN_MODULE_HEADS+=BOOLEAN.h
