@@ -252,3 +252,8 @@ cleanup0:
     return retval;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
