@@ -103,7 +103,7 @@ void usage(void) {
 	    " -T,--datapoint-start <entryStart>  Timestamp of datapoint as reported by the HAB\n"
 	    "                                    must be equal to or newer than the \"entry start\"\n"
 	    "                                    time (default: infinite past)\n"
-	    " -T,--datapoint-end <entryEnd>      Timestamp of datapoint as reported by the HAB\n"
+	    " -t,--datapoint-end <entryEnd>      Timestamp of datapoint as reported by the HAB\n"
 	    "                                    must be equal to or older than the \"entry end\"\n"
 	    "                                    time (default: infinite future)\n"
 	    "\n"
