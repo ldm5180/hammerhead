@@ -25,6 +25,7 @@
 static sqlite3 *db = NULL;
 
 extern char * database_file;
+char bdm_id[256] = { 0 };
 
 
 int db_init(void) {
@@ -376,6 +377,8 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
 //	    bionet_resource_get_name(resource),
 //	    bionet_value_to_str(value));
 
+//BDM-BP TODO add bdm_id when doing a datapoint insert
+//BDM-BP TODO add entry timestamp when doing a datapoint insert
     r = snprintf(
         sql,
         sizeof(sql),
@@ -780,8 +783,10 @@ GPtrArray *db_get_resource_datapoints(
     const char *hab_id,
     const char *node_id,
     const char *resource_id,
-    struct timeval *start,
-    struct timeval *end
+    struct timeval *datapoint_start,
+    struct timeval *datapoint_end,
+    struct timeval *entry_start,
+    struct timeval *entry_end
 ) {
     int r;
     char sql[2048];
@@ -877,6 +882,13 @@ GPtrArray *db_get_resource_datapoints(
     }
 
 
+    if ((datapoint_start == NULL) || (strcmp(datapoint_start, "*") == 0)) {
+	datapoint_start_restriction[0] = '\0';
+    } else {
+	
+    }
+
+
     r = snprintf(
         sql,
         sizeof(sql),
@@ -916,12 +928,12 @@ GPtrArray *db_get_resource_datapoints(
         "     Datapoints.Timestamp_Sec ASC,"
         "     Datapoints.Timestamp_Usec ASC"
         ";",
-        (int)start->tv_sec,
-        (int)start->tv_usec,
-        (int)start->tv_sec,
-        (int)end->tv_sec,
-        (int)end->tv_sec,
-        (int)end->tv_usec,
+        (int)datapoint_start->tv_sec,
+        (int)datapoint_start->tv_usec,
+        (int)datapoint_start->tv_sec,
+        (int)datapoint_end->tv_sec,
+        (int)datapoint_end->tv_sec,
+        (int)datapoint_end->tv_usec,
         hab_type_restriction,
         hab_id_restriction,
         node_id_restriction,
