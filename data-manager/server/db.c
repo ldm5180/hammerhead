@@ -790,6 +790,7 @@ GPtrArray *db_get_resource_datapoints(
 ) {
     int r;
     char sql[2048];
+    char * tmp_sql;
     char *zErrMsg = NULL;
 
     char hab_type_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
@@ -988,19 +989,17 @@ GPtrArray *db_get_resource_datapoints(
 	char * or = '\0';
 
 	//append the "AND"
-	{
-	    char * tmp_sql = (char *)sql + strlen(sql);
-	    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
-			 "    AND (");
-	    if (r >= sizeof(sql) - strlen(sql) - 1) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
-		return NULL;
-	    }
+	tmp_sql = (char *)sql + strlen(sql);
+	r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
+		     "    AND (");
+	if (r >= sizeof(sql) - strlen(sql) - 1) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
+	    return NULL;
 	}
 
 	//append the datapoint start restriction
 	if (datapoint_start_restriction[0] != '\0') {
-	    char * tmp_sql = (char *)sql + strlen(sql);
+	    tmp_sql = (char *)sql + strlen(sql);
 	    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
 			 "        (Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)",
 			 (int)datapoint_start->tv_sec, (int)datapoint_start->tv_usec);
@@ -1013,7 +1012,7 @@ GPtrArray *db_get_resource_datapoints(
 
         //append the datapoint stop restriction
 	if (datapoint_end_restriction[0] != '\0') {
-	    char * tmp_sql = (char *)sql + strlen(sql);
+	    tmp_sql = (char *)sql + strlen(sql);
 	    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
 			 "        %s(Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)",
 			 or, (int)datapoint_end->tv_sec, (int)datapoint_end->tv_usec);
@@ -1026,7 +1025,7 @@ GPtrArray *db_get_resource_datapoints(
 
 	//append the entry start restriction
 	if (entry_start_restriction[0] != '\0') {
-	    char * tmp_sql = (char *)sql + strlen(sql);
+	    tmp_sql = (char *)sql + strlen(sql);
 	    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
 			 "        %s(Entry.Timestamp_Sec = %d AND Entry.Timestamp_Usec >= %d)",
 			 or, (int)entry_start->tv_sec, (int)entry_start->tv_usec);
@@ -1039,7 +1038,7 @@ GPtrArray *db_get_resource_datapoints(
 
         //append the entry stop restriction
 	if (entry_end_restriction[0] != '\0') {
-	    char * tmp_sql = (char *)sql + strlen(sql);
+	    tmp_sql = (char *)sql + strlen(sql);
 	    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
 			 "        %s(Entry.Timestamp_Sec = %d AND Entry.Timestamp_Usec >= %d)",
 			 or, (int)entry_end->tv_sec, (int)entry_end->tv_usec);
@@ -1051,38 +1050,34 @@ GPtrArray *db_get_resource_datapoints(
 	}
 
 	//append the closing ")"
-	{
-	    char * tmp_sql = (char *)sql + strlen(sql);
-	    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
-			 "    )");
-	    if (r >= sizeof(sql) - strlen(sql) - 1) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
-		return NULL;
-	    }
-	}
-    }
-
-
-    {
-	char * tmp_sql = (char *)sql + strlen(sql);
+	tmp_sql = (char *)sql + strlen(sql);
 	r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
-		     "    %s"
-		     "    %s"
-		     "    %s"
-		     "    %s"
-		     " ORDER BY"
-		     "     Datapoints.Timestamp_Sec ASC,"
-		     "     Datapoints.Timestamp_Usec ASC"
-		     ";",
-		     hab_type_restriction,
-		     hab_id_restriction,
-		     node_id_restriction,
-		     resource_id_restriction
-	    );
+		     "    )");
 	if (r >= sizeof(sql) - strlen(sql) - 1) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
 	    return NULL;
 	}
+    }
+
+
+    tmp_sql = (char *)sql + strlen(sql);
+    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
+		 "    %s"
+		 "    %s"
+		 "    %s"
+		 "    %s"
+		 " ORDER BY"
+		 "     Datapoints.Timestamp_Sec ASC,"
+		 "     Datapoints.Timestamp_Usec ASC"
+		 ";",
+		 hab_type_restriction,
+		 hab_id_restriction,
+		 node_id_restriction,
+		 resource_id_restriction
+	);
+    if (r >= sizeof(sql) - strlen(sql) - 1) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
+	return NULL;
     }
 
 
