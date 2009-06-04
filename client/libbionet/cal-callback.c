@@ -20,7 +20,7 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
     bionet_node_t *node;
     bionet_hab_t *hab;
 
-    int r, i;
+    int r;
 
     r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
     if (r != 0) {
@@ -51,51 +51,6 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
 
     if (libbionet_callback_new_node != NULL) {
         libbionet_callback_new_node(node);
-    }
-
-    if (libbionet_callback_datapoint != NULL) {
-
-        // Walk through and report all datapoints
-        for (i = 0; i < bionet_node_get_num_resources(node); i++) {
-            bionet_resource_t* resource;
-            int k, found_datapoint_subscriptions = 0;
-            GSList *j;
-
-            resource = bionet_node_get_resource_by_index(node, i);
-            if (resource == NULL) {
-                // an error has been logged already
-                continue;
-            }
-
-            // does the resource match any of the client's datapoint subscriptions?
-            for (j = libbionet_datapoint_subscriptions; j != NULL; j = j->next) {
-                libbionet_datapoint_subscription_t *sub = j->data;
-
-                if (bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, 
-                    sub->hab_type, sub->hab_id, sub->node_id, sub->resource_id)) {
-
-                    found_datapoint_subscriptions = 1;
-                    break;
-                }
-            }
-
-            // nope, don't do anything
-            if ( !found_datapoint_subscriptions )
-                continue;
-
-            // yep, report all the datapoints once
-            for (k = 0; k < bionet_resource_get_num_datapoints(resource); k++) {
-                bionet_datapoint_t *new_dp;
-
-                new_dp = bionet_resource_get_datapoint_by_index(resource, k);
-                if (new_dp == NULL) {
-                    // an error has been logged already
-                    continue;
-                }
-
-                libbionet_callback_datapoint(new_dp);
-            }
-        }
     }
 }
 
@@ -451,9 +406,26 @@ void libbionet_cal_callback(const cal_event_t *event) {
                 GSList *j;
 
                 if (libbionet_callback_lost_node != NULL) {
-		    int i;
+                    int i;
                     for (i = 0; i < bionet_hab_get_num_nodes(hab); i++) {
-			bionet_node_t *node = bionet_hab_get_node_by_index(hab, i);
+                        bionet_node_t *node = bionet_hab_get_node_by_index(hab, i);
+                        GSList *j;
+                        int found_node_subscription = 0;
+                        
+                        // only report the node if we are subscribed to it!
+                        for (j = libbionet_node_subscriptions; j != NULL; j = j->next) {
+                            libbionet_node_subscription_t *node_sub = j->data;
+
+                            if (bionet_node_matches_habtype_habid_nodeid(node, 
+                                node_sub->hab_type, node_sub->hab_id, node_sub->node_id)) {
+                                found_node_subscription = 1;
+                                break;
+                            }
+                        }
+                        
+                        if (!found_node_subscription)
+                            continue;
+                        
                         libbionet_callback_lost_node(node);
                     }
                 }

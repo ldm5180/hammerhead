@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$ROOT/hab/test-pattern/test-pattern-hab" ]; then
+    echo "test-pattern hab does not exist, skipping"
+    exit 2
+fi
+
+UNIQUE=$$
+RETVAL=0
+
+
+echo starting two bionet-watchers
+$ROOT/client/watcher/bionet-watcher --resources "test-pattern-hab.$UNIQUE.*:*" >| out.watcher.0 &
+$ROOT/client/watcher/bionet-watcher --resources "test-pattern-hab.$UNIQUE.*:*" >| out.watcher.1 &
+
+echo starting test-pattern-hab
+$ROOT/hab/test-pattern/test-pattern-hab --id $UNIQUE --output-mode resources-only input.pattern >| out.pattern &
+
+
+# wait for test-pattern hab to complete completely
+wait %3
+
+sleep 1  # to let the clients notice
+
+
+echo killing the bionet-watchers
+kill %1
+kill %2
+wait
+
+
+if ! diff -q out.watcher.0 out.watcher.1; then
+    echo "ERROR: watcher outputs differ:"
+    diff -u out.watcher.0 out.watcher.1
+    RETVAL=1
+else
+    echo "watcher outputs are identical, yay"
+fi
+
+if ! diff -q out.watcher.0 out.pattern; then
+    echo "ERROR: watcher output differs from test-pattern-hab output:"
+    diff -u out.pattern out.watcher.0
+    RETVAL=1
+else
+    echo "watcher outputs are identical to test-pattern-hab output, yay"
+fi
+
+exit $RETVAL
+

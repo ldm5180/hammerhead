@@ -87,12 +87,14 @@ int hab_report_new_node(const bionet_node_t *node) {
                 continue;
             }
 
+            snprintf(topic, sizeof(topic), 
+                "D %s", bionet_resource_get_local_name(resource));
+
             // publish the message to any connected subscribers
-            cal_server.publish(bionet_resource_get_local_name(resource), buf.buf, buf.size);
+            cal_server.publish(topic, buf.buf, buf.size);
 
             // FIXME: cal_server.publish should take the buf
             free(buf.buf);
-
 
             // send all datapoints
             r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 0);
@@ -101,7 +103,7 @@ int hab_report_new_node(const bionet_node_t *node) {
             bionet_resource_make_clean(resource);
 
             // publish the message to any connected subscribers
-            cal_server.publish(bionet_resource_get_local_name(resource), buf.buf, buf.size);
+            cal_server.publish(topic, buf.buf, buf.size);
 
             // FIXME: cal_server.publish should take the buf
             free(buf.buf);
