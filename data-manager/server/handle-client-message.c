@@ -30,29 +30,29 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    Resource Datapoints Query {");
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        Resource Name Pattern: %s.%s.%s:%s", rdpq->habType.buf, rdpq->habId.buf, rdpq->nodeId.buf, rdpq->resourceId.buf);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        startTime=%s", rdpq->startTime.buf);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        endTime=%s", rdpq->endTime.buf);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        datapointStartTime=%s", rdpq->datapointStartTime.buf);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        datapointEndTime=%s", rdpq->datapointEndTime.buf);
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    }");
 
-    r = bionet_GeneralizedTime_to_timeval(&rdpq->startTime, &start);
+    r = bionet_GeneralizedTime_to_timeval(&rdpq->datapointStartTime, &start);
     if (r != 0) {
         g_log(
             BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
             "handle_client_message_resourceDatapointsQuery(): error converting GeneralizedTime '%s' to struct timeval: %s",
-            rdpq->startTime.buf,
+            rdpq->datapointStartTime.buf,
             strerror(errno)
         );
         return;  // FIXME: return an error message to the client
     }
 
-    r = bionet_GeneralizedTime_to_timeval(&rdpq->endTime, &end);
+    r = bionet_GeneralizedTime_to_timeval(&rdpq->datapointEndTime, &end);
     if (r != 0) {
         g_log(
             BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
             "handle_client_message_resourceDatapointsQuery(): error converting GeneralizedTime '%s' to struct timeval: %s",
-            rdpq->endTime.buf,
+            rdpq->datapointEndTime.buf,
             strerror(errno)
         );
         return;  // FIXME: return an error message to the client

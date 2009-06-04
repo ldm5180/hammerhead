@@ -27,7 +27,7 @@ struct Datapoint;
 
 /* BDMRecord */
 typedef struct BDMRecord {
-	GeneralizedTime_t	 timestamp;
+	GeneralizedTime_t	 entryTimestamp;
 	OCTET_STRING_t	 resourceKey;
 	struct datapoints {
 		A_SEQUENCE_OF(struct Datapoint) list;

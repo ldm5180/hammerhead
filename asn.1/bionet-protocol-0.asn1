@@ -80,9 +80,9 @@ BEGIN
     }
 
     BDMRecord ::= SEQUENCE {
-        timestamp      GeneralizedTime,
-	resourceKey    OCTET STRING,
-        datapoints     SEQUENCE OF Datapoint
+        entryTimestamp    GeneralizedTime,
+	resourceKey       OCTET STRING,
+        datapoints        SEQUENCE OF Datapoint
     }
 
     -- 
@@ -112,12 +112,14 @@ BEGIN
     -- 
 
     ResourceDatapointsQuery ::= SEQUENCE {
-        habType     PrintableString,
-        habId       PrintableString,
-        nodeId      PrintableString,
-        resourceId  PrintableString,
-        startTime   GeneralizedTime,
-        endTime     GeneralizedTime
+        habType              PrintableString,
+        habId                PrintableString,
+        nodeId               PrintableString,
+        resourceId           PrintableString,
+        datapointStartTime   GeneralizedTime,
+        datapointEndTime     GeneralizedTime,
+	entryStartTime       GeneralizedTime,
+	entryEndTime         GeneralizedTime
     }
 
     ResourceDatapointsReply ::= SEQUENCE OF HardwareAbstractor

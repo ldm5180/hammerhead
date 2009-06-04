@@ -150,13 +150,13 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct
     }
 
 
-    r = bionet_timeval_to_GeneralizedTime(start, &rdpq->startTime);
+    r = bionet_timeval_to_GeneralizedTime(start, &rdpq->datapointStartTime);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %s", (long)start->tv_sec, (long)start->tv_usec, strerror(errno));
         goto cleanup4;
     }
 
-    r = bionet_timeval_to_GeneralizedTime(end, &rdpq->endTime);
+    r = bionet_timeval_to_GeneralizedTime(end, &rdpq->datapointEndTime);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %s", (long)end->tv_sec, (long)end->tv_usec, strerror(errno));
         goto cleanup4;

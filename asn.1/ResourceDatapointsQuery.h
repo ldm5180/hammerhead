@@ -26,8 +26,10 @@ typedef struct ResourceDatapointsQuery {
 	PrintableString_t	 habId;
 	PrintableString_t	 nodeId;
 	PrintableString_t	 resourceId;
-	GeneralizedTime_t	 startTime;
-	GeneralizedTime_t	 endTime;
+	GeneralizedTime_t	 datapointStartTime;
+	GeneralizedTime_t	 datapointEndTime;
+	GeneralizedTime_t	 entryStartTime;
+	GeneralizedTime_t	 entryEndTime;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

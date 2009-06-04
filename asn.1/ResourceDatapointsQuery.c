@@ -46,23 +46,41 @@ static asn_TYPE_member_t asn_MBR_ResourceDatapointsQuery_1[] = {
 		0,
 		"resourceId"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct ResourceDatapointsQuery, startTime),
+	{ ATF_NOFLAGS, 0, offsetof(struct ResourceDatapointsQuery, datapointStartTime),
 		(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_GeneralizedTime,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
-		"startTime"
+		"datapointStartTime"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct ResourceDatapointsQuery, endTime),
+	{ ATF_NOFLAGS, 0, offsetof(struct ResourceDatapointsQuery, datapointEndTime),
 		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_GeneralizedTime,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
-		"endTime"
+		"datapointEndTime"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ResourceDatapointsQuery, entryStartTime),
+		(ASN_TAG_CLASS_CONTEXT | (6 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_GeneralizedTime,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		"entryStartTime"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ResourceDatapointsQuery, entryEndTime),
+		(ASN_TAG_CLASS_CONTEXT | (7 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_GeneralizedTime,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		"entryEndTime"
 		},
 };
 static ber_tlv_tag_t asn_DEF_ResourceDatapointsQuery_tags_1[] = {
@@ -73,14 +91,16 @@ static asn_TYPE_tag2member_t asn_MAP_ResourceDatapointsQuery_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* habId at 116 */
     { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* nodeId at 117 */
     { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* resourceId at 118 */
-    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* startTime at 119 */
-    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 } /* endTime at 120 */
+    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* datapointStartTime at 119 */
+    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 }, /* datapointEndTime at 120 */
+    { (ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0 }, /* entryStartTime at 121 */
+    { (ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0 } /* entryEndTime at 122 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_ResourceDatapointsQuery_specs_1 = {
 	sizeof(struct ResourceDatapointsQuery),
 	offsetof(struct ResourceDatapointsQuery, _asn_ctx),
 	asn_MAP_ResourceDatapointsQuery_tag2el_1,
-	6,	/* Count of tags in the map */
+	8,	/* Count of tags in the map */
 	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* Start extensions */
 	-1	/* Stop extensions */
@@ -106,7 +126,7 @@ asn_TYPE_descriptor_t asn_DEF_ResourceDatapointsQuery = {
 		/sizeof(asn_DEF_ResourceDatapointsQuery_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
 	asn_MBR_ResourceDatapointsQuery_1,
-	6,	/* Elements count */
+	8,	/* Elements count */
 	&asn_SPC_ResourceDatapointsQuery_specs_1	/* Additional specs */
 };
 

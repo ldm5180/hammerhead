@@ -56,14 +56,14 @@ asn_TYPE_descriptor_t asn_DEF_datapoints_4 = {
 };
 
 static asn_TYPE_member_t asn_MBR_BDMRecord_1[] = {
-	{ ATF_NOFLAGS, 0, offsetof(struct BDMRecord, timestamp),
+	{ ATF_NOFLAGS, 0, offsetof(struct BDMRecord, entryTimestamp),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_GeneralizedTime,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
-		"timestamp"
+		"entryTimestamp"
 		},
 	{ ATF_NOFLAGS, 0, offsetof(struct BDMRecord, resourceKey),
 		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
@@ -88,7 +88,7 @@ static ber_tlv_tag_t asn_DEF_BDMRecord_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
 static asn_TYPE_tag2member_t asn_MAP_BDMRecord_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* timestamp at 83 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* entryTimestamp at 83 */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* resourceKey at 84 */
     { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* datapoints at 86 */
 };
