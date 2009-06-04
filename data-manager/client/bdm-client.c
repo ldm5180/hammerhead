@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     char *bdm_hostname = NULL;
     uint16_t bdm_port = BDM_PORT;
     char *resource_name_pattern;
-    struct timeval start, stop;
+    struct timeval datapointStart, datapointEnd;
 
     GPtrArray *hab_list;
 
@@ -134,8 +134,8 @@ int main(int argc, char *argv[]) {
 
     resource_name_pattern = argv[i];
 
-    str_to_timeval(argv[i+1], &start);
-    str_to_timeval(argv[i+2], &stop);
+    str_to_timeval(argv[i+1], &datapointStart);
+    str_to_timeval(argv[i+2], &datapointEnd);
 
 
     bdm_fd = bdm_connect(bdm_hostname, bdm_port);
@@ -143,7 +143,9 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    hab_list = bdm_get_resource_datapoints(resource_name_pattern, &start, &stop);
+    hab_list = bdm_get_resource_datapoints(resource_name_pattern, 
+					   &datapointStart, &datapointEnd, 
+					   NULL, NULL);
     if (hab_list == NULL) {
         g_message("error getting resource datapoints");
     } else {

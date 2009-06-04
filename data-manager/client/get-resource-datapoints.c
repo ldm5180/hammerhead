@@ -98,7 +98,11 @@ cleanup:
 
 
 
-GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct timeval *start, struct timeval *end) {
+GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, 
+				       struct timeval *datapointStart, 
+				       struct timeval *datapointEnd,
+				       struct timeval *entryStart,
+				       struct timeval *entryEnd) {
     char *hab_type;
     char *hab_id;
     char *node_id;
@@ -150,15 +154,19 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct
     }
 
 
-    r = bionet_timeval_to_GeneralizedTime(start, &rdpq->datapointStartTime);
+    r = bionet_timeval_to_GeneralizedTime(datapointStart, &rdpq->datapointStartTime);
     if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %s", (long)start->tv_sec, (long)start->tv_usec, strerror(errno));
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %s", 
+	      (long)datapointStart->tv_sec, (long)datapointStart->tv_usec, strerror(errno));
         goto cleanup4;
     }
 
-    r = bionet_timeval_to_GeneralizedTime(end, &rdpq->datapointEndTime);
+    r = bionet_timeval_to_GeneralizedTime(datapointEnd, &rdpq->datapointEndTime);
     if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %s", (long)end->tv_sec, (long)end->tv_usec, strerror(errno));
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %s", 
+	      (long)datapointEnd->tv_sec, (long)datapointEnd->tv_usec, strerror(errno));
         goto cleanup4;
     }
 
