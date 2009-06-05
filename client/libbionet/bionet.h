@@ -328,7 +328,7 @@ int bionet_subscribe_hab_list_by_name(const char *hab_name);
  * @retval 0 Success
  * @retval -1 Error
  *
- * @deprecated This function will be removed in Bionet v2.1
+ * @deprecated This function will be removed in Bionet v2.3
  * Concatentate parameters and use bionet_subscribe_hab_list_by_name()
  */
 int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char *hab_id);
@@ -363,7 +363,7 @@ int bionet_subscribe_node_list_by_name(const char *node_name);
  * @retval 0 Success
  * @retval -1 Error
  *
- * @deprecated This function will be removed in Bionet v2.1
+ * @deprecated This function will be removed in Bionet v2.3
  * Concatentate parameters and use bionet_subscribe_node_list_by_name()
  */
 int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  const char *hab_id, const char *node_id);
@@ -383,7 +383,7 @@ int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  co
  * @retval 0 Success
  * @retval -1 Error
  * 
- * @deprecated This function will be removed in Bionet v2.1
+ * @deprecated This function will be removed in Bionet v2.3
  * Instead use bionet_subscribe_resource_by_name()
  */
 int bionet_subscribe_datapoints_by_name(const char *resource_name);
@@ -404,7 +404,7 @@ int bionet_subscribe_datapoints_by_name(const char *resource_name);
  * @retval 0 Success
  * @retval -1 Error
  *
- * @deprecated This function will be removed in Bionet v2.1
+ * @deprecated This function will be removed in Bionet v2.3
  * Concatentate parameters and use bionet_subscribe_datapoints_by_name()
  */
 int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *hab_type,  const char *hab_id, const char *node_id, const char *resource_id);
@@ -488,7 +488,7 @@ int bionet_set_resource(bionet_resource_t *resource, const char *value);
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that it was sent to the HAB 
  *
- * @deprecated This function will be removed in Bionet v2.1
+ * @deprecated This function will be removed in Bionet v2.3
  * Concatentate parameters, obtain a bionet_resource_t and use 
  * bionet_set_resource()
  */
@@ -515,8 +515,8 @@ int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that the HAB accepted the request.
  *
- * @deprecated This function will be removed in Bionet v2.1
- * In 2.1 and later use bionet_set_reource_by_name()
+ * @deprecated This function will be removed in Bionet v2.3
+ * In 2.1 and later use bionet_set_resource_by_name()
  */
 int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const char *value);
 
