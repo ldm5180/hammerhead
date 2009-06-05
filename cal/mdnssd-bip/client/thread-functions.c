@@ -417,7 +417,7 @@ static void read_from_user(void) {
             while (i < subscriptions->len) {
                 s = (cal_client_mdnssd_bip_subscription_t*)g_ptr_array_index(subscriptions, i);
 
-                if ((this->peer_matches(event->peer_name, s->peer_name) == 0) &&
+                if ((strcmp(event->peer_name, s->peer_name) == 0) &&
                     (strcmp(event->topic, s->topic) == 0)) {
 
                     s = (cal_client_mdnssd_bip_subscription_t*)g_ptr_array_remove_index(subscriptions, i);
