@@ -38,6 +38,11 @@ int bionet_unsubscribe_hab_list_by_habtype_habid(const char *hab_type,  const ch
             continue;
         }
 
+        if ((hab_sub->hab_type == NULL) || (hab_sub->hab_id == NULL)) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_hablist...(): NULL hab subscription component!");
+            continue;
+        }
+
         if ((strcmp(hab_sub->hab_type, hab_type) == 0) && (strcmp(hab_sub->hab_id, hab_id) == 0)) {
             libbionet_hab_subscriptions = g_slist_remove_link(libbionet_hab_subscriptions, link);
 
@@ -59,8 +64,8 @@ int bionet_unsubscribe_hab_list_by_habtype_habid(const char *hab_type,  const ch
             // remove the matching subscription
             //
 
-            if (hab_sub->hab_type != NULL) free(hab_sub->hab_type);
-            if (hab_sub->hab_id != NULL) free(hab_sub->hab_id);
+            free(hab_sub->hab_type);
+            free(hab_sub->hab_id);
             free(hab_sub);
             link->data = NULL;
             g_slist_free(link);

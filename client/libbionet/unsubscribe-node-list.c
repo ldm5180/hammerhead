@@ -30,6 +30,14 @@ int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  
             continue;
         }
 
+        if ((node_sub->hab_type == NULL) || 
+            (node_sub->hab_id == NULL) ||
+            (node_sub->node_id)) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_node_list...(): NULL node subscription component!");
+            i = i->next;
+            continue;
+        }
+
         // if the subscription is not an exact match, skip it
         if ((strcmp(node_sub->hab_type, hab_type) != 0) ||
             (strcmp(node_sub->hab_id, hab_id) != 0) ||
@@ -64,9 +72,9 @@ int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  
             //        then subscribe to it again, we don't run into issues).
         }
 
-        if (node_sub->hab_type != NULL) free(node_sub->hab_type);
-        if (node_sub->hab_id != NULL) free(node_sub->hab_id);
-        if (node_sub->node_id != NULL) free(node_sub->node_id);
+        free(node_sub->hab_type);
+        free(node_sub->hab_id);
+        free(node_sub->node_id);
         free(node_sub);
         
         i->data = NULL;

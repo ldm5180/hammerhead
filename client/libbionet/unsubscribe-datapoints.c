@@ -30,6 +30,13 @@ int bionet_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char 
             continue;
         }
 
+        if ((dp_sub->hab_type == NULL) || (dp_sub->hab_id == NULL) || 
+            (dp_sub->node_id == NULL) || (dp_sub->node_id == NULL)) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_datapoints: encountered a NULL subscription component");
+            i = i->next;
+            continue;
+        }
+
         if (!((strcmp(dp_sub->hab_type, hab_type) == 0) &&
             (strcmp(dp_sub->hab_id, hab_id) == 0) &&
             (strcmp(dp_sub->node_id, node_id) == 0) &&
@@ -38,10 +45,10 @@ int bionet_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char 
             continue;
         }
 
-        if (dp_sub->hab_type != NULL) free(dp_sub->hab_type);
-        if (dp_sub->hab_id != NULL) free(dp_sub->hab_id);
-        if (dp_sub->node_id != NULL) free(dp_sub->node_id);
-        if (dp_sub->resource_id != NULL) free(dp_sub->resource_id);
+        free(dp_sub->hab_type);
+        free(dp_sub->hab_id);
+        free(dp_sub->node_id);
+        free(dp_sub->resource_id);
         free(dp_sub);
         i->data = NULL;
         

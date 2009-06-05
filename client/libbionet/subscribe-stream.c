@@ -22,37 +22,47 @@ int bionet_subscribe_stream_by_habtype_habid_nodeid_streamid(const char *hab_typ
     libbionet_datapoint_subscription_t *new_stream_sub;
 
     new_stream_sub = calloc(1, sizeof(libbionet_datapoint_subscription_t));
-    if (new_stream_sub == NULL)
+    if (new_stream_sub == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(): out of memory");
         goto fail0;
+    }
 
     new_stream_sub->hab_type = strdup(hab_type);
-    if (new_stream_sub->hab_type == NULL) 
+    if (new_stream_sub->hab_type == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(): out of memory");
         goto fail1;
+    }
 
     new_stream_sub->hab_id = strdup(hab_id);
-    if (new_stream_sub->hab_id == NULL) 
+    if (new_stream_sub->hab_id == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(): out of memory");
         goto fail2;
+    }
 
     new_stream_sub->node_id = strdup(node_id);
-    if (new_stream_sub->node_id == NULL) 
+    if (new_stream_sub->node_id == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(): out of memory");
         goto fail3;
+    }
 
     new_stream_sub->resource_id = strdup(stream_id);
-    if (new_stream_sub->resource_id == NULL) 
+    if (new_stream_sub->resource_id == NULL)  {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(): out of memory");
         goto fail4;
+    }
 
     libbionet_stream_subscriptions = g_slist_prepend(libbionet_stream_subscriptions, new_stream_sub);
 
     r = snprintf(publisher, sizeof(publisher), "%s.%s", hab_type, hab_id);
     if (r >= sizeof(publisher)) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_stream_by_habtype_habid_nodeid_streamid(): HAB name '%s.%s' too long", hab_type, hab_id);
-        return -1;
+        goto fail5;
     }
 
     r = snprintf(topic, sizeof(topic), "S %s:%s", node_id, stream_id);
     if (r >= sizeof(topic)) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_stream_by_habtype_habid_nodeid_streamid(): topic 'S %s:%s' too long", node_id, stream_id);
-        return -1;
+        goto fail5;
     }
 
     // send the subscription request to the HAB
@@ -60,6 +70,9 @@ int bionet_subscribe_stream_by_habtype_habid_nodeid_streamid(const char *hab_typ
     if (!r) return -1;
 
     return 0;
+
+fail5:
+    free(new_stream_sub->resource_id);
 
 fail4:
     free(new_stream_sub->node_id);
@@ -74,7 +87,6 @@ fail1:
     free(new_stream_sub);
 
 fail0:
-    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(): out of memory");
     return -1;
 
 }
