@@ -64,6 +64,16 @@ INSERT INTO Resource_Flavors VALUES (NULL, 'actuator');
 INSERT INTO Resource_Flavors VALUES (NULL, 'parameter');
 
 
+-- this table has one row for each BDM that has synced to/from, including the local BDM
+CREATE TABLE BDMs (
+    Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
+    BDM_ID VARCHAR(255) NOT NULL,
+    Datapoint_Key INTEGER,                           -- Last datapoint that was synced to this BDM. NULL for BDMs that haven't been synced to yet (Or never will). Note, sort order for datapoints is: (Entry_Timestamp_sec, Entry_Timestamp_usec, Timestamp_sec, Timestamp_usec, Resource.Key, value) Ascending
+    UNIQUE (BDM_ID)
+);
+CREATE INDEX BDM_ID_Index ON BDMs(BDM_ID);
+    
+
 -- this table has one row for each distinct resource we've ever seen
 -- this is the resource metadata
 CREATE TABLE Resources (
@@ -86,11 +96,15 @@ CREATE INDEX Resource_ID_Index ON Resources(Resource_ID);
 CREATE TABLE Datapoints (
     Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
     Resource_Key INTEGER NOT NULL,                   -- the row index in the Resources table of the Resource that this Datapoint belongs to
+    BDM_Key INTEGER NOT NULL,                        -- the rom index in the BDMs table of the BDM that this Datapoint was first recorded
     Value INTEGER NOT NULL,                          -- taking advantage of sqlite's manifest typing
     Timestamp_Sec  INTEGER NOT NULL,
     Timestamp_Usec INTEGER NOT NULL,
+    Entry_Timestamp_Sec  INTEGER NOT NULL,           -- Time that this datapoint was entered into the database
+    Entry_Timestamp_Usec INTEGER NOT NULL,
     UNIQUE (Resource_Key, Value, Timestamp_Sec, Timestamp_Usec)
 );
 CREATE INDEX Resource_Key_Index ON Datapoints(Resource_Key);
 CREATE INDEX Timestamp_Sec_Index ON Datapoints(Timestamp_Sec);
+CREATE INDEX Entry_Timestamp_Sec_Index ON Datapoints(Entry_Timestamp_Sec);
 

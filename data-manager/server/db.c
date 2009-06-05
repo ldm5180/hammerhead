@@ -20,9 +20,13 @@
 #include "bdm-util.h"
 
 
+static int add_bdm_to_db(const char *bdm_id);
 
 
 static sqlite3 *db = NULL;
+
+static sqlite3_stmt * insert_datapoint_stmt = NULL;
+static sqlite3_stmt * insert_bdm_stmt = NULL;
 
 extern char * database_file;
 char bdm_id[256] = { 0 };
@@ -45,6 +49,9 @@ int db_init(void) {
         return -1;
     }
 
+    // Add self as bdm to db
+    add_bdm_to_db(bdm_id);
+
     return 0;
 }
 
@@ -54,6 +61,16 @@ int db_init(void) {
 //
 
 void db_shutdown(void) {
+
+    if(insert_datapoint_stmt){
+	sqlite3_finalize(insert_datapoint_stmt);
+	insert_datapoint_stmt = NULL;
+    }
+    if(insert_bdm_stmt){
+	sqlite3_finalize(insert_bdm_stmt);
+	insert_bdm_stmt = NULL;
+    }
+
     sqlite3_close(db);
 }
 
@@ -321,54 +338,75 @@ static int add_resource_to_db(bionet_resource_t *resource) {
 }
 
 
+static int add_bdm_to_db(const char *bdm_id) {
+    int r;
+
+    if(insert_bdm_stmt == NULL) {
+	r = sqlite3_prepare_v2(db, 
+	    "INSERT"
+	    " OR IGNORE"
+	    " INTO BDMs(BDM_ID) VALUES(?)",
+	    -1, &insert_bdm_stmt, NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-bdm SQL error: %s\n", sqlite3_errmsg(db));
+	    return -1;
+	}
+    }
+
+    int param = 1;
+    r = sqlite3_bind_text(insert_bdm_stmt, param++, bdm_id, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_bdm_stmt)));
+    if (r != SQLITE_DONE) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
+	sqlite3_reset(insert_bdm_stmt);
+        return -1;
+    }
+    sqlite3_reset(insert_bdm_stmt);
+    sqlite3_clear_bindings(insert_bdm_stmt);
+
+    return 0;
+}
 
 
 static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
     int r;
-    char sql[1024];
-    char escaped_string[1024];
-    char *zErrMsg = NULL;
-    bionet_value_t *value = bionet_datapoint_get_value(datapoint);
 
-    // String values need to be escaped here to avoid an SQL injection
-    // vulnerability.  Single-quote characters "'" need to be replaced with
-    // the two-character string "''" (two single-quote characters).
+    if(insert_datapoint_stmt == NULL) {
+	r = sqlite3_prepare_v2(db, 
+	    "INSERT"
+	    " OR IGNORE"
+	    " INTO Datapoints"
+	    " SELECT"
+	    "     NULL, Resources.Key, BDMs.Key, ?, ?, ?, ?, ?"
+	    "     FROM Hardware_Abstractors, Nodes, Resources, BDMs"
+	    "     WHERE"
+	    "         Hardware_Abstractors.HAB_Type = ?"
+	    "         AND Hardware_Abstractors.HAB_ID = ?"
+	    "         AND Nodes.HAB_Key = Hardware_Abstractors.Key"
+	    "         AND Nodes.Node_ID = ?"
+	    "         AND Resources.Node_Key = Nodes.Key"
+	    "         AND Resources.Resource_ID = ?"
+	    "         AND BDMs.BDM_ID = ?"
+	    ";",
+	    -1, &insert_datapoint_stmt, NULL);
 
-    {
-        char *src_string;
-        int src_index;
-        int dest_index;
-        int dest_size;
-
-        src_string = bionet_value_to_str(value);
-
-        dest_size = sizeof(escaped_string);
-
-        for (
-            src_index = 0, dest_index = 0;
-            (dest_index < (dest_size-1)) && (src_string[src_index] != '\0');
-            src_index ++, dest_index ++
-        ) {
-            if (src_string[src_index] == '\'') {
-                if (dest_index >= (dest_size-2)) {
-                    // not enough room for the escaped ' and the NULL
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL doesnt fit in buffer!\n");
-                    free(src_string);
-                    return -1;
-                }
-                escaped_string[dest_index] = '\'';
-                dest_index ++;
-            }
-            escaped_string[dest_index] = src_string[src_index];
-        }
-        escaped_string[dest_index] = '\0';
-
-        free(src_string);
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
+	    return -1;
+	}
     }
 
-
     // FIXME: might be the wrong resource (might differ in data type or flavor)
+    bionet_value_t *value = bionet_datapoint_get_value(datapoint);
     struct timeval * timestamp = bionet_datapoint_get_timestamp(datapoint);
+    struct timeval entry;
+    gettimeofday(&entry, NULL);
     bionet_resource_t * resource = bionet_value_get_resource(value);
     bionet_node_t * node = bionet_resource_get_node(resource);
     bionet_hab_t * hab = bionet_node_get_hab(node);
@@ -377,50 +415,68 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
 //	    bionet_resource_get_name(resource),
 //	    bionet_value_to_str(value));
 
-//BDM-BP TODO add bdm_id when doing a datapoint insert
-//BDM-BP TODO add entry timestamp when doing a datapoint insert
-    r = snprintf(
-        sql,
-        sizeof(sql),
-        "INSERT"
-        " OR IGNORE"
-        " INTO Datapoints"
-        " SELECT"
-        "     NULL, Resources.Key, '%s', %u, %u"
-        "     FROM Hardware_Abstractors, Nodes, Resources"
-        "     WHERE"
-        "         Hardware_Abstractors.HAB_Type = '%s'"
-        "         AND Hardware_Abstractors.HAB_ID = '%s'"
-        "         AND Nodes.HAB_Key = Hardware_Abstractors.Key"
-        "         AND Nodes.Node_ID = '%s'"
-        "         AND Resources.Node_Key = Nodes.Key"
-        "         AND Resources.Resource_ID = '%s'"
-        ";",
-        escaped_string,
-        (unsigned int)timestamp->tv_sec,
-        (unsigned int)timestamp->tv_usec,
-        bionet_hab_get_type(hab),
-        bionet_hab_get_id(hab),
-	bionet_node_get_id(node),
-        bionet_resource_get_id(resource)
-    );
-    if (r >= sizeof(sql)) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL doesnt fit in buffer!\n");
-        return -1;
+    // Bind host variables to the prepared statement -- This eliminates the need to escape strings
+    // In order of the placeholders (?) in the SQL
+    int param = 1;
+    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_value_to_str(value), -1, free);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  timestamp->tv_sec);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  timestamp->tv_usec);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  entry.tv_sec);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  entry.tv_usec);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_hab_get_type(hab), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_hab_get_id(hab), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_node_get_id(node), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_resource_get_id(resource), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bdm_id, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
     }
 
-    r = sqlite3_exec(
-        db,
-        sql,
-        NULL,
-        0,
-        &zErrMsg
-    );
-    if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_datapoint_stmt)));
+    if (r != SQLITE_DONE) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
+	sqlite3_reset(insert_datapoint_stmt);
         return -1;
     }
+    sqlite3_reset(insert_datapoint_stmt);
+    sqlite3_clear_bindings(insert_datapoint_stmt);
 
     return 0;
 }
@@ -470,6 +526,7 @@ int db_add_datapoint(bionet_datapoint_t *datapoint) {
     r = add_resource_to_db(resource);
     if (r != 0) goto fail;
 
+    //BDM-BP TODO: Add BDM to database if not self
 
     // now finally add the data point itself
     r = add_datapoint_to_db(datapoint);
@@ -545,6 +602,7 @@ int db_add_node(bionet_node_t *node) {
 
         // add the resource's data point, if any
         if (d != NULL) {
+	    // BDM-BP TODO: Add BDM to database if not self
             r = add_datapoint_to_db(d);
             if (r != 0) goto fail;
         }
@@ -790,7 +848,6 @@ GPtrArray *db_get_resource_datapoints(
 ) {
     int r;
     char sql[2048];
-    char * tmp_sql;
     char *zErrMsg = NULL;
 
     char hab_type_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
@@ -799,6 +856,7 @@ GPtrArray *db_get_resource_datapoints(
     char resource_id_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     char datapoint_start_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     char datapoint_end_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
+    /* The size of these is mostly fixed */
     char entry_start_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     char entry_end_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
 
@@ -887,13 +945,19 @@ GPtrArray *db_get_resource_datapoints(
     }
 
 
-    if ((datapoint_start == NULL) == 0) {
+    if (datapoint_start == NULL) {
 	datapoint_start_restriction[0] = '\0';
     } else {
-	r = snprintf(datapoint_start_restriction,
-		     sizeof(datapoint_start_restriction),
-		     "(Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)",
-		     (int)datapoint_start->tv_sec, (int)datapoint_start->tv_usec);
+	r = snprintf(
+		datapoint_start_restriction, 
+		sizeof(datapoint_start_restriction),
+		"AND ("
+		" Datapoints.Timestamp_Sec > %d"
+		" OR (Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)"
+		")",
+		(int)datapoint_start->tv_sec, 
+		(int)datapoint_start->tv_sec, 
+		(int)datapoint_start->tv_usec);
 	if (r >= sizeof(datapoint_start_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "db_get_resource_datapoints(): datapoint start time is too long!");
@@ -901,51 +965,66 @@ GPtrArray *db_get_resource_datapoints(
 	}
     }
 
-
-    if ((datapoint_end == NULL) == 0) {
+    if (datapoint_end == NULL) {
 	datapoint_end_restriction[0] = '\0';
     } else {
-	r = snprintf(datapoint_end_restriction,
-		     sizeof(datapoint_end_restriction),
-		     "(Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)",
-		     (int)datapoint_end->tv_sec, (int)datapoint_end->tv_usec);
+	r = snprintf(
+		datapoint_end_restriction, 
+		sizeof(datapoint_end_restriction),
+		"AND ("
+		" Datapoints.Timestamp_Sec < %d"
+		" OR (Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec < %d)"
+		")",
+		(int)datapoint_end->tv_sec, 
+		(int)datapoint_end->tv_sec, 
+		(int)datapoint_end->tv_usec);
 	if (r >= sizeof(datapoint_end_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "db_get_resource_datapoints(): datapoint start time is too long!");
+		  "db_get_resource_datapoints(): datapoint end time is too long!");
 	    return NULL;
 	}
     }
 
 
-    if ((entry_start == NULL) == 0) {
+    if (entry_start == NULL) {
 	entry_start_restriction[0] = '\0';
     } else {
-	r = snprintf(entry_start_restriction,
-		     sizeof(entry_start_restriction),
-		     "(Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)",
-		     (int)entry_start->tv_sec, (int)entry_start->tv_usec);
+	r = snprintf(
+		entry_start_restriction, 
+		sizeof(entry_start_restriction),
+		"AND ("
+		" Datapoints.Entry_Timestamp_Sec > %d"
+		" OR (Datapoints.Entry_Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)"
+		")",
+		(int)entry_start->tv_sec, 
+		(int)entry_start->tv_sec, 
+		(int)entry_start->tv_usec);
 	if (r >= sizeof(entry_start_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "db_get_resource_datapoints(): datapoint start time is too long!");
+		  "db_get_resource_entrys(): entry start time is too long!");
 	    return NULL;
 	}
     }
 
-
-    if ((entry_end == NULL) == 0) {
+    if (entry_end == NULL) {
 	entry_end_restriction[0] = '\0';
     } else {
-	r = snprintf(entry_end_restriction,
-		     sizeof(entry_end_restriction),
-		     "(Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)",
-		     (int)entry_end->tv_sec, (int)entry_end->tv_usec);
+	r = snprintf(
+		entry_end_restriction, 
+		sizeof(entry_end_restriction),
+		"AND ("
+		" Datapoints.Entry_Timestamp_Sec < %d"
+		" OR (Datapoints.Entry_Timestamp_Sec = %d AND Datapoints.Timestamp_Usec < %d)"
+		")",
+		(int)entry_end->tv_sec, 
+		(int)entry_end->tv_sec, 
+		(int)entry_end->tv_usec);
 	if (r >= sizeof(entry_end_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "db_get_resource_datapoints(): datapoint start time is too long!");
+		  "db_get_resource_entrys(): entry end time is too long!");
 	    return NULL;
 	}
     }
-
 
     r = snprintf(
         sql,
@@ -973,113 +1052,32 @@ GPtrArray *db_get_resource_datapoints(
         "    AND Resource_Data_Types.Key=Resources.Data_Type_Key"
         "    AND Resource_Flavors.Key=Resources.Flavor_Key"
         "    AND Datapoints.Resource_Key=Resources.Key"
+	"    %s"
+	"    %s"
+	"    %s"
+	"    %s"
+	"    %s"
+	"    %s"
+	"    %s"
+	"    %s"
+	" ORDER BY"
+	"     Datapoints.Timestamp_Sec ASC,"
+	"     Datapoints.Timestamp_Usec ASC"
+	";",
+	datapoint_start_restriction,
+	datapoint_end_restriction,
+	entry_start_restriction,
+	entry_end_restriction,
+	hab_type_restriction,
+	hab_id_restriction,
+	node_id_restriction,
+	resource_id_restriction
 	);
 
     if (r >= sizeof(sql)) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
         return NULL;
     }
-
-
-    if ((datapoint_start_restriction[0] != '\0') ||
-	(datapoint_end_restriction[0] != '\0') ||
-	(entry_start_restriction[0] != '\0') ||
-	(entry_end_restriction[0] != '\0')) {
-	
-	char * or = '\0';
-
-	//append the "AND"
-	tmp_sql = (char *)sql + strlen(sql);
-	r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
-		     "    AND (");
-	if (r >= sizeof(sql) - strlen(sql) - 1) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
-	    return NULL;
-	}
-
-	//append the datapoint start restriction
-	if (datapoint_start_restriction[0] != '\0') {
-	    tmp_sql = (char *)sql + strlen(sql);
-	    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
-			 "        (Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)",
-			 (int)datapoint_start->tv_sec, (int)datapoint_start->tv_usec);
-	    if (r >= sizeof(sql) - strlen(sql) - 1) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
-		return NULL;
-	    }
-	    or = "OR ";
-	}
-
-        //append the datapoint stop restriction
-	if (datapoint_end_restriction[0] != '\0') {
-	    tmp_sql = (char *)sql + strlen(sql);
-	    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
-			 "        %s(Datapoints.Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)",
-			 or, (int)datapoint_end->tv_sec, (int)datapoint_end->tv_usec);
-	    if (r >= sizeof(sql) - strlen(sql) - 1) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
-		return NULL;
-	    }
-	    or = "OR ";
-	}
-
-	//append the entry start restriction
-	if (entry_start_restriction[0] != '\0') {
-	    tmp_sql = (char *)sql + strlen(sql);
-	    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
-			 "        %s(Entry.Timestamp_Sec = %d AND Entry.Timestamp_Usec >= %d)",
-			 or, (int)entry_start->tv_sec, (int)entry_start->tv_usec);
-	    if (r >= sizeof(sql) - strlen(sql) - 1) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
-		return NULL;
-	    }
-	    or = "OR ";
-	}
-
-        //append the entry stop restriction
-	if (entry_end_restriction[0] != '\0') {
-	    tmp_sql = (char *)sql + strlen(sql);
-	    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
-			 "        %s(Entry.Timestamp_Sec = %d AND Entry.Timestamp_Usec >= %d)",
-			 or, (int)entry_end->tv_sec, (int)entry_end->tv_usec);
-	    if (r >= sizeof(sql) - strlen(sql) - 1) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
-		return NULL;
-	    }
-	    or = "OR ";
-	}
-
-	//append the closing ")"
-	tmp_sql = (char *)sql + strlen(sql);
-	r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
-		     "    )");
-	if (r >= sizeof(sql) - strlen(sql) - 1) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
-	    return NULL;
-	}
-    }
-
-
-    tmp_sql = (char *)sql + strlen(sql);
-    r = snprintf(tmp_sql, sizeof(sql) - strlen(sql) - 1,
-		 "    %s"
-		 "    %s"
-		 "    %s"
-		 "    %s"
-		 " ORDER BY"
-		 "     Datapoints.Timestamp_Sec ASC,"
-		 "     Datapoints.Timestamp_Usec ASC"
-		 ";",
-		 hab_type_restriction,
-		 hab_id_restriction,
-		 node_id_restriction,
-		 resource_id_restriction
-	);
-    if (r >= sizeof(sql) - strlen(sql) - 1) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL doesnt fit in buffer!\n");
-	return NULL;
-    }
-
 
     g_log(
         BDM_LOG_DOMAIN,
