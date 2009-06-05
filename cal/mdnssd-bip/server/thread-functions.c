@@ -177,7 +177,8 @@ static int read_from_user(void) {
 
                 cursor = cursor->next;
 
-                if (this->topic_matches((char*)topic_link->data, event->topic) == 0) {
+                // topic matches have to be exact: you can only remove previously existing subscriptions
+                if (strcmp((char*)topic_link->data, event->topic) == 0) {
                     peer->subscriptions = g_slist_remove_link(peer->subscriptions, topic_link);
 
                     if (topic_link->data != NULL) free((char*)topic_link->data);
@@ -550,7 +551,8 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
 
                 cursor = cursor->next;
 
-                if (this->topic_matches((char*)topic_link->data, event->topic) == 0) {
+                // topic matches have to be exact: you can only remove previously existing subscriptions
+                if (strcmp((char*)topic_link->data, event->topic) == 0) {
                     peer->subscriptions = g_slist_remove_link(peer->subscriptions, topic_link);
 
                     if (topic_link->data != NULL) free((char*)topic_link->data);
