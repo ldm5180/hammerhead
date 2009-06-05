@@ -19,6 +19,9 @@ libbionet_la_SOURCES =        \
     subscribe-hab-list.c      \
     subscribe-node-list.c     \
     subscribe-stream.c        \
+    unsubscribe-hab-list.c    \
+    unsubscribe-node-list.c   \
+    unsubscribe-datapoints.c  \
     unsubscribe-stream.c      \
     set-resource.c            \
     stream-write.c            \

@@ -428,13 +428,80 @@ int bionet_subscribe_stream_by_name(const char *stream_name);
 
 
 /**
+ * @brief Removes a previous hab subscription.
+ *
+ * If the specified pattern matches a previous subscription, the 
+ * matched subscription is removed. Otherwise, this function does
+ * nothing and returns failure, check errno:
+ *
+ * EINVAL  = Invalid hab name
+ *
+ * ENOENT  = Matching subscription does not exist
+ *
+ * @param[in] hab_name A string in the form "<HAB-Type>.<HAB-ID>" where any 
+ * component may be the wildcard "*"
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_unsubscribe_hab_list_by_name(const char *hab_name);
+
+
+/**
+ * @brief Remove's a previous subscription to a list of Nodes.
+ *
+ * If the specified pattern matches a subscription, the matched subscription
+ * is removed (the client will no longer be notified when matching nodes join
+ * or leave the network). Otherwise, this function does nothing and returns 
+ * failure, check errno:
+ *
+ * EINVAL  = Invalid hab name
+ *
+ * ENOENT  = Matching subscription does not exist
+ *
+ * @param 'node_name' A string in the form "<HAB-Type>.<HAB-ID>.<Node-ID>"
+ * where any component may be the wildcard "*".
+ *
+ * @retval 0 Success
+ * @retval -1 Error
+ */
+int bionet_unsubscribe_node_list_by_name(const char *node_name);
+
+
+/**
+ * @brief Removes a subscription to a list of datapoints.
+ *
+ * If the specified pattern matches a subscription, the matched subscription
+ * is removed (the client will no longer be notified when matching datapoints
+ * join or leave the network). Otherwise, this function does nothing and
+ * returns failure, check errno:
+ *
+ * EINVAL  = Invalid hab name
+ *
+ * ENOENT  = Matching subscription does not exist
+ *
+ * @param resource_name A string in the form 
+ * "<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>" where any component may be
+ * the wildcard "*".
+ *
+ * @retval 0 Success
+ * @retval -1 Error
+ */
+int bionet_unsubscribe_datapoints_by_name(const char *resource_name);
+
+
+/**
  * @brief Removes a client's subcription to the contents of the 
  * named Producer Stream.
  *
  * If the specified stream name matches a previous subscription, the 
  * matched subscription is removed (the client will no longer recieve
  * data published to the named Producer Stream). Otherwise, this function
- * does nothing.
+ * does nothing, returns failure and sets errno.
+ *
+ * EINVAL  = Invalid hab name
+ *
+ * ENOENT  = Matching subscription does not exist
  *
  * @param stream_name A string in the form 
  *"<HAB-Type>.<HAB-ID>.<Node-ID>:<Stream-ID>" where any component may be

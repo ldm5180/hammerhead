@@ -41,11 +41,11 @@ int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char
             bionet_hab_t *hab = i->data;
 
             if (bionet_hab_matches_type_and_id(hab, new_hab_sub->hab_type, new_hab_sub->hab_id)) {
-		if (bionet_cache_lookup_hab(bionet_hab_get_type(hab), bionet_hab_get_id(hab)) == NULL) {
+                if (bionet_cache_lookup_hab(bionet_hab_get_type(hab), bionet_hab_get_id(hab)) == NULL) {
                     libbionet_cache_add_hab(hab);
-                    if (libbionet_callback_new_hab != NULL) {
-                        libbionet_callback_new_hab(hab);
-                    }
+                }
+                if (libbionet_callback_new_hab != NULL) {
+                    libbionet_callback_new_hab(hab);
                 }
             }
         }
