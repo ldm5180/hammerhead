@@ -33,6 +33,11 @@ int bionet_unsubscribe_hab_list_by_habtype_habid(const char *hab_type,  const ch
 
         libbionet_hab_subscription_t *hab_sub = (libbionet_hab_subscription_t*)link->data;
 
+        if (hab_sub == NULL) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_hablist...(): NULL hab subscription!");
+            continue;
+        }
+
         if ((strcmp(hab_sub->hab_type, hab_type) == 0) && (strcmp(hab_sub->hab_id, hab_id) == 0)) {
             libbionet_hab_subscriptions = g_slist_remove_link(libbionet_hab_subscriptions, link);
 

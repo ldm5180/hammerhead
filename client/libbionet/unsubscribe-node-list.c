@@ -24,6 +24,12 @@ int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  
     while (i != NULL) {
         libbionet_node_subscription_t *node_sub = i->data;
 
+        if (node_sub == NULL) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_node_list...(): NULL node subscription!");
+            i = i->next;
+            continue;
+        }
+
         // if the subscription is not an exact match, skip it
         if ((strcmp(node_sub->hab_type, hab_type) != 0) ||
             (strcmp(node_sub->hab_id, hab_id) != 0) ||
