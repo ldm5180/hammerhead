@@ -24,6 +24,12 @@ int bionet_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char 
     while (i != NULL) {
         libbionet_datapoint_subscription_t *dp_sub = i->data;
 
+        if (dp_sub == NULL) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_datapoints: encountered a NULL subscription");
+            i = i->next;
+            continue;
+        }
+
         if (!((strcmp(dp_sub->hab_type, hab_type) == 0) &&
             (strcmp(dp_sub->hab_id, hab_id) == 0) &&
             (strcmp(dp_sub->node_id, node_id) == 0) &&
