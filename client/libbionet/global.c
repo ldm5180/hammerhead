@@ -36,6 +36,7 @@ GSList *libbionet_habs = NULL;
 GSList *libbionet_hab_subscriptions = NULL;
 GSList *libbionet_node_subscriptions = NULL;
 GSList *libbionet_datapoint_subscriptions = NULL;
+GSList *libbionet_stream_subscriptions = NULL;
 
 
 #if 0

@@ -76,6 +76,7 @@ typedef struct {
 } libbionet_datapoint_subscription_t;
 
 extern GSList *libbionet_datapoint_subscriptions;
+extern GSList *libbionet_stream_subscriptions;
 
 
 

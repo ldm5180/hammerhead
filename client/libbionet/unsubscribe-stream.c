@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <glib.h>
@@ -18,24 +19,50 @@ int bionet_unsubscribe_stream_by_habtype_habid_nodeid_streamid(const char *hab_t
     int r;
     char publisher[BIONET_NAME_COMPONENT_MAX_LEN * 2];
     char topic[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 2];  // the +2 is for the starting "S " subscription family
+    GSList *i = libbionet_stream_subscriptions;
 
-    r = snprintf(publisher, sizeof(publisher), "%s.%s", hab_type, hab_id);
-    if (r >= sizeof(publisher)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_stream_by_habtype_habid_nodeid_streamid(): HAB name '%s.%s' too long", hab_type, hab_id);
-        return -1;
+    while (i != NULL) {
+        libbionet_datapoint_subscription_t *stream_sub = i->data;
+
+        if (!((strcmp(stream_sub->hab_type, hab_type) == 0) &&
+            (strcmp(stream_sub->hab_id, hab_id) == 0) &&
+            (strcmp(stream_sub->node_id, node_id) == 0) &&
+            (strcmp(stream_sub->resource_id, stream_id) == 0))) {
+            i = i->next;
+            continue;
+        }
+
+        if (stream_sub->hab_type != NULL) free(stream_sub->hab_type);
+        if (stream_sub->hab_id != NULL) free(stream_sub->hab_id);
+        if (stream_sub->node_id != NULL) free(stream_sub->node_id);
+        if (stream_sub->resource_id != NULL) free(stream_sub->resource_id);
+        free(stream_sub);
+        i->data = NULL;
+        
+        libbionet_stream_subscriptions = g_slist_delete_link(libbionet_stream_subscriptions, i);
+
+
+        r = snprintf(publisher, sizeof(publisher), "%s.%s", hab_type, hab_id);
+        if (r >= sizeof(publisher)) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_stream_by_habtype_habid_nodeid_streamid(): HAB name '%s.%s' too long", hab_type, hab_id);
+            return -1;
+        }
+
+        r = snprintf(topic, sizeof(topic), "S %s:%s", node_id, stream_id);
+        if (r >= sizeof(topic)) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_stream_by_habtype_habid_nodeid_streamid(): topic 'S %s:%s' too long", node_id, stream_id);
+            return -1;
+        }
+
+        // send the subscription request to the HAB
+        r = cal_client.unsubscribe(publisher, topic);
+        if (!r) return -1;
+
+        return 0;
     }
 
-    r = snprintf(topic, sizeof(topic), "S %s:%s", node_id, stream_id);
-    if (r >= sizeof(topic)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_stream_by_habtype_habid_nodeid_streamid(): topic 'S %s:%s' too long", node_id, stream_id);
-        return -1;
-    }
-
-    // send the subscription request to the HAB
-    r = cal_client.unsubscribe(publisher, topic);
-    if (!r) return -1;
-
-    return 0;
+    errno = ENOENT;
+    return -1;
 }
 
 
