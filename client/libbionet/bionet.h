@@ -514,11 +514,8 @@ int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
  *
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that the HAB accepted the request.
- *
- * @deprecated This function will be removed in Bionet v2.3
- * In 2.1 and later use bionet_set_resource_by_name()
  */
-int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const char *value);
+int bionet_set_resource_by_name(const char *resource_name, const char *value);
 
 
 /**

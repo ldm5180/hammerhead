@@ -100,7 +100,7 @@
 	BOOL ok = NO;
 	
 	if(valStr){
-		if(0 == bionet_set_resource_by_name_pattern([name UTF8String], valStr)){
+		if(0 == bionet_set_resource_by_name([name UTF8String], valStr)){
 			ok = YES;
 		}
 	}

@@ -43,14 +43,14 @@ int bionet_set_resource(bionet_resource_t *resource, const char *value) {
 }
 
 
-int bionet_set_resource_by_name_pattern(const char *resource_name_pattern, const char *value) {
+int bionet_set_resource_by_name(const char *resource_name, const char *value) {
     char *hab_type;
     char *hab_id;
     char *node_id;
     char *resource_id;
     int r;
 
-    r = bionet_split_resource_name(resource_name_pattern, &hab_type, &hab_id, &node_id, &resource_id);
+    r = bionet_split_resource_name(resource_name, &hab_type, &hab_id, &node_id, &resource_id);
     if (r != 0) {
         // a helpful log message has already been logged
         return -1;

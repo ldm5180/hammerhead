@@ -76,6 +76,7 @@ START_TEST (test_libutil_hab_new_1) {
     hab_type = bionet_hab_get_type(hab);
     hab_id = bionet_hab_get_id(hab);
 
+#ifdef LINUX
     fd = open("/proc/self/cmdline", O_RDONLY);
     fail_if(fd < 0,
 	    "error opening /proc/self/cmdline (%m)\n");
@@ -104,6 +105,7 @@ START_TEST (test_libutil_hab_new_1) {
     fail_if(strcmp(myid, hab_id),
 	    "HAB-ID should be %s, but it is %s\n",
 	    myid, hab_id);
+#endif
 } END_TEST /* test_libutil_hab_new_1 */
 
 
@@ -126,6 +128,7 @@ START_TEST (test_libutil_hab_new_2) {
     hab_type = bionet_hab_get_type(hab);
     hab_id = bionet_hab_get_id(hab);
 
+#ifdef LINUX
     fd = open("/proc/self/cmdline", O_RDONLY);
     fail_if(fd < 0,
 	    "error opening /proc/self/cmdline (%m)\n");
@@ -163,6 +166,7 @@ START_TEST (test_libutil_hab_new_2) {
     fail_if(strcmp(hostname, hab_id),
 	    "HAB-ID should be %s, but it is %s\n",
 	    hostname, hab_id);
+#endif
 } END_TEST /* test_libutil_hab_new_2 */
 
 
