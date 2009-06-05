@@ -504,7 +504,7 @@ int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
  * @brief  Sends a message to Bionet requesting that the specified
  * Resource be set to the specified value.
  *
- * @param[in] resource_name_pattern A string in the form 
+ * @param[in] resource_name A string in the form 
  *"<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>" where any component may be
  * the wildcard "*".
  * @param[in] value New value as a string
