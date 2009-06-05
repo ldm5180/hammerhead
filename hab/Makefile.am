@@ -6,14 +6,17 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = libhab random csa-cp syshealth pal-650 streamy
-
-if ENABLE_ALSA
-SUBDIRS += alsa
-endif
+SUBDIRS = libhab 
 
 if ENABLE_PYTHON
 SUBDIRS += py-libhab
+endif
+
+if ENABLE_HABS
+SUBDIRS += random csa-cp syshealth pal-650 streamy
+
+if ENABLE_ALSA
+SUBDIRS += alsa
 endif
 
 if ENABLE_BLUETOOTH
@@ -42,4 +45,6 @@ if ENABLE_FLEX
 if ENABLE_BISON
 SUBDIRS += test-pattern
 endif
+endif
+
 endif

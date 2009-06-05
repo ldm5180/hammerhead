@@ -5,13 +5,22 @@
 
 
 include $(top_srcdir)/common.am
-SUBDIRS = libbionet watcher stream
+
+SUBDIRS = libbionet 
 
 if ENABLE_QT4
-SUBDIRS += libbionet-qt4 monitor stream-manager
+SUBDIRS += libbionet-qt4
 endif
 
 if ENABLE_PYTHON
 SUBDIRS += py-libbionet
 endif
 
+if ENABLE_CLIENTS
+SUBDIRS += watcher stream
+
+if ENABLE_QT4
+SUBDIRS += monitor stream-manager
+endif
+
+endif

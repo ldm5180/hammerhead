@@ -163,6 +163,25 @@ fi
 AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
 
 
+# disable HABs
+AC_ARG_ENABLE(
+    habs,
+    AC_HELP_STRING([--disable-habs], [disable Bionet HABs]),
+        [ENABLE_HABS=$enableval],
+        [ENABLE_HABS=yes]
+    )
+AM_CONDITIONAL(ENABLE_HABS, test "x$ENABLE_HABS" = "xyes")
+
+# disable Clients
+AC_ARG_ENABLE(
+    clients,
+    AC_HELP_STRING([--disable-clients], [disable Bionet Clients]),
+        [ENABLE_CLIENTS=$enableval],
+        [ENABLE_CLIENTS=yes]
+    )
+AM_CONDITIONAL(ENABLE_CLIENTS, test "x$ENABLE_CLIENTS" = "xyes")
+
+
 ###
 # 
 # make sure there is sqlite3 (required for BDM)
