@@ -27,6 +27,7 @@ libbionet_la_SOURCES =        \
     stream-write.c            \
     cal-callback.c            \
     cache-get-hab.c           \
+    cache-cleanup.c           \
     cache-internal.c          \
     cache-lookup-hab.c        \
     cache-lookup-node.c       \

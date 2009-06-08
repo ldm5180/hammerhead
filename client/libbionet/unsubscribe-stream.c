@@ -56,6 +56,7 @@ int bionet_unsubscribe_stream_by_habtype_habid_nodeid_streamid(const char *hab_t
         
         libbionet_stream_subscriptions = g_slist_delete_link(libbionet_stream_subscriptions, i);
 
+        libbionet_cache_cleanup_nodes();
 
         r = snprintf(publisher, sizeof(publisher), "%s.%s", hab_type, hab_id);
         if (r >= sizeof(publisher)) {

@@ -94,6 +94,8 @@ void libbionet_cache_remove_node(bionet_node_t *node);
 void libbionet_cache_add_resource(bionet_resource_t *resource);
 void libbionet_cache_replace_resource(bionet_resource_t *resource);
 
+void libbionet_cache_cleanup_habs();
+void libbionet_cache_cleanup_nodes();
 
 
 

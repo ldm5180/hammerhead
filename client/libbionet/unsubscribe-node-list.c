@@ -32,7 +32,7 @@ int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  
 
         if ((node_sub->hab_type == NULL) || 
             (node_sub->hab_id == NULL) ||
-            (node_sub->node_id)) {
+            (node_sub->node_id == NULL)) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_node_list...(): NULL node subscription component!");
             i = i->next;
             continue;
@@ -57,19 +57,11 @@ int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  
                 for (j = 0; j < bionet_hab_get_num_nodes(hab); j++) {
                     bionet_node_t *node = bionet_hab_get_node_by_index(hab, j);
 
-                    printf("does the node match?");
                     if (bionet_node_matches_habtype_habid_nodeid(node, hab_type, hab_id, node_id)) {
-                        printf(" ... yes!\n");
                         libbionet_callback_lost_node(node);
-                    } else {
-                        printf(" ... no\n");
                     }
                 }
             }
-            // FIXME: if there are no datapoint subscriptions that also collude with 
-            //        this node, then we also need to remove the node from the cache
-            //        (so if reappears with new resources with new resources and we 
-            //        then subscribe to it again, we don't run into issues).
         }
 
         free(node_sub->hab_type);
@@ -79,6 +71,8 @@ int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  
         
         i->data = NULL;
         libbionet_node_subscriptions = g_slist_delete_link(libbionet_node_subscriptions, i);
+
+        libbionet_cache_cleanup_nodes();
 
         r = snprintf(publisher, sizeof(publisher), "%s.%s", hab_type, hab_id);
         if (r >= sizeof(publisher)) {

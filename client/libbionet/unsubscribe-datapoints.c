@@ -54,6 +54,8 @@ int bionet_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char 
         
         libbionet_datapoint_subscriptions = g_slist_delete_link(libbionet_datapoint_subscriptions, i);
 
+        libbionet_cache_cleanup_nodes();
+
         r = snprintf(publisher, sizeof(publisher), "%s.%s", hab_type, hab_id);
         if (r >= sizeof(publisher)) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid(): HAB name '%s.%s' too long", hab_type, hab_id);

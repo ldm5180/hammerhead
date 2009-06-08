@@ -47,20 +47,6 @@ int bionet_unsubscribe_hab_list_by_habtype_habid(const char *hab_type,  const ch
             libbionet_hab_subscriptions = g_slist_remove_link(libbionet_hab_subscriptions, link);
 
             //
-            // send lost_hab callback for all matching habs
-            //
-
-            if (libbionet_callback_lost_hab != NULL) {
-                GSList *i;
-                for (i = libbionet_habs; i != NULL; i = i->next) {
-                    bionet_hab_t *hab = i->data;
-                    if (bionet_hab_matches_type_and_id(hab, hab_type, hab_id)) {
-                        libbionet_callback_lost_hab(hab);
-                    }
-                }
-            }
-
-            //
             // remove the matching subscription
             //
 
@@ -69,6 +55,28 @@ int bionet_unsubscribe_hab_list_by_habtype_habid(const char *hab_type,  const ch
             free(hab_sub);
             link->data = NULL;
             g_slist_free(link);
+
+            //
+            // send lost_hab callback for all matching habs ...
+            //
+
+            if (libbionet_callback_lost_hab != NULL) {
+                GSList *i;
+                for (i = bionet_habs; i != NULL; i = i->next) {
+                    bionet_hab_t *hab = i->data;
+
+                    // FIXME: ... that do not match other subscriptions too
+                    if (bionet_hab_matches_type_and_id(hab, hab_type, hab_id)) {
+                        libbionet_callback_lost_hab(hab);
+                    }
+                }
+            }
+
+            //
+            // cleanup the libbionet cache
+            //
+
+            libbionet_cache_cleanup_habs();
 
             return 0;
         }
