@@ -119,6 +119,8 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern,
     BDM_S2C_Message_t *message = NULL;
     int index = 0;
     int total_bytes_read = 0;
+    
+    struct timeval tv;
 
     memset(&m, 0x00, sizeof(BDM_C2S_Message_t));
     m.present = BDM_C2S_Message_PR_resourceDatapointsQuery;
@@ -153,20 +155,83 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern,
         goto cleanup3;
     }
 
-
-    r = bionet_timeval_to_GeneralizedTime(datapointStart, &rdpq->datapointStartTime);
+    if (datapointStart) {
+	tv.tv_sec = datapointStart->tv_sec;
+	tv.tv_usec = datapointStart->tv_usec;
+    } else {
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+    }
+    r = bionet_timeval_to_GeneralizedTime(&tv, &rdpq->datapointStartTime);
     if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %s", 
-	      (long)datapointStart->tv_sec, (long)datapointStart->tv_usec, strerror(errno));
+	if (datapointStart) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %m", 
+		  (long)datapointStart->tv_sec, (long)datapointStart->tv_usec);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
+	}
         goto cleanup4;
     }
 
-    r = bionet_timeval_to_GeneralizedTime(datapointEnd, &rdpq->datapointEndTime);
+    if (datapointEnd) {
+	tv.tv_sec = datapointEnd->tv_sec;
+	tv.tv_usec = datapointEnd->tv_usec;
+    } else {
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+    }
+    r = bionet_timeval_to_GeneralizedTime(&tv, &rdpq->datapointEndTime);
     if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %s", 
-	      (long)datapointEnd->tv_sec, (long)datapointEnd->tv_usec, strerror(errno));
+	if (datapointEnd) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %m", 
+		  (long)datapointEnd->tv_sec, (long)datapointEnd->tv_usec);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
+	}
+        goto cleanup4;
+    }
+
+    if (entryStart) {
+	tv.tv_sec = entryStart->tv_sec;
+	tv.tv_usec = entryStart->tv_usec;
+    } else {
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+    }
+    r = bionet_timeval_to_GeneralizedTime(&tv, &rdpq->entryStartTime);
+    if (r != 0) {
+	if (entryStart) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %m", 
+		  (long)entryStart->tv_sec, (long)entryStart->tv_usec);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
+	}
+        goto cleanup4;
+    }
+
+    if (entryEnd) {
+	tv.tv_sec = entryEnd->tv_sec;
+	tv.tv_usec = entryEnd->tv_usec;
+    } else {
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+    }
+    r = bionet_timeval_to_GeneralizedTime(&tv, &rdpq->entryEndTime);
+    if (r != 0) {
+	if (entryEnd) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %m", 
+		  (long)entryEnd->tv_sec, (long)entryEnd->tv_usec);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
+	}
         goto cleanup4;
     }
 

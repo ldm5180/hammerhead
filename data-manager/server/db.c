@@ -945,7 +945,8 @@ GPtrArray *db_get_resource_datapoints(
     }
 
 
-    if (datapoint_start == NULL) {
+    if ((datapoint_start == NULL) ||
+	((datapoint_start->tv_sec == 0) && (datapoint_start->tv_usec == 0))) {
 	datapoint_start_restriction[0] = '\0';
     } else {
 	r = snprintf(
@@ -965,7 +966,8 @@ GPtrArray *db_get_resource_datapoints(
 	}
     }
 
-    if (datapoint_end == NULL) {
+    if ((datapoint_end == NULL) ||
+	((datapoint_end->tv_sec == 0) && (datapoint_end->tv_usec == 0))) {
 	datapoint_end_restriction[0] = '\0';
     } else {
 	r = snprintf(
@@ -986,7 +988,8 @@ GPtrArray *db_get_resource_datapoints(
     }
 
 
-    if (entry_start == NULL) {
+    if ((entry_start == NULL) ||
+	((entry_start->tv_sec == 0) && (entry_start->tv_usec == 0))) {
 	entry_start_restriction[0] = '\0';
     } else {
 	r = snprintf(
@@ -1006,7 +1009,8 @@ GPtrArray *db_get_resource_datapoints(
 	}
     }
 
-    if (entry_end == NULL) {
+    if ((entry_end == NULL) ||
+	((entry_end->tv_sec == 0) && (entry_end->tv_usec == 0))) {
 	entry_end_restriction[0] = '\0';
     } else {
 	r = snprintf(
