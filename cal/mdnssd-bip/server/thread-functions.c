@@ -847,6 +847,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
         if (FD_ISSET(this->socket, &readers)) {
             accept_connection(this);
+			continue;
         }
 
 

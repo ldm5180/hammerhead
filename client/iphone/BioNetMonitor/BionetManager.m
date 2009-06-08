@@ -311,6 +311,8 @@ static void cleanUTF8String(char * str) {
 		
 		bionet_init_security([secpath UTF8String], sec_required);
 		
+		hab_fd = -1;
+
 		if(hab_enabled){			
 			UIDevice *dev = [UIDevice currentDevice];
 			char * c_habtype = strdup([dev.model UTF8String]);
@@ -334,7 +336,8 @@ static void cleanUTF8String(char * str) {
 				exit(1);
 			}
 			
-			//hab_read();
+			
+			hab_read();
 			
 			bionet_node_t * c_node = bionet_node_new(c_hab, "info");
 			if (c_node == NULL) {
@@ -533,7 +536,9 @@ static void cleanUTF8String(char * str) {
 		
 		FD_ZERO(&readers);
 		FD_SET(bionet_fd, &readers);
-		FD_SET(hab_fd, &readers);
+		if(hab_fd >=0){
+			FD_SET(hab_fd, &readers);
+		}
 		
 		//struct timeval timeout = { 1, 0 } ;
 		
@@ -549,45 +554,11 @@ static void cleanUTF8String(char * str) {
 			if(FD_ISSET(bionet_fd, &readers)) {
 				bionet_read();
 			}
-			if(FD_ISSET(hab_fd, &readers)) {
+			if(hab_fd >=0 && FD_ISSET(hab_fd, &readers)) {
 				hab_read();
 			}
 		}
 		
-		/*
-		 NSMutableArray *habList = [[NSMutableArray alloc] init];
-		 
-		 unsigned int numHabs = bionet_cache_get_num_habs();
-		 if(numHabs > 0){
-		 unsigned int i;
-		 for(i=0;i<numHabs; i++) {
-		 bionet_hab_t * hab = bionet_cache_get_hab_by_index(i);
-		 if(hab) {
-		 NSMutableDictionary *dictionary;
-		 NSMutableDictionary *characters;
-		 NSDateComponents *dateComponents = [[NSDateComponents alloc] init];
-		 NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-		 NSDate *date;
-		 
-		 characters = [[NSArray alloc] initWithObjects:@"Antony", @"Artemidorus", @"Brutus", @"Caesar", @"Calpurnia", @"Casca", @"Cassius", @"Cicero", @"Cinna", @"Cinna the Poet", @"Citizens", @"Claudius", @"Clitus", @"Dardanius", @"Decius Brutus", @"First Citizen", @"First Commoner", @"First Soldier", @"Flavius", @"Fourth Citizen", @"Lepidus", @"Ligarius", @"Lucilius", @"Lucius", @"Marullus", @"Messala", @"Messenger", @"Metellus Cimber", @"Octavius", @"Pindarus", @"Poet", @"Popilius", @"Portia", @"Publius", @"Second Citizen", @"Second Commoner", @"Second Soldier", @"Servant", @"Soothsayer", @"Strato", @"Third Citizen", @"Third Soldier", @"Tintinius", @"Trebonius", @"Varro", @"Volumnius", @"Young Cato", nil];
-		 [dateComponents setYear:1599];
-		 date = [calendar dateFromComponents:dateComponents];
-		 
-		 const char * habNameConst = bionet_hab_get_name(hab);
-		 NSString *habName = [[NSString alloc] initWithCString:habNameConst];
-		 dictionary = [[NSMutableDictionary alloc] initWithObjectsAndKeys:habName, @"title", characters, @"mainCharacters", date, @"date", @"Tragedy", @"genre", nil];
-		 [habList addObject:dictionary];
-		 [habName release];
-		 [dictionary release];
-		 [characters release];
-		 }
-		 }					
-		 
-		 //[self.nodeList release];
-		 self.nodeList = habList;
-		 [habList release];
-		 }	
-		 */
 		[loopPool drain];
 		
 	}

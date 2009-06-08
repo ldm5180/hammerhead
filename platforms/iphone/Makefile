@@ -147,4 +147,15 @@ ports-install:
 	rm -rf tmp_ports
 	
 	
+IOKIT_FRAMEWORK_OS=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.1.sdk/System/Library/Frameworks/IOKit.framework
+IOKIT_FRAMEWORK_SIM=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator2.2.1.sdk/System/Library/Frameworks/IOKit.framework
 	
+fix-iphone-sdk-links:
+	cd $(IOKIT_FRAMEWORK_OS)/Versions && sudo ln -sf A Current
+	cd $(IOKIT_FRAMEWORK_OS)/Versions/A && sudo ln -sf $(IOKIT_FRAMEWORK_SIM)/Versions/A/Headers Headers
+	cd $(IOKIT_FRAMEWORK_OS) && sudo ln -sf Versions/Current/IOKit IOKit
+	
+
+#
+# vim: nosta
+#

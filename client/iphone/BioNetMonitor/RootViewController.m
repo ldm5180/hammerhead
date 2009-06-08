@@ -225,9 +225,6 @@
 // Customize the appearance of table view cells.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 
-	if(indexPath.row >= list.count){
-		return nil;
-	}
 	
 	NSString * CellIdentifier;
 	if(depth >= 1){
@@ -272,32 +269,34 @@
 	
     
 	// Get the object to display and set the value in the cell
-	id itemAtIndex;
+	id itemAtIndex = nil;
+	if(indexPath.row < list.count) {
 #if addFakeItems
-	if(indexPath.row == 0){
-		cell.text = @"All";
-	} else 
+		if(indexPath.row == 0){
+			cell.text = @"All";
+		} else 
 #endif
-	{
-		int i = indexPath.row;
-		itemAtIndex = [list objectAtIndex:i - addFakeItems];
-		if( depth >= 1){
-			UILabel * label = (UILabel *)[cell viewWithTag:1];
-			label.text = [itemAtIndex ident];
+		{
+			int i = indexPath.row;
+			itemAtIndex = [list objectAtIndex:i - addFakeItems];
+			if( depth >= 1){
+				UILabel * label = (UILabel *)[cell viewWithTag:1];
+				label.text = [itemAtIndex ident];
 
-			UIImageView *image = (UIImageView *)[cell viewWithTag:0];
-			if(hab_secure || (depth == 1 && [itemAtIndex isSecure])){
-				image.image = [UIImage imageNamed:@"lock.png"];
+				UIImageView *image = (UIImageView *)[cell viewWithTag:0];
+				if(hab_secure || (depth == 1 && [itemAtIndex isSecure])){
+					image.image = [UIImage imageNamed:@"lock.png"];
+				} else {
+					image.image = [UIImage imageNamed:@"unlock.png"];
+				}
+				
 			} else {
-				image.image = [UIImage imageNamed:@"unlock.png"];
+				cell.text = [itemAtIndex ident];
 			}
-			
-		} else {
-			cell.text = [itemAtIndex ident];
-		}
 
-		cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-		
+			cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+			
+		}
 	}
 
     return cell;

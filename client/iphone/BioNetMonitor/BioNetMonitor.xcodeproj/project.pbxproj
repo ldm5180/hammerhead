@@ -26,6 +26,7 @@
 		7436ADDE0FBB3B9300D805A4 /* unlock.png in Resources */ = {isa = PBXBuildFile; fileRef = 7436ADDC0FBB3B9300D805A4 /* unlock.png */; };
 		7443CB840FC4A7D4007A17A0 /* libhab.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7443CB830FC4A7D4007A17A0 /* libhab.a */; };
 		744F268A0FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 744F26890FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a */; };
+		745C7E560FD72CB40021A47A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 745C7E550FD72CB40021A47A /* IOKit.framework */; };
 		74609D500FB4734E00A8B792 /* ResourceDetailCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 74609D4F0FB4734E00A8B792 /* ResourceDetailCell.m */; };
 		74724FD60F7856680061BF62 /* BionetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC50F7856680061BF62 /* BionetManager.m */; };
 		74724FD70F7856680061BF62 /* BioNetMonitorAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 74724FC70F7856680061BF62 /* BioNetMonitorAppDelegate.m */; };
@@ -71,6 +72,7 @@
 		7436ADDC0FBB3B9300D805A4 /* unlock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = unlock.png; sourceTree = "<group>"; };
 		7443CB830FC4A7D4007A17A0 /* libhab.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhab.a; path = ../bionet_sdk/usr/local/lib/libhab.a; sourceTree = SOURCE_ROOT; };
 		744F26890FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libcal-mdnssd-bip-server.a"; path = "../bionet_sdk/usr/local/lib/libcal-mdnssd-bip-server.a"; sourceTree = "<group>"; };
+		745C7E550FD72CB40021A47A /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		74609D4E0FB4734E00A8B792 /* ResourceDetailCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceDetailCell.h; sourceTree = "<group>"; };
 		74609D4F0FB4734E00A8B792 /* ResourceDetailCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ResourceDetailCell.m; sourceTree = "<group>"; };
 		74724FC40F7856680061BF62 /* BionetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BionetManager.h; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 				74FB74730FC35CB5009146AD /* libcrypto.a in Frameworks */,
 				7443CB840FC4A7D4007A17A0 /* libhab.a in Frameworks */,
 				744F268A0FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a in Frameworks */,
+				745C7E560FD72CB40021A47A /* IOKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -205,6 +208,7 @@
 				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
 				2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */,
+				745C7E550FD72CB40021A47A /* IOKit.framework */,
 				74CA85760F71674F00FEE5E2 /* libiconv.2.dylib */,
 				74FB74700FC35C9B009146AD /* libssl.a */,
 				74FB74720FC35CB5009146AD /* libcrypto.a */,
@@ -497,7 +501,7 @@
 					"-lz",
 				);
 				PREBINDING = NO;
-				SDKROOT = iphonesimulator2.2;
+				SDKROOT = iphonesimulator2.2.1;
 				bionet_sdk = "";
 				"bionet_sdk[sdk=iphoneos*][arch=*]" = ../bionet_sdk;
 				"bionet_sdk[sdk=iphonesimulator*][arch=*]" = ../bionet_simulator_sdk;
