@@ -9,7 +9,7 @@
 
 #include "BDMRecord.h"
 
-static asn_TYPE_member_t asn_MBR_datapoints_4[] = {
+static asn_TYPE_member_t asn_MBR_syncDatapoints_4[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
@@ -20,19 +20,19 @@ static asn_TYPE_member_t asn_MBR_datapoints_4[] = {
 		""
 		},
 };
-static ber_tlv_tag_t asn_DEF_datapoints_tags_4[] = {
+static ber_tlv_tag_t asn_DEF_syncDatapoints_tags_4[] = {
 	(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static asn_SET_OF_specifics_t asn_SPC_datapoints_specs_4 = {
-	sizeof(struct datapoints),
-	offsetof(struct datapoints, _asn_ctx),
+static asn_SET_OF_specifics_t asn_SPC_syncDatapoints_specs_4 = {
+	sizeof(struct syncDatapoints),
+	offsetof(struct syncDatapoints, _asn_ctx),
 	0,	/* XER encoding is XMLDelimitedItemList */
 };
 static /* Use -fall-defs-global to expose */
-asn_TYPE_descriptor_t asn_DEF_datapoints_4 = {
-	"datapoints",
-	"datapoints",
+asn_TYPE_descriptor_t asn_DEF_syncDatapoints_4 = {
+	"syncDatapoints",
+	"syncDatapoints",
 	SEQUENCE_OF_free,
 	SEQUENCE_OF_print,
 	SEQUENCE_OF_constraint,
@@ -43,16 +43,16 @@ asn_TYPE_descriptor_t asn_DEF_datapoints_4 = {
 	SEQUENCE_OF_decode_uper,
 	SEQUENCE_OF_encode_uper,
 	0,	/* Use generic outmost tag fetcher */
-	asn_DEF_datapoints_tags_4,
-	sizeof(asn_DEF_datapoints_tags_4)
-		/sizeof(asn_DEF_datapoints_tags_4[0]) - 1, /* 1 */
-	asn_DEF_datapoints_tags_4,	/* Same as above */
-	sizeof(asn_DEF_datapoints_tags_4)
-		/sizeof(asn_DEF_datapoints_tags_4[0]), /* 2 */
+	asn_DEF_syncDatapoints_tags_4,
+	sizeof(asn_DEF_syncDatapoints_tags_4)
+		/sizeof(asn_DEF_syncDatapoints_tags_4[0]) - 1, /* 1 */
+	asn_DEF_syncDatapoints_tags_4,	/* Same as above */
+	sizeof(asn_DEF_syncDatapoints_tags_4)
+		/sizeof(asn_DEF_syncDatapoints_tags_4[0]), /* 2 */
 	0,	/* No PER visible constraints */
-	asn_MBR_datapoints_4,
+	asn_MBR_syncDatapoints_4,
 	1,	/* Single element */
-	&asn_SPC_datapoints_specs_4	/* Additional specs */
+	&asn_SPC_syncDatapoints_specs_4	/* Additional specs */
 };
 
 static asn_TYPE_member_t asn_MBR_BDMRecord_1[] = {
@@ -74,14 +74,14 @@ static asn_TYPE_member_t asn_MBR_BDMRecord_1[] = {
 		0,
 		"resourceKey"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct BDMRecord, datapoints),
+	{ ATF_NOFLAGS, 0, offsetof(struct BDMRecord, syncDatapoints),
 		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_datapoints_4,
+		&asn_DEF_syncDatapoints_4,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
-		"datapoints"
+		"syncDatapoints"
 		},
 };
 static ber_tlv_tag_t asn_DEF_BDMRecord_tags_1[] = {
@@ -90,7 +90,7 @@ static ber_tlv_tag_t asn_DEF_BDMRecord_tags_1[] = {
 static asn_TYPE_tag2member_t asn_MAP_BDMRecord_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* entryTimestamp at 83 */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* resourceKey at 84 */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* datapoints at 86 */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* syncDatapoints at 86 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_BDMRecord_specs_1 = {
 	sizeof(struct BDMRecord),

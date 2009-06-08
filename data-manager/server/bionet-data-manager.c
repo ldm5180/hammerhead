@@ -25,6 +25,7 @@ GMainLoop *bdm_main_loop = NULL;
 
 char * database_file = DB_NAME;
 extern char bdm_id[256];
+int enable_tcp_sync_receiver = 0;
 
 void usage(void) {
     printf(
@@ -42,6 +43,7 @@ void usage(void) {
 	"                                                Subscribe to Resource values.\n"
 	" -s,--security-dir <dir>                        Directory containing security\n"
 	"                                                certificates\n"
+	" -t,--tcp-sync-receiver                         Enable BDM synchonization over TCP\n"
 	" -v,--version                                   Show the version number\n"
 	"\n"
 	"Security can only be required when a security directory has been specified.\n"
@@ -83,10 +85,11 @@ int main(int argc, char *argv[]) {
 	    {"resource", 1, 0, 'r'},
 	    {"require-security", 0, 0, 'e'},
 	    {"security-dir", 1, 0, 's'},
+	    {"tcp-sync-receiver", 0, 0, 't'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c= getopt_long(argc, argv, "?vef:h:i:n:r:s:", long_options, &i);
+	c= getopt_long(argc, argv, "?vetf:h:i:n:r:s:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -148,6 +151,10 @@ int main(int argc, char *argv[]) {
 	    security_dir = optarg;
 	    break;
 
+	case 't':
+	    enable_tcp_sync_receiver = 1;
+	    break;
+
 	case 'v':
 	    print_bionet_version(stdout);
 	    return 0;
@@ -205,7 +212,16 @@ int main(int argc, char *argv[]) {
         g_io_add_watch(ch, G_IO_IN, client_connecting_handler, GINT_TO_POINTER(fd));
     }
 
-
+    
+    // add the TCP sync receiver
+    if (enable_tcp_sync_receiver) {
+	GIOChannel *ch;
+	int fd;
+	
+	fd = make_listening_socket(BDM_SYNC_PORT);
+	ch = g_io_channel_unix_new(fd);
+	g_io_add_watch(ch, G_IO_IN, sync_receive_connecting_handler, GINT_TO_POINTER(fd));
+    }
 
 
     // 
@@ -251,3 +267,8 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

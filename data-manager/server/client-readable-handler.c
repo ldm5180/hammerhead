@@ -44,11 +44,11 @@ int client_readable_handler(GIOChannel *unused, GIOCondition cond, client_t *cli
     client->index += bytes_read;
 
     do {
-        rval = ber_decode(NULL, &asn_DEF_BDM_C2S_Message, (void **)&client->message, client->buffer, client->index);
+        rval = ber_decode(NULL, &asn_DEF_BDM_C2S_Message, (void **)&client->message.C2S_message, client->buffer, client->index);
         if (rval.code == RC_OK) {
-            handle_client_message(client, client->message);
-            asn_DEF_BDM_C2S_Message.free_struct(&asn_DEF_BDM_C2S_Message, client->message, 0);
-            client->message = NULL;
+            handle_client_message(client, client->message.C2S_message);
+            asn_DEF_BDM_C2S_Message.free_struct(&asn_DEF_BDM_C2S_Message, client->message.C2S_message, 0);
+            client->message.C2S_message = NULL;
         } else if (rval.code == RC_WMORE) {
             // ber_decode is waiting for more data, but so far so good
         } else if (rval.code == RC_FAIL) {

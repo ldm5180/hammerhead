@@ -29,12 +29,12 @@ struct Datapoint;
 typedef struct BDMRecord {
 	GeneralizedTime_t	 entryTimestamp;
 	OCTET_STRING_t	 resourceKey;
-	struct datapoints {
+	struct syncDatapoints {
 		A_SEQUENCE_OF(struct Datapoint) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
-	} datapoints;
+	} syncDatapoints;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

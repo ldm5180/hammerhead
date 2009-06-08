@@ -82,7 +82,7 @@ BEGIN
     BDMRecord ::= SEQUENCE {
         entryTimestamp    GeneralizedTime,
 	resourceKey       OCTET STRING,
-        datapoints        SEQUENCE OF Datapoint
+        syncDatapoints    SEQUENCE OF Datapoint
     }
 
     -- 

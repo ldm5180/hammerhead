@@ -9,18 +9,22 @@ include $(top_srcdir)/common.am
 bin_PROGRAMS = bionet-data-manager
 
 
-bionet_data_manager_SOURCES =     \
-    bionet-data-manager.c         \
-    bionet-io.c                   \
-    db.c                          \
-    client-connecting-handler.c   \
-    client-readable-handler.c     \
-    handle-client-message.c       \
-    disconnect-client.c           \
-    make-listening-socket.c       \
-    make-shutdowns-clean.c        \
-    keepalive.c                   \
-    sync-send.c
+bionet_data_manager_SOURCES =         \
+    bionet-data-manager.c             \
+    bionet-io.c                       \
+    db.c                              \
+    client-connecting-handler.c       \
+    client-readable-handler.c         \
+    handle-client-message.c           \
+    disconnect-client.c               \
+    make-listening-socket.c           \
+    make-shutdowns-clean.c            \
+    keepalive.c                       \
+    sync-send.c                       \
+    sync-receive-connecting-handler.c \
+    sync-receive-readable-handler.c   \
+    handle-sync-datapoints-message.c  \
+    handle-sync-metadata-message.c    
 
 bionet_data_manager_CFLAGS = $(AM_CFLAGS) $(OPENSSL_CFLAGS) $(GLIB20_CFLAGS) $(OPENSSL_CFLAGS) -I../include $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) 
 

@@ -111,7 +111,11 @@ typedef struct {
     GIOChannel *ch;
 
     // keep track of messages coming in from the client
-    BDM_C2S_Message_t *message;
+    union {
+	BDM_C2S_Message_t             *C2S_message;
+	BDM_Sync_Datapoints_Message_t *sync_dp_message;
+	BDM_Sync_Metadata_Message_t   *sync_metadata_message;
+    } message;
     unsigned char buffer[(10 * 1024)];  // FIXME: use cal
     int index;
 } client_t;
@@ -121,6 +125,12 @@ int client_connecting_handler(GIOChannel *ch, GIOCondition condition, gpointer l
 int client_readable_handler(GIOChannel *unused, GIOCondition unused2, client_t *client);
 void handle_client_message(client_t *client, BDM_C2S_Message_t *message);
 void disconnect_client(client_t *client);
+
+int sync_receive_connecting_handler(GIOChannel *ch, GIOCondition condition, gpointer listening_fd_as_pointer);
+int sync_receive_readable_handler(GIOChannel *unused, GIOCondition unused2, client_t *client);
+void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Message_t *message);
+void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t *message);
+
 
 
 int make_listening_socket(int port);
