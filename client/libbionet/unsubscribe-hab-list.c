@@ -13,6 +13,7 @@
 #include "bionet.h"
 #include "libbionet-internal.h"
 
+extern GSList *bionet_habs;
 
 int bionet_unsubscribe_hab_list_by_habtype_habid(const char *hab_type,  const char *hab_id) {
     GSList *cursor = libbionet_hab_subscriptions;
