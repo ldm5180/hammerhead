@@ -37,6 +37,12 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
 
         g_ptr_array_add(hab_list, hab);
 
+	if (db_add_hab(hab)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "handle_sync_metadata_message(): Failed to add HAB %s to DB.",
+		  bionet_hab_get_name(hab));
+	}
+
         for (ni = 0; ni < asn_hab->nodes.list.count; ni ++) {
             Node_t *asn_node;
             bionet_node_t *node;
@@ -105,11 +111,17 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
 			  asn_resource->datapoints.list.count);
                 }
             }
+
+	    if (db_add_node(node)) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		      "handle_sync_metadata_message(): Failed to add node %s to DB.",
+		      bionet_node_get_name(node));
+	    }
+
         }
     }
 
-//BDM-BP TODO: write metadata to database
-    
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "} Sync Metadata Message");    
 }
 
 // Emacs cruft
