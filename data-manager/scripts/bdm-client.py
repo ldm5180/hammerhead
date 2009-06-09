@@ -19,20 +19,23 @@ parser.add_option("-o", "--output", dest="output", default="csv",
 parser.add_option("-s", "--server", dest="server",
                   help="BDM server hostname.", 
                   default="localhost")
-parser.add_option("-b", "--begin", dest="starttime",
-                  help="Start Time", 
+parser.add_option("-T", "--datapoint-start", dest="datapoint_start",
+                  help="Datapoint Start Time", 
                   metavar="YYYY-MM-DD HH:MM:SS")
-parser.add_option("-e", "--end", dest="endtime",
-                  help="End Time", 
+parser.add_option("-t", "--datapoint-end", dest="datapoint_end",
+                  help="Datapoint End Time", 
                   metavar="YYYY-MM-DD HH:MM:SS")
 parser.add_option("-r", "--resource", dest="resource", default="*.*.*:*",
                   help="Resource Name",
                   metavar="<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>")
+parser.add_option("-E", "--entry-start", dest="entry_start",
+                  help="Entry Start Time", 
+                  metavar="YYYY-MM-DD HH:MM:SS")
+parser.add_option("-e", "--entry-end", dest="entry_end",
+                  help="Entry End Time", 
+                  metavar="YYYY-MM-DD HH:MM:SS")
 
 (options, args) = parser.parse_args()
-
-if ((None == options.starttime) or (None == options.endtime)):
-    parser.error("Must define start and end times.")
 
 #init logger
 logger = logging.getLogger("BDM Client Output Formatter")
@@ -61,18 +64,42 @@ def gmt_convert(loctime):
 bdm_connect(options.server, BDM_PORT) 
 
 # convert the start and end times into timevals
-start = timeval()
-start.tv_sec = gmt_convert(int(time.mktime(time.strptime(options.starttime, 
-                                                         "%Y-%m-%d %H:%M:%S"))))
-start.tv_usec = 0
+if (options.datapoint_start != None):
+    datapoint_start = timeval()
+    datapoint_start.tv_sec = gmt_convert(int(time.mktime(time.strptime(options.datapoint_start, 
+                                                             "%Y-%m-%d %H:%M:%S"))))
+    datapoint_start.tv_usec = 0
+else:
+    datapoint_start = None
 
-end = timeval()
-end.tv_sec = gmt_convert(int(time.mktime(time.strptime(options.endtime, 
-                                                       "%Y-%m-%d %H:%M:%S"))))
-end.tv_usec = 0
+if (options.datapoint_end != None):
+    datapoint_end = timeval()
+    datapoint_end.tv_sec = gmt_convert(int(time.mktime(time.strptime(options.datapoint_end, 
+                                                             "%Y-%m-%d %H:%M:%S"))))
+    datapoint_end.tv_usec = 0
+else:
+    datapoint_end = None
+
+if (options.entry_start != None):
+    entry_start = timeval()
+    entry_start.tv_sec = gmt_convert(int(time.mktime(time.strptime(options.entry_start, 
+                                                             "%Y-%m-%d %H:%M:%S"))))
+    entry_start.tv_usec = 0
+else:
+    entry_start = None
+
+if (options.entry_end != None):
+    entry_end = timeval()
+    entry_end.tv_sec = gmt_convert(int(time.mktime(time.strptime(options.entry_end, 
+                                                             "%Y-%m-%d %H:%M:%S"))))
+    entry_end.tv_usec = 0
+else:
+    entry_end = None
+
+
 
 # get the big HAB list
-hab_list = bdm_get_resource_datapoints(options.resource, start, end)
+hab_list = bdm_get_resource_datapoints(options.resource, datapoint_start, datapoint_end, entry_start, entry_end)
 
 
 for hi in range(hab_list.len):  # loop over all the HABs

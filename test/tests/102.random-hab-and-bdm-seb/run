@@ -55,7 +55,7 @@ export LD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs
 
 
 
-$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -b "$PREV_YEAR-01-01 00:00:00" -e "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-client.py
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-client.py
 
 echo "killing BDM"
 kill %1
