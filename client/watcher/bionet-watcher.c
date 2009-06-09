@@ -5,9 +5,12 @@
 
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <getopt.h>
 
@@ -21,6 +24,12 @@
 #include "bionet-util.h"
 
 
+enum subscription_update_t {
+    ADD,
+    REMOVE,
+    RANDOM,
+    NONE
+};
 
 
 #if defined(LINUX) || defined(MACOSX)
@@ -208,6 +217,12 @@ void usage(void) {
 	    "                                                   Subscribe to Resource values.\n"
 	    " -s, --security-dir <dir>                          Directory containing security\n"
 	    "                                                   certificates\n"
+	    " -a, --add-subscriptions <RATE>                    add new subscriptions every \n"
+        "                                                   RATE seconds\n"
+	    " -m, --remove-subscriptions <RATE>                 remove subscriptions every\n"
+        "                                                   RATE seconds\n"
+	    " -d, --randomize-subscriptions <RATE>              randomly add/remove subscriptions\n"
+        "                                                   every RATE seconds\n"
 	    " -v, --version                                     Show the version number\n"
 	    "\n"
 	    "Security can only be required when a security directory has been specified.\n"
@@ -223,8 +238,10 @@ int main(int argc, char *argv[]) {
     GSList * hab_list = NULL;
     GSList * node_list = NULL;
     GSList * dp_list = NULL;
-    int subscribed_to_something = 0;
+    enum subscription_update_t subscription_update = NONE;
+    int rate, urandom_fd = 0, subscribed_to_something = 0;
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
+    struct timeval *diff, old;
 
     //
     // parse command-line arguments
@@ -243,10 +260,13 @@ int main(int argc, char *argv[]) {
 	    {"resources", 1, 0, 'r'},
 	    {"security-dir", 1, 0, 's'},
 	    {"require-security", 0, 0, 'e'}, 
+	    {"add-subscriptions", 1, 0, 'a'},
+	    {"remove-subscriptions", 1, 0, 'm'},
+	    {"randomize-subscriptions", 1, 0, 'd'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?veh:n:r:s:", long_options, &i);
+	c = getopt_long(argc, argv, "?veh:n:r:s:a:m:d:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -279,6 +299,33 @@ int main(int argc, char *argv[]) {
 	case 'r':
 	    dp_list = g_slist_append(dp_list, optarg);
 	    subscribed_to_something = 1;
+	    break;
+
+	case 'a':
+	    subscription_update = ADD;
+        rate = atoi(optarg);
+        if (rate < 1) {
+            g_message("can't add subscriptions every %d seconds", rate);
+            return -1;
+        }
+	    break;
+
+	case 'm':
+	    subscription_update = REMOVE;
+        rate = atoi(optarg);
+        if (rate < 1) {
+            g_message("can't remove subscriptions every %d seconds", rate);
+            return -1;
+        }
+	    break;
+
+	case 'd':
+	    subscription_update = RANDOM;
+        rate = atoi(optarg);
+        if (rate < 1) {
+            g_message("can't randomize subscriptions every %d seconds", rate);
+            return -1;
+        }
 	    break;
 
 	case 's':
@@ -336,6 +383,49 @@ int main(int argc, char *argv[]) {
 
     signal(SIGUSR1, signal_handler);
 
+    if (subscription_update != NONE) {
+        int r;
+
+        if (subscription_update == RANDOM) {
+            urandom_fd = open("/dev/urandom", O_RDONLY);
+            if (urandom_fd == -1) {
+                g_message("failed to open /dev/urandom: %s", strerror(errno));
+                exit(1);
+            }
+        }
+
+        diff = calloc(1, sizeof(struct timeval));
+        if (diff == NULL) {
+            g_message("calloc error: %s", strerror(errno));
+            exit(1);
+        }
+
+        diff->tv_sec = rate;
+        diff->tv_usec = 0;
+
+        r = gettimeofday(&old, NULL);
+        if (r != 0) {
+            g_message("gettimeofday() error: %s", strerror(errno));
+            exit(1);
+        }
+
+        if (subscription_update == REMOVE) {
+            for (i = 0; i < 10; i++) { // start by feeding a giant list of subscriptions
+                if (subscribed_to_something) {
+                    bionet_subscribe_node_list_by_name(g_slist_nth_data(node_list, 0));
+                    bionet_subscribe_datapoints_by_name(g_slist_nth_data(dp_list, 0));
+                } else {
+                    bionet_subscribe_node_list_by_name("*.*.*");
+                    bionet_subscribe_datapoints_by_name("*.*.*:*");
+                }
+            }
+            
+            diff->tv_sec = 5;
+        }
+
+    } else {
+        diff = NULL;
+    }
 
     while (1) {
 
@@ -346,7 +436,7 @@ int main(int argc, char *argv[]) {
             FD_ZERO(&readers);
             FD_SET(bionet_fd, &readers);
 
-            r = select(bionet_fd + 1, &readers, NULL, NULL, NULL);
+            r = select(bionet_fd + 1, &readers, NULL, NULL, diff);
 
             if ((r < 0) && (errno != EINTR)) {
                 fprintf(stderr, "error from select: %s", strerror(errno));
@@ -355,6 +445,69 @@ int main(int argc, char *argv[]) {
             }
 
             bionet_read();
+
+            if (subscription_update != NONE) {
+                struct timeval now;
+
+                r = gettimeofday(&now, NULL);
+                if (r != 0) {
+                    g_message("gettimeofday() error: %s", strerror(errno));
+                    exit(1);
+                }
+
+                if (now.tv_sec - old.tv_sec >= 2) {
+                    if (subscription_update == ADD) {
+                        if (subscribed_to_something) {
+                            bionet_subscribe_node_list_by_name(g_slist_nth_data(node_list, 0));
+                            bionet_subscribe_datapoints_by_name(g_slist_nth_data(dp_list, 0));
+                        } else {
+                            bionet_subscribe_node_list_by_name("*.*.*");
+                            bionet_subscribe_datapoints_by_name("*.*.*:*");
+                        }
+                    } else if (subscription_update == REMOVE) {
+                        if (subscribed_to_something) {
+                            bionet_unsubscribe_node_list_by_name(g_slist_nth_data(node_list, 0));
+                            bionet_unsubscribe_datapoints_by_name(g_slist_nth_data(dp_list, 0));
+                        } else {
+                            printf("removing subscription\n");
+                            bionet_unsubscribe_node_list_by_name("*.*.*");
+                            bionet_unsubscribe_datapoints_by_name("*.*.*:*");
+                        }
+                    } else if (subscription_update == RANDOM) {
+                        uint8_t rnd;
+                        r = read(urandom_fd, &rnd, sizeof(rnd));
+                        if (r <= 0) {
+                            g_message("bad read: %s", strerror(errno));
+                            exit(1);
+                        }
+                        rnd %= 2;
+
+                        if (rnd == 1) {
+                            if (subscribed_to_something) {
+                                bionet_subscribe_node_list_by_name(g_slist_nth_data(node_list, 0));
+                                bionet_subscribe_datapoints_by_name(g_slist_nth_data(dp_list, 0));
+                            } else {
+                                bionet_subscribe_node_list_by_name("*.*.*");
+                                bionet_subscribe_datapoints_by_name("*.*.*:*");
+                            }
+                        } else {
+                            if (subscribed_to_something) {
+                                bionet_unsubscribe_node_list_by_name(g_slist_nth_data(node_list, 0));
+                                bionet_unsubscribe_datapoints_by_name(g_slist_nth_data(dp_list, 0));
+                            } else {
+                                bionet_unsubscribe_node_list_by_name("*.*.*");
+                                bionet_subscribe_datapoints_by_name("*.*.*:*");
+                            }
+                        }
+                    }
+
+                    old.tv_sec = now.tv_sec;
+                    old.tv_usec = now.tv_usec;
+
+                    diff->tv_sec = rate;
+                    diff->tv_usec = 0;
+                }
+            }
         }
     } 
 
