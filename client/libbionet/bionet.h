@@ -99,7 +99,7 @@ void bionet_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node))
 
 
 /**
- * @brief Registers new node callback function with the Bionet library.
+ * @brief Registers lost node callback function with the Bionet library.
  *         
  * This will be called when information is published that the Client has 
  * subscribed to.
