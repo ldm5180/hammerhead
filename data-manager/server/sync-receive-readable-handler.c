@@ -23,8 +23,7 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
 
     if (cond & (G_IO_ERR | G_IO_HUP | G_IO_NVAL)) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "disconnect event from sync sender");
-//BDM-BP TODO
-//        disconnect_client(client);
+        disconnect_client(client);
         return FALSE;
     }
 
@@ -33,20 +32,17 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
     bytes_read = read(client->fd, &client->buffer[client->index], bytes_to_read);
     if (bytes_read < 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error reading from sync sender: %s", strerror(errno));
-//BDM-BP TODO
-//        disconnect_client(client);
+        disconnect_client(client);
         return FALSE;
     }
     if (bytes_read == 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "eof from sync sender");
-//BDM-BP TODO
-//        disconnect_client(client);
+        disconnect_client(client);
         return FALSE;
     }
 
     client->index += bytes_read;
 
-    //BDM-BP TODO: process the sync messages
     do {
         rval = ber_decode(NULL, 
 			  &asn_DEF_BDM_Sync_Datapoints_Message, 
