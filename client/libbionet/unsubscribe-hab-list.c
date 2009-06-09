@@ -58,18 +58,36 @@ int bionet_unsubscribe_hab_list_by_habtype_habid(const char *hab_type,  const ch
             g_slist_free(link);
 
             //
-            // send lost_hab callback for all matching habs ...
+            // send lost_hab callback for all habs that only match this subscription
             //
 
             if (libbionet_callback_lost_hab != NULL) {
                 GSList *i;
                 for (i = bionet_habs; i != NULL; i = i->next) {
+                    GSList *j;
                     bionet_hab_t *hab = i->data;
+                    int found_matching_sub = 0;
 
-                    // FIXME: ... that do not match other subscriptions too
-                    if (bionet_hab_matches_type_and_id(hab, hab_type, hab_id)) {
-                        libbionet_callback_lost_hab(hab);
+                    if (hab == NULL) {
+                        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_unsubscribe_hablist...(): NULL hab exists in cache");
+                        continue;
                     }
+
+                    // make there are no other subscriptions to this hab
+                    for (j = libbionet_hab_subscriptions; j != NULL; j = j->next) {
+                        libbionet_hab_subscription_t *sub = j->data;
+
+                        if ((sub == NULL) || (sub->hab_type == NULL) || (sub->hab_id == NULL))
+                            continue;
+
+                        if (bionet_hab_matches_type_and_id(hab, sub->hab_type, sub->hab_id)) {
+                            found_matching_sub = 1;
+                            break;
+                        }
+                    }
+                    
+                    if ( !found_matching_sub ) 
+                        libbionet_callback_lost_hab(hab);
                 }
             }
 
