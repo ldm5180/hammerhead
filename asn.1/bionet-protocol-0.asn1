@@ -211,6 +211,9 @@ BEGIN
     -- already been received and processed before this message.
     --
 
-    BDM-Sync-Datapoints-Message ::= SEQUENCE OF BDMRecord
+    BDM-Sync-Datapoints-Message ::= SEQUENCE {
+        bdmRecord BDMRecord,
+	bdmID     PrintableString
+    }
 END
 
