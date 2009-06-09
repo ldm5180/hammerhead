@@ -19,12 +19,18 @@
 
 #include "bdm-util.h"
 
+// Number of bytes to use for the resource key
+// from the sha1 hash
+#define RESOURCE_KEY_LENGTH 8 
 
 static int add_bdm_to_db(const char *bdm_id);
 
 
 static sqlite3 *db = NULL;
 
+static sqlite3_stmt * insert_hab_stmt = NULL;
+static sqlite3_stmt * insert_node_stmt = NULL;
+static sqlite3_stmt * insert_resource_stmt = NULL;
 static sqlite3_stmt * insert_datapoint_stmt = NULL;
 static sqlite3_stmt * insert_bdm_stmt = NULL;
 
@@ -107,7 +113,16 @@ static int do_commit(void) {
 }
 
 
+static double timevaltodouble(struct timeval *tv) {
+    return (double)tv->tv_sec + (1e-6 * tv->tv_usec); 
+}
 
+static double gettimedouble(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    return timevaltodouble(&tv);
+}
 
 // 
 // database back-end internal helper functions
@@ -119,38 +134,50 @@ static int do_commit(void) {
 
 static int add_hab_to_db(const bionet_hab_t *hab) {
     int r;
-    char *zErrMsg = NULL;
-    char sql[1024];
 
+    if(insert_hab_stmt == NULL) {
+	r = sqlite3_prepare_v2(db, 
+            "INSERT"
+            " OR IGNORE"
+            " INTO Hardware_Abstractors (HAB_Type, HAB_ID, Entry_Timestamp) "
+            " VALUES (?,?,?)",
+	    -1, &insert_hab_stmt, NULL);
 
-    r = snprintf(
-        sql,
-        sizeof(sql),
-        "INSERT"
-        " OR IGNORE"
-        " INTO Hardware_Abstractors"
-        " VALUES ( NULL, '%s', '%s' )"
-        ";",
-        bionet_hab_get_type(hab),
-        bionet_hab_get_id(hab)
-    );
-    if (r >= sizeof(sql)) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL doesnt fit in buffer!\n");
-        return -1;
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL error: %s\n", sqlite3_errmsg(db));
+	    return -1;
+	}
     }
 
-    r = sqlite3_exec(
-        db,
-        sql,
-        NULL,
-        0,
-        &zErrMsg
-    );
-    if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-hab SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
+    double entry = gettimedouble();
+
+    int param = 1;
+    r = sqlite3_bind_text(insert_hab_stmt, param++, bionet_hab_get_type(hab), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL bind error");
+	return -1;
+    }
+
+    r = sqlite3_bind_text(insert_hab_stmt, param++, bionet_hab_get_id(hab), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL bind error");
+	return -1;
+    }
+
+    r = sqlite3_bind_double( insert_hab_stmt, param++,  entry);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL bind error");
+	return -1;
+    }
+
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_hab_stmt)));
+    if (r != SQLITE_DONE) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
+	sqlite3_reset(insert_hab_stmt);
         return -1;
     }
+    sqlite3_reset(insert_hab_stmt);
+    sqlite3_clear_bindings(insert_hab_stmt);
 
     return 0;
 }
@@ -160,44 +187,61 @@ static int add_hab_to_db(const bionet_hab_t *hab) {
 
 static int add_node_to_db(const bionet_node_t *node) {
     int r;
-    char sql[1024];
-    char *zErrMsg = NULL;
 
+    if(insert_node_stmt == NULL) {
+	r = sqlite3_prepare_v2(db, 
+            "INSERT"
+            " OR IGNORE"
+            " INTO Nodes (HAB_Key, Node_ID, Entry_Timestamp)"
+            " SELECT"
+            "     Hardware_Abstractors.Key, ?, ?"
+            "     FROM Hardware_Abstractors"
+            "     WHERE"
+            "         HAB_Type=?"
+            "         AND HAB_ID=?",
+            -1, &insert_node_stmt, NULL);
 
-    r = snprintf(
-        sql,
-        sizeof(sql),
-        "INSERT"
-        " OR IGNORE"
-        " INTO Nodes"
-        " SELECT"
-        "     NULL, Hardware_Abstractors.Key, '%s'"
-        "     FROM Hardware_Abstractors"
-        "     WHERE"
-        "         HAB_Type='%s'"
-        "         AND HAB_ID='%s'"
-        ";",
-        bionet_node_get_id(node),
-	bionet_hab_get_type(bionet_node_get_hab(node)), 
-	bionet_hab_get_id(bionet_node_get_hab(node))
-    );
-    if (r >= sizeof(sql)) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL doesnt fit in buffer!\n");
-        return -1;
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL error: %s\n", sqlite3_errmsg(db));
+	    return -1;
+	}
     }
 
-    r = sqlite3_exec(
-        db,
-        sql,
-        NULL,
-        0,
-        &zErrMsg
-    );
-    if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-node SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
+    double entry = gettimedouble();
+
+    int param = 1;
+    r = sqlite3_bind_text(insert_node_stmt, param++, bionet_node_get_id(node), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL bind error");
+	return -1;
+    }
+
+    r = sqlite3_bind_double( insert_node_stmt, param++,  entry);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL bind error");
+	return -1;
+    }
+
+    r = sqlite3_bind_text(insert_node_stmt, param++, bionet_hab_get_type(bionet_node_get_hab(node)), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL bind error");
+	return -1;
+    }
+
+    r = sqlite3_bind_text(insert_node_stmt, param++, bionet_hab_get_id(bionet_node_get_hab(node)), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL bind error");
+	return -1;
+    }
+
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_node_stmt)));
+    if (r != SQLITE_DONE) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL error: %s\n", sqlite3_errmsg(db));
+	sqlite3_reset(insert_node_stmt);
         return -1;
     }
+    sqlite3_reset(insert_node_stmt);
+    sqlite3_clear_bindings(insert_node_stmt);
 
     return 0;
 }
@@ -207,16 +251,11 @@ static int add_node_to_db(const bionet_node_t *node) {
 
 static int add_resource_to_db(bionet_resource_t *resource) {
     int r;
-    char sql[1024];
-    char *zErrMsg = NULL;
 
     SHA_CTX sha_ctx;
     uint8_t byte;
     unsigned char sha_digest[SHA_DIGEST_LENGTH];
 
-    // blob is "X'" followed by 64 bits (8 bytes) of data ASCII-encoded as
-    // 16 characters in [0-9a-f], followed by "'" and the terminating NULL
-    char blob[20];
     const char * hab_type;
     const char * hab_id;
     const char * node_id;
@@ -276,63 +315,81 @@ static int add_resource_to_db(bionet_resource_t *resource) {
         return -1;
     }
 
+    if(insert_resource_stmt == NULL) {
+	r = sqlite3_prepare_v2(db, 
+            "INSERT"
+            " OR IGNORE"
+            " INTO Resources"
+            " SELECT"
+            "     ?, Nodes.Key, ?, Resource_Data_Types.Key, Resource_Flavors.Key, ?"
+            "     FROM Hardware_Abstractors, Nodes, Resource_Data_Types, Resource_Flavors"
+            "     WHERE"
+            "         Hardware_Abstractors.HAB_Type=?"
+            "         AND Hardware_Abstractors.HAB_ID=?"
+            "         AND Nodes.HAB_Key=Hardware_Abstractors.Key"
+            "         AND Nodes.Node_ID=?"
+            "         AND Resource_Data_Types.Data_Type LIKE ?"
+            "         AND Resource_Flavors.Flavor LIKE ?",
+	    -1, &insert_resource_stmt, NULL);
 
-    // the first 64 bits of the SHA digest is the GURID blob
-    // FIXME: or just use the whole thing?
-    {
-        int i;
-
-        snprintf(blob, sizeof(blob), "X'");
-        for (i = 0; i < 8; i ++) {
-            snprintf(&blob[2+(2*i)], sizeof(blob) - 2+(2*i),"%02X", sha_digest[i]);
-        }
-        blob[2+(2*8)] = '\'';
-        blob[2+(2*8)+1] = '\0';
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL error: %s\n", sqlite3_errmsg(db));
+	    return -1;
+	}
     }
 
+    double entry = gettimedouble();
 
-    r = snprintf(
-        sql,
-        sizeof(sql),
-        "INSERT"
-        " OR IGNORE"
-        " INTO Resources"
-        " SELECT"
-        "     %s, Nodes.Key, '%s', Resource_Data_Types.Key, Resource_Flavors.Key"
-        "     FROM Hardware_Abstractors, Nodes, Resource_Data_Types, Resource_Flavors"
-        "     WHERE"
-        "         Hardware_Abstractors.HAB_Type='%s'"
-        "         AND Hardware_Abstractors.HAB_ID='%s'"
-        "         AND Nodes.HAB_Key=Hardware_Abstractors.Key"
-        "         AND Nodes.Node_ID='%s'"
-        "         AND Resource_Data_Types.Data_Type LIKE '%s'"
-        "         AND Resource_Flavors.Flavor LIKE '%s'"
-        ";",
-        blob,
-	resource_id,
-        hab_type,
-        hab_id,
-        node_id,
-        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
-    );
-    if (r >= sizeof(sql)) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL doesnt fit in buffer!\n");
+    int param = 1;
+    r = sqlite3_bind_blob(insert_resource_stmt, param++, sha_digest, RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_resource_stmt, param++, resource_id, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_double( insert_resource_stmt, param++,  entry);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_resource_stmt, param++, hab_type, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_resource_stmt, param++, hab_id, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_resource_stmt, param++, node_id, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_resource_stmt, param++, bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_text(insert_resource_stmt, param++, bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
+	return -1;
+    }
+
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_resource_stmt)));
+    if (r != SQLITE_DONE) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL error: %s\n", sqlite3_errmsg(db));
+	sqlite3_reset(insert_resource_stmt);
         return -1;
     }
-
-    r = sqlite3_exec(
-        db,
-        sql,
-        NULL,
-        0,
-        &zErrMsg
-    );
-    if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-resource SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return -1;
-    }
+    sqlite3_reset(insert_resource_stmt);
+    sqlite3_clear_bindings(insert_resource_stmt);
 
     return 0;
 }
@@ -357,13 +414,13 @@ static int add_bdm_to_db(const char *bdm_id) {
     int param = 1;
     r = sqlite3_bind_text(insert_bdm_stmt, param++, bdm_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-bdm SQL bind error");
 	return -1;
     }
 
     while(SQLITE_BUSY == (r = sqlite3_step(insert_bdm_stmt)));
     if (r != SQLITE_DONE) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-bdm SQL error: %s\n", sqlite3_errmsg(db));
 	sqlite3_reset(insert_bdm_stmt);
         return -1;
     }
@@ -383,7 +440,7 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
 	    " OR IGNORE"
 	    " INTO Datapoints"
 	    " SELECT"
-	    "     NULL, Resources.Key, BDMs.Key, ?, ?, ?, ?, ?"
+	    "     NULL, Resources.Key, BDMs.Key, ?, ?, ?, ?"
 	    "     FROM Hardware_Abstractors, Nodes, Resources, BDMs"
 	    "     WHERE"
 	    "         Hardware_Abstractors.HAB_Type = ?"
@@ -405,8 +462,8 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
     // FIXME: might be the wrong resource (might differ in data type or flavor)
     bionet_value_t *value = bionet_datapoint_get_value(datapoint);
     struct timeval * timestamp = bionet_datapoint_get_timestamp(datapoint);
-    struct timeval entry;
-    gettimeofday(&entry, NULL);
+    double entry = gettimedouble();
+
     bionet_resource_t * resource = bionet_value_get_resource(value);
     bionet_node_t * node = bionet_resource_get_node(resource);
     bionet_hab_t * hab = bionet_node_get_hab(node);
@@ -433,12 +490,7 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
 	return -1;
     }
-    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  entry.tv_sec);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
-	return -1;
-    }
-    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  entry.tv_usec);
+    r = sqlite3_bind_double( insert_datapoint_stmt, param++,  entry);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
 	return -1;
@@ -992,16 +1044,9 @@ GPtrArray *db_get_resource_datapoints(
 	((entry_start->tv_sec == 0) && (entry_start->tv_usec == 0))) {
 	entry_start_restriction[0] = '\0';
     } else {
-	r = snprintf(
-		entry_start_restriction, 
-		sizeof(entry_start_restriction),
-		"AND ("
-		" Datapoints.Entry_Timestamp_Sec > %d"
-		" OR (Datapoints.Entry_Timestamp_Sec = %d AND Datapoints.Timestamp_Usec >= %d)"
-		")",
-		(int)entry_start->tv_sec, 
-		(int)entry_start->tv_sec, 
-		(int)entry_start->tv_usec);
+	r = snprintf(entry_start_restriction, sizeof(entry_start_restriction),
+		"AND Datapoints.Entry_Timestamp >= %lf",
+		timevaltodouble(entry_start));
 	if (r >= sizeof(entry_start_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "db_get_resource_entrys(): entry start time is too long!");
@@ -1013,16 +1058,9 @@ GPtrArray *db_get_resource_datapoints(
 	((entry_end->tv_sec == 0) && (entry_end->tv_usec == 0))) {
 	entry_end_restriction[0] = '\0';
     } else {
-	r = snprintf(
-		entry_end_restriction, 
-		sizeof(entry_end_restriction),
-		"AND ("
-		" Datapoints.Entry_Timestamp_Sec < %d"
-		" OR (Datapoints.Entry_Timestamp_Sec = %d AND Datapoints.Timestamp_Usec < %d)"
-		")",
-		(int)entry_end->tv_sec, 
-		(int)entry_end->tv_sec, 
-		(int)entry_end->tv_usec);
+	r = snprintf(entry_end_restriction, sizeof(entry_end_restriction),
+		"AND Datapoints.Entry_Timestamp < %lf",
+		timevaltodouble(entry_end));
 	if (r >= sizeof(entry_end_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "db_get_resource_entrys(): entry end time is too long!");

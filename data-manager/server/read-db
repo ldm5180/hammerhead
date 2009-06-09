@@ -86,6 +86,7 @@ function list_nodes {
     fi
 
     CMD="$CMD;"
+    echo "$CMD"
     $SQL "$CMD"
 }
 
@@ -168,13 +169,13 @@ function list_resource_datapoints {
     CMD="
         SELECT
             Hardware_Abstractors.HAB_TYPE, Hardware_Abstractors.HAB_ID, Nodes.Node_ID, Resources.Resource_ID,
-            Resource_Values.Value, Resource_Values.Timestamp_Sec, Resource_Values.Timestamp_Usec
+            Datapoints.Value, Datapoints.Timestamp_Sec, Datapoints.Timestamp_Usec
         FROM
-            Hardware_Abstractors, Nodes, Resources, Resource_Values
+            Hardware_Abstractors, Nodes, Resources, Datapoints
         WHERE
             Nodes.HAB_Key=Hardware_Abstractors.Key
             AND Resources.Node_Key=Nodes.Key
-            AND Resource_Values.Resource_Key=Resources.Key
+            AND Datapoints.Resource_Key=Resources.Key
     "
 
     if [ ! -z "$HAB_TYPE" ]; then
