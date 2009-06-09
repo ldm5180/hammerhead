@@ -168,7 +168,7 @@ static int read_from_user(void) {
             }
 
             //
-            // Walk through the subscriptions and remove any matching ones
+            // Walk through the subscriptions and remove at most one matching subscription
             //
 
             cursor = peer->subscriptions;
@@ -184,6 +184,8 @@ static int read_from_user(void) {
                     if (topic_link->data != NULL) free((char*)topic_link->data);
                     topic_link->data = NULL;
                     g_slist_free(topic_link);
+
+                    break;
                 }
             }
 
@@ -558,6 +560,9 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
                     if (topic_link->data != NULL) free((char*)topic_link->data);
                     topic_link->data = NULL;
                     g_slist_free(topic_link);
+
+                    // only remove one!
+                    break;
                 }
             }
 
