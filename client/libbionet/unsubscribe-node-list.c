@@ -46,6 +46,15 @@ int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  
             continue;
         }
 
+        free(node_sub->hab_type);
+        free(node_sub->hab_id);
+        free(node_sub->node_id);
+        free(node_sub);
+        
+        i->data = NULL;
+        libbionet_node_subscriptions = g_slist_delete_link(libbionet_node_subscriptions, i);
+
+
         if (libbionet_callback_lost_node != NULL) {
             GSList *h;
 
@@ -56,21 +65,24 @@ int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  
 
                 for (j = 0; j < bionet_hab_get_num_nodes(hab); j++) {
                     bionet_node_t *node = bionet_hab_get_node_by_index(hab, j);
+                    int found_matching_sub = 0;
+                    GSList *k;
 
-                    if (bionet_node_matches_habtype_habid_nodeid(node, hab_type, hab_id, node_id)) {
-                        libbionet_callback_lost_node(node);
+                    // walk through all the node_subscriptions: if none match, send the lost_node callback
+                    for (k = libbionet_node_subscriptions; k != NULL; k = k->next) {
+                        libbionet_node_subscription_t *sub = k->data;
+                        if (bionet_node_matches_habtype_habid_nodeid(
+                            node, sub->hab_type, sub->hab_id, sub->node_id)) {
+                            found_matching_sub = 1;
+                            break;
+                        }
                     }
+
+                    if ( !found_matching_sub )
+                        libbionet_callback_lost_node(node);
                 }
             }
         }
-
-        free(node_sub->hab_type);
-        free(node_sub->hab_id);
-        free(node_sub->node_id);
-        free(node_sub);
-        
-        i->data = NULL;
-        libbionet_node_subscriptions = g_slist_delete_link(libbionet_node_subscriptions, i);
 
         libbionet_cache_cleanup_nodes();
 
