@@ -19,14 +19,16 @@ struct event_t *add_node_event(struct timeval *tv, char *id, GSList *resources) 
     node = calloc(1, sizeof(struct new_node_event_t));
     if (node == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "calloc failed (unable to create new_node_event): %s\n", strerror(errno));
+        exit(1);
     }
 
-    strcpy(node->id, id);
+    strncpy(node->id, id, BIONET_NAME_COMPONENT_MAX_LEN);
     node->resources = resources;
 
     event = calloc(1, sizeof(struct event_t));
     if (event == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "calloc failed (unable to create new event): %s\n", strerror(errno));
+        exit(1);
     }
 
     event->tv = tv;
@@ -46,13 +48,15 @@ struct event_t *remove_node_event(struct timeval *tv, char *id) {
     node = calloc(1, sizeof(struct lost_node_event_t));
     if (node == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "calloc failed (unable to create lost_node_event): %s", strerror(errno));
+        exit(1);
     }
 
-    strcpy(node->id, id);
+    strncpy(node->id, id, BIONET_NAME_COMPONENT_MAX_LEN);
 
     event = calloc(1, sizeof(struct event_t));
     if (event == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "calloc failed (unable to create lost event): %s", strerror(errno));
+        exit(1);
     }
 
     event->tv = tv;
@@ -72,15 +76,17 @@ struct event_t *update_event(struct timeval *tv, char *node, char *resource, cha
     dp = calloc(1, sizeof(struct datapoint_event_t));
     if (dp == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "calloc failed (unable to create update datapoint event): %s", strerror(errno));
+        exit(1);
     }
 
-    strcpy(dp->id, resource);
-    strcpy(dp->node_id, node);
+    strncpy(dp->id, resource, BIONET_NAME_COMPONENT_MAX_LEN);
+    strncpy(dp->node_id, node, BIONET_NAME_COMPONENT_MAX_LEN);
     dp->value = value;
 
     event = calloc(1, sizeof(struct event_t));
     if (event == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "calloc failed (unable to create update event): %s", strerror(errno));
+        exit(1);
     }
 
     event->tv = tv;

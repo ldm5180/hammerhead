@@ -21,12 +21,18 @@ struct resource_info_t *create_resource(char *id,
 
     struct resource_info_t *res;
 
+    if (id == NULL) {
+        g_log("", G_LOG_LEVEL_WARNING, "unable to create resource: got NULL resource id");
+        return NULL;
+    }
+
     res = calloc(1, sizeof(struct resource_info_t));
     if (res == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "calloc failed (allocating resource_info): %s\n", strerror(errno));
+        exit(1);
     }
 
-    strcpy(res->id, id);
+    strncpy(res->id, id, BIONET_NAME_COMPONENT_MAX_LEN);
     res->flavor = flavor;
     res->data_type = data_type;
     res->value = value;
@@ -49,7 +55,7 @@ struct resource_info_t *create_empty_resource(char *id,
         exit(1);
     }
 
-    strcpy(res->id, id);
+    strncpy(res->id, id, BIONET_NAME_COMPONENT_MAX_LEN);
     res->flavor = flavor;
     res->data_type = data_type;
     res->has_value = FALSE;
