@@ -35,6 +35,8 @@
 #include "BDM-Sync-Datapoints-Message.h"
 #include "BDM-Sync-Metadata-Message.h"
 
+#include "BDMSyncRecord.h"
+
 #include "bionet-util.h"
 
 

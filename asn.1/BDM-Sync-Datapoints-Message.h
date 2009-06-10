@@ -12,18 +12,19 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "BDMRecord.h"
-#include <PrintableString.h>
-#include <constr_SEQUENCE.h>
+#include <asn_SEQUENCE_OF.h>
+#include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* Forward declarations */
+struct BDMSyncRecord;
+
 /* BDM-Sync-Datapoints-Message */
 typedef struct BDM_Sync_Datapoints_Message {
-	BDMRecord_t	 bdmRecord;
-	PrintableString_t	 bdmID;
+	A_SEQUENCE_OF(struct BDMSyncRecord) list;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -35,5 +36,8 @@ extern asn_TYPE_descriptor_t asn_DEF_BDM_Sync_Datapoints_Message;
 #ifdef __cplusplus
 }
 #endif
+
+/* Referred external types */
+#include "BDMSyncRecord.h"
 
 #endif	/* _BDM_Sync_Datapoints_Message_H_ */

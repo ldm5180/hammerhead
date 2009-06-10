@@ -79,10 +79,21 @@ BEGIN
         nodes    SEQUENCE OF Node
     }
 
+    ResourceRecord ::= SEQUENCE {
+        resourceKey            OCTET STRING,
+        resourceDatapoints     SEQUENCE OF Datapoint
+    }
+
     BDMRecord ::= SEQUENCE {
+        bdmID             PrintableString,
         entryTimestamp    GeneralizedTime,
 	resourceKey       OCTET STRING,
         syncDatapoints    SEQUENCE OF Datapoint
+    }
+
+    BDMSyncRecord ::= SEQUENCE {
+        bdmID            PrintableString,
+        syncResources    SEQUENCE OF ResourceRecord
     }
 
     -- 
@@ -211,9 +222,6 @@ BEGIN
     -- already been received and processed before this message.
     --
 
-    BDM-Sync-Datapoints-Message ::= SEQUENCE {
-        bdmRecord BDMRecord,
-	bdmID     PrintableString
-    }
+    BDM-Sync-Datapoints-Message ::= SEQUENCE OF BDMSyncRecord
 END
 

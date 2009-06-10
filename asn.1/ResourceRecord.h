@@ -5,15 +5,13 @@
  * 	`asn1c -Werror -fnative-types -fskeletons-copy -pdu=auto`
  */
 
-#ifndef	_BDMRecord_H_
-#define	_BDMRecord_H_
+#ifndef	_ResourceRecord_H_
+#define	_ResourceRecord_H_
 
 
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <PrintableString.h>
-#include <GeneralizedTime.h>
 #include <OCTET_STRING.h>
 #include <asn_SEQUENCE_OF.h>
 #include <constr_SEQUENCE_OF.h>
@@ -26,24 +24,22 @@ extern "C" {
 /* Forward declarations */
 struct Datapoint;
 
-/* BDMRecord */
-typedef struct BDMRecord {
-	PrintableString_t	 bdmID;
-	GeneralizedTime_t	 entryTimestamp;
+/* ResourceRecord */
+typedef struct ResourceRecord {
 	OCTET_STRING_t	 resourceKey;
-	struct syncDatapoints {
+	struct resourceDatapoints {
 		A_SEQUENCE_OF(struct Datapoint) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
-	} syncDatapoints;
+	} resourceDatapoints;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} BDMRecord_t;
+} ResourceRecord_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_BDMRecord;
+extern asn_TYPE_descriptor_t asn_DEF_ResourceRecord;
 
 #ifdef __cplusplus
 }
@@ -52,4 +48,4 @@ extern asn_TYPE_descriptor_t asn_DEF_BDMRecord;
 /* Referred external types */
 #include "Datapoint.h"
 
-#endif	/* _BDMRecord_H_ */
+#endif	/* _ResourceRecord_H_ */

@@ -32,7 +32,9 @@ ASN_MODULE_SOURCES =              \
     BDM-S2C-Message.c             \
     BDM-Sync-Metadata-Message.c   \
     BDM-Sync-Datapoints-Message.c \
-    BDMRecord.c
+    BDMRecord.c                   \
+    BDMSyncRecord.c               \
+    ResourceRecord.c              
 
 # FIXME: autoreconf doesnt work if this variable is called ASN_MODULE_HEADS
 ASN_MODULE_HEADS =                \
@@ -57,7 +59,9 @@ ASN_MODULE_HEADS =                \
     BDM-S2C-Message.h             \
     BDM-Sync-Metadata-Message.h   \
     BDM-Sync-Datapoints-Message.h \
-    BDMRecord.h
+    BDMRecord.h                   \
+    BDMSyncRecord.h               \
+    ResourceRecord.h              
 
 
 ASN_MODULE_HEADS+=BOOLEAN.h
