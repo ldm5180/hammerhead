@@ -16,6 +16,9 @@
 #include "bionet-util.h"
 
 
+// Number of bytes to use for the resource key
+// from the sha1 hash. Must be <= to SHA_DIGEST_LENGTH;
+#define BDM_RESOURCE_KEY_LENGTH 8 
 
 
 extern char *bdm_pidfile;
@@ -61,6 +64,15 @@ int db_add_node(bionet_node_t *node);
 int db_add_hab(bionet_hab_t *hab);
 
 
+//
+// Insert a datapoint, possibly before the metadata is available
+//
+int db_add_datapoint_sync(
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
+    const char * bdm_id,
+    const char * value, 
+    struct timeval *timestamp);
+
 
 
 // 
@@ -68,10 +80,10 @@ int db_add_hab(bionet_hab_t *hab);
 //
 
 GPtrArray *db_get_resource_datapoints(
-    const unsigned char *hab_type,
-    const unsigned char *hab_id,
-    const unsigned char *node_id,
-    const unsigned char *resource_id,
+    const char *hab_type,
+    const char *hab_id,
+    const char *node_id,
+    const char *resource_id,
     struct timeval *datapoint_start,
     struct timeval *datapoint_end,
     struct timeval *entry_start,

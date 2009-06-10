@@ -18,10 +18,8 @@
 #include <bionet.h>
 
 #include "bdm-util.h"
+#include "bionet-data-manager.h"
 
-// Number of bytes to use for the resource key
-// from the sha1 hash
-#define RESOURCE_KEY_LENGTH 8 
 
 static int add_bdm_to_db(const char *bdm_id);
 
@@ -32,6 +30,7 @@ static sqlite3_stmt * insert_hab_stmt = NULL;
 static sqlite3_stmt * insert_node_stmt = NULL;
 static sqlite3_stmt * insert_resource_stmt = NULL;
 static sqlite3_stmt * insert_datapoint_stmt = NULL;
+static sqlite3_stmt * insert_datapoint_sync_stmt = NULL;
 static sqlite3_stmt * insert_bdm_stmt = NULL;
 
 extern char * database_file;
@@ -71,6 +70,10 @@ void db_shutdown(void) {
     if(insert_datapoint_stmt){
 	sqlite3_finalize(insert_datapoint_stmt);
 	insert_datapoint_stmt = NULL;
+    }
+    if(insert_datapoint_sync_stmt){
+	sqlite3_finalize(insert_datapoint_sync_stmt);
+	insert_datapoint_sync_stmt = NULL;
     }
     if(insert_bdm_stmt){
 	sqlite3_finalize(insert_bdm_stmt);
@@ -341,7 +344,7 @@ static int add_resource_to_db(bionet_resource_t *resource) {
     double entry = gettimedouble();
 
     int param = 1;
-    r = sqlite3_bind_blob(insert_resource_stmt, param++, sha_digest, RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
+    r = sqlite3_bind_blob(insert_resource_stmt, param++, sha_digest, BDM_RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
 	return -1;
@@ -610,6 +613,92 @@ fail:
 }
 
 
+//
+// this is the true database interface for the bdm-sync reciever to use.
+// This allows storing datapoints before the metadata has arrived
+//
+
+int db_add_datapoint_sync(
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
+    const char * bdm_id,
+    const char * value, 
+    struct timeval *timestamp) 
+{
+    int r;
+
+    // Single insert, so no transaction needed
+
+    if(insert_datapoint_sync_stmt == NULL) {
+	r = sqlite3_prepare_v2(db, 
+	    "INSERT"
+	    " OR IGNORE"
+	    " INTO Datapoints"
+	    " SELECT"
+	    "     NULL, ?, BDMs.Key, ?, ?, ?, ?"
+	    "     FROM BDMs"
+	    "     WHERE BDMs.BDM_ID = ?",
+	    -1, &insert_datapoint_stmt, NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL error: %s\n", sqlite3_errmsg(db));
+	    return -1;
+	}
+    }
+
+    double entry = gettimedouble();
+
+    // Bind host variables to the prepared statement 
+    // -- This eliminates the need to escape strings
+    // Bind in order of the placeholders (?) in the SQL
+    int param = 1;
+    r = sqlite3_bind_blob(insert_resource_stmt, param++, 
+        resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+
+    r = sqlite3_bind_text(insert_datapoint_stmt, param++, value, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+
+    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  timestamp->tv_sec);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+
+    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  timestamp->tv_usec);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+
+    r = sqlite3_bind_double( insert_datapoint_stmt, param++,  entry);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+
+    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bdm_id, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	return -1;
+    }
+
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_datapoint_stmt)));
+    if (r != SQLITE_DONE) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
+	sqlite3_reset(insert_datapoint_stmt);
+        return -1;
+    }
+    sqlite3_reset(insert_datapoint_stmt);
+    sqlite3_clear_bindings(insert_datapoint_stmt);
+
+    return 0;
+}
 
 
 int db_add_node(bionet_node_t *node) {
