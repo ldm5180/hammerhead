@@ -37,6 +37,8 @@
 
 #include "BDMSyncRecord.h"
 
+#include "ResourceRecord.h"
+
 #include "bionet-util.h"
 
 
