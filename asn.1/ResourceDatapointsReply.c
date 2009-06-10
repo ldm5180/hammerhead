@@ -9,7 +9,7 @@
 
 #include "ResourceDatapointsReply.h"
 
-static asn_TYPE_member_t asn_MBR_ResourceDatapointsReply_1[] = {
+static asn_TYPE_member_t asn_MBR_habs_2[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
@@ -20,17 +20,19 @@ static asn_TYPE_member_t asn_MBR_ResourceDatapointsReply_1[] = {
 		""
 		},
 };
-static ber_tlv_tag_t asn_DEF_ResourceDatapointsReply_tags_1[] = {
+static ber_tlv_tag_t asn_DEF_habs_tags_2[] = {
+	(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static asn_SET_OF_specifics_t asn_SPC_ResourceDatapointsReply_specs_1 = {
-	sizeof(struct ResourceDatapointsReply),
-	offsetof(struct ResourceDatapointsReply, _asn_ctx),
+static asn_SET_OF_specifics_t asn_SPC_habs_specs_2 = {
+	sizeof(struct habs),
+	offsetof(struct habs, _asn_ctx),
 	0,	/* XER encoding is XMLDelimitedItemList */
 };
-asn_TYPE_descriptor_t asn_DEF_ResourceDatapointsReply = {
-	"ResourceDatapointsReply",
-	"ResourceDatapointsReply",
+static /* Use -fall-defs-global to expose */
+asn_TYPE_descriptor_t asn_DEF_habs_2 = {
+	"habs",
+	"habs",
 	SEQUENCE_OF_free,
 	SEQUENCE_OF_print,
 	SEQUENCE_OF_constraint,
@@ -41,6 +43,67 @@ asn_TYPE_descriptor_t asn_DEF_ResourceDatapointsReply = {
 	SEQUENCE_OF_decode_uper,
 	SEQUENCE_OF_encode_uper,
 	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_habs_tags_2,
+	sizeof(asn_DEF_habs_tags_2)
+		/sizeof(asn_DEF_habs_tags_2[0]) - 1, /* 1 */
+	asn_DEF_habs_tags_2,	/* Same as above */
+	sizeof(asn_DEF_habs_tags_2)
+		/sizeof(asn_DEF_habs_tags_2[0]), /* 2 */
+	0,	/* No PER visible constraints */
+	asn_MBR_habs_2,
+	1,	/* Single element */
+	&asn_SPC_habs_specs_2	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ResourceDatapointsReply_1[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ResourceDatapointsReply, habs),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_habs_2,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		"habs"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ResourceDatapointsReply, lastEntryTime),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_GeneralizedTime,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		"lastEntryTime"
+		},
+};
+static ber_tlv_tag_t asn_DEF_ResourceDatapointsReply_tags_1[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_TYPE_tag2member_t asn_MAP_ResourceDatapointsReply_tag2el_1[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* habs at 137 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* lastEntryTime at 138 */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ResourceDatapointsReply_specs_1 = {
+	sizeof(struct ResourceDatapointsReply),
+	offsetof(struct ResourceDatapointsReply, _asn_ctx),
+	asn_MAP_ResourceDatapointsReply_tag2el_1,
+	2,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ResourceDatapointsReply = {
+	"ResourceDatapointsReply",
+	"ResourceDatapointsReply",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	0,	/* Use generic outmost tag fetcher */
 	asn_DEF_ResourceDatapointsReply_tags_1,
 	sizeof(asn_DEF_ResourceDatapointsReply_tags_1)
 		/sizeof(asn_DEF_ResourceDatapointsReply_tags_1[0]), /* 1 */
@@ -49,7 +112,7 @@ asn_TYPE_descriptor_t asn_DEF_ResourceDatapointsReply = {
 		/sizeof(asn_DEF_ResourceDatapointsReply_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
 	asn_MBR_ResourceDatapointsReply_1,
-	1,	/* Single element */
+	2,	/* Elements count */
 	&asn_SPC_ResourceDatapointsReply_specs_1	/* Additional specs */
 };
 

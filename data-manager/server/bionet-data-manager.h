@@ -87,7 +87,8 @@ GPtrArray *db_get_resource_datapoints(
     struct timeval *datapoint_start,
     struct timeval *datapoint_end,
     struct timeval *entry_start,
-    struct timeval *entry_end
+    struct timeval *entry_end,
+    struct timeval *latest_entry
 );
 
 

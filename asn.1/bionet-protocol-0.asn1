@@ -133,7 +133,10 @@ BEGIN
 	entryEndTime         GeneralizedTime
     }
 
-    ResourceDatapointsReply ::= SEQUENCE OF HardwareAbstractor
+    ResourceDatapointsReply ::= SEQUENCE {
+        habs             SEQUENCE OF HardwareAbstractor,
+	lastEntryTime    GeneralizedTime
+    }
 
 
     -- 

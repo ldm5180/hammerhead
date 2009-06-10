@@ -21,12 +21,12 @@ GPtrArray *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
 
     hab_list = g_ptr_array_new();
 
-    for (hi = 0; hi < rdr->list.count; hi ++) {
+    for (hi = 0; hi < rdr->habs.list.count; hi ++) {
         HardwareAbstractor_t *asn_hab;
         bionet_hab_t *hab;
         int ni;
 
-        asn_hab = rdr->list.array[hi];
+        asn_hab = rdr->habs.list.array[hi];
 
         hab = bionet_hab_new((char *)asn_hab->type.buf, (char *)asn_hab->id.buf);
         if (hab == NULL) goto cleanup;

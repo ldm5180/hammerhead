@@ -12,7 +12,7 @@
 
 #include <sqlite3.h>
 #include <openssl/sha.h>
-
+#include <sys/time.h>
 #include <glib.h>
 
 #include <bionet.h>
@@ -36,6 +36,10 @@ static sqlite3_stmt * insert_bdm_stmt = NULL;
 extern char * database_file;
 char bdm_id[256] = { 0 };
 
+typedef struct sql_return {
+    GPtrArray *hab_list;
+    struct timeval * latest_entry;
+} sql_return_t;
 
 int db_init(void) {
     int r;
@@ -126,6 +130,11 @@ static double gettimedouble(void) {
 
     return timevaltodouble(&tv);
 }
+
+static void doubletotimeval(double t, struct timeval *tv) {
+    tv->tv_sec = (time_t)t;
+    tv->tv_usec = (suseconds_t)(t-tv->tv_sec * 1e6);
+} 
 
 // 
 // database back-end internal helper functions
@@ -862,17 +871,19 @@ static bionet_resource_t *find_resource(bionet_node_t *node, const char *data_ty
 
 
 static int db_get_resource_datapoints_callback(
-    void *hab_list_void,
+    void *sql_ret_void,
     int argc,
     char **argv,
     char **azColName
 ) {
-    GPtrArray *hab_list = hab_list_void;
+    sql_return_t * sql_ret_val = (sql_return_t *)sql_ret_void;
+    GPtrArray *hab_list = sql_ret_val->hab_list;
+    struct timeval * latest_entry = sql_ret_val->latest_entry;
     bionet_hab_t *hab;
     bionet_node_t *node;
     bionet_resource_t *resource;
 
-    struct timeval timestamp;
+    struct timeval timestamp, entry;
     int err = 0;
     bionet_value_t * value = NULL;
     bionet_datapoint_t * datapoint = NULL;
@@ -904,6 +915,13 @@ static int db_get_resource_datapoints_callback(
 
     timestamp.tv_sec = atoi(argv[7]);
     timestamp.tv_usec = atoi(argv[8]);
+
+    doubletotimeval(strtod(argv[9], NULL), &entry);
+    if ((entry.tv_sec > latest_entry->tv_sec) ||
+	(entry.tv_sec == latest_entry->tv_sec && entry.tv_usec > latest_entry->tv_usec)) {
+	latest_entry->tv_sec = entry.tv_sec;
+	latest_entry->tv_usec = entry.tv_usec;
+    }
 
     switch(bionet_resource_get_data_type(resource))
     {
@@ -985,7 +1003,8 @@ GPtrArray *db_get_resource_datapoints(
     struct timeval *datapoint_start,
     struct timeval *datapoint_end,
     struct timeval *entry_start,
-    struct timeval *entry_end
+    struct timeval *entry_end,
+    struct timeval *latest_entry
 ) {
     int r;
     char sql[2048];
@@ -1005,6 +1024,8 @@ GPtrArray *db_get_resource_datapoints(
 
     hab_list = g_ptr_array_new();
 
+    sql_return_t sql_ret_val = { hab_list, 
+				 latest_entry };
 
     if ((hab_type == NULL) || (strcmp(hab_type, "*") == 0)) {
         hab_type_restriction[0] = '\0';
@@ -1169,7 +1190,8 @@ GPtrArray *db_get_resource_datapoints(
         "    Resources.Resource_ID,"
         "    Datapoints.Value,"
         "    Datapoints.Timestamp_Sec,"
-        "    Datapoints.Timestamp_Usec"
+        "    Datapoints.Timestamp_Usec,"
+	"    Datapoints.Entry_Timestamp"
         " FROM"
         "    Hardware_Abstractors,"
         "    Nodes,"
@@ -1222,7 +1244,7 @@ GPtrArray *db_get_resource_datapoints(
         db,
         sql,
         db_get_resource_datapoints_callback,
-        hab_list,
+        &sql_ret_val,
         &zErrMsg
     );
 
