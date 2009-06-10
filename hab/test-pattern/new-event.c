@@ -23,6 +23,8 @@ struct event_t *add_node_event(struct timeval *tv, char *id, GSList *resources) 
     }
 
     strncpy(node->id, id, BIONET_NAME_COMPONENT_MAX_LEN);
+    if (BIONET_NAME_COMPONENT_MAX_LEN > 0)
+        node->id[BIONET_NAME_COMPONENT_MAX_LEN - 1] = '\0';
     node->resources = resources;
 
     event = calloc(1, sizeof(struct event_t));
@@ -52,6 +54,8 @@ struct event_t *remove_node_event(struct timeval *tv, char *id) {
     }
 
     strncpy(node->id, id, BIONET_NAME_COMPONENT_MAX_LEN);
+    if (BIONET_NAME_COMPONENT_MAX_LEN > 0)
+        node->id[BIONET_NAME_COMPONENT_MAX_LEN - 1] = '\0';
 
     event = calloc(1, sizeof(struct event_t));
     if (event == NULL) {
@@ -81,6 +85,10 @@ struct event_t *update_event(struct timeval *tv, char *node, char *resource, cha
 
     strncpy(dp->id, resource, BIONET_NAME_COMPONENT_MAX_LEN);
     strncpy(dp->node_id, node, BIONET_NAME_COMPONENT_MAX_LEN);
+    if (BIONET_NAME_COMPONENT_MAX_LEN > 0) {
+        dp->id[BIONET_NAME_COMPONENT_MAX_LEN - 1] = '\0';
+        dp->node_id[BIONET_NAME_COMPONENT_MAX_LEN - 1] = '\0';
+    }
     dp->value = value;
 
     event = calloc(1, sizeof(struct event_t));

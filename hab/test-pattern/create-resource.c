@@ -33,6 +33,8 @@ struct resource_info_t *create_resource(char *id,
     }
 
     strncpy(res->id, id, BIONET_NAME_COMPONENT_MAX_LEN);
+    if (BIONET_NAME_COMPONENT_MAX_LEN > 0)
+        res->id[BIONET_NAME_COMPONENT_MAX_LEN - 1] = '\0';
     res->flavor = flavor;
     res->data_type = data_type;
     res->value = value;
@@ -56,6 +58,8 @@ struct resource_info_t *create_empty_resource(char *id,
     }
 
     strncpy(res->id, id, BIONET_NAME_COMPONENT_MAX_LEN);
+    if (BIONET_NAME_COMPONENT_MAX_LEN > 0)
+        res->id[BIONET_NAME_COMPONENT_MAX_LEN - 1] = '\0';
     res->flavor = flavor;
     res->data_type = data_type;
     res->has_value = FALSE;
