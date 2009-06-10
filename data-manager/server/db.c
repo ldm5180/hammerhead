@@ -630,9 +630,11 @@ fail:
 int db_add_datapoint_sync(
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
     const char * bdm_id,
-    const char * value, 
-    struct timeval *timestamp) 
+    struct timeval *timestamp,
+    bionet_resource_data_type_t type,
+    void * value)
 {
+#if 0
     int r;
 
     // Single insert, so no transaction needed
@@ -705,6 +707,7 @@ int db_add_datapoint_sync(
     }
     sqlite3_reset(insert_datapoint_stmt);
     sqlite3_clear_bindings(insert_datapoint_stmt);
+#endif
 
     return 0;
 }

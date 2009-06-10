@@ -70,9 +70,9 @@ int db_add_hab(bionet_hab_t *hab);
 int db_add_datapoint_sync(
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
     const char * bdm_id,
-    const char * value, 
-    struct timeval *timestamp);
-
+    struct timeval *timestamp,
+    bionet_resource_data_type_t type,
+    void * value)
 
 
 // 
