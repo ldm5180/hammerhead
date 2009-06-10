@@ -72,7 +72,7 @@ int db_add_datapoint_sync(
     const char * bdm_id,
     struct timeval *timestamp,
     bionet_resource_data_type_t type,
-    void * value)
+    void * value);
 
 
 // 
