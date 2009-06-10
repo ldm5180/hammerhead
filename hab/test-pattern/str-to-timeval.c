@@ -26,6 +26,7 @@ void str_to_timeval(const char *str, struct timeval *tv) {
     p = strptime(str, "%Y-%m-%d %T", &tm);
     if (p == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "error parsing time string '%s': %s\n", str, strerror(errno));
+        exit(1);
     }
 
     if (*p == '\0') {
