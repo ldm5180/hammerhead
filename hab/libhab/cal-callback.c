@@ -132,6 +132,7 @@ static void libhab_set_resource(const char *peer_name, SetResourceValue_t *set_r
 static void libhab_handle_datapoint_subscription_request(const char *peer_name, const char *topic) {
     char topic_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char topic_resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char datapoint_topic[2*BIONET_NAME_COMPONENT_MAX_LEN + 2];
     int r;
 
     r = bionet_split_nodeid_resourceid_r(&topic[2], topic_node_id, topic_resource_id);
@@ -167,6 +168,8 @@ static void libhab_handle_datapoint_subscription_request(const char *peer_name, 
                 continue;
             }
 
+            snprintf(datapoint_topic, sizeof(datapoint_topic), "D %s", 
+                bionet_resource_get_local_name(resource));
 
             //
             // first send the metadata for this matching resource
@@ -178,10 +181,12 @@ static void libhab_handle_datapoint_subscription_request(const char *peer_name, 
                 continue;
             }
 
-            // "publish" the message to the newly connected subscriber (via sendto)
-            // cal_server.sendto takes the buf so we dont need to free it
-            cal_server.sendto(peer_name, buf.buf, buf.size);
+            // "publish" the message to the newly connected subscriber (via publishto)
+            // if the datapoint topic does not match any previous topics
+            cal_server.publishto(peer_name, datapoint_topic, buf.buf, buf.size);
 
+            // FIXME: cal_server.publish should take the buf
+            free(buf.buf);
 
             //
             // then send the datapoints (if there are any)
@@ -193,10 +198,12 @@ static void libhab_handle_datapoint_subscription_request(const char *peer_name, 
                 continue;
             }
 
-            // "publish" the message to the newly connected subscriber (via sendto)
-            // cal_server.sendto takes the buf so we dont need to free it
-            cal_server.sendto(peer_name, buf.buf, buf.size);
-
+            // "publish" the message to the newly connected subscriber (via publishto)
+            // if the datapoint topic does not match any previous topics
+            cal_server.publishto(peer_name, datapoint_topic, buf.buf, buf.size);
+            
+            // FIXME: cal_server.publish should take the buf
+            free(buf.buf);
         }
     }
 
@@ -268,6 +275,7 @@ static void libhab_handle_stream_subscription_request(const char *peer_name, con
 
 
 static void libhab_handle_node_list_subscription_request(const char *peer_name, const char *topic) {
+    char node_topic[BIONET_NAME_COMPONENT_MAX_LEN + 2];
 
     if (!bionet_is_valid_name_component_or_wildcard(&topic[2])) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid Node-list subscription topic '%s'", peer_name, &topic[2]);
@@ -289,9 +297,13 @@ static void libhab_handle_node_list_subscription_request(const char *peer_name, 
             continue;
         }
 
-        // "publish" the message to the newly connected subscriber (via sendto)
-        // cal_server.sendto takes the buf so we dont need to free it
-        cal_server.sendto(peer_name, buf.buf, buf.size);
+        snprintf(node_topic, sizeof(node_topic), "N %s", bionet_node_get_id(node));
+
+        // "publish" the message to the newly connected subscriber (via publishto)
+        cal_server.publishto(peer_name, node_topic, buf.buf, buf.size);
+
+        // FIXME: cal_server.publish should take the buf
+        free(buf.buf);
     }
 
     cal_server.subscribe(peer_name, topic);

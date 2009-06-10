@@ -213,22 +213,59 @@ static int read_from_user(void) {
                 break;
             }
 
-            g_hash_table_iter_init(&iter, clients);
-            while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&client)) {
-                GSList *si;
+            if (event->peer_name == NULL) {
+                
+                //
+                // publish the message to all peers with matching topics 
+                //
 
-                for (si = client->subscriptions; si != NULL; si = si->next) {
-                    const char *sub_topic = si->data;
+                g_hash_table_iter_init(&iter, clients);
+                while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&client)) {
+                    GSList *si;
 
-                    if (this->topic_matches(event->topic, sub_topic) == 0) {
-                        bip_send_message(name, client, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
+                    for (si = client->subscriptions; si != NULL; si = si->next) {
+                        const char *sub_topic = si->data;
+
+                        if (this->topic_matches(event->topic, sub_topic) == 0) {
+                            bip_send_message(name, client, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                bip_peer_t *peer;
+                GSList *i;
+                int topic_already_exists = 0;
+
+                //
+                // publish the message to the given peer IF the peer has not already subscribed to this topic
+                //
+
+                peer = g_hash_table_lookup(clients, event->peer_name);
+                if (peer == NULL) {
+                    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping outgoing Message event", event->peer_name);
+                    break;
+                }
+
+                for (i = peer->subscriptions; i != NULL; i = i->next) {
+                    char *topic = i->data;
+
+                    if (i == NULL)
+                        continue;
+
+                    if (this->topic_matches(event->topic, topic) == 0) {
+                        topic_already_exists = 1;
                         break;
                     }
+                }
+
+                if ( !topic_already_exists ) {
+                    bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
                 }
             }
             break;
         }
-
+ 
         case CAL_EVENT_SHUTDOWN: {
             ret_val = -1;
             break;

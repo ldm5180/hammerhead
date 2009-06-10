@@ -96,7 +96,8 @@ typedef enum {
 
     //! This event is delivered to CAL clients, to indicate that a CAL
     //! server has published new information to us.  event->peer_name is
-    //! the name of the server that published, and event->msg is the
+    //! the of the peer to publish to. event->peer_name is NULL if the
+    //! message should be published to all peers. event->msg is the
     //! published message.  event->topic is unused and set to NULL.
     CAL_EVENT_PUBLISH,
 

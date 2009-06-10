@@ -577,6 +577,81 @@ void cal_server_mdnssd_bip_publish(const char *topic, const void *msg, int size)
 }
 
 
+void cal_server_mdnssd_bip_publishto(const char *peer_name, const char *topic, const void *msg, int size) {
+    int r;
+    cal_event_t *event;
+
+    if (cal_server_mdnssd_bip_thread == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: called before init!");
+        return;
+    }
+
+    if (!cal_topic_is_valid(topic)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: invalid topic");
+        return;
+    }
+
+    if (!cal_peer_name_is_valid(peer_name)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: invalid peer_name");
+        return;
+    }
+
+
+    if (msg == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: called with NULL msg!");
+        return;
+    }
+
+    if (size < 1) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: called with invalid size %d!", size);
+        return;
+    }
+
+    event = cal_event_new(CAL_EVENT_PUBLISH);
+    if (event == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "publish: out of memory");
+        return;
+    }
+
+    event->peer_name = strdup(peer_name);
+    if (event->peer_name == NULL) {
+        free(event);
+        return;
+    }
+
+    event->topic = strdup(topic);
+    if (event->topic == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "publish: out of memory");
+        return;
+    }
+
+    event->msg.buffer = malloc(size);
+    if (event->msg.buffer == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "publish: out of memory");
+        return;
+    }
+    memcpy(event->msg.buffer, msg, size);
+    event->msg.size = size;
+
+    r = write(cal_server_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    if (r < 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: error writing to server thread: %s", strerror(errno));
+        cal_event_free(event);
+        return;
+    }
+    if (r < sizeof(event)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: short write to server thread!!");
+        cal_event_free(event);
+        return;
+    }
+
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
+    return;
+}
+
+
 int cal_server_mdnssd_bip_init_security(const char * dir, int require) {
     char cadir[1024];
     char pubcert[1024];
@@ -733,6 +808,7 @@ cal_server_t cal_server = {
     .subscribe = cal_server_mdnssd_bip_subscribe,
     .sendto = cal_server_mdnssd_bip_sendto,
     .publish = cal_server_mdnssd_bip_publish,
+    .publishto = cal_server_mdnssd_bip_publishto,
 
     .init_security = cal_server_mdnssd_bip_init_security
 };

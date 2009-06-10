@@ -160,6 +160,28 @@ typedef struct {
     void (*publish)(const char *topic, const void *msg, int size);
 
 
+    //!
+    //! \brief Publish a message to a conected client
+    //!
+    //! \param peer_name The name of the client to send the message to.
+    //!     The peer_name should have been the subject of a previous
+    //!     Connect event, and not the subject of a Disconnect event since
+    //!     then.
+    //!
+    //! \param topic The topic to publish on.  topic is a NULL-terminated
+    //!     ASCII string.  When publish() returns, the caller may modify or
+    //!     free the string.
+    //!
+    //! \param msg The content of the message to publish.  When publish()
+    //!     returns, the caller may modify or free the msg buffer.  FIXME:
+    //!     Note that this is opposite from how the .sendto() msg behaves
+    //!
+    //! \param size The size of msg, in bytes.
+    //!
+
+    void (*publishto)(const char *peer_name, const char *topic, const void *msg, int size);
+
+
     /**
      * @brief Initialize security parameters.
      *

@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=11
+fi
+
+UNIQUE=$$
+RETVAL=0
+
+
+echo starting random-hab
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
+
+echo starting two bionet-watchers
+$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" -a 1 >| out.watcher.0 &
+
+
+sleep $TEST_DURATION
+
+
+echo "killing the random-hab"
+kill %1
+wait %1
+
+sleep 2  # to let the clients notice
+
+
+echo "killing the bionet-watcher"
+kill %2
+wait
+
+
+if ! diff -q out.watcher.0 out.random-hab; then
+    echo "ERROR: watcher output differs from random-hab output:"
+    diff -u out.random-hab out.watcher.0
+    RETVAL=1
+else
+    echo "watcher outputs are identical to random-hab output, yay"
+fi
+
+exit $RETVAL
+
