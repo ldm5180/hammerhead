@@ -30,6 +30,20 @@ typedef struct {
     bionet_datapoint_t * datapoint;
 } bdm_record_t;
 
+typedef enum {
+    BDM_SYNC_METHOD_TCP = 0,
+    BDM_SYNC_METHOD_ION = 1,
+} bdm_sync_method_t;
+
+typedef struct {
+    bdm_sync_method_t method;
+    struct timeval start_time;
+    struct timeval end_time;
+    char resource_name_pattern[BIONET_NAME_COMPONENT_MAX_LEN * 4];
+    unsigned int frequency;
+    char * sync_recipient;
+} sync_sender_config_t;
+
 // 
 // interface to the database backend
 //
