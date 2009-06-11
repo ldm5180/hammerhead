@@ -1,0 +1,62 @@
+
+Copyright (c) 2008-2009, Regents of the University of Colorado.  This work
+was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and NNC07CB47C.
+
+-------------------------------------------------------------------------------
+The test pattern hab simulates a real hab based on a test-pattern input.
+
+The hab accepts two different types of input formats:
+ (1) Node Add/Remove Messages
+ (2) Datapoint updates
+
+-------------------------------------------------------------------------------
+(1) Node Add/Remove Format
+
+DATE TIME [+|-] NODE_ID
+    [RESOURCE_ID1 DATA_TYPE FLAVOR [?|'VALUE']]
+    [RESOURCE_ID2 DATA_TYPE FLAVOR [?|'VALUE']]
+    [RESOURCE_ID3 DATA_TYPE FLAVOR [?|'VALUE']]
+
+    In this case, the date has the form YYYY-MM-DD. Time has the form
+    'HH:MM:SS:UUUUUU', where UUUUUUU is the microsecond time component. To add
+    a node, follow the time with a '+'; conversely, to remove a node, use '-'.
+    The node id follows the name. 
+    If the node also has resources, then any number of resource lines, 
+    consisting of the resource id, data type and flavor. If the resource does
+    not have a value, finish the line with a question mark. If the resource
+    has a value, encase the value in single quotes.
+    All resources are added at the same time.
+
+Example:
+    Below, the node planets would be added. It has two resources, mercury and 
+    venus. Mercury is a binary parameter with an initial value of 0. venus is 
+    a uint8 parameter with no initial value.
+    10 seconds later, the node planets would be removed.
+
+2009-06-03 15:00:00.000000 + planets
+    mercury binary parameter '0'
+    venus uint8 Parameter ?
+
+2009-06-03 15:00:10.000000 - planets
+
+-------------------------------------------------------------------------------
+(2) Datapoint Update Format
+
+DATE TIME NODE_ID RESOURCE_ID 'VALUE'
+
+    Resource updates start with the DATE (in a YYYY-MMM-DD format), followed 
+    by the TIME (HH:MM:SS:UUUUUU). This is followed by the node id and then 
+    the resource name. The update value is encased in single quotes.
+
+Example:
+    Below, the node planes' resources mercury and venus are updated with 
+    values of 1 and 255, respectively.
+
+2009-06-03 15:00:04.000000 planets mercury '1'
+2009-06-03 15:00:04.000000 planets venus '255'
+
+
+-------------------------------------------------------------------------------
+NOTES:
+
+-Events must be in chronological order.

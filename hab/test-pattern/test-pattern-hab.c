@@ -98,12 +98,8 @@ int main(int argc, char *argv[]) {
 
     if (optind == argc-1) {
         strncpy(file_name, argv[optind], MAX_FILE_NAME_LENGTH);
-        if (MAX_FILE_NAME_LENGTH > 0)
+        if (MAX_FILE_NAME_LENGTH > 0) {
             file_name[MAX_FILE_NAME_LENGTH - 1] = '\0';
-        if (file_name == NULL) {
-            g_log("", G_LOG_LEVEL_WARNING, "need an input file");
-            usage();
-            exit(1);
         }
     } else if (optind < argc-1 ) {
         g_log("", G_LOG_LEVEL_WARNING, "too many input files");
