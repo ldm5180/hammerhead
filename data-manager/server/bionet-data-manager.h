@@ -24,6 +24,8 @@
 extern char *bdm_pidfile;
 extern GMainLoop *bdm_main_loop;
 
+extern GHashTable * bdm_opts_table;
+
 
 typedef struct {
     struct timeval entry_ts;
@@ -169,6 +171,8 @@ void make_shutdowns_clean(void);
 int sync_send_metadata();
 int sync_send_datapoints();
 
+
+sync_sender_config_t * read_config_file(const char * fname);
 
 #endif //  BIONET_DATA_MANAGER_H
 

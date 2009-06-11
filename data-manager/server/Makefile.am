@@ -24,7 +24,8 @@ bionet_data_manager_SOURCES =         \
     sync-receive-connecting-handler.c \
     sync-receive-readable-handler.c   \
     handle-sync-datapoints-message.c  \
-    handle-sync-metadata-message.c    
+    handle-sync-metadata-message.c    \
+    cfg.c
 
 bionet_data_manager_CFLAGS = $(AM_CFLAGS) $(OPENSSL_CFLAGS) $(GLIB20_CFLAGS) $(OPENSSL_CFLAGS) -I../include $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) 
 
