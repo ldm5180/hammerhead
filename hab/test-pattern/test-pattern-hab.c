@@ -25,6 +25,7 @@
 
 om_t output_mode = OM_NORMAL;
 
+#define MAX_FILE_NAME_LENGTH (200)
 
 void usage(void) {
     printf("usage: test-pattern-hab [-i ID] [-o OUTPUT_MODE] FILENAME\n");
@@ -42,7 +43,7 @@ void usage(void) {
 
 int main(int argc, char *argv[]) {
     int bionet_fd, i;
-    char *file_name;
+    char file_name[MAX_FILE_NAME_LENGTH];
     char *id = NULL;
     //GSList *events = NULL;
     FILE *fd;
@@ -96,25 +97,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (optind == argc-1) {
-        file_name = argv[optind];
+        strncpy(file_name, argv[optind], MAX_FILE_NAME_LENGTH);
+        if (MAX_FILE_NAME_LENGTH > 0)
+            file_name[MAX_FILE_NAME_LENGTH - 1] = '\0';
         if (file_name == NULL) {
             g_log("", G_LOG_LEVEL_WARNING, "need an input file");
-            usage();
-            exit(1);
-        }
-
-        // sanitizing the input file-name
-        i = 0;
-        while ((file_name[i] != '\0') && (i < 200)) {
-            if ( !isprint(file_name[i]) ) {
-                g_log("", G_LOG_LEVEL_WARNING, "passed in unprintable file character string\n");
-                usage();
-                exit(1);
-            }
-            i++;
-        }
-        if (i >= 200) {
-            g_log("", G_LOG_LEVEL_WARNING, "input file name too long\n");
             usage();
             exit(1);
         }
