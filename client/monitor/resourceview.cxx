@@ -227,7 +227,6 @@ void ResourceView::textEntered() {
     }
 
     name = QString("%1.%2.%3:%4").arg(habType->text()).arg(habId->text()).arg(nodeId->text()).arg(resourceId->text());
-    qDebug("set resource name %s", qPrintable(name));
 
     r = bionet_set_resource_by_name(qPrintable(name), qPrintable(valueEditor->text()));
     
