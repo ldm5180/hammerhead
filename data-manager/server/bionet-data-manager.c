@@ -221,6 +221,7 @@ int main(int argc, char *argv[]) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to create a thread for config %d", i);
 	}
+	//TODO create a signaling/control method to cause threads to exit when needed.
     }
 
 

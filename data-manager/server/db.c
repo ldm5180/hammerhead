@@ -1319,6 +1319,28 @@ GPtrArray *db_get_resource_datapoints(
 }
 
 
+GPtrArray *db_get_metadata(
+    const char *hab_type,
+    const char *hab_id,
+    const char *node_id,
+    const char *resource_id,
+    struct timeval *datapoint_start,
+    struct timeval *datapoint_end,
+    struct timeval *entry_start,
+    struct timeval *entry_end,
+    struct timeval *latest_entry) {
+
+    //TODO complete this function
+    
+    return NULL;
+} 
+
+
+void db_get_latest_entry_timestamp(struct timeval * ts) {
+    //TODO complete this function
+}
+
+
 // Emacs cruft
 // Local Variables:
 // mode: C

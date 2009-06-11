@@ -107,6 +107,19 @@ GPtrArray *db_get_resource_datapoints(
     struct timeval *latest_entry
 );
 
+GPtrArray *db_get_metadata(
+    const char *hab_type,
+    const char *hab_id,
+    const char *node_id,
+    const char *resource_id,
+    struct timeval *datapoint_start,
+    struct timeval *datapoint_end,
+    struct timeval *entry_start,
+    struct timeval *entry_end,
+    struct timeval *latest_entry);
+
+void db_get_latest_entry_timestamp(struct timeval * ts);
+
 
 // 
 // stuff for being a bionet client
