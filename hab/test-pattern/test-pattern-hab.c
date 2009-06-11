@@ -7,6 +7,7 @@
 #define _XOPEN_SOURCE
 #define _BSD_SOURCE
 
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
@@ -98,6 +99,22 @@ int main(int argc, char *argv[]) {
         file_name = argv[optind];
         if (file_name == NULL) {
             g_log("", G_LOG_LEVEL_WARNING, "need an input file");
+            usage();
+            exit(1);
+        }
+
+        // sanitizing the input file-name
+        i = 0;
+        while ((file_name[i] != '\0') && (i < 200)) {
+            if ( !isprint(file_name[i]) ) {
+                g_log("", G_LOG_LEVEL_WARNING, "passed in unprintable file character string\n");
+                usage();
+                exit(1);
+            }
+            i++;
+        }
+        if (i >= 200) {
+            g_log("", G_LOG_LEVEL_WARNING, "input file name too long\n");
             usage();
             exit(1);
         }
