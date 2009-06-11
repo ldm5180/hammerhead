@@ -203,6 +203,10 @@ const char *bionet_stream_get_local_name(const bionet_stream_t *stream);
  *
  * @param[in] stream The Stream
  * @param[in] user_data The data to annotate the stream with.
+ *
+ * @note If the user sets the user data, then the user is 
+ *       responsible for freeing the it and setting it to 
+ *       NULL before the hab is free'd.
  */
 void bionet_stream_set_user_data(bionet_stream_t *stream, const void *user_data);
 

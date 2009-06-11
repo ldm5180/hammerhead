@@ -190,6 +190,10 @@ int bionet_hab_matches_type_and_id(const bionet_hab_t *hab,
  *
  * @param[in] hab The Hab
  * @param[in] user_data The data to annotate the Hab with.
+ *
+ * @note If the user sets the user data, then the user is 
+ *       responsible for freeing the it and setting it to 
+ *       NULL before the hab is free'd.
  */
 void bionet_hab_set_user_data(bionet_hab_t *hab, const void *user_data);
 

@@ -230,6 +230,10 @@ int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node,
  *
  * @param[in] node The Node
  * @param[in] user_data The data to annotate the Node with.
+ *
+ * @note If the user sets the user data, then the user is 
+ *       responsible for freeing the it and setting it to 
+ *       NULL before the hab is free'd.
  */
 void bionet_node_set_user_data(bionet_node_t *node, const void *user_data);
 

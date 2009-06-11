@@ -896,6 +896,10 @@ void bionet_resource_make_clean(bionet_resource_t *resource);
  *
  * @param[in] resource The Resource
  * @param[in] user_data The data to annotate the Resource with.
+ *
+ * @note If the user sets the user data, then the user is 
+ *       responsible for freeing the it and setting it to 
+ *       NULL before the hab is free'd.
  */
 void bionet_resource_set_user_data(bionet_resource_t *resource, const void *user_data);
 
