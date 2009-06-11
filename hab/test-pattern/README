@@ -60,3 +60,8 @@ Example:
 NOTES:
 
 -Events must be in chronological order.
+-The bionet-watcher test-pattern hab output mode is not exact: node add/lost
+ events are not timestamped. In order to use the output you must add these 
+ timestamps.
+-The bionet-watcher test-pattern hab output is also not in chronological order.
+ To use it, you must re-arrange the data to be in chronological order.

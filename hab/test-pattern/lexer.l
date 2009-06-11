@@ -45,7 +45,7 @@ int line_num = 0;
 
 int yywrap() { return 1; }
 
-int yyerror() {
-    g_log("", G_LOG_LEVEL_ERROR, "error at line %d (%s)\n", line_num, yytext);
+int yyerror(const char *msg) {
+    g_log("", G_LOG_LEVEL_ERROR, "error at line %d (%s): %s\n", line_num, yytext, msg);
     return 0;
 }

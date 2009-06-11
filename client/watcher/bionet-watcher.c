@@ -23,6 +23,13 @@
 #include "bionet.h"
 #include "bionet-util.h"
 
+typedef enum {
+    OM_NORMAL,
+    OM_TEST_PATTERN
+} om_t;
+
+om_t output_mode = OM_NORMAL;
+
 
 enum subscription_update_t {
     ADD,
@@ -109,31 +116,50 @@ void cb_datapoint(bionet_datapoint_t *datapoint) {
 
     char * value_str = bionet_value_to_str(value);
 
-    g_message(
-        "%s = %s %s %s @ %s",
-        bionet_resource_get_name(resource),
-        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-        value_str,
-        bionet_datapoint_timestamp_to_string(datapoint)
-    );
+    if (output_mode == OM_NORMAL) {
+        g_message(
+            "%s = %s %s %s @ %s",
+            bionet_resource_get_name(resource),
+            bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+            bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+            value_str,
+            bionet_datapoint_timestamp_to_string(datapoint)
+        );
+    } else if (output_mode == OM_TEST_PATTERN) {
+        g_message(
+            "%s %s %s '%s'",
+            bionet_datapoint_timestamp_to_string(datapoint),
+            bionet_node_get_id(bionet_resource_get_node(resource)),
+            bionet_resource_get_id(resource),
+            value_str
+        );
+    }
 
     free(value_str);
 }
 
 
 void cb_lost_node(bionet_node_t *node) {
-    g_message("lost node: %s", bionet_node_get_name(node));
+    if (output_mode == OM_NORMAL) {
+        g_message("lost node: %s", bionet_node_get_name(node));
+    } else if (output_mode == OM_TEST_PATTERN) {
+        g_message("- %s", bionet_node_get_id(node));
+    }
 }
 
 
 void cb_new_node(bionet_node_t *node) {
     int i;
 
-    g_message("new node: %s", bionet_node_get_name(node));
+    if (output_mode == OM_NORMAL) {
+        g_message("new node: %s", bionet_node_get_name(node));
+    } else if (output_mode == OM_TEST_PATTERN) {
+        g_message("+ %s", bionet_node_get_id(node));
+    }
 
     if (bionet_node_get_num_resources(node)) {
-        g_message("    Resources:");
+        if (output_mode == OM_NORMAL)
+            g_message("    Resources:");
 
         for (i = 0; i < bionet_node_get_num_resources(node); i++) {
             bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
@@ -144,23 +170,42 @@ void cb_new_node(bionet_node_t *node) {
             bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
 
             if (datapoint == NULL) {
-                g_message(
-                    "        %s %s %s (no known value)", 
-                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                    bionet_resource_get_id(resource)
-                );
+                if (output_mode == OM_NORMAL) {
+                    g_message(
+                        "        %s %s %s (no known value)", 
+                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                        bionet_resource_get_id(resource)
+                    );
+                } else if (output_mode == OM_TEST_PATTERN) {
+                    g_message(
+                        "    %s %s %s ?",
+                        bionet_resource_get_id(resource),
+                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
+                    );
+                }
             } else {
                 char * value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
 
-                g_message(
-                    "        %s %s %s = %s @ %s", 
-                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                    bionet_resource_get_id(resource),
-                    value_str,
-                    bionet_datapoint_timestamp_to_string(datapoint)
-                );
+                if (output_mode == OM_NORMAL) {
+                    g_message(
+                        "        %s %s %s = %s @ %s", 
+                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                        bionet_resource_get_id(resource),
+                        value_str,
+                        bionet_datapoint_timestamp_to_string(datapoint)
+                    );
+                } else if (output_mode == OM_TEST_PATTERN) {
+                    g_message(
+                        "    %s %s %s '%s'",
+                        bionet_resource_get_id(resource),
+                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                        value_str
+                    );
+                }
 
 		free(value_str);
             }
@@ -169,34 +214,41 @@ void cb_new_node(bionet_node_t *node) {
     }
 
     if (bionet_node_get_num_streams(node)) {
-        g_message("    Streams:");
+        if (output_mode == OM_NORMAL)
+            g_message("    Streams:");
 
         for (i = 0; i < bionet_node_get_num_streams(node); i++) {
             bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
-	    if (NULL == stream) {
-		g_log("", G_LOG_LEVEL_WARNING, "Failed to get stream at index %d from node", i);
-	    }
+            if (NULL == stream) {
+                g_log("", G_LOG_LEVEL_WARNING, "Failed to get stream at index %d from node", i);
+            }
 
-            g_message(
-                "        %s %s %s", 
-                bionet_stream_get_id(stream),
-                bionet_stream_get_type(stream),
-                bionet_stream_direction_to_string(bionet_stream_get_direction(stream))
-            );
+            if (output_mode == OM_NORMAL) {
+                g_message(
+                    "        %s %s %s", 
+                    bionet_stream_get_id(stream),
+                    bionet_stream_get_type(stream),
+                    bionet_stream_direction_to_string(bionet_stream_get_direction(stream))
+                );
+            }
         }
     }
 }
 
 
 void cb_lost_hab(bionet_hab_t *hab) {
-    g_message("lost hab: %s", bionet_hab_get_name(hab));
+    if (output_mode == OM_NORMAL) {
+        g_message("lost hab: %s", bionet_hab_get_name(hab));
+    }
 }
 
 
 void cb_new_hab(bionet_hab_t *hab) {
-    g_message("new hab: %s", bionet_hab_get_name(hab));
-    if (bionet_hab_is_secure(hab)) {
-	g_message("    %s: security enabled", bionet_hab_get_name(hab));
+    if (output_mode == OM_NORMAL) {
+        g_message("new hab: %s", bionet_hab_get_name(hab));
+        if (bionet_hab_is_secure(hab)) {
+            g_message("    %s: security enabled", bionet_hab_get_name(hab));
+        }
     }
 }
 
@@ -223,6 +275,9 @@ void usage(void) {
         "                                                   RATE seconds\n"
 	    " -d, --randomize-subscriptions <RATE>              randomly add/remove subscriptions\n"
         "                                                   every RATE seconds\n"
+        " -o, --output-mode <MODE>                          either normal (default) or\n"
+        "                                                   test-pattern for generating test-"
+        "                                                   pattern-hab-input"
 	    " -v, --version                                     Show the version number\n"
 	    "\n"
 	    "Security can only be required when a security directory has been specified.\n"
@@ -263,10 +318,11 @@ int main(int argc, char *argv[]) {
 	    {"add-subscriptions", 1, 0, 'a'},
 	    {"remove-subscriptions", 1, 0, 'm'},
 	    {"randomize-subscriptions", 1, 0, 'd'},
+	    {"output-mode", 1, 0, 'o'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?veh:n:r:s:a:m:d:", long_options, &i);
+	c = getopt_long(argc, argv, "?veh:n:r:s:a:m:d:o:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -335,6 +391,16 @@ int main(int argc, char *argv[]) {
 	case 'v':
 	    print_bionet_version(stdout);
 	    return 0;
+
+    case 'o':
+        if (strcmp(optarg, "normal") == 0) output_mode = OM_NORMAL;
+        else if (strcmp(optarg, "test-pattern") == 0) output_mode = OM_TEST_PATTERN;
+        else {
+            fprintf(stderr, "unknown output mode %s\n", optarg);
+            usage();
+            return 1;
+        }
+        break;
 
 	default:
 	    break;
