@@ -220,17 +220,16 @@ void ResourceView::resourceValueChanged(bionet_datapoint_t* datapoint) {
 
 void ResourceView::textEntered() {
     int r = 0;
+    QString name;
 
     if (valueEditor->text() == NULL) {
         return;
     }
 
-    r = bionet_set_resource_by_habtype_habid_nodeid_resourceid( 
-            qPrintable(habType->text()), 
-            qPrintable(habId->text()), 
-            qPrintable(nodeId->text()),
-            qPrintable(resourceId->text()),
-            qPrintable(valueEditor->text()));
+    name = QString("%1.%2.%3:%4").arg(habType->text()).arg(habId->text()).arg(nodeId->text()).arg(resourceId->text());
+    qDebug("set resource name %s", qPrintable(name));
+
+    r = bionet_set_resource_by_name(qPrintable(name), qPrintable(valueEditor->text()));
     
     if (r < 0) {
         popupError->showMessage("Unable to set resource value");
