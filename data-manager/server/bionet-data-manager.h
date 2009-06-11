@@ -171,6 +171,7 @@ void make_shutdowns_clean(void);
 int sync_send_metadata();
 int sync_send_datapoints();
 
+extern GSList * sync_config_list;
 
 sync_sender_config_t * read_config_file(const char * fname);
 

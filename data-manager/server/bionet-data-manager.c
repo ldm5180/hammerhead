@@ -27,6 +27,8 @@ char * database_file = DB_NAME;
 extern char bdm_id[256];
 int enable_tcp_sync_receiver = 0;
 
+GSList * sync_config_list = NULL;
+
 void usage(void) {
     printf(
 	"'bionet-data-manager' records Bionet traffic to a database.\n"
@@ -34,6 +36,7 @@ void usage(void) {
 	"usage: bionet-data-manager [OPTIONS]\n"
 	"\n"
 	" -?,--help                                      Show this help\n"
+	" -c,--sync-sender-config <FILE>                 File for configuring a BDM sync sender\n"       
 	" -e,--require-security                          Require security\n"
 	" -f,--file /Path/to/database/file.db            Full path of database file (bdm.db)\n"
 	" -h,--hab,--habs \"HAB-Type.Hab-ID\"              Subscribe to a HAB list.\n"
@@ -86,10 +89,11 @@ int main(int argc, char *argv[]) {
 	    {"require-security", 0, 0, 'e'},
 	    {"security-dir", 1, 0, 's'},
 	    {"tcp-sync-receiver", 0, 0, 't'},
+	    {"sync-sender-config", 1, 0, 'c'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c= getopt_long(argc, argv, "?vetf:h:i:n:r:s:", long_options, &i);
+	c= getopt_long(argc, argv, "?vetf:h:i:n:r:s:c:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -99,6 +103,19 @@ int main(int argc, char *argv[]) {
 	case '?':
 	    usage();
 	    return 0;
+
+	case 'c':
+	{
+	    sync_sender_config_t * sync_config = NULL;
+	    sync_config = read_config_file(optarg);
+	    if (NULL == sync_config) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "Failed to parse config file %s", optarg);
+		continue;
+	    }
+	    sync_config_list = g_slist_append(sync_config_list, sync_config);
+	    break;
+	}
 
 	case 'e':
 	    if (security_dir) {
