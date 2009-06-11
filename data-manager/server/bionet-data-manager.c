@@ -28,6 +28,7 @@ extern char bdm_id[256];
 int enable_tcp_sync_receiver = 0;
 
 GSList * sync_config_list = NULL;
+static GSList * sync_thread_list = NULL;
 
 void usage(void) {
     printf(
@@ -202,7 +203,25 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    
+    if (sync_config_list) {
+	g_thread_init(NULL);
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	      "Initializing GThreads.");
+    }
 
+    //create a thread for each sync sender configuration
+    for (i = 0; i < g_slist_length(sync_config_list); i++) {
+	GThread * thread;
+	thread = g_thread_create(sync_thread, g_slist_nth_data(sync_config_list, i), FALSE, NULL);
+	
+	if (thread) {
+	    sync_thread_list = g_slist_append(sync_thread_list, thread);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to create a thread for config %d", i);
+	}
+    }
 
 
     //

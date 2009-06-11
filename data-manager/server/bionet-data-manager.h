@@ -168,8 +168,7 @@ void make_shutdowns_clean(void);
 
 
 // BDM sync'ing
-int sync_send_metadata();
-int sync_send_datapoints();
+gpointer sync_thread(gpointer config);
 
 extern GSList * sync_config_list;
 

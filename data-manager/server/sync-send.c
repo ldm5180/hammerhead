@@ -13,15 +13,39 @@
 
 #include <glib.h>
 
+#include <bionet.h>
+#include "bionet-util.h"
+#include "bdm-util.h"
+#include "bionet-data-manager.h"
 
-int sync_send_metadata() {
+
+static int sync_send_metadata() {
     return 0;
 } /* sync_send_metadata() */
 
 
-int sync_send_datapoints() {
+static int sync_send_datapoints() {
     return 0;
 } /* sync_send_datapoints() */
+
+
+gpointer sync_thread(gpointer config) {
+    sync_sender_config_t * cfg = (sync_sender_config_t *)config;
+    if (NULL == cfg) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "sync_thread(): NULL config"); 
+    }
+
+    while (1) {
+	sync_send_metadata();
+	sync_send_datapoints();
+	
+	g_usleep(cfg->frequency * G_USEC_PER_SEC);
+    }
+
+    return NULL;
+} /* sync_thread() */
+
 
 
 // Emacs cruft
