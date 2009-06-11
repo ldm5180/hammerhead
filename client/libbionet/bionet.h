@@ -7,8 +7,8 @@
 #ifndef __BIONET_H
 #define __BIONET_H
 
-
-
+// put this before any deprecated functions
+#define BIONET_DEPRECATED __attribute((__deprecated__))
 
 #include <glib.h>
 
@@ -314,27 +314,6 @@ int bionet_subscribe_hab_list_by_name(const char *hab_name);
 
 
 /**
- * @brief Subscribes the client to Bionet's list of HABs matching the
- * specified pattern.  
- *
- * When HABs matching the specified pattern join or leave Bionet, that fact 
- * will be reported to the Client.
- *
- * @param[in] hab_type A string in the form "<HAB-Type>" or the wildcard "*"
- * @param[in] hab_id A string in the form "<HAB-ID>" or the wildcard "*"
- *
- * @note hab_type and hab_id are joined using the "." character to get hab_name
- *
- * @retval 0 Success
- * @retval -1 Error
- *
- * @deprecated This function will be removed in Bionet v2.3
- * Concatentate parameters and use bionet_subscribe_hab_list_by_name()
- */
-int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char *hab_id);
-
-
-/**
  * @brief Subscribes the client to Bionet's list of Nodes matching
  * the specified pattern.  
  *
@@ -348,25 +327,6 @@ int bionet_subscribe_hab_list_by_habtype_habid(const char *hab_type,  const char
  * @retval -1 Error
  */
 int bionet_subscribe_node_list_by_name(const char *node_name);
-
-/**
- * @brief Subscribes the client to Bionet's list of Nodes matching
- * the specified pattern.  
- *
- * When Nodes matching the specified pattern join or leave a network, Bionet
- * will report the fact to the Client.
- *
- * @param[in] hab_type string of the form "<HAB-Type>" or the wildcard "*"
- * @param[in] hab_id string of the form "<HAB-ID>" or the wildcard "*"
- * @param[in] node_id string of the form "<Node-ID>" or the wildcard "*"
- *
- * @retval 0 Success
- * @retval -1 Error
- *
- * @deprecated This function will be removed in Bionet v2.3
- * Concatentate parameters and use bionet_subscribe_node_list_by_name()
- */
-int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  const char *hab_id, const char *node_id);
 
 
 /**
@@ -382,32 +342,8 @@ int bionet_subscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  co
  *
  * @retval 0 Success
  * @retval -1 Error
- * 
- * @deprecated This function will be removed in Bionet v2.3
- * Instead use bionet_subscribe_resource_by_name()
  */
 int bionet_subscribe_datapoints_by_name(const char *resource_name);
-
-
-/**
- * @brief  Subscribes the client to the values of Resources matching
- * the specified pattern.  
- *
- * When Resource matching the specified pattern changes Bionet will report
- * the fact to the Client.
- *
- * @param[in] hab_type string of the form "<HAB-Type>" or the wildcard "*"
- * @param[in] hab_id string of the form "<HAB-ID>" or the wildcard "*"
- * @param[in] node_id string of the form "<Node-ID>" or the wildcard "*"
- * @param[in] resource_id string of the form "<Resource-ID>" or the wildcard "*"
- *
- * @retval 0 Success
- * @retval -1 Error
- *
- * @deprecated This function will be removed in Bionet v2.3
- * Concatentate parameters and use bionet_subscribe_datapoints_by_name()
- */
-int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *hab_type,  const char *hab_id, const char *node_id, const char *resource_id);
 
 
 /**
@@ -537,34 +473,6 @@ void bionet_stream_write(bionet_stream_t *stream, const void *buf, unsigned int 
  * updated on the Node, just that the HAB accepted the request.
  */
 int bionet_set_resource(bionet_resource_t *resource, const char *value);
-
-
-/**
- * @brief  Sends a message to Bionet requesting that the specified
- * Resource be set to the specified value.
- *
- * @param[in] hab_type string of the form "<HAB-Type>" or the wildcard "*"
- * @param[in] hab_id string of the form "<HAB-ID>" or the wildcard "*"
- * @param[in] node_id string of the form "<Node-ID>" or the wildcard "*"
- * @param[in] resource_id string of the form "<Resource-ID>" or the wildcard "*"
- * @param[in] value New value as a string
- *
- * @retval 0 Successfully sent to HAB associated with the resource
- * @retval -1 Failed to send to the HAB associated with the resource
- *
- * @note A return value of 0 does NOT mean that the Resource was actually
- * updated on the Node, just that it was sent to the HAB 
- *
- * @deprecated This function will be removed in Bionet v2.3
- * Concatentate parameters, obtain a bionet_resource_t and use 
- * bionet_set_resource()
- */
-int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
-    const char *hab_type,
-    const char *hab_id,
-    const char *node_id,
-    const char *resource_id,
-    const char *value);
 
 
 /**

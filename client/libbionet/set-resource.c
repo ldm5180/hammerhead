@@ -22,44 +22,6 @@
 
 
 
-int bionet_set_resource(bionet_resource_t *resource, const char *value) {
-    bionet_node_t *node;
-    bionet_hab_t *hab;
-
-    /* sanity */
-    if (NULL == resource) {
-	errno = EINVAL;
-	return -1;
-    }
-
-    node = bionet_resource_get_node(resource);
-    hab = bionet_node_get_hab(node);
-
-    return bionet_set_resource_by_habtype_habid_nodeid_resourceid(bionet_hab_get_type(hab), 
-								  bionet_hab_get_id(hab), 
-								  bionet_node_get_id(node), 
-								  bionet_resource_get_id(resource), 
-								  value);
-}
-
-
-int bionet_set_resource_by_name(const char *resource_name, const char *value) {
-    char *hab_type;
-    char *hab_id;
-    char *node_id;
-    char *resource_id;
-    int r;
-
-    r = bionet_split_resource_name(resource_name, &hab_type, &hab_id, &node_id, &resource_id);
-    if (r != 0) {
-        // a helpful log message has already been logged
-        return -1;
-    }
-
-    return bionet_set_resource_by_habtype_habid_nodeid_resourceid(hab_type, hab_id, node_id, resource_id, value);
-}
-
-
 int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
     const char *hab_type,
     const char *hab_id,
@@ -127,6 +89,44 @@ cleanup:
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_C2H_Message, &m);
     if (buf.buf != NULL) free(buf.buf);
     return -1;
+}
+
+
+int bionet_set_resource(bionet_resource_t *resource, const char *value) {
+    bionet_node_t *node;
+    bionet_hab_t *hab;
+
+    /* sanity */
+    if (NULL == resource) {
+	errno = EINVAL;
+	return -1;
+    }
+
+    node = bionet_resource_get_node(resource);
+    hab = bionet_node_get_hab(node);
+
+    return bionet_set_resource_by_habtype_habid_nodeid_resourceid(bionet_hab_get_type(hab), 
+								  bionet_hab_get_id(hab), 
+								  bionet_node_get_id(node), 
+								  bionet_resource_get_id(resource), 
+								  value);
+}
+
+
+int bionet_set_resource_by_name(const char *resource_name, const char *value) {
+    char *hab_type;
+    char *hab_id;
+    char *node_id;
+    char *resource_id;
+    int r;
+
+    r = bionet_split_resource_name(resource_name, &hab_type, &hab_id, &node_id, &resource_id);
+    if (r != 0) {
+        // a helpful log message has already been logged
+        return -1;
+    }
+
+    return bionet_set_resource_by_habtype_habid_nodeid_resourceid(hab_type, hab_id, node_id, resource_id, value);
 }
 
 // Emacs cruft
