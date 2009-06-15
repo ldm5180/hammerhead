@@ -5,7 +5,9 @@
 
 
 #define _ISOC99_SOURCE //needed for strtof()
+#define _SVID_SOURCE //needed for strdup
 #include <stdlib.h>
+#include <string.h>
 #include <glib.h>
 
 #include "libhab-internal.h"
@@ -94,7 +96,7 @@ static void libhab_set_resource(const char *peer_name, SetResourceValue_t *set_r
 	    case BIONET_RESOURCE_DATA_TYPE_STRING:
 	    {
 		value = bionet_value_new_str(resource, 
-					     (char *)set_resource_value->value.buf);
+					     strdup((char *)set_resource_value->value.buf));
 		break;	
 	    }
 	    default:
