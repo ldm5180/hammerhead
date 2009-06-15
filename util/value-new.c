@@ -106,7 +106,7 @@ bionet_value_t *bionet_value_new_str(bionet_resource_t *resource,
     return bionet_value_new_internal(resource, 
 				     content, 
 				     BIONET_RESOURCE_DATA_TYPE_STRING);
-} /* bionet_value_new_float() */
+} /* bionet_value_new_string() */
 
 
 bionet_value_t * bionet_value_dup(bionet_resource_t *resource, bionet_value_t *value)
