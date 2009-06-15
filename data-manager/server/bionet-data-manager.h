@@ -41,6 +41,7 @@ typedef struct {
     bdm_sync_method_t method;
     struct timeval start_time;
     struct timeval end_time;
+    struct timeval last_entry_end_time;
     char resource_name_pattern[BIONET_NAME_COMPONENT_MAX_LEN * 4];
     unsigned int frequency;
     char * sync_recipient;
@@ -119,7 +120,8 @@ GPtrArray *db_get_metadata(
     struct timeval *latest_entry);
 
 void db_get_latest_entry_timestamp(struct timeval * ts);
-
+void db_get_last_sync_timestamp(char * bdm_id, struct timeval * ts);
+void db_set_last_sync_timestamp(char * bdm_id, struct timeval * ts);
 
 // 
 // stuff for being a bionet client

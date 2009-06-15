@@ -114,6 +114,8 @@ int main(int argc, char *argv[]) {
 		      "Failed to parse config file %s", optarg);
 		continue;
 	    }
+	    sync_config->last_entry_end_time.tv_sec = 0;
+	    sync_config->last_entry_end_time.tv_usec = 0;
 	    sync_config_list = g_slist_append(sync_config_list, sync_config);
 	    break;
 	}
@@ -213,6 +215,17 @@ int main(int argc, char *argv[]) {
     //create a thread for each sync sender configuration
     for (i = 0; i < g_slist_length(sync_config_list); i++) {
 	GThread * thread;
+	sync_sender_config_t * sync_config = NULL;
+
+	//init the latest entry end time for the config
+	sync_config = g_slist_nth_data(sync_config_list, i);
+	if (sync_config) {
+	    db_get_last_sync_timestamp(sync_config->sync_recipient, &sync_config->last_entry_end_time);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "Config number %d is not in the list.", i);
+	}
+
 	thread = g_thread_create(sync_thread, g_slist_nth_data(sync_config_list, i), FALSE, NULL);
 	
 	if (thread) {

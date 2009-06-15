@@ -21,18 +21,42 @@
 
 static int sync_send_metadata(sync_sender_config_t * config, struct timeval * last_sync) {
     GPtrArray * hab_list = NULL;
-    struct timeval ts;
+    struct timeval ts, last_entry_end_time;
+    char * hab_type;
+    char * hab_id;
+    char * node_id;
+    char * resource_id;
 
+    //get the most recent entry timestamp in the database. use this as the entry 
+    //end time for the query. this allows for the DB to act as the syncronization point
+    //instead of creating our own locks.
     db_get_latest_entry_timestamp(&ts);
 
+    if (bionet_split_resource_name(config->resource_name_pattern,
+				   &hab_type, &hab_id, &node_id, &resource_id)) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "Failed to split resource name pattern: %s", config->resource_name_pattern);
+    }
+
     //TODO populate the params correctly
-    hab_list = db_get_metadata(NULL, NULL, NULL, NULL,
-			       NULL, NULL,
-			       NULL, NULL,
-			       NULL);
+    hab_list = db_get_metadata(hab_type, hab_id, node_id, resource_id,
+			       &config->start_time, &config->end_time,
+			       &config->last_entry_end_time, &ts,
+			       &last_entry_end_time);
+    config->last_entry_end_time = last_entry_end_time;
 
     //TODO parse the hab list and create the metadata message
-
+#if 0
+    hab_list = db_get_metadata(const char *hab_type,
+			       const char *hab_id,
+			       const char *node_id,
+			       const char *resource_id,
+			       struct timeval *datapoint_start,
+			       struct timeval *datapoint_end,
+			       struct timeval *entry_start,
+			       struct timeval *entry_end,
+			       struct timeval *latest_entry);
+#endif
     return 0;
 } /* sync_send_metadata() */
 

@@ -1341,6 +1341,16 @@ void db_get_latest_entry_timestamp(struct timeval * ts) {
 }
 
 
+void db_get_last_sync_timestamp(char * bdm_id, struct timeval * ts) {
+    //TODO complete this function
+}
+
+
+void db_set_last_sync_timestamp(char * bdm_id, struct timeval * ts) {
+    //TODO complete this function
+}
+
+
 // Emacs cruft
 // Local Variables:
 // mode: C
