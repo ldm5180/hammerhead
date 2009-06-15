@@ -32,6 +32,11 @@ Known issues:
     /etc/default/avahi-daemon so that AVAHI_DAEMON_DETECT_LOCAL is set to 0.
     See Ubuntu bug #327362.
 
+    
+
+    ASN.1 Compiler:
+    The ASN1c compiler has two known bugs affecting Bionet.
+
     32-bit machines output an 'error converting ASN INTEGER to native 
     Datapoint value' message when receiving a new-node message or a datapoint
     update message from a 64-bit machine if the message contains a uint32
