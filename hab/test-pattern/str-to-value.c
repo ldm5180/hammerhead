@@ -32,7 +32,7 @@ bionet_value_t *str_to_value(bionet_resource_t *resource, bionet_resource_data_t
             break;
 
         case BIONET_RESOURCE_DATA_TYPE_UINT32:
-            value = bionet_value_new_uint32(resource, atoi(str));
+            value = bionet_value_new_uint32(resource, (uint32_t)strtoul(str, NULL, 10));
             break;
 
         case BIONET_RESOURCE_DATA_TYPE_INT8:
