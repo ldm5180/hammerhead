@@ -1,3 +1,20 @@
+Bionet 2.3.0, 2009 June 15
+
+    * Added unsubscribe functionality for HABs, nodes, and resources
+
+    * Added --disable-habs and --disable-clients flags to configure script
+
+    * Added test-pattern HAB
+
+    * Better notice of lost HABs using TCP keep-alive messages
+
+    * Added HAB capability to iPhone Bionet Monitor and allowed screen locking
+
+    * Lots of bug fixes all over
+
+    * General API cleanup: removal of deprecated functions, etc.
+
+
 Bionet 2.2.0-rc1, 2009 May 20
     
     * Added STTR Rights Notice
