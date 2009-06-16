@@ -13,11 +13,20 @@
 
 #include <glib.h>
 
+#if defined(LINUX) || defined(MACOSX)
+    #include <netdb.h>
+    #include <pwd.h>
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
+#endif
+
 #include <bionet.h>
 #include "bionet-util.h"
 #include "bdm-util.h"
 #include "bionet-data-manager.h"
 
+int send_message_to_sync_receiver(const void *buffer, size_t size, void * config_void);
 
 static int sync_send_metadata(sync_sender_config_t * config, struct timeval * last_sync) {
     GPtrArray * hab_list = NULL;
@@ -94,7 +103,12 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 	      "sync_send_datapoints(): Failed to malloc sync_record: %m");
     }
 
-    //BDM-BP TODO add BDM-ID to BDM Sync Record
+    //BDM-BP TODO add BDM-ID to BDM Sync Record, not just a NULL
+     r = OCTET_STRING_fromString(&sync_record->bdmID, NULL);
+     if (r != 0) {
+	 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	       "sync_send_datapoints(): Failed to set BDM ID");
+     }
 
     //walk list of habs
     for (hi = 0; hi < hab_list->len; hi++) {
@@ -117,31 +131,161 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 	    //walk list of resources
 	    for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
 		int di;
+		ResourceRecord_t resource_rec;
 		bionet_resource_t * resource = bionet_node_get_resource_by_index(node, ri);
 		if (NULL == resource) {
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 			  "Failed to get resource %d from Node %s", ri, bionet_node_get_name(node));
 		}
 
+		r = asn_sequence_add(&sync_record->syncResources, &resource_rec);
+		if (r != 0) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+			  "sync_send_datapoints(): Failed to add resource record.");
+		}
+
+		 r = OCTET_STRING_fromString(&resource_rec.resourceKey, NULL);
+		 if (r != 0) {
+		     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+			   "sync_send_datapoints(): Failed to set resource key");
+		 }
+
 		//walk list of datapoints and add each one to the message
 		for (di = 0; di < bionet_resource_get_num_datapoints(resource); di++) {
-		    bionet_datapoint_t * datapoint = bionet_resource_get_datapoint_by_index(resource, di);
-		    if (NULL == datapoint) {
+		    bionet_datapoint_t * d = bionet_resource_get_datapoint_by_index(resource, di);
+		    Datapoint_t *asn_datapoint;
+		    if (NULL == d) {
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 			      "Failed to get datapoint %d from Resource %s", di, bionet_resource_get_name(resource));
 		    }
 
-		    //BDM-BP TODO add datapoint to message
+		    asn_datapoint = bionet_datapoint_to_asn(d);
+		    if (asn_datapoint == NULL) {
+			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+			      "send_sync_datapoints(): out of memory!");
+		    }
+		    
+		    r = asn_sequence_add(&resource_rec.resourceDatapoints.list, asn_datapoint);
+		    if (r != 0) {
+			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+			      "send_sync_datapoints(): error adding Datapoint to Resource: %m");
+		    }
 		}
 	    }
 	}
     }
 
 
-    //BDM-BP TODO encode and send message
+    // send the reply to the client
+    asn_enc_rval_t asn_r;
+    asn_r = der_encode(&asn_DEF_BDM_Sync_Datapoints_Message, &message, send_message_to_sync_receiver, config);
+    if (asn_r.encoded == -1) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %s", strerror(errno));
+    }
+
 
     return 0;
 } /* sync_send_datapoints() */
+
+
+int send_message_to_sync_receiver(const void *buffer, size_t size, void * config_void) {
+    sync_sender_config_t * config = (sync_sender_config_t *)config_void;
+    struct sockaddr_in server_address;
+    struct hostent *server_host;
+    int fd;
+
+    if (NULL == config) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "send_message_to_sync_receiver(): NULL config passed in.");
+	return -1;
+    }
+
+    // If the server dies or the connection is lost somehow, writes will
+    // cause us to receive SIGPIPE, and the default SIGPIPE handler
+    // terminates the process.  So we need to change the handler to ignore
+    // the signal, unless the process has explicitly changed the action.
+    {
+        int r;
+        struct sigaction sa;
+
+        r = sigaction(SIGPIPE, NULL, &sa);
+        if (r < 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "send_message_to_sync_receiver(): error getting old SIGPIPE sigaction: %m");
+            return -1;
+        }
+
+        if (sa.sa_handler == SIG_DFL) {
+            sa.sa_handler = SIG_IGN;
+            r = sigaction(SIGPIPE, &sa, NULL);
+            if (r < 0) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		      "send_message_to_sync_receiver(): error setting SIGPIPE sigaction to SIG_IGN: %m");
+                return -1;
+            }
+        }
+    }
+
+    // get the hostent for the server
+    server_host = gethostbyname(config->sync_recipient);
+    if (server_host == NULL) {
+	const char *error_string;
+	error_string = hstrerror(h_errno);
+
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "send_message_to_sync_receiver(): gethostbyname(\"%s\"): %s",
+            config->sync_recipient,
+            error_string
+        );
+        return -1;
+    }
+    
+        // create the socket
+    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "send_message_to_sync_receiver(): cannot create local socket: %m");
+        return -1;
+    }
+
+
+    //  This makes it to the underlying networking code tries to send any
+    //  buffered data, even after we've closed the socket.
+    {
+        struct linger linger;
+
+        linger.l_onoff = 1;
+        linger.l_linger = 60;
+        if (setsockopt(fd, SOL_SOCKET, SO_LINGER, (char *)&linger, sizeof(linger)) != 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "send_message_to_sync_reciever(): WARNING: cannot make socket linger: %m");
+        }
+    }
+
+
+    // prepare the server address
+    memset((char *)&server_address, '\0', sizeof(server_address));
+    server_address.sin_family = AF_INET;
+    server_address.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)(*server_host->h_addr_list)));
+    server_address.sin_port = g_htons(BDM_SYNC_PORT);
+
+
+    // connect to the server
+    if (connect(fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) {
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "send_message_to_sync_receiver(): failed to connect to server %s:%d: %m",
+            server_host->h_name,
+            BDM_SYNC_PORT);
+        return -1;
+    }
+
+    return write(fd, buffer, size);
+} /* send_message_to_sync_receiver() */
 
 
 gpointer sync_thread(gpointer config) {
