@@ -35,7 +35,8 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     char * hab_id;
     char * node_id;
     char * resource_id;
-    int hi;
+    BDM_Sync_Metadata_Message_t message;
+    int hi, r;
 
     //get the most recent entry timestamp in the database. use this as the entry 
     //end time for the query. this allows for the DB to act as the syncronization point
@@ -58,6 +59,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 
     for (hi = 0; hi < hab_list->len; hi++) {
 	int ni;
+	HardwareAbstractor_t * asn_hab;
 	bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);
 	if (NULL == hab) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
@@ -65,31 +67,122 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 	}
 
 	//BDM-BP TODO add the HAB to the message
+	asn_hab = (HardwareAbstractor_t *)calloc(1, sizeof(HardwareAbstractor_t));
+	if (asn_hab == NULL) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "sync_send_metadata(): out of memory!");
+	    goto cleanup;
+	}
+	
+	r = asn_sequence_add(&message.list, asn_hab);
+	if (r != 0) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "sync_send_metadata(): error adding HAB to Sync Metadata: %s", strerror(errno));
+	    goto cleanup;
+	}
+	
+	r = OCTET_STRING_fromString(&asn_hab->type, bionet_hab_get_type(hab));
+	if (r != 0) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "sync_send_metadata(): error making OCTET_STRING for HAB-Type %s", bionet_hab_get_type(hab));
+	    goto cleanup;
+	}
+	
+	r = OCTET_STRING_fromString(&asn_hab->id, bionet_hab_get_id(hab));
+	if (r != 0) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "sync_send_metadata(): error making OCTET_STRING for HAB-ID %s", bionet_hab_get_id(hab));
+	    goto cleanup;
+	}
 
 	for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
 	    int ri;
+	    Node_t * asn_node;
 	    bionet_node_t * node = bionet_hab_get_node_by_index(hab, ni);
 	    if (NULL == node) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		      "sync_send_metadata(): Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
 	    }
 
-	    //BDM-BP TODO add the Node to the message
+	    //add the Node to the message
+	    asn_node = (Node_t *)calloc(1, sizeof(Node_t));
+	    if (asn_node == NULL) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "sync_send_metadata(): out of memory!");
+		goto cleanup;
+	    }
+	    
+	    r = asn_sequence_add(&asn_hab->nodes.list, asn_node);
+	    if (r != 0) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "sync_send_metadata(): error adding Node to Sync Metadata: %m");
+		goto cleanup;
+	    }
+	    
+	    r = OCTET_STRING_fromString(&asn_node->id, bionet_node_get_id(node));
+	    if (r != 0) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		      "sync_send_metadata(): error making OCTET_STRING for Node-ID %s", bionet_node_get_id(node));
+		goto cleanup;
+	    }
+
 	    for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
+		Resource_t * asn_resource;
 		bionet_resource_t * resource = bionet_node_get_resource_by_index(node, ri);
 		if (NULL == resource) {
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 			  "sync_send_metadata(): Failed to get resource %d from Node %s", ri, bionet_node_get_name(node));
 		}
 
-		//BDM-BP add the Resource to the message
+		//add the Resource to the message
+		asn_resource = (Resource_t *)calloc(1, sizeof(Resource_t));
+		if (asn_resource == NULL) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "sync_send_metadata(): out of memory!");
+		    goto cleanup;
+		}
+		
+		r = asn_sequence_add(&asn_node->resources.list, asn_resource);
+		if (r != 0) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+			  "sync_send_metadata(): error adding Resource to Sync Metadata: %m");
+		    goto cleanup;
+		}
+		
+		r = OCTET_STRING_fromString(&asn_resource->id, bionet_resource_get_id(resource));
+		if (r != 0) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+			  "sync_send_metadata(): error making OCTET_STRING for Resource-ID %s", bionet_resource_get_id(resource));
+		    goto cleanup;
+		}
+		
+		asn_resource->flavor = bionet_flavor_to_asn(bionet_resource_get_flavor(resource));
+		if (asn_resource->flavor == -1) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+			  "sync_send_metadata(): resource has invalid flavor");
+		    goto cleanup;
+		}
+		
+		asn_resource->datatype = bionet_datatype_to_asn(bionet_resource_get_data_type(resource));
+		if (asn_resource->datatype == -1) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+			  "sync_send_metadata(): resource has invalid datatype");
+		    goto cleanup;
+		}
 	    }
 	}
     }
 
     //BDM-BP TODO encode and send message
+    // send the reply to the client
+    asn_enc_rval_t asn_r;
+    asn_r = der_encode(&asn_DEF_BDM_Sync_Metadata_Message, &message, send_message_to_sync_receiver, config);
+    if (asn_r.encoded == -1) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
+    }
 
     return 0;
+
+cleanup:
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Metadata_Message, &message);
+    return -1;
 } /* sync_send_metadata() */
 
 
@@ -121,6 +214,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 			       &last_entry_end_time);
     config->last_entry_end_time = last_entry_end_time;
 
+
     //BDM-BP TODO create a sync record for each BDM
     BDMSyncRecord_t * sync_record = (BDMSyncRecord_t *)calloc(1, sizeof(BDMSyncRecord_t));
     if (sync_record) {
@@ -134,12 +228,14 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 	      "sync_send_datapoints(): Failed to malloc sync_record: %m");
     }
 
+
     //BDM-BP TODO add BDM-ID to BDM Sync Record, not just a NULL
      r = OCTET_STRING_fromString(&sync_record->bdmID, NULL);
      if (r != 0) {
 	 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	       "sync_send_datapoints(): Failed to set BDM ID");
      }
+
 
     //walk list of habs
     for (hi = 0; hi < hab_list->len; hi++) {
@@ -150,6 +246,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 		  "Failed to get HAB %d from array of HABs", hi);
 	}
 
+
 	//walk list of nodes
 	for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
 	    int ri;
@@ -158,6 +255,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		      "Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
 	    }
+
 
 	    //walk list of resources
 	    for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
@@ -180,6 +278,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 		     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			   "sync_send_datapoints(): Failed to set resource key");
 		 }
+
 
 		//walk list of datapoints and add each one to the message
 		for (di = 0; di < bionet_resource_get_num_datapoints(resource); di++) {
@@ -211,7 +310,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
     asn_enc_rval_t asn_r;
     asn_r = der_encode(&asn_DEF_BDM_Sync_Datapoints_Message, &message, send_message_to_sync_receiver, config);
     if (asn_r.encoded == -1) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %s", strerror(errno));
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
     }
 
 
