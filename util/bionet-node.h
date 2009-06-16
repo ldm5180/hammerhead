@@ -41,7 +41,7 @@ bionet_node_t* bionet_node_new(bionet_hab_t *hab, const char* node_id);
  *
  * @return The Node name, or NULL on error.
  *
- * @note This function is shorthand (and may be more efficient) for the following code. Interal 
+ * @note This function is shorthand (and may be more efficient) for the following code. Internal 
  * library memory is used and cleaned up by the library when the node is free'd.
  * @code
  * char str[BIONET_NAME_COMPONENT_MAX_LEN * 3];

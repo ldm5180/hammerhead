@@ -44,7 +44,7 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
  *
  * @return The HAB name.
  *
- * @note This function is shorthand (and may be more efficient) for the following code. Interal 
+ * @note This function is shorthand (and may be more efficient) for the following code. Internal 
  * library memory is used and cleaned up by the library when the node is free'd.
  * @code
  * char str[BIONET_NAME_COMPONENT_MAX_LEN * 2];

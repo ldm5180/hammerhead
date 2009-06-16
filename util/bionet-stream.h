@@ -163,7 +163,7 @@ const char *bionet_stream_direction_to_string(bionet_stream_direction_t directio
  *
  * @return The name of the Stream, or NULL on error.
  *
- * @note This function is shorthand (and may be more efficient) for the following code. Interal 
+ * @note This function is shorthand (and may be more efficient) for the following code. Internal 
  * library memory is used and cleaned up by the library when the node is free'd.
  * @code
  * char str[BIONET_NAME_COMPONENT_MAX_LEN * 4];
@@ -186,7 +186,7 @@ const char *bionet_stream_get_name(const bionet_stream_t *stream);
  *
  * @return The local name of the Stream, or NULL on error.
  *
- * @note This function is shorthand (and may be more efficient) for the following code. Interal 
+ * @note This function is shorthand (and may be more efficient) for the following code. Internal 
  * library memory is used and cleaned up by the library when the node is free'd.
  * @code
  * char str[BIONET_NAME_COMPONENT_MAX_LEN * 2];
