@@ -35,6 +35,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     char * hab_id;
     char * node_id;
     char * resource_id;
+    int hi;
 
     //get the most recent entry timestamp in the database. use this as the entry 
     //end time for the query. this allows for the DB to act as the syncronization point
@@ -55,8 +56,38 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     config->last_entry_end_time = last_entry_end_time;
 
 
-    //TODO parse the hab list and create the metadata message
-    
+    for (hi = 0; hi < hab_list->len; hi++) {
+	int ni;
+	bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);
+	if (NULL == hab) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+		  "sync_send_metadata(): Failed to get HAB %d from array of HABs", hi);
+	}
+
+	//BDM-BP TODO add the HAB to the message
+
+	for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
+	    int ri;
+	    bionet_node_t * node = bionet_hab_get_node_by_index(hab, ni);
+	    if (NULL == node) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		      "sync_send_metadata(): Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
+	    }
+
+	    //BDM-BP TODO add the Node to the message
+	    for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
+		bionet_resource_t * resource = bionet_node_get_resource_by_index(node, ri);
+		if (NULL == resource) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+			  "sync_send_metadata(): Failed to get resource %d from Node %s", ri, bionet_node_get_name(node));
+		}
+
+		//BDM-BP add the Resource to the message
+	    }
+	}
+    }
+
+    //BDM-BP TODO encode and send message
 
     return 0;
 } /* sync_send_metadata() */
