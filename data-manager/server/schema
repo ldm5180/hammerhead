@@ -14,6 +14,7 @@
 CREATE TABLE Entry_Sequence (
     Num INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL -- The Sequence number
 );
+INSERT INTO Entry_Sequence VALUES (NULL);
 
 -- this table has one row for each distinct HAB we've ever seen
 CREATE TABLE Hardware_Abstractors (

@@ -206,7 +206,7 @@ static int add_hab_to_db(const bionet_hab_t *hab) {
 
     while(SQLITE_BUSY == (r = sqlite3_step(insert_hab_stmt)));
     if (r != SQLITE_DONE) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL error: %s\n", sqlite3_errmsg(db));
 	sqlite3_reset(insert_hab_stmt);
         return -1;
     }
@@ -692,7 +692,7 @@ int db_add_datapoint_sync(
     r = sqlite3_bind_blob(insert_resource_stmt, param++, 
         resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_STATIC);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
 	return -1;
     }
 
@@ -747,41 +747,41 @@ int db_add_datapoint_sync(
             r = sqlite3_bind_text(insert_datapoint_sync_stmt, param++, value, -1, SQLITE_STATIC);
             break;
         default:
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint API Type error");
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync API Type error");
             return -1;
     }
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
 	return -1;
     }
 
     r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  timestamp->tv_sec);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
 	return -1;
     }
 
     r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  timestamp->tv_usec);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
 	return -1;
     }
 
     r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  entry_seq);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
 	return -1;
     }
 
     r = sqlite3_bind_text(insert_datapoint_sync_stmt, param++, bdm_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
 	return -1;
     }
 
     while(SQLITE_BUSY == (r = sqlite3_step(insert_datapoint_sync_stmt)));
     if (r != SQLITE_DONE) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL error: %s\n", sqlite3_errmsg(db));
 	sqlite3_reset(insert_datapoint_sync_stmt);
         return -1;
     }
@@ -1476,7 +1476,7 @@ static int db_set_int_callback(
     char **argv,
     char **azColName)
 {
-    if (argc == 1) {
+    if (argc == 1 && argv[0]) {
         *(int*)sql_ret_void = atoi(argv[0]);
         return 0;
     }
@@ -1590,15 +1590,15 @@ int db_get_last_sync_seq(char * bdm_id) {
     }
 
 
-    r = sqlite3_bind_text(set_last_sync_bdm_stmt, 2, bdm_id, -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(get_last_sync_bdm_stmt, 1, bdm_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            "add-datapoint SQL bind error");
+            "get-last-sync SQL bind error");
         return -1;
     }
 
     r = sqlite3_step(get_last_sync_bdm_stmt);
-    if (r != SQLITE_ROW) {
+    if (r != SQLITE_ROW && r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "No row for last-sync: %s\n", sqlite3_errmsg(db));
 	sqlite3_reset(get_last_sync_bdm_stmt);
         return -1;
@@ -1635,13 +1635,13 @@ void db_set_last_sync_seq(char * bdm_id, int last_sync) {
     r = sqlite3_bind_int(set_last_sync_bdm_stmt, 1, last_sync);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            "add-datapoint SQL bind error");
+            "set-last-sync SQL bind error");
         return;
     }
     r = sqlite3_bind_text(set_last_sync_bdm_stmt, 2, bdm_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            "add-datapoint SQL bind error");
+            "set-last-sync SQL bind error");
         return;
     }
 
