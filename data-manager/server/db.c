@@ -22,6 +22,7 @@
 
 
 static int add_bdm_to_db(const char *bdm_id);
+static int db_get_next_entry_seq(void);
 
 
 static sqlite3 *db = NULL;
@@ -32,13 +33,15 @@ static sqlite3_stmt * insert_resource_stmt = NULL;
 static sqlite3_stmt * insert_datapoint_stmt = NULL;
 static sqlite3_stmt * insert_datapoint_sync_stmt = NULL;
 static sqlite3_stmt * insert_bdm_stmt = NULL;
+static sqlite3_stmt * get_last_sync_bdm_stmt = NULL;
+static sqlite3_stmt * set_last_sync_bdm_stmt = NULL;
 
 extern char * database_file;
 char bdm_id[256] = { 0 };
 
 typedef struct sql_return {
     GPtrArray *hab_list;
-    struct timeval * latest_entry;
+    int * latest_entry;
 } sql_return_t;
 
 int db_init(void) {
@@ -120,6 +123,7 @@ static int do_commit(void) {
 }
 
 
+#if 0
 static double timevaltodouble(struct timeval *tv) {
     return (double)tv->tv_sec + (1e-6 * tv->tv_usec); 
 }
@@ -135,6 +139,7 @@ static void doubletotimeval(double t, struct timeval *tv) {
     tv->tv_sec = (time_t)t;
     tv->tv_usec = (suseconds_t)(t-tv->tv_sec * 1e6);
 } 
+#endif
 
 // 
 // database back-end internal helper functions
@@ -151,7 +156,7 @@ static int add_hab_to_db(const bionet_hab_t *hab) {
 	r = sqlite3_prepare_v2(db, 
             "INSERT"
             " OR IGNORE"
-            " INTO Hardware_Abstractors (HAB_Type, HAB_ID, Entry_Timestamp) "
+            " INTO Hardware_Abstractors (HAB_Type, HAB_ID, Entry_Num) "
             " VALUES (?,?,?)",
 	    -1, &insert_hab_stmt, NULL);
 
@@ -160,8 +165,6 @@ static int add_hab_to_db(const bionet_hab_t *hab) {
 	    return -1;
 	}
     }
-
-    double entry = gettimedouble();
 
     int param = 1;
     r = sqlite3_bind_text(insert_hab_stmt, param++, bionet_hab_get_type(hab), -1, SQLITE_STATIC);
@@ -176,7 +179,8 @@ static int add_hab_to_db(const bionet_hab_t *hab) {
 	return -1;
     }
 
-    r = sqlite3_bind_double( insert_hab_stmt, param++,  entry);
+    int entry_seq = db_get_next_entry_seq();
+    r = sqlite3_bind_int( insert_hab_stmt, param++,  entry_seq);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL bind error");
 	return -1;
@@ -204,7 +208,7 @@ static int add_node_to_db(const bionet_node_t *node) {
 	r = sqlite3_prepare_v2(db, 
             "INSERT"
             " OR IGNORE"
-            " INTO Nodes (HAB_Key, Node_ID, Entry_Timestamp)"
+            " INTO Nodes (HAB_Key, Node_ID, Entry_Num)"
             " SELECT"
             "     Hardware_Abstractors.Key, ?, ?"
             "     FROM Hardware_Abstractors"
@@ -219,7 +223,13 @@ static int add_node_to_db(const bionet_node_t *node) {
 	}
     }
 
-    double entry = gettimedouble();
+    int entry_seq = db_get_next_entry_seq();
+    if(entry_seq < 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "Error getting sequence number\n");
+        return -1;
+    }
+
 
     int param = 1;
     r = sqlite3_bind_text(insert_node_stmt, param++, bionet_node_get_id(node), -1, SQLITE_STATIC);
@@ -228,7 +238,7 @@ static int add_node_to_db(const bionet_node_t *node) {
 	return -1;
     }
 
-    r = sqlite3_bind_double( insert_node_stmt, param++,  entry);
+    r = sqlite3_bind_int( insert_node_stmt, param++,  entry_seq);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL bind error");
 	return -1;
@@ -350,8 +360,12 @@ static int add_resource_to_db(bionet_resource_t *resource) {
 	}
     }
 
-    double entry = gettimedouble();
-
+    int entry_seq = db_get_next_entry_seq();
+    if(entry_seq < 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "Error getting sequence number\n");
+        return -1;
+    }
     int param = 1;
     r = sqlite3_bind_blob(insert_resource_stmt, param++, sha_digest, BDM_RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
     if(r != SQLITE_OK){
@@ -363,7 +377,7 @@ static int add_resource_to_db(bionet_resource_t *resource) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
 	return -1;
     }
-    r = sqlite3_bind_double( insert_resource_stmt, param++,  entry);
+    r = sqlite3_bind_int( insert_resource_stmt, param++,  entry_seq);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
 	return -1;
@@ -474,7 +488,6 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
     // FIXME: might be the wrong resource (might differ in data type or flavor)
     bionet_value_t *value = bionet_datapoint_get_value(datapoint);
     struct timeval * timestamp = bionet_datapoint_get_timestamp(datapoint);
-    double entry = gettimedouble();
 
     bionet_resource_t * resource = bionet_value_get_resource(value);
     bionet_node_t * node = bionet_resource_get_node(resource);
@@ -486,6 +499,12 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
 
     // Bind host variables to the prepared statement -- This eliminates the need to escape strings
     // In order of the placeholders (?) in the SQL
+    int entry_seq = db_get_next_entry_seq();
+    if(entry_seq < 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "Error getting sequence number\n");
+        return -1;
+    }
     int param = 1;
     r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_value_to_str(value), -1, free);
     if(r != SQLITE_OK){
@@ -502,7 +521,7 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
 	return -1;
     }
-    r = sqlite3_bind_double( insert_datapoint_stmt, param++,  entry);
+    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  entry_seq);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
 	return -1;
@@ -655,11 +674,15 @@ int db_add_datapoint_sync(
 	}
     }
 
-    double entry = gettimedouble();
-
     // Bind host variables to the prepared statement 
     // -- This eliminates the need to escape strings
     // Bind in order of the placeholders (?) in the SQL
+    int entry_seq = db_get_next_entry_seq();
+    if(entry_seq < 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "Error getting sequence number\n");
+        return -1;
+    }
     int param = 1;
     r = sqlite3_bind_blob(insert_resource_stmt, param++, 
         resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_STATIC);
@@ -739,7 +762,7 @@ int db_add_datapoint_sync(
 	return -1;
     }
 
-    r = sqlite3_bind_double( insert_datapoint_sync_stmt, param++,  entry);
+    r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  entry_seq);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
 	return -1;
@@ -932,12 +955,13 @@ static int db_get_resource_datapoints_callback(
 ) {
     sql_return_t * sql_ret_val = (sql_return_t *)sql_ret_void;
     GPtrArray *hab_list = sql_ret_val->hab_list;
-    struct timeval * latest_entry = sql_ret_val->latest_entry;
+    int * latest_entry = sql_ret_val->latest_entry;
     bionet_hab_t *hab;
     bionet_node_t *node;
     bionet_resource_t *resource;
 
-    struct timeval timestamp, entry;
+    struct timeval timestamp;
+    int entry = 0;
     int err = 0;
     bionet_value_t * value = NULL;
     bionet_datapoint_t * datapoint = NULL;
@@ -970,11 +994,10 @@ static int db_get_resource_datapoints_callback(
     timestamp.tv_sec = atoi(argv[7]);
     timestamp.tv_usec = atoi(argv[8]);
 
-    doubletotimeval(strtod(argv[9], NULL), &entry);
-    if ((entry.tv_sec > latest_entry->tv_sec) ||
-	(entry.tv_sec == latest_entry->tv_sec && entry.tv_usec > latest_entry->tv_usec)) {
-	latest_entry->tv_sec = entry.tv_sec;
-	latest_entry->tv_usec = entry.tv_usec;
+
+    entry = atoi(argv[9]);
+    if(entry > *latest_entry) {
+	*latest_entry = entry;
     }
 
     if(argv[6]){
@@ -1061,9 +1084,9 @@ static GPtrArray *_db_get_resource_info(
     const char *resource_id,
     struct timeval *datapoint_start,
     struct timeval *datapoint_end,
-    struct timeval *entry_start,
-    struct timeval *entry_end,
-    struct timeval *latest_entry,
+    int entry_start,
+    int entry_end,
+    int *latest_entry,
     int include_datapoints) 
 {
     int r;
@@ -1209,13 +1232,12 @@ static GPtrArray *_db_get_resource_info(
     }
 
 
-    if ((entry_start == NULL) ||
-	((entry_start->tv_sec == 0) && (entry_start->tv_usec == 0))) {
+    if (entry_start < 0) {
 	entry_start_restriction[0] = '\0';
     } else {
 	r = snprintf(entry_start_restriction, sizeof(entry_start_restriction),
-		"AND Datapoints.Entry_Timestamp >= %lf",
-		timevaltodouble(entry_start));
+		"AND Datapoints.Entry_Num >= %d",
+		entry_start);
 	if (r >= sizeof(entry_start_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "db_get_resource_entrys(): entry start time is too long!");
@@ -1223,13 +1245,12 @@ static GPtrArray *_db_get_resource_info(
 	}
     }
 
-    if ((entry_end == NULL) ||
-	((entry_end->tv_sec == 0) && (entry_end->tv_usec == 0))) {
+    if (entry_end < 0) {
 	entry_end_restriction[0] = '\0';
     } else {
 	r = snprintf(entry_end_restriction, sizeof(entry_end_restriction),
-		"AND Datapoints.Entry_Timestamp < %lf",
-		timevaltodouble(entry_end));
+		"AND Datapoints.Entry_Num < %d",
+		entry_end);
 	if (r >= sizeof(entry_end_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "db_get_resource_entrys(): entry end time is too long!");
@@ -1250,7 +1271,7 @@ static GPtrArray *_db_get_resource_info(
             " Datapoints.Value,"
             " Datapoints.Timestamp_Sec,"
             " Datapoints.Timestamp_Usec,"
-            " Datapoints.Entry_Timestamp";
+            " Datapoints.Entry_Num";
     } else {
         sql_fields = 
             " Hardware_Abstractors.HAB_TYPE,"
@@ -1262,7 +1283,7 @@ static GPtrArray *_db_get_resource_info(
             " NULL,"
             " NULL,"
             " NULL,"
-            " Datapoints.Entry_Timestamp";
+            " Datapoints.Entry_Num";
     }
 
     r = snprintf(sql, sizeof(sql),
@@ -1346,9 +1367,9 @@ GPtrArray *db_get_resource_datapoints(
     const char *resource_id,
     struct timeval *datapoint_start,
     struct timeval *datapoint_end,
-    struct timeval *entry_start,
-    struct timeval *entry_end,
-    struct timeval *latest_entry
+    int entry_start,
+    int entry_end,
+    int *latest_entry
 ) {
 
     return _db_get_resource_info(
@@ -1371,9 +1392,9 @@ GPtrArray *db_get_metadata(
     const char *resource_id,
     struct timeval *datapoint_start,
     struct timeval *datapoint_end,
-    struct timeval *entry_start,
-    struct timeval *entry_end,
-    struct timeval *latest_entry) 
+    int entry_start,
+    int entry_end,
+    int *latest_entry) 
 {
 
     return _db_get_resource_info(
@@ -1389,19 +1410,190 @@ GPtrArray *db_get_metadata(
         0);
 }
 
+static int db_set_int_callback(
+    void *sql_ret_void,
+    int argc,
+    char **argv,
+    char **azColName)
+{
+    if (argc == 1) {
+        *(int*)sql_ret_void = atoi(argv[0]);
+        return 0;
+    }
+    return -1;
+}
 
-void db_get_latest_entry_timestamp(struct timeval * ts) {
-    //TODO complete this function
+static int db_get_next_entry_seq(void) {
+    int r;
+    char *zErrMsg = NULL;
+
+    // start transaction
+    r = sqlite3_exec(
+        db,
+        "BEGIN TRANSACTION;",
+        NULL,
+        0,
+        &zErrMsg
+    );
+    if (r != SQLITE_OK) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "BEGIN TRANSACTION SQL error: %s\n", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return -1;
+    }
+
+    // Delete last seq
+    r = sqlite3_exec(
+        db,
+        "DELETE FROM Entry_Seq",
+        NULL,
+        0,
+        &zErrMsg
+    );
+    if (r != SQLITE_OK) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Clear Entry_Seq SQL error: %s\n", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return -1;
+    }
+
+    // Create New Seq
+    r = sqlite3_exec(
+        db,
+        "INSERT INTO Entry_Seq VALUES (NULL)",
+        NULL,
+        0,
+        &zErrMsg
+    );
+    if (r != SQLITE_OK) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "INSERT Entry_Seq SQL error: %s\n", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return -1;
+    }
+
+    int entry_seq = db_get_latest_entry_seq();
+
+    // commit transaction
+    r = sqlite3_exec(
+        db,
+        "COMMIT",
+        NULL,
+        0,
+        &zErrMsg
+    );
+    if (r != SQLITE_OK) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "BEGIN TRANSACTION SQL error: %s\n", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return -1;
+    }
+
+    return entry_seq;
+}
+
+int db_get_latest_entry_seq(void) {
+    int entry_seq = -1;
+    int r;
+    char * zErrMsg = NULL;
+
+    r = sqlite3_exec(
+        db,
+        "SELECT max(Num) from Entry_Sequence",
+        db_set_int_callback,
+        &entry_seq,
+        &zErrMsg
+    );
+    if (r != SQLITE_OK) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "BEGIN TRANSACTION SQL error: %s\n", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return -1;
+    }
+    return entry_seq;
 }
 
 
-void db_get_last_sync_timestamp(char * bdm_id, struct timeval * ts) {
-    //TODO complete this function
+int db_get_last_sync_seq(char * bdm_id) {
+    int r;
+    int entry_seq = -1;
+
+    if(get_last_sync_bdm_stmt == NULL) {
+	r = sqlite3_prepare_v2(db, 
+	    "SELECT Last_Sync_Num"
+            " FROM BDMs"
+            " WHERE BDM_ID = ?",
+	    -1, &get_last_sync_bdm_stmt, NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "get-last-sync SQL error: %s\n", sqlite3_errmsg(db));
+	    return -1;
+	}
+
+    }
+
+
+    r = sqlite3_bind_text(set_last_sync_bdm_stmt, 2, bdm_id, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "add-datapoint SQL bind error");
+        return -1;
+    }
+
+    r = sqlite3_step(get_last_sync_bdm_stmt);
+    if (r != SQLITE_ROW) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "No row for last-sync: %s\n", sqlite3_errmsg(db));
+	sqlite3_reset(get_last_sync_bdm_stmt);
+        return -1;
+    }
+
+    entry_seq = sqlite3_column_int(get_last_sync_bdm_stmt, 1);
+
+    sqlite3_reset(get_last_sync_bdm_stmt);
+    sqlite3_clear_bindings(get_last_sync_bdm_stmt);
+
+    return entry_seq;
 }
 
 
-void db_set_last_sync_timestamp(char * bdm_id, struct timeval * ts) {
-    //TODO complete this function
+void db_set_last_sync_seq(char * bdm_id, int last_sync) {
+    int r;
+
+    if(set_last_sync_bdm_stmt == NULL) {
+	r = sqlite3_prepare_v2(db, 
+	    "UPDATE BDMs"
+            " SET LAST_Sync = ?"
+            " WHERE BDM_ID = ?",
+	    -1, &set_last_sync_bdm_stmt, NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "get-last-sync SQL error: %s\n", sqlite3_errmsg(db));
+	    return;
+	}
+
+    }
+
+    // Bind variables
+    r = sqlite3_bind_int(set_last_sync_bdm_stmt, 1, last_sync);
+    if(r != SQLITE_OK){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "add-datapoint SQL bind error");
+        return;
+    }
+    r = sqlite3_bind_text(set_last_sync_bdm_stmt, 2, bdm_id, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "add-datapoint SQL bind error");
+        return;
+    }
+
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_datapoint_sync_stmt)));
+    if (r != SQLITE_DONE) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error updating last-sync: %s\n", sqlite3_errmsg(db));
+	sqlite3_reset(set_last_sync_bdm_stmt);
+        return;
+    }
+
+    sqlite3_reset(set_last_sync_bdm_stmt);
+    sqlite3_clear_bindings(set_last_sync_bdm_stmt);
+
 }
 
 

@@ -129,13 +129,13 @@ BEGIN
         resourceId           PrintableString,
         datapointStartTime   GeneralizedTime,
         datapointEndTime     GeneralizedTime,
-	entryStartTime       GeneralizedTime,
-	entryEndTime         GeneralizedTime
+	entryStart           INTEGER,
+	entryEnd             INTEGER
     }
 
     ResourceDatapointsReply ::= SEQUENCE {
         habs             SEQUENCE OF HardwareAbstractor,
-	lastEntryTime    GeneralizedTime
+	lastEntry        INTEGER
     }
 
 

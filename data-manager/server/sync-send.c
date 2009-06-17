@@ -30,7 +30,7 @@ int send_message_to_sync_receiver(const void *buffer, size_t size, void * config
 
 static int sync_send_metadata(sync_sender_config_t * config, struct timeval * last_sync) {
     GPtrArray * hab_list = NULL;
-    struct timeval ts, last_entry_end_time;
+    int curr_seq, last_entry_end_seq;
     char * hab_type;
     char * hab_id;
     char * node_id;
@@ -41,7 +41,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     //get the most recent entry timestamp in the database. use this as the entry 
     //end time for the query. this allows for the DB to act as the syncronization point
     //instead of creating our own locks.
-    db_get_latest_entry_timestamp(&ts);
+    curr_seq = db_get_latest_entry_seq();
 
     if (bionet_split_resource_name(config->resource_name_pattern,
 				   &hab_type, &hab_id, &node_id, &resource_id)) {
@@ -52,9 +52,9 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 
     hab_list = db_get_metadata(hab_type, hab_id, node_id, resource_id,
 			       &config->start_time, &config->end_time,
-			       &config->last_entry_end_time, &ts,
-			       &last_entry_end_time);
-    config->last_entry_end_time = last_entry_end_time;
+			       config->last_entry_end_seq, curr_seq,
+			       &last_entry_end_seq);
+    config->last_entry_end_seq = last_entry_end_seq;
 
 
     for (hi = 0; hi < hab_list->len; hi++) {
@@ -188,7 +188,7 @@ cleanup:
 
 static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * last_sync) {
     GPtrArray * hab_list = NULL;
-    struct timeval ts, last_entry_end_time;
+    int curr_seq, last_entry_end_seq;
     char * hab_type;
     char * hab_id;
     char * node_id;
@@ -199,7 +199,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
     //get the most recent entry timestamp in the database. use this as the entry 
     //end time for the query. this allows for the DB to act as the syncronization point
     //instead of creating our own locks.
-    db_get_latest_entry_timestamp(&ts);
+    curr_seq = db_get_latest_entry_seq();
 
     if (bionet_split_resource_name(config->resource_name_pattern,
 				   &hab_type, &hab_id, &node_id, &resource_id)) {
@@ -210,9 +210,9 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 
     hab_list = db_get_metadata(hab_type, hab_id, node_id, resource_id,
 			       &config->start_time, &config->end_time,
-			       &config->last_entry_end_time, &ts,
-			       &last_entry_end_time);
-    config->last_entry_end_time = last_entry_end_time;
+			       config->last_entry_end_seq, curr_seq,
+			       &last_entry_end_seq);
+    config->last_entry_end_seq = last_entry_end_seq;
 
 
     //BDM-BP TODO create a sync record for each BDM

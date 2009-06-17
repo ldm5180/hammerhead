@@ -101,8 +101,8 @@ cleanup:
 GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, 
 				       struct timeval *datapointStart, 
 				       struct timeval *datapointEnd,
-				       struct timeval *entryStart,
-				       struct timeval *entryEnd) {
+				       int entryStart,
+				       int entryEnd) {
     char *hab_type;
     char *hab_id;
     char *node_id;
@@ -195,44 +195,12 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern,
         goto cleanup4;
     }
 
-    if (entryStart) {
-	tv.tv_sec = entryStart->tv_sec;
-	tv.tv_usec = entryStart->tv_usec;
-    } else {
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
-    }
-    r = bionet_timeval_to_GeneralizedTime(&tv, &rdpq->entryStartTime);
-    if (r != 0) {
-	if (entryStart) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %m", 
-		  (long)entryStart->tv_sec, (long)entryStart->tv_usec);
-	} else {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
-	}
-        goto cleanup4;
+    if (entryStart >=0 ) {
+        rdpq->entryStart = entryStart;
     }
 
-    if (entryEnd) {
-	tv.tv_sec = entryEnd->tv_sec;
-	tv.tv_usec = entryEnd->tv_usec;
-    } else {
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
-    }
-    r = bionet_timeval_to_GeneralizedTime(&tv, &rdpq->entryEndTime);
-    if (r != 0) {
-	if (entryEnd) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %m", 
-		  (long)entryEnd->tv_sec, (long)entryEnd->tv_usec);
-	} else {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
-	}
-        goto cleanup4;
+    if (entryEnd >= 0) {
+        rdpq->entryEnd = entryEnd;
     }
 
     enc_rval = der_encode(&asn_DEF_BDM_C2S_Message, &m, bdm_send_asn, NULL);

@@ -21,6 +21,19 @@
 
 extern int bdm_fd;
 
+static int str_to_int(const char * str) {
+    char * endptr;
+    int i;
+
+    i = strtol(str, &endptr, 10);
+    if(*endptr != '\0') {
+        printf("error parsing int string '%s': Unknown characters '%s'\n", 
+            str, endptr);
+        exit(1);
+    }
+    return i;
+}
+
 void str_to_timeval(const char *str, struct timeval *tv) {
     struct tm tm;
     char *p;
@@ -122,17 +135,14 @@ int main(int argc, char *argv[]) {
     char *bdm_hostname = NULL;
     uint16_t bdm_port = BDM_PORT;
     char *resource_name_pattern = "*.*.*:*";
-    struct timeval datapointStart, datapointEnd, entryStart, entryEnd;
+    struct timeval datapointStart, datapointEnd;
+    int entryStart, entryEnd;
     struct timeval * pDatapointStart = NULL;
     struct timeval * pDatapointEnd = NULL;
-    struct timeval * pEntryStart = NULL;
-    struct timeval * pEntryEnd = NULL;
 
 
     memset(&datapointStart, 0, sizeof(struct timeval));
     memset(&datapointEnd, 0, sizeof(struct timeval));
-    memset(&entryStart, 0, sizeof(struct timeval));
-    memset(&entryEnd, 0, sizeof(struct timeval));
 
     GPtrArray *hab_list;
 
@@ -164,13 +174,11 @@ int main(int argc, char *argv[]) {
        	    return 0;
 
 	case 'E':
-	    str_to_timeval(optarg, &entryStart);
-	    pEntryStart = &entryStart;
+	    entryStart = str_to_int(optarg);
 	    break;
 
 	case 'e':
-	    str_to_timeval(optarg, &entryEnd);
-	    pEntryEnd = &entryEnd;
+	    entryEnd = str_to_int(optarg);
 	    break;
 
 	case 'r':
@@ -208,7 +216,7 @@ int main(int argc, char *argv[]) {
 
     hab_list = bdm_get_resource_datapoints(resource_name_pattern, 
 					   pDatapointStart, pDatapointEnd, 
-					   pEntryStart, pEntryEnd);
+					   entryStart, entryEnd);
     if (hab_list == NULL) {
         g_message("error getting resource datapoints");
     } else {

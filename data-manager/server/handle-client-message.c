@@ -21,12 +21,10 @@ int send_message_to_client(const void *buffer, size_t size, void *client_void) {
 static void handle_client_message_resourceDatapointsQuery(client_t *client, ResourceDatapointsQuery_t *rdpq) {
     GPtrArray *hab_list;
     struct timeval datapoint_start, datapoint_end;
-    struct timeval entry_start, entry_end;
-    struct timeval latest_entry;
+    int entry_start, entry_end;
+    int latest_entry;
     struct timeval *pDatapointStart = NULL;
     struct timeval *pDatapointEnd = NULL;
-    struct timeval *pEntryStart = NULL;
-    struct timeval *pEntryEnd = NULL;
     int r;
 
     BDM_S2C_Message_t reply;
@@ -38,8 +36,8 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        Resource Name Pattern: %s.%s.%s:%s", rdpq->habType.buf, rdpq->habId.buf, rdpq->nodeId.buf, rdpq->resourceId.buf);
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        datapointStartTime=%s", rdpq->datapointStartTime.buf);
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        datapointEndTime=%s", rdpq->datapointEndTime.buf);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        entryStartTime=%s", rdpq->entryStartTime.buf);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        entryEndTime=%s", rdpq->entryEndTime.buf);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        entryStart=%ld", rdpq->entryStart);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        entryEnd=%ld", rdpq->entryEnd);
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    }");
 
     r = bionet_GeneralizedTime_to_timeval(&rdpq->datapointStartTime, &datapoint_start);
@@ -72,36 +70,9 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 	pDatapointEnd = &datapoint_end;
     }
 
-    r = bionet_GeneralizedTime_to_timeval(&rdpq->entryStartTime, &entry_start);
-    if (r != 0) {
-        g_log(
-            BDM_LOG_DOMAIN,
-            G_LOG_LEVEL_WARNING,
-            "handle_client_message_resourceDatapointsQuery(): error converting GeneralizedTime '%s' to struct timeval: %s",
-            rdpq->entryStartTime.buf,
-            strerror(errno)
-        );
-        return;  // FIXME: return an error message to the client
-    }
-    if (entry_start.tv_sec != 0 || entry_start.tv_usec != 0) {
-	pEntryStart = &entry_start;
-    }
+    entry_start = rdpq->entryStart;
 
-    r = bionet_GeneralizedTime_to_timeval(&rdpq->entryEndTime, &entry_end);
-    if (r != 0) {
-        g_log(
-            BDM_LOG_DOMAIN,
-            G_LOG_LEVEL_WARNING,
-            "handle_client_message_resourceDatapointsQuery(): error converting GeneralizedTime '%s' to struct timeval: %s",
-            rdpq->entryEndTime.buf,
-            strerror(errno)
-        );
-        return;  // FIXME: return an error message to the client
-    }
-    if (entry_end.tv_sec != 0 || entry_end.tv_usec != 0) {
-	pEntryEnd = &entry_end;
-    }
-
+    entry_end = rdpq->entryEnd;
 
     // do that database lookup
     hab_list = db_get_resource_datapoints((const char *)rdpq->habType.buf, 
@@ -109,7 +80,7 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 					  (const char *)rdpq->nodeId.buf, 
 					  (const char *)rdpq->resourceId.buf, 
 					  pDatapointStart, pDatapointEnd, 
-					  pEntryStart, pEntryEnd,
+					  entry_start, entry_end,
 					  &latest_entry);
     if (NULL == hab_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
@@ -126,12 +97,7 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
     {
         int hi;
 	
-	r = bionet_timeval_to_GeneralizedTime(&latest_entry, &rdpr->lastEntryTime);
-	if (r != 0) {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "error setting timestamp of lastest entry: %m");
-	    goto cleanup;
-	}
+        rdpr->lastEntry = latest_entry;
 
         for (hi = 0; hi < hab_list->len; hi ++) {
             int ni;

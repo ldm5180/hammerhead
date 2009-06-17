@@ -28,8 +28,8 @@ void bdm_disconnect(void);
 GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, 
 				       struct timeval *datapointStart, 
 				       struct timeval *datapointEnd,
-				       struct timeval *entryStart,
-				       struct timeval *entryEnd);
+				       int entryStart,
+				       int entryEnd);
 
 
 int bdm_send_asn(const void *buffer, size_t size, void *unused);
