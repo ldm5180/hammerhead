@@ -25,6 +25,7 @@ static int db_get_next_entry_seq(void);
 
 
 static sqlite3 *db = NULL;
+static int entry_seq = -1; // Always set before calling add_*_to_db
 
 static sqlite3_stmt * insert_hab_stmt = NULL;
 static sqlite3_stmt * insert_node_stmt = NULL;
@@ -178,13 +179,6 @@ static int add_hab_to_db(const bionet_hab_t *hab) {
 	return -1;
     }
 
-    int entry_seq = db_get_next_entry_seq();
-    r = sqlite3_bind_int( insert_hab_stmt, param++,  entry_seq);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL bind error");
-	return -1;
-    }
-
     while(SQLITE_BUSY == (r = sqlite3_step(insert_hab_stmt)));
     if (r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
@@ -220,13 +214,6 @@ static int add_node_to_db(const bionet_node_t *node) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL error: %s\n", sqlite3_errmsg(db));
 	    return -1;
 	}
-    }
-
-    int entry_seq = db_get_next_entry_seq();
-    if(entry_seq < 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            "Error getting sequence number\n");
-        return -1;
     }
 
 
@@ -359,12 +346,6 @@ static int add_resource_to_db(bionet_resource_t *resource) {
 	}
     }
 
-    int entry_seq = db_get_next_entry_seq();
-    if(entry_seq < 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            "Error getting sequence number\n");
-        return -1;
-    }
     int param = 1;
     r = sqlite3_bind_blob(insert_resource_stmt, param++, sha_digest, BDM_RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
     if(r != SQLITE_OK){
@@ -498,12 +479,6 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
 
     // Bind host variables to the prepared statement -- This eliminates the need to escape strings
     // In order of the placeholders (?) in the SQL
-    int entry_seq = db_get_next_entry_seq();
-    if(entry_seq < 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            "Error getting sequence number\n");
-        return -1;
-    }
     int param = 1;
     r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_value_to_str(value), -1, free);
     if(r != SQLITE_OK){
@@ -577,6 +552,13 @@ int db_add_datapoint(bionet_datapoint_t *datapoint) {
     bionet_resource_t * resource = NULL;
     bionet_node_t * node = NULL;
     bionet_hab_t * hab = NULL;
+
+    entry_seq = db_get_next_entry_seq();
+    if(entry_seq < 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "Error getting sequence number\n");
+        return -1;
+    }
 
     // start transaction
     r = sqlite3_exec(
@@ -654,6 +636,13 @@ int db_add_datapoint_sync(
 {
     int r;
 
+    entry_seq = db_get_next_entry_seq();
+    if(entry_seq < 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "Error getting sequence number\n");
+        return -1;
+    }
+
     // Single insert, so no transaction needed
 
     if(insert_datapoint_sync_stmt == NULL) {
@@ -676,12 +665,6 @@ int db_add_datapoint_sync(
     // Bind host variables to the prepared statement 
     // -- This eliminates the need to escape strings
     // Bind in order of the placeholders (?) in the SQL
-    int entry_seq = db_get_next_entry_seq();
-    if(entry_seq < 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            "Error getting sequence number\n");
-        return -1;
-    }
     int param = 1;
     r = sqlite3_bind_blob(insert_resource_stmt, param++, 
         resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_STATIC);
@@ -792,6 +775,13 @@ int db_add_node(bionet_node_t *node) {
     int r;
     char *zErrMsg = NULL;
 
+    entry_seq = db_get_next_entry_seq();
+    if(entry_seq < 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "Error getting sequence number\n");
+        return -1;
+    }
+
 
     // start transaction
     r = sqlite3_exec(
@@ -839,7 +829,6 @@ int db_add_node(bionet_node_t *node) {
     r = do_commit();
     if (r != 0) goto fail;
 
-
     return 0;
 
 
@@ -863,6 +852,13 @@ fail:
 
 int db_add_hab(bionet_hab_t *hab) {
     int r;
+
+    entry_seq = db_get_next_entry_seq();
+    if(entry_seq < 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "Error getting sequence number\n");
+        return -1;
+    }
 
     // this doesnt need a transaction because it's just a single INSERT
     r = add_hab_to_db(hab);
@@ -1487,52 +1483,53 @@ static int db_get_next_entry_seq(void) {
     // Delete last seq
     r = sqlite3_exec(
         db,
-        "DELETE FROM Entry_Seq",
+        "DELETE FROM Entry_Sequence",
         NULL,
         0,
         &zErrMsg
     );
-    if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Clear Entry_Seq SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return -1;
-    }
+    if (r != SQLITE_OK) goto fail;
 
     // Create New Seq
     r = sqlite3_exec(
         db,
-        "INSERT INTO Entry_Seq VALUES (NULL)",
+        "INSERT INTO Entry_Sequence VALUES (NULL)",
         NULL,
         0,
         &zErrMsg
     );
-    if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "INSERT Entry_Seq SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return -1;
-    }
+    if (r != SQLITE_OK) goto fail;
 
-    int entry_seq = db_get_latest_entry_seq();
+    int latest_seq = db_get_latest_entry_seq();
 
     // commit transaction
+    r = do_commit();
+    if (r != SQLITE_OK) goto fail;
+
+    return latest_seq;
+
+fail:
+    if(zErrMsg){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Get Latest entry SQL error: %s\n", zErrMsg);
+        free(zErrMsg);
+    }
     r = sqlite3_exec(
         db,
-        "COMMIT",
+        "ROLLBACK;",
         NULL,
         0,
         &zErrMsg
     );
     if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "BEGIN TRANSACTION SQL error: %s\n", zErrMsg);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ROLLBACK SQL error: %s\n", zErrMsg);
         sqlite3_free(zErrMsg);
-        return -1;
     }
 
-    return entry_seq;
+    return -1;
 }
 
 int db_get_latest_entry_seq(void) {
-    int entry_seq = -1;
+    int seq = -1;
     int r;
     char * zErrMsg = NULL;
 
@@ -1540,21 +1537,21 @@ int db_get_latest_entry_seq(void) {
         db,
         "SELECT max(Num) from Entry_Sequence",
         db_set_int_callback,
-        &entry_seq,
+        &seq,
         &zErrMsg
     );
     if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "BEGIN TRANSACTION SQL error: %s\n", zErrMsg);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "SELECT SQL error: %s\n", zErrMsg);
         sqlite3_free(zErrMsg);
         return -1;
     }
-    return entry_seq;
+    return seq;
 }
 
 
 int db_get_last_sync_seq(char * bdm_id) {
     int r;
-    int entry_seq = -1;
+    int seq = -1;
 
     if(get_last_sync_bdm_stmt == NULL) {
 	r = sqlite3_prepare_v2(db, 
@@ -1586,12 +1583,12 @@ int db_get_last_sync_seq(char * bdm_id) {
         return -1;
     }
 
-    entry_seq = sqlite3_column_int(get_last_sync_bdm_stmt, 1);
+    seq = sqlite3_column_int(get_last_sync_bdm_stmt, 1);
 
     sqlite3_reset(get_last_sync_bdm_stmt);
     sqlite3_clear_bindings(get_last_sync_bdm_stmt);
 
-    return entry_seq;
+    return seq;
 }
 
 
