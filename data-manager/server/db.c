@@ -40,7 +40,7 @@ extern char * database_file;
 char bdm_id[256] = { 0 };
 
 typedef struct sql_return {
-    GPtrArray *hab_list;
+    GPtrArray *bdm_list;
     int * latest_entry;
 } sql_return_t;
 
@@ -876,10 +876,34 @@ int db_add_hab(bionet_hab_t *hab) {
 
 
 
+static bdm_t *find_bdm(GPtrArray *bdm_list, const char *bdm_id) {
+    int i;
+    bdm_t *bdm;
 
-static bionet_hab_t *find_hab(GPtrArray *hab_list, const char *hab_type, const char *hab_id) {
+    for (i = 0; i < bdm_list->len; i ++) {
+        bdm = g_ptr_array_index(bdm_list, i);
+	if ( strcmp(bdm->bdm_id, bdm_id) == 0) {
+            return bdm;
+        }
+    }
+
+    //
+    // the requested bdm is not in the list, so add it
+    //
+
+    bdm = malloc(sizeof(bdm_t));
+    if (bdm == NULL) return NULL;
+    bdm->hab_list = g_ptr_array_new();
+    bdm->bdm_id = strdup(bdm_id); 
+
+    g_ptr_array_add(bdm_list, bdm);
+    return bdm;
+}
+
+static bionet_hab_t *find_hab(bdm_t * bdm, const char *hab_type, const char *hab_id) {
     int i;
     bionet_hab_t *hab;
+    GPtrArray * hab_list = bdm->hab_list;
 
     for (i = 0; i < hab_list->len; i ++) {
         hab = g_ptr_array_index(hab_list, i);
@@ -954,7 +978,7 @@ static int db_get_resource_datapoints_callback(
     char **azColName
 ) {
     sql_return_t * sql_ret_val = (sql_return_t *)sql_ret_void;
-    GPtrArray *hab_list = sql_ret_val->hab_list;
+    GPtrArray *bdm_list = sql_ret_val->bdm_list;
     int * latest_entry = sql_ret_val->latest_entry;
     bionet_hab_t *hab;
     bionet_node_t *node;
@@ -967,72 +991,87 @@ static int db_get_resource_datapoints_callback(
     bionet_datapoint_t * datapoint = NULL;
     char * tmpstr;
 
-    hab = find_hab(hab_list, argv[0], argv[1]);
+
+    static const int i_habtype =  0;
+    static const int i_habname =  1;
+    static const int i_node =     2;
+    static const int i_datatype = 3;
+    static const int i_flavor =   4;
+    static const int i_resource = 5;
+    static const int i_value =    6;
+    static const int i_tssec =    7;
+    static const int i_tsusec =   8;
+    static const int i_entry =    9;
+    static const int i_bdm =      10;
+    
+    bdm_t * bdm = find_bdm(bdm_list, argv[i_bdm]);
+
+    hab = find_hab(bdm, argv[i_habtype], argv[i_habname]);
     if (hab == NULL) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding hab %s.%s", argv[0], argv[1]);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding hab %s.%s", argv[i_habtype], argv[i_habname]);
         return -1;
     }
 
-    node = find_node(hab, argv[2]);
+    node = find_node(hab, argv[i_node]);
     if (node == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 	      "db_get_resource_datapoints_callback(): error finding node %s.%s.%s", 
-	      bionet_hab_get_type(hab), bionet_hab_get_id(hab), argv[2]);
+	      bionet_hab_get_type(hab), bionet_hab_get_id(hab), argv[i_node]);
         return -1;
     }
 
-    resource = find_resource(node, argv[3], argv[4], argv[5]);
+    resource = find_resource(node, argv[i_datatype], argv[i_flavor], argv[i_resource]);
     if (resource == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 	      "db_get_resource_datapoints_callback(): error finding resource %s %s %s.%s.%s:%s", 
-	      argv[3], argv[4], 
+	      argv[i_datatype], argv[i_flavor], 
 	      bionet_hab_get_type(hab), bionet_hab_get_id(hab), 
-	      bionet_node_get_id(node), argv[5]);
+	      bionet_node_get_id(node), argv[i_resource]);
         return -1;
     }
 
-    timestamp.tv_sec = atoi(argv[7]);
-    timestamp.tv_usec = atoi(argv[8]);
+    timestamp.tv_sec = atoi(argv[i_tssec]);
+    timestamp.tv_usec = atoi(argv[i_tsusec]);
 
 
-    entry = atoi(argv[9]);
+    entry = atoi(argv[i_entry]);
     if(entry > *latest_entry) {
 	*latest_entry = entry;
     }
 
-    if(argv[6]){
+    if(argv[i_value]){
         switch(bionet_resource_get_data_type(resource))
         {
         case BIONET_RESOURCE_DATA_TYPE_BINARY:
-            value = bionet_value_new_binary(resource, atoi(argv[6]));
+            value = bionet_value_new_binary(resource, atoi(argv[i_value]));
             break; 
         case BIONET_RESOURCE_DATA_TYPE_UINT8:
-            value = bionet_value_new_uint8(resource, (uint8_t)strtoul(argv[6], NULL, 0));
+            value = bionet_value_new_uint8(resource, (uint8_t)strtoul(argv[i_value], NULL, 0));
             break; 
         case BIONET_RESOURCE_DATA_TYPE_INT8:   
-            value = bionet_value_new_int8(resource, (int8_t)atoi(argv[6]));
+            value = bionet_value_new_int8(resource, (int8_t)atoi(argv[i_value]));
             break; 
         case BIONET_RESOURCE_DATA_TYPE_UINT16: 
-            value = bionet_value_new_uint16(resource, (uint16_t)strtoul(argv[6], NULL, 0));
+            value = bionet_value_new_uint16(resource, (uint16_t)strtoul(argv[i_value], NULL, 0));
             break; 
         case BIONET_RESOURCE_DATA_TYPE_INT16:  
-            value = bionet_value_new_int16(resource, (int16_t)atoi(argv[6]));
+            value = bionet_value_new_int16(resource, (int16_t)atoi(argv[i_value]));
             break; 
         case BIONET_RESOURCE_DATA_TYPE_UINT32: 
-            value = bionet_value_new_uint32(resource, (uint32_t)strtoul(argv[6], NULL, 0));
+            value = bionet_value_new_uint32(resource, (uint32_t)strtoul(argv[i_value], NULL, 0));
             break; 
         case BIONET_RESOURCE_DATA_TYPE_INT32:  
-            value = bionet_value_new_int32(resource, (int32_t)atoi(argv[6]));
+            value = bionet_value_new_int32(resource, (int32_t)atoi(argv[i_value]));
             break; 
         case BIONET_RESOURCE_DATA_TYPE_FLOAT:  
-            value = bionet_value_new_float(resource, strtof(argv[6], NULL));
+            value = bionet_value_new_float(resource, strtof(argv[i_value], NULL));
             break; 
         case BIONET_RESOURCE_DATA_TYPE_DOUBLE: 
-            value = bionet_value_new_double(resource, strtod(argv[6], NULL));
+            value = bionet_value_new_double(resource, strtod(argv[i_value], NULL));
             break; 
         case BIONET_RESOURCE_DATA_TYPE_STRING:
-            tmpstr = malloc(strlen(argv[6]) + 1);
-            strncpy(tmpstr, argv[6], strlen(argv[6]) + 1);
+            tmpstr = malloc(strlen(argv[i_value]) + 1);
+            strncpy(tmpstr, argv[i_value], strlen(argv[i_value]) + 1);
             value = bionet_value_new_str(resource, tmpstr);
             break; 
         case BIONET_RESOURCE_DATA_TYPE_INVALID:
@@ -1103,11 +1142,11 @@ static GPtrArray *_db_get_resource_info(
     char entry_start_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     char entry_end_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
 
-    GPtrArray *hab_list;
+    GPtrArray *bdm_list;
 
-    hab_list = g_ptr_array_new();
+    bdm_list = g_ptr_array_new();
 
-    sql_return_t sql_ret_val = { hab_list, 
+    sql_return_t sql_ret_val = { bdm_list, 
 				 latest_entry };
 
     if ((hab_type == NULL) || (strcmp(hab_type, "*") == 0)) {
@@ -1271,7 +1310,8 @@ static GPtrArray *_db_get_resource_info(
             " Datapoints.Value,"
             " Datapoints.Timestamp_Sec,"
             " Datapoints.Timestamp_Usec,"
-            " Datapoints.Entry_Num";
+            " Datapoints.Entry_Num,"
+            " BDMs.BDM_ID";
     } else {
         sql_fields = 
             " Hardware_Abstractors.HAB_TYPE,"
@@ -1283,7 +1323,8 @@ static GPtrArray *_db_get_resource_info(
             " NULL,"
             " NULL,"
             " NULL,"
-            " Datapoints.Entry_Num";
+            " Datapoints.Entry_Num,"
+            " BDMs.BDM_ID";
     }
 
     r = snprintf(sql, sizeof(sql),
@@ -1295,13 +1336,15 @@ static GPtrArray *_db_get_resource_info(
         "    Resources,"
         "    Resource_Data_Types,"
         "    Resource_Flavors,"
-        "    Datapoints"
+        "    Datapoints,"
+        "    BDMs"
         " WHERE"
         "    Nodes.HAB_Key=Hardware_Abstractors.Key"
         "    AND Resources.Node_Key=Nodes.Key"
         "    AND Resource_Data_Types.Key=Resources.Data_Type_Key"
         "    AND Resource_Flavors.Key=Resources.Flavor_Key"
         "    AND Datapoints.Resource_Key=Resources.Key"
+        "    AND Datapoints.BDM_Key=BDMs.Key"
         "    %s"
         "    %s"
         "    %s"
@@ -1311,6 +1354,7 @@ static GPtrArray *_db_get_resource_info(
         "    %s"
         "    %s"
         " ORDER BY"
+        "     BDMs.BDM_Key ASC, " 
         "     Datapoints.Timestamp_Sec ASC,"
         "     Datapoints.Timestamp_Usec ASC",
         sql_fields,
@@ -1357,7 +1401,7 @@ static GPtrArray *_db_get_resource_info(
         return NULL;
     }
 
-    return hab_list;
+    return bdm_list;
 }
 
 GPtrArray *db_get_resource_datapoints(
