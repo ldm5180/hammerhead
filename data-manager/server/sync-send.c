@@ -56,6 +56,12 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 			       &last_entry_end_seq);
     config->last_entry_end_seq = last_entry_end_seq;
 
+    if (NULL == bdm_list) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "send_sync_metadata(): NULL BDM list from db_get_metadata()");
+	goto cleanup;
+    }
+
     for (bi = 0; bi < bdm_list->len; bi++) {
 	int hi;
 	bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
@@ -225,12 +231,17 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
     }
 
 
-    bdm_list = db_get_metadata(hab_type, hab_id, node_id, resource_id,
-			       &config->start_time, &config->end_time,
-			       config->last_entry_end_seq, curr_seq,
-			       &last_entry_end_seq);
+    bdm_list = db_get_resource_datapoints(hab_type, hab_id, node_id, resource_id,
+					  &config->start_time, &config->end_time,
+					  config->last_entry_end_seq, curr_seq,
+					  &last_entry_end_seq);
     config->last_entry_end_seq = last_entry_end_seq;
 
+    if (NULL == bdm_list) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "send_sync_datapoints(): NULL BDM list from db_get_resource_datapoints()");
+	goto cleanup;
+    }
 
     //create a sync record for each BDM
     for (bi = 0; bi < bdm_list->len; bi++) {
