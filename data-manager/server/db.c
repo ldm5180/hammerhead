@@ -590,8 +590,6 @@ int db_add_datapoint(bionet_datapoint_t *datapoint) {
     r = add_resource_to_db(resource);
     if (r != 0) goto fail;
 
-    //BDM-BP TODO: Add BDM to database if not self
-
     // now finally add the data point itself
     r = add_datapoint_to_db(datapoint);
     if (r != 0) goto fail;
@@ -818,7 +816,6 @@ int db_add_node(bionet_node_t *node) {
 
         // add the resource's data point, if any
         if (d != NULL) {
-	    // BDM-BP TODO: Add BDM to database if not self
             r = add_datapoint_to_db(d);
             if (r != 0) goto fail;
         }

@@ -193,7 +193,6 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     } //for (bi = 0; bi < bdm_list->len; bi++)
 
 
-    //BDM-BP TODO encode and send message
     // send the reply to the client
     asn_enc_rval_t asn_r;
     asn_r = der_encode(&asn_DEF_BDM_Sync_Metadata_Message, &message, send_message_to_sync_receiver, config);
