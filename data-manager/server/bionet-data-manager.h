@@ -48,9 +48,9 @@ typedef struct {
 } sync_sender_config_t;
 
 typedef struct { 
-    GPtrArray * bdm_list;
+    GPtrArray * hab_list;
     char * bdm_id;
-} bdm_list_t;
+} bdm_t;
 
 // 
 // interface to the database backend
@@ -98,9 +98,8 @@ int db_add_datapoint_sync(
 
 
 // 
-// Finds all matching datapoints, and returns them as a GPtrArray of HABs.
+// Finds all matching datapoints, and returns them as a GPtrArray of bdm_list_t.
 //
-
 GPtrArray *db_get_resource_datapoints(
     const char *hab_type,
     const char *hab_id,
@@ -113,6 +112,9 @@ GPtrArray *db_get_resource_datapoints(
     int *latest_entry
 );
 
+// 
+// Finds all matching metadata, and returns them as a GPtrArray of bdm_list_t.
+//
 GPtrArray *db_get_metadata(
     const char *hab_type,
     const char *hab_id,
