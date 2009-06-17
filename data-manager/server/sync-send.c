@@ -36,7 +36,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     char * node_id;
     char * resource_id;
     BDM_Sync_Metadata_Message_t message;
-    int hi, r;
+    int hi = 0, r;
 
     //get the most recent entry timestamp in the database. use this as the entry 
     //end time for the query. this allows for the DB to act as the syncronization point
@@ -57,7 +57,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     config->last_entry_end_seq = last_entry_end_seq;
 
 
-    for (hi = 0; hi < hab_list->len; hi++) {
+    for (; hi < hab_list->len; hi++) {
 	int ni;
 	HardwareAbstractor_t * asn_hab;
 	bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);
@@ -66,7 +66,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 		  "sync_send_metadata(): Failed to get HAB %d from array of HABs", hi);
 	}
 
-	//BDM-BP TODO add the HAB to the message
+	//add the HAB to the message
 	asn_hab = (HardwareAbstractor_t *)calloc(1, sizeof(HardwareAbstractor_t));
 	if (asn_hab == NULL) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -194,7 +194,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
     char * node_id;
     char * resource_id;
     BDM_Sync_Datapoints_Message_t message;
-    int r, hi;
+    int r, hi = 0;
 
     //get the most recent entry timestamp in the database. use this as the entry 
     //end time for the query. this allows for the DB to act as the syncronization point
@@ -227,26 +227,25 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 	      "sync_send_datapoints(): Failed to malloc sync_record: %m");
     }
-
-
+    
+    
     //BDM-BP TODO add BDM-ID to BDM Sync Record, not just a NULL
-     r = OCTET_STRING_fromString(&sync_record->bdmID, NULL);
-     if (r != 0) {
-	 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	       "sync_send_datapoints(): Failed to set BDM ID");
-     }
-
-
+    r = OCTET_STRING_fromString(&sync_record->bdmID, NULL);
+    if (r != 0) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "sync_send_datapoints(): Failed to set BDM ID");
+    }
+    
+    
     //walk list of habs
-    for (hi = 0; hi < hab_list->len; hi++) {
+    for (; hi < hab_list->len; hi++) {
 	int ni;
 	bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);
 	if (NULL == hab) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to get HAB %d from array of HABs", hi);
 	}
-
-
+	
 	//walk list of nodes
 	for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
 	    int ri;
@@ -255,8 +254,8 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		      "Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
 	    }
-
-
+	    
+	    
 	    //walk list of resources
 	    for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
 		int di;
@@ -266,20 +265,20 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 			  "Failed to get resource %d from Node %s", ri, bionet_node_get_name(node));
 		}
-
+		
 		r = asn_sequence_add(&sync_record->syncResources, &resource_rec);
 		if (r != 0) {
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			  "sync_send_datapoints(): Failed to add resource record.");
 		}
-
-		 r = OCTET_STRING_fromString(&resource_rec.resourceKey, NULL);
-		 if (r != 0) {
-		     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-			   "sync_send_datapoints(): Failed to set resource key");
-		 }
-
-
+		
+		r = OCTET_STRING_fromString(&resource_rec.resourceKey, NULL);
+		if (r != 0) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+			  "sync_send_datapoints(): Failed to set resource key");
+		}
+		
+		
 		//walk list of datapoints and add each one to the message
 		for (di = 0; di < bionet_resource_get_num_datapoints(resource); di++) {
 		    bionet_datapoint_t * d = bionet_resource_get_datapoint_by_index(resource, di);
@@ -288,7 +287,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 			      "Failed to get datapoint %d from Resource %s", di, bionet_resource_get_name(resource));
 		    }
-
+		    
 		    asn_datapoint = bionet_datapoint_to_asn(d);
 		    if (asn_datapoint == NULL) {
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -300,10 +299,10 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 			      "send_sync_datapoints(): error adding Datapoint to Resource: %m");
 		    }
-		}
-	    }
-	}
-    }
+		} //for (di = 0; di < bionet_resource_get_num_datapoints(resource); di++) 
+	    } //for (ri = 0; ri < bionet_node_get_num_resources(node); ri++)
+	} //for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++)
+    } //for (; hi < hab_list->len; hi++)
 
 
     // send the reply to the client

@@ -14,6 +14,7 @@
 /* Including external dependencies */
 #include <PrintableString.h>
 #include <GeneralizedTime.h>
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -28,8 +29,8 @@ typedef struct ResourceDatapointsQuery {
 	PrintableString_t	 resourceId;
 	GeneralizedTime_t	 datapointStartTime;
 	GeneralizedTime_t	 datapointEndTime;
-	GeneralizedTime_t	 entryStartTime;
-	GeneralizedTime_t	 entryEndTime;
+	long	 entryStart;
+	long	 entryEnd;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

@@ -65,14 +65,14 @@ static asn_TYPE_member_t asn_MBR_ResourceDatapointsReply_1[] = {
 		0,
 		"habs"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct ResourceDatapointsReply, lastEntryTime),
+	{ ATF_NOFLAGS, 0, offsetof(struct ResourceDatapointsReply, lastEntry),
 		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_GeneralizedTime,
+		&asn_DEF_NativeInteger,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
-		"lastEntryTime"
+		"lastEntry"
 		},
 };
 static ber_tlv_tag_t asn_DEF_ResourceDatapointsReply_tags_1[] = {
@@ -80,7 +80,7 @@ static ber_tlv_tag_t asn_DEF_ResourceDatapointsReply_tags_1[] = {
 };
 static asn_TYPE_tag2member_t asn_MAP_ResourceDatapointsReply_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* habs at 137 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* lastEntryTime at 138 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* lastEntry at 139 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_ResourceDatapointsReply_specs_1 = {
 	sizeof(struct ResourceDatapointsReply),

@@ -47,6 +47,11 @@ typedef struct {
     char * sync_recipient;
 } sync_sender_config_t;
 
+typedef struct { 
+    GPtrArray * bdm_list;
+    char * bdm_id;
+} bdm_list_t;
+
 // 
 // interface to the database backend
 //

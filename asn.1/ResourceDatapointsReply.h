@@ -12,7 +12,7 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <GeneralizedTime.h>
+#include <NativeInteger.h>
 #include <asn_SEQUENCE_OF.h>
 #include <constr_SEQUENCE_OF.h>
 #include <constr_SEQUENCE.h>
@@ -32,7 +32,7 @@ typedef struct ResourceDatapointsReply {
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
 	} habs;
-	GeneralizedTime_t	 lastEntryTime;
+	long	 lastEntry;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
