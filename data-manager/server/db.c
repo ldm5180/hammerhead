@@ -74,6 +74,18 @@ int db_init(void) {
 
 void db_shutdown(void) {
 
+    if(insert_hab_stmt){
+	sqlite3_finalize(insert_hab_stmt);
+	insert_hab_stmt = NULL;
+    }
+    if(insert_node_stmt){
+	sqlite3_finalize(insert_node_stmt);
+	insert_node_stmt = NULL;
+    }
+    if(insert_resource_stmt){
+	sqlite3_finalize(insert_resource_stmt);
+	insert_resource_stmt = NULL;
+    }
     if(insert_datapoint_stmt){
 	sqlite3_finalize(insert_datapoint_stmt);
 	insert_datapoint_stmt = NULL;
@@ -85,6 +97,14 @@ void db_shutdown(void) {
     if(insert_bdm_stmt){
 	sqlite3_finalize(insert_bdm_stmt);
 	insert_bdm_stmt = NULL;
+    }
+    if(get_last_sync_bdm_stmt){
+	sqlite3_finalize(get_last_sync_bdm_stmt);
+	get_last_sync_bdm_stmt = NULL;
+    }
+    if(set_last_sync_bdm_stmt){
+	sqlite3_finalize(set_last_sync_bdm_stmt);
+	set_last_sync_bdm_stmt = NULL;
     }
 
     sqlite3_close(db);
@@ -174,6 +194,11 @@ static int add_hab_to_db(const bionet_hab_t *hab) {
     }
 
     r = sqlite3_bind_text(insert_hab_stmt, param++, bionet_hab_get_id(hab), -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL bind error");
+	return -1;
+    }
+    r = sqlite3_bind_int(insert_hab_stmt, param++, entry_seq);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL bind error");
 	return -1;
@@ -1346,7 +1371,6 @@ static GPtrArray *_db_get_resource_info(
         "    %s"
         "    %s"
         " ORDER BY"
-        "     BDMs.BDM_Key ASC, " 
         "     Datapoints.Timestamp_Sec ASC,"
         "     Datapoints.Timestamp_Usec ASC",
         sql_fields,

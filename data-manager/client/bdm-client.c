@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
     uint16_t bdm_port = BDM_PORT;
     char *resource_name_pattern = "*.*.*:*";
     struct timeval datapointStart, datapointEnd;
-    int entryStart, entryEnd;
+    int entryStart = -1, entryEnd = -1;
     struct timeval * pDatapointStart = NULL;
     struct timeval * pDatapointEnd = NULL;
 
