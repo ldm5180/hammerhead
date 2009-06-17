@@ -371,6 +371,7 @@ static void read_from_user(void) {
         case CAL_EVENT_UNSUBSCRIBE: {
             cal_client_mdnssd_bip_subscription_t *s;
             int i;
+            int matching_subscription_exists = 0;
 
             if (!cal_peer_name_is_valid(event->peer_name)) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user Unsubscribe event has invalid peer_name, ignoring");
@@ -380,33 +381,6 @@ static void read_from_user(void) {
             if (!cal_topic_is_valid(event->topic)) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: user Unsubscribe event has invalid topic, ignoring");
                 break;
-            }
-
-            //
-            // walk the list of known peers, and send this unsubscribe message to all that match
-            //
-
-            {
-                GHashTableIter iter;
-                const char *name;
-                bip_peer_t *peer;
-
-                g_hash_table_iter_init (&iter, peers);
-                while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
-                    if (peer->nets->len == 0) continue;
-                    if (this->peer_matches(name, event->peer_name) != 0) continue;
-
-                    while (peer->nets->len > 0) {
-                        r = bip_peer_connect(name, peer);
-                        if (r < 0) {
-                            report_peer_lost(name, peer);
-                            break;
-                        }
-
-                        r = bip_send_message(name, peer, BIP_MSG_TYPE_UNSUBSCRIBE, event->topic, strlen(event->topic) + 1);
-                        if (r == 0) break;
-                    }
-                }
             }
 
             //
@@ -426,9 +400,38 @@ static void read_from_user(void) {
                     if (s->topic != NULL) free(s->topic);
                     free(s);
 
+                    matching_subscription_exists = 1;
+
                     break;
                 } else {
                     i++;
+                }
+            }
+
+            //
+            // walk the list of known peers, and send this unsubscribe message to all that match
+            //
+
+            if (matching_subscription_exists) {
+                GHashTableIter iter;
+                const char *name;
+                bip_peer_t *peer;
+
+                g_hash_table_iter_init (&iter, peers);
+                while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
+                    if (peer->nets->len == 0) continue;
+                    if (this->peer_matches(name, event->peer_name) != 0) continue;
+
+                    while (peer->nets->len > 0) {
+                        r = bip_peer_connect(name, peer);
+                        if (r < 0) {
+                            report_peer_lost(name, peer);
+                            break;
+                        }
+
+                        r = bip_send_message(name, peer, BIP_MSG_TYPE_UNSUBSCRIBE, event->topic, strlen(event->topic) + 1);
+                        if (r == 0) break;
+                    }
                 }
             }
 
