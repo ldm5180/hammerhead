@@ -1511,7 +1511,7 @@ static int db_get_next_entry_seq(void) {
 fail:
     if(zErrMsg){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Get Latest entry SQL error: %s\n", zErrMsg);
-        free(zErrMsg);
+	sqlite3_free(zErrMsg);
     }
     r = sqlite3_exec(
         db,
