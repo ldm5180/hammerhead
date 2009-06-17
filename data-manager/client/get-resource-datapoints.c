@@ -195,13 +195,8 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern,
         goto cleanup4;
     }
 
-    if (entryStart >=0 ) {
-        rdpq->entryStart = entryStart;
-    }
-
-    if (entryEnd >= 0) {
-        rdpq->entryEnd = entryEnd;
-    }
+    rdpq->entryStart = entryStart;
+    rdpq->entryEnd = entryEnd;
 
     enc_rval = der_encode(&asn_DEF_BDM_C2S_Message, &m, bdm_send_asn, NULL);
     if (enc_rval.encoded == -1) {

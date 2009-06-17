@@ -81,20 +81,14 @@ else:
     datapoint_end = None
 
 if (options.entry_start != None):
-    entry_start = timeval()
-    entry_start.tv_sec = gmt_convert(int(time.mktime(time.strptime(options.entry_start, 
-                                                             "%Y-%m-%d %H:%M:%S"))))
-    entry_start.tv_usec = 0
+    entry_start = options.entry_start
 else:
-    entry_start = None
+    entry_start = -1
 
 if (options.entry_end != None):
-    entry_end = timeval()
-    entry_end.tv_sec = gmt_convert(int(time.mktime(time.strptime(options.entry_end, 
-                                                             "%Y-%m-%d %H:%M:%S"))))
-    entry_end.tv_usec = 0
+    entry_end = options.entry_end;
 else:
-    entry_end = None
+    entry_end = -1
 
 
 
