@@ -1576,7 +1576,7 @@ int db_get_last_sync_seq(char * bdm_id) {
 
     if(get_last_sync_bdm_stmt == NULL) {
 	r = sqlite3_prepare_v2(db, 
-	    "SELECT Last_Sync_Num"
+	    "SELECT Last_Sync"
             " FROM BDMs"
             " WHERE BDM_ID = ?",
 	    -1, &get_last_sync_bdm_stmt, NULL);
