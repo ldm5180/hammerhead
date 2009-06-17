@@ -19,13 +19,13 @@ int send_message_to_client(const void *buffer, size_t size, void *client_void) {
 
 
 static void handle_client_message_resourceDatapointsQuery(client_t *client, ResourceDatapointsQuery_t *rdpq) {
-    GPtrArray *hab_list;
+    GPtrArray *bdm_list;
     struct timeval datapoint_start, datapoint_end;
     int entry_start, entry_end;
     int latest_entry;
     struct timeval *pDatapointStart = NULL;
     struct timeval *pDatapointEnd = NULL;
-    int r;
+    int r, bi;
 
     BDM_S2C_Message_t reply;
     ResourceDatapointsReply_t *rdpr;
@@ -75,16 +75,16 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
     entry_end = rdpq->entryEnd;
 
     // do that database lookup
-    hab_list = db_get_resource_datapoints((const char *)rdpq->habType.buf, 
+    bdm_list = db_get_resource_datapoints((const char *)rdpq->habType.buf, 
 					  (const char *)rdpq->habId.buf, 
 					  (const char *)rdpq->nodeId.buf, 
 					  (const char *)rdpq->resourceId.buf, 
 					  pDatapointStart, pDatapointEnd, 
 					  entry_start, entry_end,
 					  &latest_entry);
-    if (NULL == hab_list) {
+    if (NULL == bdm_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	      "Failed to get a HAB list.");
+	      "Failed to get a BDM list.");
 	return;
     }
 
@@ -94,9 +94,13 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 
     // build the reply message
     // debuggingly print out what we got
-    {
+    for (bi = 0; bi < bdm_list->len; bi++) {
         int hi;
-	
+	bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
+	GPtrArray * hab_list = bdm->hab_list;
+
+	//BDM-BP TODO someday add the BDM ID to the client message
+
         rdpr->lastEntry = latest_entry;
 
         for (hi = 0; hi < hab_list->len; hi ++) {

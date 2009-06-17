@@ -98,7 +98,7 @@ int db_add_datapoint_sync(
 
 
 // 
-// Finds all matching datapoints, and returns them as a GPtrArray of bdm_list_t.
+// Finds all matching datapoints, and returns them as a GPtrArray of bdm_t.
 //
 GPtrArray *db_get_resource_datapoints(
     const char *hab_type,
@@ -113,7 +113,7 @@ GPtrArray *db_get_resource_datapoints(
 );
 
 // 
-// Finds all matching metadata, and returns them as a GPtrArray of bdm_list_t.
+// Finds all matching metadata, and returns them as a GPtrArray of bdm_t.
 //
 GPtrArray *db_get_metadata(
     const char *hab_type,

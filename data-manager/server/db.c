@@ -3,11 +3,10 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
-
-#define _ISOC99_SOURCE
+#define _XOPEN_SOURCE 600
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <errno.h>
 
 #include <sqlite3.h>
