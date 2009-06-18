@@ -1022,6 +1022,11 @@ static int db_get_resource_datapoints_callback(
     static const int i_bdm =      10;
     
     bdm_t * bdm = find_bdm(bdm_list, argv[i_bdm]);
+    if (bdm == NULL) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding bdm %s", 
+            argv[i_bdm]);
+        return -1;
+    }
 
     hab = find_hab(bdm, argv[i_habtype], argv[i_habname]);
     if (hab == NULL) {
@@ -1320,6 +1325,7 @@ static GPtrArray *_db_get_resource_info(
 
 
     const char * sql_fields;
+    const char * sql_group = "";
     if(include_datapoints){
         sql_fields = 
             " Hardware_Abstractors.HAB_TYPE,"
@@ -1344,8 +1350,17 @@ static GPtrArray *_db_get_resource_info(
             " NULL,"
             " NULL,"
             " NULL,"
-            " Datapoints.Entry_Num,"
+            " max(Datapoints.Entry_Num),"
             " BDMs.BDM_ID";
+
+        sql_group = 
+            " GROUP BY "
+            " Hardware_Abstractors.HAB_TYPE,"
+            " Hardware_Abstractors.HAB_ID,"
+            " Nodes.Node_ID,"
+            " Resource_Data_Types.Data_Type,"
+            " Resource_Flavors.Flavor,"
+            " Resources.Resource_ID";
     }
 
     r = snprintf(sql, sizeof(sql),
