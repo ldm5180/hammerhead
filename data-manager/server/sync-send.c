@@ -62,6 +62,8 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 	goto cleanup;
     }
 
+    memset(&message, 0x00, sizeof(BDM_Sync_Metadata_Message_t));
+
     for (bi = 0; bi < bdm_list->len; bi++) {
 	int hi;
 	bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
@@ -207,7 +209,7 @@ cleanup:
     return -1;
 } /* sync_send_metadata() */
 
-
+#if 0
 static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * last_sync) {
     GPtrArray * bdm_list = NULL;
     int curr_seq, last_entry_end_seq;
@@ -241,6 +243,8 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 	      "send_sync_datapoints(): NULL BDM list from db_get_resource_datapoints()");
 	goto cleanup;
     }
+
+    memset(&message, 0x00, sizeof(BDM_Sync_Datapoints_Message_t));
 
     //create a sync record for each BDM
     for (bi = 0; bi < bdm_list->len; bi++) {
@@ -362,13 +366,14 @@ cleanup:
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Datapoints_Message, &message);
     return -1;
 } /* sync_send_datapoints() */
-
+#endif
 
 int send_message_to_sync_receiver(const void *buffer, size_t size, void * config_void) {
     sync_sender_config_t * config = (sync_sender_config_t *)config_void;
     struct sockaddr_in server_address;
     struct hostent *server_host;
     int fd;
+    int r;
 
     if (NULL == config) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -460,7 +465,10 @@ int send_message_to_sync_receiver(const void *buffer, size_t size, void * config
         return -1;
     }
 
-    return write(fd, buffer, size);
+    r = write(fd, buffer, size);
+
+    close(fd);
+    return r;
 } /* send_message_to_sync_receiver() */
 
 
@@ -475,7 +483,7 @@ gpointer sync_thread(gpointer config) {
 
     while (1) {
 	sync_send_metadata(cfg, &last_sync);
-	sync_send_datapoints(cfg, &last_sync);
+//	sync_send_datapoints(cfg, &last_sync);
 	
 	g_usleep(cfg->frequency * G_USEC_PER_SEC);
     }
