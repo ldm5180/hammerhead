@@ -60,7 +60,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 			       &last_entry_end_seq);
     config->last_entry_end_seq = last_entry_end_seq;
 
-    memset(&message, 0x00, sizeof(BDM_Sync_Message_t));
+    memset(&sync_message, 0x00, sizeof(BDM_Sync_Message_t));
     sync_message.present = BDM_Sync_Message_PR_metadataMessage;
     message = &sync_message.choice.metadataMessage;
 
@@ -249,7 +249,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 					  &last_entry_end_seq);
     config->last_entry_end_seq = last_entry_end_seq;
 
-    memset(&message, 0x00, sizeof(BDM_Sync_Datapoints_Message_t));
+    memset(&sync_message, 0x00, sizeof(BDM_Sync_Datapoints_Message_t));
     sync_message.present = BDM_Sync_Message_PR_datapointsMessage;
     message = &sync_message.choice.datapointsMessage;
 
