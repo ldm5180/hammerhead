@@ -50,23 +50,28 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 	      "Failed to split resource name pattern: %s", config->resource_name_pattern);
     }
 
-
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	  "%s.%s.%s:%s from seq %d to %d",
+	  hab_type, hab_id, node_id, resource_id,
+	  config->last_entry_end_seq, curr_seq);
     bdm_list = db_get_metadata(hab_type, hab_id, node_id, resource_id,
 			       &config->start_time, &config->end_time,
 			       config->last_entry_end_seq, curr_seq,
 			       &last_entry_end_seq);
     config->last_entry_end_seq = last_entry_end_seq;
 
+    memset(&message, 0x00, sizeof(BDM_Sync_Message_t));
+    sync_message.present = BDM_Sync_Message_PR_metadataMessage;
+    message = &sync_message.choice.metadataMessage;
+
     if (NULL == bdm_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "send_sync_metadata(): NULL BDM list from db_get_metadata()");
 	goto cleanup;
+    } else {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	      "send_sync_metadata(): compiling metadata message from BDM list");
     }
-
-
-    memset(&message, 0x00, sizeof(BDM_Sync_Message_t));
-    sync_message.present = BDM_Sync_Message_PR_metadataMessage;
-    message = &sync_message.choice.metadataMessage;
 
 
     for (bi = 0; bi < bdm_list->len; bi++) {
@@ -244,15 +249,15 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 					  &last_entry_end_seq);
     config->last_entry_end_seq = last_entry_end_seq;
 
+    memset(&message, 0x00, sizeof(BDM_Sync_Datapoints_Message_t));
+    sync_message.present = BDM_Sync_Message_PR_datapointsMessage;
+    message = &sync_message.choice.datapointsMessage;
+
     if (NULL == bdm_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "send_sync_datapoints(): NULL BDM list from db_get_resource_datapoints()");
 	goto cleanup;
     }
-
-    memset(&message, 0x00, sizeof(BDM_Sync_Datapoints_Message_t));
-    sync_message.present = BDM_Sync_Message_PR_datapointsMessage;
-    message = &sync_message.choice.datapointsMessage;
 
     //create a sync record for each BDM
     for (bi = 0; bi < bdm_list->len; bi++) {
@@ -490,7 +495,12 @@ gpointer sync_thread(gpointer config) {
     }
 
     while (1) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	      "Syncing metadata");
 	sync_send_metadata(cfg, &last_sync);
+
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	      "Syncing datapoints");
 //	sync_send_datapoints(cfg, &last_sync);
 	
 	g_usleep(cfg->frequency * G_USEC_PER_SEC);

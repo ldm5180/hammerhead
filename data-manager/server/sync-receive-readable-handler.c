@@ -51,8 +51,12 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
 			  client->index);
         if (rval.code == RC_OK) {
 	    if (client->message.sync_message->present == BDM_Sync_Message_PR_metadataMessage) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		      "sync_receive_readable_handler(): receive Sync Metadata Message");
 		handle_sync_metadata_message(client, &client->message.sync_message->choice.metadataMessage);
 	    } else if (client->message.sync_message->present == BDM_Sync_Message_PR_datapointsMessage) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		      "sync_receive_readable_handler(): receive Sync Datapoints Message");
 		handle_sync_datapoints_message(client, &client->message.sync_message->choice.datapointsMessage);
 	    } else {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
