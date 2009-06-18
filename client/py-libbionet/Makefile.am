@@ -14,8 +14,8 @@ endif
 
 LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.version_info[0]) + \".\" + str(sys.version_info[1])" | python`
 
-pkgpyexec_PYTHON = bionet.py
-pkgpyexec_LTLIBRARIES = _bionet.la
+python_PYTHON = bionet.py
+python_LTLIBRARIES = _bionet.la
 
 BUILT_SOURCES = bionet_wrap.c
 _bionet_la_SOURCES = bionet_wrap.c

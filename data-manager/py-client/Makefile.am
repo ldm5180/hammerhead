@@ -12,8 +12,8 @@ endif
 
 LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.version_info[0]) + \".\" + str(sys.version_info[1])" | python`
 
-pkgpython_PYTHON = bdm_client.py
-pkgpyexec_LTLIBRARIES = _bdm_client.la
+python_PYTHON = bdm_client.py
+python_LTLIBRARIES = _bdm_client.la
 
 _bdm_client_la_DEPENDENCIES = $(INCLUDES_BIONET_UTIL)
 

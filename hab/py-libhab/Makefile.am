@@ -12,8 +12,8 @@ endif
 
 LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.version_info[0]) + \".\" + str(sys.version_info[1])" | python`
 
-pkgpython_PYTHON = hab.py
-pkgpyexec_LTLIBRARIES = _hab.la
+python_PYTHON = hab.py
+python_LTLIBRARIES = _hab.la
 
 BUILT_SOURCES = hab_wrap.c
 _hab_la_SOURCES = hab_wrap.c
