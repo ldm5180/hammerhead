@@ -1001,7 +1001,7 @@ static int db_get_resource_datapoints_callback(
     bionet_node_t *node;
     bionet_resource_t *resource;
 
-    struct timeval timestamp;
+    struct timeval timestamp = {0,0};
     int entry = 0;
     int err = 0;
     bionet_value_t * value = NULL;
@@ -1047,8 +1047,12 @@ static int db_get_resource_datapoints_callback(
         return -1;
     }
 
-    timestamp.tv_sec = atoi(argv[i_tssec]);
-    timestamp.tv_usec = atoi(argv[i_tsusec]);
+    if(argv[i_tssec]) {
+        timestamp.tv_sec = atoi(argv[i_tssec]);
+    }
+    if(argv[i_tsusec]) {
+        timestamp.tv_usec = atoi(argv[i_tsusec]);
+    }
 
 
     entry = atoi(argv[i_entry]);
