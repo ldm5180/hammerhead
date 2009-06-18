@@ -26,6 +26,7 @@
 #include "bdm-util.h"
 #include "bionet-data-manager.h"
 
+int sync_init_connection(sync_sender_config_t * config);
 int send_message_to_sync_receiver(const void *buffer, size_t size, void * config_void);
 
 static int sync_send_metadata(sync_sender_config_t * config, struct timeval * last_sync) {
@@ -39,6 +40,9 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     BDM_Sync_Metadata_Message_t * message;
     int bi, r;
 
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	  "Syncing metadata");
+
     //get the most recent entry timestamp in the database. use this as the entry 
     //end time for the query. this allows for the DB to act as the syncronization point
     //instead of creating our own locks.
@@ -51,7 +55,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     }
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	  "%s.%s.%s:%s from seq %d to %d",
+	  "    %s.%s.%s:%s from seq %d to %d",
 	  hab_type, hab_id, node_id, resource_id,
 	  config->last_entry_end_seq, curr_seq);
     bdm_list = db_get_metadata(hab_type, hab_id, node_id, resource_id,
@@ -70,7 +74,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 	goto cleanup;
     } else {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	      "send_sync_metadata(): compiling metadata message from BDM list");
+	      "    send_sync_metadata(): compiling metadata message from BDM list");
     }
 
 
@@ -204,6 +208,9 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 	} //for (hi = 0; hi < hab_list->len; hi++)
     } //for (bi = 0; bi < bdm_list->len; bi++)
 
+    if (sync_init_connection(config)) {
+	goto cleanup;
+    }
 
     // send the reply to the client
     asn_enc_rval_t asn_r;
@@ -211,6 +218,8 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     if (asn_r.encoded == -1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
     }
+
+    close(config->fd);
 
     return 0;
 
@@ -230,6 +239,9 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
     BDM_Sync_Message_t sync_message;
     BDM_Sync_Datapoints_Message_t * message;
     int r, bi;
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	  "Syncing datapoints");
 
     //get the most recent entry timestamp in the database. use this as the entry 
     //end time for the query. this allows for the DB to act as the syncronization point
@@ -372,6 +384,9 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
     }
 
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	  "    Sync finished");
+
     return 0;
 
 
@@ -383,104 +398,13 @@ cleanup:
 
 int send_message_to_sync_receiver(const void *buffer, size_t size, void * config_void) {
     sync_sender_config_t * config = (sync_sender_config_t *)config_void;
-    struct sockaddr_in server_address;
-    struct hostent *server_host;
-    int fd;
     int r;
 
-    if (NULL == config) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "send_message_to_sync_receiver(): NULL config passed in.");
-	return -1;
-    }
+    r = write(config->fd, buffer, size);
 
-    // If the server dies or the connection is lost somehow, writes will
-    // cause us to receive SIGPIPE, and the default SIGPIPE handler
-    // terminates the process.  So we need to change the handler to ignore
-    // the signal, unless the process has explicitly changed the action.
-    {
-        int r;
-        struct sigaction sa;
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	  "    %d bytes written", r);
 
-        r = sigaction(SIGPIPE, NULL, &sa);
-        if (r < 0) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "send_message_to_sync_receiver(): error getting old SIGPIPE sigaction: %m");
-            return -1;
-        }
-
-        if (sa.sa_handler == SIG_DFL) {
-            sa.sa_handler = SIG_IGN;
-            r = sigaction(SIGPIPE, &sa, NULL);
-            if (r < 0) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		      "send_message_to_sync_receiver(): error setting SIGPIPE sigaction to SIG_IGN: %m");
-                return -1;
-            }
-        }
-    }
-
-    // get the hostent for the server
-    server_host = gethostbyname(config->sync_recipient);
-    if (server_host == NULL) {
-	const char *error_string;
-	error_string = hstrerror(h_errno);
-
-        g_log(
-            BDM_LOG_DOMAIN,
-            G_LOG_LEVEL_WARNING,
-            "send_message_to_sync_receiver(): gethostbyname(\"%s\"): %s",
-            config->sync_recipient,
-            error_string
-        );
-        return -1;
-    }
-    
-        // create the socket
-    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        g_log(
-            BDM_LOG_DOMAIN,
-            G_LOG_LEVEL_WARNING,
-            "send_message_to_sync_receiver(): cannot create local socket: %m");
-        return -1;
-    }
-
-
-    //  This makes it to the underlying networking code tries to send any
-    //  buffered data, even after we've closed the socket.
-    {
-        struct linger linger;
-
-        linger.l_onoff = 1;
-        linger.l_linger = 60;
-        if (setsockopt(fd, SOL_SOCKET, SO_LINGER, (char *)&linger, sizeof(linger)) != 0) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "send_message_to_sync_reciever(): WARNING: cannot make socket linger: %m");
-        }
-    }
-
-
-    // prepare the server address
-    memset((char *)&server_address, '\0', sizeof(server_address));
-    server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)(*server_host->h_addr_list)));
-    server_address.sin_port = g_htons(BDM_SYNC_PORT);
-
-
-    // connect to the server
-    if (connect(fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) {
-        g_log(
-            BDM_LOG_DOMAIN,
-            G_LOG_LEVEL_WARNING,
-            "send_message_to_sync_receiver(): failed to connect to server %s:%d: %m",
-            server_host->h_name,
-            BDM_SYNC_PORT);
-        return -1;
-    }
-
-    r = write(fd, buffer, size);
-
-    close(fd);
     return r;
 } /* send_message_to_sync_receiver() */
 
@@ -495,12 +419,7 @@ gpointer sync_thread(gpointer config) {
     }
 
     while (1) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	      "Syncing metadata");
 	sync_send_metadata(cfg, &last_sync);
-
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	      "Syncing datapoints");
 //	sync_send_datapoints(cfg, &last_sync);
 	
 	g_usleep(cfg->frequency * G_USEC_PER_SEC);
@@ -509,7 +428,105 @@ gpointer sync_thread(gpointer config) {
     return NULL;
 } /* sync_thread() */
 
+int sync_init_connection(sync_sender_config_t * config) {
+    struct sockaddr_in server_address;
+    struct hostent *server_host;
 
+    if (NULL == config) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "sync_init_connection(): NULL config passed in.");
+	return -1;
+    }
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	  "    Initializing sync connection");
+
+    // If the server dies or the connection is lost somehow, writes will
+    // cause us to receive SIGPIPE, and the default SIGPIPE handler
+    // terminates the process.  So we need to change the handler to ignore
+    // the signal, unless the process has explicitly changed the action.
+    {
+        int r;
+        struct sigaction sa;
+
+        r = sigaction(SIGPIPE, NULL, &sa);
+        if (r < 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "sync_init_connection(): error getting old SIGPIPE sigaction: %m");
+            return -1;
+        }
+
+        if (sa.sa_handler == SIG_DFL) {
+            sa.sa_handler = SIG_IGN;
+            r = sigaction(SIGPIPE, &sa, NULL);
+            if (r < 0) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		      "sync_init_connection(): error setting SIGPIPE sigaction to SIG_IGN: %m");
+                return -1;
+            }
+        }
+    }
+
+    // get the hostent for the server
+    server_host = gethostbyname(config->sync_recipient);
+    if (server_host == NULL) {
+	const char *error_string;
+	error_string = hstrerror(h_errno);
+
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "sync_init_connection(): gethostbyname(\"%s\"): %s",
+            config->sync_recipient,
+            error_string
+        );
+        return -1;
+    }
+    
+        // create the socket
+    if ((config->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "sync_init_connection(): cannot create local socket: %m");
+        return -1;
+    }
+
+
+    //  This makes it to the underlying networking code tries to send any
+    //  buffered data, even after we've closed the socket.
+    {
+        struct linger linger;
+
+        linger.l_onoff = 1;
+        linger.l_linger = 60;
+        if (setsockopt(config->fd, SOL_SOCKET, SO_LINGER, (char *)&linger, sizeof(linger)) != 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "sync_init_connection(): WARNING: cannot make socket linger: %m");
+        }
+    }
+
+
+    // prepare the server address
+    memset((char *)&server_address, '\0', sizeof(server_address));
+    server_address.sin_family = AF_INET;
+    server_address.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)(*server_host->h_addr_list)));
+    server_address.sin_port = g_htons(BDM_SYNC_PORT);
+
+
+    // connect to the server
+    if (connect(config->fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) {
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "sync_init_connection(): failed to connect to server %s:%d: %m",
+            server_host->h_name,
+            BDM_SYNC_PORT);
+        return -1;
+    }
+
+    return 0;
+}
 
 // Emacs cruft
 // Local Variables:

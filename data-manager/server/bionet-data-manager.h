@@ -45,6 +45,7 @@ typedef struct {
     char resource_name_pattern[BIONET_NAME_COMPONENT_MAX_LEN * 4];
     unsigned int frequency;
     char * sync_recipient;
+    int fd;
 } sync_sender_config_t;
 
 typedef struct { 
