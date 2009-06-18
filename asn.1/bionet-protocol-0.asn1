@@ -213,7 +213,6 @@ BEGIN
     -- note: there will never be datapoints in a BDM Sync Metadata 
     -- message. They belong in the BDM Sync Update message.
     --
-
     BDM-Sync-Metadata-Message ::= SEQUENCE OF HardwareAbstractor
 
 
@@ -224,7 +223,14 @@ BEGIN
     -- note: the metadata associated with the datapoints needs to have
     -- already been received and processed before this message.
     --
-
     BDM-Sync-Datapoints-Message ::= SEQUENCE OF BDMSyncRecord
+
+
+    -- BDM Sync Message
+    -- this contains either a metadata message or a datapoints message
+    BDM-Sync-Message ::= CHOICE {
+        metadataMessage      BDM-Sync-Metadata-Message,
+        datapointsMessage    BDM-Sync-Datapoints-Message
+    }
 END
 

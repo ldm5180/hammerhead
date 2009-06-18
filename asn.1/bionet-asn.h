@@ -34,6 +34,7 @@
 
 #include "BDM-Sync-Datapoints-Message.h"
 #include "BDM-Sync-Metadata-Message.h"
+#include "BDM-Sync-Message.h"
 
 #include "BDMSyncRecord.h"
 
