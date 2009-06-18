@@ -35,7 +35,8 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     char * hab_id;
     char * node_id;
     char * resource_id;
-    BDM_Sync_Metadata_Message_t message;
+    BDM_Sync_Message_t sync_message;
+    BDM_Sync_Metadata_Message_t * message;
     int bi, r;
 
     //get the most recent entry timestamp in the database. use this as the entry 
@@ -62,7 +63,11 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 	goto cleanup;
     }
 
-    memset(&message, 0x00, sizeof(BDM_Sync_Metadata_Message_t));
+
+    memset(&message, 0x00, sizeof(BDM_Sync_Message_t));
+    sync_message.present = BDM_Sync_Message_PR_metadataMessage;
+    message = &sync_message.choice.metadataMessage;
+
 
     for (bi = 0; bi < bdm_list->len; bi++) {
 	int hi;
@@ -97,7 +102,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 		goto cleanup;
 	    }
 	    
-	    r = asn_sequence_add(&message.list, asn_hab);
+	    r = asn_sequence_add(&message->list, asn_hab);
 	    if (r != 0) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "sync_send_metadata(): error adding HAB to Sync Metadata: %s", strerror(errno));
@@ -197,7 +202,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 
     // send the reply to the client
     asn_enc_rval_t asn_r;
-    asn_r = der_encode(&asn_DEF_BDM_Sync_Metadata_Message, &message, send_message_to_sync_receiver, config);
+    asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
     if (asn_r.encoded == -1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
     }
@@ -205,7 +210,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     return 0;
 
 cleanup:
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Metadata_Message, &message);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &message);
     return -1;
 } /* sync_send_metadata() */
 
@@ -217,7 +222,8 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
     char * hab_id;
     char * node_id;
     char * resource_id;
-    BDM_Sync_Datapoints_Message_t message;
+    BDM_Sync_Message_t sync_message;
+    BDM_Sync_Datapoints_Message_t * message;
     int r, bi;
 
     //get the most recent entry timestamp in the database. use this as the entry 
@@ -245,6 +251,8 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
     }
 
     memset(&message, 0x00, sizeof(BDM_Sync_Datapoints_Message_t));
+    sync_message.present = BDM_Sync_Message_PR_datapointsMessage;
+    message = &sync_message.choice.datapointsMessage;
 
     //create a sync record for each BDM
     for (bi = 0; bi < bdm_list->len; bi++) {
@@ -265,7 +273,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 
 	BDMSyncRecord_t * sync_record = (BDMSyncRecord_t *)calloc(1, sizeof(BDMSyncRecord_t));
 	if (sync_record) {
-	    r = asn_sequence_add(&message.list, sync_record);
+	    r = asn_sequence_add(&message->list, sync_record);
 	    if (r != 0) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		      "sync_send_datapoints(): error adding sync record to BDM Sync Datapoints Message: %m");
@@ -354,7 +362,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 
     // send the reply to the client
     asn_enc_rval_t asn_r;
-    asn_r = der_encode(&asn_DEF_BDM_Sync_Datapoints_Message, &message, send_message_to_sync_receiver, config);
+    asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
     if (asn_r.encoded == -1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
     }
@@ -363,7 +371,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 
 
 cleanup:
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Datapoints_Message, &message);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &sync_message);
     return -1;
 } /* sync_send_datapoints() */
 #endif

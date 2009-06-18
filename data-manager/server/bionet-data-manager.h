@@ -164,8 +164,7 @@ typedef struct {
     // keep track of messages coming in from the client
     union {
 	BDM_C2S_Message_t             *C2S_message;
-	BDM_Sync_Datapoints_Message_t *sync_dp_message;
-	BDM_Sync_Metadata_Message_t   *sync_metadata_message;
+	BDM_Sync_Message_t            *sync_message;
     } message;
     unsigned char buffer[(10 * 1024)];  // FIXME: use cal
     int index;

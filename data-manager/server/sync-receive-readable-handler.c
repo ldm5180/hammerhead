@@ -45,33 +45,26 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
 
     do {
         rval = ber_decode(NULL, 
-			  &asn_DEF_BDM_Sync_Datapoints_Message, 
-			  (void **)&client->message.sync_dp_message, 
+			  &asn_DEF_BDM_Sync_Message, 
+			  (void **)&client->message.sync_message, 
 			  client->buffer, 
 			  client->index);
         if (rval.code == RC_OK) {
-            handle_sync_datapoints_message(client, client->message.sync_dp_message);
-	    asn_DEF_BDM_Sync_Datapoints_Message.free_struct(&asn_DEF_BDM_Sync_Datapoints_Message, client->message.sync_dp_message, 0);
-            client->message.sync_dp_message = NULL;
+	    if (client->message.sync_message->present == BDM_Sync_Message_PR_metadataMessage) {
+		handle_sync_metadata_message(client, &client->message.sync_message->choice.metadataMessage);
+	    } else if (client->message.sync_message->present == BDM_Sync_Message_PR_datapointsMessage) {
+		handle_sync_datapoints_message(client, &client->message.sync_message->choice.datapointsMessage);
+	    } else {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "sync_receive_readable_handler(): unknown Sync Message choice");
+	    }
+	    asn_DEF_BDM_Sync_Message.free_struct(&asn_DEF_BDM_Sync_Message, client->message.sync_message, 0);
+            client->message.sync_message = NULL;
         } else if (rval.code == RC_WMORE) {
             // ber_decode is waiting for more data, but so far so good
         } else if (rval.code == RC_FAIL) {
-	    //try to decode a metadata message
-	    rval = ber_decode(NULL, 
-			      &asn_DEF_BDM_Sync_Metadata_Message, 
-			      (void **)&client->message.sync_metadata_message, 
-			      client->buffer, 
-			      client->index);
-	    if (rval.code == RC_OK) {
-		handle_sync_metadata_message(client, client->message.sync_metadata_message);
-		asn_DEF_BDM_Sync_Metadata_Message.free_struct(&asn_DEF_BDM_Sync_Metadata_Message, client->message.sync_metadata_message, 0);
-		client->message.sync_metadata_message = NULL;
-	    } else if (rval.code == RC_WMORE) {
-            // ber_decode is waiting for more data, but so far so good
-            } else if (rval.code == RC_FAIL) {
-		// received invalid junk
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ber_decode failed to decode the sync sender's message");
-	    }
+	    // received invalid junk
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ber_decode failed to decode the sync sender's message");
         } else {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "unknown error with ber_decode (code=%d)", rval.code);
         }
