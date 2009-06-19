@@ -36,7 +36,7 @@ makefile.qt:
 	"QT+=network" \
 	"CONFIG+=link_pkgconfig debug" \
 	"RESOURCES = icons.qrc"
-	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects}
+	+make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects}
 
 clean-local:
 	rm -f makefile.qt *.o moc*.cpp qrc*.cpp
