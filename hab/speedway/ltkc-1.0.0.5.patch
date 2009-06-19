@@ -1,6 +1,18 @@
-diff -ur LTK-1.0.0.5.orig/LTKC/Library/ltkc_platform.h LTK-1.0.0.5/LTKC/Library/ltkc_platform.h
---- LTK-1.0.0.5.orig/LTKC/Library/ltkc_platform.h	2008-01-29 18:56:24.000000000 -0600
-+++ LTK-1.0.0.5/LTKC/Library/ltkc_platform.h	2009-01-16 09:07:49.000000000 -0600
+diff -Nur LTK/LTKC/Examples/Makefile LTK-1.0.0.5/LTKC/Examples/Makefile
+--- LTK/LTKC/Examples/Makefile	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.5/LTKC/Examples/Makefile	2009-06-19 15:47:55.000000000 -0600
+@@ -36,7 +36,7 @@
+ all: example1
+ 
+ everything:
+-	make all
++	+make all
+ 
+ example1 : example1.o $(LTKC_LIB)
+ 	$(CC) $(CFLAGS) -o example1 example1.o $(LTKC_LIB)
+diff -Nur LTK/LTKC/Library/ltkc_platform.h LTK-1.0.0.5/LTKC/Library/ltkc_platform.h
+--- LTK/LTKC/Library/ltkc_platform.h	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.5/LTKC/Library/ltkc_platform.h	2009-06-19 16:13:10.000000000 -0600
 @@ -28,8 +28,13 @@
  #include <stdlib.h>         /* malloc() */
  #include <string.h>         /* memcpy() */
@@ -15,9 +27,9 @@ diff -ur LTK-1.0.0.5.orig/LTKC/Library/ltkc_platform.h LTK-1.0.0.5/LTKC/Library/
  
  /*
   * Typedefs of simple types.
-diff -ur LTK-1.0.0.5.orig/LTKC/Library/ltkc_xmltextencode.c LTK-1.0.0.5/LTKC/Library/ltkc_xmltextencode.c
---- LTK-1.0.0.5.orig/LTKC/Library/ltkc_xmltextencode.c	2008-10-17 12:51:50.000000000 -0500
-+++ LTK-1.0.0.5/LTKC/Library/ltkc_xmltextencode.c	2009-01-16 09:07:49.000000000 -0600
+diff -Nur LTK/LTKC/Library/ltkc_xmltextencode.c LTK-1.0.0.5/LTKC/Library/ltkc_xmltextencode.c
+--- LTK/LTKC/Library/ltkc_xmltextencode.c	2008-10-17 11:51:50.000000000 -0600
++++ LTK-1.0.0.5/LTKC/Library/ltkc_xmltextencode.c	2009-06-19 16:13:10.000000000 -0600
 @@ -1498,7 +1498,7 @@
          return;
      }
@@ -36,9 +48,56 @@ diff -ur LTK-1.0.0.5.orig/LTKC/Library/ltkc_xmltextencode.c LTK-1.0.0.5/LTKC/Lib
      if(NULL == pXMLEncoder)
      {
          strcpy(pBuffer, "ERROR: XMLTextEncoder_construct failed\n");
-diff -ur LTK-1.0.0.5.orig/LTKC/Tests/dx101.c LTK-1.0.0.5/LTKC/Tests/dx101.c
---- LTK-1.0.0.5.orig/LTKC/Tests/dx101.c	2008-01-29 18:56:24.000000000 -0600
-+++ LTK-1.0.0.5/LTKC/Tests/dx101.c	2009-01-16 09:07:49.000000000 -0600
+diff -Nur LTK/LTKC/Library/Makefile LTK-1.0.0.5/LTKC/Library/Makefile
+--- LTK/LTKC/Library/Makefile	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.5/LTKC/Library/Makefile	2009-06-19 16:04:31.000000000 -0600
+@@ -51,10 +51,10 @@
+ 
+ 
+ all:    $(LTKC_LIB)
+-	cd LLRP.org; make all
++	+make -C LLRP.org all
+ 
+ everything:
+-	make all
++	+make all
+ 
+ $(LTKC_LIB) : $(LTKC_OBJS)
+ 	$(AR) crv $(LTKC_LIB) $(LTKC_OBJS)
+diff -Nur LTK/LTKC/Makefile LTK-1.0.0.5/LTKC/Makefile
+--- LTK/LTKC/Makefile	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.5/LTKC/Makefile	2009-06-19 16:03:38.000000000 -0600
+@@ -17,18 +17,19 @@
+ 
+ 
+ all:
+-	cd Library;  make all
+-	cd Tests;    make all
+-	cd Examples; make all
++	+make -C Library all
++	+make -C Tests all
++	+make -C Examples all
+ 
+ everything:
+-	cd Library;  make everything
+-	cd Tests;    make everything
+-	cd Examples; make everything
++	cd Library
++	+make -C Library everything
++	+make -C Tests everything
++	+make -C Examples everything
+ 
+ release:
+-	make everything
+-	cd Release; make all
++	+make everything
++	+make -C Release all
+ 
+ clean:
+ 	cd Library;  make clean
+diff -Nur LTK/LTKC/Tests/dx101.c LTK-1.0.0.5/LTKC/Tests/dx101.c
+--- LTK/LTKC/Tests/dx101.c	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.5/LTKC/Tests/dx101.c	2009-06-19 16:13:10.000000000 -0600
 @@ -287,7 +287,7 @@
              char                    aBuf[100*1024];
              LLRP_tSXMLTextEncoder * pEncoder;
@@ -48,9 +107,9 @@ diff -ur LTK-1.0.0.5.orig/LTKC/Tests/dx101.c LTK-1.0.0.5/LTKC/Tests/dx101.c
              LLRP_Encoder_encodeElement(&pEncoder->encoderHdr,
                      &pMessage->elementHdr);
              if(!pEncoder->bOverflow)
-diff -ur LTK-1.0.0.5.orig/LTKC/Tests/dx201.c LTK-1.0.0.5/LTKC/Tests/dx201.c
---- LTK-1.0.0.5.orig/LTKC/Tests/dx201.c	2008-01-29 18:56:24.000000000 -0600
-+++ LTK-1.0.0.5/LTKC/Tests/dx201.c	2009-01-16 09:08:20.000000000 -0600
+diff -Nur LTK/LTKC/Tests/dx201.c LTK-1.0.0.5/LTKC/Tests/dx201.c
+--- LTK/LTKC/Tests/dx201.c	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.5/LTKC/Tests/dx201.c	2009-06-19 16:13:10.000000000 -0600
 @@ -259,7 +259,7 @@
          char *              pMemHiwatAtEnd = (char*)sbrk(0);
  
@@ -60,3 +119,15 @@ diff -ur LTK-1.0.0.5.orig/LTKC/Tests/dx201.c LTK-1.0.0.5/LTKC/Tests/dx201.c
      }
  #endif
  
+diff -Nur LTK/LTKC/Tests/Makefile LTK-1.0.0.5/LTKC/Tests/Makefile
+--- LTK/LTKC/Tests/Makefile	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.5/LTKC/Tests/Makefile	2009-06-19 15:48:07.000000000 -0600
+@@ -36,7 +36,7 @@
+ all: dx101 dx201
+ 
+ everything:
+-	make all
++	+make all
+ 
+ dx101 : dx101.o $(LTKC_LIB)
+ 	$(CC) $(CFLAGS) -o dx101 dx101.o $(LTKC_LIB)
