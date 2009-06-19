@@ -37,7 +37,12 @@ int hab_publish_info(bionet_hab_t * hab, const uint32_t flags) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		      "Failed to create resource: bionet-info:version");
 	    } else {
-		bionet_node_add_resource(node, resource);
+		if (bionet_node_add_resource(node, resource)) {
+		    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+			  "Failed to add resource %s to node %s",
+			  bionet_resource_get_id(resource),
+			  bionet_node_get_name(node));
+		}
 
 		bionet_version_get(&bionet_version_str);
 		bionet_resource_set_str(resource, bionet_version_str, NULL);

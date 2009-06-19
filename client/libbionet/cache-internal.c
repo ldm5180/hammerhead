@@ -100,7 +100,12 @@ void libbionet_cache_add_resource(bionet_resource_t *resource) {
 	libbionet_cache_add_node(node);
     }
 
-    bionet_node_add_resource(node, resource);    
+    if (bionet_node_add_resource(node, resource)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "Failed to add resource %s to node %s",
+	      bionet_resource_get_id(resource),
+	      bionet_node_get_name(node));
+    }
 }
 
 
