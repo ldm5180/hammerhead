@@ -33,7 +33,7 @@ bionet_monitor_LDADD = $(AM_LDADD) -lpthread -lm -lqwt-qt4 ${qtmake_moc_objects}
 
 makefile.qt: $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_CAL_CLIENT) $(LIBS_BIONET_CLIENT_QT4)
 	${QT4_PATH} -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util /usr/include/qwt-qt4 ../libbionet-qt4" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=app" "QT+=network" "CONFIG+=link_pkgconfig debug" 
-	make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects} 
+	+make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects} 
 
 clean-local:
 	rm -f makefile.qt *.o moc*.cpp bionet-monitor
