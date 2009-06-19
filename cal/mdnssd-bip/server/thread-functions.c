@@ -250,9 +250,6 @@ static int read_from_user(void) {
                 for (i = peer->subscriptions; i != NULL; i = i->next) {
                     char *topic = i->data;
 
-                    if (i == NULL)
-                        continue;
-
                     if (this->topic_matches(event->topic, topic) == 0) {
                         topic_already_exists = 1;
                         break;
