@@ -38,7 +38,7 @@ extern int yyerror();
     GSList *gslist_v;
     struct resource_info_t *resource_info_v;
     struct event_t *event_v;
-}
+};
 
 %%
 
