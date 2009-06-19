@@ -60,7 +60,11 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
             );
         }
 
-       bionet_node_add_resource(node, resource);
+	if (bionet_node_add_resource(node, resource)) {
+	    g_warning("Failed to add resource %s to node %s",
+		      bionet_resource_get_id(resource),
+		      bionet_node_get_name(node));
+	}
     }
     
     if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_RESOURCES_ONLY)) {
@@ -200,3 +204,8 @@ void simulate_updates(gpointer data, gpointer user_data) {
     *ptr = next;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
