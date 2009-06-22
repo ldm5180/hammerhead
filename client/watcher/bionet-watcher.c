@@ -294,7 +294,8 @@ int main(int argc, char *argv[]) {
     GSList * node_list = NULL;
     GSList * dp_list = NULL;
     enum subscription_update_t subscription_update = NONE;
-    int rate, urandom_fd = 0, subscribed_to_something = 0;
+    int rate = 0;  // we always set rate before using it, but GCC can't tell
+    int urandom_fd = 0, subscribed_to_something = 0;
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
     struct timeval *diff, old;
 
