@@ -134,9 +134,8 @@ int main(int argc, char *argv[]) {
         now = time(NULL);
         diff.tv_usec = 0;
 
-        do {
-
-            diff.tv_sec = now - start;
+        while (now - start < 2) {
+            diff.tv_sec = 2 - (now - start);
 
             FD_ZERO(&fds);
             FD_SET(bionet_fd, &fds);
@@ -146,7 +145,7 @@ int main(int argc, char *argv[]) {
             hab_read();
 
             now = time(NULL);
-        } while (now - start < 2);
+        }
     }
 
     //
