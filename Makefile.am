@@ -38,7 +38,7 @@ clean-local:
 	rm -rf doxygen
 
 install-exec-hook:
-	$(LDCONFIG_EXE)
+	-$(LDCONFIG_EXE)
 
 .PHONY: test
 test:
