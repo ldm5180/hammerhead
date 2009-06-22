@@ -124,7 +124,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "} Sync Metadata Message");    
 
     //cleanup
-    for (hi = hab_list->len - 1; hi <= 0; hi ++) {
+    for (hi = hab_list->len - 1; hi >= 0; hi--) {
 	bionet_hab_free(g_ptr_array_index(hab_list, hi));
 	g_ptr_array_remove_index(hab_list, hi);
     }

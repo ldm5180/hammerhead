@@ -86,7 +86,7 @@ function list_nodes {
     fi
 
     CMD="$CMD;"
-    echo "$CMD"
+    #echo "$CMD"
     $SQL "$CMD"
 }
 
