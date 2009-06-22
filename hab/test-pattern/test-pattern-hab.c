@@ -46,7 +46,6 @@ int main(int argc, char *argv[]) {
     char file_name[MAX_FILE_NAME_LENGTH];
     char *id = NULL;
     //GSList *events = NULL;
-    FILE *fd;
     struct timeval *tv;
 
     bionet_log_context_t log_context = {
@@ -159,7 +158,7 @@ int main(int argc, char *argv[]) {
         g_log("", G_LOG_LEVEL_ERROR, "unable to open file '%s': %s", file_name, strerror(errno));
     }
     yyrestart(yyin);
-    yyparse(fd);
+    yyparse();
 
     if (output_mode == OM_BIONET_WATCHER)
         g_message("new hab: %s", bionet_hab_get_name(hab));
