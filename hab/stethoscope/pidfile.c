@@ -52,9 +52,9 @@ int kill_kin()
 	return -4;
     }
 
-    r = strtol(buffer, NULL, 0);
-
-    if (r != 1)
+    errno = 0;
+    pid = strtol(buffer, NULL, 0);
+    if (errno != 0)
     {
         unlink(PIDFILE_NAME);
         return -2;

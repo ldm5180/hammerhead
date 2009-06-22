@@ -47,20 +47,20 @@ int kill_kin()
 
     r = read(pid_fd, buffer, sizeof(buffer));
     close(pid_fd);
-
-    r = strtol(buffer, NULL, 0);
-    if (LONG_MIN == r || LONG_MAX == r) {
-	g_error("Error reading PID: %m");
+    if (r <= 0) {
+        unlink(PIDFILE_NAME);
+        return -2;
     }
 
-    if (r != 1)
-    {
+    errno = 0;
+    pid = strtol(buffer, NULL, 0);
+    if (errno != 0) {
+	g_warning("Error reading PID: %m");
         unlink(PIDFILE_NAME);
         return -2;
     }
 
     r = kill(pid, SIGINT);
-
     if (r != 0)
     {
         if (errno == ESRCH)
