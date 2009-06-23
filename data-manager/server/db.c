@@ -1347,9 +1347,9 @@ static GPtrArray *_db_get_resource_info(
     } else if ( entry_start < 0 ){
 	r = snprintf(entry_restriction, sizeof(entry_restriction),
 		"AND ("
-                "  Hardware_Abstractors.Entry_Num < %d OR"
-                "  Nodes.Entry_Num < %d OR"
-                "  Resources.Entry_Num < %d"
+                "  Hardware_Abstractors.Entry_Num <= %d OR"
+                "  Nodes.Entry_Num <= %d OR"
+                "  Resources.Entry_Num <= %d"
                 ")",
 		entry_end, entry_end, entry_end);
 	if (r >= sizeof(entry_restriction)) {
@@ -1360,9 +1360,9 @@ static GPtrArray *_db_get_resource_info(
     } else {
 	r = snprintf(entry_restriction, sizeof(entry_restriction),
 		"AND ("
-                "  (Hardware_Abstractors.Entry_Num < %d AND Hardware_Abstractors.Entry_Num >= %d ) OR"
-                "  (Nodes.Entry_Num < %d AND Nodes.Entry_Num >= %d ) OR"
-                "  (Resources.Entry_Num < %d AND Resources.Entry_Num >= %d )"
+                "  (Hardware_Abstractors.Entry_Num <= %d AND Hardware_Abstractors.Entry_Num >= %d ) OR"
+                "  (Nodes.Entry_Num <= %d AND Nodes.Entry_Num >= %d ) OR"
+                "  (Resources.Entry_Num <= %d AND Resources.Entry_Num >= %d )"
                 ")",
 		entry_end, entry_start, 
 		entry_end, entry_start, 
