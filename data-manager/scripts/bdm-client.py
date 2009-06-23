@@ -29,11 +29,14 @@ parser.add_option("-r", "--resource", dest="resource", default="*.*.*:*",
                   help="Resource Name",
                   metavar="<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>")
 parser.add_option("-E", "--entry-start", dest="entry_start",
-                  help="Entry Start Time", 
-                  metavar="YYYY-MM-DD HH:MM:SS")
+                  help="Entry Sequence Number Start",
+                  default=-1)
 parser.add_option("-e", "--entry-end", dest="entry_end",
-                  help="Entry End Time", 
-                  metavar="YYYY-MM-DD HH:MM:SS")
+                  help="Entry Sequence Number End",
+                  default=-1)
+parser.add_option("-p", "--port", dest="bdm_port",
+                  help="BDM port number",
+                  default=11002)
 
 (options, args) = parser.parse_args()
 
@@ -61,7 +64,7 @@ def gmt_convert(loctime):
     else:
         return loctime - time.timezone
 
-bdm_connect(options.server, BDM_PORT) 
+bdm_connect(options.server, options.bdm_port) 
 
 # convert the start and end times into timevals
 if (options.datapoint_start != None):
