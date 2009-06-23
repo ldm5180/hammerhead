@@ -100,7 +100,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		    type = BIONET_RESOURCE_DATA_TYPE_DOUBLE;
 		    value = &dp->value.choice.real;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "        double: %f", *(double *)value);
+			  "        double: N/A");
 		    break;
 
 		case Value_PR_string:

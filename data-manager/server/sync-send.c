@@ -256,7 +256,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 					  config->last_entry_end_seq, curr_seq,
 					  &junk);
 
-    memset(&sync_message, 0x00, sizeof(BDM_Sync_Datapoints_Message_t));
+    memset(&sync_message, 0x00, sizeof(BDM_Sync_Message_t));
     sync_message.present = BDM_Sync_Message_PR_datapointsMessage;
     message = &sync_message.choice.datapointsMessage;
 
