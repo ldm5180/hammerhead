@@ -27,6 +27,7 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
         return FALSE;
     }
 
+    client->index = 0;
 
     do {
 	bytes_to_read = sizeof(client->buffer) - client->index;
