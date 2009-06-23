@@ -349,7 +349,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
                         bionet_resource_get_data_type(resource),
                         bionet_resource_get_flavor(resource),
                         resource_key);
-		    r = OCTET_STRING_fromString(&resource_rec->resourceKey, (const char *)resource_key);
+		    r = OCTET_STRING_fromBuf(&resource_rec->resourceKey, (const char *)resource_key, BDM_RESOURCE_KEY_LENGTH);
 		    if (r != 0) {
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			      "sync_send_datapoints(): Failed to set resource key");
@@ -438,6 +438,7 @@ gpointer sync_thread(gpointer config) {
 
 	if (curr_seq >= cfg->last_entry_end_seq) {
 	    sync_send_metadata(cfg, curr_seq);
+	    sleep(1);
 	    sync_send_datapoints(cfg, curr_seq);
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,

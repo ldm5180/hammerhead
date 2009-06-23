@@ -99,6 +99,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		case Value_PR_real:
 		    type = BIONET_RESOURCE_DATA_TYPE_DOUBLE;
 		    value = &dp->value.choice.real;
+		    //FIXME: actually print the double
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 			  "        double: N/A");
 		    break;
