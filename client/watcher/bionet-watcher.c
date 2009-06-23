@@ -433,8 +433,10 @@ int main(int argc, char *argv[]) {
 
     if (subscribed_to_something) {
 	int i;
-	for (i = 0; i < g_slist_length(hab_list); i++) {
-	    bionet_subscribe_hab_list_by_name(g_slist_nth_data(hab_list, i));
+	while (g_slist_length(hab_list) > 0) {
+            char *hab_sub = g_slist_nth_data(hab_list, 0);
+            bionet_subscribe_hab_list_by_name(hab_sub);
+            hab_list = g_slist_remove(hab_list, hab_sub);
 	}
 	for (i = 0; i < g_slist_length(node_list); i++) {
 	    bionet_subscribe_node_list_by_name(g_slist_nth_data(node_list, i));
