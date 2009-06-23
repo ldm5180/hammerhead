@@ -259,7 +259,13 @@ static bionet_value_t * bionet_value_new_internal(bionet_resource_t *resource,
     }
     case BIONET_RESOURCE_DATA_TYPE_STRING:
     {
-	value->content.string_v = (char *)content;
+	value->content.string_v = strdup((char *)content);
+        if (value->content.string_v == NULL) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_value_new_*(): out of memory!");
+            free(value);
+            errno = ENOMEM;
+            return NULL;
+        }
 	break;	
     }
     default:

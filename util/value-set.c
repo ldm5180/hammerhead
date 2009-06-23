@@ -5,6 +5,7 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
@@ -203,7 +204,12 @@ static int bionet_value_set_internal(bionet_value_t *value,
 	    /* free the previous content */
 	    free(value->content.string_v); 
 	}
-	value->content.string_v = (char *)content;
+	value->content.string_v = strdup((char *)content);
+        if (value->content.string_v == NULL) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_value_set_*(): out of memory!");
+            errno = ENOMEM;
+            return -1;
+        }
 	break;	
     }
     default:

@@ -12,8 +12,10 @@
 
 #include "check-common.h"
 #include "bionet-util.h"
+
 #include "check-libutil-hab-tests.h"
 #include "check-libutil-split-hab-name.h"
+#include "check-libutil-resource-set.h"
 
 int main(int argc, char * argv[])
 {
@@ -23,6 +25,7 @@ int main(int argc, char * argv[])
         {
             { "Bionet Util HAB Tests", &libutil_hab_tests_suite },
             { "Bionet Util Split HAB Name", &libutil_split_hab_name_suite },
+            { "Bionet Util Resource Set", &libutil_resource_set_suite },
         };
 
     /* run all the integration test suites */

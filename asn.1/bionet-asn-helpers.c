@@ -303,14 +303,13 @@ bionet_datapoint_t *bionet_asn_to_datapoint(Datapoint_t *asn_datapoint, bionet_r
 	break;
     }
     case BIONET_RESOURCE_DATA_TYPE_STRING: {
-	const char * new_str = strdup((char *)asn_datapoint->value.choice.string.buf);
-	if (new_str == NULL) {
+	value = bionet_value_new_str(resource, (char *)asn_datapoint->value.choice.string.buf);
+	if (value == NULL) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "bionet_asn_to_datapoint(): error making native string from ASN.1 OCTET_STRING '%s'",
+		  "bionet_asn_to_datapoint(): error making string Value from ASN.1 OCTET_STRING '%s'",
 		  asn_datapoint->value.choice.string.buf);
 	    return NULL;
 	}
-	value = bionet_value_new_str(resource, new_str);
 	break;
     }
     default: {
