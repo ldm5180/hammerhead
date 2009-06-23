@@ -722,7 +722,7 @@ int db_add_datapoint_sync(
     // -- This eliminates the need to escape strings
     // Bind in order of the placeholders (?) in the SQL
     int param = 1;
-    r = sqlite3_bind_blob(insert_resource_stmt, param++, 
+    r = sqlite3_bind_blob(insert_datapoint_sync_stmt, param++, 
         resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_STATIC);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
