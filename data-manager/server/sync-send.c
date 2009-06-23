@@ -444,11 +444,10 @@ gpointer sync_thread(gpointer config) {
 
 	if (curr_seq >= cfg->last_entry_end_seq) {
 	    sync_send_metadata(cfg, curr_seq);
-	    sleep(1);
 	    sync_send_datapoints(cfg, curr_seq);
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-		  "No data to sync. Sleeping...");
+		  "No data to sync. Sleeping %u seconds...", cfg->frequency);
 	}
 
 	g_usleep(cfg->frequency * G_USEC_PER_SEC);
