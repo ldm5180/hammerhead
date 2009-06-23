@@ -207,18 +207,23 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
 	} //for (hi = 0; hi < hab_list->len; hi++)
     } //for (bi = 0; bi < bdm_list->len; bi++)
 
-    if (sync_init_connection(config)) {
-	goto cleanup;
+    if (bi) {
+	if (sync_init_connection(config)) {
+	    goto cleanup;
+	}
+    
+	// send the reply to the client
+	asn_enc_rval_t asn_r;
+	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
+	if (asn_r.encoded == -1) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
+	}
+	
+	close(config->fd);
     }
 
-    // send the reply to the client
-    asn_enc_rval_t asn_r;
-    asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
-    if (asn_r.encoded == -1) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
-    }
-
-    close(config->fd);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	  "    Sync finished");
 
     return 0;
 
@@ -227,7 +232,7 @@ cleanup:
     return -1;
 } /* sync_send_metadata() */
 
-#if 1
+
 static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * last_sync) {
     GPtrArray * bdm_list = NULL;
     int curr_seq;
@@ -389,14 +394,22 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 	} //for (hi = 0; hi < hab_list->len; hi++)
     } //for (bi = 0; bi < bdm_list->len; bi++)
 
+ 
     if(bi){
-        // send the reply to the client
-        asn_enc_rval_t asn_r;
-        asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
-        if (asn_r.encoded == -1) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
-        }
+	if (sync_init_connection(config)) {
+	    goto cleanup;
+	}
+
+	// send the reply to the client
+	asn_enc_rval_t asn_r;
+	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
+	if (asn_r.encoded == -1) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
+	}
+
+	close(config->fd);
     }
+
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "    Sync finished");
@@ -408,7 +421,7 @@ cleanup:
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &sync_message);
     return -1;
 } /* sync_send_datapoints() */
-#endif
+
 
 int send_message_to_sync_receiver(const void *buffer, size_t size, void * config_void) {
     sync_sender_config_t * config = (sync_sender_config_t *)config_void;

@@ -720,7 +720,7 @@ int db_add_datapoint_sync(
     r = sqlite3_bind_blob(insert_resource_stmt, param++, 
         resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_STATIC);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
 	return -1;
     }
 
@@ -779,31 +779,31 @@ int db_add_datapoint_sync(
             return -1;
     }
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
 	return -1;
     }
 
     r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  timestamp->tv_sec);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
 	return -1;
     }
 
     r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  timestamp->tv_usec);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
 	return -1;
     }
 
     r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  entry_seq);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
 	return -1;
     }
 
     r = sqlite3_bind_text(insert_datapoint_sync_stmt, param++, bdm_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
 	return -1;
     }
 
@@ -939,8 +939,12 @@ static bdm_t *find_bdm(GPtrArray *bdm_list, const char *bdm_id) {
     bdm = malloc(sizeof(bdm_t));
     if (bdm == NULL) return NULL;
     bdm->hab_list = g_ptr_array_new();
-    bdm->bdm_id = strdup(bdm_id); 
-
+    if (bdm_id) {
+	bdm->bdm_id = strdup(bdm_id);
+    } else {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "find_hab(): BDM has no ID");
+    } 
     g_ptr_array_add(bdm_list, bdm);
     return bdm;
 }
