@@ -439,7 +439,7 @@ gpointer sync_thread(gpointer config) {
 	sync_send_metadata(cfg, curr_seq);
 	sync_send_datapoints(cfg, curr_seq);
 	
-	cfg->last_entry_end_seq = curr_seq;
+	cfg->last_entry_end_seq = curr_seq + 1;
 
 	g_usleep(cfg->frequency * G_USEC_PER_SEC);
     }
