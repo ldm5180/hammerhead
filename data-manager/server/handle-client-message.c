@@ -73,6 +73,9 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
     entry_start = rdpq->entryStart;
 
     entry_end = rdpq->entryEnd;
+    if (entry_end == -1) {
+	entry_end = db_get_latest_entry_seq();
+    }
 
     // do that database lookup
     bdm_list = db_get_resource_datapoints((const char *)rdpq->habType.buf, 
@@ -82,6 +85,7 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 					  pDatapointStart, pDatapointEnd, 
 					  entry_start, entry_end,
 					  &latest_entry);
+    latest_entry = entry_end;
     if (NULL == bdm_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 	      "Failed to get a BDM list.");

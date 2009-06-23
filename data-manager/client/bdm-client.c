@@ -20,6 +20,7 @@
 
 
 extern int bdm_fd;
+long int bdm_last_entry = -1;
 
 static int str_to_int(const char * str) {
     char * endptr;
@@ -110,6 +111,7 @@ void usage(void) {
 	    " -e,--entry-end <entryEnd>          Timestamp of datapoint entry in this local BDM\n"
 	    "                                    must be equal to or older than the \"entry end\"\n"
 	    "                                    time (default: infinite future)\n"
+	    " -f,--frequency <seconds>           Query the BDM every N seconds\n"
 	    " -p,--port <Port>                   Port number to connect on the server\n"
 	    " -r,--resources <Resources>         Resource name pattern of resources to retrieve.\n"
 	    "                                    May contain wildcards. (default: \"*.*.*:*\")\n"
@@ -130,8 +132,6 @@ void usage(void) {
 }
 
 
-
-
 int main(int argc, char *argv[]) {
     char *bdm_hostname = NULL;
     uint16_t bdm_port = BDM_PORT;
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
     int entryStart = -1, entryEnd = -1;
     struct timeval * pDatapointStart = NULL;
     struct timeval * pDatapointEnd = NULL;
-
+    int frequency = 0;
 
     memset(&datapointStart, 0, sizeof(struct timeval));
     memset(&datapointEnd, 0, sizeof(struct timeval));
@@ -158,13 +158,14 @@ int main(int argc, char *argv[]) {
 	    {"datapoint-end", 1, 0, 't'},
 	    {"entry-start", 1, 0, 'E'},
 	    {"entry-stop", 1, 0, 'e'},
+	    {"frequency", 1, 0, 'f'},
 	    {"port", 1, 0, 'p'},
 	    {"resources", 1, 0, 'r'},
 	    {"server", 1, 0, 's'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?hvT:t:E:e:p:r:", long_options, &i);
+	c = getopt_long(argc, argv, "?hvT:t:E:e:p:r:f:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -181,6 +182,10 @@ int main(int argc, char *argv[]) {
 
 	case 'e':
 	    entryEnd = str_to_int(optarg);
+	    break;
+
+	case 'f':
+	    frequency = str_to_int(optarg);
 	    break;
 
 	case 'p':
@@ -220,6 +225,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+restart_poll:
     hab_list = bdm_get_resource_datapoints(resource_name_pattern, 
 					   pDatapointStart, pDatapointEnd, 
 					   entryStart, entryEnd);
@@ -267,7 +273,15 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
+	    bionet_hab_free(hab);
         }
+	g_ptr_array_free(hab_list, FALSE);
+    }
+
+    if (frequency) {
+	sleep(frequency);
+	entryStart = bdm_last_entry;
+	goto restart_poll;
     }
 
     bdm_disconnect();

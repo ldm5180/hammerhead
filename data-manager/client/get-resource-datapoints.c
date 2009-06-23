@@ -13,13 +13,17 @@
 #include "bdm-client.h"
 
 extern int bdm_fd;
-
+extern long int bdm_last_entry;
 
 GPtrArray *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
     GPtrArray *hab_list;
     int hi;
 
     hab_list = g_ptr_array_new();
+
+    if (rdr->habs.list.count) {
+	bdm_last_entry = rdr->lastEntry;
+    }
 
     for (hi = 0; hi < rdr->habs.list.count; hi ++) {
         HardwareAbstractor_t *asn_hab;
