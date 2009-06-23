@@ -16,7 +16,9 @@ nodist_check_data_manager_SOURCES = \
 	check-bdm-cfg.c
 
 check_data_manager_CFLAGS = $(CHECK_CFLAGS) \
-    -I.. $(CFLAGS_BIONET_CLIENT) \
+    -I.. \
+    -I$(top_srcdir)/data-manager/include \
+    $(CFLAGS_BIONET_CLIENT) \
     $(CFLAGS_BIONET_ASN1) \
     $(CFLAGS_BIONET_UTIL) \
     $(GLIB20_CFLAGS)

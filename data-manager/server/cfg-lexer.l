@@ -27,6 +27,7 @@ stop_time              { return SET_STOP; }
 resource_name_pattern  { return SET_RES; }
 frequency              { return SET_FREQ; }
 sync_recipient         { return SET_RECPT; }
+sync_port              { return SET_PORT; }
 tcp                    { return METH_TCP; }
 ion                    { return METH_ION; }
 

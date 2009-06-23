@@ -31,6 +31,7 @@ static sync_sender_config_t * bdmcfg;
 %token SET_RES
 %token SET_FREQ
 %token SET_RECPT
+%token SET_PORT
 %token ASSIGN
 %token OPTWHITE
 %token STRINGVAL
@@ -58,6 +59,7 @@ opt     :       set_method
         |       set_start
         |       set_stop
         |       set_res
+        |       set_recpt_port
         |       set_recpt
         |       set_freq
         |       set_unknown
@@ -93,10 +95,16 @@ set_freq        :       SET_FREQ ASSIGN INTVAL {
                             bdmcfg->frequency = $<intval>3;
                         }
 
-set_recpt        :      SET_RECPT ASSIGN STRINGVAL {
-                            bdmcfg->sync_recipient = strdup($<stringval>3);
+set_recpt_port :        SET_PORT ASSIGN INTVAL {
+                            bdmcfg->remote_port = $<intval>3;
                         }
 
+set_recpt        :      SET_RECPT ASSIGN STRINGVAL {
+                            if(bdmcfg->sync_recipient){
+                                free(bdmcfg->sync_recipient);
+                            }
+                            bdmcfg->sync_recipient = strdup($<stringval>3);
+                        }
 
 set_unknown     :       SET_UNKNOWN ASSIGN STRINGVAL {
                             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -124,19 +132,27 @@ sync_sender_config_t * read_config_file(const char * fname) {
     sync_sender_config_t * cfg = calloc(1, sizeof(sync_sender_config_t));
 
     if(cfg){
-        bdmcfg = cfg;
-        yyparse();
-        bdmcfg = NULL;
+        // Set default config values first
+        cfg->remote_port = BDM_SYNC_PORT;
 
         if(strlen(cfg->resource_name_pattern) == 0){
             strcpy(cfg->resource_name_pattern, "*.*.*:*");
         }
 
+        // Set static bdmcfg used by parser and parse file
+        bdmcfg = cfg;
+        yyparse();
+        bdmcfg = NULL;
+
+        // Check for unset values 
         if(cfg->sync_recipient == NULL){
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
                 "no sync recipient specified in config file '%s'\n",
                 fname);
 
+            if(cfg->sync_recipient){
+                free(cfg->sync_recipient);
+            }
             free(cfg);
             return NULL;
         }

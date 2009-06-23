@@ -12,10 +12,12 @@
 #include "check-common.h"
 #include "bionet-util.h"
 #include "check-bdm.h"
+#include "bdm-util.h"
 #include "data-manager/server/bionet-data-manager.h"
 
 static const char * good_config_files[] = {
-    "config-data/good-1.cfg"
+    "config-data/good-1.cfg",
+    "config-data/good-2.cfg"
 };
 
 static const sync_sender_config_t good_configs[] = {
@@ -26,7 +28,18 @@ static const sync_sender_config_t good_configs[] = {
         {0, 0},
         "*.*.*:*",
         5,
-        "localhost"
+        "localhost",
+        BDM_SYNC_PORT
+    },
+    { /* good-2.cfg */
+        BDM_SYNC_METHOD_TCP,
+        {1, 0},
+        {0, 0},
+        {0, 0},
+        "*.*.*:*",
+        5,
+        "localhost",
+        55555
     }
 };
 
@@ -51,7 +64,12 @@ static void _verify_cfg_same(
         "Incorrect frequency");
     fail_unless(
         !strcmp(cfg1->sync_recipient, cfg2->sync_recipient),
-        "Incorrect sync_recipient");
+        "Incorrect sync_recipient: '%s' <> '%s'",
+        cfg1->sync_recipient, cfg2->sync_recipient);
+
+    fail_unless(cfg1->remote_port == cfg2->remote_port,
+        "Incorrect sync_recipient port: %d != %d",
+        cfg1->remote_port, cfg2->remote_port);
 
 }
 

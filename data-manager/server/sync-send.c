@@ -521,7 +521,7 @@ int sync_init_connection(sync_sender_config_t * config) {
     memset((char *)&server_address, '\0', sizeof(server_address));
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)(*server_host->h_addr_list)));
-    server_address.sin_port = g_htons(BDM_SYNC_PORT);
+    server_address.sin_port = g_htons(config->remote_port);
 
 
     // connect to the server
@@ -531,7 +531,7 @@ int sync_init_connection(sync_sender_config_t * config) {
             G_LOG_LEVEL_WARNING,
             "sync_init_connection(): failed to connect to server %s:%d: %m",
             server_host->h_name,
-            BDM_SYNC_PORT);
+            config->remote_port);
         return -1;
     }
 
