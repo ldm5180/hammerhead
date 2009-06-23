@@ -178,7 +178,7 @@ typedef struct {
 	BDM_C2S_Message_t             *C2S_message;
 	BDM_Sync_Message_t            *sync_message;
     } message;
-    unsigned char buffer[(10 * 1024)];  // FIXME: use cal
+    unsigned char buffer[(1000 * 1024)];  // FIXME: use cal
     int index;
 } client_t;
 
