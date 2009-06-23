@@ -687,6 +687,11 @@ int db_add_datapoint_sync(
 {
     int r;
 
+    r = add_bdm_to_db(bdm_id);
+    if ( r != 0 ){
+        return r;
+    }
+
     entry_seq = db_get_next_entry_seq();
     if(entry_seq < 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
