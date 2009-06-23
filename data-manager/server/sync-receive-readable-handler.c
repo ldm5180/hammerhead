@@ -67,6 +67,7 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
         } else if (rval.code == RC_WMORE) {
             // ber_decode is waiting for more data, but so far so good
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "ber_decode: waiting for more data");
+	    usleep(10000);
         } else if (rval.code == RC_FAIL) {
 	    // received invalid junk
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ber_decode failed to decode the sync sender's message");
