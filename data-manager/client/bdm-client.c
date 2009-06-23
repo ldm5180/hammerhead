@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?hvT:t:E:e:p:", long_options, &i);
+	c = getopt_long(argc, argv, "?hvT:t:E:e:p:r:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}

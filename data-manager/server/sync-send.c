@@ -399,6 +399,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 	
 	//FIXME: only do this after receiving confirmation from far-end
 	db_set_last_sync_seq(config->sync_recipient, curr_seq);
+	config->last_entry_end_seq = curr_seq + 1;
     }
 
 
@@ -436,6 +437,8 @@ gpointer sync_thread(gpointer config) {
 	      "sync_thread(): NULL config"); 
     }
 
+    cfg->last_entry_end_seq = db_get_last_sync_seq(cfg->sync_recipient);
+
     while (1) {
 	curr_seq = db_get_latest_entry_seq();
 
@@ -447,7 +450,6 @@ gpointer sync_thread(gpointer config) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 		  "No data to sync. Sleeping...");
 	}
-	cfg->last_entry_end_seq = curr_seq + 1;
 
 	g_usleep(cfg->frequency * G_USEC_PER_SEC);
     }
