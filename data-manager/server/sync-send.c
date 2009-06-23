@@ -397,6 +397,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 
 	close(config->fd);
 	
+	//FIXME: only do this after receiving confirmation from far-end
 	db_set_last_sync_seq(config->sync_recipient, curr_seq);
     }
 
