@@ -1719,7 +1719,7 @@ void db_set_last_sync_seq(char * bdm_id, int last_sync) {
         return;
     }
 
-    while(SQLITE_BUSY == (r = sqlite3_step(insert_datapoint_sync_stmt)));
+    while(SQLITE_BUSY == (r = sqlite3_step(set_last_sync_bdm_stmt)));
     if (r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error updating last-sync: %s\n", sqlite3_errmsg(db));
 	sqlite3_reset(set_last_sync_bdm_stmt);
