@@ -436,9 +436,13 @@ gpointer sync_thread(gpointer config) {
     while (1) {
 	curr_seq = db_get_latest_entry_seq();
 
-	sync_send_metadata(cfg, curr_seq);
-	sync_send_datapoints(cfg, curr_seq);
-	
+	if (curr_seq >= cfg->last_entry_end_seq) {
+	    sync_send_metadata(cfg, curr_seq);
+	    sync_send_datapoints(cfg, curr_seq);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		  "No data to sync. Sleeping...");
+	}
 	cfg->last_entry_end_seq = curr_seq + 1;
 
 	g_usleep(cfg->frequency * G_USEC_PER_SEC);
@@ -509,20 +513,6 @@ int sync_init_connection(sync_sender_config_t * config) {
             G_LOG_LEVEL_WARNING,
             "sync_init_connection(): cannot create local socket: %m");
         return -1;
-    }
-
-
-    //  This makes it to the underlying networking code tries to send any
-    //  buffered data, even after we've closed the socket.
-    {
-        struct linger linger;
-
-        linger.l_onoff = 1;
-        linger.l_linger = 60;
-        if (setsockopt(config->fd, SOL_SOCKET, SO_LINGER, (char *)&linger, sizeof(linger)) != 0) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "sync_init_connection(): WARNING: cannot make socket linger: %m");
-        }
     }
 
 

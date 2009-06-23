@@ -28,22 +28,22 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
     }
 
 
-    bytes_to_read = sizeof(client->buffer) - client->index;
-    bytes_read = read(client->fd, &client->buffer[client->index], bytes_to_read);
-    if (bytes_read < 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error reading from sync sender: %s", strerror(errno));
-        disconnect_client(client);
-        return FALSE;
-    }
-    if (bytes_read == 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "eof from sync sender");
-        disconnect_client(client);
-        return FALSE;
-    }
-
-    client->index += bytes_read;
-
     do {
+	bytes_to_read = sizeof(client->buffer) - client->index;
+	bytes_read = read(client->fd, &client->buffer[client->index], bytes_to_read);
+	if (bytes_read < 0) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error reading from sync sender: %s", strerror(errno));
+	    disconnect_client(client);
+	    return FALSE;
+	}
+	if (bytes_read == 0) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "eof from sync sender");
+	    disconnect_client(client);
+	    return FALSE;
+	}
+	
+	client->index += bytes_read;
+
         rval = ber_decode(NULL, 
 			  &asn_DEF_BDM_Sync_Message, 
 			  (void **)&client->message.sync_message, 
@@ -66,6 +66,7 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
             client->message.sync_message = NULL;
         } else if (rval.code == RC_WMORE) {
             // ber_decode is waiting for more data, but so far so good
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "ber_decode: waiting for more data");
         } else if (rval.code == RC_FAIL) {
 	    // received invalid junk
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ber_decode failed to decode the sync sender's message");
