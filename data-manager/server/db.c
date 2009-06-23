@@ -735,6 +735,7 @@ int db_add_datapoint_sync(
         case BIONET_RESOURCE_DATA_TYPE_UINT8:
             ival = *(uint8_t*)value;
             r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, ival);
+	    break;
             
         case BIONET_RESOURCE_DATA_TYPE_INT8:
             ival = *(int8_t*)value;
