@@ -280,19 +280,19 @@ static int add_node_to_db(const bionet_node_t *node) {
 }
 
 
-
-
-static int add_resource_to_db(bionet_resource_t *resource) {
-    int r;
-
+int db_make_resource_key(
+    const char * hab_type,
+    const char * hab_id,
+    const char * node_id,
+    const char * resource_id,
+    bionet_resource_data_type_t data_type,
+    bionet_resource_flavor_t flavor,
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH]
+){
     SHA_CTX sha_ctx;
-    uint8_t byte;
     unsigned char sha_digest[SHA_DIGEST_LENGTH];
-
-    const char * hab_type;
-    const char * hab_id;
-    const char * node_id;
-    const char * resource_id;
+    int r;
+    uint8_t byte;
 
     r = SHA1_Init(&sha_ctx);
     if (r != 1) {
@@ -300,42 +300,38 @@ static int add_resource_to_db(bionet_resource_t *resource) {
         return -1;
     }
 
-    hab_type = bionet_hab_get_type(bionet_resource_get_hab(resource));
     r = SHA1_Update(&sha_ctx, hab_type, strlen(hab_type));
     if (r != 1) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource HAB-Type\n");
 	return -1;
     }
     
-    hab_id = bionet_hab_get_id(bionet_resource_get_hab(resource));
     r = SHA1_Update(&sha_ctx, hab_id, strlen(hab_id));
     if (r != 1) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource HAB-ID\n");
 	return -1;
     }
 
-    node_id = bionet_node_get_id(bionet_resource_get_node(resource));
     r = SHA1_Update(&sha_ctx, node_id, strlen(node_id));
     if (r != 1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource Node-ID\n");
         return -1;
     }
 
-    resource_id = bionet_resource_get_id(resource);
     r = SHA1_Update(&sha_ctx, resource_id, strlen(resource_id));
     if (r != 1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource ID\n");
         return -1;
     }
 
-    byte = bionet_resource_get_data_type(resource);
+    byte = data_type;
     r = SHA1_Update(&sha_ctx, &byte, 1);
     if (r != 1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource Data Type\n");
         return -1;
     }
 
-    byte = bionet_resource_get_flavor(resource);
+    byte = flavor;
     r = SHA1_Update(&sha_ctx, &byte, 1);
     if (r != 1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error updating SHA1 context with Resource Flavor\n");
@@ -347,6 +343,38 @@ static int add_resource_to_db(bionet_resource_t *resource) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error finalizing SHA1 digest\n");
         return -1;
     }
+
+    memcpy(resource_key, sha_digest, sizeof(resource_key));
+
+    return 0;
+
+}
+
+static int add_resource_to_db(bionet_resource_t *resource) {
+    int r;
+
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
+
+    const char * hab_type;
+    const char * hab_id;
+    const char * node_id;
+    const char * resource_id;
+    bionet_resource_flavor_t flavor;
+    bionet_resource_data_type_t data_type;
+
+    hab_type = bionet_hab_get_type(bionet_resource_get_hab(resource));
+    hab_id = bionet_hab_get_id(bionet_resource_get_hab(resource));
+    node_id = bionet_node_get_id(bionet_resource_get_node(resource));
+    resource_id = bionet_resource_get_id(resource);
+    data_type = bionet_resource_get_data_type(resource);
+    flavor = bionet_resource_get_flavor(resource);
+
+    r = db_make_resource_key(hab_type, hab_id, node_id, 
+        resource_id, data_type, flavor, resource_key);
+    if(r != 0){
+        return r;
+    }
+
 
     if(insert_resource_stmt == NULL) {
 	r = sqlite3_prepare_v2(db, 
@@ -372,7 +400,7 @@ static int add_resource_to_db(bionet_resource_t *resource) {
     }
 
     int param = 1;
-    r = sqlite3_bind_blob(insert_resource_stmt, param++, sha_digest, BDM_RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
+    r = sqlite3_bind_blob(insert_resource_stmt, param++, resource_key, sizeof(resource_key), SQLITE_TRANSIENT);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
 	return -1;
@@ -402,12 +430,12 @@ static int add_resource_to_db(bionet_resource_t *resource) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
 	return -1;
     }
-    r = sqlite3_bind_text(insert_resource_stmt, param++, bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)), -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(insert_resource_stmt, param++, bionet_resource_data_type_to_string(data_type), -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
 	return -1;
     }
-    r = sqlite3_bind_text(insert_resource_stmt, param++, bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)), -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(insert_resource_stmt, param++, bionet_resource_flavor_to_string(flavor), -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
 	return -1;
@@ -1165,8 +1193,7 @@ static GPtrArray *_db_get_resource_info(
     char datapoint_start_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     char datapoint_end_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     /* The size of these is mostly fixed */
-    char entry_start_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
-    char entry_end_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
+    char entry_restriction[400];
 
     GPtrArray *bdm_list;
 
@@ -1297,32 +1324,50 @@ static GPtrArray *_db_get_resource_info(
     }
 
 
-    if (entry_start < 0) {
-	entry_start_restriction[0] = '\0';
-    } else {
-	r = snprintf(entry_start_restriction, sizeof(entry_start_restriction),
-		"AND Datapoints.Entry_Num >= %d",
-		entry_start);
-	if (r >= sizeof(entry_start_restriction)) {
+    if (entry_start < 0 && entry_end < 0) {
+	entry_restriction[0] = '\0';
+    } else if ( entry_end < 0 ){
+	r = snprintf(entry_restriction, sizeof(entry_restriction),
+		"AND ("
+                "  Hardware_Abstractors.Entry_Num >= %d OR"
+                "  Nodes.Entry_Num >= %d OR"
+                "  Resources.Entry_Num >= %d"
+                ")",
+		entry_start, entry_start, entry_start);
+	if (r >= sizeof(entry_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "db_get_resource_entrys(): entry start time is too long!");
+		  "db_get_resource_entrys(): entry start is too long!");
+	    return NULL;
+	}
+    } else if ( entry_start < 0 ){
+	r = snprintf(entry_restriction, sizeof(entry_restriction),
+		"AND ("
+                "  Hardware_Abstractors.Entry_Num < %d OR"
+                "  Nodes.Entry_Num < %d OR"
+                "  Resources.Entry_Num < %d"
+                ")",
+		entry_end, entry_end, entry_end);
+	if (r >= sizeof(entry_restriction)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "db_get_resource_entrys(): entry end is too long!");
+	    return NULL;
+	}
+    } else {
+	r = snprintf(entry_restriction, sizeof(entry_restriction),
+		"AND ("
+                "  (Hardware_Abstractors.Entry_Num < %d AND Hardware_Abstractors.Entry_Num >= %d ) OR"
+                "  (Nodes.Entry_Num < %d AND Nodes.Entry_Num >= %d ) OR"
+                "  (Resources.Entry_Num < %d AND Resources.Entry_Num >= %d )"
+                ")",
+		entry_end, entry_start, 
+		entry_end, entry_start, 
+                entry_end, entry_start);
+	if (r >= sizeof(entry_restriction)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "db_get_resource_entrys(): entry end is too long!");
 	    return NULL;
 	}
     }
-
-    if (entry_end < 0) {
-	entry_end_restriction[0] = '\0';
-    } else {
-	r = snprintf(entry_end_restriction, sizeof(entry_end_restriction),
-		"AND Datapoints.Entry_Num < %d",
-		entry_end);
-	if (r >= sizeof(entry_end_restriction)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "db_get_resource_entrys(): entry end time is too long!");
-	    return NULL;
-	}
-    }
-
 
     const char * sql_fields;
     const char * sql_group = "";
@@ -1395,12 +1440,12 @@ static GPtrArray *_db_get_resource_info(
         sql_fields,
         datapoint_start_restriction,
         datapoint_end_restriction,
-        entry_start_restriction,
-        entry_end_restriction,
+        entry_restriction,
         hab_type_restriction,
         hab_id_restriction,
         node_id_restriction,
-        resource_id_restriction
+        resource_id_restriction,
+        sql_group
         );
 
     if (r >= sizeof(sql)) {

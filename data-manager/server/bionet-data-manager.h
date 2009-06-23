@@ -73,6 +73,17 @@ int db_init(void);
 
 void db_shutdown(void);
 
+//
+// Make a resource key
+//
+int db_make_resource_key(
+    const char * hab_type,
+    const char * hab_id,
+    const char * node_id,
+    const char * resource_id,
+    bionet_resource_data_type_t data_type,
+    bionet_resource_flavor_t flavor,
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH]);
 
 //
 // Each of these functions inserts a bionet object and, if needed, all its

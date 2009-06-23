@@ -31,7 +31,7 @@ int send_message_to_sync_receiver(const void *buffer, size_t size, void * config
 
 static int sync_send_metadata(sync_sender_config_t * config, struct timeval * last_sync) {
     GPtrArray * bdm_list = NULL;
-    int curr_seq, last_entry_end_seq;
+    int curr_seq;
     char * hab_type;
     char * hab_id;
     char * node_id;
@@ -61,8 +61,7 @@ static int sync_send_metadata(sync_sender_config_t * config, struct timeval * la
     bdm_list = db_get_metadata(hab_type, hab_id, node_id, resource_id,
 			       &config->start_time, &config->end_time,
 			       config->last_entry_end_seq, curr_seq,
-			       &last_entry_end_seq);
-    config->last_entry_end_seq = last_entry_end_seq;
+			       &config->last_entry_end_seq);
 
     memset(&sync_message, 0x00, sizeof(BDM_Sync_Message_t));
     sync_message.present = BDM_Sync_Message_PR_metadataMessage;
@@ -228,10 +227,10 @@ cleanup:
     return -1;
 } /* sync_send_metadata() */
 
-#if 0
+#if 1
 static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * last_sync) {
     GPtrArray * bdm_list = NULL;
-    int curr_seq, last_entry_end_seq;
+    int curr_seq;
     char * hab_type;
     char * hab_id;
     char * node_id;
@@ -255,11 +254,14 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
     }
 
 
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	  "    %s.%s.%s:%s from seq %d to %d",
+	  hab_type, hab_id, node_id, resource_id,
+	  config->last_entry_end_seq, curr_seq);
     bdm_list = db_get_resource_datapoints(hab_type, hab_id, node_id, resource_id,
 					  &config->start_time, &config->end_time,
 					  config->last_entry_end_seq, curr_seq,
-					  &last_entry_end_seq);
-    config->last_entry_end_seq = last_entry_end_seq;
+					  &config->last_entry_end_seq);
 
     memset(&sync_message, 0x00, sizeof(BDM_Sync_Datapoints_Message_t));
     sync_message.present = BDM_Sync_Message_PR_datapointsMessage;
@@ -331,20 +333,30 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 		//walk list of resources
 		for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
 		    int di;
-		    ResourceRecord_t resource_rec;
+		    ResourceRecord_t * resource_rec = 
+                        (ResourceRecord_t*)calloc(1, sizeof(ResourceRecord_t));
 		    bionet_resource_t * resource = bionet_node_get_resource_by_index(node, ri);
 		    if (NULL == resource) {
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 			      "Failed to get resource %d from Node %s", ri, bionet_node_get_name(node));
 		    }
 		    
-		    r = asn_sequence_add(&sync_record->syncResources, &resource_rec);
+		    r = asn_sequence_add(&sync_record->syncResources, resource_rec);
 		    if (r != 0) {
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			      "sync_send_datapoints(): Failed to add resource record.");
 		    }
 		    
-		    r = OCTET_STRING_fromString(&resource_rec.resourceKey, NULL);
+                    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
+                    db_make_resource_key(
+                        bionet_hab_get_type(hab),
+                        bionet_hab_get_id(hab),
+                        bionet_node_get_id(node),
+                        bionet_resource_get_id(resource),
+                        bionet_resource_get_data_type(resource),
+                        bionet_resource_get_flavor(resource),
+                        resource_key);
+		    r = OCTET_STRING_fromString(&resource_rec->resourceKey, (const char *)resource_key);
 		    if (r != 0) {
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			      "sync_send_datapoints(): Failed to set resource key");
@@ -366,7 +378,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 				  "send_sync_datapoints(): out of memory!");
 			}
 			
-			r = asn_sequence_add(&resource_rec.resourceDatapoints.list, asn_datapoint);
+			r = asn_sequence_add(&resource_rec->resourceDatapoints.list, asn_datapoint);
 			if (r != 0) {
 			    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 				  "send_sync_datapoints(): error adding Datapoint to Resource: %m");
@@ -377,11 +389,13 @@ static int sync_send_datapoints(sync_sender_config_t * config, struct timeval * 
 	} //for (hi = 0; hi < hab_list->len; hi++)
     } //for (bi = 0; bi < bdm_list->len; bi++)
 
-    // send the reply to the client
-    asn_enc_rval_t asn_r;
-    asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
-    if (asn_r.encoded == -1) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
+    if(bi){
+        // send the reply to the client
+        asn_enc_rval_t asn_r;
+        asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
+        if (asn_r.encoded == -1) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
+        }
     }
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
@@ -420,7 +434,7 @@ gpointer sync_thread(gpointer config) {
 
     while (1) {
 	sync_send_metadata(cfg, &last_sync);
-//	sync_send_datapoints(cfg, &last_sync);
+	sync_send_datapoints(cfg, &last_sync);
 	
 	g_usleep(cfg->frequency * G_USEC_PER_SEC);
     }
