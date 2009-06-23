@@ -110,6 +110,7 @@ void usage(void) {
 	    " -e,--entry-end <entryEnd>          Timestamp of datapoint entry in this local BDM\n"
 	    "                                    must be equal to or older than the \"entry end\"\n"
 	    "                                    time (default: infinite future)\n"
+	    " -p,--port <Port>                   Port number to connect on the server\n"
 	    " -r,--resources <Resources>         Resource name pattern of resources to retrieve.\n"
 	    "                                    May contain wildcards. (default: \"*.*.*:*\")\n"
 	    " -s,--server <server>               BDM server hostname (default: localhost)\n"
@@ -157,12 +158,13 @@ int main(int argc, char *argv[]) {
 	    {"datapoint-end", 1, 0, 't'},
 	    {"entry-start", 1, 0, 'E'},
 	    {"entry-stop", 1, 0, 'e'},
+	    {"port", 1, 0, 'p'},
 	    {"resources", 1, 0, 'r'},
 	    {"server", 1, 0, 's'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?hvT:t:E:e:", long_options, &i);
+	c = getopt_long(argc, argv, "?hvT:t:E:e:p:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -179,6 +181,10 @@ int main(int argc, char *argv[]) {
 
 	case 'e':
 	    entryEnd = str_to_int(optarg);
+	    break;
+
+	case 'p':
+	    bdm_port = str_to_int(optarg);
 	    break;
 
 	case 'r':
