@@ -219,6 +219,7 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "    Sync finished");
 
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &message);
     return 0;
 
 cleanup:
@@ -339,7 +340,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			      "sync_send_datapoints(): Failed to add resource record.");
 		    }
-		    
+
                     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
                     db_make_resource_key(
                         bionet_hab_get_type(hab),
@@ -354,7 +355,6 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			      "sync_send_datapoints(): Failed to set resource key");
 		    }
-		    
 		    
 		    //walk list of datapoints and add each one to the message
 		    for (di = 0; di < bionet_resource_get_num_datapoints(resource); di++) {
@@ -405,6 +405,8 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "    Sync finished");
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &sync_message);
 
     return 0;
 

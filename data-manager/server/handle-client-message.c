@@ -22,7 +22,7 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
     GPtrArray *bdm_list;
     struct timeval datapoint_start, datapoint_end;
     int entry_start, entry_end;
-    int latest_entry;
+    int latest_entry = 0;
     struct timeval *pDatapointStart = NULL;
     struct timeval *pDatapointEnd = NULL;
     int r, bi;

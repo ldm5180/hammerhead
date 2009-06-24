@@ -20,7 +20,7 @@
 
 
 extern int bdm_fd;
-long int bdm_last_entry = -1;
+extern long int bdm_last_entry;
 
 static int str_to_int(const char * str) {
     char * endptr;

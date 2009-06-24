@@ -533,6 +533,8 @@ static int add_datapoint_to_db(bionet_datapoint_t *datapoint) {
     // Bind host variables to the prepared statement -- This eliminates the need to escape strings
     // In order of the placeholders (?) in the SQL
     int param = 1;
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	  "add_datapoint_to_db(): %s: %s", bionet_resource_get_name(resource), bionet_value_to_str(value));
     r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_value_to_str(value), -1, free);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
@@ -731,6 +733,7 @@ int db_add_datapoint_sync(
 
     int ival;
     double  dval;
+    float fval;
     switch(type) {
         case BIONET_RESOURCE_DATA_TYPE_BINARY:
             ival = *(int*)value;
@@ -759,7 +762,7 @@ int db_add_datapoint_sync(
             
         case BIONET_RESOURCE_DATA_TYPE_UINT32:
             ival = *(uint32_t*)value;
-            r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, ival);
+	    r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, ival);
             break;
             
         case BIONET_RESOURCE_DATA_TYPE_INT32:
@@ -768,17 +771,19 @@ int db_add_datapoint_sync(
             break;
             
         case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-            dval = *(float*)value;
-            r = sqlite3_bind_double(insert_datapoint_sync_stmt, param++, dval);
+            fval = *(float*)value;
+	    r = sqlite3_bind_double(insert_datapoint_sync_stmt, param++, fval);
             break;
             
         case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-            dval = *(float*)value;
+            dval = *(double*)value;
             r = sqlite3_bind_double(insert_datapoint_sync_stmt, param++, dval);
             break;
             
         case BIONET_RESOURCE_DATA_TYPE_STRING:
             r = sqlite3_bind_text(insert_datapoint_sync_stmt, param++, value, -1, SQLITE_STATIC);
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		  "db_add_datapoint_sync(): %s", (char *)value);
             break;
         default:
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync API Type error");

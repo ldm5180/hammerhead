@@ -42,6 +42,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		bionet_resource_data_type_t type;
 		void * value;
 		struct timeval ts;
+		double dbl;
 
 		dp = resource_rec->resourceDatapoints.list.array[dpi];
 		
@@ -51,64 +52,76 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		    type = BIONET_RESOURCE_DATA_TYPE_BINARY;
 		    value = &dp->value.choice.binary_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "        binary: %d", *(int *)value);
+			  "    handle_sync_datapoints_message(): binary: %d", *(int *)value);
 		    break;
 
 		case Value_PR_uint8_v:
 		    type = BIONET_RESOURCE_DATA_TYPE_UINT8;
 		    value = &dp->value.choice.uint8_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "        uint8_t: %u", *(uint8_t *)value);
+			  "    handle_sync_datapoints_message(): uint8_t: %u", *(uint8_t *)value);
 		    break;
 
 		case Value_PR_int8_v:
 		    type = BIONET_RESOURCE_DATA_TYPE_INT8;
 		    value = &dp->value.choice.int8_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "        int8_t: %d", *(int8_t *)value);
+			  "    handle_sync_datapoints_message(): int8_t: %d", *(int8_t *)value);
 		    break;
 
 		case Value_PR_uint16_v:
 		    type = BIONET_RESOURCE_DATA_TYPE_UINT16;
 		    value = &dp->value.choice.uint16_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "        uint16_t: %u", *(uint16_t *)value);
+			  "    handle_sync_datapoints_message(): uint16_t: %u", *(uint16_t *)value);
 		    break;
 
 		case Value_PR_int16_v:
 		    type = BIONET_RESOURCE_DATA_TYPE_INT16;
 		    value = &dp->value.choice.int16_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "        int16_t: %d", *(int16_t *)value);
+			  "    handle_sync_datapoints_message(): int16_t: %d", *(int16_t *)value);
 		    break;
 
 		case Value_PR_uint32_v:
+		{
+		    int r;
+		    long l;
+		    uint32_t u;
 		    type = BIONET_RESOURCE_DATA_TYPE_UINT32;
-		    value = &dp->value.choice.uint32_v;
+		    r = asn_INTEGER2long(&dp->value.choice.uint32_v, &l);
+		    if (r != 0) {
+			g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+			      "bionet_asn_to_datapoint(): error converting ASN INTEGER to native Datapoint value");
+		    }
+		    u = (uint32_t)l;
+		    value = &u;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "        uint32_t: %u", *(uint32_t *)value);
+			  "    handle_sync_datapoints_message(): uint32_t: %u", u);
 		    break;
+		}
 
 		case Value_PR_int32_v:
 		    type = BIONET_RESOURCE_DATA_TYPE_INT32;
 		    value = &dp->value.choice.int32_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "        int32_t: %d", *(int32_t *)value);
+			  "    handle_sync_datapoints_message(): int32_t: %d", *(int32_t *)value);
 		    break;
 
 		case Value_PR_real:
 		    type = BIONET_RESOURCE_DATA_TYPE_DOUBLE;
-		    value = &dp->value.choice.real;
+		    dbl = dp->value.choice.real;
+		    value = &dbl;
 		    //FIXME: actually print the double
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "        double: N/A");
+			  "    handle_sync_datapoints_message(): double: %f", dbl);
 		    break;
 
 		case Value_PR_string:
 		    type = BIONET_RESOURCE_DATA_TYPE_STRING;
 		    value = dp->value.choice.string.buf;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "        string: %s", (char *)value);
+			  "    handle_sync_datapoints_message(): string: %s", (char *)value);
 		    break;
 
 		default:

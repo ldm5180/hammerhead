@@ -13,7 +13,7 @@
 #include "bdm-client.h"
 
 extern int bdm_fd;
-extern long int bdm_last_entry;
+long int bdm_last_entry = -1;
 
 GPtrArray *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
     GPtrArray *hab_list;

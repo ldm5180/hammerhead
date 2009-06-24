@@ -17,7 +17,7 @@
 
 int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_t *client) {
     int bytes_to_read;
-    int bytes_read;
+    int bytes_read = 0;
     asn_dec_rval_t rval;
 
 
