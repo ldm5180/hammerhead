@@ -15,7 +15,7 @@ NUM_FAILED=0
 TESTS=$@
 
 if [ -z "$TESTS" ]; then
-    TESTS=$(ls -ld tests/* | sort)
+    TESTS=$(ls -1d tests/* | sort)
 fi
 
 for TEST in $TESTS; do
