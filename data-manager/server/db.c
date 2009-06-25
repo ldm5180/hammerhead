@@ -344,7 +344,7 @@ int db_make_resource_key(
         return -1;
     }
 
-    memcpy(resource_key, sha_digest, sizeof(resource_key));
+    memcpy(resource_key, sha_digest,BDM_RESOURCE_KEY_LENGTH);
 
     return 0;
 
@@ -400,7 +400,7 @@ static int add_resource_to_db(bionet_resource_t *resource) {
     }
 
     int param = 1;
-    r = sqlite3_bind_blob(insert_resource_stmt, param++, resource_key, sizeof(resource_key), SQLITE_TRANSIENT);
+    r = sqlite3_bind_blob(insert_resource_stmt, param++, resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error");
 	return -1;
