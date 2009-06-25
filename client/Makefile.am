@@ -17,7 +17,7 @@ SUBDIRS += py-libbionet
 endif
 
 if ENABLE_CLIENTS
-SUBDIRS += watcher stream
+SUBDIRS += watcher stream commander
 
 if ENABLE_QT4
 SUBDIRS += monitor stream-manager
