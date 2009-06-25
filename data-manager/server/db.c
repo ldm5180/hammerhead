@@ -1338,58 +1338,93 @@ static GPtrArray *_db_get_resource_info(
 	}
     }
 
-
-    if (entry_start < 0 && entry_end < 0) {
-	entry_restriction[0] = '\0';
-    } else if ( entry_end < 0 ){
-	r = snprintf(entry_restriction, sizeof(entry_restriction),
-		     "AND ("
-		     "  Hardware_Abstractors.Entry_Num >= %d OR"
-		     "  Nodes.Entry_Num >= %d OR"
-		     "  Resources.Entry_Num >= %d OR"
-		     "  Datapoints.Entry_Num >= %d"
-		     ")",
-		     entry_start, entry_start, entry_start, entry_start);
-	if (r >= sizeof(entry_restriction)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "db_get_resource_entrys(): entry start is too long!");
-	    return NULL;
-	}
-    } else if ( entry_start < 0 ){
-	r = snprintf(entry_restriction, sizeof(entry_restriction),
-		     "AND ("
-		     "  Hardware_Abstractors.Entry_Num <= %d OR"
-		     "  Nodes.Entry_Num <= %d OR"
-		     "  Resources.Entry_Num <= %d OR"
-		     "  Datapoints.Entry_Num <= %d"
-		     ")",
-		     entry_end, entry_end, entry_end, entry_end);
-	if (r >= sizeof(entry_restriction)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "db_get_resource_entrys(): entry end is too long!");
-	    return NULL;
+    if (include_datapoints) {
+	if (entry_start < 0 && entry_end < 0) {
+	    entry_restriction[0] = '\0';
+	} else if ( entry_end < 0 ){
+	    r = snprintf(entry_restriction, sizeof(entry_restriction),
+			 "AND ("
+			 "  Datapoints.Entry_Num >= %d"
+			 ")",
+			 entry_start);
+	    if (r >= sizeof(entry_restriction)) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "db_get_resource_entrys(): entry start is too long!");
+		return NULL;
+	    }
+	} else if ( entry_start < 0 ){
+	    r = snprintf(entry_restriction, sizeof(entry_restriction),
+			 "AND ("
+			 "  Datapoints.Entry_Num <= %d"
+			 ")",
+			 entry_end);
+	    if (r >= sizeof(entry_restriction)) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "db_get_resource_entrys(): entry end is too long!");
+		return NULL;
+	    }
+	} else {
+	    r = snprintf(entry_restriction, sizeof(entry_restriction),
+			 "AND ("
+			 "  (Datapoints.Entry_Num <= %d and Datapoints.Entry_Num >= %d )"
+			 ")",
+			 entry_end, entry_start);
+	    if (r >= sizeof(entry_restriction)) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "db_get_resource_entrys(): entry end is too long!");
+		return NULL;
+	    }
 	}
     } else {
-	r = snprintf(entry_restriction, sizeof(entry_restriction),
-		     "AND ("
-		     "  (Hardware_Abstractors.Entry_Num <= %d AND Hardware_Abstractors.Entry_Num >= %d ) OR"
-		     "  (Nodes.Entry_Num <= %d AND Nodes.Entry_Num >= %d ) OR"
-		     "  (Resources.Entry_Num <= %d AND Resources.Entry_Num >= %d ) OR"
-		     "  (Datapoints.Entry_Num <= %d and Datapoints.Entry_Num >= %d )"
-		     ")",
-		     entry_end, entry_start, 
-		     entry_end, entry_start, 
-		     entry_end, entry_start,
-		     entry_end, entry_start);
-	if (r >= sizeof(entry_restriction)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "db_get_resource_entrys(): entry end is too long!");
-	    return NULL;
+	if (entry_start < 0 && entry_end < 0) {
+	    entry_restriction[0] = '\0';
+	} else if ( entry_end < 0 ){
+	    r = snprintf(entry_restriction, sizeof(entry_restriction),
+			 "AND ("
+			 "  Hardware_Abstractors.Entry_Num >= %d OR"
+			 "  Nodes.Entry_Num >= %d OR"
+			 "  Resources.Entry_Num >= %d"
+			 ")",
+			 entry_start, entry_start, entry_start);
+	    if (r >= sizeof(entry_restriction)) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "db_get_resource_entrys(): entry start is too long!");
+		return NULL;
+	    }
+	} else if ( entry_start < 0 ){
+	    r = snprintf(entry_restriction, sizeof(entry_restriction),
+			 "AND ("
+			 "  Hardware_Abstractors.Entry_Num <= %d OR"
+			 "  Nodes.Entry_Num <= %d OR"
+			 "  Resources.Entry_Num <= %d"
+			 ")",
+			 entry_end, entry_end, entry_end);
+	    if (r >= sizeof(entry_restriction)) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "db_get_resource_entrys(): entry end is too long!");
+		return NULL;
+	    }
+	} else {
+	    r = snprintf(entry_restriction, sizeof(entry_restriction),
+			 "AND ("
+			 "  (Hardware_Abstractors.Entry_Num <= %d AND Hardware_Abstractors.Entry_Num >= %d ) OR"
+			 "  (Nodes.Entry_Num <= %d AND Nodes.Entry_Num >= %d ) OR"
+			 "  (Resources.Entry_Num <= %d AND Resources.Entry_Num >= %d )"
+			 ")",
+			 entry_end, entry_start, 
+			 entry_end, entry_start, 
+			 entry_end, entry_start);
+	    if (r >= sizeof(entry_restriction)) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "db_get_resource_entrys(): entry end is too long!");
+		return NULL;
+	    }
 	}
     }
 
     const char * sql_fields;
     const char * sql_group = "";
+    const char * sql_dp = "";
     if(include_datapoints){
         sql_fields = 
             " Hardware_Abstractors.HAB_TYPE,"
@@ -1403,6 +1438,9 @@ static GPtrArray *_db_get_resource_info(
             " Datapoints.Timestamp_Usec,"
             " Datapoints.Entry_Num,"
             " BDMs.BDM_ID";
+	sql_dp = 
+	    "    AND Datapoints.Resource_Key=Resources.Key"
+	    "    AND Datapoints.BDM_Key=BDMs.Key";
     } else {
         sql_fields = 
             " Hardware_Abstractors.HAB_TYPE,"
@@ -1443,8 +1481,7 @@ static GPtrArray *_db_get_resource_info(
         "    AND Resources.Node_Key=Nodes.Key"
         "    AND Resource_Data_Types.Key=Resources.Data_Type_Key"
         "    AND Resource_Flavors.Key=Resources.Flavor_Key"
-        "    AND Datapoints.Resource_Key=Resources.Key"
-        "    AND Datapoints.BDM_Key=BDMs.Key"
+        "    %s"
         "    %s"
         "    %s"
         "    %s"
@@ -1457,6 +1494,7 @@ static GPtrArray *_db_get_resource_info(
         "     Datapoints.Timestamp_Sec ASC,"
         "     Datapoints.Timestamp_Usec ASC",
         sql_fields,
+        sql_dp,
         datapoint_start_restriction,
         datapoint_end_restriction,
         entry_restriction,
