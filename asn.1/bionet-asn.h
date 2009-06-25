@@ -32,6 +32,13 @@
 #include "BDM-C2S-Message.h"
 #include "BDM-S2C-Message.h"
 
+#include "BDM-Sync-Datapoints-Message.h"
+#include "BDM-Sync-Metadata-Message.h"
+#include "BDM-Sync-Message.h"
+
+#include "BDMSyncRecord.h"
+
+#include "ResourceRecord.h"
 
 #include "bionet-util.h"
 

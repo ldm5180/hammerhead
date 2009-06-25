@@ -14,11 +14,26 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "bdm-client.h"
 
 
 extern int bdm_fd;
+extern long int bdm_last_entry;
+
+static int str_to_int(const char * str) {
+    char * endptr;
+    int i;
+
+    i = strtol(str, &endptr, 10);
+    if(*endptr != '\0') {
+        printf("error parsing int string '%s': Unknown characters '%s'\n", 
+            str, endptr);
+        exit(1);
+    }
+    return i;
+}
 
 void str_to_timeval(const char *str, struct timeval *tv) {
     struct tm tm;
@@ -83,59 +98,126 @@ void str_to_timeval(const char *str, struct timeval *tv) {
 
 
 void usage(void) {
-    printf("usage: bdm-client [--server SERVER] ResourceName StartTime EndTime\n");
-    printf("       bdm-client --help\n");
-    printf("\n");
-    printf("    ResourceName is the Resource Name to retrieve.  May contain wildcards.\n");
-    printf("\n");
-    printf("    StartTime and EndTime are given in this format: \"YYYY-MM-DD hh:mm:ss\"\n");
-    printf("        YYYY is the four-digit year, for example 2008\n");
-    printf("        MM is the two-digit month, with 01 meaning January and 12 meaning December\n");
-    printf("        DD is the two-digit day-of-the-month, with 01 meaning the first day\n");
-    printf("        hh:mm:ss is the 24-hour time\n");
-    printf("\n");
+    fprintf(stderr,
+	    "'bdm-client' reads data from the BDM\n"
+	    "\n"
+	    "usage: bdm-client [OPTIONS]\n"
+	    "\n"
+	    " -?,--help                          Show this usage information\n"
+	    " -v,--version                       Show the version number\n"
+	    " -E,--entry-start <entryStart>      Timestamp of datapoint entry in this local BDM\n"
+	    "                                    must be equal to or newer than the \"entry start\"\n"
+	    "                                    time (default: infinite past)\n"
+	    " -e,--entry-end <entryEnd>          Timestamp of datapoint entry in this local BDM\n"
+	    "                                    must be equal to or older than the \"entry end\"\n"
+	    "                                    time (default: infinite future)\n"
+	    " -f,--frequency <seconds>           Query the BDM every N seconds\n"
+	    " -p,--port <Port>                   Port number to connect on the server\n"
+	    " -r,--resources <Resources>         Resource name pattern of resources to retrieve.\n"
+	    "                                    May contain wildcards. (default: \"*.*.*:*\")\n"
+	    " -s,--server <server>               BDM server hostname (default: localhost)\n"
+	    " -T,--datapoint-start <entryStart>  Timestamp of datapoint as reported by the HAB\n"
+	    "                                    must be equal to or newer than the \"entry start\"\n"
+	    "                                    time (default: infinite past)\n"
+	    " -t,--datapoint-end <entryEnd>      Timestamp of datapoint as reported by the HAB\n"
+	    "                                    must be equal to or older than the \"entry end\"\n"
+	    "                                    time (default: infinite future)\n"
+	    "\n"
+	    "note: StartTime and EndTime are given in this format: \"YYYY-MM-DD hh:mm:ss\"\n"
+	    "      YYYY is the four-digit year, for example 2008\n"
+	    "      MM is the two-digit month, with 01 meaning January and 12 meaning December\n"
+	    "      DD is the two-digit day-of-the-month, with 01 meaning the first day\n"
+	    "      hh:mm:ss is the 24-hour time\n"
+	    );
 }
-
-
 
 
 int main(int argc, char *argv[]) {
     char *bdm_hostname = NULL;
     uint16_t bdm_port = BDM_PORT;
-    char *resource_name_pattern;
-    struct timeval start, stop;
+    char *resource_name_pattern = "*.*.*:*";
+    struct timeval datapointStart, datapointEnd;
+    int entryStart = -1, entryEnd = -1;
+    struct timeval * pDatapointStart = NULL;
+    struct timeval * pDatapointEnd = NULL;
+    int frequency = 0;
+
+    memset(&datapointStart, 0, sizeof(struct timeval));
+    memset(&datapointEnd, 0, sizeof(struct timeval));
 
     GPtrArray *hab_list;
 
     int i;
+    int c;
 
+    while(1) {
+	static struct option long_options[] = {
+	    {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'v'},
+	    {"datapoint-start", 1, 0, 'T'},
+	    {"datapoint-end", 1, 0, 't'},
+	    {"entry-start", 1, 0, 'E'},
+	    {"entry-stop", 1, 0, 'e'},
+	    {"frequency", 1, 0, 'f'},
+	    {"port", 1, 0, 'p'},
+	    {"resources", 1, 0, 'r'},
+	    {"server", 1, 0, 's'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
 
-    for (i = 1; i < argc; i ++) {
-        if (strcmp(argv[i], "--server") == 0) {
-            i ++;
-            bdm_hostname = argv[i];
-        } 
+	c = getopt_long(argc, argv, "?hvT:t:E:e:p:r:f:", long_options, &i);
+	if (c == -1) {
+	    break;
+	}
 
-        else if (strcmp(argv[i], "--help") == 0) {
-            usage();
-            exit(0);
-        } 
+	switch (c) {
+	case '?':
+	case 'h':
+	    usage();
+       	    return 0;
 
-        else {
-            // hopefully the required arguments start now
-            break;
-        }
+	case 'E':
+	    entryStart = str_to_int(optarg);
+	    break;
+
+	case 'e':
+	    entryEnd = str_to_int(optarg);
+	    break;
+
+	case 'f':
+	    frequency = str_to_int(optarg);
+	    break;
+
+	case 'p':
+	    bdm_port = str_to_int(optarg);
+	    break;
+
+	case 'r':
+	    resource_name_pattern = optarg;
+	    break;
+
+	case 's':
+	    bdm_hostname = optarg;
+	    break;
+
+	case 'T':
+	    str_to_timeval(optarg, &datapointStart);
+	    pDatapointStart = &datapointStart;
+	    break;
+
+	case 't':
+	    str_to_timeval(optarg, &datapointEnd);
+	    pDatapointEnd = &datapointEnd;
+	    break;
+
+	case 'v':
+	    print_bionet_version(stdout);
+	    return 0;
+
+	default:
+	    break;
+	}
     }
-
-    if ((argc - i) != 3) {
-        usage();
-        exit(1);
-    }
-
-    resource_name_pattern = argv[i];
-
-    str_to_timeval(argv[i+1], &start);
-    str_to_timeval(argv[i+2], &stop);
 
 
     bdm_fd = bdm_connect(bdm_hostname, bdm_port);
@@ -143,7 +225,10 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    hab_list = bdm_get_resource_datapoints(resource_name_pattern, &start, &stop);
+restart_poll:
+    hab_list = bdm_get_resource_datapoints(resource_name_pattern, 
+					   pDatapointStart, pDatapointEnd, 
+					   entryStart, entryEnd);
     if (hab_list == NULL) {
         g_message("error getting resource datapoints");
     } else {
@@ -188,7 +273,15 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
+	    bionet_hab_free(hab);
         }
+	g_ptr_array_free(hab_list, FALSE);
+    }
+
+    if (frequency) {
+	sleep(frequency);
+	entryStart = bdm_last_entry;
+	goto restart_poll;
     }
 
     bdm_disconnect();
@@ -196,3 +289,8 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

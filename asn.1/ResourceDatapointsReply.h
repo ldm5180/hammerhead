@@ -12,8 +12,10 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
+#include <NativeInteger.h>
 #include <asn_SEQUENCE_OF.h>
 #include <constr_SEQUENCE_OF.h>
+#include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,7 +26,13 @@ struct HardwareAbstractor;
 
 /* ResourceDatapointsReply */
 typedef struct ResourceDatapointsReply {
-	A_SEQUENCE_OF(struct HardwareAbstractor) list;
+	struct habs {
+		A_SEQUENCE_OF(struct HardwareAbstractor) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} habs;
+	long	 lastEntry;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

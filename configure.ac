@@ -435,6 +435,8 @@ AC_CONFIG_FILES([Makefile
 		 test/config.sh
 		 check/Makefile
 		 check/libutil/Makefile
+		 check/data-manager/Makefile
+		 check/asn1/Makefile
                  ])
 
 AC_OUTPUT

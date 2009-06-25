@@ -25,7 +25,11 @@ int bdm_is_connected(void);
 void bdm_disconnect(void);
 
 
-GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct timeval *start, struct timeval *stop);
+GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, 
+				       struct timeval *datapointStart, 
+				       struct timeval *datapointEnd,
+				       int entryStart,
+				       int entryEnd);
 
 
 int bdm_send_asn(const void *buffer, size_t size, void *unused);

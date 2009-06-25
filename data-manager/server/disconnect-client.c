@@ -25,8 +25,8 @@ void disconnect_client(client_t *client) {
         g_io_channel_unref(client->ch);
     }
 
-    if (client->message != NULL) {
-        ASN_STRUCT_FREE(asn_DEF_BDM_C2S_Message, client->message);
+    if (client->message.C2S_message != NULL) {
+        ASN_STRUCT_FREE(asn_DEF_BDM_C2S_Message, client->message.C2S_message);
     }
 
     free(client);

@@ -37,7 +37,7 @@ cd $ORIG_DIR
 YEAR=`date +%Y`
 cd ../../../data-manager/scripts
 echo "Running BDM-Client..."
-./bdm-client.py -o chrono -s localhost -b "$YEAR-01-01 00:00:00" -e "$YEAR-12-31 12:59:59" -r "*.*.*:*" > $ORIG_DIR/bdm.out
+./bdm-client.py -o chrono -s localhost -T "$YEAR-01-01 00:00:00" -t "$YEAR-12-31 12:59:59" -r "*.*.*:*" > $ORIG_DIR/bdm.out
 
 #stop the BDM
 echo "Killing BDM server..."

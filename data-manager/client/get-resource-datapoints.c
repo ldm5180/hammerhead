@@ -13,7 +13,7 @@
 #include "bdm-client.h"
 
 extern int bdm_fd;
-
+long int bdm_last_entry = -1;
 
 GPtrArray *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
     GPtrArray *hab_list;
@@ -21,12 +21,16 @@ GPtrArray *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
 
     hab_list = g_ptr_array_new();
 
-    for (hi = 0; hi < rdr->list.count; hi ++) {
+    if (rdr->habs.list.count) {
+	bdm_last_entry = rdr->lastEntry;
+    }
+
+    for (hi = 0; hi < rdr->habs.list.count; hi ++) {
         HardwareAbstractor_t *asn_hab;
         bionet_hab_t *hab;
         int ni;
 
-        asn_hab = rdr->list.array[hi];
+        asn_hab = rdr->habs.list.array[hi];
 
         hab = bionet_hab_new((char *)asn_hab->type.buf, (char *)asn_hab->id.buf);
         if (hab == NULL) goto cleanup;
@@ -98,7 +102,11 @@ cleanup:
 
 
 
-GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct timeval *start, struct timeval *end) {
+GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, 
+				       struct timeval *datapointStart, 
+				       struct timeval *datapointEnd,
+				       int entryStart,
+				       int entryEnd) {
     char *hab_type;
     char *hab_id;
     char *node_id;
@@ -115,6 +123,8 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct
     BDM_S2C_Message_t *message = NULL;
     int index = 0;
     int total_bytes_read = 0;
+    
+    struct timeval tv;
 
     memset(&m, 0x00, sizeof(BDM_C2S_Message_t));
     m.present = BDM_C2S_Message_PR_resourceDatapointsQuery;
@@ -149,18 +159,48 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, struct
         goto cleanup3;
     }
 
-
-    r = bionet_timeval_to_GeneralizedTime(start, &rdpq->startTime);
+    if (datapointStart) {
+	tv.tv_sec = datapointStart->tv_sec;
+	tv.tv_usec = datapointStart->tv_usec;
+    } else {
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+    }
+    r = bionet_timeval_to_GeneralizedTime(&tv, &rdpq->datapointStartTime);
     if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %s", (long)start->tv_sec, (long)start->tv_usec, strerror(errno));
+	if (datapointStart) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %m", 
+		  (long)datapointStart->tv_sec, (long)datapointStart->tv_usec);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
+	}
         goto cleanup4;
     }
 
-    r = bionet_timeval_to_GeneralizedTime(end, &rdpq->endTime);
+    if (datapointEnd) {
+	tv.tv_sec = datapointEnd->tv_sec;
+	tv.tv_usec = datapointEnd->tv_usec;
+    } else {
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+    }
+    r = bionet_timeval_to_GeneralizedTime(&tv, &rdpq->datapointEndTime);
     if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %s", (long)end->tv_sec, (long)end->tv_usec, strerror(errno));
+	if (datapointEnd) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from %ld.%06ld: %m", 
+		  (long)datapointEnd->tv_sec, (long)datapointEnd->tv_usec);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
+	}
         goto cleanup4;
     }
+
+    rdpq->entryStart = entryStart;
+    rdpq->entryEnd = entryEnd;
 
     enc_rval = der_encode(&asn_DEF_BDM_C2S_Message, &m, bdm_send_asn, NULL);
     if (enc_rval.encoded == -1) {
@@ -244,3 +284,8 @@ cleanup0:
     return retval;
 }
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

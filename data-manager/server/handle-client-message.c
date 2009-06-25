@@ -19,9 +19,13 @@ int send_message_to_client(const void *buffer, size_t size, void *client_void) {
 
 
 static void handle_client_message_resourceDatapointsQuery(client_t *client, ResourceDatapointsQuery_t *rdpq) {
-    GPtrArray *hab_list;
-    struct timeval start, end;
-    int r;
+    GPtrArray *bdm_list;
+    struct timeval datapoint_start, datapoint_end;
+    int entry_start, entry_end;
+    int latest_entry = 0;
+    struct timeval *pDatapointStart = NULL;
+    struct timeval *pDatapointEnd = NULL;
+    int r, bi;
 
     BDM_S2C_Message_t reply;
     ResourceDatapointsReply_t *rdpr;
@@ -30,38 +34,63 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    Resource Datapoints Query {");
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        Resource Name Pattern: %s.%s.%s:%s", rdpq->habType.buf, rdpq->habId.buf, rdpq->nodeId.buf, rdpq->resourceId.buf);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        startTime=%s", rdpq->startTime.buf);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        endTime=%s", rdpq->endTime.buf);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        datapointStartTime=%s", rdpq->datapointStartTime.buf);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        datapointEndTime=%s", rdpq->datapointEndTime.buf);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        entryStart=%ld", rdpq->entryStart);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        entryEnd=%ld", rdpq->entryEnd);
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    }");
 
-    r = bionet_GeneralizedTime_to_timeval(&rdpq->startTime, &start);
+    r = bionet_GeneralizedTime_to_timeval(&rdpq->datapointStartTime, &datapoint_start);
     if (r != 0) {
         g_log(
             BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
             "handle_client_message_resourceDatapointsQuery(): error converting GeneralizedTime '%s' to struct timeval: %s",
-            rdpq->startTime.buf,
+            rdpq->datapointStartTime.buf,
             strerror(errno)
         );
         return;  // FIXME: return an error message to the client
     }
+    if (datapoint_start.tv_sec != 0 || datapoint_start.tv_usec != 0) {
+	pDatapointStart = &datapoint_start;
+    }
 
-    r = bionet_GeneralizedTime_to_timeval(&rdpq->endTime, &end);
+    r = bionet_GeneralizedTime_to_timeval(&rdpq->datapointEndTime, &datapoint_end);
     if (r != 0) {
         g_log(
             BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
             "handle_client_message_resourceDatapointsQuery(): error converting GeneralizedTime '%s' to struct timeval: %s",
-            rdpq->endTime.buf,
+            rdpq->datapointEndTime.buf,
             strerror(errno)
         );
         return;  // FIXME: return an error message to the client
     }
+    if (datapoint_end.tv_sec != 0 || datapoint_end.tv_usec != 0) {
+	pDatapointEnd = &datapoint_end;
+    }
 
+    entry_start = rdpq->entryStart;
+
+    entry_end = rdpq->entryEnd;
+    if (entry_end == -1) {
+	entry_end = db_get_latest_entry_seq();
+    }
 
     // do that database lookup
-    hab_list = db_get_resource_datapoints(rdpq->habType.buf, rdpq->habId.buf, rdpq->nodeId.buf, rdpq->resourceId.buf, &start, &end);
-
+    bdm_list = db_get_resource_datapoints((const char *)rdpq->habType.buf, 
+					  (const char *)rdpq->habId.buf, 
+					  (const char *)rdpq->nodeId.buf, 
+					  (const char *)rdpq->resourceId.buf, 
+					  pDatapointStart, pDatapointEnd, 
+					  entry_start, entry_end,
+					  &latest_entry);
+    latest_entry = entry_end;
+    if (NULL == bdm_list) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "Failed to get a BDM list.");
+	return;
+    }
 
     memset(&reply, 0x00, sizeof(BDM_S2C_Message_t));
     reply.present = BDM_S2C_Message_PR_resourceDatapointsReply;
@@ -69,8 +98,14 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 
     // build the reply message
     // debuggingly print out what we got
-    {
+    for (bi = 0; bi < bdm_list->len; bi++) {
         int hi;
+	bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
+	GPtrArray * hab_list = bdm->hab_list;
+
+	//BDM-BP TODO someday add the BDM ID to the client message
+
+        rdpr->lastEntry = latest_entry;
 
         for (hi = 0; hi < hab_list->len; hi ++) {
             int ni;
@@ -83,7 +118,7 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
                 goto cleanup;
             }
 
-            r = asn_sequence_add(&rdpr->list, asn_hab);
+            r = asn_sequence_add(&rdpr->habs.list, asn_hab);
             if (r != 0) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "handle_client_message_resourceDatapointsQuery(): error adding HAB to ResourceDatapointReply: %s", strerror(errno));
                 goto cleanup;
@@ -181,6 +216,7 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
         }
     }
 
+    
 
     // send the reply to the client
     asn_r = der_encode(&asn_DEF_BDM_S2C_Message, &reply, send_message_to_client, client);

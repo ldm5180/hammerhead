@@ -32,8 +32,8 @@
 // bdm server listens on this TCP port, clients connect
 //
 
-#define BDM_PORT (11002)
-
+#define BDM_PORT      (11002)
+#define BDM_SYNC_PORT (11003)
 
 
 

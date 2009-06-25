@@ -79,6 +79,22 @@ BEGIN
         nodes    SEQUENCE OF Node
     }
 
+    ResourceRecord ::= SEQUENCE {
+        resourceKey            OCTET STRING,
+        resourceDatapoints     SEQUENCE OF Datapoint
+    }
+
+    BDMRecord ::= SEQUENCE {
+        bdmID             PrintableString,
+        entryTimestamp    GeneralizedTime,
+	resourceKey       OCTET STRING,
+        syncDatapoints    SEQUENCE OF Datapoint
+    }
+
+    BDMSyncRecord ::= SEQUENCE {
+        bdmID            PrintableString,
+        syncResources    SEQUENCE OF ResourceRecord
+    }
 
     -- 
     -- Helper structs
@@ -107,15 +123,20 @@ BEGIN
     -- 
 
     ResourceDatapointsQuery ::= SEQUENCE {
-        habType     PrintableString,
-        habId       PrintableString,
-        nodeId      PrintableString,
-        resourceId  PrintableString,
-        startTime   GeneralizedTime,
-        endTime     GeneralizedTime
+        habType              PrintableString,
+        habId                PrintableString,
+        nodeId               PrintableString,
+        resourceId           PrintableString,
+        datapointStartTime   GeneralizedTime,
+        datapointEndTime     GeneralizedTime,
+	entryStart           INTEGER,
+	entryEnd             INTEGER
     }
 
-    ResourceDatapointsReply ::= SEQUENCE OF HardwareAbstractor
+    ResourceDatapointsReply ::= SEQUENCE {
+        habs             SEQUENCE OF HardwareAbstractor,
+	lastEntry        INTEGER
+    }
 
 
     -- 
@@ -185,5 +206,31 @@ BEGIN
         resourceDatapointsReply ResourceDatapointsReply
     }
 
+
+    -- 
+    -- BDM Sync Metadata Messages
+    -- 
+    -- note: there will never be datapoints in a BDM Sync Metadata 
+    -- message. They belong in the BDM Sync Update message.
+    --
+    BDM-Sync-Metadata-Message ::= SEQUENCE OF HardwareAbstractor
+
+
+
+    --
+    -- BDM Sync Datapoints Messages
+    --
+    -- note: the metadata associated with the datapoints needs to have
+    -- already been received and processed before this message.
+    --
+    BDM-Sync-Datapoints-Message ::= SEQUENCE OF BDMSyncRecord
+
+
+    -- BDM Sync Message
+    -- this contains either a metadata message or a datapoints message
+    BDM-Sync-Message ::= CHOICE {
+        metadataMessage      BDM-Sync-Metadata-Message,
+        datapointsMessage    BDM-Sync-Datapoints-Message
+    }
 END
 
