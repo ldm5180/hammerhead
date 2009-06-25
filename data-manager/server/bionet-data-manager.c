@@ -124,6 +124,7 @@ int main(int argc, char *argv[]) {
 		continue;
 	    }
 	    sync_config->last_entry_end_seq = -1;
+	    sync_config->last_entry_end_seq_metadata = -1;
 	    sync_config_list = g_slist_append(sync_config_list, sync_config);
 	    break;
 	}

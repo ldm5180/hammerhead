@@ -42,7 +42,7 @@ sleep 3 # let the bdm come up before starting the HAB
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
 
-sleep 5
+sleep 10
 
 echo "killing the TCP sync receiver BDM"
 kill %1

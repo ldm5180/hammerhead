@@ -42,6 +42,7 @@ typedef struct {
     struct timeval start_time;
     struct timeval end_time;
     int last_entry_end_seq;
+    int last_entry_end_seq_metadata;
     char resource_name_pattern[BIONET_NAME_COMPONENT_MAX_LEN * 4];
     unsigned int frequency;
     char * sync_recipient;

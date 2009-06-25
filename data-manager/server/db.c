@@ -1343,12 +1343,13 @@ static GPtrArray *_db_get_resource_info(
 	entry_restriction[0] = '\0';
     } else if ( entry_end < 0 ){
 	r = snprintf(entry_restriction, sizeof(entry_restriction),
-		"AND ("
-                "  Hardware_Abstractors.Entry_Num >= %d OR"
-                "  Nodes.Entry_Num >= %d OR"
-                "  Resources.Entry_Num >= %d"
-                ")",
-		entry_start, entry_start, entry_start);
+		     "AND ("
+		     "  Hardware_Abstractors.Entry_Num >= %d OR"
+		     "  Nodes.Entry_Num >= %d OR"
+		     "  Resources.Entry_Num >= %d OR"
+		     "  Datapoints.Entry_Num >= %d"
+		     ")",
+		     entry_start, entry_start, entry_start, entry_start);
 	if (r >= sizeof(entry_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "db_get_resource_entrys(): entry start is too long!");
@@ -1356,12 +1357,13 @@ static GPtrArray *_db_get_resource_info(
 	}
     } else if ( entry_start < 0 ){
 	r = snprintf(entry_restriction, sizeof(entry_restriction),
-		"AND ("
-                "  Hardware_Abstractors.Entry_Num <= %d OR"
-                "  Nodes.Entry_Num <= %d OR"
-                "  Resources.Entry_Num <= %d"
-                ")",
-		entry_end, entry_end, entry_end);
+		     "AND ("
+		     "  Hardware_Abstractors.Entry_Num <= %d OR"
+		     "  Nodes.Entry_Num <= %d OR"
+		     "  Resources.Entry_Num <= %d OR"
+		     "  Datapoints.Entry_Num <= %d"
+		     ")",
+		     entry_end, entry_end, entry_end, entry_end);
 	if (r >= sizeof(entry_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "db_get_resource_entrys(): entry end is too long!");
@@ -1369,14 +1371,16 @@ static GPtrArray *_db_get_resource_info(
 	}
     } else {
 	r = snprintf(entry_restriction, sizeof(entry_restriction),
-		"AND ("
-                "  (Hardware_Abstractors.Entry_Num <= %d AND Hardware_Abstractors.Entry_Num >= %d ) OR"
-                "  (Nodes.Entry_Num <= %d AND Nodes.Entry_Num >= %d ) OR"
-                "  (Resources.Entry_Num <= %d AND Resources.Entry_Num >= %d )"
-                ")",
-		entry_end, entry_start, 
-		entry_end, entry_start, 
-                entry_end, entry_start);
+		     "AND ("
+		     "  (Hardware_Abstractors.Entry_Num <= %d AND Hardware_Abstractors.Entry_Num >= %d ) OR"
+		     "  (Nodes.Entry_Num <= %d AND Nodes.Entry_Num >= %d ) OR"
+		     "  (Resources.Entry_Num <= %d AND Resources.Entry_Num >= %d ) OR"
+		     "  (Datapoints.Entry_Num <= %d and Datapoints.Entry_Num >= %d )"
+		     ")",
+		     entry_end, entry_start, 
+		     entry_end, entry_start, 
+		     entry_end, entry_start,
+		     entry_end, entry_start);
 	if (r >= sizeof(entry_restriction)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "db_get_resource_entrys(): entry end is too long!");

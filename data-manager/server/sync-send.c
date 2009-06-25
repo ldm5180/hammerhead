@@ -42,6 +42,12 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "Syncing metadata");
 
+    if (sync_init_connection(config)) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	      "    Unable to make TCP connection to BDM Sync Receiver");
+	return 0;
+    }
+
     if (bionet_split_resource_name(config->resource_name_pattern,
 				   &hab_type, &hab_id, &node_id, &resource_id)) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -49,12 +55,12 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
     }
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	  "    %s.%s.%s:%s from seq %d to %d",
+	  "    METADATA for %s.%s.%s:%s from seq %d to %d",
 	  hab_type, hab_id, node_id, resource_id,
-	  config->last_entry_end_seq, curr_seq);
+	  config->last_entry_end_seq_metadata, curr_seq);
     bdm_list = db_get_metadata(hab_type, hab_id, node_id, resource_id,
 			       &config->start_time, &config->end_time,
-			       config->last_entry_end_seq, curr_seq,
+			       config->last_entry_end_seq_metadata, curr_seq,
 			       &junk);
 
     memset(&sync_message, 0x00, sizeof(BDM_Sync_Message_t));
@@ -201,20 +207,19 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 	} //for (hi = 0; hi < hab_list->len; hi++)
     } //for (bi = 0; bi < bdm_list->len; bi++)
 
-    if (bi) {
-	if (sync_init_connection(config)) {
-	    goto cleanup;
-	}
-    
+    if (bi) {    
 	// send the reply to the client
 	asn_enc_rval_t asn_r;
 	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
 	if (asn_r.encoded == -1) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
 	}
-	
-	close(config->fd);
+
+	//FIXME: only do this after receiving confirmation from far-end
+	config->last_entry_end_seq_metadata = curr_seq + 1;	
     }
+
+    close(config->fd);
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "    Sync finished");
@@ -241,6 +246,12 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "Syncing datapoints");
 
+    if (sync_init_connection(config)) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	      "    Unable to make TCP connection to BDM Sync Receiver");
+	return 0;
+    }
+
     if (bionet_split_resource_name(config->resource_name_pattern,
 				   &hab_type, &hab_id, &node_id, &resource_id)) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -249,7 +260,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	  "    %s.%s.%s:%s from seq %d to %d",
+	  "    DATAPOINTS for %s.%s.%s:%s from seq %d to %d",
 	  hab_type, hab_id, node_id, resource_id,
 	  config->last_entry_end_seq, curr_seq);
     bdm_list = db_get_resource_datapoints(hab_type, hab_id, node_id, resource_id,
@@ -384,10 +395,6 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 
  
     if(bi){
-	if (sync_init_connection(config)) {
-	    goto cleanup;
-	}
-
 	// send the reply to the client
 	asn_enc_rval_t asn_r;
 	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
@@ -395,13 +402,12 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
 	}
 
-	close(config->fd);
-	
 	//FIXME: only do this after receiving confirmation from far-end
 	db_set_last_sync_seq(config->sync_recipient, curr_seq);
 	config->last_entry_end_seq = curr_seq + 1;
     }
 
+    close(config->fd);
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "    Sync finished");
@@ -439,13 +445,19 @@ gpointer sync_thread(gpointer config) {
 	      "sync_thread(): NULL config"); 
     }
 
-    cfg->last_entry_end_seq = db_get_last_sync_seq(cfg->sync_recipient);
+    cfg->last_entry_end_seq_metadata = cfg->last_entry_end_seq = db_get_last_sync_seq(cfg->sync_recipient);
 
     while (1) {
 	curr_seq = db_get_latest_entry_seq();
 
-	if (curr_seq >= cfg->last_entry_end_seq) {
+	if (curr_seq >= cfg->last_entry_end_seq_metadata) {
 	    sync_send_metadata(cfg, curr_seq);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		  "No metadata to sync.");
+	}
+	if (curr_seq >= cfg->last_entry_end_seq) {
+
 	    sync_send_datapoints(cfg, curr_seq);
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
