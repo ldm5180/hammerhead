@@ -30,10 +30,12 @@ START_TEST (test_libutil_split_hab_name_0) {
     fail_if(r != -1, "failed to reject NULL HAB Name\n");
 
     r = bionet_split_hab_name("hello.world", NULL, &hab_id);
-    fail_if(r != -1, "failed to reject NULL HAB Type\n");
+    fail_if(r != 0, "failed to accept NULL HAB Type\n");
+    fail_if(strcmp("world", hab_id) != 0, "failed to split 'hello.world' hab-id properly with NULL hab-type\n");
 
     r = bionet_split_hab_name("hello.world", &hab_type, NULL);
-    fail_if(r != -1, "failed to reject NULL HAB ID\n");
+    fail_if(r != 0, "failed to accept NULL HAB ID\n");
+    fail_if(strcmp("hello", hab_type) != 0, "failed to split 'hello.world' hab-type properly with NULL hab-id\n");
 } END_TEST
 
 
@@ -53,31 +55,45 @@ START_TEST (test_libutil_split_hab_name_1) {
     name = "HAB-Type.HAB-ID";
     r = bionet_split_hab_name(name, &hab_type, &hab_id);
     fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
+    fail_if(strcmp("HAB-Type", hab_type) != 0, "failed to split '%s' properly\n", name);
+    fail_if(strcmp("HAB-ID", hab_id) != 0, "failed to split '%s' properly\n", name);
 
     name = "a.b";
     r = bionet_split_hab_name(name, &hab_type, &hab_id);
     fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
+    fail_if(strcmp("a", hab_type) != 0, "failed to split '%s' properly\n", name);
+    fail_if(strcmp("b", hab_id) != 0, "failed to split '%s' properly\n", name);
 
     name = "*.*";
     r = bionet_split_hab_name(name, &hab_type, &hab_id);
     fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
+    fail_if(strcmp("*", hab_type) != 0, "failed to split '%s' properly\n", name);
+    fail_if(strcmp("*", hab_id) != 0, "failed to split '%s' properly\n", name);
 
     name = "type.*";
     r = bionet_split_hab_name(name, &hab_type, &hab_id);
     fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
+    fail_if(strcmp("type", hab_type) != 0, "failed to split '%s' properly\n", name);
+    fail_if(strcmp("*", hab_id) != 0, "failed to split '%s' properly\n", name);
 
     name = "*.id";
     r = bionet_split_hab_name(name, &hab_type, &hab_id);
     fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
+    fail_if(strcmp("*", hab_type) != 0, "failed to split '%s' properly\n", name);
+    fail_if(strcmp("id", hab_id) != 0, "failed to split '%s' properly\n", name);
 
     name = "1.2";
     r = bionet_split_hab_name(name, &hab_type, &hab_id);
     fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
+    fail_if(strcmp("1", hab_type) != 0, "failed to split '%s' properly\n", name);
+    fail_if(strcmp("2", hab_id) != 0, "failed to split '%s' properly\n", name);
 
     // valid chars are [-a-zA-Z0-9]
     name = "--.--";
     r = bionet_split_hab_name(name, &hab_type, &hab_id);
     fail_if(r != 0, "failed to accept valid HAB Name %s\n", name);
+    fail_if(strcmp("--", hab_type) != 0, "failed to split '%s' properly\n", name);
+    fail_if(strcmp("--", hab_id) != 0, "failed to split '%s' properly\n", name);
 
     for (i = 0; i < (BIONET_NAME_COMPONENT_MAX_LEN-1); i ++) {
         name_str[i] = 'A' + (i % 26);

@@ -47,26 +47,6 @@ int bionet_split_resource_name(
         return -1;
     }
 
-    if (hab_type == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name(): NULL hab_type passed in");
-        return -1;
-    }
-
-    if (hab_id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name(): NULL hab_id passed in");
-        return -1;
-    }
-
-    if (node_id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name(): NULL node_id passed in");
-        return -1;
-    }
-
-    if (resource_id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name(): NULL resource_id passed in");
-        return -1;
-    }
-
 
     p = resource_name;
 
@@ -88,6 +68,11 @@ int bionet_split_resource_name(
     memcpy(internal_hab_type, p, size);
     internal_hab_type[size] = '\0';
 
+    if (! bionet_is_valid_name_component_or_wildcard(internal_hab_type)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name(): HAB-Type of Resource Name '%s' is not a valid name component or a wildcard", resource_name);
+        return -1;
+    }
+
 
     // get the HAB-ID
     p = separator + 1;
@@ -107,6 +92,11 @@ int bionet_split_resource_name(
     }
     memcpy(internal_hab_id, p, size);
     internal_hab_id[size] = '\0';
+
+    if (! bionet_is_valid_name_component_or_wildcard(internal_hab_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name(): HAB-ID of Resource Name '%s' is not a valid name component or a wildcard", resource_name);
+        return -1;
+    }
 
 
     // get the Node-ID
@@ -128,6 +118,11 @@ int bionet_split_resource_name(
     memcpy(internal_node_id, p, size);
     internal_node_id[size] = '\0';
 
+    if (! bionet_is_valid_name_component_or_wildcard(internal_node_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name(): Node-ID of Resource Name '%s' is not a valid name component or a wildcard", resource_name);
+        return -1;
+    }
+
 
     // get the Resource-ID
     p = separator + 1;
@@ -143,12 +138,17 @@ int bionet_split_resource_name(
     memcpy(internal_resource_id, p, size);
     internal_resource_id[size] = '\0';
 
+    if (! bionet_is_valid_name_component_or_wildcard(internal_resource_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name(): Resource-ID of Resource Name '%s' is not a valid name component or a wildcard", resource_name);
+        return -1;
+    }
 
-    // set returned values
-    *hab_type = internal_hab_type;
-    *hab_id = internal_hab_id;
-    *node_id = internal_node_id;
-    *resource_id = internal_resource_id;
+
+    // set returned values, if the user wants them
+    if (hab_type != NULL)    *hab_type = internal_hab_type;
+    if (hab_id != NULL)      *hab_id = internal_hab_id;
+    if (node_id != NULL)     *node_id = internal_node_id;
+    if (resource_id != NULL) *resource_id = internal_resource_id;
 
 
     return 0;
@@ -244,21 +244,6 @@ int bionet_split_node_name(
         return -1;
     }
 
-    if (hab_type == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): NULL hab_type passed in");
-        return -1;
-    }
-
-    if (hab_id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): NULL hab_id passed in");
-        return -1;
-    }
-
-    if (node_id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): NULL node_id passed in");
-        return -1;
-    }
-
 
     p = node_name;
 
@@ -280,6 +265,11 @@ int bionet_split_node_name(
     memcpy(internal_hab_type, p, size);
     internal_hab_type[size] = '\0';
 
+    if (! bionet_is_valid_name_component_or_wildcard(internal_hab_type)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): HAB-Type of Node Name '%s' is not a valid name component or a wildcard", node_name);
+        return -1;
+    }
+
 
     // get the HAB-ID
     p = separator + 1;
@@ -300,6 +290,11 @@ int bionet_split_node_name(
     memcpy(internal_hab_id, p, size);
     internal_hab_id[size] = '\0';
 
+    if (! bionet_is_valid_name_component_or_wildcard(internal_hab_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): HAB-ID of Node Name '%s' is not a valid name component or a wildcard", node_name);
+        return -1;
+    }
+
 
     // get the Node-ID
     p = separator + 1;
@@ -315,12 +310,16 @@ int bionet_split_node_name(
     memcpy(internal_node_id, p, size);
     internal_node_id[size] = '\0';
 
+    if (! bionet_is_valid_name_component_or_wildcard(internal_node_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): Node-ID of Node Name '%s' is not a valid name component or a wildcard", node_name);
+        return -1;
+    }
+
 
     // set returned values
-    *hab_type = internal_hab_type;
-    *hab_id = internal_hab_id;
-    *node_id = internal_node_id;
-
+    if (hab_type != NULL) *hab_type = internal_hab_type;
+    if (hab_id != NULL)   *hab_id = internal_hab_id;
+    if (node_id != NULL)  *node_id = internal_node_id;
 
     return 0;
 }
@@ -347,16 +346,6 @@ int bionet_split_hab_name(
 
     if (hab_name == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name(): NULL HAB Name passed in");
-        return -1;
-    }
-
-    if (hab_type == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name(): NULL hab_type passed in");
-        return -1;
-    }
-
-    if (hab_id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_hab_name(): NULL hab_id passed in");
         return -1;
     }
 
@@ -408,8 +397,8 @@ int bionet_split_hab_name(
 
 
     // set returned values
-    *hab_type = internal_hab_type;
-    *hab_id = internal_hab_id;
+    if (hab_type != NULL) *hab_type = internal_hab_type;
+    if (hab_id != NULL)   *hab_id = internal_hab_id;
 
 
     return 0;

@@ -149,6 +149,14 @@ void bionet_glib_log_handler(
  *
  * Resource name string shall be in the format 
  *    <HAB-type>.<HAB-ID>.<Node-ID>:<Resource-ID>
+ * 
+ * The passed-in char-pointer-pointers will be assigned the addresses of
+ * statically allocated strings internal to the library.  The caller must
+ * not free or assign to these strings.  The values will change on the next
+ * call to this function.
+ *
+ * If the caller passes in NULL for any of the "out" arguments, that part
+ * of the name component will be skipped.
  *
  * @param[in] resource_name Resource name to split
  * @param[out] hab_type HAB-type from resource name
@@ -174,6 +182,14 @@ int bionet_split_resource_name(
  * Node name string shall be in the format 
  *    <HAB-type>.<HAB-ID>.<Node-ID>
  *
+ * The passed-in char-pointer-pointers will be assigned the addresses of
+ * statically allocated strings internal to the library.  The caller must
+ * not free or assign to these strings.  The values will change on the next
+ * call to this function.
+ *
+ * If the caller passes in NULL for any of the "out" arguments, that part
+ * of the name component will be skipped.
+ *
  * @param[in] node_name Node name to split
  * @param[out] hab_type HAB-type
  * @param[out] hab_id HAB-ID 
@@ -195,6 +211,14 @@ int bionet_split_node_name(
  *
  * HAB name string shall be in the format 
  *    <HAB-type>.<HAB-ID>
+ *
+ * The passed-in char-pointer-pointers will be assigned the addresses of
+ * statically allocated strings internal to the library.  The caller must
+ * not free or assign to these strings.  The values will change on the next
+ * call to this function.
+ *
+ * If the caller passes in NULL for any of the "out" arguments, that part
+ * of the name component will be skipped.
  *
  * @param[in] hab_name HAB name to split
  * @param[out] hab_type HAB-type
