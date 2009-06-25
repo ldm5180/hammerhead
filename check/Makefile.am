@@ -6,5 +6,5 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = libutil data-manager
+SUBDIRS = libutil data-manager asn1
 

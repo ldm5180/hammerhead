@@ -416,6 +416,7 @@ AC_CONFIG_FILES([Makefile
 		 check/Makefile
 		 check/libutil/Makefile
 		 check/data-manager/Makefile
+		 check/asn1/Makefile
                  ])
 
 AC_OUTPUT

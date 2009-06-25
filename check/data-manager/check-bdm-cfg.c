@@ -20,28 +20,32 @@ static const char * good_config_files[] = {
     "config-data/good-2.cfg"
 };
 
-static const sync_sender_config_t good_configs[] = {
-    { /* good-1.cfg */
-        BDM_SYNC_METHOD_TCP,
-        {1, 0},
-        {0, 0},
-        {0, 0},
-        "*.*.*:*",
-        5,
-        "localhost",
-        BDM_SYNC_PORT
-    },
-    { /* good-2.cfg */
-        BDM_SYNC_METHOD_TCP,
-        {1, 0},
-        {0, 0},
-        {0, 0},
-        "*.*.*:*",
-        5,
-        "localhost",
-        55555
+static void mk_good_config(sync_sender_config_t *cfg, int i) 
+{
+    memset(cfg, 0, sizeof(sync_sender_config_t));
+    switch (i) {
+        case 0: /* good-1.cfg */
+            cfg->method = BDM_SYNC_METHOD_TCP;
+            cfg->start_time.tv_sec = 1;
+            strcpy(cfg->resource_name_pattern, "*.*.*:*");
+            cfg->frequency = 5;
+            cfg->sync_recipient = "localhost";
+            cfg->remote_port = BDM_SYNC_PORT;
+            break;
+
+        case 1: /* good-2.cfg */
+            cfg->method = BDM_SYNC_METHOD_TCP;
+            cfg->start_time.tv_sec = 1;
+            strcpy(cfg->resource_name_pattern, "*.*.*:*");
+            cfg->frequency = 5;
+            cfg->sync_recipient = "localhost";
+            cfg->remote_port = 55555;
+            break;
+
+        default:
+            fail("No config for id %d", i);
     }
-};
+}
 
 
 static void _verify_cfg_same(
@@ -74,12 +78,15 @@ static void _verify_cfg_same(
 }
 
 START_TEST (test_bdm_cfg_read_good) {
+    sync_sender_config_t expected_cfg;
+    mk_good_config(&expected_cfg, _i);
+
     sync_sender_config_t * cfg = 
         read_config_file(good_config_files[_i]);
 
     fail_if(NULL == cfg, "Config read failed");
 
-    _verify_cfg_same(cfg, &good_configs[_i]);
+    _verify_cfg_same(cfg, &expected_cfg);
 
 } END_TEST /* test_bdm_cfg_read_good */
 
