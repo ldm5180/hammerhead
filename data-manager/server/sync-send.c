@@ -443,6 +443,7 @@ gpointer sync_thread(gpointer config) {
     if (NULL == cfg) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 	      "sync_thread(): NULL config"); 
+	return NULL;
     }
 
     cfg->last_entry_end_seq_metadata = cfg->last_entry_end_seq = db_get_last_sync_seq(cfg->sync_recipient);

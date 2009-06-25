@@ -1607,6 +1607,7 @@ static int db_set_int_callback(
 static int db_get_next_entry_seq(void) {
     int r;
     char *zErrMsg = NULL;
+    int latest_seq = -1;
 
     // start transaction
     r = sqlite3_exec(
@@ -1642,7 +1643,7 @@ static int db_get_next_entry_seq(void) {
     );
     if (r != SQLITE_OK) goto fail;
 
-    int latest_seq = db_get_latest_entry_seq();
+    latest_seq = db_get_latest_entry_seq();
 
     // commit transaction
     r = do_commit();

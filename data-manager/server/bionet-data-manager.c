@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
 	    break;
 
 	case 'i':
-	    strncpy(bdm_id, optarg, sizeof(bdm_id));
+	    strncpy(bdm_id, optarg, sizeof(bdm_id) - 1);
 	    break;
 
 	case 'n':

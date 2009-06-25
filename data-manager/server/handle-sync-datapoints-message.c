@@ -86,13 +86,15 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		case Value_PR_uint32_v:
 		{
 		    int r;
+		    long l;
 		    uint32_t u;
 		    type = BIONET_RESOURCE_DATA_TYPE_UINT32;
-		    r = asn_INTEGER2long(&dp->value.choice.uint32_v, (long *)&u);
+		    r = asn_INTEGER2long(&dp->value.choice.uint32_v, &l);
 		    if (r != 0) {
 			g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 			      "bionet_asn_to_datapoint(): error converting ASN INTEGER to native Datapoint value");
 		    }
+		    u = (uint32_t)l;
 		    value = &u;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 			  "    handle_sync_datapoints_message(): uint32_t: %u", u);

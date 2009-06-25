@@ -87,7 +87,7 @@ set_res         :       SET_RES ASSIGN STRINGVAL {
                             strncpy(
                                 bdmcfg->resource_name_pattern,
                                 $<stringval>3,
-                                sizeof(bdmcfg->resource_name_pattern));
+                                sizeof(bdmcfg->resource_name_pattern) - 1);
                             bdmcfg->end_time.tv_usec = $<timeval>3.tv_usec;
                         }
 
