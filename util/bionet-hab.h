@@ -42,10 +42,12 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
  *
  * @param[in] hab The HAB
  *
- * @return The HAB name.
+ * @return The HAB name.  This is a pointer to memory owned and managed by
+ *         the Bionet library, the caller should not modify or free the
+ *         returned pointer.
  *
  * @note This function is shorthand (and may be more efficient) for the following code. Internal 
- * library memory is used and cleaned up by the library when the node is free'd.
+ * library memory is used and cleaned up by the library when the HAB is free'd.
  * @code
  * char str[BIONET_NAME_COMPONENT_MAX_LEN * 2];
  * sprintf(str, "%s.%s", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
