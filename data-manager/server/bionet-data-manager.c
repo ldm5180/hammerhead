@@ -37,7 +37,8 @@ void usage(void) {
 	"usage: bionet-data-manager [OPTIONS]\n"
 	"\n"
 	" -?,--help                                      Show this help\n"
-	" -c,--sync-sender-config <FILE>                 File for configuring a BDM sync sender\n"       
+	" -c,--sync-sender-config <FILE>                 File for configuring a BDM sync sender\n"
+	" -d,--enable-dtn-sync-receiver                  Enable BDM syncronization over DTN (ION)\n"
 	" -e,--require-security                          Require security\n"
 	" -f,--file /Path/to/database/file.db            Full path of database file (bdm.db)\n"
 	" -h,--hab,--habs \"HAB-Type.Hab-ID\"              Subscribe to a HAB list.\n"
@@ -77,6 +78,7 @@ int main(int argc, char *argv[]) {
     int tcp_sync_recv_port = BDM_SYNC_PORT;
     int bdm_port = BDM_PORT;
     int enable_tcp_sync_receiver = 0;
+    int enable_dtn_sync_receiver = 0;
 
     //
     // parse command-line arguments
@@ -100,10 +102,11 @@ int main(int argc, char *argv[]) {
 	    {"tcp-sync-receiver",  2, 0, 't'},
 	    {"sync-sender-config", 1, 0, 'c'},
 	    {"port",               1, 0, 'p'},
+	    {"dtn-sync-receiver",  0, 0, 'd'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c= getopt_long(argc, argv, "?vet::f:h:i:n:p:r:s:c:", long_options, &i);
+	c= getopt_long(argc, argv, "?vedt::f:h:i:n:p:r:s:c:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -128,6 +131,19 @@ int main(int argc, char *argv[]) {
 	    sync_config_list = g_slist_append(sync_config_list, sync_config);
 	    break;
 	}
+
+	case 'd':
+#ifdef ION
+	    enable_dtn_sync_receiver = 1;
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		  "Starting BDM-DTN sync receiver");
+	    //BDM-BP TODO: complete me!
+#else
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "BDM Syncronization over DTN was disabled at compile time.");
+	    return (-1);
+#endif
+	    break;
 
 	case 'e':
 	    if (security_dir) {
@@ -196,6 +212,8 @@ int main(int argc, char *argv[]) {
                     g_warning("invalid tcp sync-recieve port specified: '%s'", optarg); 
                 }
             }
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		  "Starting BDM-TCP sync receiver on port %d", tcp_sync_recv_port);
 	    break;
         }
 

@@ -8,7 +8,7 @@
 
 # Prelude.
 AC_PREREQ([2.59])
-AC_INIT([Bionet], [2.2], [lenny@colorado.edu])
+AC_INIT([Bionet], [2.3], [bionet@bioserve.colorado.edu])
 
 # unique source file --- primitive safety check 
 AC_CONFIG_SRCDIR([cal/cal-server.h])
@@ -201,6 +201,15 @@ AC_CHECK_LIB(
     [ AC_MSG_ERROR([could not find libsqlite3-dev]) ],
     [ ]
 )
+AC_ARG_ENABLE(
+    ion,
+    AC_HELP_STRING([--disable-ion], [disable BDM syncronization over DTN (ION)]),
+        [ENABLE_ION=$enableval],
+        [ENABLE_ION=yes]
+    )
+AM_CONDITIONAL(ENABLE_ION, test "x$ENABLE_ION" = "xyes")
+else
+AM_CONDITIONAL(ENABLE_ION, test "x" = "xyes")
 fi
 AM_CONDITIONAL(ENABLE_BDM, test "x$ENABLE_BDM" = "xyes")
 
