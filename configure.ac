@@ -205,11 +205,10 @@ AC_CHECK_LIB(
 AC_ARG_WITH(
     ion,
     AC_HELP_STRING([--with-ion], [Use ION for BDM syncronization over DTN @<:@default=no@:>@]),
-        [with_ion=$enableval],
+        [with_ion=$withval],
         [with_ion=no]
     )
 
-ENABLE_ION=
   AS_IF([test "x$with_ion" != xno],
       [AC_SUBST([ENABLE_ION], [1])
        AC_DEFINE([ENABLE_ION], [1],
@@ -217,7 +216,7 @@ ENABLE_ION=
     ])
 fi
 AM_CONDITIONAL(ENABLE_BDM, test "x$ENABLE_BDM" = "xyes")
-AM_CONDITIONAL(ENABLE_ION, test "x$enable_ion" = "xyes")
+AM_CONDITIONAL([ENABLE_ION], [test "x$with_ion" = "xyes"])
 
 #
 # optionally compile the mmod hab
