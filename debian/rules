@@ -22,6 +22,7 @@
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
+	[ -f ./configure ] || ./autogen.sh
 	./configure --prefix=/usr
 	debian/bzr-log-to-debian-changelog bionet2 `egrep '^BIONET_RELEASE_VERSION *= *' common.am | cut -d '=' -f 2 | tr -- _ -` >| debian/changelog
 	touch configure-stamp
