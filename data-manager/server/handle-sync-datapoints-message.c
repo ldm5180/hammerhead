@@ -126,8 +126,8 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 
 		default:
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-			  "Unknown datatype in BDM Sync Datapoint Message");
-		    break;
+			  "Unknown datatype in BDM Sync Datapoint Message, ignoring datapoint");
+		    continue;
 		} /* switch(dp->value.present) */
 
 		if (0 != bionet_GeneralizedTime_to_timeval(&dp->timestamp, &ts)) {
