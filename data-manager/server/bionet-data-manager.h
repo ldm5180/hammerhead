@@ -34,6 +34,9 @@ extern GMainLoop *bdm_main_loop;
 
 extern GHashTable * bdm_opts_table;
 
+#if ENABLE_ION
+extern char * dtn_endpoint_id;
+#endif
 
 typedef struct {
     struct timeval entry_ts;

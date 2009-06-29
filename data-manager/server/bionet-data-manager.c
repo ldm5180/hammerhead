@@ -46,6 +46,7 @@ void usage(void) {
 	" --ion-key <int>                                Alternate ION key to use if syncing over ION\n"       
 #endif
 	" -n,--node,--nodes \"HAB-Type.HAB-ID.Node-ID\"    Subscribe to a Node list.\n"
+	" -o,--dtn-endpoint-id <ID>                      DTN endpoint ID (ex: ipn:1.2)\n"
         " -p,--port <port>                               Alternate BDM Client port. Default: %u\n"
 	" -r,--resource,--resources \"HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
 	"                                                Subscribe to Resource values.\n"
@@ -108,10 +109,11 @@ int main(int argc, char *argv[]) {
 	    {"sync-sender-config", 1, 0, 'c'},
 	    {"port",               1, 0, 'p'},
 	    {"dtn-sync-receiver",  0, 0, 'd'},
+	    {"dtn-endpoint-id",    1, 0, 'o'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c= getopt_long(argc, argv, "?vedt::f:h:I:i:n:p:r:s:c:", long_options, &i);
+	c= getopt_long(argc, argv, "?vedt::f:h:I:i:n:p:r:s:c:o:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -220,6 +222,16 @@ int main(int argc, char *argv[]) {
 		g_warning("skipping Node subscription %s, only %d are handled", 
 			  *argv, MAX_SUBSCRIPTIONS);
 	    }
+	    break;
+
+	case 'o':
+#if ENABLE_ION
+	    dtn_endpoint_id = optarg;
+#else
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "DTN capabilities were disabled at compile time.");
+	    return (-1);
+#endif
 	    break;
 
 	case 'r':

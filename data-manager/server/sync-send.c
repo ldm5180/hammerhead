@@ -27,11 +27,14 @@
 #include "bdm-util.h"
 #include "bionet-data-manager.h"
 
+#if ENABLE_ION
+char * dtn_endpoint_id = NULL;
+#endif
+
 static int sync_init_connection(sync_sender_config_t * config);
 static int sync_finish_connection(sync_sender_config_t * config);
 static int write_data_to_message(const void *buffer, size_t size, void * config_void);
 static int write_data_to_socket(const void *buffer, size_t size, void * config_void);
-
 
 #if ENABLE_ION
 static int write_data_to_ion(const void *buffer, size_t size, void * config_void);
