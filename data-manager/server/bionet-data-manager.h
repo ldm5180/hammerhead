@@ -15,6 +15,14 @@
 #include "bionet-asn.h"
 #include "bionet-util.h"
 
+#include "config.h"
+
+#if ENABLE_ION
+#include "ion/zco.h"
+#include "ion/sdr.h"
+#include "ion/bp.h"
+#endif
+
 
 // Number of bytes to use for the resource key
 // from the sha1 hash. Must be <= to SHA_DIGEST_LENGTH;
@@ -38,15 +46,25 @@ typedef enum {
 } bdm_sync_method_t;
 
 typedef struct {
-    bdm_sync_method_t method;
-    struct timeval start_time;
-    struct timeval end_time;
-    int last_entry_end_seq;
-    int last_entry_end_seq_metadata;
+    bdm_sync_method_t method;  // The method used to send
+    struct timeval start_time; // Start-time datapoint filter
+    struct timeval end_time;   // End-time datapoint filter
     char resource_name_pattern[BIONET_NAME_COMPONENT_MAX_LEN * 4];
     unsigned int frequency;
     char * sync_recipient;
     int remote_port;
+#if ENABLE_ION
+    // Group ion configs for clarity
+    struct {
+        int basekey; // ION base key, to allow multiple instance on a machine
+        Sdr	sdr; // The SDR of the open transaction. NULL when not in transaction
+        Object	bundleZco; // The ZCO that is being appended to.
+    } ion;
+#endif
+
+    //State vars
+    int last_entry_end_seq;    
+    int last_entry_end_seq_metadata; 
     int fd;
 } sync_sender_config_t;
 

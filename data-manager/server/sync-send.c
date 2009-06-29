@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <errno.h>
 
 #include <glib.h>
 
@@ -26,8 +27,15 @@
 #include "bdm-util.h"
 #include "bionet-data-manager.h"
 
-int sync_init_connection(sync_sender_config_t * config);
-int send_message_to_sync_receiver(const void *buffer, size_t size, void * config_void);
+static int sync_init_connection(sync_sender_config_t * config);
+static int sync_finish_connection(sync_sender_config_t * config);
+static int write_data_to_message(const void *buffer, size_t size, void * config_void);
+static int write_data_to_socket(const void *buffer, size_t size, void * config_void);
+
+
+#if ENABLE_ION
+static int write_data_to_ion(const void *buffer, size_t size, void * config_void);
+#endif
 
 static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
     GPtrArray * bdm_list = NULL;
@@ -210,7 +218,8 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
     if (bi) {    
 	// send the reply to the client
 	asn_enc_rval_t asn_r;
-	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
+	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, 
+            write_data_to_message, config);
 	if (asn_r.encoded == -1) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
 	}
@@ -219,10 +228,11 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 	config->last_entry_end_seq_metadata = curr_seq + 1;	
     }
 
-    close(config->fd);
-
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	  "    Sync finished");
+    r = sync_finish_connection(config);
+    if( r == 0 ) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+              "    Sync finished");
+    }
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &message);
     return 0;
@@ -397,7 +407,8 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
     if(bi){
 	// send the reply to the client
 	asn_enc_rval_t asn_r;
-	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, send_message_to_sync_receiver, config);
+	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, 
+            write_data_to_message, config);
 	if (asn_r.encoded == -1) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
 	}
@@ -407,10 +418,11 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 	config->last_entry_end_seq = curr_seq + 1;
     }
 
-    close(config->fd);
-
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	  "    Sync finished");
+    r = sync_finish_connection(config);
+    if( r == 0 ) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+              "    Sync datapoints finished");
+    }
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &sync_message);
 
@@ -423,7 +435,7 @@ cleanup:
 } /* sync_send_datapoints() */
 
 
-int send_message_to_sync_receiver(const void *buffer, size_t size, void * config_void) {
+static int write_data_to_socket(const void *buffer, size_t size, void * config_void) {
     sync_sender_config_t * config = (sync_sender_config_t *)config_void;
     int r;
 
@@ -433,7 +445,43 @@ int send_message_to_sync_receiver(const void *buffer, size_t size, void * config
 	  "    %d bytes written", r);
 
     return r;
-} /* send_message_to_sync_receiver() */
+} /* write_data_to_socket() */
+
+#if ENABLE_ION
+static int write_data_to_ion(const void *buffer, size_t size, void * config_void) {
+    sync_sender_config_t * config = (sync_sender_config_t *)config_void;
+
+    Object	extent;
+    Sdr sdr = config->ion.sdr;
+    Object bundleZco = config->ion.bundleZco;
+
+    if(sdr == NULL) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+            "SDR not initialized for send");
+        return -1;
+    }
+
+    if(size == 0) {
+        return 0;
+    }
+
+    extent = sdr_malloc(sdr, size);
+    if (extent == 0)
+    {
+        sdr_cancel_xn(sdr);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+            "No space for ZCO extent.");
+
+        config->ion.sdr = NULL;
+        return -1;
+    }
+
+    sdr_write(sdr, extent, (void*)buffer, size);
+    zco_append_extent(sdr, bundleZco, ZcoSdrSource, extent, 0, size);
+
+    return size;
+}
+#endif
 
 
 gpointer sync_thread(gpointer config) {
@@ -471,13 +519,123 @@ gpointer sync_thread(gpointer config) {
     return NULL;
 } /* sync_thread() */
 
-int sync_init_connection(sync_sender_config_t * config) {
+#if ENABLE_ION
+static int sync_init_connection_ion(sync_sender_config_t * config) {
+
+    config->ion.sdr = bp_get_sdr();
+
+    sdr_begin_xn(config->ion.sdr);
+
+    config->ion.bundleZco = zco_create(config->ion.sdr, ZcoSdrSource, 0,
+                    0, 0);
+
+    //TODO: Move to shutdown
+    writeErrmsgMemos();
+    puts("Stopping bpsource.");
+    return 0;
+
+}
+#endif
+
+static int sync_finish_connection_tcp(sync_sender_config_t * config) {
+    int r;
+    while((r = close(config->fd)) < 0 && errno == EINTR);
+
+    if(r<0){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+            "Can't close TCP connection: %m");
+        return -1;
+    }   
+
+    return 0;
+}
+
+
+#if ENABLE_ION
+static int sync_finish_connection_ion(sync_sender_config_t * config) {
+
+    if (sdr_end_xn(config->ion.sdr) < 0 || config->ion.bundleZco == 0)
+    {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                "Can't end sdr transaction");
+            sdr_cancel_xn(config->ion.sdr);
+            config->ion.sdr = NULL;
+            return -1;
+    }
+
+    if (bp_send(NULL, BP_BLOCKING, config->sync_recipient, NULL, 300,
+                    BP_STD_PRIORITY, NoCustodyRequested,
+                    0, 0, config->ion.bundleZco) < 1)
+    {
+            putSysErrmsg("bpsource can't send ADU", NULL);
+            return -1;
+    }
+
+    writeErrmsgMemos();
+    return 0;
+
+}
+#endif
+
+static int write_data_to_message(const void *buffer, size_t size, void * config_void)
+{
+    int rc;
+    sync_sender_config_t * config = (sync_sender_config_t *)config_void;
+    switch ( config->method ) {
+        case BDM_SYNC_METHOD_TCP:
+            rc = write_data_to_socket(buffer, size, config);
+            break;
+
+#if ENABLE_ION
+        case BDM_SYNC_METHOD_ION:
+            rc = write_data_to_ion(buffer, size, config);
+            break;
+#endif
+        
+        default:
+            g_log(
+                BDM_LOG_DOMAIN,
+                G_LOG_LEVEL_WARNING,
+                "write_data_to_message(): failed to write: unknown method %d",
+                config->method);
+            rc = -1;
+    }
+    return rc;
+}
+
+static int sync_finish_connection(sync_sender_config_t * config) {
+    int rc;
+    switch ( config->method ) {
+        case BDM_SYNC_METHOD_TCP:
+            rc = sync_finish_connection_tcp(config);
+            break;
+
+#if ENABLE_ION
+        case BDM_SYNC_METHOD_ION:
+            rc = sync_finish_connection_ion(config);
+            break;
+#endif
+        
+        default:
+            g_log(
+                BDM_LOG_DOMAIN,
+                G_LOG_LEVEL_WARNING,
+                "sync_finish_connection(): failed to send: unknown method %d",
+                config->method);
+            rc = -1;
+    }
+    return rc;
+}
+
+
+
+static int sync_init_connection_tcp(sync_sender_config_t * config) {
     struct sockaddr_in server_address;
     struct hostent *server_host;
 
     if (NULL == config) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "sync_init_connection(): NULL config passed in.");
+	      "sync_init_connection_tcp(): NULL config passed in.");
 	return -1;
     }
 
@@ -495,7 +653,7 @@ int sync_init_connection(sync_sender_config_t * config) {
         r = sigaction(SIGPIPE, NULL, &sa);
         if (r < 0) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "sync_init_connection(): error getting old SIGPIPE sigaction: %m");
+		  "sync_init_connection_tcp(): error getting old SIGPIPE sigaction: %m");
             return -1;
         }
 
@@ -504,7 +662,7 @@ int sync_init_connection(sync_sender_config_t * config) {
             r = sigaction(SIGPIPE, &sa, NULL);
             if (r < 0) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		      "sync_init_connection(): error setting SIGPIPE sigaction to SIG_IGN: %m");
+		      "sync_init_connection_tcp(): error setting SIGPIPE sigaction to SIG_IGN: %m");
                 return -1;
             }
         }
@@ -519,7 +677,7 @@ int sync_init_connection(sync_sender_config_t * config) {
         g_log(
             BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
-            "sync_init_connection(): gethostbyname(\"%s\"): %s",
+            "sync_init_connection_tcp(): gethostbyname(\"%s\"): %s",
             config->sync_recipient,
             error_string
         );
@@ -531,7 +689,7 @@ int sync_init_connection(sync_sender_config_t * config) {
         g_log(
             BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
-            "sync_init_connection(): cannot create local socket: %m");
+            "sync_init_connection_tcp(): cannot create local socket: %m");
         return -1;
     }
 
@@ -548,7 +706,7 @@ int sync_init_connection(sync_sender_config_t * config) {
         g_log(
             BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
-            "sync_init_connection(): failed to connect to server %s:%d: %m",
+            "sync_init_connection_tcp(): failed to connect to server %s:%d: %m",
             server_host->h_name,
             config->remote_port);
         return -1;
@@ -556,6 +714,32 @@ int sync_init_connection(sync_sender_config_t * config) {
 
     return 0;
 }
+
+static int sync_init_connection(sync_sender_config_t * config) {
+    int rc;
+    switch ( config->method ) {
+        case BDM_SYNC_METHOD_TCP:
+            rc = sync_init_connection_tcp(config);
+            break;
+
+#if ENABLE_ION
+        case BDM_SYNC_METHOD_ION:
+            rc = sync_init_connection_ion(config);
+            break;
+#endif
+        
+        default:
+            g_log(
+                BDM_LOG_DOMAIN,
+                G_LOG_LEVEL_WARNING,
+                "sync_init_connection(): failed to initialize: unknown method %d",
+                config->method);
+            rc = -1;
+    }
+    return rc;
+}
+
+
 
 // Emacs cruft
 // Local Variables:

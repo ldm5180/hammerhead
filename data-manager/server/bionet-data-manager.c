@@ -17,9 +17,6 @@
 #include "bionet-data-manager.h"
 #include "bdm-util.h"
 
-
-
-
 GMainLoop *bdm_main_loop = NULL;
 
 #define DB_NAME "bdm.db"
@@ -38,11 +35,16 @@ void usage(void) {
 	"\n"
 	" -?,--help                                      Show this help\n"
 	" -c,--sync-sender-config <FILE>                 File for configuring a BDM sync sender\n"
+#if ENABLE_ION
 	" -d,--enable-dtn-sync-receiver                  Enable BDM syncronization over DTN (ION)\n"
+#endif
 	" -e,--require-security                          Require security\n"
 	" -f,--file /Path/to/database/file.db            Full path of database file (bdm.db)\n"
 	" -h,--hab,--habs \"HAB-Type.Hab-ID\"              Subscribe to a HAB list.\n"
 	" -i,--id <ID>                                   ID of Bionet Data Manager\n"
+#if ENABLE_ION
+	" --ion-key <int>                                Alternate ION key to use if syncing over ION\n"       
+#endif
 	" -n,--node,--nodes \"HAB-Type.HAB-ID.Node-ID\"    Subscribe to a Node list.\n"
         " -p,--port <port>                               Alternate BDM Client port. Default: %u\n"
 	" -r,--resource,--resources \"HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
@@ -78,8 +80,7 @@ int main(int argc, char *argv[]) {
     int tcp_sync_recv_port = BDM_SYNC_PORT;
     int bdm_port = BDM_PORT;
     int enable_tcp_sync_receiver = 0;
-
-#ifdef ION
+#if ENABLE_ION
     int enable_dtn_sync_receiver = 0;
 #endif
 
@@ -95,6 +96,7 @@ int main(int argc, char *argv[]) {
 	    {"file",               1, 0, 'f'},
 	    {"habs",               1, 0, 'h'},
 	    {"hab",                1, 0, 'h'},
+	    {"ion-key",            1, 0, 'I'},
 	    {"id",                 1, 0, 'i'},
 	    {"nodes",              1, 0, 'n'},
 	    {"node",               1, 0, 'n'},
@@ -109,7 +111,7 @@ int main(int argc, char *argv[]) {
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c= getopt_long(argc, argv, "?vedt::f:h:i:n:p:r:s:c:", long_options, &i);
+	c= getopt_long(argc, argv, "?vedt::f:h:I:i:n:p:r:s:c:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -131,12 +133,26 @@ int main(int argc, char *argv[]) {
 	    }
 	    sync_config->last_entry_end_seq = -1;
 	    sync_config->last_entry_end_seq_metadata = -1;
+            if(sync_config->method == BDM_SYNC_METHOD_ION){
+#if ENABLE_ION
+                if (bp_attach() < 0)
+                {
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                        "Can't attach to BP.");
+                    continue;
+                }
+#else
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                      "Bad config file '%s': BDM Syncronization over DTN was disabled at compile time.", optarg);
+                return (1);
+#endif
+            }
 	    sync_config_list = g_slist_append(sync_config_list, sync_config);
 	    break;
 	}
 
 	case 'd':
-#ifdef ION
+#if ENABLE_ION
 	    enable_dtn_sync_receiver = 1;
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 		  "Starting BDM-DTN sync receiver");
@@ -144,7 +160,7 @@ int main(int argc, char *argv[]) {
 #else
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "BDM Syncronization over DTN was disabled at compile time.");
-	    return (-1);
+	    return (1);
 #endif
 	    break;
 
@@ -174,6 +190,27 @@ int main(int argc, char *argv[]) {
 	case 'i':
 	    strncpy(bdm_id, optarg, sizeof(bdm_id) - 1);
 	    break;
+
+	case 'I':
+        {
+#if ENABLE_ION
+            char * endptr = NULL;
+            long key;
+            key = strtoul(optarg, &endptr, 10);
+            if(endptr > optarg 
+            && endptr[0] == '\0')
+            {
+                sm_set_basekey(key);
+            } else {
+                g_warning("invalid ION key specified: '%s'", optarg); 
+            }
+#else	
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "BDM Syncronization over DTN was disabled at compile time.");
+	    return (1);
+#endif
+	    break;
+        }
 
 	case 'n':
 	    if (node_list_index < MAX_SUBSCRIPTIONS) {

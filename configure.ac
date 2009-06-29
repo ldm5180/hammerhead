@@ -204,15 +204,20 @@ AC_CHECK_LIB(
 
 AC_ARG_WITH(
     ion,
-    [enable BDM syncronization over DTN (ION)],
-    [ ],
-    [ENABLE_ION=no]
+    AC_HELP_STRING([--with-ion], [Use ION for BDM syncronization over DTN @<:@default=no@:>@]),
+        [with_ion=$enableval],
+        [with_ion=no]
     )
-AM_CONDITIONAL(ENABLE_ION, test "x$ENABLE_ION" != "xno")
-else
-AM_CONDITIONAL(ENABLE_ION, test "xno" = "xno")
+
+ENABLE_ION=
+  AS_IF([test "x$with_ion" != xno],
+      [AC_SUBST([ENABLE_ION], [1])
+       AC_DEFINE([ENABLE_ION], [1],
+                 [Define if you have want BDM-BP Sync support over ION])
+    ])
 fi
 AM_CONDITIONAL(ENABLE_BDM, test "x$ENABLE_BDM" = "xyes")
+AM_CONDITIONAL(ENABLE_ION, test "x$enable_ion" = "xyes")
 
 #
 # optionally compile the mmod hab
