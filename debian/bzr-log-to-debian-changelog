@@ -1,0 +1,119 @@
+#!/usr/bin/perl -w
+
+use strict;
+use POSIX qw(strftime);
+
+
+
+
+sub start_entry($$) {
+    my ($package_name, $rev) = @_;
+    print "$package_name ($rev) unstable; urgency=low\n";
+    print "\n";
+}
+
+
+sub entry($) {
+    my ($entry) = @_;
+    print "  * $entry\n";
+}
+
+
+sub finish_entry($$) {
+    my ($committer, $timestamp) = @_;
+    print "\n";
+    print " -- $committer  $timestamp\n";
+    print "\n";
+}
+
+
+
+
+if (int(@ARGV) != 2) {
+    die "usage: bzr-log-to-debian-changelog PACKAGE UPSTREAM-VERSION\n";
+}
+
+my $package_name = $ARGV[0];
+my $upstream_version = $ARGV[1];
+
+# AJJ: bzr version 1.12 and less doesn't have --levels so we emulate with a grep.
+my @bzr_log = `bzr log --levels=1`;
+if (`echo $?` != 0) {
+    @bzr_log = `bzr log | egrep -v '^(    )+'`;
+}
+chomp @bzr_log;
+
+my ($rev, $committer, $timestamp);
+
+#my @bzr_status = `svn st | egrep -v '^\\?'`;
+#chomp @bzr_status;
+
+
+while (defined (my $line = shift(@bzr_log))) {
+    if ($line =~ /^-+$/) {
+        if ((defined $timestamp) && (defined $committer)) {
+            finish_entry($committer, $timestamp);
+        }
+        $committer = $timestamp = $rev = undef;
+        next;
+    }
+
+    elsif ($line =~ /^revno:\s+(\S+)/) {
+        $rev = $1;
+        next;
+    }
+
+    elsif ($line =~ /^committer:\s+(.*)/) {
+        my $raw = $1;
+        if ($raw =~ /^.* <.*@.*>$/) {
+            $committer = $raw;
+        } elsif ($raw =~ /^<(.*)@.*>$/) {
+            $committer = "$1 $raw";
+        } elsif ($raw =~ /^(.*)@.*$/) {
+            $committer = "$1 <$raw>";
+        } else {
+            # bogus committer, just use it raw
+            $committer = $raw;
+        }
+        next;
+    }
+
+    elsif ($line =~ /^timestamp:\s+(.+)/) {
+        $timestamp = `date -R -d "$1"`;
+        next;
+    }
+
+    elsif ($line =~ /^message:\s*$/) {
+        start_entry($package_name, "$upstream_version+$rev");
+        next;
+    }
+
+    elsif ($line =~ /^branch nick:/) { next; }
+    elsif ($line =~ /^tags:/) { next; }
+    elsif ($line =~ /^\s*$/) { next; }
+
+    entry $line;
+
+#        if ($line !~ /^(r\d+) \| (\w+) \| ([-0-9]+) ([:0-9]+ \S+) \(([^\)]+)\) \|/) {
+#            die "error parsing changlog entry header '$line'\n";
+#        }
+#        ($rev, $committer, $time, $date) = ($1, $2, $4, $5);
+#        if (int(@svn_status) > 0) {
+#            # local mods!
+#            my $now = strftime "%Y%m%d%H%M%S", gmtime;
+#            start_entry($package_name, "$rev+$now");
+#            entry("local mods:");
+#            for my $s (@svn_status) {
+#                entry($s);
+#            }
+#            finish_entry($committer, $email_host, $date, $time);
+#            undef @svn_status;
+#        }
+#        start_entry($package_name, $rev);
+
+}
+
+if ((defined $timestamp) && (defined $committer)) {
+    finish_entry($committer, $timestamp);
+}
+
