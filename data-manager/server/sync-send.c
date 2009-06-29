@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <errno.h>
+#include <signal.h>
 
 #include <glib.h>
 
