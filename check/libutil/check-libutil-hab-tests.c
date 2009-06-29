@@ -201,6 +201,19 @@ START_TEST (test_libutil_hab_new_3) {
 } END_TEST /* test_libutil_hab_new_0 */
 
 
+
+START_TEST (test_libutil_hab_new_and_free) {
+    bionet_hab_t *hab;
+
+    // make a hab with NULL Type and ID
+    hab = bionet_hab_new(NULL, NULL);
+    fail_if(hab == NULL, "error creating a new hab");
+
+    // and clean it up
+    bionet_hab_free(hab);
+} END_TEST
+
+
 /*
  * bionet_hab_get_name(NULL)
  */
@@ -421,6 +434,7 @@ void libutil_hab_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_hab_new_1);
     tcase_add_test(tc, test_libutil_hab_new_2);
     tcase_add_test(tc, test_libutil_hab_new_3);
+    tcase_add_test(tc, test_libutil_hab_new_and_free);
 
     /* bionet_hab_get_name() */
     tcase_add_test(tc, test_libutil_hab_get_name_0);

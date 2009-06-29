@@ -82,7 +82,11 @@ static int bionet_hab_set_type(bionet_hab_t *hab, const char *type) {
             return -1;
         }
 
-	hab->type = tmp_type;
+	hab->type = strdup(tmp_type);
+        if (hab->type == NULL) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "bionet_hab_set_type(): out of memory!");
+            return -1;
+        }
 
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 	      "bionet_hab_set_type(): the passed-in HAB has no HAB-Type, using program name '%s'", 
@@ -142,6 +146,10 @@ static int bionet_hab_set_id(bionet_hab_t *hab, const char *id) {
         }
 
 	hab->id = strdup(hostname);
+        if (hab->id == NULL) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "bionet_hab_set_id(): out of memory!");
+            return -1;
+        }
     }
 
     return 0;
