@@ -201,15 +201,16 @@ AC_CHECK_LIB(
     [ AC_MSG_ERROR([could not find libsqlite3-dev]) ],
     [ ]
 )
-AC_ARG_ENABLE(
+
+AC_ARG_WITH(
     ion,
-    AC_HELP_STRING([--disable-ion], [disable BDM syncronization over DTN (ION)]),
-        [ENABLE_ION=$enableval],
-        [ENABLE_ION=yes]
+    [enable BDM syncronization over DTN (ION)],
+    [ ],
+    [ENABLE_ION=no]
     )
-AM_CONDITIONAL(ENABLE_ION, test "x$ENABLE_ION" = "xyes")
+AM_CONDITIONAL(ENABLE_ION, test "x$ENABLE_ION" != "xno")
 else
-AM_CONDITIONAL(ENABLE_ION, test "x" = "xyes")
+AM_CONDITIONAL(ENABLE_ION, test "xno" = "xno")
 fi
 AM_CONDITIONAL(ENABLE_BDM, test "x$ENABLE_BDM" = "xyes")
 
