@@ -226,6 +226,7 @@ void make_shutdowns_clean(void);
 
 // BDM sync'ing
 gpointer sync_thread(gpointer config);
+gpointer dtn_receive_thread(gpointer config);
 
 extern GSList * sync_config_list;
 

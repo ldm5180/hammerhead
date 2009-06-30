@@ -524,6 +524,16 @@ gpointer sync_thread(gpointer config) {
     return NULL;
 } /* sync_thread() */
 
+
+#if ENABLE_ION
+gpointer dtn_receive_thread(gpointer config) {
+    while(1) {
+	sleep(60);
+    }
+}
+#endif
+
+
 #if ENABLE_ION
 static int sync_init_connection_ion(sync_sender_config_t * config) {
 

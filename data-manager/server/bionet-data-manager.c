@@ -409,6 +409,27 @@ int main(int argc, char *argv[]) {
     }
 
 
+#if ENABLE_ION
+    //start the DTN receiver thread
+    GThread * dtn_recv = NULL;
+    if (enable_dtn_sync_receiver) {
+	if (NULL == dtn_endpoint_id) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "DTN Sync Receiver requested, but no DTN endpoint ID specified.");
+	    return (-1);
+	}
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	      "DTN Sync Receiver starting. DTN endpoint ID: %s", dtn_endpoint_id);
+
+	dtn_recv = g_thread_create(dtn_receive_thread, dtn_endpoint_id, FALSE, NULL);
+	if (NULL == dtn_recv) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to create DTN receiver thread: %m");
+	}
+	//TODO create a signaling/control method to cause threads to exit when needed.
+    }
+#endif
+
 
     //
     //  The program has now initialized itself.
