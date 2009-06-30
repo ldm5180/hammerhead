@@ -254,6 +254,12 @@ int main (int argc, char *argv[]) {
         int r;
 
         if (should_exit) {
+	    int i;
+	    for (i = 0; i < bionet_hab_get_num_nodes(hab); i++) {
+		bionet_node_t *n;
+		n = bionet_hab_get_node_by_index(hab, i);
+		hab_report_datapoints(n);
+	    }
             hab_disconnect();  // let the CAL thread emit any last-second events we sent *last* time through the main loop
             show_stuff_going_away();
             exit(0);
