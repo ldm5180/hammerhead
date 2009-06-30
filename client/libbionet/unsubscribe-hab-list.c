@@ -73,7 +73,7 @@ int bionet_unsubscribe_hab_list_by_habtype_habid(const char *hab_type,  const ch
                         continue;
                     }
 
-                    // make there are no other subscriptions to this hab
+                    // make sure there are no other subscriptions to this hab
                     for (j = libbionet_hab_subscriptions; j != NULL; j = j->next) {
                         libbionet_hab_subscription_t *sub = j->data;
 
