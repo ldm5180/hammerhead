@@ -62,6 +62,7 @@ typedef struct {
         int basekey; // ION base key, to allow multiple instance on a machine
         Sdr	sdr; // The SDR of the open transaction. NULL when not in transaction
         Object	bundleZco; // The ZCO that is being appended to.
+        size_t  bundle_size; // Running total of all extents appended to bundle
     } ion;
 #endif
 

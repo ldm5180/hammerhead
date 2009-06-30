@@ -482,6 +482,7 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
 
     sdr_write(sdr, extent, (void*)buffer, size);
     zco_append_extent(sdr, bundleZco, ZcoSdrSource, extent, 0, size);
+    config->ion.bundle_size += size;
 
     return size;
 }
@@ -532,10 +533,9 @@ static int sync_init_connection_ion(sync_sender_config_t * config) {
 
     config->ion.bundleZco = zco_create(config->ion.sdr, ZcoSdrSource, 0,
                     0, 0);
+    config->ion.bundle_size = 0;
 
-    //TODO: Move to shutdown
     writeErrmsgMemos();
-    puts("Stopping bpsource.");
     return 0;
 
 }
@@ -567,13 +567,21 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
             return -1;
     }
 
-    if (bp_send(NULL, BP_BLOCKING, config->sync_recipient, NULL, 300,
-                    BP_STD_PRIORITY, NoCustodyRequested,
-                    0, 0, config->ion.bundleZco) < 1)
-    {
-            putSysErrmsg("bpsource can't send ADU", NULL);
-            return -1;
+    if ( config->ion.bundle_size ) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+            "Sending bundle with payload of %lu bytes",
+            config->ion.bundle_size);
+        if (bp_send(NULL, BP_BLOCKING, config->sync_recipient, NULL, 300,
+                        BP_STD_PRIORITY, NoCustodyRequested,
+                        0, 0, config->ion.bundleZco) < 1)
+        {
+                putSysErrmsg("bpsource can't send ADU", NULL);
+                return -1;
+        }
+    } else {
+        zco_destroy_reference(config->ion.sdr, config->ion.bundleZco);
     }
+
 
     writeErrmsgMemos();
     return 0;
