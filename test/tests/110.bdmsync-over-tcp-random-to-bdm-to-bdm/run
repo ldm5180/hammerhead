@@ -15,6 +15,13 @@ if [ -z "$TEST_DURATION" ]; then
     TEST_DURATION=30
 fi
 
+if [ -z "$PYTHONPATH" ]; then
+    export PYTHONPATH=$ROOT/data-manager/py-client:$ROOT/data-manager/py-client/.libs
+else
+    export PYTHONPATH=$ROOT/data-manager/py-client:$ROOT/data-manager/py-client/.libs:$PYTHONPATH
+fi
+export DYLD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs
+export LD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs
 
 UNIQUE=$$
 RETVAL=0
@@ -49,34 +56,36 @@ kill %3
 wait %3
 
 sleep 10
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
 echo "test run complete. killing the TCP sync sender BDM"
 kill %2
 kill %2
 
 echo "getting data from TCP sync receiver BDM"
-if [ -z "$PYTHONPATH" ]; then
-    export PYTHONPATH=$ROOT/data-manager/py-client:$ROOT/data-manager/py-client/.libs
-else
-    export PYTHONPATH=$ROOT/data-manager/py-client:$ROOT/data-manager/py-client/.libs:$PYTHONPATH
-fi
-export DYLD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs
-export LD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs
 
 
-
-$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-client.py
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
 
 echo "killing BDM"
 kill %1
 wait
 
-if ! diff -q out.random-hab out.bdm-client.py; then
-    echo "ERROR: bdm-client.py output differs from random-hab output:"
-    diff -u out.random-hab out.bdm-client.py
+if ! diff -q out.random-hab out.bdm-orig; then
+    echo "ERROR: Originating BDM output differs from random-hab output:"
+    diff -u out.random-hab out.bdm-orig
     RETVAL=1
 else
-    echo "bdm-client.py output is identical to random-hab output, yay"
+    echo "Originating BDM output is identical to random-hab output, yay"
 fi
+
+if ! diff -q out.random-hab out.bdm-sync; then
+    echo "ERROR: Sync'd BDM output differs from random-hab output:"
+    diff -u out.random-hab out.bdm-sync
+    RETVAL=1
+else
+    echo "Sync'd BDM output is identical to random-hab output, yay"
+fi
+
 
 exit $RETVAL
 
