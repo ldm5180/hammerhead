@@ -35,7 +35,7 @@ parser.add_option("-e", "--entry-end", dest="entry_end",
                   help="Entry Sequence Number End",
                   default=-1)
 parser.add_option("-p", "--port", dest="bdm_port",
-                  help="BDM port number",
+                  help="BDM port number", type="int",
                   default=11002)
 
 (options, args) = parser.parse_args()

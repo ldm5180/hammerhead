@@ -1,0 +1,84 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
+
+UNIQUE=$$
+RETVAL=0
+
+
+YEAR=`date +%Y`
+PREV_YEAR=$(($YEAR-1))
+NEXT_YEAR=$(($YEAR+1))
+
+echo "making DB file"
+rm -f bdm.db
+pushd $ROOT/data-manager/server > /dev/null
+./make-db.sh > /dev/null
+popd > /dev/null
+mv $ROOT/data-manager/server/bdm.db orig-bdm.db
+cp orig-bdm.db sync-bdm.db
+
+echo starting TCP sync receiver BDM
+$ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-receive --resources "a.a.a:a" --tcp-sync-receiver &
+
+echo starting TCP sync sender BDM
+$ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/111.bdmsync-over-tcp-bdm-to-bdm/test.cfg --port 11111 &
+sleep 3 # let the bdm come up before starting the HAB
+
+echo starting random-hab
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+
+sleep 30
+
+echo "killing random-hab"
+kill %3
+wait %3
+
+sleep 10
+
+echo "getting data from TCP sync receiver BDM"
+if [ -z "$PYTHONPATH" ]; then
+    export PYTHONPATH=$ROOT/data-manager/py-client:$ROOT/data-manager/py-client/.libs
+else
+    export PYTHONPATH=$ROOT/data-manager/py-client:$ROOT/data-manager/py-client/.libs:$PYTHONPATH
+fi
+export DYLD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs
+export LD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs
+
+
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
+
+echo "test run complete. killing the TCP sync sender BDM"
+kill %2
+kill %2
+
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
+
+echo "killing BDM"
+kill %1
+wait
+
+if ! diff -q out.bdm-orig out.bdm-sync; then
+    echo "ERROR: sync'd BDM output differs from originating BDM output:"
+    diff -u out.bdm-orig out.bdm-sync
+    RETVAL=1
+else
+    echo "sync'd BDM output is identical to originating BDM output, yay"
+fi
+
+exit $RETVAL
+
