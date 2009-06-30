@@ -15,6 +15,8 @@
 #include "libbionet-internal.h"
 
 
+extern GSList *bionet_habs;
+
 int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  const char *hab_id, const char *node_id) {
     int r;
     char publisher[BIONET_NAME_COMPONENT_MAX_LEN * 2];
@@ -59,7 +61,7 @@ int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  
             GSList *h;
 
             // need to walk over the entire hab/node list to unsubscribe from each :(
-            for (h = libbionet_habs; h != NULL; h = h->next) {
+            for (h = bionet_habs; h != NULL; h = h->next) {
                 bionet_hab_t *hab = h->data;
                 int j;
 
