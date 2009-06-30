@@ -9,6 +9,8 @@
 #include "bionet.h"
 #include "libbionet-internal.h"
 
+extern GSList *bionet_habs;
+
 void cache_cleanup_hab(bionet_hab_t *hab) {
     GSList *i;
 
@@ -108,7 +110,7 @@ void cache_cleanup_node(bionet_node_t *node) {
 void libbionet_cache_cleanup_habs() {
     GSList *i;
 
-    for (i = libbionet_habs; i != NULL; i = i->next) {
+    for (i = bionet_habs; i != NULL; i = i->next) {
         bionet_hab_t *hab = i->data;
 
         if (hab == NULL)
@@ -122,7 +124,7 @@ void libbionet_cache_cleanup_habs() {
 void libbionet_cache_cleanup_nodes() {
     GSList *i;
 
-    for (i = libbionet_habs; i != NULL; i = i->next) {
+    for (i = bionet_habs; i != NULL; i = i->next) {
         bionet_hab_t *hab = i->data;
         int j;
 
