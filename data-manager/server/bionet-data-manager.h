@@ -23,6 +23,7 @@
 #include "ion/bp.h"
 #endif
 
+#include <sqlite3.h>
 
 // Number of bytes to use for the resource key
 // from the sha1 hash. Must be <= to SHA_DIGEST_LENGTH;
@@ -67,6 +68,7 @@ typedef struct {
 #endif
 
     //State vars
+    sqlite3 *db;
     int last_entry_end_seq;    
     int last_entry_end_seq_metadata; 
     int fd;
@@ -83,19 +85,23 @@ typedef struct {
 
 
 //
+// Main thread db handle. Used by bionet callbacks
+//
+extern sqlite3 * main_db;
+
+//
 // set up the database
 //
 // return 0 on success, -1 on failure
 //
-
-int db_init(void);
+sqlite3 * db_init(void);
 
 
 // 
 // shut down the database
 //
 
-void db_shutdown(void);
+void db_shutdown(sqlite3 *db);
 
 //
 // Make a resource key
@@ -116,16 +122,18 @@ int db_make_resource_key(
 // Return 0 on success, -1 on failure.
 //
 
-int db_add_datapoint(bionet_datapoint_t *datapoint);
-int db_add_resource(bionet_resource_t *resource);
-int db_add_node(bionet_node_t *node);
-int db_add_hab(bionet_hab_t *hab);
+int db_add_datapoint(sqlite3 *db, bionet_datapoint_t *datapoint);
+int db_add_resource(sqlite3 *db, bionet_resource_t *resource);
+int db_add_node(sqlite3 *db, bionet_node_t *node);
+int db_add_hab(sqlite3 *db, bionet_hab_t *hab);
+int db_add_bdm(sqlite3 *db, const char * bdm_id);
 
 
 //
 // Insert a datapoint, possibly before the metadata is available
 //
 int db_add_datapoint_sync(
+    sqlite3 *db,
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
     const char * bdm_id,
     struct timeval *timestamp,
@@ -137,6 +145,7 @@ int db_add_datapoint_sync(
 // Finds all matching datapoints, and returns them as a GPtrArray of bdm_t.
 //
 GPtrArray *db_get_resource_datapoints(
+    sqlite3 *db,
     const char *hab_type,
     const char *hab_id,
     const char *node_id,
@@ -152,6 +161,7 @@ GPtrArray *db_get_resource_datapoints(
 // Finds all matching metadata, and returns them as a GPtrArray of bdm_t.
 //
 GPtrArray *db_get_metadata(
+    sqlite3 *db,
     const char *hab_type,
     const char *hab_id,
     const char *node_id,
@@ -162,9 +172,9 @@ GPtrArray *db_get_metadata(
     int entry_end,
     int *latest_entry);
 
-int db_get_latest_entry_seq(void);
-int db_get_last_sync_seq(char * bdm_id);
-void db_set_last_sync_seq(char * bdm_id, int seq);
+int db_get_latest_entry_seq(sqlite3 *db);
+int db_get_last_sync_seq(sqlite3 *db, char * bdm_id);
+void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int seq);
 
 // 
 // stuff for being a bionet client

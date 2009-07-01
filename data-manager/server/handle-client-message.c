@@ -74,11 +74,12 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 
     entry_end = rdpq->entryEnd;
     if (entry_end == -1) {
-	entry_end = db_get_latest_entry_seq();
+	entry_end = db_get_latest_entry_seq(main_db);
     }
 
     // do that database lookup
-    bdm_list = db_get_resource_datapoints((const char *)rdpq->habType.buf, 
+    bdm_list = db_get_resource_datapoints(main_db,
+                                          (const char *)rdpq->habType.buf, 
 					  (const char *)rdpq->habId.buf, 
 					  (const char *)rdpq->nodeId.buf, 
 					  (const char *)rdpq->resourceId.buf, 

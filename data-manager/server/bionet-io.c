@@ -27,6 +27,7 @@ char *resource_name_patterns[MAX_SUBSCRIPTIONS];
 char * security_dir = NULL;
 int require_security = 0;
 
+sqlite3 * main_db = NULL;
 
 // 
 // bionet callbacks
@@ -34,7 +35,7 @@ int require_security = 0;
 
 
 static void cb_datapoint(bionet_datapoint_t *datapoint) {
-    (void) db_add_datapoint(datapoint);
+    (void) db_add_datapoint(main_db, datapoint);
 }
 
 
@@ -51,7 +52,7 @@ static void cb_new_node(bionet_node_t *node) {
 	  bionet_hab_get_type(bionet_node_get_hab(node)), 
 	  bionet_hab_get_id(bionet_node_get_hab(node)), 
 	  bionet_node_get_id(node));
-    (void) db_add_node(node);
+    (void) db_add_node(main_db, node);
 }
 
 
@@ -66,7 +67,7 @@ static void cb_new_hab(bionet_hab_t *hab) {
     g_log("", G_LOG_LEVEL_INFO, "new hab: %s.%s", 
 	  bionet_hab_get_type(hab), 
 	  bionet_hab_get_id(hab));
-    (void) db_add_hab(hab);
+    (void) db_add_hab(main_db, hab);
 }
 
 

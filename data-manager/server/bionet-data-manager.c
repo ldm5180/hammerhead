@@ -310,10 +310,14 @@ int main(int argc, char *argv[]) {
 	}
     }
 
-    if (db_init() != 0) {
+    if ((main_db = db_init()) == NULL) {
         // an informative error message has already been logged by db_init()
         exit(1);
     }
+
+    // Add self as bdm to db
+    db_add_bdm(main_db, bdm_id);
+
 
    
 
@@ -388,8 +392,9 @@ int main(int argc, char *argv[]) {
 
 	//init the latest entry end time for the config
 	sync_config = g_slist_nth_data(sync_config_list, i);
+        sync_config->db = db_init();
 	if (sync_config) {
-	    sync_config->last_entry_end_seq = db_get_last_sync_seq(sync_config->sync_recipient);
+	    sync_config->last_entry_end_seq = db_get_last_sync_seq(db, sync_config->sync_recipient);
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Config number %d is not in the list.", i);
@@ -447,7 +452,7 @@ int main(int argc, char *argv[]) {
     //
 
     g_main_loop_unref(bdm_main_loop);
-    db_shutdown();
+    db_shutdown(main_db);
     return 0;
 }
 

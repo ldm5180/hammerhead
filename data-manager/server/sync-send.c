@@ -70,7 +70,7 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 	  "    METADATA for %s.%s.%s:%s from seq %d to %d",
 	  hab_type, hab_id, node_id, resource_id,
 	  config->last_entry_end_seq_metadata, curr_seq);
-    bdm_list = db_get_metadata(hab_type, hab_id, node_id, resource_id,
+    bdm_list = db_get_metadata(config->db, hab_type, hab_id, node_id, resource_id,
 			       &config->start_time, &config->end_time,
 			       config->last_entry_end_seq_metadata, curr_seq,
 			       &junk);
@@ -277,7 +277,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 	  "    DATAPOINTS for %s.%s.%s:%s from seq %d to %d",
 	  hab_type, hab_id, node_id, resource_id,
 	  config->last_entry_end_seq, curr_seq);
-    bdm_list = db_get_resource_datapoints(hab_type, hab_id, node_id, resource_id,
+    bdm_list = db_get_resource_datapoints(config->db, hab_type, hab_id, node_id, resource_id,
 					  &config->start_time, &config->end_time,
 					  config->last_entry_end_seq, curr_seq,
 					  &junk);
@@ -418,7 +418,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 	}
 
 	//FIXME: only do this after receiving confirmation from far-end
-	db_set_last_sync_seq(config->sync_recipient, curr_seq);
+	db_set_last_sync_seq(config->db, config->sync_recipient, curr_seq);
 	config->last_entry_end_seq = curr_seq + 1;
     }
 
@@ -499,10 +499,11 @@ gpointer sync_thread(gpointer config) {
 	return NULL;
     }
 
-    cfg->last_entry_end_seq_metadata = cfg->last_entry_end_seq = db_get_last_sync_seq(cfg->sync_recipient);
+    cfg->last_entry_end_seq_metadata = cfg->last_entry_end_seq 
+        = db_get_last_sync_seq(cfg->db, cfg->sync_recipient);
 
     while (1) {
-	curr_seq = db_get_latest_entry_seq();
+	curr_seq = db_get_latest_entry_seq(cfg->db);
 
 	if (curr_seq >= cfg->last_entry_end_seq_metadata) {
 	    sync_send_metadata(cfg, curr_seq);

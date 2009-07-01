@@ -37,7 +37,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
 
         g_ptr_array_add(hab_list, hab);
 
-	if (db_add_hab(hab)) {
+	if (db_add_hab(main_db, hab)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "handle_sync_metadata_message(): Failed to add HAB %s to DB.",
 		  bionet_hab_get_name(hab));
@@ -112,7 +112,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
                 }
             }
 
-	    if (db_add_node(node)) {
+	    if (db_add_node(main_db, node)) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "handle_sync_metadata_message(): Failed to add node %s to DB.",
 		      bionet_node_get_name(node));

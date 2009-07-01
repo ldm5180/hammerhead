@@ -138,7 +138,8 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		}
 
 
-		if (db_add_datapoint_sync(resource_key, 
+		if (db_add_datapoint_sync(main_db,
+                                          resource_key, 
 					  bdm_id,
 					  &ts,
 					  type,
