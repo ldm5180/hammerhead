@@ -43,7 +43,8 @@ libbionet_la_CFLAGS = \
 	$(CFLAGS_BIONET_CAL_CLIENT) \
 	$(CFLAGS_BIONET_UTIL) \
 	$(CFLAGS_BIONET_ASN1) \
-	$(OPENSSL_CFLAGS)
+	$(OPENSSL_CFLAGS) \
+	-fno-strict-aliasing
 
 libbionet_la_LIBADD = \
 	$(AM_LDADD) \

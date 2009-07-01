@@ -136,7 +136,7 @@ lib_LTLIBRARIES=libbionet-asn.la
 
 libbionet_asn_la_SOURCES=$(SRC) $(ASN_MODULE_HEADS)
 
-libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(CFLAGS_BIONET_UTIL)
+libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(CFLAGS_BIONET_UTIL) -fno-strict-aliasing
 
 libbionet_asn_la_LIBADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) -lm
 
