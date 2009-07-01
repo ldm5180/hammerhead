@@ -107,11 +107,21 @@ int main(int argc, char *argv[]) {
 	    break;
 
 	case 'r':
-	    rf_sensitivity = strtol(optarg, NULL, 0);
-	    if (LONG_MAX == rf_sensitivity) {
-		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse RF Sensitivity: %m");
-	    }
-	    break;
+            {
+                long tmp;
+                errno = 0;
+                tmp = strtol(optarg, NULL, 0);
+                if (errno != 0) {
+                    g_log("", G_LOG_LEVEL_WARNING, "Failed to parse RF Sensitivity: %m");
+                    exit(1);
+                }
+                if (tmp > UINT16_MAX) {
+                    g_log("", G_LOG_LEVEL_WARNING, "RF Sensitivity %ld is out of range, clipping to %d", tmp, (int)UINT16_MAX);
+                    tmp = UINT16_MAX;
+                }
+                rf_sensitivity = tmp;
+            }
+            break;
 
 	case 's':
 	    security_dir = optarg;
