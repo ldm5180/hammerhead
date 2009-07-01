@@ -280,7 +280,7 @@ restart_poll:
 
     if (frequency) {
 	sleep(frequency);
-	entryStart = bdm_last_entry;
+	entryStart = bdm_last_entry + 1;
 	goto restart_poll;
     }
 
