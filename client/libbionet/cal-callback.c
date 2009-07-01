@@ -215,6 +215,11 @@ static void handle_resource_datapoints(const cal_event_t *event, ResourceDatapoi
         Datapoint_t *asn_d = rd->newDatapoints.list.array[i];
         bionet_datapoint_t *new_d = bionet_asn_to_datapoint(asn_d, resource);
 
+        if( NULL == new_d ){
+            // An error has been logged already
+            continue;
+        }
+
         bionet_resource_remove_datapoint_by_index(resource, 0);
         bionet_resource_add_datapoint(resource, new_d);
 
