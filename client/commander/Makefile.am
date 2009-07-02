@@ -13,7 +13,7 @@ bionet_commander_SOURCES = bionet-commander.c
 
 bionet_commander_CFLAGS = \
 	$(AM_CFLAGS) \
-	$(GLIB20_CFLAGS) \
+	$(GLIB_CFLAGS) \
 	$(OPENSSL_CFLAGS) \
 	$(CFLAGS_BIONET_CLIENT) \
 	$(CFLAGS_BIONET_UTIL) \
@@ -22,7 +22,7 @@ bionet_commander_CFLAGS = \
 
 bionet_commander_LDFLAGS = \
 	$(AM_LDFLAGS) \
-	$(GLIB20_LIBS) \
+	$(GLIB_LIBS) \
 	$(AVAHI_COMPAT_LIBDNS_SD_LIBS) \
 	$(DBUS_LIBS) \
 	$(LDFLAGS_BIONET_CLIENT) \

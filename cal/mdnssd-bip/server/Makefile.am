@@ -31,9 +31,9 @@ LIBCAL_MDNSSD_BIP_SHARED_SOURCES =           \
 
 lib_LTLIBRARIES = libcal-mdnssd-bip-server.la
 
-libcal_mdnssd_bip_server_la_CFLAGS = $(AM_CFLAGS) $(OPENSSL_CFLAGS) $(GLIB20_CFLAGS) $(GTHREAD_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../.. -I../../util
+libcal_mdnssd_bip_server_la_CFLAGS = $(AM_CFLAGS) $(OPENSSL_CFLAGS) $(GLIB_CFLAGS) $(GTHREAD_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../.. -I../../util
 libcal_mdnssd_bip_server_la_SOURCES = cal-server-api.c global.c thread-functions.c $(LIBCAL_MDNSSD_BIP_SHARED_SOURCES) $(LIBCAL_UTIL_SOURCES)
-libcal_mdnssd_bip_server_la_LIBADD = $(AM_LDADD) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(GLIB20_LIBS) $(DBUS_LIBS) $(OPENSSL_LIBS) $(GTHREAD_LIBS)
+libcal_mdnssd_bip_server_la_LIBADD = $(AM_LDADD) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(GLIB_LIBS) $(DBUS_LIBS) $(OPENSSL_LIBS) $(GTHREAD_LIBS)
 
 libcal_mdnssd_bip_server_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION)
 

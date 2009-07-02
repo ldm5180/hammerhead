@@ -38,7 +38,7 @@ libbionet_la_SOURCES =        \
 
 libbionet_la_CFLAGS = \
 	$(AM_CFLAGS) \
-	$(GLIB20_CFLAGS) \
+	$(GLIB_CFLAGS) \
 	$(CFLAGS_BIONET_CAL_UTIL) \
 	$(CFLAGS_BIONET_CAL_CLIENT) \
 	$(CFLAGS_BIONET_UTIL) \
@@ -49,7 +49,7 @@ libbionet_la_CFLAGS = \
 libbionet_la_LIBADD = \
 	$(AM_LDADD) \
 	$(AVAHI_COMPAT_LIBDNS_SD_LIBS) \
-	$(GLIB20_LIBS) \
+	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(OPENSSL_LIBS) \
 	$(LIBS_BIONET_CAL_UTIL) \

@@ -48,10 +48,10 @@ ac_cv_env_CXXFLAGS_set=set
 ac_cv_env_CXXFLAGS_value='-arch armv6 -pipe -std=c99 -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -Wreturn-type -Wunused-variable -fmessage-length=0 -gdwarf-2 -mthumb -miphoneos-version-min=2.0 -I/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk/usr/include -I/opt/local/arm-apple-darwin/usr/include -isysroot //Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk'
 ac_cv_env_CXX_set=set
 ac_cv_env_CXX_value=/opt/local/bin/arm-apple-darwin-gcc
-ac_cv_env_GLIB20_CFLAGS_set=
-ac_cv_env_GLIB20_CFLAGS_value=
-ac_cv_env_GLIB20_LIBS_set=
-ac_cv_env_GLIB20_LIBS_value=
+ac_cv_env_GLIB_CFLAGS_set=
+ac_cv_env_GLIB_CFLAGS_value=
+ac_cv_env_GLIB_LIBS_set=
+ac_cv_env_GLIB_LIBS_value=
 ac_cv_env_LDFLAGS_set=set
 ac_cv_env_LDFLAGS_value='-arch armv6 -pipe -std=c99 -gdwarf-2 -mthumb -L/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk/usr/lib -L/opt/local/arm-apple-darwin/usr/lib -isysroot //Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk'
 ac_cv_env_LIBS_set=
@@ -140,7 +140,7 @@ test "${lt_cv_sys_global_symbol_to_c_name_address+set}" = set || lt_cv_sys_globa
 test "${lt_cv_sys_global_symbol_to_c_name_address_lib_prefix+set}" = set || lt_cv_sys_global_symbol_to_c_name_address_lib_prefix='sed -n -e '\''s/^: \([^ ]*\) $/  {\"\1\", (void *) 0},/p'\'' -e '\''s/^[BCDEGRST]* \([^ ]*\) \(lib[^ ]*\)$/  {"\2", (void *) \&\2},/p'\'' -e '\''s/^[BCDEGRST]* \([^ ]*\) \([^ ]*\)$/  {"lib\2", (void *) \&\2},/p'\'''
 lt_cv_sys_global_symbol_to_cdecl=${lt_cv_sys_global_symbol_to_cdecl='sed -n -e '\''s/^T .* \(.*\)$/extern int \1();/p'\'' -e '\''s/^[BCDEGRST]* .* \(.*\)$/extern char \1;/p'\'''}
 lt_cv_sys_max_cmd_len=${lt_cv_sys_max_cmd_len=196608}
-pkg_cv_GLIB20_CFLAGS=${pkg_cv_GLIB20_CFLAGS='-D_REENTRANT -I/opt/local/arm-apple-darwin/include/glib-2.0 -I/opt/local/arm-apple-darwin/lib/glib-2.0/include -I/opt/local/arm-apple-darwin/include  '}
-pkg_cv_GLIB20_LIBS=${pkg_cv_GLIB20_LIBS='-L/opt/local/arm-apple-darwin/lib -lgthread-2.0 -lglib-2.0 -lintl -liconv  '}
+pkg_cv_GLIB_CFLAGS=${pkg_cv_GLIB_CFLAGS='-D_REENTRANT -I/opt/local/arm-apple-darwin/include/glib-2.0 -I/opt/local/arm-apple-darwin/lib/glib-2.0/include -I/opt/local/arm-apple-darwin/include  '}
+pkg_cv_GLIB_LIBS=${pkg_cv_GLIB_LIBS='-L/opt/local/arm-apple-darwin/lib -lgthread-2.0 -lglib-2.0 -lintl -liconv  '}
 pkg_cv_OPENSSL_CFLAGS=${pkg_cv_OPENSSL_CFLAGS='-I/opt/local/arm-apple-darwin/include  '}
 pkg_cv_OPENSSL_LIBS=${pkg_cv_OPENSSL_LIBS='-L/opt/local/arm-apple-darwin/lib -lssl -lcrypto -lz  '}

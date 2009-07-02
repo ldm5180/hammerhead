@@ -21,12 +21,12 @@ check_data_manager_CFLAGS = $(CHECK_CFLAGS) \
     $(CFLAGS_BIONET_CLIENT) \
     $(CFLAGS_BIONET_ASN1) \
     $(CFLAGS_BIONET_UTIL) \
-    $(GLIB20_CFLAGS)
+    $(GLIB_CFLAGS)
 
 check_data_manager_LDFLAGS = $(CHECK_LIBS) \
     $(LDFLAGS_BIONET_CLIENT) \
     $(LDFLAGS_BIONET_ASN1) \
-    $(GLIB20_LIBS)
+    $(GLIB_LIBS)
 
 check_data_manager_LDADD = \
     $(LIBS_BIONET_CLIENT) \

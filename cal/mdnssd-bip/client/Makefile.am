@@ -35,7 +35,7 @@ lib_LTLIBRARIES = libcal-mdnssd-bip-client.la
 libcal_mdnssd_bip_client_la_CFLAGS = \
 	$(AM_CFLAGS) \
 	$(OPENSSL_CFLAGS) \
-	$(GLIB20_CFLAGS) \
+	$(GLIB_CFLAGS) \
 	$(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	-I.. \
@@ -53,7 +53,7 @@ libcal_mdnssd_bip_client_la_SOURCES = \
 libcal_mdnssd_bip_client_la_LIBADD = \
 	$(AM_LDADD) \
 	$(AVAHI_COMPAT_LIBDNS_SD_LIBS) \
-	$(GLIB20_LIBS) \
+	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(OPENSSL_LIBS)
 

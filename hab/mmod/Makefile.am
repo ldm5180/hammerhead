@@ -58,13 +58,13 @@ mmod_hab_SOURCES =    \
 
 mmod_hab_CFLAGS = \
 	$(AM_CFLAGS) \
-	$(GLIB20_CFLAGS) \
+	$(GLIB_CFLAGS) \
 	$(CFLAGS_BIONET_HAB) \
 	$(CFLAGS_BIONET_UTIL) 
 
 mmod_hab_LDFLAGS = \
 	$(AM_LDFLAGS) \
-	$(GLIB20_LIBS) \
+	$(GLIB_LIBS) \
 	$(AVAHI_COMPAT_LIBDNS_SD_LIBS) \
 	$(DBUS_LIBS) \
 	$(LDFLAGS_BIONET_HAB) \

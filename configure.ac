@@ -55,7 +55,7 @@ AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
       [ENABLE_CHECK=$enableval],
       [ENABLE_CHECK=yes])
 if test "x$ENABLE_CHECK" = "xyes"; then
-PKG_CHECK_MODULES(CHECK, [check >= 0.9.5])
+AM_PATH_CHECK([0.9.3])
 AC_SUBST(CHECK_CFLAGS)
 AC_SUBST(CHECK_LIBS)
 fi
@@ -114,10 +114,10 @@ else
 fi
 
 if test "$cross_compiling" != yes; then
-PKG_CHECK_MODULES(GLIB20, [ gthread-2.0 >= 2.4.0 ])
+AM_PATH_GLIB_2_0([2.12.0], [], [], [gthread])
 fi
-AC_SUBST(GLIB20_CFLAGS)
-AC_SUBST(GLIB20_LIBS)
+AC_SUBST(GLIB_CFLAGS)
+AC_SUBST(GLIB_LIBS)
 
 if test "$cross_compiling" != yes; then
 PKG_CHECK_MODULES(OPENSSL, [ openssl >= 0.9.8 ])

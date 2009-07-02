@@ -20,7 +20,7 @@ python_LTLIBRARIES = _bionet.la
 BUILT_SOURCES = bionet_wrap.c
 _bionet_la_SOURCES = bionet_wrap.c
 
-_bionet_la_CFLAGS = $(AM_CFLAGS) $(GLIB20_CFLAGS) $(SWIG_PYTHON_CPPFLAGS) $(SWIG_INCDIR) -fno-strict-aliasing
+_bionet_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(SWIG_PYTHON_CPPFLAGS) $(SWIG_INCDIR) -fno-strict-aliasing
 _bionet_la_LDFLAGS = -module $(LDFLAGS_BIONET_CLIENT) $(LDFLAGS_BIONET_CAL_CLIENT) $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_UTIL) -version-info $(BIONET_INTERFACE_VERSION)
 _bionet_la_LIBADD = $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_CAL_CLIENT) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_UTIL) -lpthread -lm
 
