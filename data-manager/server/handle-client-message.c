@@ -22,7 +22,6 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
     GPtrArray *bdm_list;
     struct timeval datapoint_start, datapoint_end;
     int entry_start, entry_end;
-    int latest_entry = 0;
     struct timeval *pDatapointStart = NULL;
     struct timeval *pDatapointEnd = NULL;
     int r, bi;
@@ -84,9 +83,7 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 					  (const char *)rdpq->nodeId.buf, 
 					  (const char *)rdpq->resourceId.buf, 
 					  pDatapointStart, pDatapointEnd, 
-					  entry_start, entry_end,
-					  &latest_entry);
-    latest_entry = entry_end;
+					  entry_start, entry_end);
     if (NULL == bdm_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 	      "Failed to get a BDM list.");
@@ -106,7 +103,7 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 
 	//BDM-BP TODO someday add the BDM ID to the client message
 
-        rdpr->lastEntry = latest_entry;
+        rdpr->lastEntry = entry_end;
 
         for (hi = 0; hi < hab_list->len; hi ++) {
             int ni;

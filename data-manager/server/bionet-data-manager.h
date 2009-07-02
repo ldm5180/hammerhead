@@ -153,8 +153,7 @@ GPtrArray *db_get_resource_datapoints(
     struct timeval *datapoint_start,
     struct timeval *datapoint_end,
     int entry_start,
-    int entry_end,
-    int *latest_entry
+    int entry_end
 );
 
 // 
@@ -169,8 +168,7 @@ GPtrArray *db_get_metadata(
     struct timeval *datapoint_start,
     struct timeval *datapoint_end,
     int entry_start,
-    int entry_end,
-    int *latest_entry);
+    int entry_end);
 
 int db_get_latest_entry_seq(sqlite3 *db);
 int db_get_last_sync_seq(sqlite3 *db, char * bdm_id);

@@ -7,16 +7,42 @@
 # This script lets you run one test over and over again until it fails or
 # you stop it.
 #
-# Set ROOT to the root of your sandbox, cd to the test-dir you want to run,
-# and run this script.
+# Run from this directory, and specify the path(s)
+# to the test directories to repeat
 #
 
+export ROOT="$(pwd)/.."
+
+TESTS=$@
+
+if [ -z "$TESTS" ]; then
+    TESTS=$(ls -1d tests/* | sort)
+fi
+
+
 while : ; do
-    ./run
-    if [ $? -ne 0 ]; then
-        echo fail
-        exit 1
-    fi
+    for TEST in $TESTS; do
+        [ ! -d "$TEST" ] && continue
+
+        echo
+        echo "*** ${TEST}"
+
+        if [ ! -x "$TEST/run" ]; then
+            echo "disabled, skipping"
+            NUM_SKIPPED=$(($NUM_SKIPPED+1))
+            continue
+        fi
+
+        pushd "$TEST" > /dev/null
+        ./run
+        if [ $? -eq 0 ]; then
+            echo "TEST PASSED!"
+        else
+            echo "TEST FAILED!"
+            exit 1
+        fi
+        popd > /dev/null
+    done
     sleep 1
 done
 

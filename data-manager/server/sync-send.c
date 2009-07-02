@@ -49,7 +49,7 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
     char * resource_id;
     BDM_Sync_Message_t sync_message;
     BDM_Sync_Metadata_Message_t * message;
-    int bi, r, junk;
+    int bi, r;
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "Syncing metadata");
@@ -72,8 +72,7 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 	  config->last_entry_end_seq_metadata, curr_seq);
     bdm_list = db_get_metadata(config->db, hab_type, hab_id, node_id, resource_id,
 			       &config->start_time, &config->end_time,
-			       config->last_entry_end_seq_metadata, curr_seq,
-			       &junk);
+			       config->last_entry_end_seq_metadata, curr_seq);
 
     memset(&sync_message, 0x00, sizeof(BDM_Sync_Message_t));
     sync_message.present = BDM_Sync_Message_PR_metadataMessage;
@@ -97,6 +96,8 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 		  "Failed to get BDM %d from BDM list", bi);
 	    goto cleanup;
 	}
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+              "       BDM %s", bdm->bdm_id);
 
 	GPtrArray * hab_list = bdm->hab_list;
 	if (NULL == hab_list) {
@@ -113,6 +114,8 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		      "sync_send_metadata(): Failed to get HAB %d from array of HABs", hi);
 	    }
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                  "         HAB %s", bionet_hab_get_id(hab));
 	    
 	    //add the HAB to the message
 	    asn_hab = (HardwareAbstractor_t *)calloc(1, sizeof(HardwareAbstractor_t));
@@ -152,6 +155,9 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 			  "sync_send_metadata(): Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
 		}
 		
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                      "           NODE %s", bionet_node_get_id(node));
+
 		//add the Node to the message
 		asn_node = (Node_t *)calloc(1, sizeof(Node_t));
 		if (asn_node == NULL) {
@@ -179,6 +185,9 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 			      "sync_send_metadata(): Failed to get resource %d from Node %s", ri, bionet_node_get_name(node));
 		    }
+
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                          "             RES %s", bionet_resource_get_id(resource));
 		    
 		    //add the Resource to the message
 		    asn_resource = (Resource_t *)calloc(1, sizeof(Resource_t));
@@ -255,7 +264,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
     char * resource_id;
     BDM_Sync_Message_t sync_message;
     BDM_Sync_Datapoints_Message_t * message;
-    int r, bi, junk;
+    int r, bi;
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "Syncing datapoints");
@@ -279,8 +288,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 	  config->last_entry_end_seq, curr_seq);
     bdm_list = db_get_resource_datapoints(config->db, hab_type, hab_id, node_id, resource_id,
 					  &config->start_time, &config->end_time,
-					  config->last_entry_end_seq, curr_seq,
-					  &junk);
+					  config->last_entry_end_seq, curr_seq);
 
     memset(&sync_message, 0x00, sizeof(BDM_Sync_Message_t));
     sync_message.present = BDM_Sync_Message_PR_datapointsMessage;

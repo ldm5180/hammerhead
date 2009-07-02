@@ -39,7 +39,6 @@ char bdm_id[256] = { 0 };
 
 typedef struct sql_return {
     GPtrArray *bdm_list;
-    int * latest_entry;
 } sql_return_t;
 
 sqlite3 *db_init(void) {
@@ -124,7 +123,11 @@ static int do_commit(sqlite3 *db) {
             &zErrMsg
         );
 
-        if (r == SQLITE_OK) return 0;
+        if (r == SQLITE_OK) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+                  "committed(%p)", db);
+             return 0;
+        }
 
         if (r == SQLITE_BUSY) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "COMMIT failed because the database is busy (\"%s\"), retrying", zErrMsg);
@@ -137,26 +140,31 @@ static int do_commit(sqlite3 *db) {
         sqlite3_free(zErrMsg);
         return -1;
     } while (1);
+
 }
 
+static int do_begin_transaction(sqlite3 *db) {
+    int r;
+    char *zErrMsg = NULL;
 
-#if 0
-static double timevaltodouble(struct timeval *tv) {
-    return (double)tv->tv_sec + (1e-6 * tv->tv_usec); 
+    r = sqlite3_exec(
+        db,
+        "BEGIN TRANSACTION;",
+        NULL,
+        0,
+        &zErrMsg
+    );
+    if (r != SQLITE_OK) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "BEGIN TRANSACTION SQL error: %s\n", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return -1;
+    }
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	  "in transaction(%p)", db);
+
+    return 0;
 }
-
-static double gettimedouble(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
-    return timevaltodouble(&tv);
-}
-
-static void doubletotimeval(double t, struct timeval *tv) {
-    tv->tv_sec = (time_t)t;
-    tv->tv_usec = (suseconds_t)(t-tv->tv_sec * 1e6);
-} 
-#endif
 
 // 
 // database back-end internal helper functions
@@ -263,6 +271,12 @@ static int add_node_to_db(sqlite3* db, const bionet_node_t *node) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL bind error");
 	return -1;
     }
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	  "add_node_to_db(%p): [%d] %s", 
+          db,
+          entry_seq,
+          bionet_node_get_name(node));
 
     while(SQLITE_BUSY == (r = sqlite3_step(insert_node_stmt)));
     if (r != SQLITE_DONE) {
@@ -372,6 +386,15 @@ static int add_resource_to_db(sqlite3* db, bionet_resource_t *resource) {
         return r;
     }
 
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	  "add_resource_to_db(%p): [%d] %s: %2x%2x%2x%2x%2x%2x%2x%2x", 
+          db,
+          entry_seq,
+          bionet_resource_get_name(resource), 
+          (int)resource_key[0], (int)resource_key[1], 
+          (int)resource_key[2], (int)resource_key[3],
+          (int)resource_key[4], (int)resource_key[5],
+          (int)resource_key[6], (int)resource_key[7]);
 
     if(insert_resource_stmt == NULL) {
 	r = sqlite3_prepare_v2(db, 
@@ -530,8 +553,12 @@ static int add_datapoint_to_db(sqlite3* db, bionet_datapoint_t *datapoint) {
     // Bind host variables to the prepared statement -- This eliminates the need to escape strings
     // In order of the placeholders (?) in the SQL
     int param = 1;
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	  "add_datapoint_to_db(): %s: %s", bionet_resource_get_name(resource), bionet_value_to_str(value));
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	  "add_datapoint_to_db(%p) [%d: %s: %s", 
+          db,
+          entry_seq,
+          bionet_resource_get_name(resource), 
+          bionet_value_to_str(value));
     r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_value_to_str(value), -1, free);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
@@ -613,18 +640,8 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     }
 
     // start transaction
-    r = sqlite3_exec(
-        db,
-        "BEGIN TRANSACTION;",
-        NULL,
-        0,
-        &zErrMsg
-    );
-    if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "BEGIN TRANSACTION SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return -1;
-    }
+    r = do_begin_transaction(db);
+    if (r != 0) return -1;
 
 
     // add parent objects as needed
@@ -815,6 +832,16 @@ int db_add_datapoint_sync(sqlite3* db,
 	return -1;
     }
 
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	  "add_datapoint_to_db_sync(%p) [%d]: %2x%2x%2x%2x%2x%2x%2x%2x", 
+          db,
+          entry_seq,
+          (int)resource_key[0], (int)resource_key[1], 
+          (int)resource_key[2], (int)resource_key[3],
+          (int)resource_key[4], (int)resource_key[5],
+          (int)resource_key[6], (int)resource_key[7]);
+
+
     while(SQLITE_BUSY == (r = sqlite3_step(insert_datapoint_sync_stmt)));
     if (r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL error: %s\n", sqlite3_errmsg(db));
@@ -843,18 +870,8 @@ int db_add_node(sqlite3* db, bionet_node_t *node) {
 
 
     // start transaction
-    r = sqlite3_exec(
-        db,
-        "BEGIN TRANSACTION;",
-        NULL,
-        0,
-        &zErrMsg
-    );
-    if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "BEGIN TRANSACTION SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return -1;
-    }
+    r = do_begin_transaction(db);
+    if (r != 0) return -1;
 
 
     // add parent hab
@@ -1036,13 +1053,11 @@ static int db_get_resource_datapoints_callback(
 ) {
     sql_return_t * sql_ret_val = (sql_return_t *)sql_ret_void;
     GPtrArray *bdm_list = sql_ret_val->bdm_list;
-    int * latest_entry = sql_ret_val->latest_entry;
     bionet_hab_t *hab;
     bionet_node_t *node;
     bionet_resource_t *resource;
 
     struct timeval timestamp = {0,0};
-    int entry = 0;
     int err = 0;
     bionet_value_t * value = NULL;
     bionet_datapoint_t * datapoint = NULL;
@@ -1058,8 +1073,7 @@ static int db_get_resource_datapoints_callback(
     static const int i_value =    6;
     static const int i_tssec =    7;
     static const int i_tsusec =   8;
-    static const int i_entry =    9;
-    static const int i_bdm =      10;
+    static const int i_bdm =      9;
     
     bdm_t * bdm = find_bdm(bdm_list, argv[i_bdm]);
     if (bdm == NULL) {
@@ -1099,11 +1113,6 @@ static int db_get_resource_datapoints_callback(
         timestamp.tv_usec = atoi(argv[i_tsusec]);
     }
 
-
-    entry = atoi(argv[i_entry]);
-    if(entry > *latest_entry) {
-	*latest_entry = entry;
-    }
 
     if(argv[i_value]){
         switch(bionet_resource_get_data_type(resource))
@@ -1191,7 +1200,6 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
     struct timeval *datapoint_end,
     int entry_start,
     int entry_end,
-    int *latest_entry,
     int include_datapoints) 
 {
     int r;
@@ -1211,8 +1219,7 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
 
     bdm_list = g_ptr_array_new();
 
-    sql_return_t sql_ret_val = { bdm_list, 
-				 latest_entry };
+    sql_return_t sql_ret_val = { bdm_list };
 
     if ((hab_type == NULL) || (strcmp(hab_type, "*") == 0)) {
         hab_type_restriction[0] = '\0';
@@ -1294,10 +1301,11 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
     }
 
 
-    if ((datapoint_start == NULL) ||
-	((datapoint_start->tv_sec == 0) && (datapoint_start->tv_usec == 0))) {
-	datapoint_start_restriction[0] = '\0';
-    } else {
+    datapoint_start_restriction[0] = '\0';
+    if ( include_datapoints && 
+        (datapoint_start != NULL) &&
+	((datapoint_start->tv_sec != 0) || (datapoint_start->tv_usec != 0))) 
+    {
 	r = snprintf(
 		datapoint_start_restriction, 
 		sizeof(datapoint_start_restriction),
@@ -1315,10 +1323,11 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
 	}
     }
 
-    if ((datapoint_end == NULL) ||
-	((datapoint_end->tv_sec == 0) && (datapoint_end->tv_usec == 0))) {
-	datapoint_end_restriction[0] = '\0';
-    } else {
+    datapoint_end_restriction[0] = '\0';
+    if ( include_datapoints && 
+        (datapoint_end != NULL) &&
+	((datapoint_end->tv_sec != 0) || (datapoint_end->tv_usec != 0))) 
+    {
 	r = snprintf(
 		datapoint_end_restriction, 
 		sizeof(datapoint_end_restriction),
@@ -1419,7 +1428,9 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
 	}
     }
 
+    const char * sql_tables;
     const char * sql_fields;
+    const char * sql_order = "";
     const char * sql_group = "";
     const char * sql_dp = "";
     if(include_datapoints){
@@ -1433,11 +1444,24 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
             " Datapoints.Value,"
             " Datapoints.Timestamp_Sec,"
             " Datapoints.Timestamp_Usec,"
-            " Datapoints.Entry_Num,"
             " BDMs.BDM_ID";
+
+        sql_tables =
+            "    Hardware_Abstractors,"
+            "    Nodes,"
+            "    Resources,"
+            "    Resource_Data_Types,"
+            "    Resource_Flavors,"
+            "    Datapoints,"
+            "    BDMs";
+
 	sql_dp = 
 	    "    AND Datapoints.Resource_Key=Resources.Key"
 	    "    AND Datapoints.BDM_Key=BDMs.Key";
+        sql_order =
+            " ORDER BY"
+            "     Datapoints.Timestamp_Sec ASC,"
+            "     Datapoints.Timestamp_Usec ASC";
     } else {
         sql_fields = 
             " Hardware_Abstractors.HAB_TYPE,"
@@ -1449,8 +1473,15 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
             " NULL,"
             " NULL,"
             " NULL,"
-            " max(Datapoints.Entry_Num),"
             " BDMs.BDM_ID";
+
+        sql_tables =
+            "    Hardware_Abstractors,"
+            "    Nodes,"
+            "    Resources,"
+            "    Resource_Data_Types,"
+            "    Resource_Flavors,"
+            "    BDMs";
 
         sql_group = 
             " GROUP BY "
@@ -1466,13 +1497,7 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
         "SELECT"
         "    %s"
         " FROM"
-        "    Hardware_Abstractors,"
-        "    Nodes,"
-        "    Resources,"
-        "    Resource_Data_Types,"
-        "    Resource_Flavors,"
-        "    Datapoints,"
-        "    BDMs"
+        "    %s"
         " WHERE"
         "    Nodes.HAB_Key=Hardware_Abstractors.Key"
         "    AND Resources.Node_Key=Nodes.Key"
@@ -1487,10 +1512,9 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
         "    %s"
         "    %s"
         "    %s"
-        " ORDER BY"
-        "     Datapoints.Timestamp_Sec ASC,"
-        "     Datapoints.Timestamp_Usec ASC",
+        " %s", //ORDER BY
         sql_fields,
+        sql_tables,
         sql_dp,
         datapoint_start_restriction,
         datapoint_end_restriction,
@@ -1499,7 +1523,8 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
         hab_id_restriction,
         node_id_restriction,
         resource_id_restriction,
-        sql_group
+        sql_group,
+        sql_order
         );
 
     if (r >= sizeof(sql)) {
@@ -1547,8 +1572,7 @@ GPtrArray *db_get_resource_datapoints(
     struct timeval *datapoint_start,
     struct timeval *datapoint_end,
     int entry_start,
-    int entry_end,
-    int *latest_entry
+    int entry_end
 ) {
 
     return _db_get_resource_info(
@@ -1561,7 +1585,6 @@ GPtrArray *db_get_resource_datapoints(
         datapoint_end,
         entry_start,
         entry_end,
-        latest_entry,
         1);
 }
 
@@ -1574,8 +1597,7 @@ GPtrArray *db_get_metadata(
     struct timeval *datapoint_start,
     struct timeval *datapoint_end,
     int entry_start,
-    int entry_end,
-    int *latest_entry) 
+    int entry_end)
 {
 
     return _db_get_resource_info(
@@ -1588,7 +1610,6 @@ GPtrArray *db_get_metadata(
         datapoint_end,
         entry_start,
         entry_end,
-        latest_entry,
         0);
 }
 
@@ -1611,18 +1632,8 @@ static int db_get_next_entry_seq(sqlite3* db) {
     int latest_seq = -1;
 
     // start transaction
-    r = sqlite3_exec(
-        db,
-        "BEGIN TRANSACTION;",
-        NULL,
-        0,
-        &zErrMsg
-    );
-    if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "BEGIN TRANSACTION SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return -1;
-    }
+    r = do_begin_transaction(db);
+    if (r != 0) return -1;
 
     // Delete last seq
     r = sqlite3_exec(
@@ -1644,7 +1655,15 @@ static int db_get_next_entry_seq(sqlite3* db) {
     );
     if (r != SQLITE_OK) goto fail;
 
-    latest_seq = db_get_latest_entry_seq(db);
+    // Get the new value
+    r = sqlite3_exec(
+        db,
+        "SELECT max(Num) from Entry_Sequence",
+        db_set_int_callback,
+        &latest_seq,
+        &zErrMsg
+    );
+    if (r != SQLITE_OK) goto fail;
 
     // commit transaction
     r = do_commit(db);
@@ -1679,7 +1698,15 @@ int db_get_latest_entry_seq(sqlite3 *db) {
 
     r = sqlite3_exec(
         db,
-        "SELECT max(Num) from Entry_Sequence",
+        "SELECT max(Num) from ("
+        "  SELECT max(Entry_num) as Num from Hardware_Abstractors"
+        " UNION"
+        "  SELECT max(Entry_num) as Num from Nodes"
+        " UNION"
+        "  SELECT max(Entry_num) as Num from Resources"
+        " UNION"
+        "  SELECT max(Entry_num) as Num from Datapoints"
+        ")",
         db_set_int_callback,
         &seq,
         &zErrMsg

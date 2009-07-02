@@ -26,6 +26,7 @@ CREATE TABLE Hardware_Abstractors (
 );
 CREATE INDEX HAB_Type_Index ON Hardware_Abstractors(HAB_Type);
 CREATE INDEX HAB_ID_Index ON Hardware_Abstractors(HAB_ID);
+CREATE INDEX HAB_Entry_Num ON Hardware_Abstractors(Entry_Num);
 
 
 -- this table has one row for each distinct Node we've ever seen
@@ -38,6 +39,7 @@ CREATE TABLE Nodes (
 );
 CREATE INDEX HAB_Key_Index ON Nodes(HAB_Key);
 CREATE INDEX Node_ID_Index ON Nodes(Node_ID);
+CREATE INDEX Node_Entry_Num ON Nodes(Entry_Num);
 
 
 -- this table has one row for each Data Type we support
@@ -95,6 +97,7 @@ CREATE TABLE Resources (
 );
 CREATE INDEX Node_Key_Index ON Resources(Node_Key);
 CREATE INDEX Resource_ID_Index ON Resources(Resource_ID);
+CREATE INDEX Resource_Entry_Num ON Resources(Entry_Num);
 
 
 
@@ -113,4 +116,5 @@ CREATE TABLE Datapoints (
 );
 CREATE INDEX Resource_Key_Index ON Datapoints(Resource_Key);
 CREATE INDEX Timestamp_Sec_Index ON Datapoints(Timestamp_Sec);
+CREATE INDEX Datapoints_Entry_Num ON Datapoints(Entry_Num);
 
