@@ -394,7 +394,9 @@ int main(int argc, char *argv[]) {
 	sync_config = g_slist_nth_data(sync_config_list, i);
         sync_config->db = db_init();
 	if (sync_config) {
-	    sync_config->last_entry_end_seq = db_get_last_sync_seq(db, sync_config->sync_recipient);
+	    sync_config->last_entry_end_seq = 
+                db_get_last_sync_seq(sync_config->db, 
+                    sync_config->sync_recipient);
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Config number %d is not in the list.", i);
