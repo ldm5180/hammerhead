@@ -237,14 +237,17 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
 	}
 
-	//FIXME: only do this after receiving confirmation from far-end
-	config->last_entry_end_seq_metadata = curr_seq + 1;	
     }
 
     r = sync_finish_connection(config);
     if( r == 0 ) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-              "    Sync finished");
+              "    Sync metadata finished");
+
+        if(bi) {
+            //FIXME: only do this after receiving confirmation from far-end
+            config->last_entry_end_seq_metadata = curr_seq + 1;	
+        }
     }
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &message);
@@ -425,15 +428,18 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
 	}
 
-	//FIXME: only do this after receiving confirmation from far-end
-	db_set_last_sync_seq(config->db, config->sync_recipient, curr_seq);
-	config->last_entry_end_seq = curr_seq + 1;
     }
 
     r = sync_finish_connection(config);
     if( r == 0 ) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
               "    Sync datapoints finished");
+
+        if(bi) {
+            //FIXME: only do this after receiving confirmation from far-end
+            db_set_last_sync_seq(config->db, config->sync_recipient, curr_seq);
+            config->last_entry_end_seq = curr_seq + 1;
+        }
     }
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &sync_message);
