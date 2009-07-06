@@ -65,7 +65,7 @@ void usage(FILE * fp) {
 	    "\n"
 	    "usage: syshealth-hab [OPTIONS]\n"
 	    "\n"
-	    "-d,--delay <sec>         Wait N seconds between updates.  Default is 30\n"
+	    "-d,--delay <sec>         Wait N seconds between updates.  Default is 300\n"
 	    "-i,--info                Publish Bionet library information\n"
 	    "-h,--help                Show this help and exit\n"
 	    "-s,--security-dir <dir>  Directory containing security certificates\n"
