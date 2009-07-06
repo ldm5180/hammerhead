@@ -55,7 +55,7 @@ AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
       [ENABLE_CHECK=$enableval],
       [ENABLE_CHECK=yes])
 if test "x$ENABLE_CHECK" = "xyes"; then
-AM_PATH_CHECK([0.9.3])
+PKG_CHECK_MODULES([CHECK], [ check >= 0.9.3 ])
 AC_SUBST(CHECK_CFLAGS)
 AC_SUBST(CHECK_LIBS)
 fi
