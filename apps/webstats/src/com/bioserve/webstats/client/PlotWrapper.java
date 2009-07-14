@@ -28,9 +28,11 @@ public class PlotWrapper implements Updateable, TimespanSettable {
 	public PlotWrapper(String packHere, String filter)
 	{
 		this();
-		setFilter(filter);
-		pack(packHere);
-		setTitle(filter);	/* Untitled */
+		if(filter != null) {
+			setFilter(filter);
+			pack(packHere);
+			setTitle(filter);	/* Untitled */
+		}
 	}
 	
 	private void pack(String packHere) {
