@@ -9,7 +9,7 @@ public class TimespanChooser extends ParameterChooser {
 	public TimespanChooser(String packHere) {
 		super(packHere, "Plot the last:", "timespan");
 		createChoices();
-		setActive("minute");
+		setActive("half-hour");
 	}
 	
 	private void createChoices() {
