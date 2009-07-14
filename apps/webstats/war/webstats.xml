@@ -1,0 +1,6 @@
+<config>
+<plots>
+  <plot bionet_filter="syshealth.*.*:15-min-load-average" />
+  <plot bionet_filter="syshealth.*.*:uptime" />
+</plots>
+</config>
