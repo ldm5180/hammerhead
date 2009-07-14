@@ -394,6 +394,21 @@ fi
 AM_CONDITIONAL([ENABLE_BISON], [test "x$ac_cv_prog_YACC" != "x"])
 AM_CONDITIONAL([ENABLE_FLEX], [test "x$ac_cv_prog_LEX" != "x"])
 
+# GWT UIs depend on Java at compile-time.
+AC_PATH_PROG([JAVA], [java], [no], [])
+AM_CONDITIONAL([ENABLE_JAVA], [test "x$JAVA" != "xno"])
+
+# Google Web Toolkit is required for compiling the webstats app from Java
+# into JavaScript.  Both the GWT jars and java (not javac) are required.
+# GWT doesn't have a normal system path, so the user has to pass a path.
+AC_ARG_WITH([gwt], AC_HELP_STRING([--with-gwt],
+    [Path to Google Web Toolkit to build web UIs @<:@default=none@:>@]),
+    [if test "x$JAVA" == "xno"; then
+		AC_MSG_ERROR([--with-gwt specified but java could not be found], [1])
+	 fi
+	 AC_SUBST([GWT_PATH], [$withval])],
+    [with_gwt=none])
+AM_CONDITIONAL([ENABLE_GWT], [test "x$with_gwt" != "xnone"])
 
 # Checks for library functions.
 if test "$cross_compiling" != yes; then
@@ -446,6 +461,8 @@ AC_CONFIG_FILES([Makefile
                  data-manager/py-client/Makefile
 		 security/Makefile
 		 security/ca/Makefile
+		 apps/Makefile
+		 apps/webstats/Makefile
 		 test/config.sh
 		 check/Makefile
 		 check/libutil/Makefile
