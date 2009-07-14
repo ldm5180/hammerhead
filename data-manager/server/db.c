@@ -21,6 +21,8 @@
 
 
 static int db_get_next_entry_seq(sqlite3 *db);
+static int db_get_last_sync_seq(sqlite3 *db, char * bdm_id, sqlite3_stmt *stmt);
+static void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int last_sync, sqlite3_stmt *stmt);
 
 
 static int entry_seq = -1; // Always set before calling add_*_to_db
@@ -31,8 +33,10 @@ static sqlite3_stmt * insert_resource_stmt = NULL;
 static sqlite3_stmt * insert_datapoint_stmt = NULL;
 static sqlite3_stmt * insert_datapoint_sync_stmt = NULL;
 static sqlite3_stmt * insert_bdm_stmt = NULL;
-static sqlite3_stmt * get_last_sync_bdm_stmt = NULL;
-static sqlite3_stmt * set_last_sync_bdm_stmt = NULL;
+static sqlite3_stmt * get_last_sync_bdm_stmt_metadata = NULL;
+static sqlite3_stmt * get_last_sync_bdm_stmt_datapoints = NULL;
+static sqlite3_stmt * set_last_sync_bdm_stmt_metadata = NULL;
+static sqlite3_stmt * set_last_sync_bdm_stmt_datapoints = NULL;
 
 extern char * database_file;
 char bdm_id[256] = { 0 };
@@ -94,13 +98,21 @@ void db_shutdown(sqlite3 *db) {
 	sqlite3_finalize(insert_bdm_stmt);
 	insert_bdm_stmt = NULL;
     }
-    if(get_last_sync_bdm_stmt){
-	sqlite3_finalize(get_last_sync_bdm_stmt);
-	get_last_sync_bdm_stmt = NULL;
+    if(get_last_sync_bdm_stmt_datapoints){
+	sqlite3_finalize(get_last_sync_bdm_stmt_datapoints);
+	get_last_sync_bdm_stmt_datapoints = NULL;
     }
-    if(set_last_sync_bdm_stmt){
-	sqlite3_finalize(set_last_sync_bdm_stmt);
-	set_last_sync_bdm_stmt = NULL;
+    if(get_last_sync_bdm_stmt_metadata){
+	sqlite3_finalize(get_last_sync_bdm_stmt_metadata);
+	get_last_sync_bdm_stmt_metadata = NULL;
+    }
+    if(set_last_sync_bdm_stmt_datapoints){
+	sqlite3_finalize(set_last_sync_bdm_stmt_datapoints);
+	set_last_sync_bdm_stmt_datapoints = NULL;
+    }
+    if(set_last_sync_bdm_stmt_metadata){
+	sqlite3_finalize(set_last_sync_bdm_stmt_metadata);
+	set_last_sync_bdm_stmt_metadata = NULL;
     }
 
     sqlite3_close(db);
@@ -1706,13 +1718,16 @@ int db_get_latest_entry_seq(sqlite3 *db) {
         "  SELECT max(Entry_num) as Num from Resources"
         " UNION"
         "  SELECT max(Entry_num) as Num from Datapoints"
+        " UNION"
+        "  SELECT 0 as Num"
         ")",
         db_set_int_callback,
         &seq,
         &zErrMsg
     );
     if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "SELECT SQL error: %s\n", zErrMsg);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): SELECT SQL error: %s\n",
+            __FUNCTION__, zErrMsg);
         sqlite3_free(zErrMsg);
         return -1;
     }
@@ -1720,16 +1735,15 @@ int db_get_latest_entry_seq(sqlite3 *db) {
 }
 
 
-int db_get_last_sync_seq(sqlite3 *db, char * bdm_id) {
+int db_get_last_sync_seq_metadata(sqlite3 *db, char * bdm_id) {
     int r;
-    int seq = -1;
 
-    if(get_last_sync_bdm_stmt == NULL) {
+    if(get_last_sync_bdm_stmt_metadata == NULL) {
 	r = sqlite3_prepare_v2(db, 
-	    "SELECT Last_Sync"
+	    "SELECT Last_Sync_Metadata"
             " FROM BDMs"
             " WHERE BDM_ID = ?",
-	    -1, &get_last_sync_bdm_stmt, NULL);
+	    -1, &get_last_sync_bdm_stmt_metadata, NULL);
 
 	if (r != SQLITE_OK) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -1739,39 +1753,63 @@ int db_get_last_sync_seq(sqlite3 *db, char * bdm_id) {
 
     }
 
+    return db_get_last_sync_seq(db, bdm_id, get_last_sync_bdm_stmt_metadata);
+}
+int db_get_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id) {
+    int r;
 
-    r = sqlite3_bind_text(get_last_sync_bdm_stmt, 1, bdm_id, -1, SQLITE_STATIC);
+    if(get_last_sync_bdm_stmt_datapoints == NULL) {
+	r = sqlite3_prepare_v2(db, 
+	    "SELECT Last_Sync_Datapoints"
+            " FROM BDMs"
+            " WHERE BDM_ID = ?",
+	    -1, &get_last_sync_bdm_stmt_datapoints, NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "get-last-sync SQL error: %s\n", sqlite3_errmsg(db));
+	    return -1;
+	}
+
+    }
+
+    return db_get_last_sync_seq(db, bdm_id, get_last_sync_bdm_stmt_datapoints);
+}
+static int db_get_last_sync_seq(sqlite3 *db, char * bdm_id, sqlite3_stmt *stmt) {
+    int r;
+    int seq = -1;
+
+    r = sqlite3_bind_text(stmt, 1, bdm_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "get-last-sync SQL bind error");
         return -1;
     }
 
-    r = sqlite3_step(get_last_sync_bdm_stmt);
+    r = sqlite3_step(stmt);
     if (r != SQLITE_ROW && r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "No row for last-sync: %s\n", sqlite3_errmsg(db));
-	sqlite3_reset(get_last_sync_bdm_stmt);
+	sqlite3_reset(stmt);
         return -1;
     }
 
-    seq = sqlite3_column_int(get_last_sync_bdm_stmt, 1);
+    seq = sqlite3_column_int(stmt, 1);
 
-    sqlite3_reset(get_last_sync_bdm_stmt);
-    sqlite3_clear_bindings(get_last_sync_bdm_stmt);
+    sqlite3_reset(stmt);
+    sqlite3_clear_bindings(stmt);
 
     return seq;
 }
 
-
-void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int last_sync) {
+void db_set_last_sync_seq_metadata(sqlite3 *db, char * bdm_id, int last_sync) {
     int r;
 
-    if(set_last_sync_bdm_stmt == NULL) {
+    if(set_last_sync_bdm_stmt_metadata == NULL) {
 	r = sqlite3_prepare_v2(db, 
 	    "UPDATE BDMs"
-            " SET LAST_Sync = ?"
+            " SET LAST_Sync_Metadata = ?"
             " WHERE BDM_ID = ?",
-	    -1, &set_last_sync_bdm_stmt, NULL);
+	    -1, &set_last_sync_bdm_stmt_metadata, NULL);
 
 	if (r != SQLITE_OK) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -1781,29 +1819,55 @@ void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int last_sync) {
 
     }
 
+    db_set_last_sync_seq(db, bdm_id, last_sync, set_last_sync_bdm_stmt_metadata);
+}
+void db_set_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id, int last_sync) {
+    int r;
+
+    if(set_last_sync_bdm_stmt_datapoints == NULL) {
+	r = sqlite3_prepare_v2(db, 
+	    "UPDATE BDMs"
+            " SET LAST_Sync_Datapoints = ?"
+            " WHERE BDM_ID = ?",
+	    -1, &set_last_sync_bdm_stmt_datapoints, NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "get-last-sync SQL error: %s\n", sqlite3_errmsg(db));
+	    return;
+	}
+
+    }
+
+    db_set_last_sync_seq(db, bdm_id, last_sync, set_last_sync_bdm_stmt_datapoints);
+}
+
+static void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int last_sync, sqlite3_stmt *stmt) {
+    int r;
+
     // Bind variables
-    r = sqlite3_bind_int(set_last_sync_bdm_stmt, 1, last_sync);
+    r = sqlite3_bind_int(stmt, 1, last_sync);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "set-last-sync SQL bind error");
         return;
     }
-    r = sqlite3_bind_text(set_last_sync_bdm_stmt, 2, bdm_id, -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(stmt, 2, bdm_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "set-last-sync SQL bind error");
         return;
     }
 
-    while(SQLITE_BUSY == (r = sqlite3_step(set_last_sync_bdm_stmt)));
+    while(SQLITE_BUSY == (r = sqlite3_step(stmt)));
     if (r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error updating last-sync: %s\n", sqlite3_errmsg(db));
-	sqlite3_reset(set_last_sync_bdm_stmt);
+	sqlite3_reset(stmt);
         return;
     }
 
-    sqlite3_reset(set_last_sync_bdm_stmt);
-    sqlite3_clear_bindings(set_last_sync_bdm_stmt);
+    sqlite3_reset(stmt);
+    sqlite3_clear_bindings(stmt);
 
 }
 

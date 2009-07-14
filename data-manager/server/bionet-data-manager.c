@@ -36,7 +36,7 @@ void usage(void) {
 	" -?,--help                                      Show this help\n"
 	" -c,--sync-sender-config <FILE>                 File for configuring a BDM sync sender\n"
 #if ENABLE_ION
-	" -d,--enable-dtn-sync-receiver                  Enable BDM syncronization over DTN (ION)\n"
+	" -d,--dtn-sync-receiver                         Enable BDM syncronization over DTN (ION)\n"
 #endif
 	" -e,--require-security                          Require security\n"
 	" -f,--file /Path/to/database/file.db            Full path of database file (bdm.db)\n"
@@ -46,7 +46,9 @@ void usage(void) {
 	" --ion-key <int>                                Alternate ION key to use if syncing over ION\n"       
 #endif
 	" -n,--node,--nodes \"HAB-Type.HAB-ID.Node-ID\"    Subscribe to a Node list.\n"
+#if ENABLE_ION
 	" -o,--dtn-endpoint-id <ID>                      DTN endpoint ID (ex: ipn:1.2)\n"
+#endif
         " -p,--port <port>                               Alternate BDM Client port. Default: %u\n"
 	" -r,--resource,--resources \"HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
 	"                                                Subscribe to Resource values.\n"
@@ -76,7 +78,6 @@ int main(int argc, char *argv[]) {
     };
 
     g_log_set_default_handler(bionet_glib_log_handler, &lc);
-
 
     int tcp_sync_recv_port = BDM_SYNC_PORT;
     int bdm_port = BDM_PORT;
@@ -395,7 +396,11 @@ int main(int argc, char *argv[]) {
         sync_config->db = db_init();
 	if (sync_config) {
 	    sync_config->last_entry_end_seq = 
-                db_get_last_sync_seq(sync_config->db, 
+                db_get_last_sync_seq_datapoints(sync_config->db, 
+                    sync_config->sync_recipient);
+
+	    sync_config->last_entry_end_seq_metadata = 
+                db_get_last_sync_seq_metadata(sync_config->db, 
                     sync_config->sync_recipient);
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
@@ -428,7 +433,7 @@ int main(int argc, char *argv[]) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	      "DTN Sync Receiver starting. DTN endpoint ID: %s", dtn_endpoint_id);
 
-	dtn_recv = g_thread_create(dtn_receive_thread, dtn_endpoint_id, FALSE, NULL);
+	dtn_recv = g_thread_create(dtn_receive_thread, NULL, FALSE, NULL);
 	if (NULL == dtn_recv) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to create DTN receiver thread: %m");

@@ -32,6 +32,7 @@ ASN_MODULE_SOURCES =              \
     BDM-S2C-Message.c             \
     BDM-Sync-Metadata-Message.c   \
     BDM-Sync-Datapoints-Message.c \
+    BDM-Sync-Ack.c                \
     BDMRecord.c                   \
     BDMSyncRecord.c               \
     ResourceRecord.c              \
@@ -60,6 +61,7 @@ ASN_MODULE_HEADS =                \
     BDM-S2C-Message.h             \
     BDM-Sync-Metadata-Message.h   \
     BDM-Sync-Datapoints-Message.h \
+    BDM-Sync-Ack.h                \
     BDMRecord.h                   \
     BDMSyncRecord.h               \
     ResourceRecord.h              \

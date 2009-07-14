@@ -71,7 +71,9 @@ typedef struct {
     sqlite3 *db;
     int last_entry_end_seq;    
     int last_entry_end_seq_metadata; 
+    // TCP Specific
     int fd;
+    int bytes_sent;
 } sync_sender_config_t;
 
 typedef struct { 
@@ -171,8 +173,10 @@ GPtrArray *db_get_metadata(
     int entry_end);
 
 int db_get_latest_entry_seq(sqlite3 *db);
-int db_get_last_sync_seq(sqlite3 *db, char * bdm_id);
-void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int seq);
+int db_get_last_sync_seq_metadata(sqlite3 *db, char * bdm_id);
+void db_set_last_sync_seq_metadata(sqlite3 *db, char * bdm_id, int seq);
+int db_get_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id);
+void db_set_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id, int seq);
 
 // 
 // stuff for being a bionet client
@@ -204,6 +208,15 @@ int try_to_connect_to_bionet(void *unused);
 typedef struct {
     int fd;
     GIOChannel *ch;
+
+#if ENABLE_ION
+    struct {
+        int	running;
+        BpSAP	sap;
+        Sdr		sdr;
+	ZcoReader	reader;
+    } ion;
+#endif
 
     // keep track of messages coming in from the client
     union {

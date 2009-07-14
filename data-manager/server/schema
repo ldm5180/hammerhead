@@ -77,11 +77,33 @@ INSERT INTO Resource_Flavors VALUES (NULL, 'parameter');
 CREATE TABLE BDMs (
     Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
     BDM_ID VARCHAR(255) NOT NULL,
-    Last_Sync INTEGER, --Key of the last confirmed sync
+    -- NOTE: Once a bundle is sent, these values are updated, and the bundle is 
+    -- inserted into the 'Sync_*_Bundle_Outstatnding' table, and later removed
+    -- once it has been confirmed.
+    Last_Sync_Metadata INTEGER, --Seq of the last successfully sent metadata
+    Last_Sync_Datapoints INTEGER, --Seq of the last successfully sent datapoints
     UNIQUE (BDM_ID)
 );
 CREATE INDEX BDM_ID_Index ON BDMs(BDM_ID);
-    
+
+-- these tables track all outstanding bundles, and when they were
+-- last transmitted. 
+CREATE TABLE Sync_Datapoints_Bundle_Outstanding (
+    BDM_Key            INTEGER NOT NULL,
+    Sent_Timestamp     FLOAT   NOT NULL, --Part of bundle ID, and used for retranmit timers
+    Sent_Timestamp_Seq FLOAT   NOT NULL, --Part of bundle ID
+    Start_Seq          INTEGER NOT NULL, --First seq in bundle, inclusive
+    End_Seq            INTEGER NOT NULL  --Last seq in bundle, inclusive
+);
+
+CREATE TABLE Sync_Metadata_Bundle_Outstanding (
+    BDM_Key            INTEGER NOT NULL,
+    Sent_Timestamp     FLOAT   NOT NULL, --Part of bundle ID, and used for retranmit timers
+    Sent_Timestamp_Seq FLOAT   NOT NULL, --Part of bundle ID
+    Start_Seq          INTEGER NOT NULL, --First seq in bundle, inclusive
+    End_Seq            INTEGER NOT NULL --Last seq in bundle, inclusive
+);
+
 
 -- this table has one row for each distinct resource we've ever seen
 -- this is the resource metadata

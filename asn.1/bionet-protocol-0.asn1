@@ -232,5 +232,14 @@ BEGIN
         metadataMessage      BDM-Sync-Metadata-Message,
         datapointsMessage    BDM-Sync-Datapoints-Message
     }
+
+    -- BDM Sync Ack
+    -- this contains the TCP equivelent of the BP Reception report signal
+    BDM-Sync-Ack ::= ENUMERATED {
+        error(-1),
+        datapointAck,
+        metadataAck
+    }
+
 END
 

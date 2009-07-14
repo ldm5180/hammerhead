@@ -14,6 +14,31 @@
 #include "bionet-data-manager.h"
 #include "bdm-util.h"
 
+static int write_data_to_fd(const void *buffer, size_t size, void * fd_void) {
+    int fd = *(int*)fd_void;
+    int r;
+
+    r = write(fd, buffer, size);
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	  "    %d bytes written %x%x", r, (int)((char*)buffer)[0], (int)((char*)buffer)[1]);
+
+    return r;
+} /* write_data_to_socket() */
+
+static void send_ack(client_t *client, BDM_Sync_Ack_t ack_type ) {
+    asn_enc_rval_t asn_r;
+    BDM_Sync_Ack_t sync_ack = ack_type;
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+        "Sending ACK (%ld)...", ack_type);
+    
+    asn_r = der_encode(&asn_DEF_BDM_Sync_Ack, &sync_ack, 
+        write_data_to_fd, &client->fd);
+    if (asn_r.encoded == -1) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_ack(): error with der_encode(): %m");
+    }
+}
 
 int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_t *client) {
     int bytes_to_read;
@@ -55,10 +80,13 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 		      "sync_receive_readable_handler(): receive Sync Metadata Message");
 		handle_sync_metadata_message(client, &client->message.sync_message->choice.metadataMessage);
+
+                send_ack(client, BDM_Sync_Ack_metadataAck);
 	    } else if (client->message.sync_message->present == BDM_Sync_Message_PR_datapointsMessage) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 		      "sync_receive_readable_handler(): receive Sync Datapoints Message");
 		handle_sync_datapoints_message(client, &client->message.sync_message->choice.datapointsMessage);
+                send_ack(client, BDM_Sync_Ack_datapointAck);
 	    } else {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		      "sync_receive_readable_handler(): unknown Sync Message choice");

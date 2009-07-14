@@ -23,7 +23,7 @@
     #include <sys/socket.h>
 #endif
 
-#include <bionet.h>
+#include "bionet.h"
 #include "bionet-util.h"
 #include "bdm-util.h"
 #include "bionet-data-manager.h"
@@ -41,7 +41,11 @@ static int write_data_to_socket(const void *buffer, size_t size, void * config_v
 static int write_data_to_ion(const void *buffer, size_t size, void * config_void);
 #endif
 
-static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
+static int sync_send_metadata(
+    sync_sender_config_t * config,
+    int from_seq, 
+    int to_seq) 
+{
     GPtrArray * bdm_list = NULL;
     char * hab_type;
     char * hab_id;
@@ -52,7 +56,7 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
     int bi, r;
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	  "Syncing metadata");
+	  "Syncing metadata to %s", config->sync_recipient);
 
     if (sync_init_connection(config)) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
@@ -68,11 +72,10 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "    METADATA for %s.%s.%s:%s from seq %d to %d",
-	  hab_type, hab_id, node_id, resource_id,
-	  config->last_entry_end_seq_metadata, curr_seq);
+	  hab_type, hab_id, node_id, resource_id, from_seq, to_seq);
     bdm_list = db_get_metadata(config->db, hab_type, hab_id, node_id, resource_id,
 			       &config->start_time, &config->end_time,
-			       config->last_entry_end_seq_metadata, curr_seq);
+			       from_seq, to_seq);
 
     memset(&sync_message, 0x00, sizeof(BDM_Sync_Message_t));
     sync_message.present = BDM_Sync_Message_PR_metadataMessage;
@@ -246,7 +249,7 @@ static int sync_send_metadata(sync_sender_config_t * config, int curr_seq) {
 
         if(bi) {
             //FIXME: only do this after receiving confirmation from far-end
-            config->last_entry_end_seq_metadata = curr_seq + 1;	
+            config->last_entry_end_seq_metadata = to_seq;	
         }
     }
 
@@ -259,7 +262,11 @@ cleanup:
 } /* sync_send_metadata() */
 
 
-static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
+static int sync_send_datapoints(
+    sync_sender_config_t * config,
+    int from_seq, 
+    int to_seq) 
+{
     GPtrArray * bdm_list = NULL;
     char * hab_type;
     char * hab_id;
@@ -288,10 +295,10 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	  "    DATAPOINTS for %s.%s.%s:%s from seq %d to %d",
 	  hab_type, hab_id, node_id, resource_id,
-	  config->last_entry_end_seq, curr_seq);
+	  from_seq, to_seq);
     bdm_list = db_get_resource_datapoints(config->db, hab_type, hab_id, node_id, resource_id,
 					  &config->start_time, &config->end_time,
-					  config->last_entry_end_seq, curr_seq);
+					  from_seq, to_seq);
 
     memset(&sync_message, 0x00, sizeof(BDM_Sync_Message_t));
     sync_message.present = BDM_Sync_Message_PR_datapointsMessage;
@@ -436,9 +443,7 @@ static int sync_send_datapoints(sync_sender_config_t * config, int curr_seq) {
               "    Sync datapoints finished");
 
         if(bi) {
-            //FIXME: only do this after receiving confirmation from far-end
-            db_set_last_sync_seq(config->db, config->sync_recipient, curr_seq);
-            config->last_entry_end_seq = curr_seq + 1;
+            config->last_entry_end_seq = to_seq;
         }
     }
 
@@ -461,6 +466,8 @@ static int write_data_to_socket(const void *buffer, size_t size, void * config_v
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "    %d bytes written", r);
+
+    config->bytes_sent += r;
 
     return r;
 } /* write_data_to_socket() */
@@ -513,21 +520,23 @@ gpointer sync_thread(gpointer config) {
 	return NULL;
     }
 
-    cfg->last_entry_end_seq_metadata = cfg->last_entry_end_seq 
-        = db_get_last_sync_seq(cfg->db, cfg->sync_recipient);
+    cfg->last_entry_end_seq_metadata = 
+        db_get_last_sync_seq_metadata(cfg->db, cfg->sync_recipient);
+    cfg->last_entry_end_seq = 
+        db_get_last_sync_seq_datapoints(cfg->db, cfg->sync_recipient);
 
     while (1) {
 	curr_seq = db_get_latest_entry_seq(cfg->db);
 
-	if (curr_seq >= cfg->last_entry_end_seq_metadata) {
-	    sync_send_metadata(cfg, curr_seq);
+	if (curr_seq > cfg->last_entry_end_seq_metadata) {
+	    sync_send_metadata(cfg, cfg->last_entry_end_seq_metadata+1, curr_seq);
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 		  "No metadata to sync.");
 	}
-	if (curr_seq >= cfg->last_entry_end_seq) {
+	if (curr_seq > cfg->last_entry_end_seq) {
 
-	    sync_send_datapoints(cfg, curr_seq);
+	    sync_send_datapoints(cfg, cfg->last_entry_end_seq+1, curr_seq);
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 		  "No data to sync. Sleeping %u seconds...", cfg->frequency);
@@ -543,8 +552,9 @@ gpointer sync_thread(gpointer config) {
 #if ENABLE_ION
 gpointer dtn_receive_thread(gpointer config) {
     while(1) {
-	sleep(60);
+       sleep(60);
     }
+    return NULL;
 }
 #endif
 
@@ -566,8 +576,114 @@ static int sync_init_connection_ion(sync_sender_config_t * config) {
 }
 #endif
 
+/*
+ * Read the TCP ack, which is sent once this message has been committed to disk
+ */
+static int read_ack_tcp(sync_sender_config_t *config) {
+    int bytes_to_read;
+    int bytes_read = 0;
+    asn_dec_rval_t rval;
+
+    char buffer[128];
+    int index = 0;
+    BDM_Sync_Ack_t sync_ack;
+    BDM_Sync_Ack_t * p_sync_ack = &sync_ack;
+
+    memset(&sync_ack, 0, sizeof(sync_ack));
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+        "Waiting for ACK...");
+
+    do {
+	bytes_to_read = sizeof(buffer) - index;
+	bytes_read = read(config->fd, &buffer[index], bytes_to_read);
+	if (bytes_read < 0) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error reading from sync receiver: %s", strerror(errno));
+	    return FALSE;
+	}
+	if (bytes_read == 0) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "eof from sync receiver");
+	    return FALSE;
+	}
+	
+	index += bytes_read;
+
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+              "    decoding %d bytes of ack %x%x%x", bytes_read, 
+              (int)buffer[0], (int)buffer[1], (int)buffer[2]);
+        rval = ber_decode(NULL, 
+			  &asn_DEF_BDM_Sync_Ack, 
+			  (void **)&p_sync_ack, 
+			  buffer, 
+			  index);
+
+        if (rval.code == RC_OK) {
+
+            if(sync_ack < 0) {
+                // The connection worked, but the remote side couldn't save the
+                // data 
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+                    "The message was not saved by the reciever");
+                return FALSE;
+            }
+
+            switch(sync_ack){
+                case BDM_Sync_Ack_datapointAck:
+                    db_set_last_sync_seq_datapoints(config->db, 
+                        config->sync_recipient, 
+                        config->last_entry_end_seq);
+
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                        "Datapoint ACK received...");
+                    break;
+
+                case BDM_Sync_Ack_metadataAck:
+                    db_set_last_sync_seq_metadata(config->db, 
+                        config->sync_recipient, 
+                        config->last_entry_end_seq_metadata);
+
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                        "Metadata ACK received...");
+                    break;
+
+                default:
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+                        "Unhandled ack value: %ld", sync_ack);
+                    return FALSE;
+            }
+
+            return TRUE;
+                        
+        } else if (rval.code == RC_WMORE) {
+            // ber_decode is waiting for more data, but so far so good
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "ber_decode: waiting for more data");
+	    usleep(10000);
+        } else if (rval.code == RC_FAIL) {
+	    // received invalid junk
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ber_decode failed to decode the sync receiver's message");
+        } else {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "unknown error with ber_decode (code=%d)", rval.code);
+        }
+
+        if (rval.consumed > 0) {
+            index -= rval.consumed;
+            memmove(buffer, &buffer[rval.consumed], index);
+        }
+    } while ((rval.consumed > 0) && (index > 0));
+
+    return FALSE;
+}
+
 static int sync_finish_connection_tcp(sync_sender_config_t * config) {
     int r;
+
+    if(config->bytes_sent){
+        // TCP will ack the message in the same connection. Wait for it.
+        read_ack_tcp(config);
+    }
+
+    config->bytes_sent = 0;
+
     while((r = close(config->fd)) < 0 && errno == EINTR);
 
     if(r<0){
@@ -748,6 +864,8 @@ static int sync_init_connection_tcp(sync_sender_config_t * config) {
             config->remote_port);
         return -1;
     }
+
+    config->bytes_sent = 0;
 
     return 0;
 }
