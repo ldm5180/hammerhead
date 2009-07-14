@@ -1,7 +1,7 @@
 package com.bioserve.webstats.client;
 
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Image;
 
@@ -19,28 +19,28 @@ public class PlotWrapper implements Updateable, TimespanSettable {
 		setFilter("syshealth.otis.*:Seconds-of-uptime");
 	}
 	
-	public PlotWrapper(String packHere) {
+	public PlotWrapper(HasWidgets parent) {
 		this();
-		pack(packHere);
+		pack(parent);
 		setTitle("Plot");	/* Untitled */
 	}
 	
-	public PlotWrapper(String packHere, String filter)
+	public PlotWrapper(HasWidgets parent, String filter)
 	{
 		this();
 		if(filter != null) {
 			setFilter(filter);
-			pack(packHere);
+			pack(parent);
 			setTitle(filter);	/* Untitled */
 		}
 	}
 	
-	private void pack(String packHere) {
+	private void pack(HasWidgets parent) {
 		// Draw the image once.
 		update();
 			
 		//Pack the panel into packHere.
-		RootPanel.get(packHere).add(mainPanel);
+		parent.add(mainPanel);
 		
 		//Pack the title into the panel, set attributes.
 		mainPanel.add(htmlTitle, DockPanel.NORTH);
