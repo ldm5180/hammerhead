@@ -5,6 +5,12 @@
 ./data-manager/**/Makefile.in
 ./hab/**/Makefile.in
 ./util/**/Makefile.in
+./apps/**/Makefile.in
+./security/**/Makefile.in
+./check/**/Makefile.in
+./apps/webstats/war/WEB-INF/
+./apps/webstats/war/webstats/
+Makefile
 *.lo
 *.la
 .deps
