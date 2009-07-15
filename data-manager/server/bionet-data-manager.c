@@ -83,9 +83,7 @@ int main(int argc, char *argv[]) {
     int tcp_sync_recv_port = BDM_SYNC_PORT;
     int bdm_port = BDM_PORT;
     int enable_tcp_sync_receiver = 0;
-#if ENABLE_ION
     int enable_dtn_sync_receiver = 0;
-#endif
 
     //
     // parse command-line arguments
