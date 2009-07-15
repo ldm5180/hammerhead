@@ -1,0 +1,172 @@
+## File created by ../../ionscript
+## Mon Oct 27 14:56:07 EDT 2008
+## Run the following command to start ION node:
+##	% ionstart -I "loopback.rc"
+
+## begin ionadmin 
+# ionrc configuration file for loopback test.
+#	This uses ltp as the primary convergence layer.
+#	command: % ionadmin loopback.ionrc
+# 	This command should be run FIRST.
+#
+#	Ohio University, Oct 2008
+
+# Initialization command (command 1). 
+#	Set this node to be node 1 (as in ipn:1).
+#	Use default sdr configuration (empty configuration file name "").
+1 1 ""
+
+# start ion node
+s
+
+# Add a contact.
+# 	It will start at +1 seconds from now, ending +3600 seconds from now.
+#	It will connect node 1 to itself
+#	It will transmit 100000 bytes/second.
+a contact +1 +3600 1 1 100000
+
+# Add a range. This is the physical distance between nodes.
+#	It will start at +1 seconds from now, ending +3600 seconds from now.
+#	It will connect node 1 to itself.
+#	Data on the link is expected to take 1 second to reach the other
+#	end (One Way Light Time).
+a range +1 +3600 1 1 1
+
+# set this node to consume and produce a mean of 1000000 bytes/second.
+m production 1000000
+m consumption 1000000
+## end ionadmin 
+
+## begin ltpadmin 
+# ltprc configuration file for the loopback test.
+#	Command: % ltpadmin loopback.ltprc
+#	This command should be run AFTER ionadmin and BEFORE bpadmin.
+#
+#	Ohio University, Oct 2008
+
+# Initialization command (command 1). 
+# Establishes the LTP retransmission window. 
+# (Prohibiting LTP from seizing all available storage).
+#	A maximum of 32 sessions.  A session is assumed to be around one
+#	second of transmission.  This value should be estimated at the sum
+#	of maximum round-trip times (in seconds) for all "spans."
+#	Suggest throwing 20% higher number of sessions to account for extra-
+#	long sessions which contain an actual retransmission.
+#	Set a block size limit of 131072 bytes.  The block size is around
+#	the amount of data expected to be sent in a session.  Determine
+#	this with the maximum amount of data (in bytes) transferred in one
+#	second on your fastest available link.
+1 32 131072
+
+# Add a span. (a connection) 
+#	Identify the span as engine number 1.
+#	Use 1400 byte segments (assuming a standard ethernet frame
+#	underlying this link and accounting for ip/udp/eth header overhead).
+#	Use a nominal block size of 10000 bytes.  This is the amount of data
+#	(which can span several bundles) sent in a session.  You should
+#	consider this to be the maximum number of bytes sent in one second
+#	on the link. (you can also use the block size limit in the
+#	initialization command).
+#	Use the command 'udplso localhost:1113' to implement the link
+#	itself.  In this case, we use udp to connect to localhost (this is
+#	loopback) using port 1113 (defined by IANA as the default UDP port
+#	for Licklider Transmission Protocol).  The single quote is
+#	important, don't use double quotes.
+a span 1 1400 10000 'udplso localhost:1113'
+
+# Start command.
+#	This command actually runs the link service output commands
+#	(defined above, in the "a span" commands).
+#	Also starts the link service INPUT task 'udplsi localhost:1113' to
+#	listen locally on UDP port 1113 for incoming LTP traffic.
+s 'udplsi localhost:1113'
+## end ltpadmin 
+
+## begin bpadmin 
+# bprc configuration file for the loopback test.
+#	Command: % bpadmin loopback.bprc
+#	This command should be run AFTER ionadmin and ltpadmin and 
+#	BEFORE ipnadmin or dtnadmin.
+#
+#	Ohio University, Oct 2008
+
+# Initialization command (command 1).
+#	Use ipn:1.0 as the custodian endpoint of this node.
+#	That is, scheme IPN with element_number 1 and service number 0
+#	(ipn requires custodian service is zero).
+#	Note that this EID must be understood by the node itself, so be sure
+#	to add the scheme below.
+1 ipn:1.0
+
+# Add an EID scheme.
+#	The scheme's name is ipn.
+#	The scheme's number is 1.  Note that this number is defined for
+#	Compressed Bundle Header Encoding (CBHE) schemes ONLY.  All other
+#	schemes (dtn for example) should use number -1.
+#	This scheme's forwarding engine is handled by the program 'ipnfw.'
+#	This scheme's administration program (acting as the custodian
+#	daemon) is 'ipnadminep.'
+a scheme ipn 1 'ipnfw' 'ipnadminep'
+
+# Add endpoints.
+#	Establish endpoints ipn:1.0 ipn:1.1 and ipn:1.2 on the local node.
+#	ipn:1.0 is expected for custodian traffic.  The rest are usually
+#	used for specific applications (such as bpsink).
+#	The behavior for receiving a bundle when there is no application
+#	currently accepting bundles, is to queue them 'q', as opposed to
+#	immediately and silently discarding them (use 'x' instead of 'q' to
+#	discard).
+a endpoint ipn 1.0 q
+a endpoint ipn 1.1 q
+a endpoint ipn 1.2 q
+
+# Add a protocol. 
+#	Add the protocol named ltp.
+#	Estimate transmission capacity assuming 1400 bytes of each frame (in
+#	this case, udp on ethernet) for payload, and 100 bytes for overhead.
+a protocol ltp 1400 100
+
+# Add an induct. (listen)
+#	Add an induct to accept bundles using the ltp protocol.
+#	The duct's name is 1 (this is for future changing/deletion of the
+#	induct).
+#	The induct itself is implemented by the 'ltpcli' command.
+a induct ltp 1 ltpcli
+
+# Add an outduct. (send to yourself)
+#	Add an outduct to send bundles using the ltp protocol.
+#	The duct's name is 1 (this is for future changing/deletion of the
+#	outduct).
+#	The outduct itself is implemented by the 'ltpclo' command.
+a outduct ltp 1 ltpclo
+
+# Start bundle protocol engine, also running all of the induct, outduct,
+# and administration programs defined above
+s
+## end bpadmin 
+
+## begin ipnadmin 
+# ipnrc configuration file for the loopback test.
+#	Essentially, this is the IPN scheme's routing table.
+#	Command: % ipnadmin loopback.ipnrc
+#	This command should be run AFTER bpadmin (likely to be run last).
+#
+#	Ohio University, Oct 2008
+
+# Add services
+#	Add service 0 (i.e. ipn:1.0) called 'admin.'
+#	Add service 1 (ipn:1.1) called 'test1.'
+#	Add service 2 (ipn:1.2) called 'test2.'
+#	See your bprc file for endpoint IDs you should use.
+a service 0 admin
+a service 1 test1
+a service 2 test2
+
+# Add an egress plan.
+#	Bundles to be transmitted to element number 1 (that is, yourself).
+#	This element is named 'node1.'
+#	The plan is to queue for transmission (x) on protocol 'ltp' using
+#	the outduct identified as '1.'
+#	See your bprc file or bpadmin for outducts/protocols you can use.
+a plan 1 node1 x ltp/1
+## end ipnadmin 

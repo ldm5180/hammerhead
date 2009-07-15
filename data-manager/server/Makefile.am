@@ -39,6 +39,7 @@ libbionet_data_manager_la_SOURCES =      \
     sync-send.c                       \
     sync-receive-connecting-handler.c \
     sync-receive-readable-handler.c   \
+    sync-receive-ion.c                \
     handle-sync-datapoints-message.c  \
     handle-sync-metadata-message.c    \
     cfg-parser.y                      \

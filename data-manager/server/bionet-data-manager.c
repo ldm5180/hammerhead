@@ -26,6 +26,7 @@ extern char bdm_id[256];
 
 GSList * sync_config_list = NULL;
 static GSList * sync_thread_list = NULL;
+static int bp_attached = 0;
 
 void usage(void) {
     printf(
@@ -136,7 +137,7 @@ int main(int argc, char *argv[]) {
 	    }
 	    sync_config->last_entry_end_seq = -1;
 	    sync_config->last_entry_end_seq_metadata = -1;
-            if(sync_config->method == BDM_SYNC_METHOD_ION){
+            if(sync_config->method == BDM_SYNC_METHOD_ION && !bp_attached){
 #if ENABLE_ION
                 if (bp_attach() < 0)
                 {
@@ -144,6 +145,7 @@ int main(int argc, char *argv[]) {
                         "Can't attach to BP.");
                     continue;
                 }
+                bp_attached++;
 #else
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
                       "Bad config file '%s': BDM Syncronization over DTN was disabled at compile time.", optarg);
@@ -380,7 +382,7 @@ int main(int argc, char *argv[]) {
 
 
 
-    if (sync_config_list) {
+    if (sync_config_list || enable_dtn_sync_receiver) {
 	g_thread_init(NULL);
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "Initializing GThreads.");
@@ -432,6 +434,16 @@ int main(int argc, char *argv[]) {
 	}
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	      "DTN Sync Receiver starting. DTN endpoint ID: %s", dtn_endpoint_id);
+
+        if(!bp_attached){
+            if (bp_attach() < 0)
+            {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                    "Can't attach to BP.");
+                return -1;
+            }
+            bp_attached++;
+        }
 
 	dtn_recv = g_thread_create(dtn_receive_thread, NULL, FALSE, NULL);
 	if (NULL == dtn_recv) {

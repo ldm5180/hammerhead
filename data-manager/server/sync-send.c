@@ -550,16 +550,6 @@ gpointer sync_thread(gpointer config) {
 
 
 #if ENABLE_ION
-gpointer dtn_receive_thread(gpointer config) {
-    while(1) {
-       sleep(60);
-    }
-    return NULL;
-}
-#endif
-
-
-#if ENABLE_ION
 static int sync_init_connection_ion(sync_sender_config_t * config) {
 
     config->ion.sdr = bp_get_sdr();
