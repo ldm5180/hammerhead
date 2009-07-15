@@ -113,13 +113,13 @@ else
     AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
 fi
 
-if test "x$GLIB_CFLAGS" = "x" && "x$GLIB_LIBS" = "x"; then
+if test "x$GLIB_CFLAGS" = "x" && test "x$GLIB_LIBS" = "x"; then
     if test "$cross_compiling" != yes; then
     AM_PATH_GLIB_2_0([2.12.0], 
         [], [], [gthread])
     fi
 fi
-if test "x$GLIB_CFLAGS" = "x" && "x$GLIB_LIBS" = "x"; then
+if test "x$GLIB_CFLAGS" = "x" && test "x$GLIB_LIBS" = "x"; then
     AC_MSG_ERROR([GLIB required to build], [1])
 fi
 AC_SUBST(GLIB_CFLAGS)
