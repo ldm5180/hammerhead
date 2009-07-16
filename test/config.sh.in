@@ -9,3 +9,5 @@ export top_builddir="$ROOT"
 export LIBTOOL="$top_builddir/libtool"
 
 @ENABLE_DARWIN_TRUE@export VGSUPPRESSIONS_SUFFIX=.darwin
+
+@ENABLE_ION_TRUE@export ENABLE_ION=1

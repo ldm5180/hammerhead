@@ -32,12 +32,18 @@ for TEST in $TESTS; do
 
     pushd "$TEST" > /dev/null
     ./run
-    if [ $? -eq 0 ]; then
+    RC=$?
+    if [ $RC -eq 0 ]; then
         echo "TEST PASSED!"
         NUM_PASSED=$(($NUM_PASSED+1))
     else
-        echo "TEST FAILED!"
-        NUM_FAILED=$(($NUM_FAILED+1))
+        if [ $RC -eq 3 ]; then
+            echo "test disabled itself, skipping"
+            NUM_SKIPPED=$(($NUM_SKIPPED+1))
+        else
+            echo "TEST FAILED!"
+            NUM_FAILED=$(($NUM_FAILED+1))
+        fi
     fi
     popd > /dev/null
 done

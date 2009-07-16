@@ -52,11 +52,7 @@ cp orig-bdm.db sync-bdm.db
 
 echo starting ION Loopback interface
 CONFIGDIR="./ionconfig"
-ionstart                           \
-    -i ${CONFIGDIR}/loopback.ionrc \
-    -l ${CONFIGDIR}/loopback.ltprc \
-    -b ${CONFIGDIR}/loopback.bprc  \
-    -p ${CONFIGDIR}/loopback.ipnrc
+ionstart -I ${CONFIGDIR}/loopback.rc
 
 
 # receive the message and store it in a file via test bundle sink
@@ -71,8 +67,17 @@ echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
 
 echo "Generating data for a while..."
-sleep $TEST_DURATION
+sleep `expr $TEST_DURATION / 2`
 
+echo "killing the ION sync receiver BDM"
+kill %1
+wait %1
+sleep 20 
+
+echo re-starting ION sync receiver BDM
+$ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-recv --habs "X.X" --nodes "X.X.X" --resources "X.X.X:X" --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver &
+
+sleep `expr $TEST_DURATION / 2`
 
 echo "test run complete, killing random-hab"
 kill %3
@@ -97,7 +102,7 @@ export LD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-client.py
 
 echo "killing ION Sync Receive BDM"
-kill %1
+kill %4
 wait
 
 if ! diff -q out.random-hab out.bdm-client.py; then
