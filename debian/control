@@ -19,3 +19,10 @@ Architecture: any
 Depends: ${shlibs:Depends}
 Description: Bionet2
  Bionet2 headers and static libraries
+
+Package: bionet2-www
+Section: unknown
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Bionet2
+ Bionet2 web infrastructure
