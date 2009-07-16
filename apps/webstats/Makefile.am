@@ -24,3 +24,5 @@ war/webstats/webstats.nocache.js: $(CLIENTFILES)
 	$(JAVA) -cp $(CLASSPATH) $(GWTCOMPILERCLASS) com.bioserve.webstats.Webstats
 
 all-local: war/webstats/webstats.nocache.js
+
+cgibin_SCRIPTS=war/webstats/webstats.nocache.js

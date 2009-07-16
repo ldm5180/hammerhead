@@ -81,3 +81,5 @@ LIBS_BIONET_ASN1 = $(top_srcdir)/asn.1/libbionet-asn.la $(OPENSSL_LIBS)
 INCLUDES_QT = `pkg-config --cflags QtCore` `pkg-config --cflags QtGui`
 LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`
 
+cgibindir = $(libdir)/cgi-bin/bionet
+

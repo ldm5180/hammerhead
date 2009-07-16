@@ -6,7 +6,6 @@
 
 include $(top_srcdir)/common.am
 
-cgibindir = $(libdir)/cgi-bin/bionet
 cgibin_SCRIPTS = bdmplot.py \
 	datapoints_to_dict.py \
 	timechooser.py \
