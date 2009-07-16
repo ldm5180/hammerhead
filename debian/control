@@ -10,6 +10,7 @@ Package: bionet2
 Section: unknown
 Architecture: any
 Depends: ${shlibs:Depends}
+Suggests: bionet2-www
 Description: Bionet2
  Bionet2 HABs, Clients, and shared libraries, and BDM
 
@@ -23,6 +24,7 @@ Description: Bionet2
 Package: bionet2-www
 Section: unknown
 Architecture: any
-Depends: ${shlibs:Depends}
-Description: Bionet2
+Depends: bionet2, python
+Recommends: httpd-cgi
+Description: Bionet2 WWW
  Bionet2 web infrastructure
