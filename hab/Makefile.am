@@ -47,4 +47,8 @@ SUBDIRS += test-pattern
 endif
 endif
 
+if ENABLE_ION
+SUBDIRS += bpstats2
+endif
+
 endif
