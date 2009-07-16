@@ -6,12 +6,8 @@
 
 include $(top_srcdir)/common.am
 
-if ENABLE_BDM
-
-SUBDIRS = server client bdmplot
-
-if ENABLE_PYTHON
-SUBDIRS += py-client
-endif
-
-endif
+cgibindir = $(libdir)/cgi-bin/bionet
+cgibin_SCRIPTS = bdmplot.py \
+	datapoints_to_dict.py \
+	timechooser.py \
+	timespan.py
