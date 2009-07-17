@@ -58,6 +58,9 @@ public class Configurator {
 		final Element  configElem = configDoc.getDocumentElement();
 		XMLParser.removeWhitespace(configElem);
 		
+		/* Get parameters for this configuration */
+		handleConfigAttributes(configElem.getAttributes());
+		
 		/* Handle any configuration objects as specified */
 		Node 		configObj = configElem.getFirstChild();
 		NodeList	configObjChildren = configObj.getChildNodes();
@@ -72,6 +75,14 @@ public class Configurator {
 			}
 			configObj = configObj.getNextSibling();
 		}		
+	}
+	
+	private void handleConfigAttributes(final NamedNodeMap configAttributes)
+	{
+		if(configAttributes.getNamedItem("bdmplot_url") != null)
+		{
+			bdmplotsUrl = configAttributes.getNamedItem("bdmplot_url").getNodeValue();
+		}
 	}
 	
 	private void stuffPlots(final NodeList plotElems) {
@@ -96,6 +107,7 @@ public class Configurator {
 			
 			/* Make the plot */
 			PlotWrapper plotWrapper = new PlotWrapper(plotsPanel, bionet_filter);
+			plotWrapper.setImageBaseUrl(bdmplotsUrl);
 			refresher.add(plotWrapper);
 			timespanChooser.add(plotWrapper);
 		}
