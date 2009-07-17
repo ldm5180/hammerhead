@@ -396,14 +396,14 @@
 					"-lz",
 				);
 				PREBINDING = NO;
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "EACFB0BA-A527-48D3-A6AD-E11A3FB776B0";
-				SDKROOT = iphoneos2.2.1;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "DCA28B41-B65B-4E20-935F-696D27F6649B";
+				SDKROOT = iphoneos2.2;
 				bionet_sdk = "";
 				"bionet_sdk[sdk=iphoneos*][arch=*]" = ../bionet_sdk;
 				"bionet_sdk[sdk=iphonesimulator*][arch=*]" = ../bionet_simulator_sdk;
 				macport_sdk = "";
-				"macport_sdk[sdk=iphoneos*][arch=*]" = "/opt/local/arm-apple-darwin";
-				"macport_sdk[sdk=iphonesimulator*][arch=*]" = "/opt/local/i686-apple-darwin";
+				"macport_sdk[sdk=iphoneos*][arch=*]" = /opt/local/iPhoneOS3.0;
+				"macport_sdk[sdk=iphonesimulator*][arch=*]" = /opt/local/iPhoneSimulator3.0;
 			};
 			name = AdHoc;
 		};
@@ -451,8 +451,8 @@
 				"bionet_sdk[sdk=iphoneos*][arch=*]" = ../bionet_sdk;
 				"bionet_sdk[sdk=iphonesimulator*][arch=*]" = ../bionet_simulator_sdk;
 				macport_sdk = "";
-				"macport_sdk[sdk=iphoneos*][arch=*]" = "/opt/local/arm-apple-darwin";
-				"macport_sdk[sdk=iphonesimulator*][arch=*]" = "/opt/local/i686-apple-darwin";
+				"macport_sdk[sdk=iphoneos*][arch=*]" = /opt/local/iPhoneOS3.0;
+				"macport_sdk[sdk=iphonesimulator*][arch=*]" = /opt/local/iPhoneSimulator3.0;
 			};
 			name = Buildbot;
 		};
@@ -506,8 +506,8 @@
 				"bionet_sdk[sdk=iphoneos*][arch=*]" = ../bionet_sdk;
 				"bionet_sdk[sdk=iphonesimulator*][arch=*]" = ../bionet_simulator_sdk;
 				macport_sdk = "";
-				"macport_sdk[sdk=iphoneos*][arch=*]" = "/opt/local/arm-apple-darwin";
-				"macport_sdk[sdk=iphonesimulator*][arch=*]" = "/opt/local/i686-apple-darwin";
+				"macport_sdk[sdk=iphoneos*][arch=*]" = /opt/local/iPhoneOS3.0;
+				"macport_sdk[sdk=iphonesimulator*][arch=*]" = /opt/local/iPhoneSimulator3.0;
 			};
 			name = Debug;
 		};
@@ -542,8 +542,8 @@
 				"bionet_sdk[sdk=iphoneos*][arch=*]" = ../bionet_sdk;
 				"bionet_sdk[sdk=iphonesimulator*][arch=*]" = ../bionet_simulator_sdk;
 				macport_sdk = "";
-				"macport_sdk[sdk=iphoneos*][arch=*]" = "/opt/local/arm-apple-darwin";
-				"macport_sdk[sdk=iphonesimulator*][arch=*]" = "/opt/local/i686-apple-darwin";
+				"macport_sdk[sdk=iphoneos*][arch=*]" = /opt/local/iPhoneOS3.0;
+				"macport_sdk[sdk=iphonesimulator*][arch=*]" = /opt/local/iPhoneSimulator3.0;
 			};
 			name = Release;
 		};

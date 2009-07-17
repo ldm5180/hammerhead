@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 # Fix IOKit symlinks
 for vers in '2.0' '2.1' '2.2' '2.2.1' '3.0'; do 
 	FRAMEWORK_OS=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS${vers}.sdk/System/Library/Frameworks; 

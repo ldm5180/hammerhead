@@ -8,8 +8,8 @@ if [[ "$0" =~  -iphone-sim.sh$ ]]; then
 	XARCH=i686
 	XHOST=i686-apple-darwin
 	XDIR=/Developer/Platforms/iPhoneSimulator.platform/Developer
-	XSDK=iPhoneSimulator2.2.sdk
-	XPORTROOT=/opt/local/i686-apple-darwin
+	XSDK=iPhoneSimulator3.0.sdk
+	XPORTROOT=/opt/local/iPhoneSimulator3.0
 
 	XCFLAGS="-arch $XARCH -pipe -std=c99 -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -Wreturn-type -Wunused-variable -fmessage-length=0 -miphoneos-version-min=2.0 -gdwarf-2 -mthumb -miphoneos-version-min=2.0 -I$XDIR/SDKs/$XSDK/usr/include -I$XPORTROOT/usr/include -isysroot /$XDIR/SDKs/$XSDK"
 		
@@ -22,8 +22,8 @@ else
 	XARCH=armv6
 	XHOST=arm-apple-darwin
 	XDIR=/Developer/Platforms/iPhoneOS.platform/Developer
-	XSDK=iPhoneOS2.2.sdk
-	XPORTROOT=/opt/local/arm-apple-darwin
+	XSDK=iPhoneOS3.0.sdk
+	XPORTROOT=/opt/local/iPhoneOS3.0
 	XSYSROOT=$XDIR/SDKs/$XSDK
 
 	XCFLAGS="-arch $XARCH -pipe -std=c99 -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -Wreturn-type -Wunused-variable -fmessage-length=0 -gdwarf-2 -mthumb -miphoneos-version-min=2.0 -I$XDIR/SDKs/$XSDK/usr/include -I$XPORTROOT/usr/include -isysroot /$XDIR/SDKs/$XSDK"
@@ -32,7 +32,9 @@ else
 
 	XDESTDIR=$PWD/client/iphone/bionet_sdk
 	XCACHEFILE=--cache-file=arm-apple-darwin.cache
-
+	echo "Creating arm-apple-darwin.cache for cross-compilation"
+        echo 'ac_cv_func_malloc_0_nonnull=${ac_cv_func_malloc_0_nonnull=yes}' \
+           > arm-apple-darwin.cache
 fi
 
 export PATH=/opt/local/bin:/opt/local/sbin:$XDIR/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin
@@ -57,7 +59,9 @@ autoreconf --force --install
 #export AR="$XPORTROOT/bin/$XHOST-ar"
 #export NM="$XPORTROOT/bin/$XHOST-nm"
 
-#These can't be figured out by autoconf when cross-compiling
+#
+# Answer configure tests that can't be solved when cross compiling
+#
 export GLIB_CFLAGS=`$PKG_CONFIG --cflags glib-2.0 gthread-2.0`
 export GLIB_LIBS=`$PKG_CONFIG --libs glib-2.0 gthread-2.0`
 
@@ -67,6 +71,8 @@ export GLIB_LIBS=`$PKG_CONFIG --libs glib-2.0 gthread-2.0`
 	--enable-static \
 	--disable-python \
 	--disable-check \
+        --disable-clients \
+        --disable-habs \
 	"$XCACHEFILE" \
 	CFLAGS="$XCFLAGS" \
 	LDFLAGS="$XLDFLAGS" \
