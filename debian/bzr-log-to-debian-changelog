@@ -6,9 +6,12 @@ use POSIX qw(strftime);
 
 
 
+my $distribution = `lsb_release -cs`;
+chomp $distribution;
+
 sub start_entry($$) {
     my ($package_name, $rev) = @_;
-    print "$package_name ($rev) unstable; urgency=low\n";
+    print "$package_name ($rev) $distribution; urgency=low\n";
     print "\n";
 }
 
