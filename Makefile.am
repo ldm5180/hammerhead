@@ -29,6 +29,8 @@ if DISABLE_DOT
 DOXYFILE = Doxyfile.nodot
 endif
 
+web_DATA = 
+
 all-local: $(DOXYGEN_INPUT) $(doc_DATA) 
 
 doxygen/html/index.html: $(DOXYGEN_INPUT)
