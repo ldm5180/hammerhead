@@ -21,6 +21,13 @@ Since the iPhone macports are cross compiling, the build tools will be used from
 If an additional library is needed in the future, it can be installed with the port-iphone and/or port-iphone-sim macports varients.
 
 ==================================================================
+UNINSTALL INSTRUCTIONS:
+==================================================================
+To uninstall the iPhone related macports tools and compiled libraries, run the following from platforms/iphone directory:
+
+sudo make uninstall
+
+==================================================================
 INSTALL INSTRUCTIONS:
 ==================================================================
 Follow these instructions to setup a Mac Computer to build bionet2 for the iPhone:
@@ -31,7 +38,7 @@ Follow these instructions to setup a Mac Computer to build bionet2 for the iPhon
         website). This is refered to as the "base" macports by this document
       - All the build dependencies for bionet installed into macports
 
-2 - Install the iPhone SDK 2.2.19 or greater 
+2 - Install the latest iPhone SDK (3.0 or greater)
     (http://developer.apple.com/iphone)
 
 3 - Install macports overlay to /usr/local/ports, and additional macports 

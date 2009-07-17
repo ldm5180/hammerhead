@@ -8,7 +8,8 @@
 
 MACPORTS_VERS=1.7.0
 
-SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk
+IPHONEOS_SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS3.0.sdk
+IPHONESIM_SYSROOT=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator2.2.sdk
 
 all:
 	echo "Please specify a target to build"
@@ -20,10 +21,12 @@ install: install-macports-iphone ports-install
 # Incomplete uninstaller
 #
 uninstall:
-	#rm -rf /opt/local/i686-apple-darwin
-	#rm -rf /Library/Tcl/i686-apple-darwin
+	rm -rf /opt/local/i686-apple-darwin
+	rm -rf /Library/Tcl/i686-apple-darwin
 	rm -rf /opt/local/arm-apple-darwin
 	rm -rf /Library/Tcl/arm-apple-darwin
+	rm -rf /opt/local/iPhoneOS3.0
+	rm -rf /Library/Tcl/iPhoneOS3.0
 
 # Create two parallel directories, one original and one modified for
 # editing. When done editing, re-make the patchfile...
@@ -73,17 +76,25 @@ MacPorts-$(MACPORTS_VERS).patch: MacPorts-$(MACPORTS_VERS) MacPorts-$(MACPORTS_V
 #
 # Install both versions of macports
 #
-install-macports-iphone: install-macports-iphone-arm install-macports-iphone-i686 
+install-macports-iphone: install-macports-iPhoneOS3.0 install-macports-iPhoneSimulator3.0
 
 #
 # Install macports for iphone device
 #
-install-macports-iphone-arm: SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk
+install-macports-arm-apple-darwin: SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.sdk
+install-macports-arm-apple-darwin: SYSARCH=arm
+
+install-macports-iPhoneOS3.0: SYSROOT=$(IPHONEOS_SYSROOT)
+install-macports-iPhoneOS3.0: SYSARCH=arm
 
 #
 # Install macports for iphone simulator
 #
-install-macports-iphone-i686: SYSROOT=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator2.2.sdk
+install-macports-i696-apple-darwin: SYSROOT=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator2.2.sdk
+install-macports-i696-apple-darwin: SYSARCH=i686
+
+install-macports-iPhoneSimulator3.0: SYSROOT=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator3.0.sdk
+install-macports-iPhoneSimulator3.0: SYSARCH=i686
 
 
 #	rm -rf tmp_macports
@@ -107,7 +118,7 @@ install-macports-iphone-i686: SYSROOT=/Developer/Platforms/iPhoneSimulator.platf
 #
 # NOT AND EXTERNAL TARGET
 #
-install-macports-iphone-%:
+install-macports-%:
 	#@echo "macports install $* ${SYSROOT}"
 	rm -rf tmp_macports
 	mkdir tmp_macports
@@ -115,15 +126,15 @@ install-macports-iphone-%:
 	(cd tmp_macports/MacPorts-$(MACPORTS_VERS) && patch -p1) \
 		< MacPorts-$(MACPORTS_VERS).patch
 	(cd tmp_macports/MacPorts-$(MACPORTS_VERS) && \
-		./configure --prefix=/opt/local/$*-apple-darwin \
+		./configure --prefix=/opt/local/$* \
 		      --with-universal-target="10.5" \
 		      --with-universal-sysroot="${SYSROOT}" \
-		      --with-universal-archs=$* \
-		      --with-tclpackage=/Library/Tcl/$*-apple-darwin)
+		      --with-universal-archs=${SYSARCH} \
+		      --with-tclpackage=/Library/Tcl/$*)
 	(cd tmp_macports/MacPorts-$(MACPORTS_VERS) && make)
-	@echo "Using sudo to install macports into /opt/local/$*-apple-darwin"
+	@echo "Using sudo to install macports into /opt/local/$*"
 	(cd tmp_macports/MacPorts-$(MACPORTS_VERS) && sudo make install)
-	sudo /opt/local/$*-apple-darwin/bin/port sync
+	sudo /opt/local/$*/bin/port sync
 	#rm -rf tmp_macports
 
 
@@ -146,16 +157,9 @@ ports-install:
 	(cd /usr/local/ports/iphone && sudo portindex)
 	rm -rf tmp_ports
 	
+fix-sdk-link:
+	sh ./fix-sdk-links.sh
 	
-IOKIT_FRAMEWORK_OS=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS2.2.1.sdk/System/Library/Frameworks/IOKit.framework
-IOKIT_FRAMEWORK_SIM=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator2.2.1.sdk/System/Library/Frameworks/IOKit.framework
-	
-fix-iphone-sdk-links:
-	cd $(IOKIT_FRAMEWORK_OS)/Versions && sudo ln -sf A Current
-	cd $(IOKIT_FRAMEWORK_OS)/Versions/A && sudo ln -sf $(IOKIT_FRAMEWORK_SIM)/Versions/A/Headers Headers
-	cd $(IOKIT_FRAMEWORK_OS) && sudo ln -sf Versions/Current/IOKit IOKit
-	
-
 #
-# vim: nosta
+# vim: nosta noexpandtab sw=4 ts=4
 #

@@ -3,8 +3,8 @@
 XARCH=i686
 XHOST=i686-apple-darwin
 XDIR=/Developer/Platforms/iPhoneSimulator.platform/Developer
-XSDK=iPhoneSimulator2.2.sdk
-XPORTROOT=/opt/local/i686-apple-darwin
+XSDK=iPhoneSimulator3.0.sdk
+XPORTROOT=/opt/local/iPhoneSimulator3.0
 
 XCFLAGS="-arch $XARCH -pipe -std=c99 -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -Wreturn-type -Wunused-variable -fmessage-length=0 -miphoneos-version-min=2.0 -gdwarf-2 -mthumb -miphoneos-version-min=2.0 -I$XDIR/SDKs/$XSDK/usr/include -I$XPORTROOT/usr/include -isysroot /$XDIR/SDKs/$XSDK"
 	

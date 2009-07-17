@@ -19,15 +19,15 @@ case $arch in
 		XARCH=armv6
 		XHOST=arm-apple-darwin
 		XDIR=/Developer/Platforms/iPhoneOS.platform/Developer
-		XSDK=iPhoneOS2.2.sdk
-		XPORTROOT=/opt/local/arm-apple-darwin
+		XSDK=iPhoneOS3.0.sdk
+		XPORTROOT=/opt/local/iPhoneOS3.0
 		;;
 	*i?86)
 		XARCH=i686
 		XHOST=i686-apple-darwin
 		XDIR=/Developer/Platforms/iPhoneSimulator.platform/Developer
-		XSDK=iPhoneSimulator2.2.sdk
-		XPORTROOT=/opt/local/i686-apple-darwin
+		XSDK=iPhoneSimulator3.0.sdk
+		XPORTROOT=/opt/local/iPhoneSimulator3.0
 		;;
 	*)
 		echo "Apple architecture expected (e.g. arm-apple-darwin)"
@@ -35,7 +35,7 @@ case $arch in
 esac
 
 SYSROOT=$XDIR/SDKs/$XSDK
-export IPHONEOS_DEPLOYMENT_TARGET=2.2
+export IPHONEOS_DEPLOYMENT_TARGET=3.0
 
 case $TOOL in
 	gcc|g++|ld)
