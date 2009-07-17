@@ -13,8 +13,6 @@ public class PlotWrapper implements Updateable, TimespanSettable {
 	private HTML htmlTitle = new HTML();
 	
 	public PlotWrapper() {
-		//Set the defaults for the query.
-		imageGetWrapper.setBaseUrl("http://localhost/~andrew/cgi-bin/bdmplot.py");
 		setTimespan("last 30m");
 		setFilter("syshealth.otis.*:Seconds-of-uptime");
 	}
@@ -73,5 +71,10 @@ public class PlotWrapper implements Updateable, TimespanSettable {
 	public void setTitle(String title)
 	{
 		htmlTitle.setText(title);
+	}
+	
+	public void setImageBaseUrl(String url)
+	{
+		imageGetWrapper.setBaseUrl(url);
 	}
 }
