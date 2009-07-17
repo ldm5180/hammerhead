@@ -27,8 +27,12 @@ public class Configurator {
 	 * calls
 	 */
 	public void loadConfigXml() {
+		String configUrl = getConfigUrl();
+		if (configUrl == null) {
+			configUrl = "../webstats.xml";
+		}
 		RequestBuilder reqBuilder = new RequestBuilder(RequestBuilder.GET,
-				"../webstats.xml");
+				configUrl);
 		try {
 			reqBuilder.sendRequest(null, new RequestCallback() {
 				public void onError(Request request, Throwable ex)
@@ -37,13 +41,23 @@ public class Configurator {
 				}
 				public void onResponseReceived(Request request, Response response)
 				{
-					parseConfig(response.getText());
+					if(response.getStatusCode() != 200) {
+						parsingFailed("Couldn't find config (" + 
+								response.getStatusCode() + "): " +
+								response.getStatusText());
+					} else {
+						parseConfig(response.getText());
+					}
 				}
 			});
 		} catch (RequestException ex) {
 			requestFailed("constructing request", ex);
 		}
 	}
+	
+	public static native String getConfigUrl() /*-{
+		return $wnd.config_url;
+	}-*/;
 	
 	private void requestFailed(String what, Throwable exception) {
 		Window.alert("Failed " + what + ": " + exception.getMessage());
