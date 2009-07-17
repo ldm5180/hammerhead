@@ -11,6 +11,10 @@ h1 {
   font-size: 16pt;
 }
 
+.plotsPanel {
+  display: inline;
+}
+
 .updateButton {
   display: block;
   font-size: 22pt;

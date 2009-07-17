@@ -1,4 +1,4 @@
-<config>
+<config bdmplot_url="http://localhost:80/cgi-bin/bionet/bdmplot.py">
 <plots>
   <plot bionet_filter="syshealth.*.*:15-min-load-average" />
   <plot bionet_filter="syshealth.*.*:Seconds-of-uptime" />

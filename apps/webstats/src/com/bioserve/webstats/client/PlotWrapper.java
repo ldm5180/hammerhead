@@ -2,13 +2,13 @@ package com.bioserve.webstats.client;
 
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Image;
 
 
 public class PlotWrapper implements Updateable, TimespanSettable {
-	private DockPanel mainPanel = new DockPanel();
-	private Image plotImage;
+	private VerticalPanel mainPanel = new VerticalPanel();
+	private Image plotImage = null;
 	private HttpGetWrapper imageGetWrapper = new HttpGetWrapper();
 	private HTML htmlTitle = new HTML();
 	
@@ -34,27 +34,23 @@ public class PlotWrapper implements Updateable, TimespanSettable {
 	}
 	
 	private void pack(HasWidgets parent) {
+		//Pack the title into the panel, set attributes.
+		mainPanel.add(htmlTitle);
+		htmlTitle.setStylePrimaryName("plotTitle");
+		mainPanel.setStylePrimaryName("plotsPanel");
+		
 		// Draw the image once.
-		update();
+		plotImage = new Image(imageGetWrapper.toString());
+		mainPanel.add(plotImage);
 			
 		//Pack the panel into packHere.
 		parent.add(mainPanel);
-		
-		//Pack the title into the panel, set attributes.
-		mainPanel.add(htmlTitle, DockPanel.NORTH);
-		htmlTitle.setStylePrimaryName("plotTitle");
 	}
 	
 	public void update() {
-		if(plotImage == null) {
-			//Make the image and add it.
-			plotImage = new Image(imageGetWrapper.toString());
-			mainPanel.add(plotImage, DockPanel.CENTER);
-		} else {
-			//Update the image URL, which triggers a reload of the image.
-			plotImage.setUrl(imageGetWrapper.toString() + 
-					"&bogus=" + System.currentTimeMillis()); /* FIXME: Hack to force reload */
-		}
+		//Update the image URL, which triggers a reload of the image.
+		plotImage.setUrl(imageGetWrapper.toString() + 
+				"&bogus=" + System.currentTimeMillis()); /* FIXME: Hack to force reload */
 	}
 	
 	public void setFilter(String filter)
@@ -65,7 +61,7 @@ public class PlotWrapper implements Updateable, TimespanSettable {
 	public void setTimespan(String timespan)
 	{
 		imageGetWrapper.setParam("timespan", timespan);
-		update();
+		if(plotImage != null) { update(); }
 	}
 	
 	public void setTitle(String title)
