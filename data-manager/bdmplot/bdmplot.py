@@ -35,6 +35,7 @@ def bdmplot(**kwargs):
              "filter": "syshealth.*.*:15-min-load-average",
              "timespan": "last 6h",
              "regex": None,
+             "format": "png",
              "width": 7,
              "height": 5,
              "dpi": 60 }
@@ -100,10 +101,10 @@ def bdmplot(**kwargs):
     
     # If CGI, add MIME header
     if os.environ.has_key("GATEWAY_INTERFACE"):
-        print "Content-Type: image/png\n"
+        print "Content-Type: image/" + args["format"] + "\n"
 
     # Print the plot.
-    pylab.savefig(os.sys.stdout, format='png', dpi=args["dpi"])
+    pylab.savefig(os.sys.stdout, format=args["format"], dpi=args["dpi"])
 
 if __name__ == "__main__":
     bdmplot()
