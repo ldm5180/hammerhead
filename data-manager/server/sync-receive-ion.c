@@ -111,7 +111,7 @@ gpointer dtn_receive_thread(gpointer config) {
                             == BDM_Sync_Message_PR_metadataMessage) 
                         {
                             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-                                  "sync_receive_ion): receive Sync Metadata Message");
+                                  "sync_receive_ion(): receive Sync Metadata Message");
                             handle_sync_metadata_message(&client, 
                                 &client.message.sync_message->choice.metadataMessage);
                         } else if (client.message.sync_message->present 

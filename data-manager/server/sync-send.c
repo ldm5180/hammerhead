@@ -237,7 +237,7 @@ static int sync_send_metadata(
 	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, 
             write_data_to_message, config);
 	if (asn_r.encoded == -1) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_metadata(): error with der_encode(): %m");
 	}
 
     }
@@ -525,6 +525,32 @@ gpointer sync_thread(gpointer config) {
     cfg->last_entry_end_seq = 
         db_get_last_sync_seq_datapoints(cfg->db, cfg->sync_recipient);
 
+    // One-time setup
+#if ENABLE_ION
+    if(NULL == dtn_endpoint_id) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "No source EID defined. Cannot continue");
+        return NULL;
+    }   
+
+    if( cfg->method == BDM_SYNC_METHOD_ION ) {
+        if (bp_open(dtn_endpoint_id, &cfg->ion.sap) < 0)
+        {
+            if(bp_add_endpoint(dtn_endpoint_id, NULL) != 1) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "Can't create own endpoint ('%s')", dtn_endpoint_id);
+                return NULL;
+            } else if(bp_open(dtn_endpoint_id, &cfg->ion.sap) < 0)
+            {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "Can't open own endpoint ('%s')", dtn_endpoint_id);
+                return 0;
+            }
+        }
+    }
+#endif // ENABLE_ION
+
+
     while (1) {
 	curr_seq = db_get_latest_entry_seq(cfg->db);
 
@@ -702,8 +728,9 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
             "Sending bundle with payload of %lu bytes",
             config->ion.bundle_size);
-        if (bp_send(NULL, BP_BLOCKING, config->sync_recipient, NULL, 300,
-                        BP_STD_PRIORITY, NoCustodyRequested,
+        if (bp_send(config->ion.sap, BP_BLOCKING, config->sync_recipient, 
+                        NULL, 300,
+                        BP_STD_PRIORITY, SourceCustodyRequired,
                         0, 0, config->ion.bundleZco) < 1)
         {
                 putSysErrmsg("bpsource can't send ADU", NULL);
