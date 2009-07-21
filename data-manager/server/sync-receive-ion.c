@@ -45,11 +45,14 @@ gpointer dtn_receive_thread(gpointer config) {
     // One-time setup
     if (bp_open(dtn_endpoint_id, &client.ion.sap) < 0)
     {
+#ifdef HAVE_BP_ADD_ENDPOINT
         if(bp_add_endpoint(dtn_endpoint_id, NULL) != 1) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                 "Can't create own endpoint ('%s')", dtn_endpoint_id);
             return NULL;
-        } else if(bp_open(dtn_endpoint_id, &client.ion.sap) < 0) {
+        } else if(bp_open(dtn_endpoint_id, &client.ion.sap) < 0)
+#endif
+        {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                 "Can't open own endpoint ('%s')", dtn_endpoint_id);
             return 0;

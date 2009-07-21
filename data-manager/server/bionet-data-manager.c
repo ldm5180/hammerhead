@@ -16,6 +16,7 @@
 
 #include "bionet-data-manager.h"
 #include "bdm-util.h"
+#include "config.h"
 
 GMainLoop *bdm_main_loop = NULL;
 
@@ -44,7 +45,9 @@ void usage(void) {
 	" -h,--hab,--habs \"HAB-Type.Hab-ID\"              Subscribe to a HAB list.\n"
 	" -i,--id <ID>                                   ID of Bionet Data Manager\n"
 #if ENABLE_ION
+#if HAVE_SM_SET_BASEKEY
 	" --ion-key <int>                                Alternate ION key to use if syncing over ION\n"       
+#endif
 #endif
 	" -n,--node,--nodes \"HAB-Type.HAB-ID.Node-ID\"    Subscribe to a Node list.\n"
 #if ENABLE_ION
@@ -196,7 +199,7 @@ int main(int argc, char *argv[]) {
 
 	case 'I':
         {
-#if ENABLE_ION
+#if HAVE_SM_SET_BASEKEY
             char * endptr = NULL;
             long key;
             key = strtoul(optarg, &endptr, 10);
@@ -209,9 +212,9 @@ int main(int argc, char *argv[]) {
             }
 #else	
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		  "BDM Syncronization over DTN was disabled at compile time.");
+		  "Setting ION basekey not supported");
 	    return (1);
-#endif
+#endif // HAVE_SM_SET_BASEKEY
 	    break;
         }
 

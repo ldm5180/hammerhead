@@ -5,7 +5,7 @@
 
 #include <pthread.h>
 #include <glib.h>
-#include <ion/bp.h>         /* Needs ion-dev */
+#include <bp.h>         /* Needs ion-dev */
 
 #include "hardware-abstractor.h"
 

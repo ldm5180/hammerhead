@@ -7,6 +7,7 @@
 #ifndef BIONET_DATA_MANAGER_H
 #define BIONET_DATA_MANAGER_H
 
+#include "config.h"
 
 #include <glib.h>
 
@@ -15,13 +16,12 @@
 #include "bionet-asn.h"
 #include "bionet-util.h"
 
-#include "config.h"
-
 #if ENABLE_ION
-#include "ion/zco.h"
-#include "ion/sdr.h"
-#include "ion/bp.h"
+#include "zco.h"
+#include "sdr.h"
+#include "bp.h"
 #endif
+
 
 #include <sqlite3.h>
 

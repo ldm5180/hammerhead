@@ -527,24 +527,27 @@ gpointer sync_thread(gpointer config) {
 
     // One-time setup
 #if ENABLE_ION
-    if(NULL == dtn_endpoint_id) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            "No source EID defined. Cannot continue");
-        return NULL;
-    }   
 
     if( cfg->method == BDM_SYNC_METHOD_ION ) {
+        if(NULL == dtn_endpoint_id) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "sync-send: No source EID defined. Cannot continue");
+            return NULL;
+        }   
+
         if (bp_open(dtn_endpoint_id, &cfg->ion.sap) < 0)
         {
+#ifdef HAVE_BP_ADD_ENDPOINT
             if(bp_add_endpoint(dtn_endpoint_id, NULL) != 1) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                     "Can't create own endpoint ('%s')", dtn_endpoint_id);
                 return NULL;
             } else if(bp_open(dtn_endpoint_id, &cfg->ion.sap) < 0)
+#endif // HAVE_BP_ADD_ENDPOINT
             {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                     "Can't open own endpoint ('%s')", dtn_endpoint_id);
-                return 0;
+                return NULL;
             }
         }
     }

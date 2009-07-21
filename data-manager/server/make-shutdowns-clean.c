@@ -6,6 +6,7 @@
 
 #define _GNU_SOURCE
 
+#include "bionet-data-manager.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -14,7 +15,6 @@
 
 #include <glib.h>
 
-#include "bionet-data-manager.h"
 
 
 

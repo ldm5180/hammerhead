@@ -79,7 +79,11 @@ void handle_options(int argc, char *argv[])
         break;
 
     case 'k':
+#ifdef ENBABLE_ION_BIOSERVE
         sm_set_basekey(atoi(optarg));
+#else
+        fprintf(stderr, "Bioserve version of ION required to set Base Key.\n");
+#endif
         break;
     }
     } //while(1)
