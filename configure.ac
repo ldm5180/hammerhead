@@ -453,6 +453,7 @@ AC_CONFIG_FILES([Makefile
                  client/stream/Makefile
 		 client/stream-manager/Makefile
 		 client/commander/Makefile
+		 client/get/Makefile
                  hab/Makefile
                  hab/libhab/Makefile
 		 hab/py-libhab/Makefile
