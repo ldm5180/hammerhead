@@ -730,7 +730,7 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
     if ( config->ion.bundle_size ) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
             "Sending bundle with payload of %lu bytes",
-            config->ion.bundle_size);
+            (unsigned long)config->ion.bundle_size);
         if (bp_send(config->ion.sap, BP_BLOCKING, config->sync_recipient, 
                         NULL, 300,
                         BP_STD_PRIORITY, SourceCustodyRequired,
