@@ -6,14 +6,6 @@
 
 include $(top_srcdir)/common.am
 
-if ENABLE_ION
-ION_LIBS= \
-	-lbp \
-	-lbpP \
-	-lici \
-	-lrfx
-endif
-
 bin_PROGRAMS = bionet-data-manager
 noinst_LTLIBRARIES = libbionet-data-manager.la
 
@@ -48,7 +40,7 @@ bionet_data_manager_CFLAGS = $(AM_CFLAGS) $(OPENSSL_CFLAGS) $(GLIB_CFLAGS) $(OPE
 
 bionet_data_manager_LDFLAGS = $(AM_LDFLAGS) $(OPENSSL_LIBS) $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_CLIENT) $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_CAL_CLIENT) $(ION_LDFLAGS)
 
-bionet_data_manager_LDADD = libbionet-data-manager.la  $(ION_LIBS) $(AM_LDADD) -lpthread -lm 
+bionet_data_manager_LDADD = libbionet-data-manager.la  $(LIBS_ION) $(AM_LDADD) -lpthread -lm 
 
 bionet_data_manager_DEPENDENCIES = $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_ASN1) $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_CAL_CLIENT) $(BUILT_SOURCES) $(libbionet_data_manager_la_SOURCES) $(noinst_LTLIBRARIES)
 
@@ -57,7 +49,7 @@ libbionet_data_manager_la_CFLAGS = $(AM_CFLAGS) $(OPENSSL_CFLAGS) $(GLIB_CFLAGS)
 
 libbionet_data_manager_la_LDFLAGS = $(AM_LDFLAGS) $(OPENSSL_LIBS) $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_CLIENT) $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_CAL_CLIENT) $(ION_LDFALGS)
 
-libbionet_data_manager_la_LIBADD = $(AM_LDADD) -lsqlite3 $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_CLIENT) $(ION_LIBS) -lm 
+libbionet_data_manager_la_LIBADD = $(AM_LDADD) -lsqlite3 $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_CLIENT) $(LIBS_ION) -lm 
 
 libbionet_data_manager_la_DEPENDENCIES = $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_ASN1) $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_CAL_CLIENT) 
 

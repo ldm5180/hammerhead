@@ -1,4 +1,4 @@
-dnl @synopsis AX_EXT_HAVE_LIB(<directories>, <library>, <function>, <extra libraries>)
+dnl @synopsis AX_EXT_HAVE_LIB(<directories>, <library>, <function>, [run-if-found], [run-if-not-found],  [extra libraries])
 dnl
 dnl AX_EXT_HAVE_LIB is identical to AC_SEARCH_LIBS with the exception
 dnl that will add -L<directory> when looking, and use a different
@@ -31,7 +31,7 @@ AC_DEFUN([AX_EXT_HAVE_LIB],
 [
 new_ldflags=${LDFLAGS}
 new_libs=$LIBS
-AC_CHECK_LIB([$2], $3, new_libs="-l$2 $4"; ext_lib_found="yes",  ext_lib_found="no", $4)
+AC_CHECK_LIB([$2], $3, new_libs="-l$2 $6"; ext_lib_found="yes",  ext_lib_found="no", $6)
 for dir in $1
 do
 if test $ext_lib_found = no
@@ -40,7 +40,7 @@ ext_haslib_cvdir=`echo $dir | $as_tr_sh`
 AC_CACHE_CHECK([for $2 library with -L$dir], [ext_cv${ext_haslib_cvdir}_haslib_$2],
 [ext_func_search_save_LIBS=$LIBS
 ext_func_save_ldflags=${LDFLAGS}
-LIBS="-l$2 $4 ${ext_func_search_save_LIBS}"
+LIBS="-l$2 $6 ${ext_func_search_save_LIBS}"
 LDFLAGS="-L$dir ${ext_func_save_ldflags}"
 AC_TRY_LINK_FUNC([$3], [eval "ext_cv${ext_haslib_cvdir}_haslib_$2"="yes"],
 [eval "ext_cv${ext_haslib_cvdir}_haslib_$2"="no"])
@@ -54,6 +54,7 @@ ext_lib_found="yes"
 fi
 fi
 done
+AS_IF([test "$ext_lib_found" = "yes"], [$4], [$5])
 LIBS=$new_libs
 LDFLAGS=$new_ldflags
 ])

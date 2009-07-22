@@ -1,4 +1,4 @@
-dnl @synopsis AX_EXT_CHECK_HEADER(<header>, <paths>).
+dnl @synopsis AX_EXT_CHECK_HEADER(<header>, <paths>, [run-if-found], [run-if-not-found], [includes = `AC_INCLUDES_DEFAULT']).
 dnl
 dnl Check for <header> with -I<path> for each path in <paths> if need
 dnl be. The first sucecssful path is chosen (eg if you say
@@ -20,7 +20,7 @@ dnl @license AllPermissive
 
 AC_DEFUN([AX_EXT_HAVE_HEADER],
 [AC_LANG_PUSH(C)
- AC_CHECK_HEADER($1, [$3 got="yes"], [$4 got="no"], $5)
+ AC_CHECK_HEADERS($1, [got="yes"], [got="no"], $5)
  hdr=`echo $1 | $as_tr_sh`
  for dir in $2; do
   if test "x${got}" = "xno"; then
@@ -42,4 +42,5 @@ AC_DEFUN([AX_EXT_HAVE_HEADER],
       AC_DEFINE_UNQUOTED(HAVE_${hdr}, 1,
        [Define this if you have the $1 header])
   fi; fi; done
+  AS_IF([test "x${got}" = "xyes"], [$3], [$4])
 AC_LANG_POP])

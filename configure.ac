@@ -214,25 +214,41 @@ AM_CONDITIONAL(ENABLE_BDM, test "x$ENABLE_BDM" = "xyes")
 
 AC_ARG_WITH(
     [ion],
-    AC_HELP_STRING([--with-ion], [Use ION for BDM syncronization over DTN @<:@default=no@:>@]),
+    AC_HELP_STRING([--with-ion], [Use ION for BP @<:@default=check@:>@]),
         [with_ion=$withval],
-        [with_ion=no]
+        [with_ion=check]
     )
 
-AS_IF([test "x$with_ion" != "xno"],
-    [AC_DEFINE([ENABLE_ION], 1, [Define if you have BP support via ION]) 
-     AC_SUBST([ENABLE_ION], 1)
-     if test "$cross_compiling" != yes; then
 # Search for ION libs/Headers, and modify CFLAGS/LDFLAGS if needed 
 #(These all add to the list of libs to link into future tests)
-        AX_EXT_HAVE_HEADER([ion.h], [/usr/include/ion /usr/local/include /opt/include]) 
-        AX_EXT_HAVE_LIB([/usr/lib/ion /usr/local/lib /opt/lib], [bp], [bp_attach], [-lbpP -lrfx -lici])
+# Set ION_LIBS if ion enabled
+AS_IF([test "x$with_ion" != "xno"],
+      [if test "$cross_compiling" != yes; then
+        AX_EXT_HAVE_HEADER([ion.h], 
+                           [/usr/include/ion /usr/local/include /opt/include],
+                           [have_ion_h=yes]) 
+        AX_EXT_HAVE_LIB([/usr/lib/ion /usr/local/lib /opt/lib], 
+                        [bp], [bp_attach], 
+                        [have_libbp=yes],
+                        [],
+                        [-lbpP -lrfx -lici])
+        if test "x$have_ion_h" != "x" && test "x$have_libbp" != "x"; then
+          AC_DEFINE([ENABLE_ION], 1, [Define if you have BP support via ION])
+          AC_SUBST([ENABLE_ION], 1)
+          AC_SUBST([LIBS_ION], ["-lbp -lbpP -lrfx -lici"])
+#         Check if the bioserve features are present
+          AC_CHECK_FUNCS([bp_add_endpoint sm_set_basekey])
+        else
+          if test "x$with_ion" != xcheck; then
+            AC_MSG_FAILURE(
+               [--with-ion was given, but test for ion failed])
+          fi
+          with_ion=no
+        fi
 
-# Check if the bioserve features are present
-        AC_CHECK_FUNCS([bp_add_endpoint sm_set_basekey])
-     fi
-     ])
+     fi])
 AM_CONDITIONAL(ENABLE_ION, [test "x$with_ion" != "xno"])
+
 
 #
 # optionally compile the mmod hab
