@@ -40,7 +40,6 @@ static void	handleQuit()
 
 gpointer dtn_receive_thread(gpointer config) {
 
-    asn_dec_rval_t rval;
 
     // One-time setup
     if (bp_open(dtn_endpoint_id, &client.ion.sap) < 0)
@@ -81,6 +80,7 @@ gpointer dtn_receive_thread(gpointer config) {
         {
             int bytes_to_read;
             int bytes_read;
+            asn_dec_rval_t rval = {0};
 
             //contentLength = zco_source_data_length(client.ion.sdr, dlv.adu);
             sdr_begin_xn(client.ion.sdr);
@@ -89,6 +89,7 @@ gpointer dtn_receive_thread(gpointer config) {
             client.index = 0;
 
             do {
+
 	        bytes_to_read = sizeof(client.buffer) - client.index;
                 bytes_read = zco_receive_source(client.ion.sdr, &client.ion.reader,
                                 bytes_to_read, (void*)(client.buffer+client.index));
@@ -158,7 +159,7 @@ gpointer dtn_receive_thread(gpointer config) {
                     client.index -= rval.consumed;
                     memmove(client.buffer, client.buffer + rval.consumed, client.index);
                 }
-            } while ((rval.consumed > 0) && (client.index > 0) && running);
+            } while (running && (rval.consumed > 0) && (client.index > 0));
 
             zco_stop_receiving(client.ion.sdr, &client.ion.reader);
             if (sdr_end_xn(client.ion.sdr) < 0)

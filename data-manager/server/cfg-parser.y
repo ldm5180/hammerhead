@@ -136,7 +136,8 @@ sync_sender_config_t * read_config_file(const char * fname) {
         cfg->remote_port = BDM_SYNC_PORT;
 
         if(strlen(cfg->resource_name_pattern) == 0){
-            strcpy(cfg->resource_name_pattern, "*.*.*:*");
+            strncpy(cfg->resource_name_pattern, "*.*.*:*", 
+                sizeof(cfg->resource_name_pattern));
         }
 
         // Set static bdmcfg used by parser and parse file
