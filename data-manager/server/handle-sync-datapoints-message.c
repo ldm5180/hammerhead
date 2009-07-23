@@ -39,89 +39,93 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 	    
 	    for (dpi = 0; dpi < resource_rec->resourceDatapoints.list.count; dpi++) {
 		Datapoint_t *dp;
-		bionet_resource_data_type_t type;
-		void * value;
-		struct timeval ts;
-		double dbl;
+                bdm_datapoint_t bdmdp;
+
+                bdmdp.bdm_id = (char*)bdm_id;
 
 		dp = resource_rec->resourceDatapoints.list.array[dpi];
 		
 		switch(dp->value.present) {
 
 		case Value_PR_binary_v:
-		    type = BIONET_RESOURCE_DATA_TYPE_BINARY;
-		    value = &dp->value.choice.binary_v;
+		    bdmdp.type = DB_INT;
+		    bdmdp.value.i = dp->value.choice.binary_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "    handle_sync_datapoints_message(): binary: %d", *(int *)value);
+			  "    handle_sync_datapoints_message(): binary: %d", 
+                          bdmdp.value.i);
 		    break;
 
 		case Value_PR_uint8_v:
-		    type = BIONET_RESOURCE_DATA_TYPE_UINT8;
-		    value = &dp->value.choice.uint8_v;
+		    bdmdp.type = DB_INT;
+		    bdmdp.value.i = dp->value.choice.uint8_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "    handle_sync_datapoints_message(): uint8_t: %u", *(uint8_t *)value);
+			  "    handle_sync_datapoints_message(): uint8_t: %u", 
+                          (uint8_t)bdmdp.value.i);
 		    break;
 
 		case Value_PR_int8_v:
-		    type = BIONET_RESOURCE_DATA_TYPE_INT8;
-		    value = &dp->value.choice.int8_v;
+		    bdmdp.type = DB_INT;
+		    bdmdp.value.i = dp->value.choice.int8_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "    handle_sync_datapoints_message(): int8_t: %d", *(int8_t *)value);
+			  "    handle_sync_datapoints_message(): int8_t: %d",
+                          (int8_t)bdmdp.value.i);
 		    break;
 
 		case Value_PR_uint16_v:
-		    type = BIONET_RESOURCE_DATA_TYPE_UINT16;
-		    value = &dp->value.choice.uint16_v;
+		    bdmdp.type = DB_INT;
+		    bdmdp.value.i = dp->value.choice.uint16_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "    handle_sync_datapoints_message(): uint16_t: %u", *(uint16_t *)value);
+			  "    handle_sync_datapoints_message(): uint16_t: %u",
+                          (uint16_t)bdmdp.value.i);
 		    break;
 
 		case Value_PR_int16_v:
-		    type = BIONET_RESOURCE_DATA_TYPE_INT16;
-		    value = &dp->value.choice.int16_v;
+		    bdmdp.type = DB_INT;
+		    bdmdp.value.i = dp->value.choice.int16_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "    handle_sync_datapoints_message(): int16_t: %d", *(int16_t *)value);
+			  "    handle_sync_datapoints_message(): int16_t: %d",
+                          (int16_t)bdmdp.value.i);
 		    break;
 
 		case Value_PR_uint32_v:
 		{
 		    int r;
 		    long l;
-		    uint32_t u;
-		    type = BIONET_RESOURCE_DATA_TYPE_UINT32;
+		    bdmdp.type = DB_INT;
 		    r = asn_INTEGER2long(&dp->value.choice.uint32_v, &l);
 		    if (r != 0) {
 			g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 			      "bionet_asn_to_datapoint(): error converting ASN INTEGER to native Datapoint value");
 		    }
-		    u = (uint32_t)l;
-		    value = &u;
+		    bdmdp.value.i = (uint32_t)l;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "    handle_sync_datapoints_message(): uint32_t: %u", u);
+			  "    handle_sync_datapoints_message(): uint32_t: %u", 
+                          (uint32_t)l);
 		    break;
 		}
 
 		case Value_PR_int32_v:
-		    type = BIONET_RESOURCE_DATA_TYPE_INT32;
-		    value = &dp->value.choice.int32_v;
+		    bdmdp.type = DB_INT;
+		    bdmdp.value.i = dp->value.choice.int32_v;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "    handle_sync_datapoints_message(): int32_t: %d", *(int32_t *)value);
+			  "    handle_sync_datapoints_message(): int32_t: %d",
+                          (int32_t)bdmdp.value.i);
 		    break;
 
 		case Value_PR_real:
-		    type = BIONET_RESOURCE_DATA_TYPE_DOUBLE;
-		    dbl = dp->value.choice.real;
-		    value = &dbl;
-		    //FIXME: actually print the double
+		    bdmdp.type = DB_DOUBLE;
+		    bdmdp.value.d = dp->value.choice.real;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "    handle_sync_datapoints_message(): double: %f", dbl);
+			  "    handle_sync_datapoints_message(): double: %g", 
+                          bdmdp.value.d);
 		    break;
 
 		case Value_PR_string:
-		    type = BIONET_RESOURCE_DATA_TYPE_STRING;
-		    value = dp->value.choice.string.buf;
+		    bdmdp.type = DB_STRING;
+		    bdmdp.value.str = (char*)dp->value.choice.string.buf;
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "    handle_sync_datapoints_message(): string: %s", (char *)value);
+			  "    handle_sync_datapoints_message(): string: %s", 
+                          bdmdp.value.str);
 		    break;
 
 		default:
@@ -130,20 +134,14 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		    continue;
 		} /* switch(dp->value.present) */
 
-		if (0 != bionet_GeneralizedTime_to_timeval(&dp->timestamp, &ts)) {
+		if (0 != bionet_GeneralizedTime_to_timeval(&dp->timestamp, &bdmdp.timestamp)) {
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			  "error converting GeneralizedTime '%s' to struct timeval: %m",
 			  dp->timestamp.buf);
 		    return;  // FIXME: return an error message to the client
 		}
 
-
-		if (db_add_datapoint_sync(main_db,
-                                          resource_key, 
-					  bdm_id,
-					  &ts,
-					  type,
-					  value)) {
+		if (db_add_datapoint_sync(main_db, resource_key, &bdmdp)) {
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			  "Failed adding datapoint to DB.");
 		}

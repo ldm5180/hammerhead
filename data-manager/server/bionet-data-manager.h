@@ -39,6 +39,26 @@ extern GHashTable * bdm_opts_table;
 extern char * dtn_endpoint_id;
 #endif
 
+
+typedef enum {
+    DB_INT = 0,
+    DB_DOUBLE,
+    DB_STRING
+} db_type_t;
+
+typedef union {
+    int i;
+    double d;
+    char * str;
+} db_value_t;
+
+typedef struct {
+    char * bdm_id;
+    struct timeval timestamp;
+    db_type_t type;
+    db_value_t value;
+} bdm_datapoint_t;
+
 typedef struct {
     struct timeval entry_ts;
     bionet_datapoint_t * datapoint;
@@ -138,10 +158,7 @@ int db_add_bdm(sqlite3 *db, const char * bdm_id);
 int db_add_datapoint_sync(
     sqlite3 *db,
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
-    const char * bdm_id,
-    struct timeval *timestamp,
-    bionet_resource_data_type_t type,
-    void * value);
+    bdm_datapoint_t * dp);
 
 
 // 

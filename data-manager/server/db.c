@@ -30,7 +30,6 @@ static int entry_seq = -1; // Always set before calling add_*_to_db
 static sqlite3_stmt * insert_hab_stmt = NULL;
 static sqlite3_stmt * insert_node_stmt = NULL;
 static sqlite3_stmt * insert_resource_stmt = NULL;
-static sqlite3_stmt * insert_datapoint_stmt = NULL;
 static sqlite3_stmt * insert_datapoint_sync_stmt = NULL;
 static sqlite3_stmt * insert_bdm_stmt = NULL;
 static sqlite3_stmt * get_last_sync_bdm_stmt_metadata = NULL;
@@ -40,6 +39,104 @@ static sqlite3_stmt * set_last_sync_bdm_stmt_datapoints = NULL;
 
 extern char * database_file;
 char bdm_id[256] = { 0 };
+
+static int _datapoint_bionet_to_bdm(
+    bionet_datapoint_t * datapoint,
+    bdm_datapoint_t *dp,
+    char * bdm_id) 
+{
+
+    bionet_resource_data_type_t type;
+    bionet_value_t *value;
+    int r = -1;
+
+    type = bionet_resource_get_data_type(bionet_datapoint_get_resource(datapoint));
+    value = bionet_datapoint_get_value(datapoint);
+
+    dp->bdm_id = bdm_id;
+    struct timeval * ts = bionet_datapoint_get_timestamp(datapoint);
+    dp->timestamp.tv_sec = ts->tv_sec;
+    dp->timestamp.tv_usec = ts->tv_usec;
+
+    // Set type and value
+    switch (type) {
+        case BIONET_RESOURCE_DATA_TYPE_BINARY: {
+            int i;
+            r = bionet_value_get_binary(value, &i);
+            dp->type = DB_INT;
+            dp->value.i = i;
+            break;
+        }
+        case BIONET_RESOURCE_DATA_TYPE_UINT8: {
+            uint8_t u8;
+            dp->type = DB_INT;
+            r = bionet_value_get_uint8(value, &u8);
+            dp->value.i = u8;
+            break;
+        }
+        case BIONET_RESOURCE_DATA_TYPE_INT8: {
+            int8_t i8;
+            dp->type = DB_INT;
+            r = bionet_value_get_int8(value, &i8);
+            dp->value.i = i8;
+            break;
+        }
+        case BIONET_RESOURCE_DATA_TYPE_UINT16: {
+            uint16_t u16;
+            dp->type = DB_INT;
+            r = bionet_value_get_uint16(value, &u16);
+            dp->value.i = u16;
+            break;
+        }
+        case BIONET_RESOURCE_DATA_TYPE_INT16: {
+            int16_t i16;
+            dp->type = DB_INT;
+            r = bionet_value_get_int16(value, &i16);
+            dp->value.i = i16;
+            break;
+        }
+        case BIONET_RESOURCE_DATA_TYPE_UINT32: {
+	    uint32_t u32;
+            dp->type = DB_INT;
+	    r = bionet_value_get_uint32(value, &u32);
+            dp->value.i = u32;
+            break;
+        }
+        case BIONET_RESOURCE_DATA_TYPE_INT32: {
+            int32_t i32;
+            dp->type = DB_INT;
+            r = bionet_value_get_int32(value, &i32);
+            dp->value.i = i32;
+            break;
+        }
+        case BIONET_RESOURCE_DATA_TYPE_FLOAT: {
+	    float f;
+            r = bionet_value_get_float(value, &f);
+            dp->type = DB_DOUBLE;
+	    dp->value.d = f;
+            break;
+        }
+        case BIONET_RESOURCE_DATA_TYPE_DOUBLE: {
+	    double d;
+            dp->type = DB_DOUBLE;
+            r = bionet_value_get_double(value, &d);
+	    dp->value.d = d;
+            break;
+        }
+        case BIONET_RESOURCE_DATA_TYPE_STRING: {
+            r = bionet_value_get_str(value, &dp->value.str);
+            dp->type = DB_STRING;
+            break;
+        }
+        default: {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s(): invalid datatype %d", 
+                __FUNCTION__, type);
+            return -1;
+        }
+    }
+    return r;
+}
 
 typedef struct sql_return {
     GPtrArray *bdm_list;
@@ -85,10 +182,6 @@ void db_shutdown(sqlite3 *db) {
     if(insert_resource_stmt){
 	sqlite3_finalize(insert_resource_stmt);
 	insert_resource_stmt = NULL;
-    }
-    if(insert_datapoint_stmt){
-	sqlite3_finalize(insert_datapoint_stmt);
-	insert_datapoint_stmt = NULL;
     }
     if(insert_datapoint_sync_stmt){
 	sqlite3_finalize(insert_datapoint_sync_stmt);
@@ -221,7 +314,10 @@ static int add_hab_to_db(sqlite3* db, const bionet_hab_t *hab) {
 	return -1;
     }
 
-    while(SQLITE_BUSY == (r = sqlite3_step(insert_hab_stmt)));
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_hab_stmt))){
+        g_usleep(20 * 1000);
+    }
+        
     if (r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-hab SQL error: %s\n", sqlite3_errmsg(db));
 	sqlite3_reset(insert_hab_stmt);
@@ -290,7 +386,9 @@ static int add_node_to_db(sqlite3* db, const bionet_node_t *node) {
           entry_seq,
           bionet_node_get_name(node));
 
-    while(SQLITE_BUSY == (r = sqlite3_step(insert_node_stmt)));
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_node_stmt))){
+        g_usleep(20 * 1000);
+    }
     if (r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-node SQL error: %s\n", sqlite3_errmsg(db));
 	sqlite3_reset(insert_node_stmt);
@@ -473,7 +571,9 @@ static int add_resource_to_db(sqlite3* db, bionet_resource_t *resource) {
 	return -1;
     }
 
-    while(SQLITE_BUSY == (r = sqlite3_step(insert_resource_stmt)));
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_resource_stmt))){
+        g_usleep(20 * 1000);
+    }
     if (r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL error: %s\n", sqlite3_errmsg(db));
 	sqlite3_reset(insert_resource_stmt);
@@ -509,7 +609,9 @@ int db_add_bdm(sqlite3* db, const char *bdm_id) {
 	return -1;
     }
 
-    while(SQLITE_BUSY == (r = sqlite3_step(insert_bdm_stmt)));
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_bdm_stmt))){
+        g_usleep(20 * 1000);
+    }
     if (r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-bdm SQL error: %s\n", sqlite3_errmsg(db));
 	sqlite3_reset(insert_bdm_stmt);
@@ -522,118 +624,125 @@ int db_add_bdm(sqlite3* db, const char *bdm_id) {
 }
 
 
-static int add_datapoint_to_db(sqlite3* db, bionet_datapoint_t *datapoint) {
+/*
+ * Add the datapoint to the DB. 
+ * Does NOT require metadata be inserted first
+ */
+static int add_datapoint_to_db(sqlite3* db, 
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
+    bdm_datapoint_t *dp)
+{
     int r;
 
-    if(insert_datapoint_stmt == NULL) {
+    if(insert_datapoint_sync_stmt == NULL) {
 	r = sqlite3_prepare_v2(db, 
 	    "INSERT"
 	    " OR IGNORE"
 	    " INTO Datapoints"
 	    " SELECT"
-	    "     NULL, Resources.Key, BDMs.Key, ?, ?, ?, ?"
-	    "     FROM Hardware_Abstractors, Nodes, Resources, BDMs"
-	    "     WHERE"
-	    "         Hardware_Abstractors.HAB_Type = ?"
-	    "         AND Hardware_Abstractors.HAB_ID = ?"
-	    "         AND Nodes.HAB_Key = Hardware_Abstractors.Key"
-	    "         AND Nodes.Node_ID = ?"
-	    "         AND Resources.Node_Key = Nodes.Key"
-	    "         AND Resources.Resource_ID = ?"
-	    "         AND BDMs.BDM_ID = ?"
-	    ";",
-	    -1, &insert_datapoint_stmt, NULL);
+	    "     NULL, ?, BDMs.Key, ?, ?, ?, ?"
+	    "     FROM BDMs"
+	    "     WHERE BDMs.BDM_ID = ?",
+	    -1, &insert_datapoint_sync_stmt, NULL);
 
 	if (r != SQLITE_OK) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db SQL error: %s\n", sqlite3_errmsg(db));
 	    return -1;
 	}
     }
 
-    // FIXME: might be the wrong resource (might differ in data type or flavor)
-    bionet_value_t *value = bionet_datapoint_get_value(datapoint);
-    struct timeval * timestamp = bionet_datapoint_get_timestamp(datapoint);
-
-    bionet_resource_t * resource = bionet_value_get_resource(value);
-    bionet_node_t * node = bionet_resource_get_node(resource);
-    bionet_hab_t * hab = bionet_node_get_hab(node);
-
-//    fprintf(stderr, "%s,%s,%s\n", bionet_datapoint_timestamp_to_string(datapoint),
-//	    bionet_resource_get_name(resource),
-//	    bionet_value_to_str(value));
-
-    // Bind host variables to the prepared statement -- This eliminates the need to escape strings
-    // In order of the placeholders (?) in the SQL
+    // Bind host variables to the prepared statement 
+    // -- This eliminates the need to escape strings
+    // Bind in order of the placeholders (?) in the SQL
     int param = 1;
+    r = sqlite3_bind_blob(insert_datapoint_sync_stmt, param++, 
+        resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db SQL bind error: %d", param);
+	return -1;
+    }
+
+    switch(dp->type) {
+        case DB_INT:
+            r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, dp->value.i);
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		  "%s(): (unsigned int)%lu (int)%li", __FUNCTION__, 
+                  (unsigned long)dp->value.i, (long)dp->value.i);
+            break;
+            
+        case DB_DOUBLE:
+	    r = sqlite3_bind_double(insert_datapoint_sync_stmt, param++, dp->value.d);
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		  "%s(): (double)%.16g", __FUNCTION__, dp->value.d);
+            break;
+            
+        case DB_STRING:
+            r = sqlite3_bind_text(insert_datapoint_sync_stmt, param++, dp->value.str, -1, SQLITE_STATIC);
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		  "%s(): (str)%s", __FUNCTION__, dp->value.str);
+            break;
+
+        default:
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db internal error: type %d invalid", dp->type);
+            return -1;
+
+    }
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db SQL bind error: %d", param);
+	return -1;
+    }
+
+    r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  dp->timestamp.tv_sec);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db SQL bind error: %d", param);
+	return -1;
+    }
+
+    r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  dp->timestamp.tv_usec);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db SQL bind error: %d", param);
+	return -1;
+    }
+
+    r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  entry_seq);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db SQL bind error: %d", param);
+	return -1;
+    }
+
+    r = sqlite3_bind_text(insert_datapoint_sync_stmt, param++, dp->bdm_id, -1, SQLITE_STATIC);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db SQL bind error: %d", param);
+	return -1;
+    }
+
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-	  "add_datapoint_to_db(%p) [%d: %s: %s", 
+	  "add_datapoint_to_db(%p) [%d]: %2x%2x%2x%2x%2x%2x%2x%2x", 
           db,
           entry_seq,
-          bionet_resource_get_name(resource), 
-          bionet_value_to_str(value));
-    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_value_to_str(value), -1, free);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
-	return -1;
-    }
-    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  timestamp->tv_sec);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
-	return -1;
-    }
-    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  timestamp->tv_usec);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
-	return -1;
-    }
-    r = sqlite3_bind_int( insert_datapoint_stmt, param++,  entry_seq);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
-	return -1;
-    }
-    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_hab_get_type(hab), -1, SQLITE_STATIC);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
-	return -1;
-    }
-    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_hab_get_id(hab), -1, SQLITE_STATIC);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
-	return -1;
-    }
-    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_node_get_id(node), -1, SQLITE_STATIC);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
-	return -1;
-    }
-    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bionet_resource_get_id(resource), -1, SQLITE_STATIC);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
-	return -1;
-    }
-    r = sqlite3_bind_text(insert_datapoint_stmt, param++, bdm_id, -1, SQLITE_STATIC);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL bind error");
-	return -1;
-    }
+          (int)resource_key[0], (int)resource_key[1], 
+          (int)resource_key[2], (int)resource_key[3],
+          (int)resource_key[4], (int)resource_key[5],
+          (int)resource_key[6], (int)resource_key[7]);
 
-    while(SQLITE_BUSY == (r = sqlite3_step(insert_datapoint_stmt)));
+
+    while(SQLITE_BUSY == (r = sqlite3_step(insert_datapoint_sync_stmt))){
+        g_usleep(20 * 1000);
+    }
     if (r != SQLITE_DONE) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint SQL error: %s\n", sqlite3_errmsg(db));
-	sqlite3_reset(insert_datapoint_stmt);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db SQL error: %s\n", sqlite3_errmsg(db));
+	sqlite3_reset(insert_datapoint_sync_stmt);
         return -1;
     }
-    sqlite3_reset(insert_datapoint_stmt);
-    sqlite3_clear_bindings(insert_datapoint_stmt);
+    sqlite3_reset(insert_datapoint_sync_stmt);
+    sqlite3_clear_bindings(insert_datapoint_sync_stmt);
 
     return 0;
 }
 
-
-
-
 //
-// this is the true database interface for the bdm front-end to use, and for the bdm back-end to provide
+// this is the true database interface for the bdm front-end to use, 
+// and for the bdm back-end to provide
 //
 
 int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
@@ -643,6 +752,9 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     bionet_resource_t * resource = NULL;
     bionet_node_t * node = NULL;
     bionet_hab_t * hab = NULL;
+    struct timeval * timestamp = NULL;
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
+    bdm_datapoint_t dp;
 
     entry_seq = db_get_next_entry_seq(db);
     if(entry_seq < 0) {
@@ -661,6 +773,7 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     resource = bionet_value_get_resource(value);
     node = bionet_resource_get_node(resource);
     hab = bionet_node_get_hab(node);
+    timestamp = bionet_datapoint_get_timestamp(datapoint);
 
     r = add_hab_to_db(db, hab);
     if (r != 0) goto fail;
@@ -672,14 +785,25 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     if (r != 0) goto fail;
 
     // now finally add the data point itself
-    r = add_datapoint_to_db(db, datapoint);
+    db_make_resource_key(
+        bionet_hab_get_type(hab),
+        bionet_hab_get_id(hab),
+        bionet_node_get_id(node),
+        bionet_resource_get_id(resource),
+        bionet_resource_get_data_type(resource),
+        bionet_resource_get_flavor(resource),
+        resource_key);
+
+    r = _datapoint_bionet_to_bdm(datapoint, &dp, bdm_id);
+    if (r != 0) goto fail;
+
+    r = add_datapoint_to_db(db, resource_key, &dp); 
     if (r != 0) goto fail;
 
 
     // it all worked, commit it to the DB
     r = do_commit(db);
     if (r != 0) goto fail;
-
 
     return 0;
 
@@ -706,16 +830,14 @@ fail:
 // This allows storing datapoints before the metadata has arrived
 //
 
-int db_add_datapoint_sync(sqlite3* db, 
+int db_add_datapoint_sync(
+    sqlite3 *db,
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
-    const char * bdm_id,
-    struct timeval *timestamp,
-    bionet_resource_data_type_t type,
-    void * value)
+    bdm_datapoint_t * dp)
 {
     int r;
 
-    r = db_add_bdm(db, bdm_id);
+    r = db_add_bdm(db, dp->bdm_id);
     if ( r != 0 ){
         return r;
     }
@@ -728,142 +850,7 @@ int db_add_datapoint_sync(sqlite3* db,
     }
 
     // Single insert, so no transaction needed
-
-    if(insert_datapoint_sync_stmt == NULL) {
-	r = sqlite3_prepare_v2(db, 
-	    "INSERT"
-	    " OR IGNORE"
-	    " INTO Datapoints"
-	    " SELECT"
-	    "     NULL, ?, BDMs.Key, ?, ?, ?, ?"
-	    "     FROM BDMs"
-	    "     WHERE BDMs.BDM_ID = ?",
-	    -1, &insert_datapoint_sync_stmt, NULL);
-
-	if (r != SQLITE_OK) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL error: %s\n", sqlite3_errmsg(db));
-	    return -1;
-	}
-    }
-
-    // Bind host variables to the prepared statement 
-    // -- This eliminates the need to escape strings
-    // Bind in order of the placeholders (?) in the SQL
-    int param = 1;
-    r = sqlite3_bind_blob(insert_datapoint_sync_stmt, param++, 
-        resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
-	return -1;
-    }
-
-    int ival;
-    double  dval;
-    float fval;
-    switch(type) {
-        case BIONET_RESOURCE_DATA_TYPE_BINARY:
-            ival = *(int*)value;
-            r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, ival);
-            break;
-            
-        case BIONET_RESOURCE_DATA_TYPE_UINT8:
-            ival = *(uint8_t*)value;
-            r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, ival);
-	    break;
-            
-        case BIONET_RESOURCE_DATA_TYPE_INT8:
-            ival = *(int8_t*)value;
-            r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, ival);
-            break;
-            
-        case BIONET_RESOURCE_DATA_TYPE_UINT16:
-            ival = *(uint16_t*)value;
-            r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, ival);
-            break;
-            
-        case BIONET_RESOURCE_DATA_TYPE_INT16:
-            ival = *(int16_t*)value;
-            r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, ival);
-            break;
-            
-        case BIONET_RESOURCE_DATA_TYPE_UINT32:
-            ival = *(uint32_t*)value;
-	    r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, ival);
-            break;
-            
-        case BIONET_RESOURCE_DATA_TYPE_INT32:
-            ival = *(int32_t*)value;
-            r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, ival);
-            break;
-            
-        case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-            fval = *(float*)value;
-	    r = sqlite3_bind_double(insert_datapoint_sync_stmt, param++, fval);
-            break;
-            
-        case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-            dval = *(double*)value;
-            r = sqlite3_bind_double(insert_datapoint_sync_stmt, param++, dval);
-            break;
-            
-        case BIONET_RESOURCE_DATA_TYPE_STRING:
-            r = sqlite3_bind_text(insert_datapoint_sync_stmt, param++, value, -1, SQLITE_STATIC);
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-		  "db_add_datapoint_sync(): %s", (char *)value);
-            break;
-        default:
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync API Type error");
-            return -1;
-    }
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
-	return -1;
-    }
-
-    r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  timestamp->tv_sec);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
-	return -1;
-    }
-
-    r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  timestamp->tv_usec);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
-	return -1;
-    }
-
-    r = sqlite3_bind_int( insert_datapoint_sync_stmt, param++,  entry_seq);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
-	return -1;
-    }
-
-    r = sqlite3_bind_text(insert_datapoint_sync_stmt, param++, bdm_id, -1, SQLITE_STATIC);
-    if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL bind error: %d", param);
-	return -1;
-    }
-
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-	  "add_datapoint_to_db_sync(%p) [%d]: %2x%2x%2x%2x%2x%2x%2x%2x", 
-          db,
-          entry_seq,
-          (int)resource_key[0], (int)resource_key[1], 
-          (int)resource_key[2], (int)resource_key[3],
-          (int)resource_key[4], (int)resource_key[5],
-          (int)resource_key[6], (int)resource_key[7]);
-
-
-    while(SQLITE_BUSY == (r = sqlite3_step(insert_datapoint_sync_stmt)));
-    if (r != SQLITE_DONE) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-datapoint-sync SQL error: %s\n", sqlite3_errmsg(db));
-	sqlite3_reset(insert_datapoint_sync_stmt);
-        return -1;
-    }
-    sqlite3_reset(insert_datapoint_sync_stmt);
-    sqlite3_clear_bindings(insert_datapoint_sync_stmt);
-
-    return 0;
+    return add_datapoint_to_db(db, resource_key, dp);
 }
 
 
@@ -872,6 +859,10 @@ int db_add_node(sqlite3* db, bionet_node_t *node) {
 
     int r;
     char *zErrMsg = NULL;
+
+    bionet_hab_t * hab = NULL;
+
+    hab = bionet_node_get_hab(node);
 
     entry_seq = db_get_next_entry_seq(db);
     if(entry_seq < 0) {
@@ -887,7 +878,7 @@ int db_add_node(sqlite3* db, bionet_node_t *node) {
 
 
     // add parent hab
-    r = add_hab_to_db(db, bionet_node_get_hab(node));
+    r = add_hab_to_db(db, hab);
     if (r != 0) goto fail;
 
 
@@ -906,7 +897,22 @@ int db_add_node(sqlite3* db, bionet_node_t *node) {
 
         // add the resource's data point, if any
         if (d != NULL) {
-            r = add_datapoint_to_db(db, d);
+            bdm_datapoint_t dp;
+            uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
+
+            db_make_resource_key(
+                bionet_hab_get_type(hab),
+                bionet_hab_get_id(hab),
+                bionet_node_get_id(node),
+                bionet_resource_get_id(resource),
+                bionet_resource_get_data_type(resource),
+                bionet_resource_get_flavor(resource),
+                resource_key);
+
+            r = _datapoint_bionet_to_bdm(d, &dp, bdm_id);
+            if (r != 0) goto fail;
+
+            r = add_datapoint_to_db(db, resource_key, &dp);
             if (r != 0) goto fail;
         }
     }
@@ -1057,14 +1063,13 @@ static bionet_resource_t *find_resource(bionet_node_t *node, const char *data_ty
 }
 
 
-static int db_get_resource_datapoints_callback(
-    void *sql_ret_void,
-    int argc,
-    char **argv,
-    char **azColName
+/*
+ * Called once per sqlite3_step()
+ */
+static int _add_to_bdm_list(
+    sqlite3_stmt *stmt,
+    GPtrArray *bdm_list
 ) {
-    sql_return_t * sql_ret_val = (sql_return_t *)sql_ret_void;
-    GPtrArray *bdm_list = sql_ret_val->bdm_list;
     bionet_hab_t *hab;
     bionet_node_t *node;
     bionet_resource_t *resource;
@@ -1073,94 +1078,104 @@ static int db_get_resource_datapoints_callback(
     int err = 0;
     bionet_value_t * value = NULL;
     bionet_datapoint_t * datapoint = NULL;
-    char * tmpstr;
 
 
-    static const int i_habtype =  0;
-    static const int i_habname =  1;
-    static const int i_node =     2;
-    static const int i_datatype = 3;
-    static const int i_flavor =   4;
-    static const int i_resource = 5;
-    static const int i_value =    6;
-    static const int i_tssec =    7;
-    static const int i_tsusec =   8;
-    static const int i_bdm =      9;
+    const char * habtype_id  = (const char *)sqlite3_column_text(stmt, 0); 
+    const char * habname_id  = (const char *)sqlite3_column_text(stmt, 1); 
+    const char * node_id     = (const char *)sqlite3_column_text(stmt, 2); 
+    const char * datatype    = (const char *)sqlite3_column_text(stmt, 3); 
+    const char * flavor      = (const char *)sqlite3_column_text(stmt, 4); 
+    const char * resource_id = (const char *)sqlite3_column_text(stmt, 5); 
+    static const int i_value =                                         6; 
+    timestamp.tv_sec         =               sqlite3_column_int (stmt, 7);
+    timestamp.tv_usec        =               sqlite3_column_int (stmt, 8);
+    const char * bdm_id      = (const char *)sqlite3_column_text(stmt, 9); 
     
-    bdm_t * bdm = find_bdm(bdm_list, argv[i_bdm]);
+    bdm_t * bdm = find_bdm(bdm_list, bdm_id);
     if (bdm == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding bdm %s", 
-            argv[i_bdm]);
+            bdm_id);
         return -1;
     }
 
-    hab = find_hab(bdm, argv[i_habtype], argv[i_habname]);
+    hab = find_hab(bdm, habtype_id, habname_id);
     if (hab == NULL) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding hab %s.%s", argv[i_habtype], argv[i_habname]);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding hab %s.%s", habtype_id, habname_id);
         return -1;
     }
 
-    node = find_node(hab, argv[i_node]);
+    node = find_node(hab, node_id);
     if (node == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 	      "db_get_resource_datapoints_callback(): error finding node %s.%s.%s", 
-	      bionet_hab_get_type(hab), bionet_hab_get_id(hab), argv[i_node]);
+	      bionet_hab_get_type(hab), bionet_hab_get_id(hab), node_id);
         return -1;
     }
 
-    resource = find_resource(node, argv[i_datatype], argv[i_flavor], argv[i_resource]);
+    resource = find_resource(node, datatype, flavor, resource_id);
     if (resource == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 	      "db_get_resource_datapoints_callback(): error finding resource %s %s %s.%s.%s:%s", 
-	      argv[i_datatype], argv[i_flavor], 
+	      datatype, flavor, 
 	      bionet_hab_get_type(hab), bionet_hab_get_id(hab), 
-	      bionet_node_get_id(node), argv[i_resource]);
+	      bionet_node_get_id(node), resource_id);
         return -1;
     }
 
-    if(argv[i_tssec]) {
-        timestamp.tv_sec = atoi(argv[i_tssec]);
-    }
-    if(argv[i_tsusec]) {
-        timestamp.tv_usec = atoi(argv[i_tsusec]);
-    }
-
-
-    if(argv[i_value]){
+    int column_type = sqlite3_column_type(stmt, i_value);
+    if(column_type != SQLITE_NULL){
         switch(bionet_resource_get_data_type(resource))
         {
         case BIONET_RESOURCE_DATA_TYPE_BINARY:
-            value = bionet_value_new_binary(resource, atoi(argv[i_value]));
+            value = bionet_value_new_binary(resource, 
+                sqlite3_column_int(stmt, i_value));
             break; 
+
         case BIONET_RESOURCE_DATA_TYPE_UINT8:
-            value = bionet_value_new_uint8(resource, (uint8_t)strtoul(argv[i_value], NULL, 0));
+            value = bionet_value_new_uint8(resource, 
+                (uint8_t)sqlite3_column_int(stmt, i_value));
             break; 
+
         case BIONET_RESOURCE_DATA_TYPE_INT8:   
-            value = bionet_value_new_int8(resource, (int8_t)atoi(argv[i_value]));
+            value = bionet_value_new_int8(resource, 
+                (int8_t)sqlite3_column_int(stmt, i_value));
             break; 
+
         case BIONET_RESOURCE_DATA_TYPE_UINT16: 
-            value = bionet_value_new_uint16(resource, (uint16_t)strtoul(argv[i_value], NULL, 0));
+            value = bionet_value_new_uint16(resource, 
+                (uint16_t)sqlite3_column_int(stmt, i_value));
             break; 
+            
         case BIONET_RESOURCE_DATA_TYPE_INT16:  
-            value = bionet_value_new_int16(resource, (int16_t)atoi(argv[i_value]));
+            value = bionet_value_new_int16(resource, 
+                (int16_t)sqlite3_column_int(stmt, i_value));
             break; 
+
         case BIONET_RESOURCE_DATA_TYPE_UINT32: 
-            value = bionet_value_new_uint32(resource, (uint32_t)strtoul(argv[i_value], NULL, 0));
+            value = bionet_value_new_uint32(resource, 
+                (uint32_t)sqlite3_column_int(stmt, i_value));
             break; 
+
         case BIONET_RESOURCE_DATA_TYPE_INT32:  
-            value = bionet_value_new_int32(resource, (int32_t)atoi(argv[i_value]));
+            value = bionet_value_new_int32(resource, 
+                (int32_t)sqlite3_column_int(stmt, i_value));
             break; 
+
         case BIONET_RESOURCE_DATA_TYPE_FLOAT:  
-            value = bionet_value_new_float(resource, strtof(argv[i_value], NULL));
+            value = bionet_value_new_float(resource, 
+                (float)sqlite3_column_double(stmt, i_value));
             break; 
+
         case BIONET_RESOURCE_DATA_TYPE_DOUBLE: 
-            value = bionet_value_new_double(resource, strtod(argv[i_value], NULL));
+            value = bionet_value_new_double(resource, 
+                sqlite3_column_double(stmt, i_value));
             break; 
+
         case BIONET_RESOURCE_DATA_TYPE_STRING:
-            tmpstr = malloc(strlen(argv[i_value]) + 1);
-            strncpy(tmpstr, argv[i_value], strlen(argv[i_value]) + 1);
-            value = bionet_value_new_str(resource, tmpstr);
+            value = bionet_value_new_str(resource, 
+                (const char*)sqlite3_column_text(stmt, i_value));
             break; 
+
         case BIONET_RESOURCE_DATA_TYPE_INVALID:
         default:
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
@@ -1199,7 +1214,6 @@ static int db_get_resource_datapoints_callback(
     return 0;
 }
 
-
 // 
 // Return data for the given filter parameters
 //
@@ -1216,7 +1230,6 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
 {
     int r;
     char sql[2048];
-    char *zErrMsg = NULL;
 
     char hab_type_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     char hab_id_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
@@ -1230,8 +1243,6 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
     GPtrArray *bdm_list;
 
     bdm_list = g_ptr_array_new();
-
-    sql_return_t sql_ret_val = { bdm_list };
 
     if ((hab_type == NULL) || (strcmp(hab_type, "*") == 0)) {
         hab_type_restriction[0] = '\0';
@@ -1551,28 +1562,36 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
         sql
     );
 
+    sqlite3_stmt *stmt;
+    r = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (r != SQLITE_OK) goto db_fail;
 
-    r = sqlite3_exec(
-        db,
-        sql,
-        db_get_resource_datapoints_callback,
-        &sql_ret_val,
-        &zErrMsg
-    );
-
-    if (r == SQLITE_BUSY) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "failed to get datapoints because the database is busy (\"%s\")", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return NULL;
+    for(;;) {
+        r = sqlite3_step(stmt);
+        if(r == SQLITE_BUSY) {
+            g_usleep(20 * 1000);
+            continue;
+        }
+        if(r == SQLITE_ROW) {
+            _add_to_bdm_list(stmt, bdm_list);
+            continue;
+        }
+        break;
     }
+    if (r != SQLITE_DONE) goto db_fail;
 
-    if (r != SQLITE_OK) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_resource_datapoints(): SQL error: %s", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return NULL;
-    }
+    sqlite3_finalize(stmt);
 
     return bdm_list;
+
+    db_fail:
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "db_get_resource_datapoints(): SQL error: %s", sqlite3_errmsg(db));
+        sqlite3_reset(stmt);
+        sqlite3_finalize(stmt);
+        g_ptr_array_free(bdm_list, TRUE);
+        return NULL;
+
 }
 
 GPtrArray *db_get_resource_datapoints(
@@ -1859,7 +1878,9 @@ static void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int last_sync, sqli
         return;
     }
 
-    while(SQLITE_BUSY == (r = sqlite3_step(stmt)));
+    while(SQLITE_BUSY == (r = sqlite3_step(stmt))){
+        g_usleep(20 * 1000);
+    }
     if (r != SQLITE_DONE) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error updating last-sync: %s\n", sqlite3_errmsg(db));
 	sqlite3_reset(stmt);
