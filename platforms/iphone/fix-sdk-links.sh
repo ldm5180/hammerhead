@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Fix IOKit symlinks
-for vers in '2.0' '2.1' '2.2' '2.2.1' '3.0'; do 
+for vers in '2.0' '2.1' '2.2' '2.2.1' '3.0' '3.1'; do 
 	FRAMEWORK_OS=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS${vers}.sdk/System/Library/Frameworks; 
 	FRAMEWORK_SIM=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator${vers}.sdk/System/Library/Frameworks; 
 	IOKIT_FRAMEWORK_OS=${FRAMEWORK_OS}/IOKit.framework; 
