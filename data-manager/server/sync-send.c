@@ -618,11 +618,11 @@ static int read_ack_tcp(sync_sender_config_t *config) {
 	bytes_read = read(config->fd, &buffer[index], bytes_to_read);
 	if (bytes_read < 0) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error reading from sync receiver: %s", strerror(errno));
-	    return FALSE;
+	    return -1;
 	}
 	if (bytes_read == 0) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "eof from sync receiver");
-	    return FALSE;
+	    return -1;
 	}
 	
 	index += bytes_read;
@@ -643,7 +643,7 @@ static int read_ack_tcp(sync_sender_config_t *config) {
                 // data 
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
                     "The message was not saved by the reciever");
-                return FALSE;
+                return -1;
             }
 
             switch(sync_ack){
@@ -668,10 +668,10 @@ static int read_ack_tcp(sync_sender_config_t *config) {
                 default:
                     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
                         "Unhandled ack value: %ld", sync_ack);
-                    return FALSE;
+                    return -1;
             }
 
-            return TRUE;
+            return 0;
                         
         } else if (rval.code == RC_WMORE) {
             // ber_decode is waiting for more data, but so far so good
@@ -690,15 +690,16 @@ static int read_ack_tcp(sync_sender_config_t *config) {
         }
     } while ((rval.consumed > 0) && (index > 0));
 
-    return FALSE;
+    return -1;
 }
 
 static int sync_finish_connection_tcp(sync_sender_config_t * config) {
-    int r;
+    int rc = 0;
+    int r = 0;
 
     if(config->bytes_sent){
         // TCP will ack the message in the same connection. Wait for it.
-        read_ack_tcp(config);
+        rc = read_ack_tcp(config);
     }
 
     config->bytes_sent = 0;
@@ -708,10 +709,10 @@ static int sync_finish_connection_tcp(sync_sender_config_t * config) {
     if(r<0){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "Can't close TCP connection: %m");
-        return -1;
+        rc = -1;
     }   
 
-    return 0;
+    return rc;
 }
 
 
