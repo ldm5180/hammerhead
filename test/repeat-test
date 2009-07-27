@@ -27,6 +27,8 @@ while : ; do
         echo
         echo "*** ${TEST}"
 
+        echo -n "*** " && date --utc
+
         if [ ! -x "$TEST/run" ]; then
             echo "disabled, skipping"
             NUM_SKIPPED=$(($NUM_SKIPPED+1))

@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <limits.h>
+#include <syslog.h>
 
 #include <glib.h>
 
@@ -377,6 +378,7 @@ int main(int argc, char *argv[]) {
     //  good place because everything that could go wrong, hasn't.
     //
 
+    openlog(NULL, LOG_PID, LOG_USER);
     lc.destination = BIONET_LOG_TO_SYSLOG;
 
     make_shutdowns_clean();

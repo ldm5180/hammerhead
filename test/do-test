@@ -23,6 +23,7 @@ for TEST in $TESTS; do
 
     echo
     echo "*** ${TEST}"
+    echo -n "*** " && date --utc
 
     if [ ! -x "$TEST/run" ]; then
         echo "disabled, skipping"
