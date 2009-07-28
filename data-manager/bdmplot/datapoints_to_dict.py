@@ -5,7 +5,7 @@
 from bdm_client import *
 from timespan import timeval_to_float
 
-def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regex = None,
+def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None,
     bdm_hostname = "localhost", bdm_port = 11002, bdm_fd = None):
     """
     Gets a bunch of datapoints from the Bionet Data Manager (BDM) and converts
@@ -46,6 +46,12 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regex = None,
     
     # Get the HAB list, prefiltered.
     hab_list=bdm_get_resource_datapoints(filter_string, timespan_vals[0], timespan_vals[1], -1, -1)
+
+    # If there's a regular expression, compile it.
+    re_compiled = None
+    if regexp != None:
+        import re
+        re_compiled = re.compile(regexp);
     
     # Stuff the result dictionary.
     results = {}
@@ -60,7 +66,7 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regex = None,
                 res = bionet_node_get_resource_by_index(node, ri)
                 resname = bionet_resource_get_name(res)
                 # If there's a regex, and it doesn't match a resource, skip.
-                if (regex != None) and (regex.match(resname) == None):
+                if (re_compiled != None) and (re_compiled.search(resname) == None):
                     continue
                 # Otherwise, stuff the resource and its datapoints in the result set.
                 results[resname] = []

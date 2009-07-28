@@ -34,7 +34,7 @@ def bdmplot(**kwargs):
     args = { "label": "plot",
              "filter": "syshealth.*.*:15-min-load-average",
              "timespan": "last 6h",
-             "regex": None,
+             "regexp": None,
              "format": "png",
              "width": 7,
              "height": 5,
@@ -60,7 +60,7 @@ def bdmplot(**kwargs):
     
     # Get the results
     from datapoints_to_dict import datapoints_to_dict
-    results = datapoints_to_dict(timespan_vals, args["filter"], args["regex"])
+    results = datapoints_to_dict(timespan_vals, args["filter"], args["regexp"])
 
     # Split the dictionary into:
     #   - an array of legends based on the keys
