@@ -23,13 +23,16 @@ public class PlotWrapper implements Updateable, TimespanSettable {
 		setTitle("Plot");	/* Untitled */
 	}
 	
-	public PlotWrapper(HasWidgets parent, String filter)
+	public PlotWrapper(HasWidgets parent, String filter, String regexp)
 	{
 		this();
 		if(filter != null) {
 			setFilter(filter);
 			pack(parent);
 			setTitle(filter);	/* Untitled */
+		}
+		if(regexp != null) {
+			setRegexp(regexp);
 		}
 	}
 	
@@ -56,6 +59,11 @@ public class PlotWrapper implements Updateable, TimespanSettable {
 	public void setFilter(String filter)
 	{
 		imageGetWrapper.setParam("filter", filter);
+	}
+	
+	public void setRegexp(String regexp)
+	{
+		imageGetWrapper.setParam("regexp", regexp);
 	}
 	
 	public void setTimespan(String timespan)

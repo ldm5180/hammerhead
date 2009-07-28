@@ -111,6 +111,7 @@ public class Configurator {
 		{
 			/* Attributes we need to make the plot */
 			String bionet_filter = null;
+			String regexp = null;
 			
 			/* Get the node attributes required to make the plot. */
 			Node plot = plotElems.item(i);
@@ -118,9 +119,12 @@ public class Configurator {
 			Node bionetFilterNode = plotAttribs.getNamedItem("bionet_filter");
 			if(bionetFilterNode != null)
 				bionet_filter = bionetFilterNode.getNodeValue();
+			Node regexpNode = plotAttribs.getNamedItem("regexp");
+			if(regexpNode != null)
+				regexp = regexpNode.getNodeValue();
 			
 			/* Make the plot */
-			PlotWrapper plotWrapper = new PlotWrapper(plotsPanel, bionet_filter);
+			PlotWrapper plotWrapper = new PlotWrapper(plotsPanel, bionet_filter, regexp);
 			plotWrapper.setImageBaseUrl(bdmplotsUrl);
 			refresher.add(plotWrapper);
 			timespanChooser.add(plotWrapper);
