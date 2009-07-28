@@ -554,7 +554,7 @@ gpointer sync_thread(gpointer config) {
 #endif // ENABLE_ION
 
 
-    while (1) {
+    while (!bdm_shutdown_now) {
 	curr_seq = db_get_latest_entry_seq(cfg->db);
 
 	if (curr_seq > cfg->last_entry_end_seq_metadata) {

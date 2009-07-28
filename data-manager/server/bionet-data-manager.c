@@ -30,6 +30,11 @@ GSList * sync_config_list = NULL;
 static GSList * sync_thread_list = NULL;
 static int bp_attached = 0;
 
+int bdm_shutdown_now = 0;
+#ifdef ENABLE_ION
+client_t dtn_thread_data = {0};
+#endif
+
 void usage(void) {
     printf(
 	"'bionet-data-manager' records Bionet traffic to a database.\n"
@@ -414,7 +419,7 @@ int main(int argc, char *argv[]) {
 
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	      "Starting sync thread");
-	thread = g_thread_create(sync_thread, g_slist_nth_data(sync_config_list, i), FALSE, NULL);
+	thread = g_thread_create(sync_thread, g_slist_nth_data(sync_config_list, i), TRUE, NULL);
 	
 	if (thread) {
 	    sync_thread_list = g_slist_append(sync_thread_list, thread);
@@ -422,7 +427,6 @@ int main(int argc, char *argv[]) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to create a thread for config %d", i);
 	}
-	//TODO create a signaling/control method to cause threads to exit when needed.
     }
 
 
@@ -448,12 +452,11 @@ int main(int argc, char *argv[]) {
             bp_attached++;
         }
 
-	dtn_recv = g_thread_create(dtn_receive_thread, NULL, FALSE, NULL);
+	dtn_recv = g_thread_create(dtn_receive_thread, &dtn_thread_data, TRUE, NULL);
 	if (NULL == dtn_recv) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to create DTN receiver thread: %m");
 	}
-	//TODO create a signaling/control method to cause threads to exit when needed.
     }
 #endif
 
@@ -468,6 +471,14 @@ int main(int argc, char *argv[]) {
         g_main_context_iteration(NULL, TRUE);
     }
 
+    for (i = 0; i < g_slist_length(sync_thread_list); i++) {
+        g_thread_join(g_slist_nth_data(sync_thread_list, i));
+    }
+
+#if ENABLE_ION
+    g_thread_join(dtn_recv);
+#endif
+    
 
     // 
     // if we get here, then the main loop has quit and we need to exit

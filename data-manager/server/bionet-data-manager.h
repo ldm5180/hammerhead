@@ -35,10 +35,9 @@ extern GMainLoop *bdm_main_loop;
 
 extern GHashTable * bdm_opts_table;
 
-#if ENABLE_ION
-extern char * dtn_endpoint_id;
-#endif
 
+// Global flag. Set true to stop all auxillary threads
+extern int bdm_shutdown_now;
 
 typedef enum {
     DB_INT = 0,
@@ -245,6 +244,10 @@ typedef struct {
     int index;
 } client_t;
 
+#ifdef ENABLE_ION
+extern client_t dtn_thread_data;
+extern char * dtn_endpoint_id;
+#endif
 
 int client_connecting_handler(GIOChannel *ch, GIOCondition condition, gpointer listening_fd_as_pointer);
 int client_readable_handler(GIOChannel *unused, GIOCondition unused2, client_t *client);
