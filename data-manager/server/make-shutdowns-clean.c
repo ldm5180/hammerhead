@@ -18,7 +18,9 @@
 static void exit_signal_handler(int signal_number) {
     g_message("caught signal %d (%s), exiting\n", signal_number, strsignal(signal_number));
     bdm_shutdown_now = 1;
+#if ENABLE_ION
     bp_interrupt(dtn_thread_data.ion.sap);
+#endif
     g_main_loop_quit(bdm_main_loop);
 }
 
