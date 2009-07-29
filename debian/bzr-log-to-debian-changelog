@@ -20,7 +20,7 @@ sub start_entry($$) {
     my ($package_name, $rev) = @_;
 
     if ($extra_version ne '') {
-        $rev = "$rev-$extra_version";
+        $rev = "$rev+$extra_version";
         $extra_version = '';
     }
 
@@ -110,7 +110,7 @@ while (defined (my $line = shift(@bzr_log))) {
     }
 
     elsif ($line =~ /^message:\s*$/) {
-        start_entry($package_name, "$upstream_version+$rev");
+        start_entry($package_name, "$upstream_version+bzr$rev");
         next;
     }
 
