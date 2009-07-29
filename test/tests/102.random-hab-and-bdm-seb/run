@@ -45,7 +45,7 @@ kill %2
 wait %2
 
 # Let the BDM commit the last info to disk
-sleep 5
+sleep 10
 
 echo getting data from bdm
 if [ -z "$PYTHONPATH" ]; then

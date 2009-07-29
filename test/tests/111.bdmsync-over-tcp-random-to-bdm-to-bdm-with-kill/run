@@ -37,7 +37,7 @@ $ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-recei
 
 echo starting TCP sync sender BDM
 $ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/111.bdmsync-over-tcp-random-to-bdm-to-bdm-with-kill/test.cfg --port 11111 &
-sleep 3 # let the bdm come up before starting the HAB
+sleep 6 # let the bdm come up before starting the HAB
 
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &

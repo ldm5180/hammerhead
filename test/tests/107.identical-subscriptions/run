@@ -34,7 +34,7 @@ echo "killing the random-hab"
 kill %1
 wait %1
 
-sleep 2  # to let the clients notice
+sleep 4  # to let the clients notice
 
 
 echo "killing the bionet-watchers"

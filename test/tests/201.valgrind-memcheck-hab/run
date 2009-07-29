@@ -34,7 +34,7 @@ sleep $TEST_DURATION
 echo "killing the HAB (under valgrind)"
 kill %1
 wait %1
-sleep 4  # to let the clients notice
+sleep 6  # to let the clients notice
 
 
 echo "killing the bionet-watcher"

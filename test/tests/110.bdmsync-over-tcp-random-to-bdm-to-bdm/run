@@ -44,7 +44,7 @@ $ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-recei
 
 echo starting TCP sync sender BDM
 $ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
-sleep 3 # let the bdm come up before starting the HAB
+sleep 6 # let the bdm come up before starting the HAB
 
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
@@ -55,7 +55,7 @@ echo "killing random-hab"
 kill %3
 wait %3
 
-sleep 10
+sleep 15
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
 echo "test run complete. killing the TCP sync sender BDM"
 kill %2

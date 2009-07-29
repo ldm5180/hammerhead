@@ -44,6 +44,8 @@ echo "test run complete, killing random-hab"
 kill %2
 wait %2
 
+sleep 4 # Let the BDM store all random-hab data
+
 echo getting data from bdm
 if [ -z "$PYTHONPATH" ]; then
     export PYTHONPATH=$ROOT/data-manager/py-client:$ROOT/data-manager/py-client/.libs
