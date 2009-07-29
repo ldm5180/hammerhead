@@ -9,8 +9,21 @@ use POSIX qw(strftime);
 my $distribution = `lsb_release -cs`;
 chomp $distribution;
 
+
+# these get set by command-line parsing, below
+my $package_name;
+my $upstream_version;
+my $extra_version;
+
+
 sub start_entry($$) {
     my ($package_name, $rev) = @_;
+
+    if ($extra_version ne '') {
+        $rev = "$rev-$extra_version";
+        $extra_version = '';
+    }
+
     print "$package_name ($rev) $distribution; urgency=low\n";
     print "\n";
 }
@@ -32,12 +45,22 @@ sub finish_entry($$) {
 
 
 
-if (int(@ARGV) != 2) {
-    die "usage: bzr-log-to-debian-changelog PACKAGE UPSTREAM-VERSION\n";
+if (
+    (int(@ARGV) != 2)
+    && (int(@ARGV) != 3)
+) {
+    die "usage: bzr-log-to-debian-changelog PACKAGE UPSTREAM-VERSION [EXTRA-VERSION]\n";
 }
 
-my $package_name = $ARGV[0];
-my $upstream_version = $ARGV[1];
+$package_name = $ARGV[0];
+$upstream_version = $ARGV[1];
+
+if (defined $ARGV[2]) {
+    $extra_version = $ARGV[2];
+} else {
+    $extra_version = '';
+}
+
 
 # AJJ: bzr version 1.12 and less doesn't have --levels so we emulate with a grep.
 my @bzr_log = `bzr log --levels=1`;
