@@ -17,7 +17,7 @@ cd $ROOT
 
 ./autogen.sh
 
-export VERSION=$(egrep ^BIONET_RELEASE_VERSION common.am | cut -d '=' -f 2) ; cd .. ; tar --exclude .bzr --exclude how-to-release --exclude debian --exclude rpm -czf bionet-$VERSION.tar.gz source ; cd $OLD_PWD
+export VERSION=$(egrep ^BIONET_RELEASE_VERSION common.am | cut -d '=' -f 2) ; cd .. ; mv source bionet-$VERSION; tar --exclude .bzr --exclude how-to-release --exclude debian --exclude rpm -czf bionet-$VERSION.tar.gz bionet-$VERSION ; mv bionet-$VERSION source; cd $OLD_PWD
 
 ln -s ~/rpmbuild $ROOT/.
 
