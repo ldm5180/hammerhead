@@ -15,9 +15,20 @@
 
 #include <glib.h>
 
+static GMutex * bdm_shutdown_mux = NULL;
+static GCond * bdm_shutdown_cond = NULL;
+
 static void exit_signal_handler(int signal_number) {
     g_message("caught signal %d (%s), exiting\n", signal_number, strsignal(signal_number));
-    bdm_shutdown_now = 1;
+
+    if(bdm_shutdown_mux && bdm_shutdown_cond) {
+        g_mutex_lock (bdm_shutdown_mux);
+        bdm_shutdown_now = 1;
+        g_cond_signal(bdm_shutdown_cond);
+        g_mutex_unlock (bdm_shutdown_mux);
+    } else {
+        bdm_shutdown_now = 1;
+    }
 #if ENABLE_ION
     bp_interrupt(dtn_thread_data.ion.sap);
 #endif
@@ -33,7 +44,7 @@ static void exit_handler(void) {
 
 
 
-void make_shutdowns_clean(void) {
+void make_shutdowns_clean(int withThreads) {
     struct sigaction sa;
 
     atexit(exit_handler);
@@ -67,6 +78,26 @@ void make_shutdowns_clean(void) {
         g_critical("error setting SIGPIPE sigaction to SIG_IGN: %s", strerror(errno));
         exit(1);
     }
+
+    if(withThreads){
+        bdm_shutdown_cond = g_cond_new();
+        bdm_shutdown_mux = g_mutex_new();
+    }
+}
+
+// Like sleep, but returns as soon as the bdm wants to shutdown
+int bdm_thread_sleep(long usec) {
+    g_mutex_lock (bdm_shutdown_mux);
+    if(!bdm_shutdown_now){
+        GTimeVal sleep_time;
+        g_get_current_time(&sleep_time);
+        g_time_val_add(&sleep_time, usec);
+
+        g_cond_timed_wait(bdm_shutdown_cond, bdm_shutdown_mux, &sleep_time);
+    }
+    g_mutex_unlock (bdm_shutdown_mux);
+
+    return bdm_shutdown_now;
 }
 
 

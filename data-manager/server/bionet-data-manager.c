@@ -386,14 +386,16 @@ int main(int argc, char *argv[]) {
     openlog(NULL, LOG_PID, LOG_USER);
     lc.destination = BIONET_LOG_TO_SYSLOG;
 
-    make_shutdowns_clean();
 
 
 
     if (sync_config_list || enable_dtn_sync_receiver) {
-	g_thread_init(NULL);
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "Initializing GThreads.");
+	g_thread_init(NULL);
+        make_shutdowns_clean(1);
+    } else {
+        make_shutdowns_clean(0);
     }
 
     //create a thread for each sync sender configuration
@@ -476,7 +478,9 @@ int main(int argc, char *argv[]) {
     }
 
 #if ENABLE_ION
-    g_thread_join(dtn_recv);
+    if(dtn_recv){
+        g_thread_join(dtn_recv);
+    }
 #endif
     
 
@@ -486,6 +490,9 @@ int main(int argc, char *argv[]) {
 
     g_main_loop_unref(bdm_main_loop);
     db_shutdown(main_db);
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+        "Bionet Data Manager shut down cleanly");
     return 0;
 }
 

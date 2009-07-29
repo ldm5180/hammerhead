@@ -39,6 +39,10 @@ extern GHashTable * bdm_opts_table;
 // Global flag. Set true to stop all auxillary threads
 extern int bdm_shutdown_now;
 
+// Call from threads instead of sleep.
+// Returns early with non-zero status if thread should exit
+int bdm_thread_sleep(long usec);
+
 typedef enum {
     DB_INT = 0,
     DB_DOUBLE,
@@ -263,7 +267,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
 
 int make_listening_socket(int port);
 void keepalive(int socket, int idle, int count, int interval);
-void make_shutdowns_clean(void);
+void make_shutdowns_clean(int withThreads);
 
 
 // BDM sync'ing

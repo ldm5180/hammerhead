@@ -571,7 +571,7 @@ gpointer sync_thread(gpointer config) {
 		  "No data to sync. Sleeping %u seconds...", cfg->frequency);
 	}
 
-	g_usleep(cfg->frequency * G_USEC_PER_SEC);
+	bdm_thread_sleep(cfg->frequency * G_USEC_PER_SEC);
     }
 
     return NULL;
