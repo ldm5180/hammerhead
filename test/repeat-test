@@ -27,7 +27,7 @@ while : ; do
         echo
         echo "*** ${TEST}"
 
-        echo -n "*** " && date --utc
+        echo -n "*** " && date
 
         if [ ! -x "$TEST/run" ]; then
             echo "disabled, skipping"
