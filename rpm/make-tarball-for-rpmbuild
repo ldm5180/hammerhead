@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$RPM_BUILD_ROOT" ]; then
+    echo "RPM_BUILD_ROOT environment variable is undefined"
+    echo "Defining RPM_BUILD_ROOT as $ROOT/rpmbuild"
+    export RPM_BUILD_ROOT=$ROOT/rpmbuild
+fi
+
+OLD_PWD=$PWD
+
+cd $ROOT
+
+./autogen.sh
+
+export VERSION=$(egrep ^BIONET_RELEASE_VERSION common.am | cut -d '=' -f 2) ; cd .. ; tar --exclude .bzr --exclude how-to-release --exclude debian --exclude rpm -czf bionet-$VERSION.tar.gz bionet-$VERSION ; cd $OLD_PWD
+
+mkdir $RPM_BUILD_ROOT
+mkdir $RPM_BUILD_ROOT/SOURCES
+mkdir $RPM_BUILD_ROOT/SPECS
+
+mv $ROOT/../bionet-$VERSION.tar.gz $RPM_BUILD_ROOT/SOURCES/.
+mv $ROOT/rpm/bionet.spec $RPM_BUILD_ROOT/SPECS/.
