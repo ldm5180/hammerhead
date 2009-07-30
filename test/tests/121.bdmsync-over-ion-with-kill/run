@@ -86,7 +86,7 @@ wait %3
 sleep 10
 echo "killing the ION sync sender BDM"
 kill %2
-kill %2
+wait %2
 
 echo "getting data from TCP sync receiver BDM"
 if [ -z "$PYTHONPATH" ]; then
@@ -103,7 +103,7 @@ $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-0
 
 echo "killing ION Sync Receive BDM"
 kill %4
-wait
+wait %4
 
 if ! diff -q out.random-hab out.bdm-client.py; then
     echo "ERROR: bdm-client.py output differs from random-hab output:"
