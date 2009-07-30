@@ -68,7 +68,7 @@ $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-0
 
 echo "killing BDM"
 kill %1
-wait %1
+wait
 
 if ! diff -q out.random-hab out.bdm-orig; then
     echo "ERROR: Originating BDM output differs from random-hab output:"

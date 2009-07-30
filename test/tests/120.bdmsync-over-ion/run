@@ -99,7 +99,7 @@ $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-0
 
 echo "killing ION Sync Receive BDM"
 kill %1
-wait %1
+wait
 
 if ! diff -q out.random-hab out.bdm-client.py; then
     echo "ERROR: bdm-client.py output differs from random-hab output:"
