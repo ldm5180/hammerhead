@@ -3,6 +3,8 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
+#include <stdlib.h>
+
 #include "hardware-abstractor.h"
 
 int hab_publish_info(bionet_hab_t * hab, const uint32_t flags) {
@@ -46,6 +48,7 @@ int hab_publish_info(bionet_hab_t * hab, const uint32_t flags) {
 
 		bionet_version_get(&bionet_version_str);
 		bionet_resource_set_str(resource, bionet_version_str, NULL);
+		free(bionet_version_str);
 	    }
 	}
 

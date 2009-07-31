@@ -390,7 +390,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: AccelAxis\n");
 	    }
-	    if (bionet_resource_set_str(resource, strdup("X-Axis"), &tv))
+	    if (bionet_resource_set_str(resource, "X-Axis", &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 
 	    }
@@ -741,20 +741,20 @@ int msg_settings_process(uint8_t *msg, ssize_t len)
 	{
 	    if (flags & ACCEL_FLAG_Y)
 	    {
-		bionet_resource_set_str(resource, strdup("both"), &tv);
+		bionet_resource_set_str(resource, "both", &tv);
 	    }
 	    else
 	    {
-		bionet_resource_set_str(resource, strdup("X-Axis"), &tv);
+		bionet_resource_set_str(resource, "X-Axis", &tv);
 	    }
 	}
 	else if (flags & ACCEL_FLAG_Y)
 	{
-	    bionet_resource_set_str(resource, strdup("Y-Axis"), &tv);
+	    bionet_resource_set_str(resource, "Y-Axis", &tv);
 	}
 	else
 	{
-	    bionet_resource_set_str(resource, strdup("None"), &tv);
+	    bionet_resource_set_str(resource, "None", &tv);
 	}
     }
 
