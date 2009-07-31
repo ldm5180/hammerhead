@@ -39,8 +39,11 @@ int main (int argc, char * argv[], char * envp[]){
         procname[0] = '\0';
     }
 
-    readlink("/proc/self/exe", cadir, sizeof(cadir));
-
+    ssize_t err = readlink("/proc/self/exe", cadir, sizeof(cadir));
+    if(err<0){
+        fprintf(stderr, "Couldn't find executable path: %m\n. exiting");
+        exit(1);
+    }
 
     if(chdir(cadir) != 0){
 	fprintf(stderr, "Unable to chdir(%s)\n", cadir);
