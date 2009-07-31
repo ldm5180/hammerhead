@@ -24,6 +24,12 @@ fi
 
 . $ROOT/test/config.sh
 
+VGLEAK=
+if [ -z "$ENABLE_DARWIN" ]; then
+    VGLEAK=--leak-check=full
+fi
+
+
 echo "making DB file"
 rm -f bdm.db
 pushd $ROOT/data-manager/server > /dev/null
@@ -32,7 +38,7 @@ popd > /dev/null
 mv $ROOT/data-manager/server/bdm.db .
 
 echo starting BDM under valgrind memcheck
-$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.bdm --tool=memcheck --trace-children=yes --leak-check=full $ROOT/data-manager/server/bionet-data-manager --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
+$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.bdm --tool=memcheck --trace-children=yes $VGLEAK $ROOT/data-manager/server/bionet-data-manager --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
 sleep 3 # let the bdm come up before starting the HAB
 
 echo starting random-hab
@@ -42,6 +48,7 @@ sleep $TEST_DURATION
 
 echo "test run complete, killing random-hab"
 kill %2
+wait %2
 sleep 1 # let the BDM get any last things sent by the random-hab
 
 echo getting data from bdm
@@ -57,6 +64,7 @@ $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-0
 
 echo "killing BDM"
 kill %1
+wait %1
 
 if ! diff -q out.random-hab out.bdm-client.py; then
     echo "ERROR: bdm-client.py output differs from random-hab output:"
