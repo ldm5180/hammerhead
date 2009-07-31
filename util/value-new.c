@@ -143,9 +143,7 @@ bionet_value_t * bionet_value_dup(bionet_resource_t *resource, bionet_value_t *v
 
     case BIONET_RESOURCE_DATA_TYPE_STRING:
     {
-	char * temp_str = NULL;
-	temp_str = strdup(value->content.string_v);
-	return bionet_value_new_internal(resource, temp_str, BIONET_RESOURCE_DATA_TYPE_STRING);
+	return bionet_value_new_internal(resource, value->content.string_v, BIONET_RESOURCE_DATA_TYPE_STRING);
     }
 
     default:
