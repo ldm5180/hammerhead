@@ -207,3 +207,16 @@ the asn1c compiler.  This should get pushed upstream to Lev Walkin
  				st->buf[0] = 0x41;	/* MINUS-INFINITY */
  			} else {
 
+=== modified file 'asn.1/constr_SEQUENCE.c'
+--- asn.1/constr_SEQUENCE.c	2008-11-04 06:53:25 +0000
++++ asn.1/constr_SEQUENCE.c	2009-07-31 14:53:20 +0000
+@@ -122,7 +122,7 @@
+ 	void *st = *struct_ptr;	/* Target structure. */
+ 	asn_struct_ctx_t *ctx;	/* Decoder context */
+ 
+-	ber_tlv_tag_t tlv_tag;	/* T from TLV */
++	ber_tlv_tag_t tlv_tag = 0;	/* T from TLV */
+ 	asn_dec_rval_t rval;	/* Return code from subparsers */
+ 
+ 	ssize_t consumed_myself = 0;	/* Consumed bytes from ptr */
+

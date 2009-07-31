@@ -122,7 +122,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 	void *st = *struct_ptr;	/* Target structure. */
 	asn_struct_ctx_t *ctx;	/* Decoder context */
 
-	ber_tlv_tag_t tlv_tag;	/* T from TLV */
+	ber_tlv_tag_t tlv_tag = 0;	/* T from TLV */
 	asn_dec_rval_t rval;	/* Return code from subparsers */
 
 	ssize_t consumed_myself = 0;	/* Consumed bytes from ptr */
