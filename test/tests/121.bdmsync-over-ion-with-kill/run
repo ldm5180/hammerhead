@@ -61,7 +61,7 @@ $ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-recv 
 
 echo starting ION sync sender BDM
 $ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  ${CONFIGDIR}/sync-send.cfg --port 11111 &
-sleep 6 # let the bdm come up before starting the HAB
+sleep 12 # let the bdm come up before starting the HAB
 
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
@@ -83,7 +83,7 @@ echo "test run complete, killing random-hab"
 kill %3
 wait %3
 
-sleep 10
+sleep 30
 echo "killing the ION sync sender BDM"
 kill %2
 wait %2
