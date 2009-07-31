@@ -144,7 +144,7 @@ void set_random_resource_value(bionet_resource_t* resource) {
 		strncat(new_string, " ", sizeof(new_string) - strlen(new_string));
             }
             new_string[strlen(new_string) - 1] = '\0';
-	    value = bionet_value_new_str(resource, strdup(new_string)); 
+	    value = bionet_value_new_str(resource, new_string); 
            if (NULL == value) {
                 fprintf(stderr, "*** out of memory!\n");
                 return;
