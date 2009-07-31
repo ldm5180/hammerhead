@@ -2,6 +2,6 @@ These tools should be used by any client or hab that needs to create a
 security dir.
 
 Assuming the CA has been installed on <CAserver>, to create a security dir, run
-the following command to create <DIR>:
+the following command to create <DIR>. 
 
-$ ./setup-sec.sh <CAserver> <DIR> 
+$ ./setup-sec.sh <CAserver> <DIR> [<ALT-CA-PATH>]

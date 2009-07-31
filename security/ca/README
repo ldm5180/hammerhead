@@ -1,11 +1,11 @@
 Tools for bionet CA
 
-The files in relroot should be copied as is to /data/bionet-ca on
-bioserve
+The files in relroot should be copied as is to the CA server data directory
+( /data/bionet-ca on bioserve.colorado.edu )
 
 ca-serve should be build, and copied to the same directory
 
-On bioserve:
+In the CA Server data directory:
 # Setup the CA database
 make init
 
@@ -14,6 +14,7 @@ chmod 0700 private
 chown root:root private 
 
 # grant access to anybody in the caadmins group permission to sign CSRs
+# Thus allowing them to authenticate to habs/clients in that group
 chown root:automation ca-serve
 chmod 4750 ca-serve
 

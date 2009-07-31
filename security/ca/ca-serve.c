@@ -4,8 +4,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <fcntl.h>
-
-#define CADIR "/data/bionet-ca"
+#include <string.h>
 
 // Send CA to stdout, and return the exit code
 int send_ca(void){
@@ -34,8 +33,17 @@ int main (int argc, char * argv[], char * envp[]){
 
     int ch;
 
-    if(chdir(CADIR) != 0){
-	fprintf(stderr, "Unable to chdir(" CADIR ")\n");
+    char cadir[1024];
+    char * procname = strrchr(cadir, '/');
+    if(procname){
+        procname[0] = '\0';
+    }
+
+    readlink("/proc/self/exe", cadir, sizeof(cadir));
+
+
+    if(chdir(cadir) != 0){
+	fprintf(stderr, "Unable to chdir(%s)\n", cadir);
 	exit(1);
     }
 
