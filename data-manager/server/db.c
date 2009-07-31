@@ -752,7 +752,6 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     bionet_resource_t * resource = NULL;
     bionet_node_t * node = NULL;
     bionet_hab_t * hab = NULL;
-    struct timeval * timestamp = NULL;
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
     bdm_datapoint_t dp;
 
@@ -773,7 +772,6 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     resource = bionet_value_get_resource(value);
     node = bionet_resource_get_node(resource);
     hab = bionet_node_get_hab(node);
-    timestamp = bionet_datapoint_get_timestamp(datapoint);
 
     r = add_hab_to_db(db, hab);
     if (r != 0) goto fail;

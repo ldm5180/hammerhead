@@ -405,8 +405,8 @@ int main(int argc, char *argv[]) {
 
 	//init the latest entry end time for the config
 	sync_config = g_slist_nth_data(sync_config_list, i);
-        sync_config->db = db_init();
 	if (sync_config) {
+	    sync_config->db = db_init();
 	    sync_config->last_entry_end_seq = 
                 db_get_last_sync_seq_datapoints(sync_config->db, 
                     sync_config->sync_recipient);
