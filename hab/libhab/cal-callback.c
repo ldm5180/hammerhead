@@ -96,7 +96,7 @@ static void libhab_set_resource(const char *peer_name, SetResourceValue_t *set_r
 	    case BIONET_RESOURCE_DATA_TYPE_STRING:
 	    {
 		value = bionet_value_new_str(resource, 
-					     strdup((char *)set_resource_value->value.buf));
+					     (char *)set_resource_value->value.buf);
 		break;	
 	    }
 	    default:
