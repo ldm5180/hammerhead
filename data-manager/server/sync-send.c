@@ -253,10 +253,14 @@ static int sync_send_metadata(
         }
     }
 
+    bdm_list_free(bdm_list);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &message);
     return 0;
 
 cleanup:
+    if(bdm_list){
+        bdm_list_free(bdm_list);
+    }
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_Sync_Message, &message);
     return -1;
 } /* sync_send_metadata() */

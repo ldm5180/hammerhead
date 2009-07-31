@@ -22,7 +22,7 @@ fi
 RETVAL=0
 
 echo starting random-hab under valgrind memcheck
-$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.random-hab --num-callers=25 --tool=memcheck --trace-children=yes --leak-check=full $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
+G_SLICE=always-malloc G_DEBUG=gc-friendly,resident-modules $LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.random-hab --num-callers=25 --tool=memcheck --trace-children=yes --leak-check=full $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bionet-watcher --max-delay 1 >| out.random-hab &
 
 echo starting bionet-watcher
 $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher &

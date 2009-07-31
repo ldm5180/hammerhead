@@ -105,6 +105,7 @@ typedef struct {
     char * bdm_id;
 } bdm_t;
 
+
 // 
 // interface to the database backend
 //
@@ -166,6 +167,7 @@ int db_add_datapoint_sync(
 
 // 
 // Finds all matching datapoints, and returns them as a GPtrArray of bdm_t.
+// Use bdm_list_free to free the list returned
 //
 GPtrArray *db_get_resource_datapoints(
     sqlite3 *db,
@@ -181,6 +183,7 @@ GPtrArray *db_get_resource_datapoints(
 
 // 
 // Finds all matching metadata, and returns them as a GPtrArray of bdm_t.
+// Use bdm_list_free to free the list returned
 //
 GPtrArray *db_get_metadata(
     sqlite3 *db,
@@ -192,6 +195,11 @@ GPtrArray *db_get_metadata(
     struct timeval *datapoint_end,
     int entry_start,
     int entry_end);
+
+//
+// Free the list returned from db_get_metadata or db_get_resource_datapoints
+//
+void bdm_list_free(GPtrArray *bdm_list);
 
 int db_get_latest_entry_seq(sqlite3 *db);
 int db_get_last_sync_seq_metadata(sqlite3 *db, char * bdm_id);

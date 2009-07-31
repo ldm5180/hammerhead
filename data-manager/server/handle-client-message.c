@@ -225,6 +225,9 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
 
 
 cleanup:
+    if(bdm_list){
+        bdm_list_free(bdm_list);
+    }
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_S2C_Message, &reply);
     return;
 }

@@ -961,6 +961,24 @@ int db_add_hab(sqlite3* db, bionet_hab_t *hab) {
 }
 
 
+void bdm_list_free(GPtrArray *bdm_list) {
+    int b, h;
+    for (b = 0; b < bdm_list->len; b++) {
+        bdm_t * bdm = g_ptr_array_index(bdm_list, b);
+
+        for (h = 0; h < bdm->hab_list->len; h++) {
+            bionet_hab_t * hab = g_ptr_array_index(bdm->hab_list, h);
+
+            bionet_hab_free(hab);
+        }
+
+        free(bdm->bdm_id);
+        g_ptr_array_free(bdm->hab_list, TRUE);
+        free(bdm);
+    }
+    g_ptr_array_free(bdm_list, TRUE);
+
+}
 
 static bdm_t *find_bdm(GPtrArray *bdm_list, const char *bdm_id) {
     int i;
