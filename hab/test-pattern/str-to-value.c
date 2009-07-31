@@ -56,9 +56,7 @@ bionet_value_t *str_to_value(bionet_resource_t *resource, bionet_resource_data_t
             break;
 
         case BIONET_RESOURCE_DATA_TYPE_STRING: {
-            char *allocated_string;
-            allocated_string = strdup(str);
-            value = bionet_value_new_str(resource, allocated_string);
+            value = bionet_value_new_str(resource, str);
             break;
         }
 
