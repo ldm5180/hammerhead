@@ -27,7 +27,7 @@ libbionet_qt4_la_LDFLAGS = $(AM_LDFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(LDFLAG
 libbionet_qt4_la_LIBADD = $(AM_LDADD) -lpthread -lm ${qtmake_moc_objects} ${qtmake_objects} $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_CLIENT)
 
 makefile.qt:
-	${QT4_PATH} -Wall -o makefile.qt \
+	${QMAKE} -Wall -o makefile.qt \
 	"INCLUDEPATH+=../libbionet ../../util /usr/include/" \
 	"HEADERS+=${qtmake_headers}" \
 	"LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" \

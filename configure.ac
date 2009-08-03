@@ -291,36 +291,21 @@ if test "x$ENABLE_PYTHON" = "xyes" ; then
 fi
 AM_CONDITIONAL(ENABLE_PYTHON, test "x$ENABLE_PYTHON" = "xyes")
 
+# QT and qt libs
 AC_ARG_ENABLE(qt4, AC_HELP_STRING([--disable-qt4],
       [disable QT4 dependent parts]),
       [ENABLE_QT4=$enableval],
       [ENABLE_QT4=yes])
-if test "x$HAVE_LINUX" = "xyes"; then
-   if test "x$ENABLE_QT4" = "xyes" ; then
-      AC_PATH_PROG(QT4_PATH, qmake-qt4, no)
-      if test "x$QT4_PATH" = xno; then
-       	 AC_MSG_ERROR([could not find QT4 executables])
-      fi
-   fi
-fi
-if test "x$HAVE_DARWIN" = "xyes"; then
-   if test "x$ENABLE_QT4" = "xyes" ; then
-      AC_PATH_PROGS(QT4_PATH, [qmake-4.4 qmake-mac], no)
-      if test "x$QT4_PATH" = xno; then
-       	 AC_MSG_ERROR([could not find QT4 executables])
-      fi
-   fi
+
+if test "x$ENABLE_QT4" = "xyes" ; then
+    AC_CACHE_CHECK([for qmake for QT4], [ac_cv_path_QMAKE],
+        [AC_PATH_PROGS_FEATURE_CHECK([QMAKE], [qmake-qt4 qmake-4.4 qmake qmake-mac],
+            [[$ac_path_QMAKE -version | grep -iq 'qt version 4' && ac_cv_path_QMAKE=$ac_path_QMAKE ac_path_QMAKE_found=:]],
+            [AC_MSG_ERROR([could not find qmake for QT4 ])])])
+    AC_SUBST([QMAKE], [$ac_cv_path_QMAKE])
+
 fi
 
-# need libqwt5 for mac...
-#if test "x$HAVE_DARWIN" = "xyes"; then
-#   if test "x$ENABLE_QT4" = "xyes" ; then
-#      AC_PATH_PROG(QT4_PATH, qmake-4.4, no)
-#      if test "x$QT4_PATH" = xno; then
-#         AC_MSG_ERROR([could not find QT4 executables])
-#      fi
-#   fi
-#fi
 if test "x$HAVE_LINUX" = "xyes"; then
 AM_CONDITIONAL(ENABLE_QT4, [test "x$ENABLE_QT4" = "xyes"])
 else
