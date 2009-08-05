@@ -1,0 +1,974 @@
+2009-08-05 15:39:38.702896 + Morris
+    caper Int16 Parameter ?
+    ragas UInt32 Parameter ?
+    pumps Int8 Parameter '84'
+    tush UInt32 Parameter ?
+    jibe Float Actuator '-8.407664e+21'
+    has Int16 Actuator ?
+    crisp Float Actuator '4.609175e-28'
+    mob Int32 Parameter ?
+    wheel Int16 Actuator '3598'
+    hogs Int16 Parameter '-25444'
+    privy Double Actuator '-1.5873688947596e-151'
+    hypes Int32 Sensor ?
+    julep Float Parameter '12689.57'
+    opus Int16 Actuator ?
+    incur Int8 Sensor ?
+    plaza Binary Actuator ?
+    frats UInt32 Actuator ?
+    shelf UInt8 Parameter '67'
+    baser UInt32 Sensor ?
+    raven String Sensor 'mute peach gurus eased'
+2009-08-05 15:39:38.696871 Morris pumps '84'
+2009-08-05 15:39:38.697050 Morris jibe '-8.407664e+21'
+2009-08-05 15:39:38.697120 Morris crisp '4.609175e-28'
+2009-08-05 15:39:38.697160 Morris wheel '3598'
+2009-08-05 15:39:38.697175 Morris hogs '-25444'
+2009-08-05 15:39:38.697204 Morris privy '-1.5873688947596e-151'
+2009-08-05 15:39:38.697234 Morris julep '12689.57'
+2009-08-05 15:39:38.697317 Morris shelf '67'
+2009-08-05 15:39:38.697365 Morris raven 'mute peach gurus eased'
+2009-08-05 15:39:38.704068 + Knudsen
+    boats Binary Sensor '1'
+    pore Int16 Sensor '29298'
+    tams UInt8 Parameter '19'
+    adobe UInt8 Parameter ?
+    lazy Int16 Actuator ?
+    tapir UInt16 Actuator ?
+    patio UInt16 Sensor ?
+    ankle String Sensor ?
+    fiat Int8 Sensor '118'
+    yule Int16 Actuator '3855'
+    shale Int32 Sensor '-1886417009'
+    fades Int32 Actuator ?
+    inept Int32 Sensor ?
+    mom Int32 Sensor ?
+2009-08-05 15:39:38.698373 Knudsen boats '1'
+2009-08-05 15:39:38.698390 Knudsen pore '29298'
+2009-08-05 15:39:38.698411 Knudsen tams '19'
+2009-08-05 15:39:38.698488 Knudsen fiat '118'
+2009-08-05 15:39:38.698511 Knudsen yule '3855'
+2009-08-05 15:39:38.698526 Knudsen shale '-1886417009'
+2009-08-05 15:39:38.704765 + Isabelle
+    refed Binary Sensor ?
+    hoped Int32 Sensor '-1397969748'
+    drank Float Actuator '-5.965414e+29'
+    abash Double Actuator '1.6340899438725e+69'
+    vista Float Parameter ?
+    oaf Int32 Sensor '151587081'
+    shift Binary Actuator ?
+    torso Double Sensor '8.1968741124263e+107'
+    hexes Binary Sensor ?
+    five UInt32 Actuator ?
+    axles Binary Parameter ?
+    oars Int16 Parameter '-9510'
+    spate String Sensor ?
+    vegan Float Parameter ?
+    teeth UInt8 Sensor ?
+    ohos Int16 Sensor ?
+    crape Int16 Sensor '2570'
+    urge UInt8 Sensor '16'
+    abeam String Parameter ?
+    horsy Int16 Actuator ?
+    lint Int16 Actuator ?
+    bulgy Int16 Parameter '30840'
+    lined Int8 Sensor ?
+    spits Float Sensor ?
+    names Int32 Parameter ?
+    real Int16 Parameter ?
+    numbs Binary Actuator ?
+    foils UInt32 Sensor '2509608341'
+2009-08-05 15:39:38.699106 Isabelle hoped '-1397969748'
+2009-08-05 15:39:38.699121 Isabelle drank '-5.965414e+29'
+2009-08-05 15:39:38.699140 Isabelle abash '1.6340899438725e+69'
+2009-08-05 15:39:38.699168 Isabelle oaf '151587081'
+2009-08-05 15:39:38.699192 Isabelle torso '8.1968741124263e+107'
+2009-08-05 15:39:38.699240 Isabelle oars '-9510'
+2009-08-05 15:39:38.699306 Isabelle crape '2570'
+2009-08-05 15:39:38.699321 Isabelle urge '16'
+2009-08-05 15:39:38.699365 Isabelle bulgy '30840'
+2009-08-05 15:39:38.699431 Isabelle foils '2509608341'
+2009-08-05 15:39:38.705994 + Malloy
+    minx String Parameter 'delis'
+    lungs UInt8 Sensor ?
+    condo UInt32 Sensor ?
+    cold UInt8 Sensor '136'
+    over UInt32 Sensor ?
+    techs Int8 Actuator ?
+    heros Int16 Parameter '13621'
+    frays UInt32 Parameter '2307492233'
+    moses Float Parameter ?
+    churn UInt32 Parameter '2762253476'
+    mild Int8 Parameter '-106'
+    toads Float Actuator '3.85009e-37'
+    legs Binary Sensor '0'
+    mutts UInt32 Sensor '3318072773'
+    showy UInt32 Parameter '2324335242'
+2009-08-05 15:39:38.700422 Malloy minx 'delis'
+2009-08-05 15:39:38.700459 Malloy cold '136'
+2009-08-05 15:39:38.700501 Malloy heros '13621'
+2009-08-05 15:39:38.700516 Malloy frays '2307492233'
+2009-08-05 15:39:38.700541 Malloy churn '2762253476'
+2009-08-05 15:39:38.700915 Malloy mild '-106'
+2009-08-05 15:39:38.700933 Malloy toads '3.85009e-37'
+2009-08-05 15:39:38.700950 Malloy legs '0'
+2009-08-05 15:39:38.700966 Malloy mutts '3318072773'
+2009-08-05 15:39:38.700990 Malloy showy '2324335242'
+2009-08-05 15:39:38.706718 + Deirdre
+2009-08-05 15:39:38.706751 - Knudsen
+2009-08-05 15:39:42.267890 + Bobbie
+    dells String Sensor ?
+    happy String Sensor ?
+    said Int32 Parameter '-1431655766'
+    thaws Binary Parameter '0'
+    frost Double Parameter ?
+    dives String Sensor 'movie topic lip iris'
+    gunny Int16 Actuator '-2314'
+    poles Int8 Actuator '-61'
+    lain String Actuator 'sore downs bract'
+    right Double Sensor '-4.2525583765009e+71'
+    gorge Int16 Sensor '14135'
+    miler Float Parameter '2.520702e-35'
+    due String Parameter ''
+    pews Float Parameter ?
+    tamps UInt32 Actuator ?
+    ennui Binary Actuator ?
+    fades Binary Parameter ?
+    icon Int32 Actuator ?
+    waste Binary Actuator '0'
+    ply Int16 Parameter '1542'
+    stymy Binary Actuator '0'
+    bones UInt16 Actuator '47031'
+    blind Int16 Parameter '-8739'
+    hurl UInt8 Sensor '212'
+    zeros String Sensor ?
+2009-08-05 15:39:42.265458 Bobbie said '-1431655766'
+2009-08-05 15:39:42.265495 Bobbie thaws '0'
+2009-08-05 15:39:42.265529 Bobbie dives 'movie topic lip iris'
+2009-08-05 15:39:42.265545 Bobbie gunny '-2314'
+2009-08-05 15:39:42.265560 Bobbie poles '-61'
+2009-08-05 15:39:42.265581 Bobbie lain 'sore downs bract'
+2009-08-05 15:39:42.265598 Bobbie right '-4.2525583765009e+71'
+2009-08-05 15:39:42.265645 Bobbie gorge '14135'
+2009-08-05 15:39:42.265661 Bobbie miler '2.520702e-35'
+2009-08-05 15:39:42.265680 Bobbie due ''
+2009-08-05 15:39:42.265746 Bobbie waste '0'
+2009-08-05 15:39:42.265761 Bobbie ply '1542'
+2009-08-05 15:39:42.265776 Bobbie stymy '0'
+2009-08-05 15:39:42.265796 Bobbie bones '47031'
+2009-08-05 15:39:42.265811 Bobbie blind '-8739'
+2009-08-05 15:39:42.265826 Bobbie hurl '212'
+2009-08-05 15:39:42.269041 - Malloy
+2009-08-05 15:39:45.593862 + Henrietta
+2009-08-05 15:39:45.594100 - Deirdre
+2009-08-05 15:39:47.843898 + Naomi
+2009-08-05 15:39:47.842960 Bobbie dells 'tuba coats drown bimbo'
+2009-08-05 15:39:47.842990 Bobbie said '-1549556829'
+2009-08-05 15:39:47.843006 Bobbie frost '-2.1455548238549e+110'
+2009-08-05 15:39:47.843028 Bobbie gunny '21588'
+2009-08-05 15:39:47.843038 Bobbie poles '122'
+2009-08-05 15:39:47.843052 Bobbie right '7.4770802645436e+20'
+2009-08-05 15:39:47.843063 Bobbie gorge '7196'
+2009-08-05 15:39:47.843081 Bobbie pews '-8.799083e+24'
+2009-08-05 15:39:47.843100 Bobbie fades '1'
+2009-08-05 15:39:47.843109 Bobbie icon '320017171'
+2009-08-05 15:39:47.843128 Bobbie stymy '1'
+2009-08-05 15:39:52.411461 Morris jibe '7.914983e-24'
+2009-08-05 15:39:52.411502 Morris crisp '-1.095257e-18'
+2009-08-05 15:39:52.411525 Morris wheel '13621'
+2009-08-05 15:39:52.411569 Morris shelf '252'
+2009-08-05 15:39:52.411579 Morris baser '1397969747'
+2009-08-05 15:39:52.411597 Morris raven 'medic jinns dupes lied'
+2009-08-05 15:39:56.959808 - Morris
+2009-08-05 15:40:01.605514 + Ralph
+2009-08-05 15:40:01.605549 - Naomi
+2009-08-05 15:40:02.267655 + Martin
+2009-08-05 15:40:02.266933 Isabelle hoped '-2004318072'
+2009-08-05 15:40:02.266959 Isabelle vista '-8.217301e-34'
+2009-08-05 15:40:02.266975 Isabelle oaf '1330597711'
+2009-08-05 15:40:02.266985 Isabelle shift '0'
+2009-08-05 15:40:02.266994 Isabelle torso '-7.9140592507382e+269'
+2009-08-05 15:40:02.267012 Isabelle five '4160223223'
+2009-08-05 15:40:02.267021 Isabelle axles '1'
+2009-08-05 15:40:02.267035 Isabelle spate ''
+2009-08-05 15:40:02.267049 Isabelle teeth '112'
+2009-08-05 15:40:02.267068 Isabelle urge '36'
+2009-08-05 15:40:02.267077 Isabelle abeam ''
+2009-08-05 15:40:02.267086 Isabelle horsy '-28528'
+2009-08-05 15:40:02.267126 Isabelle foils '2509608341'
+2009-08-05 15:40:08.768466 - Isabelle
+2009-08-05 15:40:10.756623 + Frederick
+2009-08-05 15:40:12.765780 - Bobbie
+2009-08-05 15:40:14.010393 + Reg
+    dean Int8 Sensor ?
+2009-08-05 15:40:14.010459 - Henrietta
+2009-08-05 15:40:14.981192 + Angelica
+    berry Double Parameter '1.3599969691678e+248'
+    blip UInt8 Sensor '110'
+    birch Int32 Parameter '471604252'
+    amped Float Sensor ?
+    glens Float Sensor ?
+    river Double Sensor '5.6133372798172e+112'
+    acre Float Actuator '-1.12646e+11'
+2009-08-05 15:40:14.980381 Angelica berry '1.3599969691678e+248'
+2009-08-05 15:40:14.980423 Angelica blip '110'
+2009-08-05 15:40:14.980440 Angelica birch '471604252'
+2009-08-05 15:40:14.980477 Angelica river '5.6133372798172e+112'
+2009-08-05 15:40:14.980496 Angelica acre '-1.12646e+11'
+2009-08-05 15:40:14.981490 - Martin
+2009-08-05 15:40:15.446719 + Ranulph
+2009-08-05 15:40:15.446785 + Wade
+2009-08-05 15:40:26.426016 - Ranulph
+2009-08-05 15:40:29.501251 - Angelica
+2009-08-05 15:40:32.178152 + Elric
+2009-08-05 15:40:32.178199 - Frederick
+2009-08-05 15:40:32.296389 + Hank
+    chars Binary Actuator '1'
+    hurls Double Parameter '1.2217638442044e+161'
+    ilk Int16 Parameter '-15678'
+    lam String Sensor 'diner cored grime fists'
+    diary Int8 Actuator ?
+    lilt String Actuator 'tyro cons obits sobs'
+    lids Int16 Sensor '-9510'
+    dross Int8 Parameter ?
+    brick Int8 Sensor '-59'
+    heps Int8 Sensor '0'
+    abbey UInt8 Actuator ?
+    saver String Parameter ?
+    bole Float Parameter '8.843688e-18'
+    verbs UInt32 Actuator '269488144'
+    grim Float Parameter '2.258311e+11'
+    soar Int16 Actuator '3855'
+    skier UInt8 Actuator ?
+    loser UInt8 Actuator '9'
+    firms UInt8 Parameter ?
+    ajar UInt32 Actuator ?
+    sages Binary Actuator '1'
+    satin String Sensor 'shill'
+    dowry Int32 Actuator '-1347440721'
+2009-08-05 15:40:32.294246 Hank chars '1'
+2009-08-05 15:40:32.294283 Hank hurls '1.2217638442044e+161'
+2009-08-05 15:40:32.294309 Hank ilk '-15678'
+2009-08-05 15:40:32.294361 Hank lam 'diner cored grime fists'
+2009-08-05 15:40:32.294398 Hank lilt 'tyro cons obits sobs'
+2009-08-05 15:40:32.294415 Hank lids '-9510'
+2009-08-05 15:40:32.294440 Hank brick '-59'
+2009-08-05 15:40:32.294455 Hank heps '0'
+2009-08-05 15:40:32.294490 Hank bole '8.843688e-18'
+2009-08-05 15:40:32.294507 Hank verbs '269488144'
+2009-08-05 15:40:32.294522 Hank grim '2.258311e+11'
+2009-08-05 15:40:32.294539 Hank soar '3855'
+2009-08-05 15:40:32.294564 Hank loser '9'
+2009-08-05 15:40:32.294600 Hank sages '1'
+2009-08-05 15:40:32.294616 Hank satin 'shill'
+2009-08-05 15:40:32.294631 Hank dowry '-1347440721'
+2009-08-05 15:40:33.348167 - Elric
+2009-08-05 15:40:37.960960 + Mat
+2009-08-05 15:40:44.173258 Reg dean '63'
+2009-08-05 15:40:48.322832 - Ralph
+2009-08-05 15:40:53.320623 + Kevin
+    holy UInt32 Sensor '3705461980'
+    index Int16 Actuator ?
+    laded Int32 Parameter ?
+    suit UInt8 Parameter ?
+    josh Int8 Sensor '123'
+    looks Int32 Sensor '1381126738'
+    bauds Int32 Parameter '-1280068685'
+    musky UInt32 Sensor ?
+    node Binary Actuator '1'
+    midst Int32 Parameter ?
+    spake Int8 Parameter '18'
+    speck UInt8 Sensor '173'
+    junks Float Parameter ?
+    kiddy Float Parameter '4.194572e+21'
+    haves Int32 Sensor '33686018'
+    spicy Int16 Sensor '19018'
+    cools Binary Actuator '1'
+    guilt UInt16 Sensor '28784'
+    weave UInt16 Sensor ?
+    fiord String Parameter 'stink arms bad dock'
+    bingo Double Parameter ?
+    hums Binary Sensor ?
+    mixes Int16 Actuator ?
+    tiger String Actuator ?
+    fore Binary Sensor '1'
+    flesh Int16 Parameter '-20047'
+    sharp Binary Actuator ?
+2009-08-05 15:40:53.317842 Kevin holy '3705461980'
+2009-08-05 15:40:53.317916 Kevin josh '123'
+2009-08-05 15:40:53.317932 Kevin looks '1381126738'
+2009-08-05 15:40:53.317948 Kevin bauds '-1280068685'
+2009-08-05 15:40:53.317974 Kevin node '1'
+2009-08-05 15:40:53.317999 Kevin spake '18'
+2009-08-05 15:40:53.318014 Kevin speck '173'
+2009-08-05 15:40:53.318056 Kevin kiddy '4.194572e+21'
+2009-08-05 15:40:53.318081 Kevin haves '33686018'
+2009-08-05 15:40:53.318095 Kevin spicy '19018'
+2009-08-05 15:40:53.318111 Kevin cools '1'
+2009-08-05 15:40:53.318125 Kevin guilt '28784'
+2009-08-05 15:40:53.318160 Kevin fiord 'stink arms bad dock'
+2009-08-05 15:40:53.318216 Kevin fore '1'
+2009-08-05 15:40:53.318232 Kevin flesh '-20047'
+2009-08-05 15:40:53.319400 Hank ilk '8738'
+2009-08-05 15:40:53.319412 Hank lam 'spill'
+2009-08-05 15:40:53.319421 Hank diary '25'
+2009-08-05 15:40:53.319430 Hank lilt ''
+2009-08-05 15:40:53.319438 Hank lids '27242'
+2009-08-05 15:40:53.319451 Hank brick '-61'
+2009-08-05 15:40:53.319460 Hank heps '-36'
+2009-08-05 15:40:53.319473 Hank saver ''
+2009-08-05 15:40:53.319491 Hank grim '-7.140257e-17'
+2009-08-05 15:40:53.319501 Hank soar '2056'
+2009-08-05 15:40:53.319519 Hank firms '28'
+2009-08-05 15:40:53.319528 Hank ajar '1246382666'
+2009-08-05 15:40:53.319543 Hank satin 'gnat'
+2009-08-05 15:40:53.319552 Hank dowry '2139062143'
+2009-08-05 15:40:53.911725 - Mat
+2009-08-05 15:40:54.289996 + Xuejia
+    kabob Binary Parameter ?
+    tie UInt16 Sensor '40092'
+    liven UInt16 Actuator '22873'
+    liege UInt32 Actuator '1397969747'
+    key String Sensor ?
+    begun UInt16 Sensor ?
+    abut Int32 Actuator '-185273100'
+    knife String Actuator 'joist menu suns'
+    banal String Actuator ?
+    coyer UInt32 Parameter '2610666395'
+    cuing Double Parameter ?
+    jimmy UInt16 Sensor ?
+    jeep Float Actuator '0.04620098'
+    casts UInt8 Actuator '126'
+    jets Int32 Sensor ?
+2009-08-05 15:40:54.288140 Xuejia tie '40092'
+2009-08-05 15:40:54.288163 Xuejia liven '22873'
+2009-08-05 15:40:54.288179 Xuejia liege '1397969747'
+2009-08-05 15:40:54.288215 Xuejia abut '-185273100'
+2009-08-05 15:40:54.288238 Xuejia knife 'joist menu suns'
+2009-08-05 15:40:54.288263 Xuejia coyer '2610666395'
+2009-08-05 15:40:54.288300 Xuejia jeep '0.04620098'
+2009-08-05 15:40:54.288322 Xuejia casts '126'
+2009-08-05 15:40:54.288969 Hank chars '1'
+2009-08-05 15:40:54.288984 Hank ilk '-14907'
+2009-08-05 15:40:54.288998 Hank diary '-103'
+2009-08-05 15:40:54.289015 Hank lilt 'psalm muddy chaps wails'
+2009-08-05 15:40:54.289033 Hank brick '94'
+2009-08-05 15:40:54.289042 Hank heps '60'
+2009-08-05 15:40:54.289060 Hank bole '-5.060286e-35'
+2009-08-05 15:40:54.289071 Hank verbs '2509608341'
+2009-08-05 15:40:54.289080 Hank grim '4.39006e+24'
+2009-08-05 15:40:54.289091 Hank soar '-32383'
+2009-08-05 15:40:54.289104 Hank loser '54'
+2009-08-05 15:40:54.289113 Hank firms '37'
+2009-08-05 15:40:54.289121 Hank ajar '2155905152'
+2009-08-05 15:40:54.289130 Hank sages '0'
+2009-08-05 15:40:54.289143 Hank dowry '-1499027802'
+2009-08-05 15:40:58.262740 - Xuejia
+2009-08-05 15:41:02.897617 + June
+2009-08-05 15:41:02.897691 - June
+2009-08-05 15:41:03.724603 + Jeffery
+2009-08-05 15:41:03.886869 - Reg
+2009-08-05 15:41:06.353620 + Catherine
+2009-08-05 15:41:06.353663 - Kevin
+2009-08-05 15:41:08.963407 + Spencer
+2009-08-05 15:41:11.096683 - Spencer
+2009-08-05 15:41:14.052706 + Stephanie
+    butts Float Parameter '-1.498039'
+    burgs UInt32 Actuator ?
+    biped UInt32 Sensor '101058054'
+    fiche Double Parameter '1.9285913724732e-168'
+    dear UInt8 Sensor ?
+    tiffs Int16 Parameter ?
+    racks Int16 Parameter '1028'
+    gamin Int32 Parameter '-488447262'
+    dumpy UInt8 Parameter ?
+    hack Double Actuator '-7.8969589372545e-84'
+    nippy Float Parameter ?
+    lupin Double Parameter ?
+    pagan Float Actuator '-6.041662e-26'
+    yogi UInt8 Parameter ?
+    hated Int32 Parameter ?
+    lust Double Parameter ?
+    rent Int8 Parameter ?
+    bead Int32 Parameter '1010580540'
+    perky Float Sensor '-1.41999e+26'
+    belt Double Sensor ?
+    glitz Int16 Parameter '22873'
+    newt Int16 Actuator ?
+    rajas Double Actuator '3.5295369653413e+30'
+    rest UInt8 Sensor '217'
+    loot String Actuator ?
+2009-08-05 15:41:14.050638 Stephanie butts '-1.498039'
+2009-08-05 15:41:14.050706 Stephanie biped '101058054'
+2009-08-05 15:41:14.050723 Stephanie fiche '1.9285913724732e-168'
+2009-08-05 15:41:14.050777 Stephanie racks '1028'
+2009-08-05 15:41:14.050794 Stephanie gamin '-488447262'
+2009-08-05 15:41:14.050819 Stephanie hack '-7.8969589372545e-84'
+2009-08-05 15:41:14.050857 Stephanie pagan '-6.041662e-26'
+2009-08-05 15:41:14.050914 Stephanie bead '1010580540'
+2009-08-05 15:41:14.050929 Stephanie perky '-1.41999e+26'
+2009-08-05 15:41:14.050957 Stephanie glitz '22873'
+2009-08-05 15:41:14.050982 Stephanie rajas '3.5295369653413e+30'
+2009-08-05 15:41:14.051000 Stephanie rest '217'
+2009-08-05 15:41:14.053380 - Hank
+2009-08-05 15:41:18.730054 + Ross
+2009-08-05 15:41:18.730102 - Catherine
+2009-08-05 15:41:19.727244 + Purity
+2009-08-05 15:41:19.727289 - Ross
+2009-08-05 15:41:19.937178 + Franklin
+    glen Binary Actuator '1'
+    jiffy UInt16 Parameter '12079'
+    sunup Int16 Parameter ?
+    kick Double Parameter '-2.227377823277e+168'
+    fins Double Actuator '3.5295369653413e+30'
+2009-08-05 15:41:19.936435 Franklin glen '1'
+2009-08-05 15:41:19.936482 Franklin jiffy '12079'
+2009-08-05 15:41:19.936528 Franklin kick '-2.227377823277e+168'
+2009-08-05 15:41:19.936565 Franklin fins '3.5295369653413e+30'
+2009-08-05 15:41:19.937370 - Wade
+2009-08-05 15:41:23.234511 + Juri
+2009-08-05 15:41:28.846223 Stephanie burgs '2425393296'
+2009-08-05 15:41:28.846242 Stephanie biped '1549556828'
+2009-08-05 15:41:28.846253 Stephanie fiche '6.0134700169991e-154'
+2009-08-05 15:41:28.846269 Stephanie dear '38'
+2009-08-05 15:41:28.846284 Stephanie racks '-9767'
+2009-08-05 15:41:28.846298 Stephanie dumpy '83'
+2009-08-05 15:41:28.846317 Stephanie lupin '4.0348802750122e+175'
+2009-08-05 15:41:28.846357 Stephanie perky '-3.080109e+16'
+2009-08-05 15:41:28.846373 Stephanie glitz '-7968'
+2009-08-05 15:41:28.846387 Stephanie rajas '1.3202428078733e-192'
+2009-08-05 15:41:28.846398 Stephanie rest '40'
+2009-08-05 15:41:30.990123 - Juri
+2009-08-05 15:41:32.407374 + Sedat
+    aged Int8 Sensor ?
+    jerks Int8 Sensor '-23'
+    veers Int8 Actuator '-58'
+    aura Int16 Parameter ?
+    names UInt8 Sensor ?
+    wails UInt32 Actuator ?
+    ply Double Parameter '2.0421693454609e+301'
+    safe Int8 Actuator ?
+    typed Float Actuator ?
+2009-08-05 15:41:32.406577 Sedat jerks '-23'
+2009-08-05 15:41:32.406602 Sedat veers '-58'
+2009-08-05 15:41:32.406649 Sedat ply '2.0421693454609e+301'
+2009-08-05 15:41:32.407614 - Purity
+2009-08-05 15:41:36.447924 + Teruyuki
+    franc UInt16 Actuator ?
+    kopek Int16 Parameter '2827'
+    blare Binary Parameter ?
+    lubed Double Sensor '0.00047679227941176'
+    duped Double Parameter '-1.1570099379335e+265'
+    doffs String Parameter ?
+2009-08-05 15:41:36.447245 Teruyuki kopek '2827'
+2009-08-05 15:41:36.447280 Teruyuki lubed '0.00047679227941176'
+2009-08-05 15:41:36.447303 Teruyuki duped '-1.1570099379335e+265'
+2009-08-05 15:41:36.448141 - Franklin
+2009-08-05 15:41:36.849653 + Roozbeh
+    cops UInt8 Sensor ?
+    ahoy UInt8 Parameter ?
+    spike UInt32 Actuator '2004318071'
+    bail UInt16 Parameter '23644'
+    crags Int32 Parameter '488447261'
+    rimes UInt32 Sensor ?
+    dubs Double Parameter '3.7921287488074e+146'
+    honey Double Parameter ?
+    ulcer Int16 Actuator '-25701'
+    tangs Double Actuator ?
+    pimp UInt8 Parameter '33'
+    shone String Parameter ''
+    cloys Int8 Sensor '38'
+    foul String Sensor 'pram tansy'
+    garb Int16 Actuator ?
+    odor UInt8 Actuator ?
+    twerp String Parameter ''
+    spool Int16 Actuator '27242'
+    state Float Actuator ?
+2009-08-05 15:41:36.847290 Roozbeh spike '2004318071'
+2009-08-05 15:41:36.847329 Roozbeh bail '23644'
+2009-08-05 15:41:36.847344 Roozbeh crags '488447261'
+2009-08-05 15:41:36.847371 Roozbeh dubs '3.7921287488074e+146'
+2009-08-05 15:41:36.847405 Roozbeh ulcer '-25701'
+2009-08-05 15:41:36.847432 Roozbeh pimp '33'
+2009-08-05 15:41:36.847447 Roozbeh shone ''
+2009-08-05 15:41:36.847462 Roozbeh cloys '38'
+2009-08-05 15:41:36.847481 Roozbeh foul 'pram tansy'
+2009-08-05 15:41:36.847517 Roozbeh twerp ''
+2009-08-05 15:41:36.847532 Roozbeh spool '27242'
+2009-08-05 15:41:36.848444 Stephanie burgs '1869573999'
+2009-08-05 15:41:36.848493 Stephanie lupin '-2.8777739825157e+76'
+2009-08-05 15:41:36.848510 Stephanie yogi '219'
+2009-08-05 15:41:36.848519 Stephanie hated '-1313754703'
+2009-08-05 15:41:36.848532 Stephanie rent '16'
+2009-08-05 15:41:36.848541 Stephanie bead '471604252'
+2009-08-05 15:41:36.848550 Stephanie perky '785.0667'
+2009-08-05 15:41:36.848561 Stephanie belt '-6.8285270344228e-229'
+2009-08-05 15:41:36.848574 Stephanie glitz '24415'
+2009-08-05 15:41:36.848587 Stephanie rajas '9.3728955506676e+252'
+2009-08-05 15:41:36.848600 Stephanie rest '247'
+2009-08-05 15:41:39.708996 - Roozbeh
+2009-08-05 15:41:41.514744 + Ted
+    deuce Binary Sensor ?
+    jinx Binary Actuator '0'
+    round Int8 Parameter '36'
+    often Float Sensor ?
+    bowl Int16 Parameter '-9510'
+    woks Int32 Actuator ?
+    cave Float Parameter ?
+    withs Binary Parameter ?
+    hobo UInt16 Sensor '35980'
+    boa Int16 Parameter ?
+    slash Int16 Parameter ?
+    slops UInt16 Parameter '33153'
+    cools Int16 Sensor '-32126'
+    pegs UInt8 Parameter '128'
+    guys Float Actuator ?
+    yep UInt32 Parameter ?
+    spur UInt32 Actuator '3873892070'
+    fleck Float Parameter ?
+    bee Int16 Actuator '10280'
+    drag Int8 Sensor ?
+    aches UInt16 Actuator ?
+    toted String Sensor ''
+    faxed UInt32 Actuator ?
+    whiz Float Sensor '48.5647'
+2009-08-05 15:41:41.512839 Ted jinx '0'
+2009-08-05 15:41:41.512869 Ted round '36'
+2009-08-05 15:41:41.512895 Ted bowl '-9510'
+2009-08-05 15:41:41.512941 Ted hobo '35980'
+2009-08-05 15:41:41.512978 Ted slops '33153'
+2009-08-05 15:41:41.512993 Ted cools '-32126'
+2009-08-05 15:41:41.513008 Ted pegs '128'
+2009-08-05 15:41:41.513044 Ted spur '3873892070'
+2009-08-05 15:41:41.513088 Ted bee '10280'
+2009-08-05 15:41:41.513125 Ted toted ''
+2009-08-05 15:41:41.513151 Ted whiz '48.5647'
+2009-08-05 15:41:41.515351 - Teruyuki
+2009-08-05 15:41:41.661634 + Agnetha
+2009-08-05 15:41:45.603724 - Sedat
+2009-08-05 15:41:49.187945 + Boris
+    ether UInt16 Parameter '38550'
+    pulps Int32 Parameter '-1768515946'
+    omits Int32 Sensor ?
+    baser Int8 Actuator ?
+    camps Float Sensor '-6.515823e+35'
+    tweak Int16 Sensor ?
+    owlet Binary Parameter '1'
+    yard Int8 Sensor '121'
+    rows Int32 Sensor ?
+    cargo Binary Parameter ?
+    paged UInt16 Parameter '65021'
+    fell Int32 Sensor ?
+    friar UInt8 Sensor ?
+    wired Int32 Actuator ?
+    forms Int8 Actuator '-76'
+    riven Double Sensor '9.7304159513667e-72'
+    clear UInt8 Actuator '154'
+    helps Float Actuator '51015.28'
+    dive UInt32 Actuator ?
+    cages Int32 Actuator '1499027801'
+2009-08-05 15:41:49.186286 Boris ether '38550'
+2009-08-05 15:41:49.186318 Boris pulps '-1768515946'
+2009-08-05 15:41:49.186355 Boris camps '-6.515823e+35'
+2009-08-05 15:41:49.186389 Boris owlet '1'
+2009-08-05 15:41:49.186404 Boris yard '121'
+2009-08-05 15:41:49.186440 Boris paged '65021'
+2009-08-05 15:41:49.186486 Boris forms '-76'
+2009-08-05 15:41:49.186501 Boris riven '9.7304159513667e-72'
+2009-08-05 15:41:49.186519 Boris clear '154'
+2009-08-05 15:41:49.186534 Boris helps '51015.28'
+2009-08-05 15:41:49.186562 Boris cages '1499027801'
+2009-08-05 15:41:49.188527 - Ted
+2009-08-05 15:41:51.965272 + Pamela
+    prude Float Sensor '1.649502e-33'
+    ants Binary Actuator ?
+    regal Int32 Parameter '-1044266559'
+    muses Int16 Sensor '21588'
+    probe Binary Actuator ?
+    gees UInt16 Sensor ?
+    hardy Double Sensor ?
+    afar String Parameter ?
+    aloe Int32 Sensor ?
+    noted Float Actuator '-1.12646e+11'
+    wises Int32 Parameter '690563369'
+    tore Binary Parameter ?
+    larva Float Parameter '8.09591e+34'
+    tikes Float Actuator '9.96938e+17'
+    phase String Sensor 'edify'
+    sward Double Sensor ?
+    clods UInt8 Actuator '139'
+    dusty Float Actuator '-1.357078e+23'
+    junk Double Sensor '-5.8727617676298e-21'
+    dills UInt16 Sensor ?
+    scare Int32 Sensor ?
+    poxed Double Parameter '4.4207816532212e+262'
+    alga Int32 Actuator ?
+    lemur UInt16 Sensor ?
+2009-08-05 15:41:51.962362 Pamela prude '1.649502e-33'
+2009-08-05 15:41:51.962452 Pamela regal '-1044266559'
+2009-08-05 15:41:51.962480 Pamela muses '21588'
+2009-08-05 15:41:51.962584 Pamela noted '-1.12646e+11'
+2009-08-05 15:41:51.962602 Pamela wises '690563369'
+2009-08-05 15:41:51.962628 Pamela larva '8.09591e+34'
+2009-08-05 15:41:51.962645 Pamela tikes '9.96938e+17'
+2009-08-05 15:41:51.962689 Pamela phase 'edify'
+2009-08-05 15:41:51.962716 Pamela clods '139'
+2009-08-05 15:41:51.962732 Pamela dusty '-1.357078e+23'
+2009-08-05 15:41:51.962749 Pamela junk '-5.8727617676298e-21'
+2009-08-05 15:41:51.962788 Pamela poxed '4.4207816532212e+262'
+2009-08-05 15:41:51.963829 Pamela ants '0'
+2009-08-05 15:41:51.963839 Pamela regal '-1094795586'
+2009-08-05 15:41:51.963853 Pamela probe '0'
+2009-08-05 15:41:51.963861 Pamela gees '16448'
+2009-08-05 15:41:51.963870 Pamela hardy '-0.12401960784314'
+2009-08-05 15:41:51.963889 Pamela afar 'hurt colic grays tough'
+2009-08-05 15:41:51.963898 Pamela aloe '-1650614883'
+2009-08-05 15:41:51.963907 Pamela noted '1.536522e+16'
+2009-08-05 15:41:51.963930 Pamela tikes '1.092051e-05'
+2009-08-05 15:41:51.963945 Pamela sward '-1.6882786079646e+260'
+2009-08-05 15:41:51.963970 Pamela dills '23644'
+2009-08-05 15:41:51.963987 Pamela alga '1482184792'
+2009-08-05 15:41:51.963996 Pamela lemur '8224'
+2009-08-05 15:41:54.809415 - Boris
+2009-08-05 15:41:55.189621 + Rafael
+    gulfs Int16 Actuator '-11566'
+    smart UInt32 Actuator ?
+    prey Int16 Parameter ?
+    pull UInt32 Sensor ?
+    wimpy Int8 Sensor ?
+    vary String Actuator 'nimbi'
+    cards Int32 Sensor '1313754702'
+    rainy Double Actuator ?
+    kids Int8 Parameter ?
+    fucks Int8 Actuator '-2'
+    units UInt8 Parameter ?
+    lox UInt32 Sensor ?
+    bunts Int8 Actuator '101'
+    way UInt32 Actuator ?
+    ilks UInt8 Parameter ?
+    girls UInt8 Sensor ?
+    perch Float Sensor '-6328.721'
+    gym UInt32 Sensor '3671775962'
+    saned Double Actuator '-5.4635469005909e-108'
+    cull UInt8 Sensor ?
+    raw UInt8 Sensor '244'
+    harp UInt16 Parameter ?
+    swami UInt32 Sensor '4025479151'
+2009-08-05 15:41:55.187795 Rafael gulfs '-11566'
+2009-08-05 15:41:55.187885 Rafael vary 'nimbi'
+2009-08-05 15:41:55.187900 Rafael cards '1313754702'
+2009-08-05 15:41:55.187936 Rafael fucks '-2'
+2009-08-05 15:41:55.187972 Rafael bunts '101'
+2009-08-05 15:41:55.188018 Rafael perch '-6328.721'
+2009-08-05 15:41:55.188039 Rafael gym '3671775962'
+2009-08-05 15:41:55.188071 Rafael saned '-5.4635469005909e-108'
+2009-08-05 15:41:55.188101 Rafael raw '244'
+2009-08-05 15:41:55.188127 Rafael swami '4025479151'
+2009-08-05 15:41:55.190201 - Agnetha
+2009-08-05 15:41:55.505752 + Nicolo
+2009-08-05 15:41:55.505794 - Pamela
+2009-08-05 15:41:59.767605 + Kaj
+    skimp Int8 Sensor '-54'
+    paves Int8 Actuator ?
+    turns String Actuator ''
+    carpi Int32 Sensor ?
+    auks Binary Parameter '0'
+    coma UInt16 Sensor ?
+    face Int16 Actuator '-9253'
+    stash Int16 Actuator '17990'
+    romp UInt8 Sensor '248'
+    real Int16 Parameter '23644'
+    ague Float Sensor '9.07636e+11'
+    salty Binary Sensor ?
+    clock UInt16 Sensor '24929'
+    brawn UInt8 Sensor '34'
+    hock Int8 Parameter '-14'
+    gyros UInt16 Sensor ?
+    safer UInt16 Sensor ?
+    spoof Double Actuator ?
+    basis Double Sensor ?
+    crew String Parameter 'copse'
+    ahem String Parameter ''
+    skate Int16 Parameter '10280'
+    tows Binary Actuator ?
+    fishy Int8 Sensor '-104'
+    lame Int32 Parameter ?
+    fact UInt8 Actuator ?
+2009-08-05 15:41:59.764979 Kaj skimp '-54'
+2009-08-05 15:41:59.765037 Kaj turns ''
+2009-08-05 15:41:59.765074 Kaj auks '0'
+2009-08-05 15:41:59.765101 Kaj face '-9253'
+2009-08-05 15:41:59.765116 Kaj stash '17990'
+2009-08-05 15:41:59.765131 Kaj romp '248'
+2009-08-05 15:41:59.765146 Kaj real '23644'
+2009-08-05 15:41:59.765161 Kaj ague '9.07636e+11'
+2009-08-05 15:41:59.765208 Kaj clock '24929'
+2009-08-05 15:41:59.765225 Kaj brawn '34'
+2009-08-05 15:41:59.765240 Kaj hock '-14'
+2009-08-05 15:41:59.765299 Kaj crew 'copse'
+2009-08-05 15:41:59.765314 Kaj ahem ''
+2009-08-05 15:41:59.765329 Kaj skate '10280'
+2009-08-05 15:41:59.765355 Kaj fishy '-104'
+2009-08-05 15:41:59.766478 Rafael pull '2745410467'
+2009-08-05 15:41:59.766488 Rafael wimpy '-25'
+2009-08-05 15:41:59.766502 Rafael cards '-1515870811'
+2009-08-05 15:41:59.766511 Rafael rainy '-2.327541784346e+197'
+2009-08-05 15:41:59.766524 Rafael kids '-83'
+2009-08-05 15:41:59.766533 Rafael fucks '36'
+2009-08-05 15:41:59.766542 Rafael units '134'
+2009-08-05 15:41:59.766555 Rafael bunts '56'
+2009-08-05 15:41:59.766577 Rafael perch '6.750518e-07'
+2009-08-05 15:41:59.766587 Rafael gym '3048584629'
+2009-08-05 15:41:59.766605 Rafael raw '105'
+2009-08-05 15:41:59.766614 Rafael harp '42662'
+2009-08-05 15:42:00.974719 - Jeffery
+2009-08-05 15:42:01.579844 + Hank
+2009-08-05 15:42:01.579952 + Stevan
+    fiery UInt16 Parameter '60138'
+    vex Int8 Sensor ?
+    zing Int16 Sensor '-31612'
+    belle Float Sensor '0.0001766429'
+2009-08-05 15:42:01.579356 Stevan fiery '60138'
+2009-08-05 15:42:01.579394 Stevan zing '-31612'
+2009-08-05 15:42:01.579410 Stevan belle '0.0001766429'
+2009-08-05 15:42:05.163473 - Hank
+2009-08-05 15:42:09.818262 - Nicolo
+2009-08-05 15:42:10.255936 + Raquel
+2009-08-05 15:42:10.255981 - Stephanie
+2009-08-05 15:42:13.598437 + Gypsy
+2009-08-05 15:42:13.598485 - Gypsy
+2009-08-05 15:42:16.720762 + Pete
+2009-08-05 15:42:16.720806 - Kaj
+2009-08-05 15:42:19.142145 + Kari
+    puts UInt32 Sensor '3351758791'
+    lit UInt32 Actuator ?
+    handy Double Parameter '-1.0025205409043e+120'
+    girls Float Actuator ?
+    pun UInt8 Actuator '182'
+    sup Int8 Parameter ?
+    elite UInt8 Sensor '188'
+    undue Int32 Sensor '471604252'
+    gene UInt8 Actuator '35'
+    pined String Actuator ?
+    ankhs String Sensor 'haves'
+    yawn Double Sensor ?
+    tank UInt8 Parameter ?
+    hubby UInt8 Actuator '107'
+    rope Float Sensor '2.015833e+34'
+    hips Int32 Actuator '-454761244'
+    sass Binary Sensor '1'
+2009-08-05 15:42:19.140160 Kari puts '3351758791'
+2009-08-05 15:42:19.140260 Kari handy '-1.0025205409043e+120'
+2009-08-05 15:42:19.140316 Kari pun '182'
+2009-08-05 15:42:19.140360 Kari elite '188'
+2009-08-05 15:42:19.140386 Kari undue '471604252'
+2009-08-05 15:42:19.140411 Kari gene '35'
+2009-08-05 15:42:19.140458 Kari ankhs 'haves'
+2009-08-05 15:42:19.140519 Kari hubby '107'
+2009-08-05 15:42:19.140545 Kari rope '2.015833e+34'
+2009-08-05 15:42:19.140574 Kari hips '-454761244'
+2009-08-05 15:42:19.140600 Kari sass '1'
+2009-08-05 15:42:19.141524 Stevan fiery '42405'
+2009-08-05 15:42:19.141545 Stevan belle '-1.296336e+20'
+2009-08-05 15:42:27.155111 - Kari
+2009-08-05 15:42:31.828271 + Julius
+2009-08-05 15:42:31.828324 - Raquel
+2009-08-05 15:42:33.736678 + Teruyuki
+2009-08-05 15:42:33.735985 Rafael gulfs '23130'
+2009-08-05 15:42:33.736019 Rafael pull '2088533116'
+2009-08-05 15:42:33.736029 Rafael wimpy '69'
+2009-08-05 15:42:33.736039 Rafael vary ''
+2009-08-05 15:42:33.736062 Rafael fucks '6'
+2009-08-05 15:42:33.736090 Rafael lox '606348324'
+2009-08-05 15:42:33.736102 Rafael bunts '90'
+2009-08-05 15:42:33.736115 Rafael ilks '212'
+2009-08-05 15:42:33.736130 Rafael perch '-2.296668e-28'
+2009-08-05 15:42:33.736150 Rafael saned '1.1945305291615e+103'
+2009-08-05 15:42:33.736169 Rafael raw '69'
+2009-08-05 15:42:33.736178 Rafael harp '28527'
+2009-08-05 15:42:34.055910 Stevan vex '86'
+2009-08-05 15:42:34.652905 - Teruyuki
+2009-08-05 15:42:35.923967 + Huashi
+    plaza String Parameter 'galas dodo slyly foci'
+    sized Binary Actuator '0'
+    writs Int32 Actuator '2071690107'
+    halls UInt8 Parameter '85'
+    puss Int8 Sensor ?
+    sagas Double Parameter '6.5440455822122e-125'
+2009-08-05 15:42:35.923195 Huashi plaza 'galas dodo slyly foci'
+2009-08-05 15:42:35.923226 Huashi sized '0'
+2009-08-05 15:42:35.923243 Huashi writs '2071690107'
+2009-08-05 15:42:35.923258 Huashi halls '85'
+2009-08-05 15:42:35.923285 Huashi sagas '6.5440455822122e-125'
+2009-08-05 15:42:35.924211 - Julius
+2009-08-05 15:42:39.238357 + Jenn
+2009-08-05 15:42:39.238417 - Jenn
+2009-08-05 15:42:42.980305 + Dewey
+2009-08-05 15:42:42.980355 - Rafael
+2009-08-05 15:42:46.721207 + Marek
+2009-08-05 15:42:46.721254 - Marek
+2009-08-05 15:42:49.603736 + Willie
+    carve Binary Sensor ?
+    spoke String Sensor 'curb haul axiom'
+    fold Int32 Parameter ?
+2009-08-05 15:42:49.603130 Willie spoke 'curb haul axiom'
+2009-08-05 15:42:52.611735 - Huashi
+2009-08-05 15:42:53.925531 + Damone
+    roses Int16 Actuator '-20818'
+    venal Int32 Actuator ?
+    fiord UInt32 Parameter '1684300900'
+    yews Int8 Parameter ?
+    voted Int16 Sensor '-22360'
+    dries UInt16 Parameter ?
+    patch UInt32 Sensor ?
+    basil UInt8 Sensor ?
+    corps UInt16 Actuator ?
+    fiefs String Actuator ?
+    tacit Int8 Parameter '3'
+    leers String Actuator ?
+    tares Double Sensor '5.6860735661412e-270'
+    foots Int8 Sensor '30'
+    hied UInt32 Parameter ?
+    dined UInt32 Parameter '1128481603'
+    tepee Int8 Parameter ?
+    crags UInt8 Parameter ?
+2009-08-05 15:42:53.924044 Damone roses '-20818'
+2009-08-05 15:42:53.924096 Damone fiord '1684300900'
+2009-08-05 15:42:53.924123 Damone voted '-22360'
+2009-08-05 15:42:53.924190 Damone tacit '3'
+2009-08-05 15:42:53.924216 Damone tares '5.6860735661412e-270'
+2009-08-05 15:42:53.924238 Damone foots '30'
+2009-08-05 15:42:53.924264 Damone dined '1128481603'
+2009-08-05 15:42:53.924986 Stevan vex '-8'
+2009-08-05 15:42:57.142568 - Willie
+2009-08-05 15:43:01.975686 + Capability
+2009-08-05 15:43:01.975384 Stevan fiery '57054'
+2009-08-05 15:43:01.975405 Stevan vex '-35'
+2009-08-05 15:43:01.975421 Stevan belle '9.514958e+14'
+2009-08-05 15:43:05.587402 - Dewey
+2009-08-05 15:43:07.274505 + Art
+    gods Int8 Sensor '-91'
+    vacua Double Parameter ?
+    genie Int16 Sensor '-24416'
+    venom Binary Sensor '0'
+    wee UInt8 Parameter '10'
+    stats Int32 Sensor '-1280068685'
+    alas Binary Parameter '1'
+    safes Float Sensor ?
+    bagel UInt8 Actuator ?
+    wren Int8 Parameter '115'
+    cued Binary Sensor '1'
+    undue Double Parameter '2.841321139066e-173'
+    scab Int16 Actuator ?
+2009-08-05 15:43:07.273214 Art gods '-91'
+2009-08-05 15:43:07.273257 Art genie '-24416'
+2009-08-05 15:43:07.273274 Art venom '0'
+2009-08-05 15:43:07.273289 Art wee '10'
+2009-08-05 15:43:07.273304 Art stats '-1280068685'
+2009-08-05 15:43:07.273320 Art alas '1'
+2009-08-05 15:43:07.273371 Art wren '115'
+2009-08-05 15:43:07.273387 Art cued '1'
+2009-08-05 15:43:07.273404 Art undue '2.841321139066e-173'
+2009-08-05 15:43:07.274893 - Damone
+2009-08-05 15:43:11.771528 + Mick
+    wormy Int32 Parameter ?
+    amok String Parameter 'pike wend hag'
+    sects Int16 Parameter '7453'
+    yarn Int32 Actuator '1044266558'
+    carps Int32 Parameter '421075225'
+    dire Float Actuator '-1.237695e+17'
+2009-08-05 15:43:11.770765 Mick amok 'pike wend hag'
+2009-08-05 15:43:11.770789 Mick sects '7453'
+2009-08-05 15:43:11.770805 Mick yarn '1044266558'
+2009-08-05 15:43:11.770820 Mick carps '421075225'
+2009-08-05 15:43:11.770835 Mick dire '-1.237695e+17'
+2009-08-05 15:43:11.771752 - Pete
+2009-08-05 15:43:13.740752 + Jarl
+    tiff Float Actuator ?
+    chums UInt32 Parameter '2206434179'
+    dare Int8 Actuator ?
+    taco Float Parameter ?
+2009-08-05 15:43:13.740315 Jarl chums '2206434179'
+2009-08-05 15:43:13.740875 - Jarl
+2009-08-05 15:43:13.959048 + Carolyn
+2009-08-05 15:43:13.959090 - Art
+2009-08-05 15:43:17.756994 + Stacey
+2009-08-05 15:43:17.757039 - Capability
+2009-08-05 15:43:17.799208 + Fuzzy
+2009-08-05 15:43:22.469031 - Stacey
+2009-08-05 15:43:26.095409 + Erik
+    books Binary Sensor '0'
+    thine Float Sensor '-7.943633e-11'
+    yummy String Actuator ?
+    rise UInt8 Parameter '132'
+    rig UInt16 Sensor '30069'
+    dweeb Float Parameter '-1.48514e+29'
+2009-08-05 15:43:26.093879 Erik books '0'
+2009-08-05 15:43:26.093969 Erik thine '-7.943633e-11'
+2009-08-05 15:43:26.094043 Erik rise '132'
+2009-08-05 15:43:26.094071 Erik rig '30069'
+2009-08-05 15:43:26.094096 Erik dweeb '-1.48514e+29'
+2009-08-05 15:43:26.094731 Stevan fiery '50115'
+2009-08-05 15:43:26.094749 Stevan vex '96'
+2009-08-05 15:43:26.094765 Stevan zing '1028'
+2009-08-05 15:43:26.094781 Stevan belle '-5.171579e-09'
+2009-08-05 15:43:30.778779 Erik books '0'
+2009-08-05 15:43:30.778820 Erik yummy ''
+2009-08-05 15:43:34.842163 Stevan fiery '34695'
+2009-08-05 15:43:34.842193 Stevan zing '-23131'
+2009-08-05 15:43:35.890546 Mick wormy '690563369'
+2009-08-05 15:43:35.890589 Mick amok 'sough'
+2009-08-05 15:43:35.890608 Mick sects '-14650'
+2009-08-05 15:43:35.890628 Mick dire '5.243935e+36'
+2009-08-05 15:43:37.326466 - Carolyn
+2009-08-05 15:43:39.847205 + Noel
+2009-08-05 15:43:39.847247 - Mick
+2009-08-05 15:43:43.557334 + Vernon
+    fro UInt32 Parameter ?
+    queer Int16 Sensor '-8225'
+2009-08-05 15:43:43.556938 Vernon queer '-8225'
+2009-08-05 15:43:43.557427 - Stevan
+2009-08-05 15:43:45.977303 + Moe
+    fag Double Parameter '5.3779407512681e-299'
+    adore String Actuator ?
+    vamps UInt16 Actuator ?
+    toted String Sensor ''
+    doors Int8 Actuator ?
+    hut Binary Parameter '0'
+    naval Binary Sensor ?
+    sky UInt32 Parameter '4294967295'
+    punks Double Parameter ?
+    arc UInt8 Sensor '12'
+    joker Int8 Sensor ?
+    veins UInt16 Sensor ?
+    molts Float Actuator ?
+    copes UInt8 Actuator '90'
+2009-08-05 15:43:45.975672 Moe fag '5.3779407512681e-299'
+2009-08-05 15:43:45.975763 Moe toted ''
+2009-08-05 15:43:45.975790 Moe hut '0'
+2009-08-05 15:43:45.975816 Moe sky '4294967295'
+2009-08-05 15:43:45.975842 Moe arc '12'
+2009-08-05 15:43:45.975888 Moe copes '90'
+2009-08-05 15:43:45.976523 Moe fag '1.213279767786e-279'
+2009-08-05 15:43:45.976536 Moe adore ''
+2009-08-05 15:43:45.976545 Moe vamps '37522'
+2009-08-05 15:43:45.976568 Moe naval '0'
+2009-08-05 15:43:45.976576 Moe sky '252645135'
+2009-08-05 15:43:45.976590 Moe arc '94'
+2009-08-05 15:43:45.976598 Moe joker '101'
+2009-08-05 15:43:45.976607 Moe veins '15677'
+2009-08-05 15:43:45.976616 Moe molts '8.09591e+34'
+2009-08-05 15:43:47.217230 Moe vamps '65021'
+2009-08-05 15:43:47.217248 Moe toted ''
+2009-08-05 15:43:47.217259 Moe doors '-25'
+2009-08-05 15:43:47.217278 Moe sky '3419130827'
+2009-08-05 15:43:47.217287 Moe punks '-7.3774315856768e-200'
+2009-08-05 15:43:47.217304 Moe arc '140'
+2009-08-05 15:43:47.217314 Moe joker '87'
+2009-08-05 15:43:49.141723 - Fuzzy
+2009-08-05 15:43:50.599474 + Eileen
+2009-08-05 15:43:50.599531 - Erik
+2009-08-05 15:43:52.145268 - Noel
+2009-08-05 15:43:52.145303 - Vernon
+2009-08-05 15:43:52.145310 - Moe
+2009-08-05 15:43:52.145315 - Eileen

@@ -1,0 +1,97 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+#
+# This test is meant to simulate misbehaving peers and/or networks
+# 
+# It uses the test pattern hab o replay the exact traffic, to make sure
+# all peers function properly in an un-friendly environment.
+#
+# The output of the testpattern hab is saved in a form that can be compared to
+# bionet-watcher output after replacing the hab id placeholder with the
+# value of $UNIQUE
+#
+# The watcher is started before and after the bad-hab, in case that matters
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
+UNIQUE=$$
+RETVAL=0
+
+if [ -z "$PYTHONPATH" ]; then
+    export PYTHONPATH=$ROOT/test/src/bonjour-py:$ROOT/test/src/bonjour-py/.libs
+else
+    export PYTHONPATH=$ROOT/test/src/bonjour-py:$ROOT/test/src/bonjour-py/.libs:$PYTHONPATH
+fi
+
+echo Making the test pattern output
+sed -e "s/XXPIDXX/$UNIQUE/" < testpattern.out.save > testpattern.out
+
+echo starting first bionet-watcher
+$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.0 &
+WATCH1PID=$!
+
+echo Starting bad-hab
+./bad-hab.py --id $UNIQUE  1 >| out.bad-hab &
+BADHABPID=$!
+sleep 2
+
+
+echo starting second bionet-watcher
+$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.1 &
+WATCH2PID=$!
+
+echo Starting test-pattern-hab
+$ROOT/hab/test-pattern/test-pattern-hab -i $UNIQUE testpattern.in >| out.random-hab &
+TPHPID=$!
+echo "[$!]"
+
+echo "Waiting for test-pattern-hab"
+wait $TPHPID
+
+
+
+sleep 4  # to let the clients notice
+
+
+echo "killing the bionet-watchers"
+kill $WATCH1PID
+kill $WATCH2PID
+wait $WATCH1PID
+wait $WATCH2PID
+
+echo "Killing bad-hab-pattern-hab"
+kill $BADHABPID
+wait $BADHABPID
+
+if ! diff -q out.watcher.0 out.watcher.1; then
+    echo "ERROR: watcher outputs differ:"
+    diff -u out.watcher.0 out.watcher.1
+    RETVAL=1
+else
+    echo "watcher outputs are identical, yay"
+fi
+
+if ! diff -q out.watcher.0 testpattern.out; then
+    echo "ERROR: watcher output differs from random-hab output:"
+    diff -u out.random-hab out.watcher.0
+    RETVAL=1
+else
+    echo "watcher outputs are identical to random-hab output, yay"
+fi
+
+exit $RETVAL
+

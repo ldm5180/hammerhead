@@ -498,6 +498,9 @@ AC_CONFIG_FILES([Makefile
 		 apps/Makefile
 		 apps/webstats/Makefile
 		 test/config.sh
+		 test/Makefile
+		 test/src/Makefile
+		 test/src/bonjour-py/Makefile
 		 check/Makefile
 		 check/libutil/Makefile
 		 check/data-manager/Makefile

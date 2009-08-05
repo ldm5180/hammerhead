@@ -150,6 +150,7 @@ void simulate_updates(gpointer data, gpointer user_data) {
     ptr = (struct timeval**)user_data;
     if (*ptr == NULL) {
         last = next;
+        *ptr = next;
     } else {
         last = *ptr;
     }
@@ -160,7 +161,7 @@ void simulate_updates(gpointer data, gpointer user_data) {
     // milliseconds are a bit different ...
     if (sec == 0) {
         usec = next->tv_usec - last->tv_usec;
-    } else {
+    } else if (sec > 0) {
         if (next->tv_usec >= last->tv_usec) {
             usec = next->tv_usec - last->tv_usec;
         } else {
@@ -169,8 +170,12 @@ void simulate_updates(gpointer data, gpointer user_data) {
         }
     }
 
-    usleep(usec);
-    sleep(sec);
+    if(sec > 0 || (usec > 0 && sec == 0)) {
+        usleep(usec);
+        sleep(sec);
+        // set the timeval for the next step
+        *ptr = next;
+    }
 
     switch (event->type) {
         case NEW_NODE: {
@@ -200,8 +205,6 @@ void simulate_updates(gpointer data, gpointer user_data) {
         }
     }
 
-    // set the timeval for the next step
-    *ptr = next;
 }
 
 // Emacs cruft

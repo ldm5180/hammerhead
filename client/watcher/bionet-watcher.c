@@ -99,6 +99,54 @@ void signal_handler(int signo) {
 #endif /* defined(LINUX) || defined(MACOSX) */
 
 
+static const char *current_timestamp_string(void)
+{
+    static char time_str[200];
+
+    char usec_str[10];
+    struct tm *tm;
+    int r;
+
+    // 
+    // sanity tests
+    //
+    struct timeval timestamp;
+    gettimeofday(&timestamp, NULL);
+
+    tm = gmtime(&timestamp.tv_sec);
+    if (tm == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_timestamp_to_string_human_readable(): error with gmtime: %s", 
+	      strerror(errno));
+        return "invalid time";
+    }
+
+    r = strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", tm);
+    if (r <= 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_timestamp_to_string_human_readable(): error with strftime: %s", 
+	      strerror(errno));
+        return "invalid time";
+    }
+
+    r = snprintf(usec_str, sizeof(usec_str), ".%06ld", (long)timestamp.tv_usec);
+    if (r >= sizeof(usec_str)) {
+        // this should never happen, but it keeps Coverity happy
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_timestamp_to_string_human_readable(): usec_str too small?!");
+        return "invalid time";
+    }
+
+    // sanity check destination memory size available
+    if ((strlen(usec_str) + 1 + strlen(time_str)) > sizeof(time_str)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_datapoint_timestamp_to_string_human_readable(): time_str too small?!");
+        return "invalid time";
+    }
+    strncat(time_str, usec_str, strlen(usec_str));
+
+    return time_str;
+}
 
 
 void cb_datapoint(bionet_datapoint_t *datapoint) {
@@ -143,7 +191,9 @@ void cb_lost_node(bionet_node_t *node) {
     if (output_mode == OM_NORMAL) {
         g_message("lost node: %s", bionet_node_get_name(node));
     } else if (output_mode == OM_TEST_PATTERN) {
-        g_message("- %s", bionet_node_get_id(node));
+        g_message("%s - %s", 
+            current_timestamp_string(),
+            bionet_node_get_id(node));
     }
 }
 
@@ -154,7 +204,9 @@ void cb_new_node(bionet_node_t *node) {
     if (output_mode == OM_NORMAL) {
         g_message("new node: %s", bionet_node_get_name(node));
     } else if (output_mode == OM_TEST_PATTERN) {
-        g_message("+ %s", bionet_node_get_id(node));
+        g_message("%s + %s", 
+            current_timestamp_string(),
+            bionet_node_get_id(node));
     }
 
     if (bionet_node_get_num_resources(node)) {
@@ -257,31 +309,32 @@ void cb_new_hab(bionet_hab_t *hab) {
 
 void usage(void) {
     fprintf(stderr,
-	    "'bionet-watcher' displays data from Bionet HABs.\n"
-	    "\n"
-	    "Usage: bionet-watcher [OPTIONS]\n"
-	    "\n"
-	    " --help                                            Show this help\n"
-	    " -e, --require-security                            Require security\n"
-	    " -h, --hab, --habs \"HAB-Type.Hab-ID\"               Subscribe to a HAB list.\n"
-	    " -n, --node, --nodes \"HAB-Type.HAB-ID.Node-ID\"     Subscribe to a Node list\n"
-	    " -r, --resource, --resources \"HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
-	    "                                                   Subscribe to Resource values.\n"
-	    " -s, --security-dir <dir>                          Directory containing security\n"
-	    "                                                   certificates\n"
-	    " -a, --add-subscriptions <RATE>                    add new subscriptions every \n"
-        "                                                   RATE seconds\n"
-	    " -m, --remove-subscriptions <RATE>                 remove subscriptions every\n"
-        "                                                   RATE seconds\n"
-	    " -d, --randomize-subscriptions <RATE>              randomly add/remove subscriptions\n"
-        "                                                   every RATE seconds\n"
-        " -o, --output-mode <MODE>                          either normal (default) or\n"
-        "                                                   test-pattern for generating test-"
-        "                                                   pattern-hab-input"
-	    " -v, --version                                     Show the version number\n"
-	    "\n"
-	    "Security can only be required when a security directory has been specified.\n"
-	    "  bionet-watcher [--security-dir <dir> [--require-security]]\n"
+"'bionet-watcher' displays data from Bionet HABs.\n"
+"\n"
+"Usage: bionet-watcher [OPTIONS]\n"
+"\n"
+" --help                                            Show this help\n"
+" -e, --require-security                            Require security\n"
+" -h, --hab, --habs \"HAB-Type.Hab-ID\"               Subscribe to a HAB list.\n"
+" -n, --node, --nodes \"HAB-Type.HAB-ID.Node-ID\"     Subscribe to a Node list\n"
+" -r, --resource, --resources \"HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
+"                                                   Subscribe to Resource values.\n"
+" -s, --security-dir <dir>                          Directory containing security\n"
+"                                                   certificates\n"
+" -a, --add-subscriptions <RATE>                    add new subscriptions every \n"
+"                                                   RATE seconds\n"
+" -m, --remove-subscriptions <RATE>                 remove subscriptions every\n"
+"                                                   RATE seconds\n"
+" -d, --randomize-subscriptions <RATE>              randomly add/remove\n"
+"                                                   subscriptions every RATE\n"
+"                                                   seconds\n"
+" -o, --output-mode <MODE>                          either normal (default) or\n"
+"                                                   test-pattern for generating\n"
+"                                                   test-pattern-hab-input\n"
+" -v, --version                                     Show the version number\n"
+"\n"
+"Security can only be required when a security directory has been specified.\n"
+"  bionet-watcher [--security-dir <dir> [--require-security]]\n"
 );
 }
 
