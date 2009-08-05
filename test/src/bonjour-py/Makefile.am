@@ -8,14 +8,8 @@ include $(top_srcdir)/common.am
 
 #SWIG_INCDIR = $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_CAL_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_CLIENT)
 
-if ENABLE_LINUX
-LDCONFIG_EXE = /sbin/ldconfig
-endif
-
-LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.version_info[0]) + \".\" + str(sys.version_info[1])" | python`
-
-python_PYTHON = bonjour.py
-python_LTLIBRARIES = _bonjour.la
+noinst_PYTHON = bonjour.py
+noinst_LTLIBRARIES = _bonjour.la
 
 BUILT_SOURCES = bonjour_wrap.c
 _bonjour_la_SOURCES = bonjour_wrap.c
