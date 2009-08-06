@@ -6,5 +6,9 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = bonjour-py 
+SUBDIRS =
+
+if ENABLE_PYTHON
+SUBDIRS += bonjour-py 
+endif
 
