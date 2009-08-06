@@ -9,7 +9,7 @@ include $(top_srcdir)/common.am
 #SWIG_INCDIR = $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_CAL_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_CLIENT)
 
 noinst_PYTHON = bonjour.py
-noinst_LTLIBRARIES = _bonjour.la
+python_LTLIBRARIES = _bonjour.la
 
 BUILT_SOURCES = bonjour_wrap.c
 _bonjour_la_SOURCES = bonjour_wrap.c

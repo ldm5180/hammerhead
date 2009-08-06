@@ -24,6 +24,13 @@ if [ -z "$ROOT" ]; then
     exit 1
 fi
 
+if [ ! -x /sbin/iptables ]; then
+    echo "This system doesn't have iptables. Can't run test"
+    exit 3
+fi
+
+
+
 if [ -z "$TEST_DURATION" ]; then
     TEST_DURATION=30
 fi
@@ -31,17 +38,18 @@ fi
 UNIQUE=$$
 RETVAL=0
 
+PYPATHADD=$ROOT/test/src/bonjour-py:$ROOT/test/src/bonjour-py/.libs:$ROOT/test/pylib:$ROOT/test/pylib
 if [ -z "$PYTHONPATH" ]; then
-    export PYTHONPATH=$ROOT/test/src/bonjour-py:$ROOT/test/src/bonjour-py/.libs
+    export PYTHONPATH=$PYPATHADD
 else
-    export PYTHONPATH=$ROOT/test/src/bonjour-py:$ROOT/test/src/bonjour-py/.libs:$PYTHONPATH
+    export PYTHONPATH=$PYPATHADD:$PYTHONPATH
 fi
 
 echo Making the test pattern output
 sed -e "s/XXPIDXX/$UNIQUE/" < testpattern.out.save > testpattern.out
 
 echo starting first bionet-watcher
-$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.0 &
+$ROOT/client/watcher/bionet-watcher --habs "test-pattern-hab.$UNIQUE" --nodes "test-pattern-hab.$UNIQUE.*" --resources "test-pattern-hab.$UNIQUE.*:*" >| out.watcher.0 &
 WATCH1PID=$!
 
 echo Starting bad-hab
@@ -51,11 +59,11 @@ sleep 2
 
 
 echo starting second bionet-watcher
-$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.1 &
+$ROOT/client/watcher/bionet-watcher --habs "test-pattern-hab.$UNIQUE" --nodes "test-pattern-hab.$UNIQUE.*" --resources "test-pattern-hab.$UNIQUE.*:*" >| out.watcher.1 &
 WATCH2PID=$!
 
 echo Starting test-pattern-hab
-$ROOT/hab/test-pattern/test-pattern-hab -i $UNIQUE testpattern.in >| out.random-hab &
+$ROOT/hab/test-pattern/test-pattern-hab -i $UNIQUE testpattern.in > /dev/null &
 TPHPID=$!
 echo "[$!]"
 
@@ -73,7 +81,7 @@ kill $WATCH2PID
 wait $WATCH1PID
 wait $WATCH2PID
 
-echo "Killing bad-hab-pattern-hab"
+echo "Killing BadHab"
 kill $BADHABPID
 wait $BADHABPID
 
@@ -86,11 +94,11 @@ else
 fi
 
 if ! diff -q out.watcher.0 testpattern.out; then
-    echo "ERROR: watcher output differs from random-hab output:"
-    diff -u out.random-hab out.watcher.0
+    echo "ERROR: watcher output differs from test-pattern-hab output:"
+    diff -u testpattern.out out.watcher.0
     RETVAL=1
 else
-    echo "watcher outputs are identical to random-hab output, yay"
+    echo "watcher outputs are identical to test-pattern-hab output, yay"
 fi
 
 exit $RETVAL
