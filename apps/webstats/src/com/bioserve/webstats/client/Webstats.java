@@ -25,7 +25,7 @@ public class Webstats implements EntryPoint {
 		
 		/* Create refresher and associate with updateRateChooser. */
 		refresher = new Refresher();
-		refresher.updateRate(5000);
+		refresher.updateRate(300000);
 		updateRateChooser.setRefresher(refresher);
 
 		/* Start loading the configuration XML */

@@ -6,7 +6,7 @@ public class UpdateRateChooser extends ParameterChooser {
 	public UpdateRateChooser(String packHere) {
 		super(packHere, "Update every:", "refresh");
 		createChoices();
-		setActive("5 seconds");
+		setActive("5 minutes");
 	}
 	
 	private void createChoices() {
