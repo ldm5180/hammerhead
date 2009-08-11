@@ -84,7 +84,7 @@ def bdmplot(**kwargs):
     
     # Plot the results
     import pylab
-    f = pylab.figure(figsize=(args["width"], args["height"]))
+    f = pylab.figure(figsize=(int(args["width"]), int(args["height"])))
     pylab.step(*plotargs, **{'figure': f})
 
     # Set the x-axis interval and formatter appropriately
