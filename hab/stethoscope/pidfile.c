@@ -47,7 +47,7 @@ int kill_kin()
 
     r = read(pid_fd, buffer, sizeof(buffer));
     close(pid_fd);
-    if (read <= 0) {
+    if (r <= 0) {
 	g_warning("Error reading %s: %m", PIDFILE_NAME);
 	return -4;
     }
