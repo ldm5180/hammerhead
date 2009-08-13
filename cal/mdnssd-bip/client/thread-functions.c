@@ -797,9 +797,15 @@ static void post_connect(bip_peer_t * peer) {
     r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "new_connection: error writing event: %s", strerror(errno));
+        cal_event_free(event);
     } else if (r != sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "new_connection: short write while writing event");
+        cal_event_free(event);
     }
+
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
 }
 
 //
