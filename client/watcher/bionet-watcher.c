@@ -111,7 +111,12 @@ static const char *current_timestamp_string(void)
     // sanity tests
     //
     struct timeval timestamp;
-    gettimeofday(&timestamp, NULL);
+    r = gettimeofday(&timestamp, NULL);
+    if (r != 0) {
+        g_message("gettimeofday() error: %s", strerror(errno));
+        exit(1);
+    }
+
 
     tm = gmtime(&timestamp.tv_sec);
     if (tm == NULL) {
