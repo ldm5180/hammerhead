@@ -54,10 +54,16 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
         max_bytes_to_read = BIP_MSG_HEADER_SIZE - net->header_index;
         r = BIO_read(net->socket_bio, &net->header[net->header_index], max_bytes_to_read);
         if (r < 0) {
-            // g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s", peer_name, strerror(errno));
+            if( BIO_should_retry(net->socket_bio) ) return 0;
+
+            //g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            //    "bip_read_from_peer(): error reading from peer %s: %s",
+            //        peer_name, strerror(errno));
             return -1;
         } else if (r == 0) {
             // peer disconnects
+            //g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            //    "bip_read_from_peer(): remote close %s", peer_name);
             return - 1;
         }
 
@@ -99,10 +105,16 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer) {
     if (max_bytes_to_read > 0) {
         r = BIO_read(net->socket_bio, &net->buffer[net->index], max_bytes_to_read);
         if (r < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_read_from_peer(): error reading from peer %s: %s", peer_name, strerror(errno));
+            if( BIO_should_retry(net->socket_bio) ) return 0;
+
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "bip_read_from_peer(): error reading from peer %s: %s",
+                    peer_name, strerror(errno));
             return -1;
         } else if (r == 0) {
-            // peer disconnects
+            // peer disconnects in the middle of a message
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "bip_read_from_peer(): remote close %s", peer_name);
             return - 1;
         }
 

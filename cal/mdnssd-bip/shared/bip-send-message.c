@@ -25,8 +25,6 @@
 #include "cal-mdnssd-bip.h"
 
 
-
-
 //
 // We're currently not limiting the size of BIP messages.  This sometimes
 // worries Coverity.
@@ -37,18 +35,12 @@
 // FIXME: Also see Issue #343 at <http://bioserve.colorado.edu/issue-tracker/?module=issues&action=view&issueid=343>
 //
 // coverity[ -tainted_data_sink : arg-4 ]
-int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size) {
+int bip_send_message(const bip_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size) {
     int r;
 
     uint32_t msg_size;
 
     bip_peer_network_info_t *net = NULL;
-
-
-    if (peer_name == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: NULL peer_name passed in");
-        return -1;
-    }
 
     if (peer == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: NULL peer passed in");
@@ -57,7 +49,7 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
 
     net = bip_peer_get_connected_net(peer);
     if (net == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: no connection to peer '%s'", peer_name);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: no connection to peer '%s'", peer->peer_name);
         return -1;
     }
 
@@ -68,6 +60,7 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
 
     r = BIO_write(net->socket_bio, &msg_type, sizeof(msg_type));
     if (r != sizeof(msg_type)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending'%s'", peer->peer_name);
         return -1;
     }
     if (1 != BIO_flush(net->socket_bio)) {
@@ -76,6 +69,7 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
 
     r = BIO_write(net->socket_bio, &msg_size, sizeof(msg_size));
     if (r != sizeof(msg_size)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending'%s'", peer->peer_name);
         return -1;
     }
     if (1 != BIO_flush(net->socket_bio)) {
@@ -86,6 +80,7 @@ int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_
 
     r = BIO_write(net->socket_bio, msg, size);
     if (r != size) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending'%s'", peer->peer_name);
         return -1;
     }
     if (1 != BIO_flush(net->socket_bio)) {

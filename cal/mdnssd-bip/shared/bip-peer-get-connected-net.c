@@ -38,7 +38,7 @@ bip_peer_network_info_t *bip_peer_get_connected_net(const bip_peer_t *peer) {
     for (i = 0; i < peer->nets->len; i ++) {
         bip_peer_network_info_t *net;
         net = g_ptr_array_index(peer->nets, i);
-        if (net->socket != -1) return net;;
+        if (net->socket_bio != NULL) return net;;
     }
 
     return NULL;

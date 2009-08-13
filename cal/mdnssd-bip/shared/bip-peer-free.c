@@ -27,6 +27,8 @@ void bip_peer_free(bip_peer_t *peer) {
         free(s);
     }
 
+    free(peer->peer_name);
+
     free(peer);
 }
 

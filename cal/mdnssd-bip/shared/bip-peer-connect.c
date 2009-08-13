@@ -25,24 +25,20 @@
 #include "cal-mdnssd-bip.h"
 
 
-
-
-int bip_peer_connect(const char *peer_name, bip_peer_t *peer) {
-    BIO * bio;
-    bip_peer_network_info_t *net;
-
+// Returns fd of connection if its in-progress, -1 if there are no more nets
+int bip_peer_connect_nonblock(bip_peer_t * peer) {
     if (peer == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_peer_connect: NULL peer passed in");
         return -1;
     }
 
-    net = bip_peer_get_connected_net(peer);
-    if (net != NULL) return 0;
-
     while (peer->nets->len > 0) {
-        net = g_ptr_array_index(peer->nets, 0);
-        bio = bip_net_connect(peer_name, net);
-        if (NULL != bio) return 0;
+        bip_peer_network_info_t *net = g_ptr_array_index(peer->nets, 0);
+        int fd = bip_net_connect_nonblock(peer->peer_name, net);
+        if ( fd >= 0 ) {
+            return fd;
+        }
+
         g_ptr_array_remove_fast(peer->nets, net);
         bip_net_destroy(net);
     }
@@ -50,3 +46,30 @@ int bip_peer_connect(const char *peer_name, bip_peer_t *peer) {
     return -1;
 }
 
+
+//
+// Finish the connect procedure. Call this when the peer->net
+// connect socket is writable:
+// 
+// If there was an error, then the failed net will be removed from the peer. Its up to the caller to try the next one
+//
+// @return bio, if connected. NULL on error
+BIO * bip_peer_connect_finish(bip_peer_t * peer) {
+    BIO * bio = NULL;
+
+    if ( peer->nets->len == 0 ){
+        // No nets
+        return NULL;
+    }
+
+    if ( peer->nets->len > 0 ) {
+        bip_peer_network_info_t *net = g_ptr_array_index(peer->nets, 0);
+        bio = bip_net_connect_check(peer->peer_name, net);
+        if(NULL == bio) {
+            g_ptr_array_remove_fast(peer->nets, net);
+            bip_net_destroy(net);
+        }
+    }
+
+    return bio;
+}

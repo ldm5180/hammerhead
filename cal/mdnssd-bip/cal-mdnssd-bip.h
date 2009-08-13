@@ -67,7 +67,6 @@ typedef struct {
     BIO * socket_bio; //!< the BIO that wraps the socket connected to this peer, or NULL if not connected
     bip_sec_type_t sectype; //!< the type of security adversited by this peer
     bip_sec_type_t security_status;
-    
 
     //! the header of the packet we're currently receiving
     char header[BIP_MSG_HEADER_SIZE];
@@ -82,8 +81,16 @@ typedef struct {
 
 
 typedef struct {
-    GPtrArray *nets;          // each pointer is a bip_peer_network_info_t*
+    uint8_t type;
+    void * data;
+    uint32_t size;
+} bip_msg_t;
+
+typedef struct {
+    char * peer_name;        // Name of this peer.
+    GPtrArray *nets;         // each pointer is a bip_peer_network_info_t*
     GSList *subscriptions;   // each is a dynamically allocated string of the topic  (FIXME: only the server uses this)
+    GSList *pending_msgs;    // list of messages (bip_msg_t) that are pending to be sent to peer when connection is established
 } bip_peer_t;
 
 
@@ -122,20 +129,34 @@ bip_peer_network_info_t *bip_net_new(const char *hostname, uint16_t port);
 
 
 /**
- * @brief Connects a bip net.
+ * @brief Start to connect a bip net.
  *
  * @param peer_name The name of the peer whose net to connect to.  Only
  *     used for log messages.
  *
  * @param net The net to connect.
  *
- * @return The connected socket on success.
+ * @return The socket that the connection is in progress 
  *
  * @return -1 on failure (in which case the caller should destroy the net).
  */
 
-BIO * bip_net_connect(const char *peer_name, bip_peer_network_info_t *net);
+int bip_net_connect_nonblock(const char *peer_name, bip_peer_network_info_t *net);
 
+/**
+ * @brief Finish the connect, and check the status
+ *
+ * @param peer_name The name of the peer whose net to connect to.  Only
+ *     used for log messages.
+ *
+ * @param net The net to check.
+ *
+ * @return The connected socket on success.
+ *
+ * @return NULL on failure (in which case the caller should destroy the net). (errno set)
+ */
+
+BIO * bip_net_connect_check(const char *peer_name, bip_peer_network_info_t *net);
 
 
 
@@ -233,27 +254,41 @@ bip_peer_t *bip_peer_new(void);
 
 
 /**
- * @brief Connect to a peer.
+ * @brief Start connecting to a peer.
  *
- * If the peer already has a connected net, no action is taken.
+ * The function attempts to connect to each of the peer's nets, in a non-blocking
+ * fashion. If the peer runs out of nets, it will return failure.
  *
- * The function tries to connect to each of the peer's nets, removing any
- * that fail to connect.  If the peer runs out of nets, it returns failure.
- *
- * @param peer_name The name of the peer to connect to.  Only used for log
- *     messages.
+ * To check if the connect succeeded, call bip_peer_connect_finish() after the
+ * returned fd is writable (see select())
  *
  * @param peer The peer to connect to.
  *
- * @return 0 if the peer is now connected.
+ * @return fd of the socket that is connection.
  *
  * @return -1 if no connection was possible, and all the nets have been exhausted.
  */
 
-int bip_peer_connect(const char *peer_name, bip_peer_t *peer);
+int bip_peer_connect_nonblock(bip_peer_t * peer);
 
-
-
+/**
+ * @brief Connect to a peer.
+ *
+ * If the peer already has a connected net, no action is taken.
+ *
+ * The function tries to finish the connection in-progress. Call this function
+ * after the socket returned by bip_peer_connect_nonblock() is writable.
+ * 
+ * On failure, the failed net will be removed from the peer, and the caller should call
+ * bip_peer_connect_nonblock() to try the next one.
+ *
+ * @param peer The peer to connect to.
+ *
+ * @return NULL if no connection was established
+ *
+ * @return bio that is ready to read/write
+ */
+BIO * bip_peer_connect_finish(bip_peer_t * peer);
 
 /**
  * @brief Disconnect from a peer.
@@ -312,7 +347,7 @@ int bip_peer_is_secure(bip_peer_t *peer);
  * @return -1 on error, in which case the peer's connected net should be closed.
  */
 
-int bip_send_message(const char *peer_name, const bip_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size);
+int bip_send_message(const bip_peer_t *peer, uint8_t msg_type, const void *msg, uint32_t size);
 
 
 

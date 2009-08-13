@@ -26,6 +26,8 @@ bip_peer_t *bip_peer_new(void) {
     };
 
     peer->subscriptions = NULL;
+    peer->peer_name = NULL;
+    peer->pending_msgs = NULL;
 
     return peer;
 }

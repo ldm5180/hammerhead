@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <arpa/inet.h>
 
@@ -136,7 +137,7 @@ static int read_from_user(void) {
                 break;
             }
 
-            bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
+            bip_send_message(peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
             // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
 
             break;
@@ -227,7 +228,7 @@ static int read_from_user(void) {
                         const char *sub_topic = si->data;
 
                         if (this->topic_matches(event->topic, sub_topic) == 0) {
-                            bip_send_message(name, client, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
+                            bip_send_message(client, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
                             break;
                         }
                     }
@@ -257,7 +258,7 @@ static int read_from_user(void) {
                 }
 
                 if ( !topic_already_exists ) {
-                    bip_send_message(event->peer_name, peer, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
+                    bip_send_message(peer, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
                 }
             }
             break;
@@ -311,6 +312,24 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: error accepting a connection: %s", strerror(errno));
         goto fail1;
     }
+
+    // Make accepted socket non-blocking
+    /*
+    {
+        int flags = fcntl(net->socket, F_GETFL, 0);
+        if (flags < 0) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+                ID "%s: error getting socket flags: %s", 
+                    __FUNCTION__, strerror(errno));
+            flags = 0;
+        }
+        if (fcntl(net->socket, F_SETFL, flags | O_NONBLOCK) < 0) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+                ID "%s: error setting socket flags: %s", 
+                    __FUNCTION__, strerror(errno));
+        }
+    }
+    */
 
     net->socket_bio = BIO_new_socket(net->socket, BIO_CLOSE);
     
@@ -658,9 +677,12 @@ static void free_peer(void *peer_as_void) {
     bip_peer_free(peer);
 }
 
-
 // clean up the clients hash table
-void cleanup_clients(void *unused) {
+void cleanup_clients_and_listener(void *unused) {
+    if(this && this->socket >= 0) {
+        close(this->socket); // Stop listening to new connections
+        this->socket = -1
+    }
     g_hash_table_unref(clients);
 }
 
@@ -700,6 +722,8 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
     this = this_as_voidp;
 
+    clients = g_hash_table_new_full(g_str_hash, g_str_equal, free, free_peer);
+    pthread_cleanup_push(cleanup_clients_and_listener, NULL)
 
     r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", cal_server_mdnssd_bip_network_type);
     if (r >= sizeof(mdnssd_service_name)) {
@@ -714,9 +738,6 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     // Shutup annoying nag message on Linux.
     setenv("AVAHI_COMPAT_NOWARN", "1", 1);
 
-
-    clients = g_hash_table_new_full(g_str_hash, g_str_equal, free, free_peer);
-    pthread_cleanup_push(cleanup_clients, NULL)
 
 
     advertisedRef = malloc(sizeof(DNSServiceRef));
@@ -919,7 +940,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
     pthread_cleanup_pop(0);  // cleanup_advertisedRef
     pthread_cleanup_pop(0);  // cleanup_text_record
-    pthread_cleanup_pop(0);  // cleanup_clients
+    pthread_cleanup_pop(0);  // cleanup_clients_and_listener
     pthread_cleanup_pop(0);  // cleanup_pipes
 }
 
