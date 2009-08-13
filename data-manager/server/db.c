@@ -665,20 +665,20 @@ static int add_datapoint_to_db(sqlite3* db,
     switch(dp->type) {
         case DB_INT:
             r = sqlite3_bind_int(insert_datapoint_sync_stmt, param++, dp->value.i);
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "%s(): (unsigned int)%lu (int)%li", __FUNCTION__, 
                   (unsigned long)dp->value.i, (long)dp->value.i);
             break;
             
         case DB_DOUBLE:
 	    r = sqlite3_bind_double(insert_datapoint_sync_stmt, param++, dp->value.d);
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "%s(): (double)%.16g", __FUNCTION__, dp->value.d);
             break;
             
         case DB_STRING:
             r = sqlite3_bind_text(insert_datapoint_sync_stmt, param++, dp->value.str, -1, SQLITE_STATIC);
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "%s(): (str)%s", __FUNCTION__, dp->value.str);
             break;
 

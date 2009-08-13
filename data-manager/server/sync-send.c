@@ -55,11 +55,11 @@ static int sync_send_metadata(
     BDM_Sync_Metadata_Message_t * message;
     int bi, r;
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "Syncing metadata to %s", config->sync_recipient);
 
     if (sync_init_connection(config)) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "    Unable to make TCP connection to BDM Sync Receiver");
 	return 0;
     }
@@ -70,7 +70,7 @@ static int sync_send_metadata(
 	      "Failed to split resource name pattern: %s", config->resource_name_pattern);
     }
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "    METADATA for %s.%s.%s:%s from seq %d to %d",
 	  hab_type, hab_id, node_id, resource_id, from_seq, to_seq);
     bdm_list = db_get_metadata(config->db, hab_type, hab_id, node_id, resource_id,
@@ -86,7 +86,7 @@ static int sync_send_metadata(
 	      "send_sync_metadata(): NULL BDM list from db_get_metadata()");
 	goto cleanup;
     } else {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "    send_sync_metadata(): compiling metadata message from BDM list");
     }
 
@@ -99,7 +99,7 @@ static int sync_send_metadata(
 		  "Failed to get BDM %d from BDM list", bi);
 	    goto cleanup;
 	}
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
               "       BDM %s", bdm->bdm_id);
 
 	GPtrArray * hab_list = bdm->hab_list;
@@ -117,7 +117,7 @@ static int sync_send_metadata(
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		      "sync_send_metadata(): Failed to get HAB %d from array of HABs", hi);
 	    }
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                   "         HAB %s", bionet_hab_get_id(hab));
 	    
 	    //add the HAB to the message
@@ -158,7 +158,7 @@ static int sync_send_metadata(
 			  "sync_send_metadata(): Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
 		}
 		
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                       "           NODE %s", bionet_node_get_id(node));
 
 		//add the Node to the message
@@ -189,7 +189,7 @@ static int sync_send_metadata(
 			      "sync_send_metadata(): Failed to get resource %d from Node %s", ri, bionet_node_get_name(node));
 		    }
 
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                           "             RES %s", bionet_resource_get_id(resource));
 		    
 		    //add the Resource to the message
@@ -244,7 +244,7 @@ static int sync_send_metadata(
 
     r = sync_finish_connection(config);
     if( r == 0 ) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
               "    Sync metadata finished");
 
         if(bi) {
@@ -280,11 +280,11 @@ static int sync_send_datapoints(
     BDM_Sync_Datapoints_Message_t * message;
     int r, bi;
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "Syncing datapoints");
 
     if (sync_init_connection(config)) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "    Unable to make TCP connection to BDM Sync Receiver");
 	return 0;
     }
@@ -296,7 +296,7 @@ static int sync_send_datapoints(
     }
 
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "    DATAPOINTS for %s.%s.%s:%s from seq %d to %d",
 	  hab_type, hab_id, node_id, resource_id,
 	  from_seq, to_seq);
@@ -443,7 +443,7 @@ static int sync_send_datapoints(
 
     r = sync_finish_connection(config);
     if( r == 0 ) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
               "    Sync datapoints finished");
 
         if(bi) {
@@ -564,14 +564,14 @@ gpointer sync_thread(gpointer config) {
 	if (curr_seq > cfg->last_entry_end_seq_metadata) {
 	    sync_send_metadata(cfg, cfg->last_entry_end_seq_metadata+1, curr_seq);
 	} else {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "No metadata to sync.");
 	}
 	if (curr_seq > cfg->last_entry_end_seq) {
 
 	    sync_send_datapoints(cfg, cfg->last_entry_end_seq+1, curr_seq);
 	} else {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "No data to sync. Sleeping %u seconds...", cfg->frequency);
 	}
 
@@ -614,9 +614,6 @@ static int read_ack_tcp(sync_sender_config_t *config) {
 
     memset(&sync_ack, 0, sizeof(sync_ack));
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-        "Waiting for ACK...");
-
     do {
 	bytes_to_read = sizeof(buffer) - index;
 	bytes_read = read(config->fd, &buffer[index], bytes_to_read);
@@ -631,9 +628,6 @@ static int read_ack_tcp(sync_sender_config_t *config) {
 	
 	index += bytes_read;
 
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-              "    decoding %d bytes of ack %x%x%x", bytes_read, 
-              (int)buffer[0], (int)buffer[1], (int)buffer[2]);
         rval = ber_decode(NULL, 
 			  &asn_DEF_BDM_Sync_Ack, 
 			  (void **)&p_sync_ack, 
@@ -645,8 +639,6 @@ static int read_ack_tcp(sync_sender_config_t *config) {
             if(sync_ack < 0) {
                 // The connection worked, but the remote side couldn't save the
                 // data 
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
-                    "The message was not saved by the reciever");
                 return -1;
             }
 
@@ -656,17 +648,12 @@ static int read_ack_tcp(sync_sender_config_t *config) {
                         config->sync_recipient, 
                         config->last_entry_end_seq);
 
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-                        "Datapoint ACK received...");
                     break;
 
                 case BDM_Sync_Ack_metadataAck:
                     db_set_last_sync_seq_metadata(config->db, 
                         config->sync_recipient, 
                         config->last_entry_end_seq_metadata);
-
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-                        "Metadata ACK received...");
                     break;
 
                 default:
@@ -733,7 +720,7 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
     }
 
     if ( config->ion.bundle_size ) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
             "Sending bundle with payload of %lu bytes",
             (unsigned long)config->ion.bundle_size);
         if (bp_send(config->ion.sap, BP_BLOCKING, config->sync_recipient, 
@@ -817,7 +804,7 @@ static int sync_init_connection_tcp(sync_sender_config_t * config) {
 	return -1;
     }
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "    Initializing sync connection");
 
     // If the server dies or the connection is lost somehow, writes will

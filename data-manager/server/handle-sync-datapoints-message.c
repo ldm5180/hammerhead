@@ -24,7 +24,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 	
 	//get the BDM-ID from the sync record
 	bdm_id = (const char *)sync_record->bdmID.buf;
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "Received sync record from BDM: %s", bdm_id);
 
 	//process every resource
@@ -50,7 +50,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		case Value_PR_binary_v:
 		    bdmdp.type = DB_INT;
 		    bdmdp.value.i = dp->value.choice.binary_v;
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 			  "    handle_sync_datapoints_message(): binary: %d", 
                           bdmdp.value.i);
 		    break;
@@ -58,7 +58,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		case Value_PR_uint8_v:
 		    bdmdp.type = DB_INT;
 		    bdmdp.value.i = dp->value.choice.uint8_v;
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 			  "    handle_sync_datapoints_message(): uint8_t: %u", 
                           (uint8_t)bdmdp.value.i);
 		    break;
@@ -66,7 +66,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		case Value_PR_int8_v:
 		    bdmdp.type = DB_INT;
 		    bdmdp.value.i = dp->value.choice.int8_v;
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 			  "    handle_sync_datapoints_message(): int8_t: %d",
                           (int8_t)bdmdp.value.i);
 		    break;
@@ -74,7 +74,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		case Value_PR_uint16_v:
 		    bdmdp.type = DB_INT;
 		    bdmdp.value.i = dp->value.choice.uint16_v;
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 			  "    handle_sync_datapoints_message(): uint16_t: %u",
                           (uint16_t)bdmdp.value.i);
 		    break;
@@ -82,7 +82,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		case Value_PR_int16_v:
 		    bdmdp.type = DB_INT;
 		    bdmdp.value.i = dp->value.choice.int16_v;
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 			  "    handle_sync_datapoints_message(): int16_t: %d",
                           (int16_t)bdmdp.value.i);
 		    break;
@@ -98,7 +98,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 			      "bionet_asn_to_datapoint(): error converting ASN INTEGER to native Datapoint value");
 		    }
 		    bdmdp.value.i = (uint32_t)l;
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 			  "    handle_sync_datapoints_message(): uint32_t: %u", 
                           (uint32_t)l);
 		    break;
@@ -107,7 +107,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		case Value_PR_int32_v:
 		    bdmdp.type = DB_INT;
 		    bdmdp.value.i = dp->value.choice.int32_v;
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 			  "    handle_sync_datapoints_message(): int32_t: %d",
                           (int32_t)bdmdp.value.i);
 		    break;
@@ -115,7 +115,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		case Value_PR_real:
 		    bdmdp.type = DB_DOUBLE;
 		    bdmdp.value.d = dp->value.choice.real;
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 			  "    handle_sync_datapoints_message(): double: %g", 
                           bdmdp.value.d);
 		    break;
@@ -123,7 +123,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		case Value_PR_string:
 		    bdmdp.type = DB_STRING;
 		    bdmdp.value.str = (char*)dp->value.choice.string.buf;
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 			  "    handle_sync_datapoints_message(): string: %s", 
                           bdmdp.value.str);
 		    break;

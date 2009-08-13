@@ -16,7 +16,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
     GPtrArray *hab_list;
     int hi;
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Sync Metadata Message {");
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Sync Metadata Message {");
 
     hab_list = g_ptr_array_new();
     for (hi = 0; hi < message->list.count; hi ++) {
@@ -33,7 +33,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
 	    return;
 	}
 	
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    HAB: %s", bionet_hab_get_name(hab));
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "    HAB: %s", bionet_hab_get_name(hab));
 
         g_ptr_array_add(hab_list, hab);
 
@@ -57,7 +57,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
 		return;
 	    }
 
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        Node: %s", bionet_node_get_id(node));
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "        Node: %s", bionet_node_get_id(node));
 
             if (bionet_hab_add_node(hab, node)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -91,10 +91,10 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
 			  "Failed to get new resource: %m");
 		}
 
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "            Resource: %s", bionet_resource_get_id(resource));
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "                datatype: %s", 
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "            Resource: %s", bionet_resource_get_id(resource));
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "                datatype: %s", 
 		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)));
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "                flavor: %s", 
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "                flavor: %s", 
 		      bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)));
 
                 if (bionet_node_add_resource(node, resource)) {
@@ -121,7 +121,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
         }
     }
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "} Sync Metadata Message");    
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "} Sync Metadata Message");    
 
     //cleanup
     for (hi = hab_list->len - 1; hi >= 0; hi--) {

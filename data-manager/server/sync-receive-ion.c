@@ -73,7 +73,7 @@ gpointer dtn_receive_thread(gpointer config) {
                 continue;
         }
 
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
             "ION event: %s.\n", deliveryTypes[dlv.result - 1]);
 
         if (dlv.result == BpPayloadPresent)
@@ -114,14 +114,14 @@ gpointer dtn_receive_thread(gpointer config) {
                         if (client->message.sync_message->present 
                             == BDM_Sync_Message_PR_metadataMessage) 
                         {
-                            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                                   "sync_receive_ion(): receive Sync Metadata Message");
                             handle_sync_metadata_message(client, 
                                 &client->message.sync_message->choice.metadataMessage);
                         } else if (client->message.sync_message->present 
                             == BDM_Sync_Message_PR_datapointsMessage) 
                         {
-                            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                                   "sync_receive_ion(): receive Sync Datapoints Message");
                             handle_sync_datapoints_message(client, 
                                 &client->message.sync_message->choice.datapointsMessage);

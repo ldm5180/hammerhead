@@ -31,13 +31,13 @@ static void handle_client_message_resourceDatapointsQuery(client_t *client, Reso
     asn_enc_rval_t asn_r;
 
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    Resource Datapoints Query {");
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        Resource Name Pattern: %s.%s.%s:%s", rdpq->habType.buf, rdpq->habId.buf, rdpq->nodeId.buf, rdpq->resourceId.buf);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        datapointStartTime=%s", rdpq->datapointStartTime.buf);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        datapointEndTime=%s", rdpq->datapointEndTime.buf);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        entryStart=%ld", rdpq->entryStart);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "        entryEnd=%ld", rdpq->entryEnd);
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "    }");
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "    Resource Datapoints Query {");
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "        Resource Name Pattern: %s.%s.%s:%s", rdpq->habType.buf, rdpq->habId.buf, rdpq->nodeId.buf, rdpq->resourceId.buf);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "        datapointStartTime=%s", rdpq->datapointStartTime.buf);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "        datapointEndTime=%s", rdpq->datapointEndTime.buf);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "        entryStart=%ld", rdpq->entryStart);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "        entryEnd=%ld", rdpq->entryEnd);
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "    }");
 
     r = bionet_GeneralizedTime_to_timeval(&rdpq->datapointStartTime, &datapoint_start);
     if (r != 0) {
