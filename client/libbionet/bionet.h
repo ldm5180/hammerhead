@@ -64,7 +64,7 @@ void bionet_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab));
  * The "new hab callback" is called when a HAB that matches a HAB-list
  * subscription joins the network. HAB-list subscriptions are created with
  * the bionet_subscribe_hab_list() function. 
-
+ *
  * @note The bionet_hab_t argument is the property of the Bionet Client 
  * library, and must not be deallocated by the callback functions.  
  *
