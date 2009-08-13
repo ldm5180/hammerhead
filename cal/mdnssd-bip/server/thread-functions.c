@@ -681,7 +681,7 @@ static void free_peer(void *peer_as_void) {
 void cleanup_clients_and_listener(void *unused) {
     if(this && this->socket >= 0) {
         close(this->socket); // Stop listening to new connections
-        this->socket = -1
+        this->socket = -1;
     }
     g_hash_table_unref(clients);
 }
