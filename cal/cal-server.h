@@ -80,6 +80,13 @@ typedef struct {
 
     //!
     //! \brief Withdraw from the network.
+    //! 
+    //! A "shutdown" event message is sent to the CAL Server thread, and
+    //! the CAL Server thread handles this event by killing itself.
+    //!
+    //! All pending event messages from the CAL Server thread are handled
+    //! (by the user's registered callback function) before this shutdown()
+    //! function returns.
     //!
 
     void (*shutdown)(void);
