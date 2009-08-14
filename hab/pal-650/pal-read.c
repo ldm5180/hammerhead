@@ -119,7 +119,12 @@ static bionet_node_t *get_node(const char *node_id) {
                 return NULL;
             }
 
-            bionet_node_add_resource(node, resource);
+            if (bionet_node_add_resource(node, resource)) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		      "Failed to add resource %s to node %s",
+		      bionet_resource_get_id(resource),
+		      bionet_node_get_name(node));
+	    }
         }
 
         node_data = (node_data_t*)calloc(1, sizeof(node_data_t));
@@ -349,3 +354,9 @@ int pal_read(int pal_fd) {
     return 0;
 }
 
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

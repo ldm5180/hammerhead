@@ -50,7 +50,12 @@ int make_reader_node(void) {
             return -1;
         }
         bionet_resource_set_binary(resource, gpi[i-1], NULL);
-        bionet_node_add_resource(reader_node, resource);
+        if (bionet_node_add_resource(reader_node, resource)) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "Failed to add resource %s to node %s",
+		  bionet_resource_get_id(resource),
+		  bionet_node_get_name(reader_node));
+	}
     }
 
     hab_report_new_node(reader_node);
@@ -58,3 +63,9 @@ int make_reader_node(void) {
     return 0;
 }
 
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
