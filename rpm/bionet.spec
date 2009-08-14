@@ -151,7 +151,6 @@ rm -rf $RPM_BUILD_ROOT
    /usr/local/lib/python2.6/site-packages/hab.py
    /usr/local/lib/python2.6/site-packages/hab.pyc
    /usr/local/lib/python2.6/site-packages/hab.pyo
-   /usr/local/share/doc/bionet/index.html
 
 %defattr(-,root,root,-)
 %doc /usr/local/share/doc/bionet/index.html
@@ -168,5 +167,11 @@ rm -rf $RPM_BUILD_ROOT
    /usr/local/include/bionet.h
    /usr/local/include/hardware-abstractor.h
 
+%files ignore
+/usr/local/lib/python2.6/site-packages/_bonjour.a
+/usr/local/lib/python2.6/site-packages/_bonjour.la
+/usr/local/lib/python2.6/site-packages/_bonjour.so
+/usr/local/lib/python2.6/site-packages/_bonjour.so.0
+/usr/local/lib/python2.6/site-packages/_bonjour.so.0.1.3
 
 %changelog
