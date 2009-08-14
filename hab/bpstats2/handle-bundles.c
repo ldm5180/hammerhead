@@ -60,7 +60,9 @@ void *handle_bundles(void *unused)
         {
             g_error("Couldn't sdr_end_xn()");
         }
-        bundlePayloadBuffer[bundlePayloadLength] = '\0';
+	if (bundlePayloadBuffer) {
+            bundlePayloadBuffer[bundlePayloadLength] = '\0';
+	}
         printf("Message from %s\n", dlv.bundleSourceEid);
         bp_release_delivery(&dlv, 1);
 
