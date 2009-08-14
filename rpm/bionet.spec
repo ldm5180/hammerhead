@@ -18,6 +18,13 @@ Group:          Other
 %description devel
 Header files for doing development with the Bionet Middleware.
 
+%package ignore
+Summary:        Ignored files used for testing only
+Group:          Other
+%description ignore
+Some files used for testing Bionet, but are not needed otherwise
+
+
 %prep
 %setup -q
 
