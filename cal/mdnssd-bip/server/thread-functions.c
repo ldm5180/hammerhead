@@ -577,7 +577,7 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
 
         case BIP_MSG_TYPE_UNSUBSCRIBE: {
             GSList *cursor;
-            bip_peer_t *peer;
+            bip_peer_t *this_peer;
             
             if (valid_subscription_type_check(net, event, peer_name) != 0) {
                 // error message should have already been logged
@@ -594,13 +594,13 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
             // Walk through the subscriptions and remove any matching ones
             //
 
-            peer = g_hash_table_lookup(clients, peer_name);
-            if (peer == NULL) {
+            this_peer = g_hash_table_lookup(clients, peer_name);
+            if (this_peer == NULL) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping Unsubscribe event", event->peer_name);
                 break;
             }
 
-            cursor = peer->subscriptions;
+            cursor = this_peer->subscriptions;
             while (cursor != NULL) {
                 GSList *topic_link = cursor;
 
@@ -608,7 +608,7 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
 
                 // topic matches have to be exact: you can only remove previously existing subscriptions
                 if (strcmp((char*)topic_link->data, event->topic) == 0) {
-                    peer->subscriptions = g_slist_remove_link(peer->subscriptions, topic_link);
+		  this_peer->subscriptions = g_slist_remove_link(this_peer->subscriptions, topic_link);
 
                     if (topic_link->data != NULL) free((char*)topic_link->data);
                     topic_link->data = NULL;
