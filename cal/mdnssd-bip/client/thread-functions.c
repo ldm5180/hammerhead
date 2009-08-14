@@ -340,7 +340,7 @@ static void read_from_user(void) {
 
                 g_hash_table_iter_init (&iter, peers);
                 while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
-                    if (peer->nets->len == 0) continue;
+                    if (bip_peer_get_connected_net(peer) == NULL) continue;
                     if (this->peer_matches(name, s->peer_name) != 0) continue;
 
                     r = bip_send_message(peer, BIP_MSG_TYPE_SUBSCRIBE, 
@@ -405,7 +405,7 @@ static void read_from_user(void) {
 
                 g_hash_table_iter_init (&iter, peers);
                 while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
-                    if (peer->nets->len == 0) continue;
+                    if (bip_peer_get_connected_net(peer) == NULL) continue;
                     if (this->peer_matches(name, event->peer_name) != 0) continue;
 
                     r = bip_send_message(peer, BIP_MSG_TYPE_UNSUBSCRIBE, 
