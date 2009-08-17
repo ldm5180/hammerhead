@@ -65,6 +65,7 @@ typedef struct {
 
     int socket;      //!< the socket connected to this peer, or -1 if we're not currently connected
     BIO * socket_bio; //!< the BIO that wraps the socket connected to this peer, or NULL if not connected
+    BIO * pending_bio; //!< the BIO of the pending BIO connect operation, or NULL if no op pending
     bip_sec_type_t sectype; //!< the type of security adversited by this peer
     bip_sec_type_t security_status;
 
@@ -151,12 +152,14 @@ int bip_net_connect_nonblock(const char *peer_name, bip_peer_network_info_t *net
  *
  * @param net The net to check.
  *
- * @return The connected socket on success.
+ * @return 1 when socket is connected
  *
- * @return NULL on failure (in which case the caller should destroy the net). (errno set)
+ * @return -1 on failure (in which case the caller should destroy the net). (errno set)
+
+ * @return 0 if connect is still in progress. Call this function later
  */
 
-BIO * bip_net_connect_check(const char *peer_name, bip_peer_network_info_t *net);
+int bip_net_connect_check(const char *peer_name, bip_peer_network_info_t *net);
 
 
 
@@ -284,11 +287,13 @@ int bip_peer_connect_nonblock(bip_peer_t * peer);
  *
  * @param peer The peer to connect to.
  *
- * @return NULL if no connection was established
+ * @return -1 if no connection could be established
  *
- * @return bio that is ready to read/write
+ * @return 0 if the connection is still pending
+
+ * @return 1 if the connection has been established
  */
-BIO * bip_peer_connect_finish(bip_peer_t * peer);
+int bip_peer_connect_finish(bip_peer_t * peer);
 
 /**
  * @brief Disconnect from a peer.

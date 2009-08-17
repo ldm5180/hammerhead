@@ -33,6 +33,7 @@ int publish_file(void *stream_as_voidp) {
         if (r <= 0) break;
 
         hab_publish_stream(stream, buf, r);
+        g_usleep(1000); // sleep .001 seconds == 100KBs
     } while(1);
 
     fclose(f);

@@ -39,6 +39,7 @@ int bip_send_message(const bip_peer_t *peer, uint8_t msg_type, const void *msg, 
     int r;
 
     uint32_t msg_size;
+    char msg_header[sizeof(msg_type) + sizeof(msg_size)];
 
     bip_peer_network_info_t *net = NULL;
 
@@ -56,35 +57,38 @@ int bip_send_message(const bip_peer_t *peer, uint8_t msg_type, const void *msg, 
 
     msg_size = htonl(size);
 
-    // FIXME: this should be one write
+    memcpy(msg_header, &msg_type, sizeof(msg_type));
+    memcpy(msg_header + sizeof(msg_type), &msg_size, sizeof(msg_size));
 
-    r = BIO_write(net->socket_bio, &msg_type, sizeof(msg_type));
-    if (r != sizeof(msg_type)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending'%s'", peer->peer_name);
+    r = BIO_write(net->socket_bio, msg_header, sizeof(msg_header));
+    if (r != sizeof(msg_header)) {
+        if(BIO_should_retry(net->socket_bio)){
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending header: timeout");
+        } else {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending header: %m");
+        }
         return -1;
     }
-    if (1 != BIO_flush(net->socket_bio)) {
-	ERR_print_errors_fp(stderr);
+
+    if (size > 0) {
+        r = BIO_write(net->socket_bio, msg, size);
+        if (r != size) {
+            if(BIO_should_retry(net->socket_bio)){
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending header: timeout");
+            } else {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending header: %m");
+            }
+            return -1;
+        }
     }
 
-    r = BIO_write(net->socket_bio, &msg_size, sizeof(msg_size));
-    if (r != sizeof(msg_size)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending'%s'", peer->peer_name);
+    if (1 != BIO_flush(net->socket_bio)) {
+        if(BIO_should_retry(net->socket_bio)){
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending header: timeout");
+        } else {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending header: %m");
+        }
         return -1;
-    }
-    if (1 != BIO_flush(net->socket_bio)) {
-	ERR_print_errors_fp(stderr);
-    }
-
-    if (size == 0) return 0;
-
-    r = BIO_write(net->socket_bio, msg, size);
-    if (r != size) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending'%s'", peer->peer_name);
-        return -1;
-    }
-    if (1 != BIO_flush(net->socket_bio)) {
-	ERR_print_errors_fp(stderr);
     }
 
     return 0;

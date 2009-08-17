@@ -54,22 +54,17 @@ int bip_peer_connect_nonblock(bip_peer_t * peer) {
 // If there was an error, then the failed net will be removed from the peer. Its up to the caller to try the next one
 //
 // @return bio, if connected. NULL on error
-BIO * bip_peer_connect_finish(bip_peer_t * peer) {
-    BIO * bio = NULL;
-
-    if ( peer->nets->len == 0 ){
-        // No nets
-        return NULL;
-    }
+int bip_peer_connect_finish(bip_peer_t * peer) {
+    int r = -1;
 
     if ( peer->nets->len > 0 ) {
         bip_peer_network_info_t *net = g_ptr_array_index(peer->nets, 0);
-        bio = bip_net_connect_check(peer->peer_name, net);
-        if(NULL == bio) {
+        r = bip_net_connect_check(peer->peer_name, net);
+        if(r < 0) {
             g_ptr_array_remove_fast(peer->nets, net);
             bip_net_destroy(net);
         }
     }
 
-    return bio;
+    return r;
 }

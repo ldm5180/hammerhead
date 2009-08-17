@@ -159,79 +159,79 @@ int bip_net_connect_nonblock(const char* peer_name, bip_peer_network_info_t *net
 // Returns BIO on success, or NULL on error. 
 // If error, check errno
 //
-BIO * bip_net_connect_check(const char * peer_name, bip_peer_network_info_t *net) {
+int bip_net_connect_check(const char * peer_name, bip_peer_network_info_t *net) {
 
     if ( net->socket < 0 ) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "%s: socket checked before being started", __FUNCTION__);
         errno = EBADF;
-        return NULL;
+        return -1;
     }
 
-    int sol_error;
-    socklen_t sol_len = sizeof(sol_error);
-    getsockopt(net->socket, SOL_SOCKET, SO_ERROR, &sol_error, &sol_len);
+    BIO * bio;
+    BIO * bio_ssl;
+    if(net->pending_bio == NULL) {
+        int sol_error;
+        socklen_t sol_len = sizeof(sol_error);
+        getsockopt(net->socket, SOL_SOCKET, SO_ERROR, &sol_error, &sol_len);
 
-    if(sol_error != 0 ) {
+        if(sol_error != 0 ) {
 #if 0
-        g_log(
-            CAL_LOG_DOMAIN,
-            G_LOG_LEVEL_WARNING,
-            "%s: error connecting to peer '%s' at %s:%hu: %s",
-            __FUNCTION__,
-            peer_name,
-            net->hostname,
-            net->port,
-            strerror(sol_error)
-            );
+            g_log(
+                CAL_LOG_DOMAIN,
+                G_LOG_LEVEL_WARNING,
+                "%s: error connecting to peer '%s' at %s:%hu: %s",
+                __FUNCTION__,
+                peer_name,
+                net->hostname,
+                net->port,
+                strerror(sol_error)
+                );
 #endif
 
-        close(net->socket);
-        net->socket = -1;
-        errno = sol_error;
-        return NULL;
+            close(net->socket);
+            net->socket = -1;
+            errno = sol_error;
+            return -1;
+        }
+
+        
+        bio = BIO_new_socket(net->socket, BIO_CLOSE);
+        if (ssl_ctx_client && (net->sectype == BIP_SEC_OPT || net->sectype == BIP_SEC_REQ)) {
+            bio_ssl = BIO_new_ssl(ssl_ctx_client, 1);
+            if (!bio_ssl) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to create an SSL.");
+                BIO_free_all(bio);
+                errno = ENOMEM;
+                return -1;
+            }
+            bio = BIO_push(bio_ssl, bio);
+        }
+    } else {
+        bio = net->pending_bio;
     }
 
-    // Make socket blocking
-    {
-        int s = net->socket;
-        int flags = fcntl(s, F_GETFL, 0);
-        if (flags < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-                "%s: error getting socket flags: %s", 
-                    __FUNCTION__, strerror(errno));
-            flags = 0;
-        }
-        if (fcntl(s, F_SETFL, flags & ~O_NONBLOCK) < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-                "%s: error setting socket flags: %s", 
-                    __FUNCTION__, strerror(errno));
-        }
-    }
-
-    BIO * bio = BIO_new_socket(net->socket, BIO_CLOSE);
-    BIO * bio_ssl;
 
     if (ssl_ctx_client && (net->sectype == BIP_SEC_OPT || net->sectype == BIP_SEC_REQ)) {
-	bio_ssl = BIO_new_ssl(ssl_ctx_client, 1);
-	if (!bio_ssl) {
-	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to create an SSL.");
-	    BIO_free_all(bio);
-            errno = ENOMEM;
-	    return NULL;
-	}
-	bio = BIO_push(bio_ssl, bio);
 	if (1 != BIO_do_handshake(bio)) {
+            if ( BIO_should_retry(bio)) {
+                net->pending_bio = bio;
+                return 0;
+            } else {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to complete SSL handshake on connect: %s",
+                    ERR_error_string(ERR_get_error(), NULL));
+            }
 	    BIO_free_all(bio);
             errno = EPROTO;
-	    return NULL;
+	    return -1;
 	} else {
 	    net->security_status = BIP_SEC_REQ;
 	}
     }
 
     net->socket_bio = bio;
+    net->pending_bio = NULL;
 
-    return bio;
+    return 1;
 }
 

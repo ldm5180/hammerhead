@@ -29,7 +29,7 @@ for FILE in test-pattern-*; do
         echo "ERROR: $FILE differs from out.$FILE:"
         hexdump $FILE > hd.$FILE
         hexdump out.$FILE > hd.out.$FILE
-        diff -u hd.$FILE hd.out.$FILE
+        #diff -u hd.$FILE hd.out.$FILE
 	kill %1
         exit 1
     fi

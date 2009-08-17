@@ -911,7 +911,12 @@ SELECT_LOOP_CONTINUE:
                 bip_peer_network_info_t *net;
                 net = g_ptr_array_index(peer->nets, 0);
                 int fd = net->socket;
-                FD_SET(fd, &writers);
+                if(net->pending_bio && BIO_should_read(net->pending_bio)){
+                    FD_SET(fd, &readers);
+                } else {
+                    FD_SET(fd, &writers);
+                    FD_SET(fd, &readers);
+                }
                 max_fd = Max(max_fd, fd);
             }
         }
@@ -948,11 +953,12 @@ SELECT_LOOP_CONTINUE:
 
                 net = g_ptr_array_index(peer->nets, 0);
                 fd = net->socket;
-                if (FD_ISSET(fd, &writers)) {
-                    connecting_peer_list = g_list_delete_link(connecting_peer_list, dptr);
-                    dptr = NULL;
+                if (FD_ISSET(fd, &writers) || FD_ISSET(fd, &readers)) {
+                    r = bip_peer_connect_finish(peer);
+                    if (r == 0 ) continue; // Call again later
 
-                    if( NULL == bip_peer_connect_finish(peer) ) {
+                    connecting_peer_list = g_list_delete_link(connecting_peer_list, dptr);
+                    if( r < 0 ) {
                         // This connect failed. Try the next one
                         int fd = bip_peer_connect_nonblock(peer);
                         if(fd >= 0) {

@@ -58,6 +58,7 @@ static void register_callback(
     }
 }
 
+static void handle_client_disconnect(const char *peer_name);
 
 // returns 0 on succes, -1 if the requested subscription is invalid
 static int valid_subscription_type_check(bip_peer_network_info_t *net, cal_event_t *event, const char *peer_name) {
@@ -137,8 +138,12 @@ static int read_from_user(void) {
                 break;
             }
 
-            bip_send_message(peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
-            // FIXME: bip_send_message might not have worked, we need to report to the user or retry or something
+            r = bip_send_message(peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
+            if( r != 0 ) {
+                handle_client_disconnect(event->peer_name);
+                g_hash_table_remove(clients, event->peer_name);  // close the network connection, free all allocated memory for key & value
+            }
+
 
             break;
         }
@@ -228,7 +233,12 @@ static int read_from_user(void) {
                         const char *sub_topic = si->data;
 
                         if (this->topic_matches(event->topic, sub_topic) == 0) {
-                            bip_send_message(client, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
+                            r = bip_send_message(client, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
+                            if( r != 0 ) {
+                                handle_client_disconnect(name);
+                                g_hash_table_remove(clients, name);  // close the network connection, free all allocated memory for key & value
+                                goto fail;
+                            }
                             break;
                         }
                     }
@@ -258,7 +268,11 @@ static int read_from_user(void) {
                 }
 
                 if ( !topic_already_exists ) {
-                    bip_send_message(peer, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
+                    r = bip_send_message(peer, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
+                    if( r != 0 ) {
+                        handle_client_disconnect(event->peer_name);
+                        g_hash_table_remove(clients, event->peer_name);  // close the network connection, free all allocated memory for key & value
+                    }
                 }
             }
             break;
@@ -275,6 +289,7 @@ static int read_from_user(void) {
             break;
         }
     }
+fail:
 
     cal_event_free(event);
 
@@ -313,23 +328,6 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
         goto fail1;
     }
 
-    // Make accepted socket non-blocking
-    /*
-    {
-        int flags = fcntl(net->socket, F_GETFL, 0);
-        if (flags < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-                ID "%s: error getting socket flags: %s", 
-                    __FUNCTION__, strerror(errno));
-            flags = 0;
-        }
-        if (fcntl(net->socket, F_SETFL, flags | O_NONBLOCK) < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-                ID "%s: error setting socket flags: %s", 
-                    __FUNCTION__, strerror(errno));
-        }
-    }
-    */
 
     net->socket_bio = BIO_new_socket(net->socket, BIO_CLOSE);
     
@@ -344,11 +342,21 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
 	    }
 	}
 	net->socket_bio = BIO_push(bio_ssl, net->socket_bio);
-	if (1 != BIO_do_handshake(net->socket_bio)) {
-	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to complete SSL handshake.");
+        SSL *ssl;
+        BIO_get_ssl(net->socket_bio, &ssl);
+	if (1 != (r = BIO_do_handshake(net->socket_bio))) {
+            if ( BIO_should_retry(net->socket_bio)) {
+                // TODO: Return a 'pending' code, and try later
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to complete SSL handshake on accept: Timeout");
+            } else {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to complete SSL handshake on accept: %s [%m]",
+                    ERR_error_string(SSL_get_error(ssl, r), NULL));
+            }
 	    if (server_require_security) {
 		goto fail2;
 	    } else {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "Failed to complete SSL handshake on accept. Trying unencrypted");
 		BIO_free_all(net->socket_bio);
 		net->socket_bio = BIO_new_socket(net->socket, BIO_CLOSE);
 		goto skip_security;
@@ -357,6 +365,23 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
     }
 
 skip_security:
+
+    // Make accepted socket non-blocking
+    {
+        int flags = fcntl(net->socket, F_GETFL, 0);
+        if (flags < 0) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+                ID "%s: error getting socket flags: %s", 
+                    __FUNCTION__, strerror(errno));
+            flags = 0;
+        }
+        if (fcntl(net->socket, F_SETFL, flags | O_NONBLOCK) < 0) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+                ID "%s: error setting socket flags: %s", 
+                    __FUNCTION__, strerror(errno));
+        }
+    }
+
     event = cal_event_new(CAL_EVENT_CONNECT);
     if (event == NULL) {
         // an error has been logged already
