@@ -1,7 +1,23 @@
 
-Bionet 2.3.1, ???? not released yet
+Bionet 2.4.0, 2009 August 18
 
-    * Many bugfixes.
+    * Add BDM Sync feature over TCP and DTN. 
+      DTN requires ION 1.0
+      NOTE - This breaks database file compatibility, so old BDM database files must i
+      be deleted.
+
+    * Fix several blocking IO bugs that could cause HABs and/or clients to become
+      unresponsive under certain network conditions
+
+    * test-pattern-hab added that can simulate responses by reading a file.
+
+    * New Build-dependency on flex and bison
+
+    * Add BDM-Plots, a web based BDM data graphing tool
+
+    * Debian (.den) and Redhat (.rpm) packages available 
+
+    * Many other bug fixes.
 
 
 Bionet 2.3.0, 2009 June 15
