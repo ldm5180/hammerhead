@@ -87,68 +87,55 @@ rm -rf $RPM_BUILD_ROOT
    /usr/local/lib/libamedevice.a
    /usr/local/lib/libamedevice.la
    /usr/local/lib/libamedevice.so
-   /usr/local/lib/libamedevice.so.0
-   /usr/local/lib/libamedevice.so.0.1.3
+   /usr/local/lib/libamedevice.so.*
    /usr/local/lib/libbionet-asn.a
    /usr/local/lib/libbionet-asn.la
    /usr/local/lib/libbionet-asn.so
-   /usr/local/lib/libbionet-asn.so.0
-   /usr/local/lib/libbionet-asn.so.0.1.3
+   /usr/local/lib/libbionet-asn.so.*
    /usr/local/lib/libbionet-qt4.a
    /usr/local/lib/libbionet-qt4.la
    /usr/local/lib/libbionet-qt4.so
-   /usr/local/lib/libbionet-qt4.so.0
-   /usr/local/lib/libbionet-qt4.so.0.1.3
+   /usr/local/lib/libbionet-qt4.so.*
    /usr/local/lib/libbionet-util.a
    /usr/local/lib/libbionet-util.la
    /usr/local/lib/libbionet-util.so
-   /usr/local/lib/libbionet-util.so.0
-   /usr/local/lib/libbionet-util.so.0.1.3
+   /usr/local/lib/libbionet-util.so.*
    /usr/local/lib/libbionet.a
    /usr/local/lib/libbionet.la
    /usr/local/lib/libbionet.so
-   /usr/local/lib/libbionet.so.0
-   /usr/local/lib/libbionet.so.0.1.3
+   /usr/local/lib/libbionet.so.*
    /usr/local/lib/libcal-mdnssd-bip-client.a
    /usr/local/lib/libcal-mdnssd-bip-client.la
    /usr/local/lib/libcal-mdnssd-bip-client.so
-   /usr/local/lib/libcal-mdnssd-bip-client.so.0
-   /usr/local/lib/libcal-mdnssd-bip-client.so.0.1.3
+   /usr/local/lib/libcal-mdnssd-bip-client.so.*
    /usr/local/lib/libcal-mdnssd-bip-server.a
    /usr/local/lib/libcal-mdnssd-bip-server.la
    /usr/local/lib/libcal-mdnssd-bip-server.so
-   /usr/local/lib/libcal-mdnssd-bip-server.so.0
-   /usr/local/lib/libcal-mdnssd-bip-server.so.0.1.3
+   /usr/local/lib/libcal-mdnssd-bip-server.so.*
    /usr/local/lib/libcal-mdnssd-bip-shared.a
    /usr/local/lib/libcal-mdnssd-bip-shared.la
    /usr/local/lib/libcal-mdnssd-bip-shared.so
-   /usr/local/lib/libcal-mdnssd-bip-shared.so.0
-   /usr/local/lib/libcal-mdnssd-bip-shared.so.0.1.3
+   /usr/local/lib/libcal-mdnssd-bip-shared.so.*
    /usr/local/lib/libevent.a
    /usr/local/lib/libevent.la
    /usr/local/lib/libevent.so
-   /usr/local/lib/libevent.so.0
-   /usr/local/lib/libevent.so.0.1.3
+   /usr/local/lib/libevent.so.*
    /usr/local/lib/libhab.a
    /usr/local/lib/libhab.la
    /usr/local/lib/libhab.so
-   /usr/local/lib/libhab.so.0
-   /usr/local/lib/libhab.so.0.1.3
+   /usr/local/lib/libhab.so.*
    /usr/local/lib/python2.6/site-packages/_bdm_client.a
    /usr/local/lib/python2.6/site-packages/_bdm_client.la
    /usr/local/lib/python2.6/site-packages/_bdm_client.so
-   /usr/local/lib/python2.6/site-packages/_bdm_client.so.0
-   /usr/local/lib/python2.6/site-packages/_bdm_client.so.0.1.3
+   /usr/local/lib/python2.6/site-packages/_bdm_client.so.*
    /usr/local/lib/python2.6/site-packages/_bionet.a
    /usr/local/lib/python2.6/site-packages/_bionet.la
    /usr/local/lib/python2.6/site-packages/_bionet.so
-   /usr/local/lib/python2.6/site-packages/_bionet.so.0
-   /usr/local/lib/python2.6/site-packages/_bionet.so.0.1.3
+   /usr/local/lib/python2.6/site-packages/_bionet.so.*
    /usr/local/lib/python2.6/site-packages/_hab.a
    /usr/local/lib/python2.6/site-packages/_hab.la
    /usr/local/lib/python2.6/site-packages/_hab.so
-   /usr/local/lib/python2.6/site-packages/_hab.so.0
-   /usr/local/lib/python2.6/site-packages/_hab.so.0.1.3
+   /usr/local/lib/python2.6/site-packages/_hab.so.*
    /usr/local/lib/python2.6/site-packages/bdm_client.py
    /usr/local/lib/python2.6/site-packages/bdm_client.pyc
    /usr/local/lib/python2.6/site-packages/bdm_client.pyo
@@ -178,7 +165,6 @@ rm -rf $RPM_BUILD_ROOT
 /usr/local/lib/python2.6/site-packages/_bonjour.a
 /usr/local/lib/python2.6/site-packages/_bonjour.la
 /usr/local/lib/python2.6/site-packages/_bonjour.so
-/usr/local/lib/python2.6/site-packages/_bonjour.so.0
-/usr/local/lib/python2.6/site-packages/_bonjour.so.0.1.3
+/usr/local/lib/python2.6/site-packages/_bonjour.so.*
 
 %changelog
