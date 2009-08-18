@@ -99,7 +99,6 @@ class BadHab:
 
 
         #sys.stderr.write("Register service: %s\n" % (name,))
-        self.__serviceRef = bonjour.AllocateDNSServiceRef()
         try:
             ret = bonjour.pyDNSServiceRegister(self.__serviceRef,
                                       flags,
@@ -150,27 +149,29 @@ class BadHab:
                 os.system('sudo iptables -D INPUT -p tcp --dport %d -j DROP' 
                     % (self.__port));
 
-            bonjour.DNSServiceRefDeallocate(self.__serviceRef)
-
-        self.__serviceRef = None
 
     def __init__(self):
         os.putenv("AVAHI_COMPAT_NOWARN", "1")
+        self.__serviceRef = bonjour.AllocateDNSServiceRef()
         #self.publish()
         
 
     def __del__(self):
         print 'Destructor triggered'
         self.unpublish()
+        if self.__serviceRef:
+            bonjour.DNSServiceRefDeallocate(self.__serviceRef)
+
+        self.__serviceRef = None
 
 
     def browse(self,name):
-        sys.stderr.write("\nBrowsing for service\n")
+        sys.stderr.write("\nBrowsing for service '%s'\n" % (name))
         ret = bonjour.pyDNSServiceBrowse(  self.__serviceRef,
                                       0,
                                       0,
                                       self.regtype,
-                                      'local.',
+                                      None,
                                       self.__BrowseCallback,
                                       name)
         if ret != bonjour.kDNSServiceErr_NoError:

@@ -41,6 +41,7 @@ static TXTRecordRef txt_ref;
 
 static cal_server_mdnssd_bip_t *this = NULL;
 
+static GList *accept_pending_list = NULL; // List of bip_peer_t
 
 
 
@@ -297,28 +298,129 @@ fail:
 }
 
 
-
-
-static void accept_connection(cal_server_mdnssd_bip_t *this) {
+static int accept_handshake( bip_peer_network_info_t * net ) {
+    BIO * bio = net->pending_bio;
+    SSL *ssl;
+    BIO_get_ssl(bio, &ssl);
     int r;
-    struct sockaddr_in sin;
-    socklen_t sin_len;
+    bip_peer_t * client = NULL;
+    cal_event_t * event = NULL;
 
-    cal_event_t *event;
-    bip_peer_t *client;
-    bip_peer_network_info_t *net;
-    BIO * bio_ssl;
+    if(ssl_ctx_server) {
+        if (1 != (r = BIO_do_handshake(bio))) {
+            if ( BIO_should_retry(bio)) {
+                return 0;
+            } 
+
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to complete SSL handshake on accept: %s [%m]",
+                ERR_error_string(SSL_get_error(ssl, r), NULL));
+
+            if (server_require_security) {
+                goto fail_handshake;
+            } else {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "Failed to complete SSL handshake on accept. Trying unencrypted");
+                BIO_free_all(bio);
+                bio = BIO_new_socket(net->socket, BIO_CLOSE);
+            }
+        }
+    }
+
+    net->socket_bio = bio;
+    net->pending_bio = NULL;
+
 
     client = bip_peer_new();
     if (client == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
-        return;
+        goto fail_handshake2;
     }
+
+    g_ptr_array_add(client->nets, net);
+
+    event = cal_event_new(CAL_EVENT_CONNECT);
+    if (event == NULL) {
+        // an error has been logged already
+        goto fail_handshake2;
+    }
+    // use the client's network address as it's "name"
+    {
+        char name[256];
+        int r;
+
+        r = snprintf(name, sizeof(name), "bip://%s:%hu", net->hostname, net->port);
+        if (r >= sizeof(name)) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: peer name too long");
+            goto fail_handshake2;
+        }
+
+        event->peer_name = strdup(name);
+        if (event->peer_name == NULL) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
+            goto fail_handshake2;
+        }
+    }
+
+
+
+
+    {
+        char *name_key;
+
+        name_key = strdup(event->peer_name);
+        if (name_key == NULL) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
+            goto fail_handshake2;
+        }
+        g_hash_table_insert(clients, name_key, client);
+    }
+
+
+    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
+    if (r < 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            ID "accept_connection(): error writing Connect event: %s", strerror(errno));
+        goto fail_handshake2;
+    } else if (r != sizeof(cal_event_t*)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            ID "accept_connection(): short write of Connect event!");
+        goto fail_handshake2;
+    }
+
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
+    return 1;
+
+
+fail_handshake2:
+    net = NULL;
+    bip_peer_free(client);
+    cal_event_free(event);
+    return -1;
+
+fail_handshake:
+    close(net->socket);
+    BIO_free_all(bio);
+    net->socket_bio = NULL;
+    net->socket = -1;
+    bip_net_destroy(net);
+    return -1;
+}
+
+
+static int accept_connection(cal_server_mdnssd_bip_t *this) {
+    struct sockaddr_in sin;
+    socklen_t sin_len;
+    int r;
+
+    bip_peer_network_info_t *net;
+
 
     net = bip_net_new(NULL, 0);
     if (net == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
-        goto fail0;
+        return -1;
     }
     
     sin_len = sizeof(struct sockaddr_in);
@@ -327,44 +429,6 @@ static void accept_connection(cal_server_mdnssd_bip_t *this) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: error accepting a connection: %s", strerror(errno));
         goto fail1;
     }
-
-
-    net->socket_bio = BIO_new_socket(net->socket, BIO_CLOSE);
-    
-    if (ssl_ctx_server) {
-	bio_ssl = BIO_new_ssl(ssl_ctx_server, 0);
-	if (!bio_ssl) {
-	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to create an SSL.");
-	    if (server_require_security) {
-		goto fail2;
-	    } else {
-		goto skip_security;
-	    }
-	}
-	net->socket_bio = BIO_push(bio_ssl, net->socket_bio);
-        SSL *ssl;
-        BIO_get_ssl(net->socket_bio, &ssl);
-	if (1 != (r = BIO_do_handshake(net->socket_bio))) {
-            if ( BIO_should_retry(net->socket_bio)) {
-                // TODO: Return a 'pending' code, and try later
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to complete SSL handshake on accept: Timeout");
-            } else {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to complete SSL handshake on accept: %s [%m]",
-                    ERR_error_string(SSL_get_error(ssl, r), NULL));
-            }
-	    if (server_require_security) {
-		goto fail2;
-	    } else {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "Failed to complete SSL handshake on accept. Trying unencrypted");
-		BIO_free_all(net->socket_bio);
-		net->socket_bio = BIO_new_socket(net->socket, BIO_CLOSE);
-		goto skip_security;
-	    }
-	}
-    }
-
-skip_security:
 
     // Make accepted socket non-blocking
     {
@@ -382,79 +446,51 @@ skip_security:
         }
     }
 
-    event = cal_event_new(CAL_EVENT_CONNECT);
-    if (event == NULL) {
-        // an error has been logged already
-        goto fail2;
+    net->pending_bio = BIO_new_socket(net->socket, BIO_CLOSE);
+    
+    if (ssl_ctx_server) {
+        BIO * bio_ssl;
+	bio_ssl = BIO_new_ssl(ssl_ctx_server, 0);
+	if (!bio_ssl) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to create an SSL.");
+	    if (server_require_security) {
+		goto fail2;
+	    } else {
+		goto skip_security;
+	    }
+	}
+        net->pending_bio = BIO_push(bio_ssl, net->pending_bio);
     }
 
-
+skip_security:
+    
     // use the client's network address as it's "name"
     {
-        char name[256];
-        int r;
-
-        r = snprintf(name, sizeof(name), "bip://%s:%hu", inet_ntoa(sin.sin_addr), ntohs(sin.sin_port));
-        if (r >= sizeof(name)) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: peer name too long");
-            goto fail3;
-        }
-
-        event->peer_name = strdup(name);
-        if (event->peer_name == NULL) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
-            goto fail3;
-        }
+        net->hostname = strdup(inet_ntoa(sin.sin_addr));
+        net->port = ntohs(sin.sin_port);
     }
 
 
-    g_ptr_array_add(client->nets, net);
 
-
-    {
-        char *name_key;
-
-        name_key = strdup(event->peer_name);
-        if (name_key == NULL) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
-            goto fail3;
-        }
-        g_hash_table_insert(clients, name_key, client);
+    r = accept_handshake(net);
+    if(r == 0){
+        accept_pending_list = g_list_append(accept_pending_list, net);
     }
-
-
-    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
-    if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection(): error writing Connect event: %s", strerror(errno));
-        cal_event_free(event);
-        return;
-    } else if (r != sizeof(cal_event_t*)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection(): short write of Connect event!");
-        cal_event_free(event);
-        return;
-    }
-
-    // 'event' passes out of scope here, but we don't leak its memory
-    // because we have successfully sent a pointer to it to the user thread
-    // coverity[leaked_storage]
-    return;
-
-
-fail3:
-    cal_event_free(event);
+    return r;
 
 fail2:
     close(net->socket);
-    BIO_free_all(net->socket_bio);
-    net->socket_bio = NULL;
+    BIO_free_all(net->pending_bio);
+    net->pending_bio = NULL;
     net->socket = -1;
 
 fail1:
     bip_net_destroy(net);
 
-fail0:
-    bip_peer_free(client);
+    return -1;
 }
+
+
 
 
 
@@ -877,11 +913,14 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
     while (1) {
         fd_set readers;
+        fd_set writers;
         int max_fd;
         int r;
 
+SELECT_LOOP_CONTINUE:
 
         FD_ZERO(&readers);
+        FD_ZERO(&writers);
         max_fd = -1;
 
 
@@ -919,6 +958,21 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
             }
         }
 
+        //
+        // See if any connect handshakes have made progress
+        //
+        GList * dptr;
+        for ( dptr = accept_pending_list; dptr != NULL; dptr = dptr->next) {
+            bip_peer_network_info_t * net = dptr->data;
+            int fd = net->socket;
+            if(net->pending_bio && BIO_should_read(net->pending_bio)) {
+                FD_SET(fd, &readers);
+            } else {
+                FD_SET(fd, &readers);
+                FD_SET(fd, &writers);
+            }
+            max_fd = Max(max_fd, fd);
+        }
 
         // block until there's something to do
         r = select(max_fd + 1, &readers, NULL, NULL, NULL);
@@ -932,9 +986,26 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
         if (FD_ISSET(this->socket, &readers)) {
             accept_connection(this);
-			continue;
+            continue;
         }
 
+        //
+        // See if any connect handshakes have made progress
+        //
+        for ( dptr = accept_pending_list; dptr != NULL; dptr = dptr->next) {
+            bip_peer_network_info_t * net = dptr->data;
+            int fd = net->socket;
+            if(FD_ISSET(fd, &readers) || FD_ISSET(fd, &writers)) {
+                r = accept_handshake(net);
+                if(r == 1) {
+                    accept_pending_list = g_list_delete_link(accept_pending_list, dptr);
+                    break;
+                } else if (r < 0 ) {
+                    accept_pending_list = g_list_delete_link(accept_pending_list, dptr);
+                    goto SELECT_LOOP_CONTINUE;
+                }
+            }
+        }
 
         // see if any of our clients said anything
         {
@@ -952,7 +1023,7 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
                 if (FD_ISSET(net->socket, &readers)) {
                     read_from_client(name, peer, net);
                     // read_from_client can disconnect the client, so we need to stop iterating over it now
-                    break;
+                    goto SELECT_LOOP_CONTINUE;
                 }
             }
         }
