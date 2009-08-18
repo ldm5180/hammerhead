@@ -12,7 +12,7 @@ in mainline:
 
     make clean ; ./autogen.sh && ./configure && make clean all check test
 
-    commit ChangeLog and common.am
+    commit ChangeLog, common.am, rpm/bionet.spec
 
     tag with the release number: "bzr tag 2.1.1"
 
