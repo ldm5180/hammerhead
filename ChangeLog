@@ -15,7 +15,7 @@ Bionet 2.4.0, 2009 August 18
 
     * Add BDM-Plots, a web based BDM data graphing tool
 
-    * Debian (.den) and Redhat (.rpm) packages available 
+    * Debian (.deb) and Redhat (.rpm) packages available 
 
     * Many other bug fixes.
 
