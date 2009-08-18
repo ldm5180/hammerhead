@@ -362,7 +362,10 @@ connecting:
 
     // Make the device socket nonblocking
 
-    fcntl(s, F_SETFL, O_NONBLOCK);
+    if(fcntl(s, F_SETFL, O_NONBLOCK) < 0) {
+        g_critical("Can't make device socket non-blocking - Aborting");
+        exit(1);
+    }
 
 
     while (1)
