@@ -1,0 +1,14 @@
+#!/bin/bash
+# this is not a real autoconf configure script
+# it's a cheesy little script to customize the debian source package for the dist it's targeted for
+# specifically, it disables ALSA if the dists' version is less than 1.0.16
+
+DIST=$(lsb_release -cs)
+if [ $DIST = "hardy" ]; then
+    echo "customizing source package for hardy:"
+    echo "    do not build-depend on alsa"
+    cp control.hardy control
+else
+    cp control.standard control
+fi
+
