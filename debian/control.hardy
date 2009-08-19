@@ -1,0 +1,46 @@
+Source: bionet2
+Priority: extra
+Maintainer: Sebastian Kuzminsky <seb@highlab.com>
+Build-Depends: debhelper (>= 6),
+ autoconf,
+ check,
+ libavahi-compat-libdnssd-dev,
+ libglib2.0-dev,
+ doxygen,
+ libssl-dev,
+ swig,
+ libqt4-dev,
+ libqwt5-qt4-dev,
+ python-dev,
+ xsltproc,
+ libbluetooth-dev,
+ libsqlite3-dev,
+ check,
+ bison,
+ flex
+Standards-Version: 3.7.3
+Section: libs
+Homepage: http://bioserve.colorado.edu/bionet
+
+Package: bionet2
+Section: unknown
+Architecture: any
+Depends: ${shlibs:Depends}
+Suggests: bionet2-www
+Description: Bionet2
+ Bionet2 HABs, Clients, and shared libraries, and BDM
+
+Package: bionet2-dev
+Section: unknown
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Bionet2
+ Bionet2 headers and static libraries
+
+Package: bionet2-www
+Section: unknown
+Architecture: any
+Depends: bionet2, python
+Recommends: httpd-cgi
+Description: Bionet2 WWW
+ Bionet2 web infrastructure

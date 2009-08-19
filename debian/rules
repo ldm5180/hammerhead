@@ -19,6 +19,10 @@
 # awk '{if (match($$0,/\.so\.[0-9]+$$/)) print substr($$0,RSTART+4)}'`
 
 
+# Bionet2's alsa-hab will not work with alsa versions older than 1.0.16
+DISABLE_ALSA = $(shell pkg-config --atleast-version=1.0.16 alsa || echo "--disable-alsa")
+
+
 debian/changelog:
 	# this is a convenience helper, normally the source package already has a changelog...
 	debian/bzr-log-to-debian-changelog bionet2 `egrep '^BIONET_RELEASE_VERSION *= *' common.am | cut -d '=' -f 2 | tr -- _ -` >| debian/changelog
@@ -28,7 +32,7 @@ configure: configure-stamp
 configure-stamp: debian/changelog
 	dh_testdir
 	[ -f ./configure ] || ./autogen.sh
-	./configure --prefix=/usr
+	./configure --prefix=/usr $(DISABLE_ALSA)
 
 	touch configure-stamp
 
