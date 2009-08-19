@@ -112,7 +112,7 @@ class BadHab:
                                       txtRecord,
                                       self.__RegisterCallback,
                                       self)
-        except Exception as err:
+        except Exception, err:
             print err
             sys.exit(1)
 
