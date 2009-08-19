@@ -39,6 +39,7 @@ build-stamp: configure-stamp
 
 	# Add here commands to compile the package.
 	$(MAKE)
+	$(MAKE) check
 
 	touch $@
 
