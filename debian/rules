@@ -19,15 +19,16 @@
 # awk '{if (match($$0,/\.so\.[0-9]+$$/)) print substr($$0,RSTART+4)}'`
 
 
+debian/changelog:
+	# this is a convenience helper, normally the source package already has a changelog...
+	debian/bzr-log-to-debian-changelog bionet2 `egrep '^BIONET_RELEASE_VERSION *= *' common.am | cut -d '=' -f 2 | tr -- _ -` >| debian/changelog
+
+
 configure: configure-stamp
-configure-stamp:
+configure-stamp: debian/changelog
 	dh_testdir
 	[ -f ./configure ] || ./autogen.sh
 	./configure --prefix=/usr
-
-	# this is a convenience helper, normally the source package already
-	# has a changelog...
-	[ -f debian/changelog ] || debian/bzr-log-to-debian-changelog bionet2 `egrep '^BIONET_RELEASE_VERSION *= *' common.am | cut -d '=' -f 2 | tr -- _ -` >| debian/changelog
 
 	touch configure-stamp
 
