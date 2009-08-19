@@ -71,8 +71,7 @@ chomp @bzr_log;
 
 my ($rev, $committer, $timestamp);
 
-#my @bzr_status = `svn st | egrep -v '^\\?'`;
-#chomp @bzr_status;
+my $in_entry = 0;
 
 
 while (defined (my $line = shift(@bzr_log))) {
@@ -81,6 +80,7 @@ while (defined (my $line = shift(@bzr_log))) {
             finish_entry($committer, $timestamp);
         }
         $committer = $timestamp = $rev = undef;
+        $in_entry = 0;
         next;
     }
 
@@ -98,8 +98,8 @@ while (defined (my $line = shift(@bzr_log))) {
         } elsif ($raw =~ /^(.*)@.*$/) {
             $committer = "$1 <$raw>";
         } else {
-            # bogus committer, just use it raw
-            $committer = $raw;
+            # bogus committer, just make something up
+            $committer = "$raw <unknown\@unknown>";
         }
         next;
     }
@@ -111,14 +111,15 @@ while (defined (my $line = shift(@bzr_log))) {
 
     elsif ($line =~ /^message:\s*$/) {
         start_entry($package_name, "$upstream_version+bzr$rev");
+        $in_entry = 1;
         next;
     }
 
-    elsif ($line =~ /^branch nick:/) { next; }
-    elsif ($line =~ /^tags:/) { next; }
     elsif ($line =~ /^\s*$/) { next; }
 
-    entry $line;
+    if ($in_entry) {
+        entry $line;
+    }
 
 #        if ($line !~ /^(r\d+) \| (\w+) \| ([-0-9]+) ([:0-9]+ \S+) \(([^\)]+)\) \|/) {
 #            die "error parsing changlog entry header '$line'\n";
