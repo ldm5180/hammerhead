@@ -4,7 +4,7 @@
 # --------------------------------------------------------
 # Search for qwt libraries and headers.
 # DEFINES QWT_LIBADD QWT_LDFLAGS QWT_CFLAGS
-# Fails if not found
+# For each requiremnet not met (headers, libs), ACTION-IF-NOT-FOUND is run
 AC_DEFUN([AC_FIND_QWT],
 [AC_LANG_PUSH(C++)
  hdr=`echo qwt.h | $as_tr_sh`
@@ -42,6 +42,10 @@ AC_DEFUN([AC_FIND_QWT],
      fi;
   fi; 
  done
+ if test "x$got" = "xno"; then
+   AC_MSG_WARN([Unable to find qwt headers])
+   [$6]
+ fi;
 
  got=no
  for dir in '' $5; do 
@@ -77,7 +81,7 @@ AC_DEFUN([AC_FIND_QWT],
   fi;
  done;
  if test "x$got" = "xno"; then
-   AC_MSG_WARN([Unable to find qwt libs or headers])
+   AC_MSG_WARN([Unable to find qwt libs])
    [$6]
  fi;
 AC_LANG_POP(C++)
