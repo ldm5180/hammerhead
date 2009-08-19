@@ -43,6 +43,7 @@ AC_DEFUN([AC_FIND_QWT],
   fi; 
  done
 
+ got=no
  for dir in '' $5; do 
   if test "x${got}" = "xno"; then
    ext_ldflag_cvdir=`echo $dir | $as_tr_sh`
@@ -68,7 +69,9 @@ AC_DEFUN([AC_FIND_QWT],
    AS_IF([test "$ac_res" != no],
      [got=yes; 
       AC_SUBST([QWT_LIBADD], ["$ac_res"])
-      AC_SUBST([QWT_LDFLAGS], ["-L${dir}"])
+      if test "x${dir}" != "x"; then
+       AC_SUBST([QWT_LDFLAGS], ["-L${dir}"])
+      fi
      ])
    AS_VAR_POPDEF([ac_cv_qwt])
   fi;
