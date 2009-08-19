@@ -317,26 +317,34 @@ AC_ARG_ENABLE(qt4, AC_HELP_STRING([--disable-qt4],
 #            [[$ac_path_QMAKE -version | grep -iq 'qt version 4' && ac_cv_path_QMAKE=$ac_path_QMAKE ac_path_QMAKE_found=:]],
 #            [AC_MSG_ERROR([could not find qmake for QT4 ])])])
 if test "x$ENABLE_QT4" = "xyes" ; then
+    qt_ok=yes
     AC_PATH_PROGS([QMAKE], 
         [qmake-qt4 qmake-4.4 qmake qmake-mac],
         [not-found])
     if test "x$QMAKE" = "xnot-found" ; then
-        AC_MSG_ERROR([could not find qmake for QT4 ])
-    fi;
-    AC_SUBST([QMAKE], [$ac_cv_path_QMAKE])
+        AC_MSG_WARN([could not find qmake for QT4 ])
+        qt_ok=no
+    else
+        AC_SUBST([QMAKE], [$ac_cv_path_QMAKE])
 
-    AC_FIND_QWT(5.0.0,4,
-        [qwt-qt4 qwt], 
-        [/usr/include/qwt5 /usr/include/qwt-qt4])
+        AC_FIND_QWT(5.0.0,4,
+            [qwt-qt4 qwt], 
+            [/usr/include/qwt5 /usr/include/qwt-qt4 /opt/local/include],
+            [/opt/local/lib],
+            [qt_ok=no])
+    fi
 
+    if test "x$qt_ok" = "xno"; then
+        if test "x$HAVE_LINUX" = "xyes"; then
+            AC_MSG_ERROR([QT or QWT could not be found. See previous errors.])
+        fi
+        ENABLE_QT4=no
+    fi
 
 fi
 
-if test "x$HAVE_LINUX" = "xyes"; then
 AM_CONDITIONAL(ENABLE_QT4, [test "x$ENABLE_QT4" = "xyes"])
-else
-AM_CONDITIONAL(ENABLE_QT4, [test "xyes" = "xno"]) #this will always be false
-fi
+
 
 if test "x$HAVE_DARWIN" = "xyes"; then
     echo "checking for LTKC... disabled"

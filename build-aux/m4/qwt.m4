@@ -1,6 +1,6 @@
 
 # AC_FIND_QWT(QWT-VERSION, QT-VERSION, SEARCH-LIBS,
-#             INCLUDE-SEARCH-PATH)
+#             INCLUDE-SEARCH-PATH, [LIBRARY-SEARCH-PATH], [ACTION-IF-NOT-FOUND])
 # --------------------------------------------------------
 # Search for qwt libraries and headers.
 # DEFINES QWT_LIBADD QWT_LDFLAGS QWT_CFLAGS
@@ -43,33 +43,39 @@ AC_DEFUN([AC_FIND_QWT],
   fi; 
  done
 
- if test "x${got}" = "xno"; then
-  AC_MSG_FAILURE([Unable to find qwt.h])
+ for dir in '' $5; do 
+  if test "x${got}" = "xno"; then
+   ext_ldflag_cvdir=`echo $dir | $as_tr_sh`
+   AS_VAR_PUSHDEF([ac_cv_qwt], [ac_cv_qwt_${ext_ldflag_cvdir}lib])dnl
+   AC_CACHE_CHECK([for qwt libs], [ac_cv_qwt],
+    [ac_func_search_save_LIBS=$LIBS
+     ac_func_search_save_LDFLAGS=$LDFLAGS
+    AC_LANG_CONFTEST([AC_LANG_CALL([], [_ZN7QwtPlot8initPlotERK7QwtText])])
+    for ac_lib in '' $3; do
+      if test -z "$ac_lib"; then
+        ac_res=""
+      else
+        ac_res=-l$ac_lib
+        LIBS="-l$ac_lib $ac_func_search_save_LIBS"
+      fi
+      AC_LINK_IFELSE([], [AS_VAR_SET([ac_cv_qwt], [$ac_res])])
+      AS_VAR_SET_IF([ac_cv_qwt], [break])dnl
+    done
+    AS_VAR_SET_IF([ac_cv_qwt], , [AS_VAR_SET([ac_cv_qwt], [no])])dnl
+    rm conftest.$ac_ext
+    LIBS=$ac_func_search_save_LIBS])
+   ac_res=AS_VAR_GET([ac_cv_qwt])
+   AS_IF([test "$ac_res" != no],
+     [got=yes; 
+      AC_SUBST([QWT_LIBADD], ["$ac_res"])
+      AC_SUBST([QWT_LDFLAGS], ["-L${dir}"])
+     ])
+   AS_VAR_POPDEF([ac_cv_qwt])
+  fi;
+ done;
+ if test "x$got" = "xno"; then
+   AC_MSG_WARN([Unable to find qwt libs or headers])
+   [$6]
  fi;
-     
- got=no
- AS_VAR_PUSHDEF([ac_cv_qwt], [ac_cv_qwt_libs])dnl
- AC_CACHE_CHECK([for qwt libs], [ac_cv_qwt],
- [ac_func_search_save_LIBS=$LIBS
- AC_LANG_CONFTEST([AC_LANG_CALL([], [_ZN7QwtPlot8initPlotERK7QwtText])])
- for ac_lib in '' $3; do
-   if test -z "$ac_lib"; then
-     ac_res=""
-   else
-     ac_res=-l$ac_lib
-     LIBS="-l$ac_lib $ac_func_search_save_LIBS"
-   fi
-   AC_LINK_IFELSE([], [AS_VAR_SET([ac_cv_qwt], [$ac_res])])
-   AS_VAR_SET_IF([ac_cv_qwt], [break])dnl
- done
- AS_VAR_SET_IF([ac_cv_qwt], , [AS_VAR_SET([ac_cv_qwt], [no])])dnl
- rm conftest.$ac_ext
- LIBS=$ac_func_search_save_LIBS])
- ac_res=AS_VAR_GET([ac_cv_qwt])
- AS_IF([test "$ac_res" != no],
-   [AC_SUBST([QWT_LIBADD], ["$ac_res"],
-   [AC_MSG_FAILURE([Unable to find qwt libs])])
- ])
- AS_VAR_POPDEF([ac_cv_qwt])
 AC_LANG_POP(C++)
 ])
