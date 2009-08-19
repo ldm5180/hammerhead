@@ -311,11 +311,18 @@ AC_ARG_ENABLE(qt4, AC_HELP_STRING([--disable-qt4],
       [ENABLE_QT4=$enableval],
       [ENABLE_QT4=yes])
 
+# The following is more reliable, but requires autoconf >= 2.62
+#    AC_CACHE_CHECK([for qmake for QT4], [ac_cv_path_QMAKE],
+#        [AC_PATH_PROGS_FEATURE_CHECK([QMAKE], [qmake-qt4 qmake-4.4 qmake qmake-mac],
+#            [[$ac_path_QMAKE -version | grep -iq 'qt version 4' && ac_cv_path_QMAKE=$ac_path_QMAKE ac_path_QMAKE_found=:]],
+#            [AC_MSG_ERROR([could not find qmake for QT4 ])])])
 if test "x$ENABLE_QT4" = "xyes" ; then
-    AC_CACHE_CHECK([for qmake for QT4], [ac_cv_path_QMAKE],
-        [AC_PATH_PROGS_FEATURE_CHECK([QMAKE], [qmake-qt4 qmake-4.4 qmake qmake-mac],
-            [[$ac_path_QMAKE -version | grep -iq 'qt version 4' && ac_cv_path_QMAKE=$ac_path_QMAKE ac_path_QMAKE_found=:]],
-            [AC_MSG_ERROR([could not find qmake for QT4 ])])])
+    AC_PATH_PROGS([QMAKE], 
+        [qmake-qt4 qmake-4.4 qmake qmake-mac],
+        [not-found])
+    if test "x$QMAKE" = "xnot-found" ; then
+        AC_MSG_ERROR([could not find qmake for QT4 ])
+    fi;
     AC_SUBST([QMAKE], [$ac_cv_path_QMAKE])
 
     AC_FIND_QWT(5.0.0,4,
