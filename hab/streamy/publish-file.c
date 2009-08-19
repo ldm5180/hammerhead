@@ -11,6 +11,7 @@
 #include <glib.h>
 
 #include "hardware-abstractor.h"
+#include "streamy-hab.h"
 
 
 int publish_file(void *stream_as_voidp) {
@@ -33,7 +34,11 @@ int publish_file(void *stream_as_voidp) {
         if (r <= 0) break;
 
         hab_publish_stream(stream, buf, r);
-        g_usleep(2000); // sleep .002 seconds == 50KBs
+        if(bandwidth_limit > 0){
+            //fprintf(stderr, "Sleeping %lf usec for %d bytes\n", 
+            //    (r/bandwidth_limit * (1e6/1024)), r);
+            g_usleep(r/bandwidth_limit * (1e6/1024));
+        }
     } while(1);
 
     fclose(f);

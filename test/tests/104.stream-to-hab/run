@@ -12,6 +12,7 @@ if [ -z "$ROOT" ]; then
     exit 1
 fi
 
+BW_LIMIT=2 #KB/sec
 
 echo starting Streamy HAB
 $ROOT/hab/streamy/streamy-hab --id $UNIQUE &
@@ -20,7 +21,7 @@ STREAM="Streamy.$UNIQUE.incoming:incoming"
 for FILE in test-pattern-*; do
     rm -f incoming:incoming
     echo sending file $FILE to stream $STREAM
-    $ROOT/client/stream/bionet-stream $STREAM < $FILE
+    $ROOT/client/stream/bionet-stream --bandwidth-limit $BW_LIMIT $STREAM < $FILE
 
     mv incoming:incoming out.$FILE
     if ! cmp  $FILE out.$FILE ; then

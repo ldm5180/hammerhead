@@ -13,17 +13,29 @@ fi
 
 UNIQUE=$$
 
+. $ROOT/test/testlib.sh
+
+BW_LIMIT=2 #KB/sec
+
+
 
 echo starting Streamy HAB
-$ROOT/hab/streamy/streamy-hab --id $UNIQUE &
+$ROOT/hab/streamy/streamy-hab --id $UNIQUE --bandwidth-limit $BW_LIMIT &
+SHABPID=$!
 
 for FILE in test-pattern-*; do
     STREAM="Streamy.$UNIQUE.outgoing:$FILE" 
     echo reading file $FILE via stream $STREAM
     $ROOT/client/stream/bionet-stream $STREAM >| out.$FILE &
-    sleep 5
-    kill %2
-    wait %2
+    SCLIENTPID=$!
+
+    size=`stat -c%s $FILE`
+    delay=`expr $size / \( 1000 \* $BW_LIMIT \) + 5`
+
+    if ! time_wait $SCLIENTPID $delay; then
+        kill $SCLIENTPID
+        wait $SCLIENTPID
+    fi
 
     if ! cmp  $FILE out.$FILE ; then
         echo "ERROR: $FILE differs from out.$FILE:"

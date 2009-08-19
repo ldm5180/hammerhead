@@ -14,6 +14,8 @@
 // this hab
 extern bionet_hab_t *this_hab;
 
+extern double bandwidth_limit;
+
 
 void cb_stream_subscription(const char *client_id, const bionet_stream_t *stream);
 void cb_stream_unsubscription(const char *client_id, const bionet_stream_t *stream);

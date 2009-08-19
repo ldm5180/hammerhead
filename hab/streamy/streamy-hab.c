@@ -21,16 +21,18 @@ bionet_hab_t *this_hab = NULL;
 
 GMainLoop *main_loop = NULL;
 
+double bandwidth_limit = -1.0;
 
 void usage(FILE *fp) {
     fprintf(fp,
 	    "'streamy-hab' Hardware Abstractor for streaming data.\n"
 	    "\n"
 	    "usage: streamy-hab [OPTIONS]\n"
-	    " -?,-h,--help               Print this help\n"
-	    " -i,--id <ID>               Set the HAB-ID (hostname)\n"
-	    " -s,--security-dir <dir>    Directory containing security certificates\n"
-	    " -v,--version               Print the version number\n");
+	    " -?,-h,--help                 Print this help\n"
+	    " -i,--id <ID>                 Set the HAB-ID (hostname)\n"
+	    " -b,--bandwidth-limit <float> Desired max send bandwidth per stream (KB/s)\n"
+	    " -s,--security-dir <dir>      Directory containing security certificates\n"
+	    " -v,--version                 Print the version number\n");
 
     return;
 } /* usage() */
@@ -52,12 +54,13 @@ int main(int argc, char *argv[]) {
 	static struct option long_options[] = {
 	    {"help", 0, 0, '?'},
 	    {"version", 0, 0, 'v'},
+	    {"bandwidth-limit", 1, 0, 'b'},
 	    {"id", 1, 0, 'i'},
 	    {"security-dir", 1, 0, 's'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?hvi:s:", long_options, &i);
+	c = getopt_long(argc, argv, "?b:hvi:s:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -68,6 +71,10 @@ int main(int argc, char *argv[]) {
 	case 'h':
 	    usage(stdout);
 	    exit(0);
+
+	case 'b':
+	    bandwidth_limit = strtoul(optarg, NULL, 10);
+	    break;
 
 	case 'i':
 	    id = optarg;

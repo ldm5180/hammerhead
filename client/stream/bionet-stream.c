@@ -15,6 +15,8 @@
 
 int bionet_fd;
 
+double bandwidth_limit = -1.0;
+
 
 
 
@@ -26,6 +28,7 @@ void usage(void) {
 	    "\n"
 	    " -h,--help            Show this help\n"
 	    " -v,--version         Show version number\n"
+	    " -b,--bandwidth-limit <float> Desired max send bandwidth per stream (KB/s)\n"
 	    "\n"
 	    "If STREAM is specified, it connects to the named stream.  For Producer\n"
 	    "Streams, the stream data is printed to stdout.  For Consumer Streams, the\n"
@@ -145,7 +148,7 @@ void write_to_stream(bionet_stream_t *stream) {
 
     while (1) {
         int r;
-        uint8_t buffer[1024];
+        uint8_t buffer[512];
 
         r = read(fileno(stdin), buffer, sizeof(buffer));
         if (r < 0) {
@@ -159,6 +162,9 @@ void write_to_stream(bionet_stream_t *stream) {
         }
 
         bionet_stream_write(stream, buffer, r);
+        if(bandwidth_limit > 0){
+            g_usleep(r/bandwidth_limit * (1024/1e6));
+        }
     }
 }
 
@@ -208,10 +214,11 @@ int main(int argc, char *argv[]) {
 	static struct option long_options[] = {
 	    {"help", 0, 0, 'h'},
 	    {"version", 0, 0, 'v'},
+	    {"bandwidth-limit", 1, 0, 'b'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "hv?", long_options, &i);
+	c = getopt_long(argc, argv, "b:hv?", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -225,6 +232,10 @@ int main(int argc, char *argv[]) {
 	case 'v':
 	    version();
 	    return 0;
+
+	case 'b':
+	    bandwidth_limit = strtoul(optarg, NULL, 10);
+	    break;
 
     	default:
 	    fprintf(stderr, "Incorrect usage.\n\n");
