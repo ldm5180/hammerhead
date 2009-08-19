@@ -11,6 +11,18 @@
 }
 
 {
+   glibc/pthread_create/hardy
+   Memcheck:Leak
+   fun:calloc
+   obj:*
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.*
+   fun:cal_client_mdnssd_bip_init
+   fun:bionet_connect
+   fun:main
+}
+
+{
     glib/g_thread_init
     Memcheck:Leak
     fun:memalign
