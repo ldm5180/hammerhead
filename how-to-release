@@ -10,6 +10,8 @@ in mainline:
 
     update Doxyfile version number
 
+    update the iPhone "Bundle Version" in Info.plist
+
     make clean ; ./autogen.sh && ./configure && make clean all check test
 
     commit ChangeLog, common.am, rpm/bionet.spec
@@ -44,6 +46,16 @@ in the release branch:
     building the release tarball also builds the docs, install them on our webserver: rsync -av doxygen/html/ bioserve.colorado.edu:/var/www/bionet/doc/2.1.2
 
     upload the tarball to someplace secret
+
+    Build iPhone App for AdHoc distribution:
+     - Build supporting libs with './configure-make-install-iphone.sh'
+     - Open the BioNetMonitor.xcodeproj
+     - Select "AdHoc" for the active configuration
+     - Select iPhoneDevice 2.2.1 for the active SDK
+     - Build
+     - Right Click on BioNetMonitor->Products->BioNetMonitor.app and "Reveal in Finder"
+     - Zip that up and copy it someplace secret along with the latest "Bionet Demo" AdHoc distribution 
+       profile downloaded from the apple developer portal
 
     send out an announcement email with links to the tarball and the
     API docs, and the top of the changelog
