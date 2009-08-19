@@ -31,7 +31,7 @@ stream_manager_LDADD = $(AM_LDADD) $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_UTIL) $(L
 
 
 makefile.qt: $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_CLIENT_QT4) 
-	${QT4_PATH} -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util ../libbionet-qt4 /usr/include" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=app" "CONFIG+=link_pkgconfig debug"
+	${QMAKE} -Wall -o makefile.qt "INCLUDEPATH+=../libbionet ../../util ../libbionet-qt4 /usr/include" "HEADERS+=${qtmake_headers}" "LIBS+=${dummy_LDFLAGS} ${dummy_LDADD}" "SOURCES+=${qtmake_sources}" "PKGCONFIG+=glib-2.0" "TEMPLATE=app" "CONFIG+=link_pkgconfig debug"
 	+make -f makefile.qt mocables ${qtmake_moc_objects} ${qtmake_objects} 
 
 clean-local:

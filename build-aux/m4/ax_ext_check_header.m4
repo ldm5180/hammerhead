@@ -19,7 +19,7 @@ dnl @version 2005-01-21
 dnl @license AllPermissive
 
 AC_DEFUN([AX_EXT_HAVE_HEADER],
-[AC_LANG_PUSH(C)
+[
  AC_CHECK_HEADERS($1, [got="yes"], [got="no"], $5)
  hdr=`echo $1 | $as_tr_sh`
  for dir in $2; do
@@ -27,13 +27,17 @@ AC_DEFUN([AX_EXT_HAVE_HEADER],
    ext_hashdr_cvdir=`echo $dir | $as_tr_sh`
    AC_CACHE_CHECK([for $1 library with -I$dir],
     [ext_cv${ext_hashdr_cvdir}_hashdr_${hdr}],
-    [ext_have_hdr_save_cflags=${CFLAGS}
+    [ext_have_hdr_save_cppflags=${CPPFLAGS}
+     ext_have_hdr_save_cflags=${CFLAGS}
      CFLAGS="${CFLAGS} -I${dir}"
+     CPPFLAGS="${CPPFLAGS} -I${dir}"
      AC_COMPILE_IFELSE(
       [AC_LANG_PROGRAM([#include <$1>])],
        [got="yes"; eval "ext_cv${ext_hashdr_cvdir}_hashdr_${hdr}"="yes"],
        [got="no"; eval "ext_cv${ext_hashdr_cvdir}_hashdr_${hdr}"="no"])
-      CFLAGS=$ext_have_hdr_save_cflags])
+      CFLAGS=$ext_have_hdr_save_cflags
+      CPPFLAGS=$ext_have_hdr_save_cppflags
+      ])
      if eval `echo 'test x${'ext_cv${ext_hashdr_cvdir}_hashdr_${hdr}'}' = "xyes"`; then
       CFLAGS="${CFLAGS} -I${dir}"
       CPPFLAGS="${CPPFLAGS} -I${dir}"
@@ -43,4 +47,4 @@ AC_DEFUN([AX_EXT_HAVE_HEADER],
        [Define this if you have the $1 header])
   fi; fi; done
   AS_IF([test "x${got}" = "xyes"], [$3], [$4])
-AC_LANG_POP])
+])
