@@ -9,7 +9,7 @@ AC_DEFUN([AC_FIND_QWT],
 [AC_LANG_PUSH(C++)
  hdr=`echo qwt.h | $as_tr_sh`
  got=no
- xtra_incdir="-I/usr/include/qt4 -I/usr/include/qt4/Qt"
+ xtra_incdir="-I/usr/include/qt4 -I/usr/include/qt4/Qt -I/usr/include/Qt -I/opt/local/libexec/qt4-mac/include -I/opt/local/libexec/qt4-mac/include/Qt"
  if test "x$1" != "x"; then
   minqwt=`echo $1 | awk -F . '{printf "0x%02d%02d%02d", $[]1, $[]2, $[]3}'`
  else
