@@ -35,8 +35,8 @@ class BionetModel : public QStandardItemModel {
     public:
         BionetModel(QObject* parent=0);
 
-        QString getName(const QModelIndex &index) const;
-        QString getID(const QModelIndex &index) const;
+        QString name(const QModelIndex &index) const;
+        QString id(const QModelIndex &index) const;
 
     public slots:
         void newHab(bionet_hab_t* hab);

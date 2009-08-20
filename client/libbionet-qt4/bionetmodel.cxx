@@ -11,12 +11,12 @@
 BionetModel :: BionetModel(QObject* parent) : QStandardItemModel(parent) { }
 
 
-QString BionetModel::getName(const QModelIndex &index) const {
+QString BionetModel::name(const QModelIndex &index) const {
     return index.data(FULLNAMEROLE).toString();
 }
 
 
-QString BionetModel::getID(const QModelIndex &index) const {
+QString BionetModel::id(const QModelIndex &index) const {
     return index.data(Qt::DisplayRole).toString();
 }
 
@@ -31,20 +31,20 @@ void BionetModel::newHab(bionet_hab_t *hab) {
         return;
     }
 
-    QString name = QString(hab_name);
+    QString myName = QString(hab_name);
     
-    QList<QStandardItem*> list = findItems(name);
+    QList<QStandardItem*> list = findItems(myName);
 
     if ( list.isEmpty() ) {
         QIcon icon;
-        item = new QStandardItem(name);
+        item = new QStandardItem(myName);
 
         if (bionet_hab_is_secure(hab))
             icon = QIcon(QString(":/icons/lock.png"));
         else
             icon = QIcon(QString(":/icons/unlock.png"));
 
-        item->setData(name, Qt::UserRole);
+        item->setData(myName, Qt::UserRole);
         item->setData(QVariant(icon), Qt::DecorationRole);
         item->setColumnCount(5);
         invisibleRootItem()->appendRow(item);
@@ -63,17 +63,17 @@ void BionetModel::lostHab(bionet_hab_t* hab) {
         return;
     }
     
-    QString name = QString(hab_name);
+    QString myName = QString(hab_name);
 
-    habList = findItems(name);
+    habList = findItems(myName);
     if ( habList.isEmpty() ) {
-        qWarning() << "Unable to delete hab (" << qPrintable(name) << "): hab does not exist" << endl;
+        qWarning() << "Unable to delete hab (" << qPrintable(myName) << "): hab does not exist" << endl;
         return;
     }
 
     habItem = habList.first();
     if ( !removeRow(habItem->row(), indexFromItem(habItem->parent())) ) {
-        qWarning() << "Unable to delete hab (" << qPrintable(name) << "): hab could not be removed" << endl;
+        qWarning() << "Unable to delete hab (" << qPrintable(myName) << "): hab could not be removed" << endl;
     }
 }
 
@@ -122,7 +122,7 @@ void BionetModel::newNode(bionet_node_t* node) {
         bionet_resource_t* resource = bionet_node_get_resource_by_index(node, i);
         bionet_datapoint_t* datapoint;
         bionet_value_t* bionet_value;
-        QStandardItem *name, *flavor, *type, *time, *value;
+        QStandardItem *nameItem, *flavor, *type, *time, *value;
         const char *resource_name;
 
         resource_name = bionet_resource_get_name(resource);
@@ -133,7 +133,7 @@ void BionetModel::newNode(bionet_node_t* node) {
 
         QString rid = QString(resource_name);
 
-        name = new QStandardItem(bionet_resource_get_id(resource));
+        nameItem = new QStandardItem(bionet_resource_get_id(resource));
         flavor = new QStandardItem(bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)));
         type = new QStandardItem(bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)));
 
@@ -147,9 +147,9 @@ void BionetModel::newNode(bionet_node_t* node) {
             value = new QStandardItem(bionet_value_to_str(bionet_value));
         }
 
-        name->setData(rid, Qt::UserRole);
+        nameItem->setData(rid, Qt::UserRole);
 
-        resList << name << flavor << type << time << value;
+        resList << nameItem << flavor << type << time << value;
         nodeItem->appendRow(resList);
         
         emit(newResource(rid));
@@ -273,20 +273,20 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
         return;
     }
 
-    QString name = QString(resource_name);
+    QString myName = QString(resource_name);
     
     QModelIndexList resourceList = match(index(0, 0, invisibleRootItem()->index()), 
-            Qt::UserRole, QVariant(name), 1, 
+            Qt::UserRole, QVariant(myName), 1, 
             Qt::MatchExactly | Qt::MatchRecursive);
     
     if ( resourceList.isEmpty() ) {
-        qWarning() << "Cannot update (unable to find resource:" << qPrintable(name) << ")" << endl;
+        qWarning() << "Cannot update (unable to find resource:" << qPrintable(myName) << ")" << endl;
         return;
     }
 
     res = resourceList.first();
     
-    //cout << "wanted to update resource " << qPrintable(name) << endl;
+    //cout << "wanted to update resource " << qPrintable(myName) << endl;
     //cout << "going to update resource " << qPrintable(res.data(Qt::UserRole).toString()) << endl;
 
     value = bionet_datapoint_get_value(datapoint);
@@ -314,16 +314,16 @@ void BionetModel::lineActivated(QModelIndex current) {
     } else
         realSelected = current;
 
-    QString name = getName(realSelected);
-    QString id = getID(realSelected);
+    QString myName = name(realSelected);
+    QString myID = id(realSelected);
 
-    if ( resRX.exactMatch(name) ) {
+    if ( resRX.exactMatch(myName) ) {
 
         bionet_resource_t* res = bionet_cache_lookup_resource(
-            qPrintable(name.section('.', 0, 0)),
-            qPrintable(name.section('.', 1, 1)),
-            qPrintable(name.section('.', 2, 2).section(':', 0, 0)),
-            qPrintable(id));
+            qPrintable(myName.section('.', 0, 0)),
+            qPrintable(myName.section('.', 1, 1)),
+            qPrintable(myName.section('.', 2, 2).section(':', 0, 0)),
+            qPrintable(myID));
 
         if (res != NULL) {
             emit resourceSelected(res);
@@ -331,10 +331,10 @@ void BionetModel::lineActivated(QModelIndex current) {
         } 
         
         bionet_stream_t* stream = bionet_cache_lookup_stream(
-            qPrintable(name.section('.', 0, 0)),
-            qPrintable(name.section('.', 1, 1)),
-            qPrintable(name.section('.', 2, 2).section(':', 0, 0)),
-            qPrintable(id));
+            qPrintable(myName.section('.', 0, 0)),
+            qPrintable(myName.section('.', 1, 1)),
+            qPrintable(myName.section('.', 2, 2).section(':', 0, 0)),
+            qPrintable(myID));
 
         if (stream != NULL) {
             emit streamSelected(stream);
@@ -344,18 +344,18 @@ void BionetModel::lineActivated(QModelIndex current) {
         // If the selected line was didn't exist then....???
         
         qWarning() << "Actived Index has resource/stream name but does not exist: " 
-             << qPrintable(name) 
+             << qPrintable(myName) 
              << endl;
 
         return;
-    } else if ( nodeRX.exactMatch(name) ) {
+    } else if ( nodeRX.exactMatch(myName) ) {
         emit nodeSelected(bionet_cache_lookup_node(
-            qPrintable(name.section('.', 0, 0)),
-            qPrintable(name.section('.', 1, 1)),
-            qPrintable(id)));
-    } else if ( habRX.exactMatch(name) ) {
+            qPrintable(myName.section('.', 0, 0)),
+            qPrintable(myName.section('.', 1, 1)),
+            qPrintable(myID)));
+    } else if ( habRX.exactMatch(myName) ) {
         emit habSelected(bionet_cache_lookup_hab(
-            qPrintable(name.section('.', 0, 0)),
-            qPrintable(name.section('.', 1, 1))));
+            qPrintable(myName.section('.', 0, 0)),
+            qPrintable(myName.section('.', 1, 1))));
     }
 }
