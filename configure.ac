@@ -108,6 +108,8 @@ if test "x$host_alias" != x; then
   elif test "x$build_alias" != "x$host_alias"; then
     cross_compiling=yes
     AM_CONDITIONAL(CROSS_COMPILING, test "x" = "x")
+  else
+    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
   fi
 else
     AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
