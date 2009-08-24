@@ -1,0 +1,27 @@
+This directory contains the gentoo portage overlay for bionet 2.
+
+Usage:
+To emerge bionet2, checkout this directory, and add the following line to /etc/make.conf 9Replace CHEKOUTDIR with the actual directory:
+PORTDIR_OVERLAY="${PORTDIR_OVERLAY} CHECKOUTDIR"
+
+Emerge with:
+  emerge bionet
+
+To install pre-build packages:
+Add bioserve public reporistory to make.conf:
+echo 'PORTAGE_BINHOST="http://bioserve.colorado.edu/gentoo"' >> /etc/make.conf
+
+install with:
+  emerge --usepkg --getbinpkg bionet
+
+Maintaining:
+Whenever there is a new build:
+copy/link the ebuild to match the new tarball number
+
+Releasing:
+To release:
+ - Copy/link the release ebuild to the latest version, and install on the public overlay server
+ - Build a binary package with 'emerge --buildpkgonly'
+ - Upload the binary package to public binary BINHOST server
+
+

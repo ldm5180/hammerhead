@@ -15,6 +15,8 @@ LICENSE=""
 SLOT="1"
 KEYWORDS="~x86 ~amd64"
 IUSE="bluetooth qt4 python alsa"
+#Never try to download from mirror
+RESTRICT="mirror"
 EAPI="2"
 
 #Build Dependencies
@@ -29,12 +31,14 @@ DEPEND="
 
 #Runtime Dependencies (Adds to build-deps)
 RDEPEND="
-	>=dev-lang/pythpn-2.5
+	>=dev-lang/python-2.5
 net-dns/avahi[mdnsresponder-compat]
 alsa? ( media-libs/alsa-lib )
 bluetooth? ( net-wireless/bluez-libs )
 qt4? (
-	>=x11-libs/qt-4.0
+	>=x11-libs/qt-core-4.5
+	>=x11-libs/qt-gui-4.5
+	>=x11-libs/qt-svg-4.5
 	>=x11-libs/qwt-5.0
 	)
 "
@@ -52,4 +56,8 @@ src_configure() {
 
 src_compile() {
 	emake || die "Error: emake failed!"
+}
+
+src_install() {
+	emake DESTDIR="${D}" install
 }
