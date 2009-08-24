@@ -15,6 +15,7 @@ libcal_mdnssd_bip_shared_la_SOURCES =   \
     bip-net-is-connected.c              \
     bip-net-disconnect.c                \
     bip-net-free.c                      \
+    bip-net-destroy.c                   \
     bip-read-from-peer.c                \
     bip-send-message.c                  \
     bip-peer-new.c                      \
