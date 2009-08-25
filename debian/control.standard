@@ -28,14 +28,14 @@ Section: unknown
 Architecture: any
 Depends: ${shlibs:Depends}
 Suggests: bionet2-www
-Description: Bionet2
+Description: A network-transparent pub/sub system for information exchange
  Bionet2 HABs, Clients, and shared libraries, and BDM
 
 Package: bionet2-dev
 Section: unknown
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: Bionet2
+Description: A network-transparent pub/sub system for information exchange (development files)
  Bionet2 headers and static libraries
 
 Package: bionet2-www
@@ -43,5 +43,6 @@ Section: unknown
 Architecture: any
 Depends: bionet2, python
 Recommends: httpd-cgi
-Description: Bionet2 WWW
- Bionet2 web infrastructure
+Description: A network-transparent pub/sub system for information exchange (web gui stuff)
+ This package contains bdmplots, a system for plotting historical Bionet
+ data (from the Bionet Data Manager) onto web pages.
