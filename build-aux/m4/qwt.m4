@@ -66,7 +66,7 @@ AC_DEFUN([AC_FIND_QWT],
       AC_LINK_IFELSE([], [AS_VAR_SET([ac_cv_qwt], [$ac_res])])
       AS_VAR_SET_IF([ac_cv_qwt], [break])dnl
     done
-    AS_VAR_SET_IF([ac_cv_qwt], , [AS_VAR_SET([ac_cv_qwt], [no])])dnl
+    AS_VAR_SET_IF([ac_cv_qwt], , [AS_VAR_SET([ac_cv_qwt], [no])])
     rm conftest.$ac_ext
     LIBS=$ac_func_search_save_LIBS])
    ac_res=AS_VAR_GET([ac_cv_qwt])
