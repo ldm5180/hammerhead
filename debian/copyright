@@ -16,5 +16,7 @@ License:
     Don't even think about it.
 
 
-# Please also look if there are files or directories which have a
-# different copyright/license attached and list them here.
+This package includes the LTK library, which is Copyright 2007, 2008
+Impinj, Inc., and licensed under the Apache-2.0 license.  It was
+downloaded from <http://sourceforge.net/projects/llrp-toolkit/>
+
