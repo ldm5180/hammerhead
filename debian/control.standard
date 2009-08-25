@@ -19,7 +19,7 @@ Build-Depends: debhelper (>= 6),
  check,
  bison,
  flex
-Standards-Version: 3.7.3
+Standards-Version: 3.8.0
 Section: libs
 Homepage: http://bioserve.colorado.edu/bionet
 
