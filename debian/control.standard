@@ -35,7 +35,7 @@ Package: bionet2-dev
 Section: unknown
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: A network-transparent pub/sub system for information exchange (development files)
+Description: A network-transparent pub/sub system for information exchange (devel files)
  Bionet2 headers and static libraries
 
 Package: bionet2-www
