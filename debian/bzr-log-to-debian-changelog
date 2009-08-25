@@ -91,16 +91,30 @@ while (defined (my $line = shift(@bzr_log))) {
 
     elsif ($line =~ /^committer:\s+(.*)/) {
         my $raw = $1;
-        if ($raw =~ /^.* <.*@.*>$/) {
-            $committer = $raw;
-        } elsif ($raw =~ /^<(.*)@.*>$/) {
-            $committer = "$1 $raw";
-        } elsif ($raw =~ /^(.*)@.*$/) {
-            $committer = "$1 <$raw>";
+        my ($real_name, $email_name, $email_domain);
+
+        if ($raw =~ /^(.*) <(.*)@(.*)>$/) {
+            $real_name = $1;
+            $email_name = $2;
+            $email_domain = $3;
+
+        } elsif (($raw =~ /^<(.*)@(.*)>$/) or ($raw =~ /^(.*)@(.*)$/)) {
+            $real_name = $1;
+            $email_name = $1;
+            $email_domain = $2;
+
         } else {
             # bogus committer, just make something up
-            $committer = "$raw <unknown\@unknown>";
+            $real_name = $raw;
+            $email_name = "unknown";
+            $email_domain = "unknown.net";
         }
+
+        if ($email_domain !~ /\./) {
+            $email_domain = "$email_domain.unknown.net";
+        }
+
+        $committer = "$real_name <$email_name\@$email_domain>";
         next;
     }
 
