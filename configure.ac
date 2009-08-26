@@ -496,7 +496,9 @@ AC_CONFIG_FILES([Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
-                 data-manager/py-client/Makefile
+                 data-manager/client/libbdm/Makefile
+                 data-manager/client/py-libbdm/Makefile
+                 data-manager/client/bdm-client/Makefile
                  data-manager/bdmplot/Makefile
 		 security/Makefile
 		 security/ca/Makefile

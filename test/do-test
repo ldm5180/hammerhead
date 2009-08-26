@@ -14,6 +14,9 @@ NUM_FAILED=0
 
 TESTS=$@
 
+. $ROOT/test/config.sh
+
+
 if [ -z "$TESTS" ]; then
     TESTS=$(ls -1d tests/* | sort)
 fi

@@ -8,7 +8,6 @@
 %{
 #include "bdm-client.h"
 #include "bdm-client-interface.h"
-#include "bdm-util.h"
 #include "bionet-util.h"
 #include "bionet-hab.h"
 #include "bionet-node.h"
@@ -27,7 +26,6 @@ typedef struct timeval
 
 %include "bdm-client.h"
 %include "bdm-client-interface.h"
-%include "bdm-util.h"
 %include "bionet-asn.h"
 %include "bionet-util.h"
 %include "bionet-hab.h"

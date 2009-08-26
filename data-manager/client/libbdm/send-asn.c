@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "bdm-client.h"
+#include "bdm-util.h"
 
 extern int bdm_fd;
 

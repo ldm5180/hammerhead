@@ -134,7 +134,7 @@ void usage(void) {
 
 int main(int argc, char *argv[]) {
     char *bdm_hostname = NULL;
-    uint16_t bdm_port = BDM_PORT;
+    uint16_t bdm_port = 0;
     char *resource_name_pattern = "*.*.*:*";
     struct timeval datapointStart, datapointEnd;
     int entryStart = -1, entryEnd = -1;

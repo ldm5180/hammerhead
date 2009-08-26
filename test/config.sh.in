@@ -11,3 +11,14 @@ export LIBTOOL="$top_builddir/libtool"
 @ENABLE_DARWIN_TRUE@export VGSUPPRESSIONS_SUFFIX=.darwin
 
 @ENABLE_ION_TRUE@export ENABLE_ION=1
+
+PYEXTRA=$ROOT/data-manager/client/py-libbdm:$ROOT/data-manager/client/py-libbdm/.libs
+if [ -z "$PYTHONPATH" ]; then
+    export PYTHONPATH=$PYEXTRA
+else
+    export PYTHONPATH=$PYEXTRA:$PYTHONPATH
+fi
+
+export DYLD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs:$ROOT/data-manager/client/libbdm/.libs
+
+export LD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs:$ROOT/data-manager/client/libbdm/.libs

@@ -10,8 +10,4 @@ if ENABLE_BDM
 
 SUBDIRS = server client bdmplot
 
-if ENABLE_PYTHON
-SUBDIRS += py-client
-endif
-
 endif

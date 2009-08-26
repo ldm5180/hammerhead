@@ -78,6 +78,11 @@ CFLAGS_BIONET_ASN1 = -I$(top_srcdir)/asn.1 $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_ASN1 = -L$(top_srcdir)/asn.1
 LIBS_BIONET_ASN1 = $(top_srcdir)/asn.1/libbionet-asn.la $(OPENSSL_LIBS)
 
+INCLUDES_BDM = $(top_srcdir)/data-manager/client/libbdm/bdm-client.h
+CFLAGS_BDM = -I$(top_srcdir)/data-manager/client/libbdm $(GLIB_CFLAGS) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1)
+LDFLAGS_BDM = -L$(top_srcdir)/data-manager/client/libbdm $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1)
+LIBS_BDM = $(top_srcdir)/data-manager/client/libbdm/libbdm.la
+
 INCLUDES_QT = `pkg-config --cflags QtCore` `pkg-config --cflags QtGui`
 LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`
 

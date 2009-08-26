@@ -24,3 +24,11 @@ time_wait() {
 }
 
 
+file_size() {
+    if [ -n "$ENABLE_DARWIN" ]; then
+        stat -f %z $1
+    else
+        stat -c %s $1
+    fi
+}
+

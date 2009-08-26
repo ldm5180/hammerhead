@@ -29,7 +29,7 @@ for FILE in test-pattern-*; do
     $ROOT/client/stream/bionet-stream $STREAM >| out.$FILE &
     SCLIENTPID=$!
 
-    size=`stat -c%s $FILE`
+    size=$(file_size $FILE)
     delay=`expr $size / \( 1000 \* $BW_LIMIT \) + 5`
 
     if ! time_wait $SCLIENTPID $delay; then

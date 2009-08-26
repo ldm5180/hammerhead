@@ -11,6 +11,7 @@
 #include <glib.h>
 
 #include "bdm-client.h"
+#include "bdm-util.h"
 
 extern int bdm_fd;
 int bdm_last_entry = -1;

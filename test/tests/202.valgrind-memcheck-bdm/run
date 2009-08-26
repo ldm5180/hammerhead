@@ -52,14 +52,6 @@ wait %2
 sleep 1 # let the BDM get any last things sent by the random-hab
 
 echo getting data from bdm
-if [ -z "$PYTHONPATH" ]; then
-    export PYTHONPATH=$ROOT/data-manager/py-client:$ROOT/data-manager/py-client/.libs
-else
-    export PYTHONPATH=$ROOT/data-manager/py-client:$ROOT/data-manager/py-client/.libs:$PYTHONPATH
-fi
-export DYLD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs
-export LD_LIBRARY_PATH=$ROOT/util/.libs:$ROOT/asn.1/.libs
-
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-client.py
 
 echo "killing BDM"
