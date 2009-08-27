@@ -14,7 +14,9 @@ libbdm_la_SOURCES =             \
     connect.c                   \
     disconnect.c                \
     get-resource-datapoints.c   \
-    send-asn.c
+    global.c   \
+    register-callback.c \
+    send-asn.c                  
 
 libbdm_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -I$(top_srcdir)/data-manager/include
 

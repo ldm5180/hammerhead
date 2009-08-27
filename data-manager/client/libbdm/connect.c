@@ -163,6 +163,10 @@ static const char *libbionet_get_id(void) {
 
 
 
+int bdm_connect(void) {
+    //TODO: Return CAL file descriptor
+    return -1;
+}
 
 // 
 // Opens a TCP connection to the BDM server specified by
@@ -173,7 +177,7 @@ static const char *libbionet_get_id(void) {
 // Returns the socket fd if the connection is open, -1 if there's a problem.
 //
 
-int bdm_connect(char *hostname, uint16_t port) {
+int bdm_add_server(char *hostname, uint16_t port) {
     struct sockaddr_in server_address;
     struct hostent *server_host;
 

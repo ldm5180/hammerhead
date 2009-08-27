@@ -10,7 +10,7 @@
 
 #include <glib.h>
 
-#include "bdm-client.h"
+#include "libbdm-internal.h"
 #include "bdm-util.h"
 
 extern int bdm_fd;

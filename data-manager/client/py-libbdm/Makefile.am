@@ -13,7 +13,6 @@ python_LTLIBRARIES = _bdm_client.la
 
 BUILT_SOURCES = bdm-client_wrap.c
 _bdm_client_la_SOURCES = bdm-client_wrap.c bdm-client-interface.c  
-#SWIG_SOURCES = bdm-client.i
 
 _bdm_client_la_LIBADD = $(LIBS_BDM) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(GLIB_LIBS)
 
@@ -22,7 +21,7 @@ _bdm_client_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) $(SWIG_PYTHON_CPPFLAGS) -fno-
 _bdm_client_la_LDFLAGS = -module $(LDFLAGS_BDM) $(LDFLAGS_BIONET_ASN1) -version-info $(BIONET_INTERFACE_VERSION) 
 
 
-bdm-client_wrap.c: bdm-client.i bdm-client-interface.c $(INCLUDES_BIONET_UTIL) 
+bdm-client_wrap.c: bdm-client.i bdm-client-interface.c $(INCLUDES_BIONET_UTIL) $(INCLUDES_BDM)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) -I../libbdm -o $@ $<
 
 clean-local:

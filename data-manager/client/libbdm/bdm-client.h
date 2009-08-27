@@ -4,8 +4,8 @@
 // NNC07CB47C.
 
 
-#ifndef __BDM_H
-#define __BDM_H
+#ifndef __BDM_CLIENT_H
+#define __BDM_CLIENT_H
 
 
 #include <stdint.h>
@@ -20,15 +20,54 @@
  * Describes the Bionet Data Manager API
  */
 
-
-// FIXME: switch to CAL and this'll use mDNS-SD
-int bdm_connect(char *hostname, uint16_t port);
-int bdm_is_connected(void);
-void bdm_disconnect(void);
-
-
 typedef struct bionet_bdm_t_opaque bionet_bdm_t;
 
+/**
+ * @brief Connect to a specific BDM server
+ *
+ * Connect to the specified BDM server, and act as if it has been discovered.
+ * Usefull the the BDM server is not on the link-local network
+ *
+ * @param[in] hostname The hostname or ipaddress string to connect to
+ *
+ * @param[in] port The port the server is available in (host-byte-ordered), or
+ * 0 to use default
+ */
+int bdm_add_server(char *hostname, uint16_t port); int bdm_is_connected(void);
+
+/**
+ * Connect to Bionet BDM network
+ *
+ * Calling this function from a BDM Client is optional, it will be called implicitly when needed by other Bionet BDM library finctions.
+ *
+ * @note If the connection is already opened, this function does nothing and just returns the file descriptor.
+ *
+ * @retval >=0 success, a non-blocking file descriptor.
+ * @retval -1 failure, check errno
+ *
+ *  @note file descriptor is associated with the Bionet network.  The file 
+ * descriptor should not be read or written directly by the Client.
+ * If the file descriptor is readable, the Client should call bionet_read()
+ * to service it.  Since the fd is non-blocking, the client may also call
+ * bionet_read() in a polling way, though this is less efficient than using
+ * select() or poll() on the fd.
+ */
+int bdm_connect(void);
+
+/**
+ * @brief Checks to see if Bionet BDM library is connected to Bionet BDM network
+ *
+ * @retval TRUO (non-zero) - the library is connected
+ * @retval FALSE (0) - the library is not connected
+ */
+
+/**
+ * @brief Disconnect from the bionet BDM network and free all resources
+ *
+ * Dissconect from the Bionet BDM network and free all resources. This will
+ * trigger 'lost' messages for any active subscriptions
+ */
+void bdm_disconnect(void);
 
 /**
  * @brief Query a bionet data manager for a list of datapoints
@@ -54,8 +93,6 @@ typedef struct bionet_bdm_t_opaque bionet_bdm_t;
  * @param[in] entryEnd If not NULL, return only datapoints with an entry
  *   sequence number less than or equal to this
  */
-
-
 GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, 
 				       struct timeval *datapointStart, 
 				       struct timeval *datapointEnd,
@@ -63,18 +100,16 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern,
 				       int entryEnd);
 
 
-int bdm_send_asn(const void *buffer, size_t size, void *unused);
-
-
-#if 0
 /**
  * @brief Register new-bdm callback function with the Bionet library.
  * 
  * The registered function will be called when a new BDM Server is discovered
  *
  * @param[in] cb_new_bdm the "new-bdm" callback function
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_new_bdm(void (*cb_new_bdm)(bionet_bdm_t *bdm));
+void bdm_register_callback_new_bdm(void (*cb_new_bdm)(bionet_bdm_t *bdm, void * use_data), void * usr_data);
 
 /**
  * @brief Register lost-bdm callback function with the Bionet library.
@@ -84,8 +119,10 @@ void bdm_register_callback_new_bdm(void (*cb_new_bdm)(bionet_bdm_t *bdm));
  *
  * @param[in] cb_new_bdm the "new-bdm" callback function
  *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
+ *
  */
-void bdm_register_callback_lost_bdm(void (*cb_lost_bdm)(bionet_bdm_t *bdm));
+void bdm_register_callback_lost_bdm(void (*cb_lost_bdm)(bionet_bdm_t *bdm, void* usr_data), void*usr_data);
 
 /**
  * @brief Registers new hab callback function with the Bionet library.
@@ -100,8 +137,10 @@ void bdm_register_callback_lost_bdm(void (*cb_lost_bdm)(bionet_bdm_t *bdm));
  * subscription leaves the network. 
  *
  * @param[in] cb_new_hab The "new hab" callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab));
+void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab, void* usr_data), void*usr_data);
 
 
 /**
@@ -121,8 +160,10 @@ void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab));
  * member.   
  *
  * @param[in] cb_lost_hab The "lost hab" callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab));
+void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab, void* usr_data), void*usr_data);
 
 
 /**
@@ -143,8 +184,10 @@ void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab));
  * the bionet_node_t's 'user_data' member.
  *
  * @param[in] cb_new_node The "new node" callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node));
+void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node, void* usr_data), void*usr_data);
 
 
 /**
@@ -165,8 +208,10 @@ void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node));
  * 'user_data'  member or the application will leak memory.
  *
  * @param[in] cb_lost_node The "lost node" callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node));
+void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node, void* usr_data), void*usr_data);
 
 
 /**
@@ -184,8 +229,10 @@ void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node));
  * callback function.
  *
  * @param[in] cb_datapoint The "datapoint" callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint));
+void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint, void* usr_data), void*usr_data);
 
 
 /**
@@ -196,11 +243,10 @@ void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *da
  * with bdm_subscribe_stream().
  *
  * @param[in] cb_stream The new callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, void *buffer, int size));
-
-#endif
-
+void bdm_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, void *buffer, int size, void* usr_data), void*usr_data);
 
 
 #endif

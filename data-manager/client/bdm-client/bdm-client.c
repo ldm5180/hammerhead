@@ -19,7 +19,6 @@
 #include "bdm-client.h"
 
 
-extern int bdm_fd;
 extern int bdm_last_entry;
 
 static int str_to_int(const char * str) {
@@ -220,8 +219,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    bdm_fd = bdm_connect(bdm_hostname, bdm_port);
-    if (bdm_fd < 0) {
+    if ( bdm_add_server(bdm_hostname, bdm_port) < 0 ) {
         exit(1);
     }
 
