@@ -16,7 +16,7 @@ libbdm_la_SOURCES =             \
     get-resource-datapoints.c   \
     send-asn.c
 
-libbdm_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -I$(top_srcdir)/data-manager/include
+libbdm_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -I$(top_srcdir)/data-manager/include -fno-strict-aliasing
 
 libbdm_la_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_BDM)
 
