@@ -69,6 +69,7 @@ export GLIB_LIBS=`$PKG_CONFIG --libs glib-2.0 gthread-2.0`
 ./configure \
 	--host=$XHOST \
 	--enable-static \
+	--disable-qt4 \
 	--disable-python \
 	--disable-check \
         --disable-clients \
