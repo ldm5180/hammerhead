@@ -319,6 +319,8 @@ AC_ARG_ENABLE(qt4, AC_HELP_STRING([--disable-qt4],
 #            [[$ac_path_QMAKE -version | grep -iq 'qt version 4' && ac_cv_path_QMAKE=$ac_path_QMAKE ac_path_QMAKE_found=:]],
 #            [AC_MSG_ERROR([could not find qmake for QT4 ])])])
 if test "x$ENABLE_QT4" = "xyes" ; then
+    AT_WITH_QT
+
     qt_ok=yes
     AC_PATH_PROGS([QMAKE], 
         [qmake-qt4 qmake-4.4 qmake qmake-mac],
