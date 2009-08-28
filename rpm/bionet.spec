@@ -145,6 +145,11 @@ rm -rf $RPM_BUILD_ROOT
    /usr/local/lib/python2.6/site-packages/hab.py
    /usr/local/lib/python2.6/site-packages/hab.pyc
    /usr/local/lib/python2.6/site-packages/hab.pyo
+   /usr/local/lib/libbdm.a
+   /usr/local/lib/libbdm.la
+   /usr/local/lib/libbdm.so
+   /usr/local/lib/libbdm.so.0
+   /usr/local/lib/libbdm.so.0.0.0
 
 %defattr(-,root,root,-)
 %doc /usr/local/share/doc/bionet/index.html
@@ -160,6 +165,7 @@ rm -rf $RPM_BUILD_ROOT
    /usr/local/include/bionet-version.h
    /usr/local/include/bionet.h
    /usr/local/include/hardware-abstractor.h
+   /usr/local/include/bdm-client.h
 
 %files ignore
 /usr/local/lib/python2.6/site-packages/_bonjour.a
