@@ -1,0 +1,9 @@
+
+node = [
+    {
+        # remember, all "\" characters need to be escaped for python
+        'resource-command': "/bin/df | grep '^/dev/.d' | sed -r 's/^[^ ]+[^\\/]+(\\/.*)$/\\1/; s/^(.)$/\\1root/; y./.-.; s/^(.*)$/uint32 kb-free-on\\1/'",
+        'command': "/bin/df | grep '^/dev/.d' | sed -r 's/^[^ ]+\\s+\\S+\\s+\\S+\\s+(\\S+)[^\\/]+(\\/.*)$/kb-free-on\\2 \\1/; y./.-.; s/^(kb-free-on-) /\\1root /;'"
+    }
+]
+
