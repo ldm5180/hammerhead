@@ -1,4 +1,0 @@
-[D-BUS Service]
-Name=org.freedesktop.DBus.TestSuiteShellEchoServiceFail
-Exec=/home/lenny/bionet2/mdacs/platforms/petalinux/user-apps/dbus-1.2.4/test/test-shell-service "this should 'fail' because of an unterminated quote 
-
