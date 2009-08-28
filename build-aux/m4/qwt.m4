@@ -121,19 +121,18 @@ AC_DEFUN([AC_FIND_QWT],
         LDFLAGS="-L${dir} $ac_func_qwt_save_LDFLAGS"
       fi
       if test -z "$ac_lib"; then
-        ac_res=""
+        tmpqwtlib=""
       else
-        ac_res=-l$ac_lib
+        tmpqwtlib=-l$ac_lib
         QTLDADD="-l$ac_lib $ac_func_qwt_save_LIBS"
       fi
-      AC_QMAKE_LINK_IFELSE([], [AS_VAR_SET([ac_cv_qwt], [$ac_res])])
-      AS_VAR_SET_IF([ac_cv_qwt], [break])dnl
+      AC_QMAKE_LINK_IFELSE([], [AS_VAR_SET([ac_cv_qwt], [$tmpqwtlib])])
+      AS_VAR_SET_IF([ac_cv_qwt], [break])
     done
     AS_VAR_SET_IF([ac_cv_qwt], , [AS_VAR_SET([ac_cv_qwt], [no])])
     rm conftest.$ac_ext
     QTLDADD=$ac_func_qwt_save_LIBS])
-   ac_res=AS_VAR_GET([ac_cv_qwt])
-   AS_IF([test "$ac_res" != no],
+   AS_IF([test "x$ac_res" != "xno"],
      [got=yes; 
       AC_SUBST([QWT_LIBADD], ["$ac_res"])
       if test "x${dir}" != "x"; then
