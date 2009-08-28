@@ -1,0 +1,13 @@
+
+node = [
+    {
+        'resource': "uint16 random-uint16",
+        'command':  "echo $RANDOM"
+    },
+
+    {
+        'resource': "double random-double",
+        'command':  'echo "10k $RANDOM 32767 /p" | dc'
+    }
+]
+

@@ -1,0 +1,6 @@
+
+not_used = "this variable is not used by the mon-hab at all"
+print "the all-sections-broken node-file is loading!"
+
+node = "the 'node' variable must be an array of dicts (the most general data type)"
+

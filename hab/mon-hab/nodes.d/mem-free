@@ -1,0 +1,9 @@
+
+node = [
+    {
+        'resource': 'uint32 KB-mem-free',
+        # NOTE: the "\1" in the replacement part of the sed script needs to have its "\" escaped from python
+        'command': 'free | grep buffers.cache | sed -r "s/^.*:\s+[0-9]+\s+([0-9]+).*$/\\1/"'
+    }
+]
+

@@ -1,0 +1,284 @@
+#!/usr/bin/python
+#
+# Copyright (c) 2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+import ConfigParser
+import optparse
+import subprocess
+import glob
+
+from twisted.internet import reactor, interfaces, protocol
+from twisted.protocols import basic
+
+from twisted_bionet import *
+
+from hab import *
+
+
+
+
+# FIXME: can i somehow use the basic.LineOnlyReceiver to split the input into lines?
+class ResourceProtocol(protocol.ProcessProtocol):
+
+    def __init__(self, mon_script):
+        self.mon_script = mon_script
+
+    def childDataReceived(self, childFD, data):
+        for line in data.split('\n'):
+            if line == "": continue
+            self.gotLine(line)
+
+    def processEnded(self, reason):
+        # FIXME: period should be "per section"
+        reactor.callLater(config.getfloat('mon-hab', 'delay'), self.mon_script.respawn)
+
+    def gotLine(self, line):
+        # override this to parse your line
+        pass
+
+
+class SingleResourceProtocol(ResourceProtocol):
+    def gotLine(self, line):
+        node = self.mon_script.node
+        section = self.mon_script.section
+        r_id = section['resources'].keys()[0]
+        resource = section['resources'][r_id]['bionet']
+        self.mon_script.set_resource(node['bionet'], resource, line)
+
+
+class MultiResourceProtocol(ResourceProtocol):
+    def gotLine(self, line):
+        node = self.mon_script.node
+        section = self.mon_script.section
+        (r_id, val) = line.split()
+        resource = section['resources'][r_id]['bionet']
+        self.mon_script.set_resource(node['bionet'], resource, val)
+
+
+
+
+class MonScript():
+    """A MonScript is a section in a mon-hab node file.  It's responsible for
+    updating zero or more resources, and it's got a command to run to generate
+    the data."""
+
+    def __init__(self, reactor, node, section):
+        self.reactor = reactor
+        self.node = node
+        self.section = section
+
+        if len(self.section['resources']) == 1:
+            self.proto = SingleResourceProtocol(self)
+        else:
+            self.proto = MultiResourceProtocol(self)
+
+        reactor.callWhenRunning(self.respawn)
+
+
+    def respawn(self):
+        reactor.spawnProcess(self.proto, "/bin/bash", [ "/bin/bash", "-c", self.section['command'] ])
+
+
+    def set_resource(self, node, resource, value):
+        #print "setting %s to %s" % (bionet_resource_get_local_name(resource), value)
+
+        if bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_BINARY:
+            bionet_resource_set_binary(resource, int(value), None)
+
+        elif bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT8:
+            bionet_resource_set_uint8(resource, int(value), None)
+
+        elif bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT8:
+            bionet_resource_set_int8(resource, int(value), None)
+
+        elif bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT16:
+            bionet_resource_set_uint16(resource, int(value), None)
+
+        elif bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT16:
+            bionet_resource_set_int16(resource, int(value), None)
+
+        elif bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT32:
+            bionet_resource_set_uint32(resource, int(value), None)
+
+        elif bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT32:
+            bionet_resource_set_int32(resource, int(value), None)
+
+        elif bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_FLOAT:
+            bionet_resource_set_float(resource, float(value), None)
+
+        elif bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+            bionet_resource_set_double(resource, float(value), None)
+
+        elif bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_STRING:
+            bionet_resource_set_str(resource, value, None)
+
+        hab_report_datapoints(node)
+
+
+
+
+def read_node_file(node_file):
+    jail = { }
+    try:
+        execfile(node_file, jail)
+    except Exception, e:
+        print e
+        return
+
+    if not 'node' in jail:
+        print node_file, "does not supply a node object, ignoring"
+        return
+
+    node = { }
+    node['id'] = node_file.split('/')[-1]
+    node['sections'] = [ ]
+
+    # validate all sections
+    for section in jail['node']:
+        if type(section) != dict:
+            print "%s section is a %s, not a dict, ignoring node" % (node['id'], type(section))
+            return
+
+        if (not 'resource' in section) and (not 'resource-command' in section):
+            print "%s section lacks both resource and resource-command, ignoring node" % node['id']
+            return
+
+        if ('resource' in section) and ('resource-command' in section):
+            print "%s section has both resource and resource-command, ignoring node" % node['id']
+            return
+
+        if not 'command' in section:
+            print "%s section lacks command, ignoring node" % node['id']
+            return
+
+        node['sections'].append(section)
+
+    if len(node['sections']) == 0:
+        print "%s has no valid sections, ignoring node" % node['id']
+        return
+
+    # make the node
+    node['bionet'] = bionet_node_new(hab, node['id'])
+
+    # process each section (add resources, start the mon command running)
+    node['mon-scripts'] = [ ]
+    for section in node['sections']: 
+        resources = [ ]
+
+        if 'resource' in section:
+            resources.append(section['resource'])
+        else:
+            resources = subprocess.Popen([ "/bin/bash", "-c", section['resource-command'] ], stdout=subprocess.PIPE).stdout.readlines()
+
+        section['resources'] = { }
+        for resource in resources:
+            (datatype, resource_id) = resource.split()
+            bionet_resource = bionet_resource_new(
+                node['bionet'],
+                bionet_datatype[datatype],
+                bionet_flavor['sensor'],
+                resource_id
+            )
+            r = {
+                'datatype': datatype,
+                'bionet': bionet_resource
+            }
+            section['resources'][resource_id] = r
+            bionet_node_add_resource(node['bionet'], r['bionet'])
+
+        node['mon-scripts'].append(MonScript(reactor, node, section))
+
+    bionet_hab_add_node(hab, node['bionet'])
+    hab_report_new_node(node['bionet'])
+
+
+
+
+# 
+# parse command-line arguments
+#
+
+parser = optparse.OptionParser()
+
+parser.add_option(
+    "-f", "--config-file",
+    dest="config_file",
+    metavar="CONFIG",
+    default="/etc/mon-hab/config",
+    help="Read CONFIG as the config file (defaults to %default if omitted)."
+)
+
+parser.add_option(
+    "-i", "--id",
+    dest="hab_id",
+    metavar="ID",
+    default=None,
+    help="Use ID as the HAB-ID (defaults to hostname if omitted)."
+)
+
+parser.add_option(
+    "-s", "--security-dir",
+    dest="security_dir",
+    default=None,
+    help="Directory containing security certificates (optional)."
+)
+
+(options, args) = parser.parse_args()
+
+if (options.security_dir != None):
+    if (hab_init_security(options.security_dir, 1)):
+        print "failed to initialize security"
+        exit(1)
+
+
+
+
+#
+# read the main config file
+#
+
+config = ConfigParser.RawConfigParser()
+config.read(options.config_file)
+
+if not config.has_section('mon-hab'):
+    print "config file %s has no [mon-hab] section!" % (options.config_file)
+    exit(1)
+
+if not config.has_option('mon-hab', 'node-dir'):
+    print "config file %s has no [mon-hab]node-dir!" % (options.config_file)
+    exit(1)
+
+
+
+
+#
+# connect to bionet
+#
+
+hab = bionet_hab_new("mon", options.hab_id)
+twisted_hab = HAB(hab)
+reactor.addReader(twisted_hab)
+
+
+
+
+#
+# read the node files
+#
+
+for node_file in glob.glob(config.get('mon-hab', 'node-dir') + "/*"):
+    read_node_file(node_file)
+
+
+
+
+#
+# just run the twisted main loop
+#
+
+reactor.run()
+

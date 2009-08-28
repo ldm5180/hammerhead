@@ -1,0 +1,13 @@
+
+node = [
+    {
+        'resource': 'float 1-minute-average',
+        'command': 'cat /proc/loadavg | cut -d \  -f 1'
+    },
+
+    {
+        'resource-command': '/bin/echo -e "float 5-minute-average\nfloat 15-minute-average"',
+        'command': 'cat /proc/loadavg | perl -n -e \'/^\d+\.\d+\s+(\d+\.\d+)\s+(\d+\.\d+)/ & print "5-minute-average $1\n15-minute-average $2\n";\''
+    }
+]
+

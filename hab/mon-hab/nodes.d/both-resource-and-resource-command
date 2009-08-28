@@ -1,0 +1,8 @@
+
+node = [
+    {
+        'command': 'echo 1',
+        'resource': 'binary broken',
+        'resource-command': 'echo "float blah"'
+    }
+]

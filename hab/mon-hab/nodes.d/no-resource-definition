@@ -1,0 +1,8 @@
+
+node = [
+    { 
+        'blubber': 'dont care',
+        'command': 'echo hi'
+    }
+]
+
