@@ -154,9 +154,9 @@ void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint,
 /**
  * @brief Sets the Datapoint Timestamp as specified.
  *
- * @param[in] datapoint The Datapoint to set the Timestamp of
+ * @param[in] datapoint The Datapoint to get the Timestamp of.
  *
- * @return Pointer to timestamp
+ * @return Pointer to timestamp (do not modify or free).
  * @return NULL on failure
  */
 struct timeval * bionet_datapoint_get_timestamp(bionet_datapoint_t *datapoint);
