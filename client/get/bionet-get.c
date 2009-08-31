@@ -20,6 +20,9 @@
 #include "bionet-util.h"
 
 
+int show_timestamp = 0;
+
+
 void cb_datapoint(bionet_datapoint_t *datapoint) {
     bionet_value_t *value;
     char *value_str;
@@ -36,7 +39,17 @@ void cb_datapoint(bionet_datapoint_t *datapoint) {
         exit(1);
     }
 
-    g_message("%s", value_str);
+    if (show_timestamp) {
+        struct timeval *t = bionet_datapoint_get_timestamp(datapoint);
+        g_message(
+            "%s %d.%06d",
+            value_str,
+            (int)t->tv_sec,
+            (int)t->tv_usec
+        );
+    } else {
+        g_message("%s", value_str);
+    }
 
     free(value_str);
 
@@ -50,10 +63,12 @@ void usage(void) {
         "\n"
         "Usage: bionet-get [OPTIONS] ResourceName\n"
         "\n"
-        " --help                                            Show this help\n"
-        " -e, --require-security                            Require security\n"
-        " -s, --security-dir <dir>                          Directory containing security\n"
-        " -v, --version                                     Show the version number\n"
+        " --help                           Show this help\n"
+        " -t, --show-timestamp             Output the timestamp of the requested\n"
+        "                                  resource (in addition to the value)\n"
+        " -e, --require-security           Require security\n"
+        " -s, --security-dir <dir>         Directory containing security\n"
+        " -v, --version                    Show the version number\n"
         "\n"
         "Security can only be required when a security directory has been specified.\n"
         "  bionet-watcher [--security-dir <dir> [--require-security]]\n"
@@ -65,6 +80,16 @@ int main(int argc, char *argv[]) {
     int bionet_fd;
     char * security_dir = NULL;
     int require_security = 0;
+
+    struct option long_options[] = {
+        {"help", 0, 0, '?'},
+        {"show-timestamp", 0, 0, 't'},
+        {"version", 0, 0, 'v'},
+        {"security-dir", 1, 0, 's'},
+        {"require-security", 0, 0, 'e'}, 
+        {0, 0, 0, 0} //this must be last in the list
+    };
+
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
 
     //
@@ -74,15 +99,7 @@ int main(int argc, char *argv[]) {
     int c;
 
     while(1) {
-        static struct option long_options[] = {
-            {"help", 0, 0, '?'},
-            {"version", 0, 0, 'v'},
-            {"security-dir", 1, 0, 's'},
-            {"require-security", 0, 0, 'e'}, 
-            {0, 0, 0, 0} //this must be last in the list
-        };
-
-        c = getopt_long(argc, argv, "?ves:", long_options, &i);
+        c = getopt_long(argc, argv, "?tves:", long_options, &i);
         if ((-1) == c) {
             break;
         }
@@ -100,6 +117,10 @@ int main(int argc, char *argv[]) {
                     usage();
                     return (-1);
                 }
+                break;
+
+            case 't':
+                show_timestamp = 1;
                 break;
 
             case 's':
@@ -122,7 +143,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (argc != 2) {
+    if ((argc - optind) != 1) {
         usage();
         exit(1);
     }
@@ -135,7 +156,7 @@ int main(int argc, char *argv[]) {
     }
 
     bionet_register_callback_datapoint(cb_datapoint);
-    bionet_subscribe_datapoints_by_name(argv[1]);
+    bionet_subscribe_datapoints_by_name(argv[optind]);
 
 
     while (1) {
