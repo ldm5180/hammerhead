@@ -1,0 +1,6 @@
+
+The mon-hab provides a simple, flexible way to get data from the shell
+into bionet.  Small python-snippet configuration files define bionet
+nodes, and specify what shell commands to run to generate data for
+the resources.
+

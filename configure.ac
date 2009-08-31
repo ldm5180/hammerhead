@@ -495,6 +495,7 @@ AC_CONFIG_FILES([Makefile
                  hab/uwb/Makefile
                  hab/streamy/Makefile
                  hab/bpstats2/Makefile
+                 hab/mon/Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
