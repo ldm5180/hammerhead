@@ -1,0 +1,15 @@
+
+warn = [
+    {
+	'resource': "*.*.*:MB-free-on-root",
+	'compare': "less-than",
+	'value': "500000",
+	'command': "echo MB-free-on-root is less than value"
+    },
+    {
+	'resource': "*.*.*:MB-free-on-data",
+	'compare': "less-than",
+	'value': "50000000",
+	'command': "echo MB-free-on-data is less than value"
+    }
+]
