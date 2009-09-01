@@ -51,9 +51,11 @@ def cb_datapoint(datapoint):
     node = bionet_resource_get_node(resource);
     hab = bionet_node_get_hab(node);
     
-    value_str = bionet_value_to_str(value);
-    print "TODO: validate", bionet_resource_get_name(resource) + " = " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint) 
+    val = new_int32p();
+    bionet_value_get_int32(value, val);
+    print "TODO: validate %s @ %d" % (bionet_resource_get_name(resource), int32p_value(val)) 
 
+    delete_int32p(val);
 
 # main
 bionet_fd = bionet_connect()

@@ -25,6 +25,9 @@
 %include "bionet-datapoint.h"
 %include "bionet-value.h"
 
+%include "cpointer.i"
+%pointer_functions(int32_t, int32p);
+
 %include "typemaps.i"
 %import "stdint.i"
 %import "inttypes.i"
