@@ -9,7 +9,18 @@
 
 #include "bionet-util.h"
 
+
+
+struct bionet_bdm_opaque_t {
+    char *id;
+
+    GSList *habs;
+
+    const void *user_data;
+};
+
 struct bionet_hab_opaque_t {
+    bionet_bdm_t *bdm; // NULL unless in bdm library
     char *type;
     char *id;
 
@@ -110,7 +121,6 @@ struct bionet_datapoint_opaque_t {
 
     int dirty;  // 1 if the datapoint has new information that hasnt been reported to Bionet, 0 if the datapoint has nothing new
 };
-
 
 #endif /* INTERNAL_H */
 

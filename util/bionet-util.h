@@ -19,6 +19,7 @@
 
 #include <glib.h>
 
+typedef struct bionet_bdm_opaque_t       bionet_bdm_t;
 typedef struct bionet_hab_opaque_t       bionet_hab_t;
 typedef struct bionet_node_opaque_t      bionet_node_t;
 typedef struct bionet_stream_opaque_t    bionet_stream_t;
@@ -26,6 +27,7 @@ typedef struct bionet_resource_opaque_t  bionet_resource_t;
 typedef struct bionet_datapoint_opaque_t bionet_datapoint_t;
 typedef struct bionet_value_opaque_t     bionet_value_t;
 
+#include "bionet-bdm.h"
 #include "bionet-hab.h"
 #include "bionet-node.h"
 #include "bionet-stream.h"

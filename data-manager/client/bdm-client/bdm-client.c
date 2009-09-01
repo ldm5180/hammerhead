@@ -19,8 +19,6 @@
 #include "bdm-client.h"
 
 
-extern int bdm_last_entry;
-
 static int str_to_int(const char * str) {
     char * endptr;
     int i;
@@ -218,19 +216,23 @@ int main(int argc, char *argv[]) {
 	}
     }
 
+    bdm_connect();
 
-    if ( bdm_add_server(bdm_hostname, bdm_port) < 0 ) {
-        exit(1);
+    if (bdm_hostname) {
+        bdm_add_server(bdm_hostname, bdm_port);
     }
 
-restart_poll:
-    hab_list = bdm_get_resource_datapoints(resource_name_pattern, 
+
+    libbdm_datapoint_query_response_t * response = 
+    bdm_get_resource_datapoints(bdm_hostname,resource_name_pattern, 
 					   pDatapointStart, pDatapointEnd, 
 					   entryStart, entryEnd);
-    if (hab_list == NULL) {
+    if (response == NULL || response->hab_list == NULL) {
         g_message("error getting resource datapoints");
     } else {
         int hi;
+        
+        hab_list = response->hab_list;
 
         for (hi = 0; hi < hab_list->len; hi ++) {
             bionet_hab_t *hab;
@@ -274,12 +276,6 @@ restart_poll:
 	    bionet_hab_free(hab);
         }
 	g_ptr_array_free(hab_list, FALSE);
-    }
-
-    if (frequency) {
-	sleep(frequency);
-	entryStart = bdm_last_entry + 1;
-	goto restart_poll;
     }
 
     bdm_disconnect();

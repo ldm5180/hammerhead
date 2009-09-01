@@ -29,3 +29,11 @@ void * libbdm_callback_stream_usr_data = NULL;
 
 
 int libbdm_cal_fd = -1;
+
+GSList *libbdm_bdms = NULL;
+
+GSList *libbdm_bdm_subscriptions = NULL;
+GSList *libbdm_hab_subscriptions = NULL;
+GSList *libbdm_node_subscriptions = NULL;
+GSList *libbdm_datapoint_subscriptions = NULL;
+GSList *libbdm_stream_subscriptions = NULL;

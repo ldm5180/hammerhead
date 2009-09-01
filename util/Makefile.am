@@ -8,7 +8,16 @@ include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libbionet-util.la
 
-include_HEADERS = bionet-util.h bionet-node.h bionet-stream.h bionet-resource.h bionet-datapoint.h bionet-value.h bionet-hab.h bionet-version.h
+include_HEADERS = \
+    bionet-bdm.h \
+    bionet-util.h \
+    bionet-node.h \
+    bionet-stream.h \
+    bionet-resource.h \
+    bionet-datapoint.h \
+    bionet-value.h \
+    bionet-hab.h \
+    bionet-version.h
 
 
 libbionet_util_la_CFLAGS = \
@@ -24,6 +33,7 @@ libbionet_util_la_LIBADD = \
 	$(GLIB_LIBS) 
 
 libbionet_util_la_SOURCES =    \
+    bdm-new.c                  \
     hab-add-node.c             \
     hab-remove-node.c          \
     hab-matches.c              \

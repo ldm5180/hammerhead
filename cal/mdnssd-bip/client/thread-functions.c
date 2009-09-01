@@ -420,6 +420,44 @@ static void read_from_user(void) {
 
         }
 
+        case CAL_EVENT_FORCE_DISCOVER :
+        {
+            bip_peer_t *peer = get_peer_by_name(event->peer_name);
+            if (peer == NULL) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: out of memory");
+                return;
+            }
+
+            bip_peer_network_info_t *net;
+            net = bip_net_new(event->force_discover.hostname, event->force_discover.port);
+            if (net == NULL) {
+                return;
+            }
+
+            if(event->is_secure){
+                net->sectype = BIP_SEC_REQ;
+            } else {
+                net->sectype = BIP_SEC_OPT;
+            }
+
+            if (peer->nets->len > 1) {
+                // this peer was known, initialized, and reported to the user
+                // before no need for any more action this time
+                return; 
+            }
+
+            //
+            // New peer just showed up on the network. Push it on the list of
+            // hosts to connect to
+            // 
+            if(bip_peer_connect_nonblock(peer) < 0) {
+                return;
+            }
+            connecting_peer_list = g_list_append(connecting_peer_list, peer);
+
+            break;
+        }
+
         default: {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown event %d from user", event->type);
             return;

@@ -11,6 +11,8 @@ lib_LTLIBRARIES = libbdm.la
 include_HEADERS = bdm-client.h
 
 libbdm_la_SOURCES =             \
+    read.c \
+    cal-callback.c \
     connect.c                   \
     disconnect.c                \
     get-resource-datapoints.c   \
@@ -18,8 +20,8 @@ libbdm_la_SOURCES =             \
     register-callback.c \
     send-asn.c                  
 
-libbdm_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -I$(top_srcdir)/data-manager/include
+libbdm_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -I$(top_srcdir)/data-manager/include $(CFLAGS_BIONET_CAL_CLIENT) $(CFLAGS_BIONET_CAL_UTIL)
 
-libbdm_la_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_BDM)
+libbdm_la_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_BDM) $(LDFLAGS_BIONET_CAL_CLIENT)
 
-libbdm_la_LIBADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) -lpthread -lm
+libbdm_la_LIBADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_CLIENT) -lpthread -lm

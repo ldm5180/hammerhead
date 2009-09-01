@@ -7,9 +7,14 @@
 #define __BDM_CLIENT_INTERNAL_H
 
 #include "bdm-client.h"
+#include "cal-client.h"
+#include "internal.h"
+
+extern libbdm_datapoint_query_response_t * _libbdm_query_response;
 
 int bdm_send_asn(const void *buffer, size_t size, void *unused);
 
+void libbdm_cal_callback(const cal_event_t *event);
 
 extern void (*libbdm_callback_new_bdm)(bionet_bdm_t *bdm, void* usr_data);
 extern void * libbdm_callback_new_bdm_usr_data;
@@ -34,5 +39,62 @@ extern void * libbdm_callback_stream_usr_data;
 
 
 extern int libbdm_cal_fd;
+
+
+
+extern GSList *libbdm_bdms;
+
+typedef struct {
+    char *bdm_id;
+} libbdm_bdm_subscription_t;
+
+// 
+// these data structures track the client's registered subscriptions
+//
+
+typedef struct {
+    char *hab_type;
+    char *hab_id;
+} libbdm_hab_subscription_t;
+
+
+typedef struct {
+    char *hab_type;
+    char *hab_id;
+    char *node_id;
+} libbdm_node_subscription_t;
+
+
+typedef struct {
+    char *hab_type;
+    char *hab_id;
+    char *node_id;
+    char *resource_id;
+} libbdm_datapoint_subscription_t;
+
+extern GSList *libbdm_bdm_subscriptions;
+extern GSList *libbdm_hab_subscriptions;
+extern GSList *libbdm_node_subscriptions;
+extern GSList *libbdm_datapoint_subscriptions;
+extern GSList *libbdm_stream_subscriptions;
+
+//
+// functions for dealing with the cache
+//
+
+void libbdm_cache_add_bdm(bionet_bdm_t *bdm);
+void libbdm_cache_remove_bdm(bionet_bdm_t *bdm);
+
+void libbdm_cache_add_hab(bionet_hab_t *hab);
+void libbdm_cache_remove_hab(bionet_hab_t *hab);
+
+void libbdm_cache_add_node(bionet_node_t *node);
+void libbdm_cache_remove_node(bionet_node_t *node);
+
+void libbdm_cache_add_resource(bionet_resource_t *resource);
+void libbdm_cache_replace_resource(bionet_resource_t *resource);
+
+void libbdm_cache_cleanup_habs();
+void libbdm_cache_cleanup_nodes();
 
 #endif
