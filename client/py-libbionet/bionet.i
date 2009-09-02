@@ -26,7 +26,13 @@
 %include "bionet-value.h"
 
 %include "cpointer.i"
-%pointer_functions(int32_t, int32p);
+%pointer_functions(int,      binaryp);
+%pointer_functions(uint8_t,  uint8p);
+%pointer_functions(int8_t,   int8p);
+%pointer_functions(uint16_t, uint16p);
+%pointer_functions(int16_t,  int16p);
+%pointer_functions(uint32_t, uint32p);
+%pointer_functions(int32_t,  int32p);
 
 %include "typemaps.i"
 %import "stdint.i"

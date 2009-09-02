@@ -8,7 +8,11 @@
 import sys
 import optparse
 import logging
+import os
 from select import select
+
+def greater_than(a, b):
+    return (a > b)
 
 # parse options 
 parser = optparse.OptionParser()
@@ -50,12 +54,72 @@ def cb_datapoint(datapoint):
     resource = bionet_value_get_resource(value);
     node = bionet_resource_get_node(resource);
     hab = bionet_node_get_hab(node);
-    
-    val = new_int32p();
-    bionet_value_get_int32(value, val);
-    print "TODO: validate %s @ %d" % (bionet_resource_get_name(resource), int32p_value(val)) 
+    check = 0;
 
-    delete_int32p(val);
+    for item in warn:
+        if (item['resource'] == bionet_resource_get_name(resource)):
+            check = 1;
+
+    #not found, get outta here
+    if (check == 0):
+        return 0;
+
+    #switch on the type
+        #create a new value
+        #populate the value
+        #run the compare
+            #execute the action
+        #delete the value
+
+    if (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_BINARY):
+        val = new_binaryp();
+        bionet_value_get_binary(value, val)
+        if (item['compare'](binaryp_value(val))):
+            os.system(item['command'])
+        delete_binaryp(val)
+
+    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT8):
+        val = new_uint8p();
+        bionet_value_get_uint8(value, val)
+        if (item['compare'](uint8p_value(val))):
+            os.system(item['command'])
+        delete_uint8p(val)
+
+    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT8):
+        val = new_int8p();
+        bionet_value_get_int8(value, val)
+        if (item['compare'](int8p_value(val))):
+            os.system(item['command'])
+        delete_int8p(val)
+
+    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT16):
+        val = new_uint16p();
+        bionet_value_get_uint16(value, val)
+        if (item['compare'](uint16p_value(val))):
+            os.system(item['command'])
+        delete_uint16p(val)
+
+    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT16):
+        val = new_int16p();
+        bionet_value_get_int16(value, val)
+        if (item['compare'](int16p_value(val))):
+            os.system(item['command'])
+        delete_int16p(val)
+
+    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT32):
+        val = new_uint32p();
+        bionet_value_get_uint32(value, val)
+        if (item['compare'](uint32p_value(val))):
+            os.system(item['command'])
+        delete_uint32p(val)
+
+    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT32):
+        val = new_int32p();
+        bionet_value_get_int32(value, val)
+        if (item['compare'](int32p_value(val))):
+            os.system(item['command'])
+        delete_int32p(val)
+
 
 # main
 bionet_fd = bionet_connect()
@@ -65,9 +129,9 @@ if (0 > bionet_fd):
 
 pybionet_register_callback_datapoint(cb_datapoint);
 
+#subscribe to all the requests
 for item in warn:
-    bionet_subscribe_datapoints_by_name(item['resource']);
-
+    bionet_subscribe_datapoints_by_name(item['resource'])
 
 while(1):
     (rr, wr, er) = select([bionet_fd], [], [])
