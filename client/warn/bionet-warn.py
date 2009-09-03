@@ -5,6 +5,7 @@
 # NNC07CB47C.
 #
 
+import ctypes
 import sys
 import optparse
 import logging
@@ -57,8 +58,14 @@ def cb_datapoint(datapoint):
     check = 0;
 
     for item in warn:
-        if (item['resource'] == bionet_resource_get_name(resource)):
-            check = 1;
+        hab_type,hab_id,resource_name = item['resource'].split('.', 3)
+        node_id,resource_id = resource_name.split(':', 2)
+
+        if (((hab_type == bionet_hab_get_type(hab)) or (hab_type == "*")) and 
+            ((hab_id == bionet_hab_get_id(hab)) or (hab_id == "*")) and 
+            ((node_id == bionet_node_get_id(node)) or (node_id == "*")) and
+            ((resource_id == bionet_resource_get_id(resource)) or (resource_id == "*"))):
+            check = 1
 
     #not found, get outta here
     if (check == 0):
@@ -119,6 +126,25 @@ def cb_datapoint(datapoint):
         if (item['compare'](int32p_value(val))):
             os.system(item['command'])
         delete_int32p(val)
+
+    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_FLOAT):
+        val = new_floatp();
+        bionet_value_get_float(value, val)
+        if (item['compare'](floatp_value(val))):
+            os.system(item['command'])
+        delete_floatp(val)
+
+    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_DOUBLE):
+        val = new_doublep();
+        bionet_value_get_double(value, val)
+        if (item['compare'](doublep_value(val))):
+            os.system(item['command'])
+        delete_doublep(val)
+
+    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_STRING):
+        val = bionet_value_get_str(value, val)
+        if (item['compare'](val)):
+            os.system(item['command'])
 
 
 # main

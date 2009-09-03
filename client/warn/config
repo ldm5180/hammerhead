@@ -1,8 +1,8 @@
 
 warn = [
     {
-	'resource': "syshealth.lenny-jaunty64.system:MB-free-on-root",
-	'compare': lambda x: x < 1024,
+	'resource': "*.*.system:MB-free-on-root",
+	'compare': lambda x: x < 102400,
 	'command': "echo MB-free-on-root is out of spec"
     }
 ]
