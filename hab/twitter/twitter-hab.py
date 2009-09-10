@@ -8,28 +8,13 @@ import time
 from ctypes import *
 import calendar
 import datetime
+import twitterparse
 
 def gmt_convert(loctime):
     if (time.daylight):
         return loctime - time.altzone
     else:
         return loctime - time.timezone
-
-
-def parse_status(hab, update):
-    node_name = update.user.screen_name.replace('_', '-')
-    n = bionet_hab_get_node_by_id(hab, node_name.encode('utf-8'))
-
-    utc_offset_res = bionet_node_get_resource_by_id(n, "utc-offset")
-    tv = timeval()
-    tv.tv_sec = gmt_convert(int(time.mktime(time.strptime(u.status.created_at, 
-                                                          "%a %b %d %H:%M:%S +0000 %Y"))))
-    tv.tv_usec = 0
-#    tv.tv_usec = bionet_resource_get_int32(utc_offset_res
-
-    r = bionet_node_get_resource_by_id(n, "tweet")
-    bionet_resource_set_str(r, update.text.encode('utf-8'), tv)
-    
 
 parser = optparse.OptionParser()
 parser.add_option("-t", "--tweeter", dest="tweeter", default=None,
@@ -109,7 +94,6 @@ max_id = 0
 
 #get a node and resource for this tweeter
 for u in users:
-    print u
     node_name = u.screen_name.replace('_', '-')
     node = bionet_node_new(hab, node_name.encode('utf-8'))
 
@@ -122,6 +106,11 @@ for u in users:
                                          BIONET_RESOURCE_DATA_TYPE_STRING, BIONET_RESOURCE_FLAVOR_SENSOR, 
                                          "tweet")
     bionet_node_add_resource(node, tweet_resource)
+
+    tweet_source_resource = bionet_resource_new(node, 
+                                         BIONET_RESOURCE_DATA_TYPE_STRING, BIONET_RESOURCE_FLAVOR_SENSOR, 
+                                         "tweet-source")
+    bionet_node_add_resource(node, tweet_source_resource)
 
     screenname_resource = bionet_resource_new(node, 
                                               BIONET_RESOURCE_DATA_TYPE_STRING, BIONET_RESOURCE_FLAVOR_SENSOR, 
@@ -173,6 +162,11 @@ for u in users:
                                             "utc-offset")
     bionet_node_add_resource(node, utc_offset_resource)
 
+    tweet_id_resource = bionet_resource_new(node, 
+                                            BIONET_RESOURCE_DATA_TYPE_UINT32, BIONET_RESOURCE_FLAVOR_SENSOR, 
+                                            "tweet-id")
+    bionet_node_add_resource(node, tweet_id_resource)
+
 
     #set the semi-constant user attributes
     if u.name:
@@ -195,6 +189,9 @@ for u in users:
         bionet_resource_set_str(tweet_resource, u.status.text.encode('utf-8'), tv)
         if (max_id < u.status.id):
             max_id = u.status.id
+        
+        bionet_resource_set_uint32(tweet_id_resource, u.status.id, tv)
+        bionet_resource_set_str(tweet_source_resource, u.status.source.encode('utf-8'), tv)
     if u.followers_count:
         bionet_resource_set_uint32(followers_count_resource, u.followers_count, None)
     if u.friends_count:
@@ -218,7 +215,6 @@ for u in users:
 
 
 while(1):
-    hab_report_datapoints(node)
     hab_read()
     date = datetime.datetime.now()
     time.sleep(int(options.frequency))
@@ -226,6 +222,6 @@ while(1):
     for up in updates:
         if (max_id < up.id):
             max_id = up.id
-        parse_status(hab, up)
+        twitterparse.parse_status(hab, up)
         print up
 
