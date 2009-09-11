@@ -65,7 +65,7 @@ if (options.password != None):
     api = twitter.Api(username=options.user, password=options.password)
     if (options.tweeter != None):
         # password, but a tweeter requested, only subscribing to that one
-        print "Ignoring follow list in favor of " + options.tweeter
+        logger.info( "Ignoring follow list in favor of " + options.tweeter)
         users.add(options.tweeter)
     else:
         # password and default follow list requested, getting friend list
@@ -111,7 +111,6 @@ while(1):
     (rr, wr, er) = select.select([bionet_fd], [], [], sleep_time)
     expired = datetime.datetime.now() - pre
     
-    print rr
     if (rr):
         hab_read()
     
