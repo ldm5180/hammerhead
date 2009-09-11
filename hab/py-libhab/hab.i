@@ -15,6 +15,12 @@
 #include "bionet-value.h"
 %}
 
+typedef struct timeval
+{
+    long int tv_sec;
+    long int tv_usec;
+};
+
 %include "hardware-abstractor.h"
 %include "bionet-util.h"
 %include "bionet-hab.h"
