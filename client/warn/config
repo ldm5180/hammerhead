@@ -6,3 +6,11 @@ warn = [
 	'command': "echo MB-free-on-root is out of spec"
     }
 ]
+
+# other useful lambda expressions
+# less than "val" =>                    lambda x: x < val
+# greater than "val" => 		lambda x: x > val
+# less than or equal to "val" => 	lambda x: x <= val
+# greater than or equal to "val" => 	lambda x: x >= val
+# equal to "val" =>                     lambda x: x == val
+# not equal to "val" =>                 lambda x: x != val
