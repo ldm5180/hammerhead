@@ -9,6 +9,7 @@ from ctypes import *
 import calendar
 import datetime
 import twitterparse
+import select
 
 def gmt_convert(loctime):
     if (time.daylight):
@@ -98,17 +99,30 @@ max_id = 0
 
 #get a node and resources for this tweeter
 for u in users:
-    twitterparse.process_user(hab, u, max_id)
+    max_id = twitterparse.process_user(hab, u, max_id)
 
+
+sleep_time = float(options.frequency)
 
 while(1):
     hab_read()
-    date = datetime.datetime.now()
-    time.sleep(int(options.frequency))
-    updates = api.GetFriendsTimeline(since_id=max_id)
-    for up in updates:
-        if (max_id < up.id):
-            max_id = up.id
-        twitterparse.parse_status(hab, up)
-        print up
 
+    pre = datetime.datetime.now()
+    (rr, wr, er) = select.select([bionet_fd], [], [], sleep_time)
+    expired = datetime.datetime.now() - pre
+    
+    print rr
+    if (rr):
+        hab_read()
+    
+    if (expired.seconds >= sleep_time):
+        sleep_time = float(options.frequency)
+        updates = api.GetFriendsTimeline(since_id=max_id)
+        for up in updates:
+            if (max_id < up.id):
+                max_id = up.id
+                twitterparse.parse_status(hab, up)
+
+    else:
+        sleep_time = sleep_time - expired.seconds
+                

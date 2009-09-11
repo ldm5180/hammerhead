@@ -165,3 +165,5 @@ def process_user(hab, u, max_id):
     hab_report_new_node(node)
     hab_report_datapoints(node)
     hab_read()
+
+    return max_id;
