@@ -38,6 +38,8 @@ class BionetModel : public QStandardItemModel {
         QString name(const QModelIndex &index) const;
         QString id(const QModelIndex &index) const;
 
+        bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
+
     public slots:
         void newHab(bionet_hab_t* hab);
         void lostHab(bionet_hab_t* hab);

@@ -21,6 +21,13 @@ QString BionetModel::id(const QModelIndex &index) const {
 }
 
 
+bool BionetModel::hasChildren(const QModelIndex& parent) const {
+    if ( name(parent).contains(':') )
+        return false;
+    return true;
+}
+
+
 void BionetModel::newHab(bionet_hab_t *hab) {
     QStandardItem *item = NULL;
     const char *hab_name;
@@ -108,6 +115,13 @@ void BionetModel::newNode(bionet_node_t* node) {
             << endl;
         return;
     }
+
+    // check to make sure node does not already exist
+    QModelIndexList nodes = match(habs.first(), 
+            Qt::UserRole, QVariant(nodeName), 1, 
+            Qt::MatchExactly | Qt::MatchRecursive);
+    if ( !nodes.isEmpty() )
+        return;
 
     nodeItem = new QStandardItem(QString(bionet_node_get_id(node)));
     nodeItem->setData(nodeName, Qt::UserRole);
