@@ -53,6 +53,7 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
 
     setupBionetIO();
     setupBionetModel();
+    setupBDM();
     setupTreeView();
     setupResourceView();
     setupArchive();
@@ -64,38 +65,102 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     setupWindow();
     bionet->setup();
 
-    connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), model, SLOT(lineActivated(QModelIndex)));
-    connect(model, SIGNAL(resourceSelected(bionet_resource_t*)), resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
-    connect(model, SIGNAL(habSelected(bionet_hab_t*)), resourceView, SLOT(clearView()));
-    connect(model, SIGNAL(nodeSelected(bionet_node_t*)), resourceView, SLOT(clearView()));
-    connect(model, SIGNAL(streamSelected(bionet_stream_t*)), resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), this, SLOT(updatePlot(bionet_datapoint_t*)));
+    connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
+        liveModel, SLOT(lineActivated(QModelIndex)));
+    connect(liveModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
+        resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
+    connect(liveModel, SIGNAL(habSelected(bionet_hab_t*)), 
+        resourceView, SLOT(clearView()));
+    connect(liveModel, SIGNAL(nodeSelected(bionet_node_t*)), 
+        resourceView, SLOT(clearView()));
+    connect(liveModel, SIGNAL(streamSelected(bionet_stream_t*)), 
+        resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
+    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        this, SLOT(updatePlot(bionet_datapoint_t*)));
 
     scaleInfoTemplate = new ScaleInfo;
 }
 
 
 void MainWindow::setupBionetModel() {
-    model = new BionetModel(this);
+    liveModel = new BionetModel(this);
 
-    model->setColumnCount(5);
-    model->setRowCount(0);
+    liveModel->setColumnCount(5);
+    liveModel->setRowCount(0);
 
-    model->setHeaderData(0, Qt::Horizontal, QString("Habs.Nodes.Resources"));
-    model->setHeaderData(1, Qt::Horizontal, QString("Flavor"));
-    model->setHeaderData(2, Qt::Horizontal, QString("Type"));
-    model->setHeaderData(3, Qt::Horizontal, QString("Timestamp"));
-    model->setHeaderData(4, Qt::Horizontal, QString("Value"));
+    liveModel->setHeaderData(0, Qt::Horizontal, QString("Habs.Nodes.Resources"));
+    liveModel->setHeaderData(1, Qt::Horizontal, QString("Flavor"));
+    liveModel->setHeaderData(2, Qt::Horizontal, QString("Type"));
+    liveModel->setHeaderData(3, Qt::Horizontal, QString("Timestamp"));
+    liveModel->setHeaderData(4, Qt::Horizontal, QString("Value"));
 
-    // Connects from Bionet to the model
-    connect(bionet, SIGNAL(newHab(bionet_hab_t*)), model, SLOT(newHab(bionet_hab_t*)));
-    connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), model, SLOT(lostHab(bionet_hab_t*)));
-    connect(bionet, SIGNAL(newNode(bionet_node_t*)), model, SLOT(newNode(bionet_node_t*)));
-    connect(bionet, SIGNAL(lostNode(bionet_node_t*)), model, SLOT(lostNode(bionet_node_t*)));
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), model, SLOT(newDatapoint(bionet_datapoint_t*)));
-    connect(model, SIGNAL(lostResource(QString)), this, SLOT(lostPlot(QString)));
-
+    // Connects from Bionet to the liveModel
+    connect(bionet, SIGNAL(newHab(bionet_hab_t*)), 
+        liveModel, SLOT(newHab(bionet_hab_t*)));
+    connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), 
+        liveModel, SLOT(lostHab(bionet_hab_t*)));
+    connect(bionet, SIGNAL(newNode(bionet_node_t*)), 
+        liveModel, SLOT(newNode(bionet_node_t*)));
+    connect(bionet, SIGNAL(lostNode(bionet_node_t*)), 
+        liveModel, SLOT(lostNode(bionet_node_t*)));
+    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        liveModel, SLOT(newDatapoint(bionet_datapoint_t*)));
+    connect(liveModel, SIGNAL(lostResource(QString)), 
+        this, SLOT(lostPlot(QString)));
     return;
+}
+
+
+void MainWindow::setupBDM() {
+    bdmModel = new BionetModel(this);
+    bdmModel->setColumnCount(5);
+    bdmModel->setRowCount(0);
+
+    bdmModel->setHeaderData(0, Qt::Horizontal, QString("Habs.Nodes.Resources"));
+    bdmModel->setHeaderData(1, Qt::Horizontal, QString("Flavor"));
+    bdmModel->setHeaderData(2, Qt::Horizontal, QString("Type"));
+    bdmModel->setHeaderData(3, Qt::Horizontal, QString("Timestamp"));
+    bdmModel->setHeaderData(4, Qt::Horizontal, QString("Value"));
+
+    bdmView = new Tree;
+
+    bdmView->setAlternatingRowColors(TRUE);
+    bdmView->setDragEnabled(FALSE);
+    bdmView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    connect(bdmModel, SIGNAL(layoutChanged()), 
+        bdmView, SLOT(repaint()));
+
+    bdmView->setModel(bdmModel);
+    bdmView->selectAll();
+
+    // Edit/adjust the header
+    QHeaderView* header;
+    header = bdmView->header();
+    header->setMovable(FALSE);
+    header->resizeSection(0,200); // resizing the columns
+    header->resizeSection(1,75); 
+    header->resizeSection(2,50); 
+    bdmView->setHeader(header);
+
+    // Edit the size of the bdmView frame
+    bdmView->setMinimumHeight(100);
+    bdmView->setMinimumWidth(100);
+
+    // create the bdmio
+    bdmio = new BDMIO();
+
+    // connect bdm interface with the model
+    connect(bdmio, SIGNAL(newHab(bionet_hab_t*)), 
+        bdmModel, SLOT(newHab(bionet_hab_t*)));
+    connect(bdmio, SIGNAL(lostHab(bionet_hab_t*)), 
+        bdmModel, SLOT(lostHab(bionet_hab_t*)));
+    connect(bdmio, SIGNAL(newNode(bionet_node_t*)), 
+        bdmModel, SLOT(newNode(bionet_node_t*)));
+    connect(bdmio, SIGNAL(lostNode(bionet_node_t*)), 
+        bdmModel, SLOT(lostNode(bionet_node_t*)));
+    connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        bdmModel, SLOT(newDatapoint(bionet_datapoint_t*)));
 }
 
 
@@ -106,9 +171,10 @@ void MainWindow::setupTreeView() {
     view->setDragEnabled(FALSE);
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     
-    connect(model, SIGNAL(layoutChanged()), view, SLOT(repaint()));
+    connect(liveModel, SIGNAL(layoutChanged()), 
+        view, SLOT(repaint()));
     
-    view->setModel(model);
+    view->setModel(liveModel);
     view->selectAll();
     
     // Edit/adjust the header
@@ -129,14 +195,89 @@ void MainWindow::setupTreeView() {
 }
 
 
+void MainWindow::switchViews(int index) {
+    // When switching between views, We don't want to:
+    //  * disconnect from bionet, since when we switch back we still want to be updated
+    //  * disconnect recording the datapoint signals
+    //  * Don't disconnect updating plots
+    // But we do want to:
+    //  * Switch the resource view to the active model
+
+    if (index == 0) { // bionet live
+        resourceView->clearView();
+
+        // disconnect selecting habs/nodes/resources/streams to the resourceview
+        disconnect(bdmModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
+            resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
+        disconnect(bdmModel, SIGNAL(habSelected(bionet_hab_t*)), 
+            resourceView, SLOT(clearView()));
+        disconnect(bdmModel, SIGNAL(nodeSelected(bionet_node_t*)), 
+            resourceView, SLOT(clearView()));
+        disconnect(bdmModel, SIGNAL(streamSelected(bionet_stream_t*)), 
+            resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
+        
+        // connect the row highlighting action
+        disconnect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
+            bdmModel, SLOT(lineActivated(QModelIndex)));
+
+        // connecting the hab/node/datapoint updates
+        connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+            resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
+        connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), 
+            resourceView, SLOT(lostHab(bionet_hab_t*)));
+        connect(bionet, SIGNAL(lostNode(bionet_node_t*)), 
+            resourceView, SLOT(lostNode(bionet_node_t*)));
+
+        // reconnect the row highlighting action
+        connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
+            liveModel, SLOT(lineActivated(QModelIndex)));
+
+    } else if (index == 1) { // bdm
+        resourceView->clearView();
+
+        // Disconnecting the hab/node/datapoint updates
+        disconnect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+            resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
+        disconnect(bionet, SIGNAL(lostHab(bionet_hab_t*)), 
+            resourceView, SLOT(lostHab(bionet_hab_t*)));
+        disconnect(bionet, SIGNAL(lostNode(bionet_node_t*)), 
+            resourceView, SLOT(lostNode(bionet_node_t*)));
+
+        // disconnect the row highlighting action
+        disconnect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
+            liveModel, SLOT(lineActivated(QModelIndex)));
+
+        // connect selecting habs/nodes/resources/streams to the resourceview
+        connect(bdmModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
+            resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
+        connect(bdmModel, SIGNAL(habSelected(bionet_hab_t*)), 
+            resourceView, SLOT(clearView()));
+        connect(bdmModel, SIGNAL(nodeSelected(bionet_node_t*)), 
+            resourceView, SLOT(clearView()));
+        connect(bdmModel, SIGNAL(streamSelected(bionet_stream_t*)), 
+            resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
+
+        // connect the row highlighting action
+        connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
+            bdmModel, SLOT(lineActivated(QModelIndex)));
+    }
+}
+
+
 void MainWindow::setupResourceView() {
     resourceView = new ResourceView();
 
     // (for losing habs & updating the pane)
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
-    connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), resourceView, SLOT(lostHab(bionet_hab_t*)));
-    connect(bionet, SIGNAL(lostNode(bionet_node_t*)), resourceView, SLOT(lostNode(bionet_node_t*)));
-    connect(resourceView, SIGNAL(plotResource(QString)), this, SLOT(makePlot(QString)));
+    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
+    connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), 
+        resourceView, SLOT(lostHab(bionet_hab_t*)));
+    connect(bionet, SIGNAL(lostNode(bionet_node_t*)), 
+        resourceView, SLOT(lostNode(bionet_node_t*)));
+
+    // connecting the plot button
+    connect(resourceView, SIGNAL(plotResource(QString)), 
+        this, SLOT(makePlot(QString)));
 
     return;
 }
@@ -146,9 +287,12 @@ void MainWindow::setupArchive() {
     archive = new Archive(this);
 
     // Connecting everything to the sample archive
-    connect(model, SIGNAL(newResource(QString)), archive, SLOT(addResource(QString)));
-    connect(model, SIGNAL(lostResource(QString)), archive, SLOT(removeResource(QString)));
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), archive, SLOT(recordSample(bionet_datapoint_t*)));
+    connect(liveModel, SIGNAL(newResource(QString)), 
+        archive, SLOT(addResource(QString)));
+    connect(liveModel, SIGNAL(lostResource(QString)), 
+        archive, SLOT(removeResource(QString)));
+    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        archive, SLOT(recordSample(bionet_datapoint_t*)));
 
     return;
 }
@@ -158,19 +302,28 @@ void MainWindow::setupBionetIO() {
     bionet = new BionetIO(this);
 
     bionet->addHabSubscription("*.*");
-    bionet->addNodeSubscription("*.*.*");
-    bionet->addResourceSubscription("*.*.*:*");
+    //bionet->addNodeSubscription("*.*.*");
+    //bionet->addResourceSubscription("*.*.*:*");
 
     return;
 }
 
 
 void MainWindow::setupWindow() {
+    tabs = new QTabWidget(this);
+    tabs->addTab(view, "Live");
+    tabs->addTab(bdmView, "History");
+
+    connect(tabs, SIGNAL(currentChanged(int)), 
+        this, SLOT(switchViews(int)));
+
+    //view->setParent(views);
+
     resViewHolder = new QWidget(this);
     resViewHolder->setLayout(resourceView);
 
     splitter = new QSplitter(this);
-    splitter->addWidget(view);
+    splitter->addWidget(tabs);
     splitter->addWidget(resViewHolder);
 
 
@@ -185,7 +338,7 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     archive->disconnect();
     resourceView->disconnect();
     view->disconnect();
-    model->disconnect();
+    liveModel->disconnect();
     bionet->disconnect();
 
     foreach(PlotWindow* p, plots) {
@@ -236,6 +389,11 @@ void MainWindow::createActions() {
 
     preferencesAction = new QAction(tr("&All/Default Plot Preferences"), this);
     connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openDefaultPlotPreferences()));
+
+
+    updateSubscriptionsAction = new QAction(tr("&Change Subscriptions"), this);
+    updateSubscriptionsAction->setShortcut(tr("Ctrl+C"));
+    connect(updateSubscriptionsAction, SIGNAL(triggered()), bdmio, SLOT(editSubscriptions()));
 }
 
 
@@ -244,6 +402,7 @@ void MainWindow::createMenus() {
     fileMenu = menuBar->addMenu(tr("&File"));
     fileMenu->addAction(plotAction);
     fileMenu->addAction(preferencesAction);
+    fileMenu->addAction(updateSubscriptionsAction);
     //fileMenu->addAction(sampleAction);
     //fileMenu->addAction(hostnameAction);
     fileMenu->addSeparator();
@@ -458,7 +617,17 @@ void MainWindow::closedPreferences(QObject* obj) {
 }
 
 
-Tree::Tree(QWidget *parent) : QTreeView(parent) {};
+void MainWindow::pollBDM() {
+    qDebug() << "polling bdm";
+}
+
+
+Tree::Tree(QWidget *parent) : QTreeView(parent) {
+    connect(this, SIGNAL(expanded(const QModelIndex &)),
+            this, SLOT(expand(const QModelIndex &)));
+    connect(this, SIGNAL(collapsed(const QModelIndex &)),
+            this, SLOT(collapse(const QModelIndex &)));
+};
 
 
 void Tree::keyPressEvent(QKeyEvent *event) {
@@ -468,4 +637,40 @@ void Tree::keyPressEvent(QKeyEvent *event) {
     }
 
     QTreeView::keyPressEvent(event);
+}
+
+
+void Tree::collapse(const QModelIndex &index) {
+    QRegExp nodeRX(".*\\..*\\..*");     // matches *.*.*
+    BionetModel *bm = (BionetModel*)model();
+
+    // is it a hab?
+    if (index.parent() == QModelIndex()) {
+        QString unsub = bm->name(index) + ".*";
+        bionet_unsubscribe_node_list_by_name(qPrintable(unsub));
+    }
+
+    // match nodes, not resources/streams
+    if ( nodeRX.exactMatch(bm->name(index)) && !bm->name(index).contains(':') ) {
+        QString unsub = bm->name(index) + ":*";
+        bionet_unsubscribe_datapoints_by_name(qPrintable(unsub));
+    }
+}
+
+
+void Tree::expand(const QModelIndex &index) {
+    QRegExp nodeRX(".*\\..*\\..*");     // matches *.*.*
+    BionetModel *bm = (BionetModel*)model();
+
+    // hab?
+    if (index.parent() == QModelIndex()) {
+        QString sub = bm->name(index) + QString(".*");
+        bionet_subscribe_node_list_by_name(qPrintable(sub));
+    }
+
+    // match only nodes, not resources/streams
+    if ( nodeRX.exactMatch(bm->name(index)) && !bm->name(index).contains(':') ) {
+        QString unsub = bm->name(index) + ":*";
+        bionet_subscribe_datapoints_by_name(qPrintable(unsub));
+    }
 }
