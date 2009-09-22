@@ -9,6 +9,7 @@ import sys
 import logging
 import optparse
 import re
+import time
 
 # parse options 
 parser = optparse.OptionParser()
@@ -37,6 +38,9 @@ parser.add_option("-e", "--entry-end", dest="entry_end",
 parser.add_option("-p", "--port", dest="bdm_port",
                   help="BDM port number", type="int",
                   default=11002)
+parser.add_option("-f", "--frequency", dest="frequency", 
+                  help="Query the BDM every N seconds",
+                  type="int", default=0)
 
 (options, args) = parser.parse_args()
 
@@ -64,7 +68,10 @@ def gmt_convert(loctime):
     else:
         return loctime - time.timezone
 
-bdm_connect(options.server, options.bdm_port) 
+bdm_fd = bdm_connect(options.server, options.bdm_port) 
+if (bdm_fd < 0):
+    logger.error("Failed to connect to Bionet Data Manager.")
+    sys.exit(1)
 
 # convert the start and end times into timevals
 if (options.datapoint_start != None):
@@ -94,46 +101,61 @@ else:
     entry_end = -1
 
 
+while 1:
+    need_print = 0
+    li = []
 
-# get the big HAB list
-hab_list = bdm_get_resource_datapoints(options.resource, datapoint_start, datapoint_end, entry_start, entry_end)
+    # get the big HAB list
+    hab_list = bdm_get_resource_datapoints(options.resource, datapoint_start, datapoint_end, entry_start, entry_end)
 
-
-for hi in range(hab_list.len):  # loop over all the HABs
-    hab = bionet_get_hab(hab_list, hi); 
-    
-    # loop over all the nodes
-    for ni in range(bionet_hab_get_num_nodes(hab)):  
-        node = bionet_hab_get_node_by_index(hab, ni)
-
-        for ri in range (bionet_node_get_num_resources(node)):
-            resource = bionet_node_get_resource_by_index(node, ri)
+    for hi in range(bdm_get_hab_list_len(hab_list)):  # loop over all the HABs
+        hab = bdm_get_hab_by_index(hab_list, hi); 
         
+        # loop over all the nodes
+        for ni in range(bionet_hab_get_num_nodes(hab)):  
+            node = bionet_hab_get_node_by_index(hab, ni)
+            
+            for ri in range (bionet_node_get_num_resources(node)):
+                resource = bionet_node_get_resource_by_index(node, ri)
+                
+                # loop over all the datapoints
+                if resource:
+                    for di in range (0, bionet_resource_get_num_datapoints(resource)): 
+                        d = bionet_resource_get_datapoint_by_index(resource, di)
+                        v = bionet_datapoint_get_value(d);
+                        
+                        if (options.output == "csv"):
+                            print bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "," + bionet_datapoint_timestamp_to_string(d) + "," + bionet_value_to_str(v) 
+                        elif (options.output == "matlab"):
+                            timematch = re.compile("((.*) (.*))\..*")
+                            ts = bionet_datapoint_timestamp_to_string(d)
+                            match = timematch.match(ts)
+                            mlts = time.strftime("%Y:%m:%d\t%H:%M:%S", time.strptime(match.group(1), "%Y-%m-%d %H:%M:%S"))
+                            print bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "\t" + mlts + "\t" + bionet_value_to_str(v) 
+                        elif (options.output == "chrono"):
+                            #sort me
+                            output_string = bionet_datapoint_timestamp_to_string(d) + "," + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "," + bionet_value_to_str(v)          
+                            li.append(output_string);
+                            need_print = 1
+                        else:
+                            print "Unknown format"
+                            parser.usage()
+                            
+        bionet_hab_free(hab)
 
-        # loop over all the datapoints
-            if resource:
-                for di in range (0, bionet_resource_get_num_datapoints(resource)): 
-                    d = bionet_resource_get_datapoint_by_index(resource, di)
-                    v = bionet_datapoint_get_value(d);
 
-                    if (options.output == "csv"):
-                        print bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "," + bionet_datapoint_timestamp_to_string(d) + "," + bionet_value_to_str(v) 
-                    elif (options.output == "matlab"):
-                        timematch = re.compile("((.*) (.*))\..*")
-                        ts = bionet_datapoint_timestamp_to_string(d)
-                        match = timematch.match(ts)
-                        mlts = time.strftime("%Y:%m:%d\t%H:%M:%S", time.strptime(match.group(1), "%Y-%m-%d %H:%M:%S"))
-                        print bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "\t" + mlts + "\t" + bionet_value_to_str(v) 
-                    elif (options.output == "chrono"):
-                        #sort me
-                        output_string = bionet_datapoint_timestamp_to_string(d) + "," + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "," + bionet_value_to_str(v)          
-                        li.append(output_string);
-                    else:
-                        print "Unknown format"
-                        parser.usage()
+    if (need_print):
+        sorted_list = sorted(li)
+        for i in range(len(sorted_list)):
+            print sorted_list[i]
 
+    if (options.frequency <= 0):
+        break;
+    else:
+        if (bdm_get_hab_list_last_entry_seq(hab_list)):
+            entry_start = bdm_get_hab_list_last_entry_seq(hab_list) + 1
+        bdm_hab_list_free(hab_list);
+        time.sleep(options.frequency)
+        
 bdm_disconnect() # done, disconnect
 
-sorted_list = sorted(li)
-for i in range(len(sorted_list)):
-    print sorted_list[i]
