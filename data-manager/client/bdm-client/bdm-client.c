@@ -20,7 +20,6 @@
 
 
 extern int bdm_fd;
-extern int bdm_last_entry;
 
 static int str_to_int(const char * str) {
     char * endptr;
@@ -145,7 +144,7 @@ int main(int argc, char *argv[]) {
     memset(&datapointStart, 0, sizeof(struct timeval));
     memset(&datapointEnd, 0, sizeof(struct timeval));
 
-    GPtrArray *hab_list;
+    bdm_hab_list_t * hab_list;
 
     int i;
     int c;
@@ -234,11 +233,11 @@ restart_poll:
     } else {
         int hi;
 
-        for (hi = 0; hi < hab_list->len; hi ++) {
+        for (hi = 0; hi < bdm_get_hab_list_len(hab_list); hi ++) {
             bionet_hab_t *hab;
             int ni;
 
-            hab = g_ptr_array_index(hab_list, hi);
+            hab = bdm_get_hab_by_index(hab_list, hi);
             printf("%s.%s\n", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
 
             for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
@@ -275,12 +274,12 @@ restart_poll:
             }
 	    bionet_hab_free(hab);
         }
-	g_ptr_array_free(hab_list, FALSE);
+	bdm_hab_list_free(hab_list);
     }
 
     if (frequency) {
 	sleep(frequency);
-	entryStart = bdm_last_entry + 1;
+	entryStart = bdm_get_hab_list_last_entry_seq(hab_list) + 1;
 	goto restart_poll;
     }
 

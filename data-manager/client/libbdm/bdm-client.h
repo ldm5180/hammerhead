@@ -29,6 +29,7 @@ void bdm_disconnect(void);
 
 typedef struct bionet_bdm_t_opaque bionet_bdm_t;
 
+typedef struct bdm_hab_list_t_opaque bdm_hab_list_t;
 
 /**
  * @brief Query a bionet data manager for a list of datapoints
@@ -56,12 +57,19 @@ typedef struct bionet_bdm_t_opaque bionet_bdm_t;
  */
 
 
-GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, 
+bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern, 
 				       struct timeval *datapointStart, 
 				       struct timeval *datapointEnd,
 				       int entryStart,
 				       int entryEnd);
 
+int bdm_get_hab_list_len(bdm_hab_list_t * hab_list);
+
+bionet_hab_t * bdm_get_hab_by_index(bdm_hab_list_t * hab_list, int index);
+
+int bdm_get_hab_list_last_entry_seq(bdm_hab_list_t * hab_list);
+
+void bdm_hab_list_free(bdm_hab_list_t * hab_list);
 
 int bdm_send_asn(const void *buffer, size_t size, void *unused);
 

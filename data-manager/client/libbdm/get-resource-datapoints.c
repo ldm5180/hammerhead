@@ -13,17 +13,65 @@
 #include "bdm-client.h"
 #include "bdm-util.h"
 
-extern int bdm_fd;
-int bdm_last_entry = -1;
 
-GPtrArray *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
-    GPtrArray *hab_list;
+struct bdm_hab_list_t_opaque {
+    GPtrArray * hab_list;
+    int bdm_last_entry;
+};
+
+extern int bdm_fd;
+
+
+int bdm_get_hab_list_len(bdm_hab_list_t * hab_list) {
+    if ((hab_list) && (hab_list->hab_list)) {
+	return hab_list->hab_list->len;
+    }
+
+    return 0;
+}
+
+
+bionet_hab_t * bdm_get_hab_by_index(bdm_hab_list_t * hab_list, int index) {
+    if ((hab_list) && (hab_list->hab_list)) {
+	return g_ptr_array_index(hab_list->hab_list, index);
+    }
+
+    return NULL;
+}
+
+
+int bdm_get_hab_list_last_entry_seq(bdm_hab_list_t * hab_list) {
+    if (hab_list) {
+	return hab_list->bdm_last_entry;
+    }
+
+    return 0;
+}
+
+
+void bdm_hab_list_free(bdm_hab_list_t * hab_list) {
+    if (hab_list) {
+	if (hab_list->hab_list) {
+	    g_ptr_array_free(hab_list->hab_list, FALSE);
+	}
+	free(hab_list);
+    }
+}
+
+
+bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
+    bdm_hab_list_t *hab_list;
     int hi;
 
-    hab_list = g_ptr_array_new();
+    hab_list = malloc(sizeof(bdm_hab_list_t));
+    if (NULL == hab_list) {
+	return NULL;
+    }
+
+    hab_list->hab_list = g_ptr_array_new();
 
     if (rdr->habs.list.count) {
-	bdm_last_entry = rdr->lastEntry;
+	hab_list->bdm_last_entry = rdr->lastEntry;
     }
 
     for (hi = 0; hi < rdr->habs.list.count; hi ++) {
@@ -36,7 +84,7 @@ GPtrArray *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
         hab = bionet_hab_new((char *)asn_hab->type.buf, (char *)asn_hab->id.buf);
         if (hab == NULL) goto cleanup;
 
-        g_ptr_array_add(hab_list, hab);
+        g_ptr_array_add(hab_list->hab_list, hab);
 
         for (ni = 0; ni < asn_hab->nodes.list.count; ni ++) {
             Node_t *asn_node;
@@ -101,9 +149,7 @@ cleanup:
 }
 
 
-
-
-GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern, 
+bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern, 
 				       struct timeval *datapointStart, 
 				       struct timeval *datapointEnd,
 				       int entryStart,
@@ -116,7 +162,7 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern,
     BDM_C2S_Message_t m;
     ResourceDatapointsQuery_t *rdpq;
 
-    GPtrArray *retval = NULL;
+    bdm_hab_list_t *retval = NULL;
 
     int r;
     asn_enc_rval_t enc_rval;
@@ -233,7 +279,7 @@ GPtrArray *bdm_get_resource_datapoints(const char *resource_name_pattern,
         dec_rval = ber_decode(NULL, &asn_DEF_BDM_S2C_Message, (void **)&message, buf, index);
 
         if (dec_rval.code == RC_OK) {
-            GPtrArray *hab_list;
+            bdm_hab_list_t *hab_list;
             if (message->present != BDM_S2C_Message_PR_resourceDatapointsReply) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "bdm_get_resource_datapoints(): unexpected message %d", message->present);
                 goto cleanup4;
