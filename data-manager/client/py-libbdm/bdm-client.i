@@ -34,10 +34,3 @@ typedef struct timeval
 %include "bionet-datapoint.h"
 %include "bionet-value.h"
 
-typedef unsigned int guint;
-typedef void* gpointer;
-typedef struct 
-{
-  gpointer *pdata;
-  guint     len;
-} GPtrArray;
