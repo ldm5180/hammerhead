@@ -63,14 +63,14 @@ bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr)
     bdm_hab_list_t *hab_list;
     int hi;
 
-    hab_list = malloc(sizeof(bdm_hab_list_t));
+    hab_list = calloc(1, sizeof(bdm_hab_list_t));
     if (NULL == hab_list) {
 	return NULL;
     }
 
     hab_list->hab_list = g_ptr_array_new();
 
-    if (rdr->habs.list.count) {
+    if ((rdr->habs.list.count) && (rdr->lastEntry)) {
 	hab_list->bdm_last_entry = rdr->lastEntry;
     }
 

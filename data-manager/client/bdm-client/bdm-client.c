@@ -274,12 +274,14 @@ restart_poll:
             }
 	    bionet_hab_free(hab);
         }
-	bdm_hab_list_free(hab_list);
     }
 
     if (frequency) {
 	sleep(frequency);
-	entryStart = bdm_get_hab_list_last_entry_seq(hab_list) + 1;
+	if ((hab_list != NULL) && (bdm_get_hab_list_last_entry_seq(hab_list))) {
+	    entryStart = bdm_get_hab_list_last_entry_seq(hab_list) + 1;
+	    bdm_hab_list_free(hab_list);
+	}
 	goto restart_poll;
     }
 
