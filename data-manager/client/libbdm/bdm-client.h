@@ -42,34 +42,70 @@ typedef struct bdm_hab_list_t_opaque bdm_hab_list_t;
  *   entry number range greater than the largest number returned in the past
  * 
  * @param[in] resource_name_pattern The resource name pattern to query for
- *
  * @param[in] datapointStart If not NULL, return only datapoints with a
- *   timestamp after this
- *
+ *            timestamp after this
  * @param[in] datapointEnd If not NULL, return only datapoints with a timestamp
- *   before this
- *
+ *            before this
  * @param[in] entryStart If not NULL, return only datapoints with an entry
- *   sequence number greater or equal to this
- *
+ *            sequence number greater or equal to this
  * @param[in] entryEnd If not NULL, return only datapoints with an entry
- *   sequence number less than or equal to this
+ *            sequence number less than or equal to this
+ *
+ * @return A HAB List which can be walked to find all the datapoints satisfying 
+ *         the query.
  */
-
-
 bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern, 
 				       struct timeval *datapointStart, 
 				       struct timeval *datapointEnd,
 				       int entryStart,
 				       int entryEnd);
 
+
+/**
+ * @brief Get the length of a HAB List
+ *
+ * @param[in] hab_list The HAB List being queried.
+ *
+ * @return Number of HABs in the HAB List
+ */
 int bdm_get_hab_list_len(bdm_hab_list_t * hab_list);
 
+
+/**
+ * @brief Get a HAB from a HAB List
+ *
+ * The range of indicies is 0 to bdm_get_hab_list_len()
+ *
+ * @param[in] hab_list The HAB List being queried.
+ * @param[in] index Index of the HAB to fetch.
+ *
+ * @return Ptr to the HAB in requested, or NULL of the index is out of range
+ */
 bionet_hab_t * bdm_get_hab_by_index(bdm_hab_list_t * hab_list, int index);
 
+
+/**
+ * @brief Get the last entry sequence number from a HAB List
+ * 
+ * Each time datapoints are fetched from the BDM, this value is updated
+ * to reflect the sequence number of the most recent datapoint entered
+ * into the database. This can be used when polling the BDM so as to
+ * not receive duplicates.
+ *
+ * @param[in] hab_list The HAB List being queried.
+ *
+ * @return The sequence number of the most recently entered datapoint fetched.
+ */
 int bdm_get_hab_list_last_entry_seq(bdm_hab_list_t * hab_list);
 
+
+/**
+ * @brief Free the HAB List
+ * 
+ * @param[in] hab_list The HAB List to free.
+ */
 void bdm_hab_list_free(bdm_hab_list_t * hab_list);
+
 
 int bdm_send_asn(const void *buffer, size_t size, void *unused);
 
