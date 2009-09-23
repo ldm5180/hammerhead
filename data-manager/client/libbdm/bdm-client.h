@@ -94,7 +94,8 @@ bionet_hab_t * bdm_get_hab_by_index(bdm_hab_list_t * hab_list, int index);
  *
  * @param[in] hab_list The HAB List being queried.
  *
- * @return The sequence number of the most recently entered datapoint fetched.
+ * @return The sequence number of the most recently entered datapoint fetched,
+ *         or 0 if no datapoints were fetched in the most recent query.
  */
 int bdm_get_hab_list_last_entry_seq(bdm_hab_list_t * hab_list);
 
@@ -105,7 +106,6 @@ int bdm_get_hab_list_last_entry_seq(bdm_hab_list_t * hab_list);
  * @param[in] hab_list The HAB List to free.
  */
 void bdm_hab_list_free(bdm_hab_list_t * hab_list);
-
 
 int bdm_send_asn(const void *buffer, size_t size, void *unused);
 
