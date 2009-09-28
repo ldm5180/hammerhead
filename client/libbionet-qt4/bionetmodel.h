@@ -18,6 +18,8 @@
 #include <iostream>
 
 #define FULLNAMEROLE            (Qt::UserRole)
+#define BIONETPTRROLE           (Qt::UserRole+1)
+#define ISRESOURCEROLE          (Qt::UserRole+2)
 #define HABNAMELENGTH           (2*BIONET_NAME_COMPONENT_MAX_LEN)
 #define NODENAMELENGTH          (3*BIONET_NAME_COMPONENT_MAX_LEN)
 #define RESOURCENAMELENGTH      (4*BIONET_NAME_COMPONENT_MAX_LEN)
@@ -38,7 +40,7 @@ class BionetModel : public QStandardItemModel {
         QString name(const QModelIndex &index) const;
         QString id(const QModelIndex &index) const;
 
-        bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
+//        bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
 
     public slots:
         void newHab(bionet_hab_t* hab);

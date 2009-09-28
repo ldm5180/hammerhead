@@ -20,12 +20,13 @@ QString BionetModel::id(const QModelIndex &index) const {
     return index.data(Qt::DisplayRole).toString();
 }
 
-
+/*
 bool BionetModel::hasChildren(const QModelIndex& parent) const {
     if ( name(parent).contains(':') )
         return false;
     return true;
 }
+*/
 
 
 void BionetModel::newHab(bionet_hab_t *hab) {
@@ -51,9 +52,11 @@ void BionetModel::newHab(bionet_hab_t *hab) {
         else
             icon = QIcon(QString(":/icons/unlock.png"));
 
-        item->setData(myName, Qt::UserRole);
+        item->setData(qVariantFromValue((void*)hab), BIONETPTRROLE);
+        item->setData(myName, FULLNAMEROLE);
         item->setData(QVariant(icon), Qt::DecorationRole);
         item->setColumnCount(5);
+
         invisibleRootItem()->appendRow(item);
     }
 }
@@ -105,7 +108,7 @@ void BionetModel::newNode(bionet_node_t* node) {
     QString habName = QString(hab_name);
     QString nodeName = QString(node_name);
 
-    QModelIndexList habs = match(index(0, 0, invisibleRootItem()->index()), Qt::UserRole, 
+    QModelIndexList habs = match(index(0, 0, invisibleRootItem()->index()), FULLNAMEROLE, 
             QVariant(habName), 1, Qt::MatchFixedString | Qt::MatchRecursive);
 
     //QList<QStandardItem*> list = findItems(id);
@@ -118,13 +121,14 @@ void BionetModel::newNode(bionet_node_t* node) {
 
     // check to make sure node does not already exist
     QModelIndexList nodes = match(habs.first(), 
-            Qt::UserRole, QVariant(nodeName), 1, 
+            FULLNAMEROLE, QVariant(nodeName), 1, 
             Qt::MatchExactly | Qt::MatchRecursive);
     if ( !nodes.isEmpty() )
         return;
 
     nodeItem = new QStandardItem(QString(bionet_node_get_id(node)));
-    nodeItem->setData(nodeName, Qt::UserRole);
+    nodeItem->setData(nodeName, FULLNAMEROLE);
+    nodeItem->setData(qVariantFromValue((void*)node), BIONETPTRROLE);
 
     habItem = itemFromIndex(habs.first());
     habItem->appendRow(nodeItem);
@@ -161,7 +165,9 @@ void BionetModel::newNode(bionet_node_t* node) {
             value = new QStandardItem(bionet_value_to_str(bionet_value));
         }
 
-        nameItem->setData(rid, Qt::UserRole);
+        nameItem->setData(rid, FULLNAMEROLE);
+        nameItem->setData(qVariantFromValue((void*)resource), BIONETPTRROLE);
+        nameItem->setData(true, ISRESOURCEROLE);
 
         resList << nameItem << flavor << type << time << value;
         nodeItem->appendRow(resList);
@@ -188,7 +194,9 @@ void BionetModel::newNode(bionet_node_t* node) {
         sid = QString(streamName);
 
         streamItem = new QStandardItem(bionet_stream_get_id(stream));
-        streamItem->setData(sid, Qt::UserRole);
+        streamItem->setData(sid, FULLNAMEROLE);
+        streamItem->setData(qVariantFromValue((void*)stream), BIONETPTRROLE);
+        streamItem->setData(false, ISRESOURCEROLE);
 
         streamList << streamItem << new QStandardItem << new QStandardItem << new QStandardItem << new QStandardItem;
         nodeItem->appendRow(streamList);
@@ -247,7 +255,7 @@ void BionetModel::lostNode(bionet_node_t* node) {
     }
 
     QModelIndexList nodes = match(index(0, 0, invisibleRootItem()->index()), 
-            Qt::UserRole, QVariant(nodeName), 1, 
+            FULLNAMEROLE, QVariant(nodeName), 1, 
             Qt::MatchExactly | Qt::MatchRecursive);
 
     if ( nodes.isEmpty() ) {
@@ -261,7 +269,7 @@ void BionetModel::lostNode(bionet_node_t* node) {
     removeRows(0, rowCount(nodeIndex), nodeIndex);
 
     if ( !removeRow(nodeIndex.row(), nodeIndex.parent()) ) {
-        qWarning() << "Unable to delete node (" << qPrintable(nodeIndex.data(Qt::UserRole).toString()) 
+        qWarning() << "Unable to delete node (" << qPrintable(nodeIndex.data(FULLNAMEROLE).toString()) 
             << "): error removing row" << endl;
         return;
     }
@@ -290,7 +298,7 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
     QString myName = QString(resource_name);
     
     QModelIndexList resourceList = match(index(0, 0, invisibleRootItem()->index()), 
-            Qt::UserRole, QVariant(myName), 1, 
+            FULLNAMEROLE, QVariant(myName), 1, 
             Qt::MatchExactly | Qt::MatchRecursive);
     
     if ( resourceList.isEmpty() ) {
@@ -300,9 +308,6 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
 
     res = resourceList.first();
     
-    //cout << "wanted to update resource " << qPrintable(myName) << endl;
-    //cout << "going to update resource " << qPrintable(res.data(Qt::UserRole).toString()) << endl;
-
     value = bionet_datapoint_get_value(datapoint);
     if (value == NULL) {
         qWarning() << "newDatapoint(): recieved good datapoint with NULL value?!?!" << endl;
@@ -322,54 +327,45 @@ void BionetModel::lineActivated(QModelIndex current) {
     QRegExp nodeRX(".*\\..*\\..*");     // matches *.*.*
     QRegExp habRX(".*\\..*");           // matches *.*
     QModelIndex realSelected;
+    void* bionet_ptr;
 
     if (current.column() != 0) {
         realSelected = index(current.row(), 0, current.parent());
     } else
         realSelected = current;
+    
+    bionet_ptr = qVariantValue<void*>(realSelected.data(BIONETPTRROLE));
 
     QString myName = name(realSelected);
     QString myID = id(realSelected);
 
     if ( resRX.exactMatch(myName) ) {
 
-        bionet_resource_t* res = bionet_cache_lookup_resource(
-            qPrintable(myName.section('.', 0, 0)),
-            qPrintable(myName.section('.', 1, 1)),
-            qPrintable(myName.section('.', 2, 2).section(':', 0, 0)),
-            qPrintable(myID));
+        if ( qVariantValue<bool>(realSelected.data(ISRESOURCEROLE)) ) {
+            bionet_resource_t* res = (bionet_resource_t*)bionet_ptr;
 
-        if (res != NULL) {
-            emit resourceSelected(res);
-            return;
-        } 
-        
-        bionet_stream_t* stream = bionet_cache_lookup_stream(
-            qPrintable(myName.section('.', 0, 0)),
-            qPrintable(myName.section('.', 1, 1)),
-            qPrintable(myName.section('.', 2, 2).section(':', 0, 0)),
-            qPrintable(myID));
+            if (res != NULL) {
+                emit resourceSelected(res);
+                return;
+            } 
+        } else {
+            bionet_stream_t* stream = (bionet_stream_t*)bionet_ptr;
 
-        if (stream != NULL) {
-            emit streamSelected(stream);
-            return;
+            if (stream != NULL) {
+                emit streamSelected(stream);
+                return;
+            }
         }
 
         // If the selected line was didn't exist then....???
-        
-        qWarning() << "Actived Index has resource/stream name but does not exist: " 
+        qWarning() << "Activated Index has resource/stream name but does not exist: " 
              << qPrintable(myName) 
              << endl;
 
         return;
     } else if ( nodeRX.exactMatch(myName) ) {
-        emit nodeSelected(bionet_cache_lookup_node(
-            qPrintable(myName.section('.', 0, 0)),
-            qPrintable(myName.section('.', 1, 1)),
-            qPrintable(myID)));
+        emit nodeSelected( (bionet_node_t*)bionet_ptr );
     } else if ( habRX.exactMatch(myName) ) {
-        emit habSelected(bionet_cache_lookup_hab(
-            qPrintable(myName.section('.', 0, 0)),
-            qPrintable(myName.section('.', 1, 1))));
+        emit habSelected( (bionet_hab_t*)bionet_ptr );
     }
 }

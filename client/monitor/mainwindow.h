@@ -16,6 +16,7 @@
 #include <QMessageBox>
 #include <QModelIndex>
 #include <QPointer>
+#include <QRegExp>
 #include <QSplitter>
 #include <QTimer>
 #include <QTreeView>
@@ -28,6 +29,7 @@
 
 #include "qwt_plot.h"
 #include "bionetmodel.h"
+#include "bdmio.h"
 #include "bionetio.h"
 #include "resourceview.h"
 #include "archive.h"
@@ -39,16 +41,31 @@
 extern "C" {
 #include "bionet.h"
 #include "bionet-util.h"
+#include "bdm-client.h"
 };
 
 using namespace std;
+
+
+class Tree : public QTreeView {
+    Q_OBJECT
+    public:
+        Tree(QWidget *parent = 0);
+//    public slots:
+//        void collapse(const QModelIndex &index);
+//        void expand(const QModelIndex &index);
+    protected:
+        void keyPressEvent(QKeyEvent *event);
+};
+
+
 
 class MainWindow : public QWidget {
     Q_OBJECT
 
     public:
         MainWindow(char* argv[], QWidget *parent = 0);
-	void usage();
+        void usage();
         void closeEvent(QCloseEvent* event);
 
     public slots:
@@ -56,6 +73,7 @@ class MainWindow : public QWidget {
         void cuts();
         void changeHostname();
         void makePlot(QString key);
+        void makeBDMPlot(QString key);
         void updatePlot(bionet_datapoint_t* datapoint);
         void lostPlot(QString key);
         void destroyPlot(QObject *obj);
@@ -65,16 +83,18 @@ class MainWindow : public QWidget {
         void closedDefaultPlotPreferences();
         void closedPreferences(QObject *obj);
         void updateScaleInfo(ScaleInfo *si);
+        void switchViews(int index);
 
     private:
         QHBoxLayout* layout;
         QSplitter* splitter;
-        QTreeView* view;
-        BionetModel* model;
+        Tree *view, *bdmView;
+        BionetModel *liveModel, *bdmModel;
         BionetIO* bionet;
         ResourceView *resourceView;
         QWidget *resViewHolder;
         Archive *archive;
+        BDMIO *bdmio;
 
         QHash<QString, PlotWindow*> plots;
         QHash<QString, PlotPreferences*> preferences;
@@ -89,29 +109,23 @@ class MainWindow : public QWidget {
         QAction* sampleAction;
         QAction* preferencesAction;
         //QAction* hostnameAction;
+        QAction* updateSubscriptionsAction;
+        QAction* pollingFrequencyAction;
 
         QMenuBar* menuBar;
         QMenu* fileMenu;
         QMenu* actionMenu;
         QMenu* helpMenu;
+        QTabWidget *tabs;
 
         void createActions();
         void createMenus();
+
+        void setupArchive();
+        void setupBDM();
         void setupBionetIO();
         void setupBionetModel();
-        void setupTreeView();
         void setupResourceView();
-        void setupArchive();
+        void setupTreeView();
         void setupWindow();
-
-        QTimer* timer;
-};
-
-
-class Tree : public QTreeView {
-    Q_OBJECT
-    public:
-        Tree(QWidget *parent = 0);
-    protected:
-        void keyPressEvent(QKeyEvent *event);
 };
