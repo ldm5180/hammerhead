@@ -16,7 +16,6 @@
 #include <glib.h>
 
 #include "bionet-data-manager.h"
-#include "bdm-util.h"
 #include "config.h"
 
 GMainLoop *bdm_main_loop = NULL;

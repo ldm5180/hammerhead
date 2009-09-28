@@ -6,7 +6,7 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = libhab 
+SUBDIRS = 
 
 if ENABLE_PYTHON
 SUBDIRS += py-libhab mon

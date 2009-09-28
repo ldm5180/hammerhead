@@ -6,7 +6,7 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = libbionet 
+SUBDIRS = 
 
 if ENABLE_QT4
 SUBDIRS += libbionet-qt4

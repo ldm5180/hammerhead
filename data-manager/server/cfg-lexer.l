@@ -7,7 +7,6 @@
 #include <glib.h>
 
 
-#include "bdm-util.h"
 #include "bionet-data-manager.h"
 #include "cfg-parser.h"
 

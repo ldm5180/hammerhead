@@ -38,10 +38,10 @@ CFLAGS_BIONET_UTIL = -I$(top_srcdir)/util $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_UTIL = -L$(top_srcdir)/util 
 LIBS_BIONET_UTIL = $(top_srcdir)/util/libbionet-util.la $(OPENSSL_LIBS)
 
-INCLUDES_BIONET_CLIENT = $(top_srcdir)/client/libbionet/bionet.h
-CFLAGS_BIONET_CLIENT = -I$(top_srcdir)/client/libbionet $(OPENSSL_CFLAGS)
-LDFLAGS_BIONET_CLIENT = -L$(top_srcdir)/client/libbionet
-LIBS_BIONET_CLIENT = $(top_srcdir)/client/libbionet/libbionet.la $(OPENSSL_LIBS)
+INCLUDES_BIONET_CLIENT = $(top_srcdir)/libbionet/bionet.h
+CFLAGS_BIONET_CLIENT = -I$(top_srcdir)/libbionet $(OPENSSL_CFLAGS)
+LDFLAGS_BIONET_CLIENT = -L$(top_srcdir)/libbionet
+LIBS_BIONET_CLIENT = $(top_srcdir)/libbionet/libbionet.la $(OPENSSL_LIBS)
 
 INCLUDES_BIONET_CLIENT_QT4 = $(top_srcdir)/client/libbionet-qt4/bionetio.h $(top_srcdir)/client/libbionet-qt4/bionetmodel.h
 CFLAGS_BIONET_CLIENT_QT4 = -I$(top_srcdir)/client/libbionet-qt4
@@ -63,10 +63,10 @@ CFLAGS_BIONET_CAL_CLIENT = -I$(top_srcdir)/cal $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_CAL_CLIENT = -L$(top_srcdir)/cal
 LIBS_BIONET_CAL_CLIENT = $(top_srcdir)/cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la $(OPENSSL_LIBS)
 
-INCLUDES_BIONET_HAB = $(top_srcdir)/hab/libhab/hardware-abstractor.h
-CFLAGS_BIONET_HAB = -I$(top_srcdir)/hab/libhab
-LDFLAGS_BIONET_HAB = -L$(top_srcdir)/hab/libhab
-LIBS_BIONET_HAB = $(top_srcdir)/hab/libhab/libhab.la
+INCLUDES_BIONET_HAB = $(top_srcdir)/libhab/hardware-abstractor.h
+CFLAGS_BIONET_HAB = -I$(top_srcdir)/libhab
+LDFLAGS_BIONET_HAB = -L$(top_srcdir)/libhab
+LIBS_BIONET_HAB = $(top_srcdir)/libhab/libhab.la
 
 INCLUDES_BIONET_HAB_AME = $(top_srcdir)/hab/libamedevice/amedevice.h
 CFLAGS_BIONET_HAB_AME = -I$(top_srcdir)/hab/libamedevice
@@ -78,10 +78,10 @@ CFLAGS_BIONET_ASN1 = -I$(top_srcdir)/asn.1 $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_ASN1 = -L$(top_srcdir)/asn.1
 LIBS_BIONET_ASN1 = $(top_srcdir)/asn.1/libbionet-asn.la $(OPENSSL_LIBS)
 
-INCLUDES_BDM = $(top_srcdir)/data-manager/client/libbdm/bdm-client.h
-CFLAGS_BDM = -I$(top_srcdir)/data-manager/client/libbdm $(GLIB_CFLAGS) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1)
-LDFLAGS_BDM = -L$(top_srcdir)/data-manager/client/libbdm $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1)
-LIBS_BDM = $(top_srcdir)/data-manager/client/libbdm/libbdm.la
+INCLUDES_BDM = $(top_srcdir)/libbdm/bdm-client.h
+CFLAGS_BDM = -I$(top_srcdir)/libbdm $(GLIB_CFLAGS) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1)
+LDFLAGS_BDM = -L$(top_srcdir)/libbdm $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1)
+LIBS_BDM = $(top_srcdir)/libbdm/libbdm.la
 
 INCLUDES_QT = `pkg-config --cflags QtCore` `pkg-config --cflags QtGui`
 LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`

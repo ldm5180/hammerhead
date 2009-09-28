@@ -25,7 +25,6 @@
 
 #include "bionet.h"
 #include "bionet-util.h"
-#include "bdm-util.h"
 #include "bionet-data-manager.h"
 
 #if ENABLE_ION

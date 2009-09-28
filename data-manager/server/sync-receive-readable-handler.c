@@ -12,7 +12,6 @@
 
 #include "bionet-asn.h"
 #include "bionet-data-manager.h"
-#include "bdm-util.h"
 
 static int write_data_to_fd(const void *buffer, size_t size, void * fd_void) {
     int fd = *(int*)fd_void;

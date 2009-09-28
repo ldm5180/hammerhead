@@ -12,7 +12,6 @@
 
 #include "bionet-asn.h"
 #include "bionet-data-manager.h"
-#include "bdm-util.h"
 
 
 int client_readable_handler(GIOChannel *unused, GIOCondition cond, client_t *client) {

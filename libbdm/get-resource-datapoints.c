@@ -11,7 +11,6 @@
 #include <glib.h>
 
 #include "bdm-client.h"
-#include "bdm-util.h"
 
 
 struct bdm_hab_list_t_opaque {

@@ -6,7 +6,7 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = libbdm
+SUBDIRS = 
 
 if ENABLE_CLIENTS
 SUBDIRS += bdm-client

@@ -12,7 +12,6 @@
 #include <errno.h>
 #include <sys/time.h>
 
-#include "bdm-util.h"
 #include "bionet-data-manager.h"
 
 int yylex();

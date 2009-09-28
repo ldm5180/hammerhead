@@ -23,7 +23,7 @@ _bdm_client_la_LDFLAGS = -module $(LDFLAGS_BDM) $(LDFLAGS_BIONET_ASN1) -version-
 
 
 bdm-client_wrap.c: bdm-client.i bdm-client-interface.c $(INCLUDES_BIONET_UTIL) 
-	$(SWIG) $(SWIG_PYTHON_OPT) $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) -I../libbdm -o $@ $<
+	$(SWIG) $(SWIG_PYTHON_OPT) $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) -I../../../libbdm -o $@ $<
 
 clean-local:
 	rm -f *.so bdm-client_wrap.c bdm_client.*

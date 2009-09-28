@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 #include "bionet-data-manager.h"
-#include "bdm-util.h"
 
 
 int send_message_to_client(const void *buffer, size_t size, void *client_void) {

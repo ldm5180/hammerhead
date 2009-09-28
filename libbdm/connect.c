@@ -26,7 +26,6 @@
 #include <glib.h>
 
 #include "bdm-client.h"
-#include "bdm-util.h"
 
 
 int bdm_fd = -1;

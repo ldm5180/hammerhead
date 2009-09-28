@@ -558,8 +558,8 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = mainpage.h \
-		         client/libbionet/bionet.h \
-                         hab/libhab/hardware-abstractor.h \
+		         libbionet/bionet.h \
+                         libhab/hardware-abstractor.h \
 			 util/bionet-datapoint.h \
                          util/bionet-hab.h \
 			 util/bionet-node.h \

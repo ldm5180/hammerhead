@@ -467,8 +467,10 @@ AC_CONFIG_FILES([Makefile
                  asn.1/Makefile
                  util/Makefile
 		 util/version.c
+                 libhab/Makefile
+                 libbionet/Makefile
+                 libbdm/Makefile
                  client/Makefile
-                 client/libbionet/Makefile
                  client/libbionet-qt4/Makefile
 		 client/monitor/Makefile
                  client/py-libbionet/Makefile
@@ -478,7 +480,6 @@ AC_CONFIG_FILES([Makefile
 		 client/commander/Makefile
 		 client/get/Makefile
                  hab/Makefile
-                 hab/libhab/Makefile
 		 hab/py-libhab/Makefile
 		 hab/libamedevice/Makefile
                  hab/csa-cp/Makefile
@@ -499,7 +500,6 @@ AC_CONFIG_FILES([Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
-                 data-manager/client/libbdm/Makefile
                  data-manager/client/py-libbdm/Makefile
                  data-manager/client/bdm-client/Makefile
                  data-manager/bdmplot/Makefile

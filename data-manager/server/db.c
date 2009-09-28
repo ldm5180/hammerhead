@@ -16,7 +16,6 @@
 
 #include <bionet.h>
 
-#include "bdm-util.h"
 #include "bionet-data-manager.h"
 
 

@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 #include "bionet-data-manager.h"
-#include "bdm-util.h"
 
 
 void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t *message) {

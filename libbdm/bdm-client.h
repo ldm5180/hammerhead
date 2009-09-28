@@ -20,6 +20,21 @@
  * Describes the Bionet Data Manager API
  */
 
+//
+// The bionet code uses glib's logging facility to log internal messages,
+// and this is the domain.
+//
+
+#define  BDM_LOG_DOMAIN  "bdm"
+
+//
+// bdm server listens on this TCP port, clients connect
+//
+
+#define BDM_PORT      (11002)
+
+
+
 
 // FIXME: switch to CAL and this'll use mDNS-SD
 int bdm_connect(char *hostname, uint16_t port);

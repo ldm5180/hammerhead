@@ -29,6 +29,21 @@
 // from the sha1 hash. Must be <= to SHA_DIGEST_LENGTH;
 #define BDM_RESOURCE_KEY_LENGTH 8 
 
+//
+// The bionet code uses glib's logging facility to log internal messages,
+// and this is the domain.
+//
+
+#define  BDM_LOG_DOMAIN  "bdm"
+
+//
+// bdm server listens on this TCP port, clients connect
+//
+
+#define BDM_PORT      (11002)
+#define BDM_SYNC_PORT (11003)
+
+
 
 extern char *bdm_pidfile;
 extern GMainLoop *bdm_main_loop;

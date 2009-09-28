@@ -13,7 +13,7 @@ include $(top_srcdir)/common.am
 
 ACLOCAL_AMFLAGS = -I build-aux/m4
 
-SUBDIRS = cal util asn.1 client hab data-manager security apps check test
+SUBDIRS = cal util asn.1 libhab libbionet libbdm data-manager hab client security apps check test
 
 if ENABLE_LINUX
 LDCONFIG_EXE = /sbin/ldconfig
@@ -21,7 +21,7 @@ endif
 
 if ENABLE_DOXYGEN
 doc_DATA = doxygen/html/index.html
-DOXYGEN_INPUT = $(top_srcdir)/client/libbionet/bionet.h $(top_srcdir)/hab/libhab/hardware-abstractor.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-util.h
+DOXYGEN_INPUT = $(top_srcdir)/libbionet/bionet.h $(top_srcdir)/libhab/hardware-abstractor.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-util.h
 DOXYFILE = Doxyfile
 endif
 
