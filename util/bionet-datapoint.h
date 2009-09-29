@@ -152,7 +152,7 @@ void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint,
 
 
 /**
- * @brief Sets the Datapoint Timestamp as specified.
+ * @brief Gets the Datapoint Timestamp.
  *
  * @param[in] datapoint The Datapoint to get the Timestamp of.
  *
