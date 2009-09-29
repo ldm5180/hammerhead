@@ -20,6 +20,7 @@ bionet_monitor_SOURCES =        \
     plotwindow.cxx              \
     subscontroller.cxx          \
     bdmio.cxx                   \
+    bdmconnectiondialog.cxx     \
     resourceview.cxx            \
     history.cxx                 \
     archive.cxx                 \
@@ -30,6 +31,7 @@ bionet_monitor_SOURCES =        \
     plotpreferences.moc.cpp     \
     subscontroller.moc.cpp      \
     bdmio.moc.cpp               \
+    bdmconnectiondialog.moc.cpp \
     resourceview.moc.cpp        \
     history.moc.cpp             \
     archive.moc.cpp
@@ -41,6 +43,7 @@ BUILT_SOURCES =                 \
     plotpreferences.moc.cpp     \
     subscontroller.moc.cpp      \
     bdmio.moc.cpp               \
+    bdmconnectiondialog.moc.cpp \
     resourceview.moc.cpp        \
     history.moc.cpp             \
     archive.moc.cpp

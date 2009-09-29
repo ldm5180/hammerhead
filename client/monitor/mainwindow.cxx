@@ -63,7 +63,9 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     createMenus();
 
     setupWindow();
+
     bionet->setup();
+    bdmio->setup();
 
     connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
         liveModel, SLOT(lineActivated(QModelIndex)));
@@ -163,6 +165,9 @@ void MainWindow::setupBDM() {
         bdmModel, SLOT(addResource(bionet_resource_t*)));
     connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
         bdmModel, SLOT(newDatapoint(bionet_datapoint_t*)));
+
+    connect(bdmio, SIGNAL(enableTab(bool)),
+        this, SLOT(enableTab(bool)));
 }
 
 
@@ -275,6 +280,11 @@ void MainWindow::switchViews(int index) {
         connect(resourceView, SIGNAL(plotResource(QString)), 
             this, SLOT(makeBDMPlot(QString)));
     }
+}
+
+
+void MainWindow::enableTab(bool enable) {
+    tabs->setTabEnabled(1, enable);
 }
 
 
@@ -408,10 +418,19 @@ void MainWindow::createActions() {
     updateSubscriptionsAction->setShortcut(tr("Ctrl+C"));
     connect(updateSubscriptionsAction, SIGNAL(triggered()), bdmio, SLOT(editSubscriptions()));
     
-    pollingFrequencyAction = new QAction(tr("&BDM Polling Frequency"), this);
-    pollingFrequencyAction->setShortcut(tr("Ctrl+B"));
+    pollingFrequencyAction = new QAction(tr("BDM Polling &Frequency"), this);
+    pollingFrequencyAction->setShortcut(tr("Ctrl+F"));
     connect(pollingFrequencyAction, SIGNAL(triggered()), bdmio, SLOT(changeFrequency()));
+
+    connectToBDMAction = new QAction(tr("Connect to &BDM"), this);
+    connectToBDMAction->setShortcut(tr("Ctrl+B"));
+    connect(connectToBDMAction, SIGNAL(triggered()), bdmio, SLOT(promptForConnection()));
+
+    disconnectFromBDMAction = new QAction(tr("&Disconnect from BDM"), this);
+    disconnectFromBDMAction->setShortcut(tr("Ctrl+D"));
+    connect(disconnectFromBDMAction, SIGNAL(triggered()), bdmio, SLOT(disconnectFromBDM()));
 }
+
 
 
 void MainWindow::createMenus() {
@@ -419,6 +438,8 @@ void MainWindow::createMenus() {
     fileMenu = menuBar->addMenu(tr("&File"));
     fileMenu->addAction(plotAction);
     fileMenu->addAction(preferencesAction);
+    fileMenu->addAction(connectToBDMAction);
+    fileMenu->addAction(disconnectFromBDMAction);
     fileMenu->addAction(updateSubscriptionsAction);
     fileMenu->addAction(pollingFrequencyAction);
     //fileMenu->addAction(sampleAction);

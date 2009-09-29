@@ -70,20 +70,12 @@ void BDMModel::addResource(bionet_resource_t *resource) {
 
 
 BDMIO::BDMIO(QWidget *parent) {
-    int bdmFD, port = 0;
     QStringList horizontalHeaderLabels;
-
-    // Connect to the BDM
-    bdmFD = bdm_connect(NULL, port);
-    if (bdmFD < 0) {
-        qWarning() << "unable to connect to the bdm!";
-    }
 
     timer = new QTimer(this);
     timer->setInterval(2000);
     timer->setSingleShot(false);
     connect(timer, SIGNAL(timeout()), this, SLOT(pollBDM()));
-    timer->start();
 
     horizontalHeaderLabels << 
         "Resource Name Pattern" << 
@@ -100,6 +92,9 @@ BDMIO::BDMIO(QWidget *parent) {
     controller = new SubscriptionController(subscriptions, parent);
     connect(controller, SIGNAL(removePattern(QString)),
         this, SLOT(removeSubscription(QString)));
+
+    hostname = QString("localhost");
+    port = 0;
 
     hab_cache = NULL;
 }
@@ -169,7 +164,19 @@ double BDMIO::getPollingFrequency() {
 
     return freq;
 }
- 
+
+
+void BDMIO::setup() {
+    bdmFD = bdm_connect(hostname.toAscii().data(), port);
+    if (bdmFD < 0) {
+        emit enableTab(false);
+        timer->stop();
+    } else {
+        emit enableTab(true);
+        timer->start();
+    }
+}
+
 
 void BDMIO::pollBDM() {
     int i;
@@ -469,7 +476,7 @@ void BDMIO::removeSubscription(QString pattern) {
             }
         }
 
-        // now walk through all the hab's node's to see whether they match the subscription
+        // walk through all the hab's node's to see whether they match the subscription
         for (int ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
             bionet_node_t* node = bionet_hab_get_node_by_index(hab, ni);
             bool nodeMatchesOtherSubscriptions = false;
@@ -503,3 +510,48 @@ void BDMIO::removeSubscription(QString pattern) {
         cursor = cursor->next;
     }
 }
+
+
+void BDMIO::promptForConnection() {
+    BDMConnectionDialog *dialog;
+    dialog = new BDMConnectionDialog(hostname, port, this);
+
+    connect(dialog, SIGNAL(newHostnameAndPort(QString, int)), 
+        this, SLOT(setHostnameAndPort(QString, int)));
+}
+
+
+void BDMIO::setHostnameAndPort(QString name, int num) {
+    hostname = name;
+    port = num;
+    setup();
+}
+
+
+void BDMIO::disconnectFromBDM() {
+    clearBDMCache();
+    bdm_disconnect();
+    emit enableTab(false);
+    timer->stop();
+    // reset all of the subscriptions #received to -1
+    for (int i = 0; i < subscriptions->rowCount(); i++) {
+        QStandardItem *item = subscriptions->item(i, ENTRY_START_COL);
+        item->setData(-1, Qt::DisplayRole);
+    }
+}
+
+
+void BDMIO::clearBDMCache() {
+    while (hab_cache != NULL) {
+        bionet_hab_t* hab = (bionet_hab_t*)(hab_cache->data);
+
+        for (int ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++)
+            emit lostNode(bionet_hab_get_node_by_index(hab, ni));
+        emit lostHab(hab);
+
+        // cleanup
+        bionet_hab_free(hab);
+        hab_cache = g_slist_delete_link(hab_cache, hab_cache);
+    }
+}
+

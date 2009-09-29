@@ -84,6 +84,7 @@ class MainWindow : public QWidget {
         void closedPreferences(QObject *obj);
         void updateScaleInfo(ScaleInfo *si);
         void switchViews(int index);
+        void enableTab(bool enable);
 
     private:
         QHBoxLayout* layout;
@@ -111,6 +112,8 @@ class MainWindow : public QWidget {
         //QAction* hostnameAction;
         QAction* updateSubscriptionsAction;
         QAction* pollingFrequencyAction;
+        QAction* connectToBDMAction;
+        QAction* disconnectFromBDMAction;
 
         QMenuBar* menuBar;
         QMenu* fileMenu;

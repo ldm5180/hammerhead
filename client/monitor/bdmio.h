@@ -9,9 +9,10 @@
 #include <QTimer>
 #include <QWidget>
 
-#include "subscontroller.h"
+#include "bdmconnectiondialog.h"
 #include "bionetmodel.h"
 #include "history.h"
+#include "subscontroller.h"
 
 extern "C" {
 #include <glib.h>
@@ -41,10 +42,14 @@ class BDMIO : public QWidget {
         double getPollingFrequency();
 
     public slots:
+        void setup();
         void pollBDM();
         void editSubscriptions();
         void changeFrequency();
         void removeSubscription(QString pattern);
+        void promptForConnection();
+        void setHostnameAndPort(QString name, int num);
+        void disconnectFromBDM();
 
     signals:
         void newHab(bionet_hab_t* hab);
@@ -53,12 +58,16 @@ class BDMIO : public QWidget {
         void lostNode(bionet_node_t* node);
         void newResource(bionet_resource_t* resource);
         void newDatapoint(bionet_datapoint_t* dp);
+        void enableTab(bool enable);
 
     private:
         SubscriptionController *controller;
         QStandardItemModel *subscriptions;
         QTimer *timer;
         float freq;
+        int bdmFD, port;
+        QString hostname;
+        QWidget *bdmConnectionDialog;
 
         bionet_hab_t *copy_hab(bionet_hab_t* orig);
 
@@ -70,6 +79,8 @@ class BDMIO : public QWidget {
         bionet_node_t* copyNode(bionet_hab_t *cached_hab, bionet_node_t *node);
         bionet_resource_t* copyResource(bionet_node_t *cached_node, bionet_resource_t *resource);
         void copyDatapoint(bionet_resource_t* cached_resource, bionet_datapoint_t *dp);
+
+        void clearBDMCache();
 
         GSList *hab_cache;
 };
