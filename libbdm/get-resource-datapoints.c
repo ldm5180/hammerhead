@@ -144,6 +144,7 @@ bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr)
 
 cleanup:
     // FIXME
+    free(hab_list);
     return NULL;
 }
 
