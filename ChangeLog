@@ -1,3 +1,5 @@
+Bionet 2.5.0
+	
 Bionet 2.4.1, 2009 September 21
 
     * Add bdm_get_last_entry_seq() and bdm_free_hab_list() to BDM client to enable 
