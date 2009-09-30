@@ -12,7 +12,7 @@
 #include "check-common.h"
 #include "bionet-util.h"
 #include "check-bdm.h"
-#include "bdm-util.h"
+#include "bionet-util.h"
 #include "data-manager/server/bionet-data-manager.h"
 
 static const char * good_config_files[] = {
