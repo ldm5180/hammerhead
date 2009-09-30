@@ -144,7 +144,7 @@ void SubscriptionController::removeSubscription() {
     // this returns the first index in each row (which is the index with the pattern)
     selected = view->selectionModel()->selectedRows();
 
-    while ( selected.length() > 0 ) {
+    while ( selected.size() > 0 ) {
         QModelIndex index;
 
         index = selected.takeLast();
