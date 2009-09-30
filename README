@@ -2,7 +2,7 @@
 Bionet 2
 ~~~~~~~~
 
-Bionet 2.0 uses mDNS-SD (multicast DNS with Service Discovery) to find
+Bionet 2 uses mDNS-SD (multicast DNS with Service Discovery) to find
 the peers on the network.  In order for this to work, you need to be
 running the avahi-daemon on each host that will run HABs or Clients.
 
