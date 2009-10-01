@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include <errno.h>
 
+#include <QDebug>
 #include <QTimer>
 #include <QObject>
 #include <qwt_plot.h>
@@ -44,7 +45,7 @@ public:
     void setXTimer(int size);
     void setXDatapoints(int size);
 
-    void setPlotStartTime(time_t plotStart) { startTime = plotStart; }
+    void setPlotStartTime(struct timeval *plotStart);
 
     ScaleType getYScaleType() { return yType; }
     int getYMin() { return yMin; }
@@ -67,7 +68,7 @@ signals:
 private:
     int xMin, xMax, yMin, yMax, numDatapoints, numSeconds;
     ScaleType xType, yType;
-    time_t startTime;
+    struct timeval startTime;
     QTimer *timer;
 
     /* Updaters: these update the passed in plot to the desired values */

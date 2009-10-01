@@ -8,12 +8,20 @@
 
 
 History::History (QObject* parent) : QObject(parent) {
-    times = new QList<time_t>;
+    times = new QList<struct timeval*>;
     values = new QList<double>;
 }
 
 
 History::~History() {
+    struct timeval *tv;
+
+    while ( !times->isEmpty() ) {
+        tv = times->takeFirst();
+        if (tv != NULL)
+            delete tv;
+    }
+
     delete times;
     delete values;
 }
@@ -21,20 +29,30 @@ History::~History() {
 
 void History::append(bionet_datapoint_t *datapoint) {
     double value;
-    time_t time;
+    struct timeval* tv;
+    int i = 0;
+
     bionet_value_t* bionet_value = bionet_datapoint_get_value(datapoint);
-
-    time = bionet_datapoint_get_timestamp(datapoint)->tv_sec;
     value = QString(bionet_value_to_str(bionet_value)).toDouble();
+    
+    tv = new timeval;
+    tv->tv_sec = bionet_datapoint_get_timestamp(datapoint)->tv_sec;
+    tv->tv_usec = bionet_datapoint_get_timestamp(datapoint)->tv_usec;
 
-    times->append(time);
-    values->append(value);
+    // insert before the first value older than it
+    // oldest is in terms of absolute time
+    for ( ; i < times->size(); i++ )
+        if ( older(times->at(i), tv) )
+            break;
+
+    times->insert(i, tv);
+    values->insert(i, value);
 }
 
 
-time_t* History::getTimes(int count) {
+double* History::getTimes(int count) {
     int start, arr_size;
-    time_t *arr;
+    double *arr;
 
     if (times->isEmpty())
         return NULL;
@@ -47,10 +65,10 @@ time_t* History::getTimes(int count) {
         start = size() - count;
     }
     
-    arr = new time_t[arr_size];
+    arr = new double[arr_size];
 
     for (int i = start; i < size(); i++)
-        arr[i-start] = times->at(i);
+        arr[i-start] = tvDiff(times->at(i), times->at(start));
 
     return arr;
 }
@@ -80,11 +98,50 @@ double* History::getValues(int count) {
 }
 
 
+struct timeval* History::getFirstTime(int count) {
+    int start;
+
+    if ((count < 0) || (size() < count))
+        start = 0;
+    else
+        start = size() - count;
+
+    return times->at(start);
+}
+
+
 int History::size() {
-    return times->size();
+    return values->size();
 }
 
 
 bool History::isEmpty() {
-    return times->isEmpty();
+    return values->isEmpty();
 }
+
+
+// is a older than b (in terms of absolute time since epoch)
+bool History::older(struct timeval *a, struct timeval *b) {
+    if (a->tv_sec > b->tv_sec)
+        return true;
+
+    if ((a->tv_sec == b->tv_sec) && (a->tv_usec > b->tv_usec))
+            return true;
+
+    return false;
+}
+
+
+double History::tvDiff(struct timeval *a, struct timeval *b) {
+    double diff;
+
+    diff = a->tv_sec - b->tv_sec;
+    if (a->tv_usec >= b->tv_usec)
+        diff += ((double)(a->tv_usec - b->tv_usec))/1000000.0;
+    else
+        diff += -1.0 + ((double)(1000000 - (b->tv_usec - a->tv_usec)))/1000000.0;
+
+    return diff;
+}
+
+

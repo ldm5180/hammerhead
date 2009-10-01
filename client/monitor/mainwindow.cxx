@@ -565,7 +565,7 @@ void MainWindow::makeBDMPlot(QString key) {
     connect(p, SIGNAL(destroyed(QObject*)), 
         this, SLOT(destroyPlot(QObject*)));
     
-    // FIXME ... what if there's overlap with an actual existing resource?
+    // FIXME: overlap with a 'live' bionet existing resource results in ?
     plots.insert(key, p);
 }
 

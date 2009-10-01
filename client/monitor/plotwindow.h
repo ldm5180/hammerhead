@@ -23,6 +23,10 @@
 
 #include <QtGlobal>
 
+#include <time.h>
+#include <errno.h>
+#include <string.h>
+
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_symbol.h>
@@ -58,7 +62,7 @@ class PlotWindow : public QWidget {
         QPushButton *prefButton, *closeButton;
         QVBoxLayout *layout;
         QHBoxLayout *bottom;
-        time_t start;
+        struct timeval *start;
 
         History *history;
         ScaleInfo *scale;

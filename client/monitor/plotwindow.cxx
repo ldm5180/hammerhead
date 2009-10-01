@@ -10,7 +10,6 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
     : QWidget(parent) 
 {
     // This assumes that the History has >= 1 entry;
-    time_t *times;
     QString xLabel;
 
     /* Setup the plot window attributes */
@@ -29,8 +28,7 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
     c->setSymbol(s); 
     
     /* We need to set the ScaleInfo start time in order for it to work properly */
-    times = history->getTimes();
-    start = times[0];
+    start = history->getFirstTime(-1);
     
     /* setup the x-/y-axis scale */
     this->scale = NULL;
@@ -40,16 +38,16 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
                 ScaleInfo::AUTOSCALE, 
                 this);
         this->scale->setPlotStartTime(start);
+
+        /* since setScaleInfo connects the scale to the plot & calls update plot,
+         * and we're not calling it, do it here instead */
         connect(this->scale, SIGNAL(updateRequest()), this, SLOT(updatePlot()));
+        updatePlot();
     } else
         setScaleInfo(scale);
-
-    /* Actually plot everything */
-    updatePlot();
     
     xLabel = createXLabel();
     p->setAxisTitle(QwtPlot::xBottom, xLabel);
-    delete[] times;
 
     /* Create two push buttons for preferences & plotting */
     prefButton = new QPushButton(tr("&Plot Preferences"), this);
@@ -79,24 +77,17 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
 
 void PlotWindow::updatePlot() {
     QString xLabel;
-    time_t *x;
-    double *y;
+    double *x, *y;
     int size;
 
     x = history->getTimes();
     y = history->getValues();
     size = history->size();
     
-    time_t start = x[0];
-    double d[size];
-
-    for (int i=0; i < size; i++)
-        d[i] = (double)(x[i] - start);
-    
-    c->setData(d, y, size);
+    c->setData(x, y, size);
     c->attach(p);
 
-    scale->update(p, d, size);
+    scale->update(p, x, size);
     p->replot();
 
     delete[] x;
@@ -110,7 +101,9 @@ void PlotWindow::setScaleInfo(ScaleInfo *newScale) {
         qDebug("tried to set NULL scale info, returning");
         return;
     }
+
     if (scale != NULL) {
+        disconnect(scale, SIGNAL(updateRequest()), this, SLOT(updatePlot()));
         delete scale;
     }
 
@@ -132,8 +125,23 @@ void PlotWindow::createActions() {
 
 
 QString PlotWindow::createXLabel() {
+    char time_str[200];
+    struct tm *tm;
     QString label = QString("Seconds Since: ");
-    label += asctime(gmtime(&start));
+    QString date, microseconds;
+
+    tm = gmtime((time_t*)&start->tv_sec);
+    if (tm == NULL) {
+        qWarning() << "gmtime error:" << strerror(errno);
+        return label;
+    }
+
+    if (strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", tm) <= 0) {
+        qWarning() << "strftime error:" << strerror(errno);
+        return label;
+    }
+
+    label += QString(time_str) + QString(".%06").arg(start->tv_usec);
     return label;
 }
 

@@ -8,9 +8,12 @@
 #define BM_HISTORY_H
 
 
+#include <QDebug>
 #include <QObject>
 #include <QList>
 #include <QString>
+
+#include <sys/time.h>
 
 
 extern "C" {
@@ -26,15 +29,20 @@ class History : public QObject {
         History(QObject* parent);
         ~History();
 
-        time_t* getTimes(int count=-1);
+        double* getTimes(int count=-1);
         double* getValues(int count=-1);
+        struct timeval* getFirstTime(int count=-1);
+
         int size();
         bool isEmpty();
 
         void append(bionet_datapoint_t *datapoint);
 
+        bool older(struct timeval *a, struct timeval *b);
+        double tvDiff(struct timeval *a, struct timeval *b);
+
     private:
-        QList<time_t> *times;
+        QList<struct timeval*> *times;
         QList<double> *values;
 };
 

@@ -74,6 +74,12 @@ void ScaleInfo::setXDatapoints(int size) {
 }
 
 
+void ScaleInfo::setPlotStartTime(struct timeval* plotStart) {
+    startTime.tv_sec = plotStart->tv_sec;
+    startTime.tv_usec = plotStart->tv_usec;
+}
+
+
 ScaleInfo* ScaleInfo::copy() {
     ScaleInfo *cpy = new ScaleInfo;
 
@@ -101,7 +107,8 @@ void ScaleInfo::update(QwtPlot *plot, double *times, int size) {
         case SLIDING_TIME_WINDOW: applyXTimes(plot); break;
         case SLIDING_DATAPOINT_WINDOW: applyXDatapoints(plot, times, size); break;
         case AUTOSCALE:
-        default: applyXAutoScale(plot);
+        default: 
+            applyXAutoScale(plot);
     }
 }
 
@@ -112,16 +119,27 @@ void ScaleInfo::applyXMinMax(QwtPlot *plot) {
 
 
 void ScaleInfo::applyXTimes(QwtPlot *plot) {
-    int max, min, r;
-    struct timeval tv;
+    double max, min, tmp;
+    int r;
+    struct timeval now;
 
-    r = gettimeofday(&tv, NULL);
+    r = gettimeofday(&now, NULL);
     if (r != 0) {
         qWarning("gettimeofday error: %s", strerror(errno));
         return;
     }
 
-    max = tv.tv_sec - startTime;
+    // this assumes current time will be > than startTime
+    // a pretty good assumption since the times should always be in chronological order
+    max = now.tv_sec - startTime.tv_sec;
+    tmp = (double)now.tv_usec - (double)startTime.tv_usec;
+
+    if (tmp < 0) {
+        max -= 1;
+        tmp += 1000000;
+    }
+
+    max += tmp/1000000.0;
     min = max - numSeconds;
 
     plot->setAxisScale(QwtPlot::xBottom, min, max);
