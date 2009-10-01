@@ -6,7 +6,7 @@ inherit versionator
 DESCRIPTION="Bionet libraries and sample apps"
 HOMEPAGE="http://bioserve.colorado.edu/www/products/bionet/"
 MY_PV=${PV/_alpha[0-9]*/}
-MY_PR=${PV/[0-9]*_alpha/build}
+MY_PR=${PV/[0-9]*_alpha/bzr}
 MY_P="${PN}2-${MY_PV}+${MY_PR}"
 SRC_URI="http://bioserve:bionet!@bioserve.colorado.edu/bionet/tarballs/${MY_P}.tar.bz2"
 S="${WORKDIR}/${MY_P}"
