@@ -140,6 +140,8 @@ History* BDMIO::createHistory(QString key) {
 
     bdm_hab_list_free(hab_list);
 
+    histories.insert(key, history);
+
     return history;
 }
 
@@ -163,6 +165,16 @@ double BDMIO::getPollingFrequency() {
     freq = 1000.0/(double)timer->interval();
 
     return freq;
+}
+
+
+void BDMIO::removeHistory(QString key) {
+    History *history = histories.take(key);
+
+    if (history == NULL)
+        return;
+
+    delete history;
 }
 
 
@@ -376,6 +388,7 @@ bionet_resource_t* BDMIO::copyResource(bionet_node_t *cached_node, bionet_resour
 
 void BDMIO::copyDatapoint(bionet_resource_t* cached_resource, bionet_datapoint_t *dp) {
     bionet_datapoint_t *cached_dp;
+    QString name;
 
     cached_dp = BIONET_RESOURCE_GET_DATAPOINT( cached_resource );
 
@@ -400,6 +413,12 @@ void BDMIO::copyDatapoint(bionet_resource_t* cached_resource, bionet_datapoint_t
             bionet_datapoint_get_timestamp(dp)
         );
     }
+
+    name = bionet_resource_get_name(cached_resource);
+
+    // add the datapoint to the history if it exists
+    if (histories.contains(QString(name)))
+        histories.value(name)->append(cached_dp);
 
     emit newDatapoint(cached_dp);
 }

@@ -75,8 +75,11 @@ class MainWindow : public QWidget {
         void makePlot(QString key);
         void makeBDMPlot(QString key);
         void updatePlot(bionet_datapoint_t* datapoint);
+        void updateBDMPlot(bionet_datapoint_t* datapoint);
         void lostPlot(QString key);
+        void lostBDMPlot(QString key);
         void destroyPlot(QObject *obj);
+        void destroyBDMPlot(QObject *obj);
         void updateMenus();
         void openPrefs(PlotWindow *pw=NULL, ScaleInfo *current=NULL);
         void openDefaultPlotPreferences();
@@ -97,7 +100,8 @@ class MainWindow : public QWidget {
         Archive *archive;
         BDMIO *bdmio;
 
-        QHash<QString, PlotWindow*> plots;
+        QHash<QString, PlotWindow*> livePlots;
+        QHash<QString, PlotWindow*> bdmPlots;
         QHash<QString, PlotPreferences*> preferences;
         PlotPreferences *defaultPreferences;
         ScaleInfo *scaleInfoTemplate;

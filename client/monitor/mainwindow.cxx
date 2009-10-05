@@ -77,8 +77,11 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
         resourceView, SLOT(clearView()));
     connect(liveModel, SIGNAL(streamSelected(bionet_stream_t*)), 
         resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
+
     connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
         this, SLOT(updatePlot(bionet_datapoint_t*)));
+    connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        this, SLOT(updateBDMPlot(bionet_datapoint_t*)));
 
     scaleInfoTemplate = new ScaleInfo;
 }
@@ -107,8 +110,10 @@ void MainWindow::setupBionetModel() {
         liveModel, SLOT(lostNode(bionet_node_t*)));
     connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
         liveModel, SLOT(newDatapoint(bionet_datapoint_t*)));
+
     connect(liveModel, SIGNAL(lostResource(QString)), 
         this, SLOT(lostPlot(QString)));
+
     return;
 }
 
@@ -165,6 +170,10 @@ void MainWindow::setupBDM() {
         bdmModel, SLOT(addResource(bionet_resource_t*)));
     connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
         bdmModel, SLOT(newDatapoint(bionet_datapoint_t*)));
+
+    // when we lose nodes, we lose all thier resources too
+    connect(liveModel, SIGNAL(lostResource(QString)), 
+        this, SLOT(lostBDMPlot(QString)));
 
     connect(bdmio, SIGNAL(enableTab(bool)),
         this, SLOT(enableTab(bool)));
@@ -365,7 +374,11 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     liveModel->disconnect();
     bionet->disconnect();
 
-    foreach(PlotWindow* p, plots) {
+    foreach(PlotWindow* p, livePlots) {
+        delete p;
+    }
+
+    foreach(PlotWindow* p, bdmPlots) {
         delete p;
     }
     
@@ -524,17 +537,18 @@ Ctrl-Q\t Quit"
 }
 
 
+// keygen ok here
 void MainWindow::makePlot(QString key) {
     
     if (( !archive->contains(key) ) || ( archive->history(key)->size() == 0 ))
         return;
 
-    if ( !plots.contains(key) ) {
+    if ( !livePlots.contains(key) ) {
         PlotWindow* p = new PlotWindow(key, archive->history(key), 
                 scaleInfoTemplate, 
                 this);
         connect(p, SIGNAL(newPreferences(PlotWindow*, ScaleInfo*)), this, SLOT(openPrefs(PlotWindow*, ScaleInfo*)));
-        plots.insert(key, p);
+        livePlots.insert(key, p);
         connect(p, SIGNAL(destroyed(QObject*)), this, SLOT(destroyPlot(QObject*)));
 
         /* if default preferences exists, add the plot to the plots it updates */
@@ -544,10 +558,10 @@ void MainWindow::makePlot(QString key) {
 }
 
 
+// keygen ok here
 void MainWindow::makeBDMPlot(QString key) {
     History *history;
     PlotWindow *p;
-    QString finalKey;
 
     // Get the info from the BDM
     history = bdmio->createHistory(key);
@@ -563,10 +577,9 @@ void MainWindow::makeBDMPlot(QString key) {
     connect(p, SIGNAL(newPreferences(PlotWindow*, ScaleInfo*)), 
         this, SLOT(openPrefs(PlotWindow*, ScaleInfo*)));
     connect(p, SIGNAL(destroyed(QObject*)), 
-        this, SLOT(destroyPlot(QObject*)));
+        this, SLOT(destroyBDMPlot(QObject*)));
     
-    // FIXME: overlap with a 'live' bionet existing resource results in ?
-    plots.insert(key, p);
+    bdmPlots.insert(key, p);
 }
 
 
@@ -581,12 +594,12 @@ void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
 
     resource_name = bionet_resource_get_name(resource);
     if (resource_name == NULL) {
-        cout << "updatePlot(): unable to get resource name" << endl;
+        qWarning() << "updatePlot(): unable to get resource name" << endl;
         return;
     }
 
     QString key = QString(resource_name);
-    PlotWindow* p = plots.value(key);
+    PlotWindow* p = livePlots.value(key);
 
     if ( p != NULL ) {
         p->updatePlot();
@@ -594,8 +607,33 @@ void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
 }
 
 
+void MainWindow::updateBDMPlot(bionet_datapoint_t* datapoint) {
+    bionet_resource_t* resource;
+    const char *resource_name;
+
+    if ((datapoint == NULL) || bdmPlots.isEmpty())
+        return;
+
+    resource = bionet_datapoint_get_resource(datapoint);
+
+    resource_name = bionet_resource_get_name(resource);
+    if (resource_name == NULL) {
+        qWarning() << "updateBDMPlot(): unable to get resource name" << endl;
+        return;
+    }
+
+    QString key = QString(resource_name);
+    PlotWindow* p = bdmPlots.value(key);
+
+    if ( p != NULL ) {
+        //qDebug() << "updating BDM Plot for resource:" << resource_name;
+        p->updatePlot();
+    }
+}
+
+
 void MainWindow::lostPlot(QString key) {
-    PlotWindow* p = plots.value(key);
+    PlotWindow* p = livePlots.value(key);
 
     if ( p != NULL ) {
         delete p;
@@ -603,16 +641,32 @@ void MainWindow::lostPlot(QString key) {
 }
 
 
+void MainWindow::lostBDMPlot(QString key) {
+    PlotWindow* p = bdmPlots.value(key);
+
+    if ( p != NULL ) {
+        delete p;
+    }
+}
+
+
+// not sure what to do here
 void MainWindow::destroyPlot(QObject* obj) {
     QString key = obj->objectName();
-    plots.take(key); // its already going to be deleted so dont worry about it
+    livePlots.take(key); // its already going to be deleted so dont worry about it
+}
+
+
+void MainWindow::destroyBDMPlot(QObject* obj) {
+    QString key = obj->objectName();
+    bdmPlots.take(key); // its already going to be deleted so dont worry about it
 }
 
 
 void MainWindow::openDefaultPlotPreferences() {
     if (!defaultPreferencesIsOpen) {
         defaultPreferencesIsOpen = true;
-        QList<PlotWindow*> windows = plots.values();
+        QList<PlotWindow*> windows = livePlots.values() + bdmPlots.values();
         defaultPreferences = new PlotPreferences(windows, scaleInfoTemplate, QString("All"), this);
 
         connect(defaultPreferences, SIGNAL(applyChanges(ScaleInfo*)), this, SLOT(updateScaleInfo(ScaleInfo*)));
@@ -638,21 +692,25 @@ void MainWindow::updateScaleInfo(ScaleInfo *si) {
 }
 
 
+//FIXME: not sure if this is the correct behavior
 void MainWindow::openPrefs(PlotWindow *pw, ScaleInfo *current) {
     PlotPreferences *pp;
+    QList<PlotWindow*> window;
+    QList<QString> keys;
+    QString key;
 
     if (pw == NULL) {
         return;
     }
 
-    QList<PlotWindow*> window;
-    QList<QString> keys;
-    QString key;
-
-    keys = plots.keys(pw);
+    keys = livePlots.keys(pw);
     if (keys.isEmpty()) {
-        qDebug("Tried to open preferences for a non-existant plot window");
-        return;
+        keys = bdmPlots.keys(pw);
+
+        if (keys.isEmpty()) {
+            qDebug("Tried to open preferences for a non-existant plot window");
+            return;
+        }
     }
     key = keys.first();
 
