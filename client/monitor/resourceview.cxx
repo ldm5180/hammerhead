@@ -279,6 +279,7 @@ void ResourceView::removeSubmitableRows() {
 }
 
 void ResourceView::plotClicked() {
+    QString id;
 
     if ((habType->text() == NULL) || 
         (habId->text() == NULL) ||
@@ -286,28 +287,24 @@ void ResourceView::plotClicked() {
         (resourceId->text() == NULL))
         return;
 
-    bionet_resource_t* res = resourceInView();
-    if (res == NULL)
-        return;
-    if (bionet_resource_get_data_type(res) == BIONET_RESOURCE_DATA_TYPE_STRING)
-        return;
+    id = QString("%1.%2.%3:%4").arg(habType->text()).arg(habId->text()).arg(nodeId->text()).arg(resourceId->text());
 
-    QString id = QString("%1.%2.%3:%4").arg(habType->text()).arg(habId->text()).arg(nodeId->text()).arg(resourceId->text());
-
-    //cout << "Sending " << qPrintable(id) << endl;
+    if (dataType->text() == QString("String"))
+        return;
     
     emit(plotResource(id));
 }
 
 
-bionet_resource_t* ResourceView::resourceInView() {
-    bionet_resource_t * resource;
-    
-    resource = bionet_cache_lookup_resource(
-        qPrintable(habType->text()),
-        qPrintable(habId->text()),
-        qPrintable(nodeId->text()),
-        qPrintable(resourceId->text()));
+bool ResourceView::isPlottable() {
+    if ((habType->text() == NULL) || 
+        (habId->text() == NULL) ||
+        (nodeId->text() == NULL) ||
+        (resourceId->text() == NULL))
+        return false;
 
-    return resource;
+    if (dataType->text() == QString("String"))
+        return false;
+    
+    return true;
 }

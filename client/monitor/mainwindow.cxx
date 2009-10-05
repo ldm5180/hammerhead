@@ -472,15 +472,7 @@ void MainWindow::createMenus() {
 
 
 void MainWindow::updateMenus() {
-    bionet_resource_t* resource;
-
-    resource = resourceView->resourceInView();
-    if (resource == NULL)
-        plotAction->setEnabled(false);
-    else if (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_STRING)
-        plotAction->setEnabled(false);
-    else
-        plotAction->setEnabled(true);
+    plotAction->setEnabled(resourceView->isPlottable());
 }
 
 
