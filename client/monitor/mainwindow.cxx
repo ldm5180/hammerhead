@@ -468,17 +468,20 @@ void MainWindow::createMenus() {
     helpMenu->addAction(aboutAction);
     helpMenu->addAction(shortcuts);
 
-    connect(fileMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
+    connect(plotMenu, SIGNAL(aboutToShow()), this, SLOT(updatePlotMenu()));
+    connect(fileMenu, SIGNAL(aboutToShow()), this, SLOT(updateFileMenu()));
 } 
 
 
-void MainWindow::updateMenus() {
+void MainWindow::updatePlotMenu() {
     plotAction->setEnabled(resourceView->isPlottable());
+}
 
+
+void MainWindow::updateFileMenu() {
     connectToBDMAction->setEnabled( !bdm_is_connected() );
     disconnectFromBDMAction->setEnabled( bdm_is_connected() );
 }
-
 
 void MainWindow::usage(void) {
     cout << "usage: bionet-monitor OPTIONS...\n\
