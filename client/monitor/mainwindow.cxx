@@ -637,6 +637,7 @@ void MainWindow::lostPlot(QString key) {
 
     if ( p != NULL ) {
         delete p;
+        bdmio->removeHistory(key);
     }
 }
 
@@ -660,6 +661,7 @@ void MainWindow::destroyPlot(QObject* obj) {
 void MainWindow::destroyBDMPlot(QObject* obj) {
     QString key = obj->objectName();
     bdmPlots.take(key); // its already going to be deleted so dont worry about it
+    bdmio->removeHistory(key);
 }
 
 
