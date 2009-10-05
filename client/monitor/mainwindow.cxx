@@ -442,6 +442,7 @@ void MainWindow::createActions() {
     disconnectFromBDMAction = new QAction(tr("&Disconnect from BDM"), this);
     disconnectFromBDMAction->setShortcut(tr("Ctrl+D"));
     connect(disconnectFromBDMAction, SIGNAL(triggered()), bdmio, SLOT(disconnectFromBDM()));
+    connect(disconnectFromBDMAction, SIGNAL(triggered()), this, SLOT(clearBDMPlots()));
 }
 
 
@@ -633,20 +634,20 @@ void MainWindow::updateBDMPlot(bionet_datapoint_t* datapoint) {
 
 
 void MainWindow::lostPlot(QString key) {
-    PlotWindow* p = livePlots.value(key);
+    PlotWindow* p = livePlots.take(key);
 
     if ( p != NULL ) {
         delete p;
-        bdmio->removeHistory(key);
     }
 }
 
 
 void MainWindow::lostBDMPlot(QString key) {
-    PlotWindow* p = bdmPlots.value(key);
+    PlotWindow* p = bdmPlots.take(key);
 
     if ( p != NULL ) {
         delete p;
+        bdmio->removeHistory(key);
     }
 }
 
@@ -662,6 +663,12 @@ void MainWindow::destroyBDMPlot(QObject* obj) {
     QString key = obj->objectName();
     bdmPlots.take(key); // its already going to be deleted so dont worry about it
     bdmio->removeHistory(key);
+}
+
+
+void MainWindow::clearBDMPlots() {
+    foreach(QString key, bdmPlots.keys())
+        lostBDMPlot(key);
 }
 
 

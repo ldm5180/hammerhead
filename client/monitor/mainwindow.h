@@ -80,6 +80,7 @@ class MainWindow : public QWidget {
         void lostBDMPlot(QString key);
         void destroyPlot(QObject *obj);
         void destroyBDMPlot(QObject *obj);
+        void clearBDMPlots();
         void updateMenus();
         void openPrefs(PlotWindow *pw=NULL, ScaleInfo *current=NULL);
         void openDefaultPlotPreferences();
