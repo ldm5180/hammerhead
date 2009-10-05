@@ -473,6 +473,9 @@ void MainWindow::createMenus() {
 
 void MainWindow::updateMenus() {
     plotAction->setEnabled(resourceView->isPlottable());
+
+    connectToBDMAction->setEnabled( !bdm_is_connected() );
+    disconnectFromBDMAction->setEnabled( bdm_is_connected() );
 }
 
 
