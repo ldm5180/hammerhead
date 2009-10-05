@@ -231,6 +231,8 @@ void MainWindow::switchViews(int index) {
             resourceView, SLOT(clearView()));
         disconnect(bdmModel, SIGNAL(streamSelected(bionet_stream_t*)), 
             resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
+        disconnect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)),
+            resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
         
         // disconnect the row highlighting action
         disconnect(bdmView->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
@@ -278,6 +280,8 @@ void MainWindow::switchViews(int index) {
             resourceView, SLOT(clearView()));
         connect(bdmModel, SIGNAL(streamSelected(bionet_stream_t*)), 
             resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
+        connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)),
+            resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
 
         // connect the row highlighting action
         connect(bdmView->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
