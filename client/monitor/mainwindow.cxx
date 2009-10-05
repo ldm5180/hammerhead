@@ -450,18 +450,19 @@ void MainWindow::createActions() {
 void MainWindow::createMenus() {
 
     fileMenu = menuBar->addMenu(tr("&File"));
-    fileMenu->addAction(plotAction);
-    fileMenu->addAction(preferencesAction);
-    fileMenu->addAction(connectToBDMAction);
-    fileMenu->addAction(disconnectFromBDMAction);
     fileMenu->addAction(updateSubscriptionsAction);
     fileMenu->addAction(pollingFrequencyAction);
+    fileMenu->addSeparator();
+    fileMenu->addAction(connectToBDMAction);
+    fileMenu->addAction(disconnectFromBDMAction);
     //fileMenu->addAction(sampleAction);
     //fileMenu->addAction(hostnameAction);
     fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
 
-    //actionMenu = menuBar->addMenu(tr("&Actions"));
+    plotMenu = menuBar->addMenu(tr("&Plotting"));
+    plotMenu->addAction(plotAction);
+    plotMenu->addAction(preferencesAction);
 
     helpMenu = menuBar->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAction);

@@ -122,7 +122,7 @@ class MainWindow : public QWidget {
 
         QMenuBar* menuBar;
         QMenu* fileMenu;
-        QMenu* actionMenu;
+        QMenu* plotMenu;
         QMenu* helpMenu;
         QTabWidget *tabs;
 
