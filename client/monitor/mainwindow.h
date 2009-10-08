@@ -114,7 +114,6 @@ class MainWindow : public QWidget {
         QAction* plotAction;
         QAction* aboutAction;
         QAction* shortcuts;
-        QAction* sampleAction;
         QAction* preferencesAction;
         //QAction* hostnameAction;
         QAction* updateSubscriptionsAction;

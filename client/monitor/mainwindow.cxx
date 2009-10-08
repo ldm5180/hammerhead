@@ -94,7 +94,6 @@ MainWindow::~MainWindow() {
     delete plotAction; 
     delete aboutAction; 
     delete shortcuts;
-    delete sampleAction; 
     delete preferencesAction; 
     delete updateSubscriptionsAction;
     delete pollingFrequencyAction; 
@@ -481,8 +480,6 @@ void MainWindow::createMenus() {
     fileMenu->addSeparator();
     fileMenu->addAction(connectToBDMAction);
     fileMenu->addAction(disconnectFromBDMAction);
-    //fileMenu->addAction(sampleAction);
-    //fileMenu->addAction(hostnameAction);
     fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
 
