@@ -12,6 +12,7 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     int require_security = 0;
     QString security_dir;
 
+    setAttribute(Qt::WA_DeleteOnClose);
     setAttribute(Qt::WA_QuitOnClose);
     argv ++;
     setWindowTitle(QString("BioNet Monitor"));
@@ -51,7 +52,7 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
         sampleSize = 10000;
     
 
-    setupBionetIO();
+    bionet = new BionetIO(this);
     setupBionetModel();
     setupBDM();
     setupTreeView();
@@ -66,6 +67,7 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
 
     bionet->setup();
     bdmio->setup();
+    subscribe();
 
     connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
         liveModel, SLOT(lineActivated(QModelIndex)));
@@ -84,6 +86,22 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
         this, SLOT(updateBDMPlot(bionet_datapoint_t*)));
 
     scaleInfoTemplate = new ScaleInfo;
+}
+
+
+MainWindow::~MainWindow() {
+    delete quitAction; 
+    delete plotAction; 
+    delete aboutAction; 
+    delete shortcuts;
+    delete sampleAction; 
+    delete preferencesAction; 
+    delete updateSubscriptionsAction;
+    delete pollingFrequencyAction; 
+    delete connectToBDMAction; 
+    delete disconnectFromBDMAction;
+
+    delete scaleInfoTemplate;
 }
 
 
@@ -335,14 +353,17 @@ void MainWindow::setupArchive() {
 }
 
 
-void MainWindow::setupBionetIO() {
-    bionet = new BionetIO(this);
+void MainWindow::subscribe() {
+    bionet_subscribe_hab_list_by_name("*.*");
+    bionet_subscribe_node_list_by_name("*.*.*");
+    bionet_subscribe_datapoints_by_name("*.*.*:*");
+}
 
-    bionet->addHabSubscription("*.*");
-    bionet->addNodeSubscription("*.*.*");
-    bionet->addResourceSubscription("*.*.*:*");
 
-    return;
+void MainWindow::unsubscribe() {
+    bionet_unsubscribe_datapoints_by_name("*.*.*:*");
+    bionet_unsubscribe_node_list_by_name("*.*.*");
+    bionet_unsubscribe_hab_list_by_name("*.*");
 }
 
 
@@ -371,6 +392,7 @@ void MainWindow::setupWindow() {
 
 
 void MainWindow::closeEvent(QCloseEvent* event) {
+    unsubscribe();
 
     archive->disconnect();
     resourceView->disconnect();

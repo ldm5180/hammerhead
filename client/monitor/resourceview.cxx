@@ -74,19 +74,61 @@ ResourceView :: ResourceView (QWidget* parent) : QGridLayout(parent) {
     connect(plotButton, SIGNAL(clicked()), this, SLOT(plotClicked()));
 }
 
+
+ResourceView::~ResourceView() {
+    delete popupError;
+
+    delete habTypeTitle;
+    delete habIdTitle;
+    delete nodeIdTitle;
+    delete resourceIdTitle;
+    delete flavorTitle;
+    delete dataTypeTitle;
+    delete timestampTitle;
+    delete valueTitle;
+
+    delete submitResourceValue;
+    delete plotButton;
+    delete valueEditor;
+    
+    delete habType;
+    delete habId;
+    delete nodeId;
+    delete resourceId;
+    delete flavor;
+    delete dataType;
+    delete timestamp;
+    delete value;
+}
+
+
 void ResourceView::updatePanel(bionet_resource_t* resource) {
     bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
 
     if (datapoint != NULL) {
-        QString exactValue(bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
+        char *value_str;
 
-        // For all of the really large resources
-        if (exactValue.toFloat() > 1e16)
-            value->setText(QString().setNum(exactValue.toFloat(), 'e', 16));
-        else
-            value->setText(exactValue);
-    
-        timestamp->setText(bionet_datapoint_timestamp_to_string(datapoint));
+        value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+        if (value_str == NULL) {
+            qWarning() << "error adding datapoint" << 
+                bionet_resource_get_name(resource) << 
+                ": unable to convert value to string!";
+            timestamp->setText("N/A");
+            value->setText("(no known value)");
+        } else {
+
+            QString exactValue(value_str);
+
+            // For all of the really large resources
+            if (exactValue.toFloat() > 1e16)
+                value->setText(QString().setNum(exactValue.toFloat(), 'e', 16));
+            else
+                value->setText(exactValue);
+        
+            timestamp->setText(bionet_datapoint_timestamp_to_string(datapoint));
+
+            free(value_str);
+        }
     } else {
         timestamp->setText("N/A");
         value->setText("(no known value)");

@@ -7,6 +7,7 @@
 #ifndef RESOURCEVIEW_H
 #define RESOURCEVIEW_H
 
+#include <QDebug>
 #include <QGridLayout>
 #include <QWidget>
 #include <QLabel>
@@ -25,6 +26,7 @@ class ResourceView  : public QGridLayout {
 
     public:
         ResourceView (QWidget* parent=0);
+        ~ResourceView();
 
     public slots:
         //  If a resource is selected the update panel slot is entered;

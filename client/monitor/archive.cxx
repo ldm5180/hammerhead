@@ -61,7 +61,7 @@ void Archive::recordSample(bionet_datapoint_t* dp) {
 
     resource = bionet_datapoint_get_resource(dp);
     if (resource == NULL) {
-        qDebug("unable to record sample, datapoint did not have resource?!");
+        qDebug("unable to record sample, datapoint did not have resource");
         return; // error out?
     }
 

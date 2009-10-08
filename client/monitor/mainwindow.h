@@ -65,6 +65,7 @@ class MainWindow : public QWidget {
 
     public:
         MainWindow(char* argv[], QWidget *parent = 0);
+        ~MainWindow();
         void usage();
         void closeEvent(QCloseEvent* event);
 
@@ -132,7 +133,8 @@ class MainWindow : public QWidget {
 
         void setupArchive();
         void setupBDM();
-        void setupBionetIO();
+        void subscribe();
+        void unsubscribe();
         void setupBionetModel();
         void setupResourceView();
         void setupTreeView();

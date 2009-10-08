@@ -139,7 +139,6 @@ void BionetModel::newNode(bionet_node_t* node) {
         QList<QStandardItem*> resList;
         bionet_resource_t* resource = bionet_node_get_resource_by_index(node, i);
         bionet_datapoint_t* datapoint;
-        bionet_value_t* bionet_value;
         QStandardItem *nameItem, *flavor, *type, *time, *value;
         const char *resource_name;
 
@@ -160,9 +159,12 @@ void BionetModel::newNode(bionet_node_t* node) {
             time = new QStandardItem(QString("N/A"));
             value = new QStandardItem(QString("(no known value)"));
         } else {
-            bionet_value = bionet_datapoint_get_value(datapoint);
+            char *value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+
             time = new QStandardItem(bionet_datapoint_timestamp_to_string(datapoint));
-            value = new QStandardItem(bionet_value_to_str(bionet_value));
+            value = new QStandardItem(QString(value_str));
+
+            free(value_str);
         }
 
         nameItem->setData(rid, FULLNAMEROLE);
@@ -281,6 +283,7 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
     bionet_resource_t *resource;
     bionet_value_t *value;
     const char *resource_name;
+    char *value_str;
     
     if (datapoint == NULL) {
         qWarning() << "newDatapoint(): received NULL datapoint!?!" << endl;
@@ -314,8 +317,12 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
         return;
     }
 
+    value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+
     setData(index(res.row(), 3, res.parent()), bionet_datapoint_timestamp_to_string(datapoint));
-    setData(index(res.row(), 4, res.parent()), bionet_value_to_str(bionet_datapoint_get_value(datapoint)));
+    setData(index(res.row(), 4, res.parent()), QString(value_str));
+
+    free(value_str);
 }
 
 

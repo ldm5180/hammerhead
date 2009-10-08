@@ -41,11 +41,6 @@ class BionetIO : public QObject {
         
         void setup();
         
-        void addHabSubscription(const char *pattern);
-        void addNodeSubscription(const char *pattern);
-        void addResourceSubscription(const char *pattern);
-        void addStreamSubscription(const char *pattern);
-
     signals:
         void newHab(bionet_hab_t* hab);
         void lostHab(bionet_hab_t* hab);
@@ -60,7 +55,6 @@ class BionetIO : public QObject {
 
     private:
         void registerCallbacks();
-        void subscribe();
 
         QPointer<QSocketNotifier> nagSocketReader;
         

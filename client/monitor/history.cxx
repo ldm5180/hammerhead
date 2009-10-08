@@ -30,10 +30,20 @@ History::~History() {
 void History::append(bionet_datapoint_t *datapoint) {
     double value;
     struct timeval* tv;
+    char *value_str;
     int i = 0;
 
     bionet_value_t* bionet_value = bionet_datapoint_get_value(datapoint);
-    value = QString(bionet_value_to_str(bionet_value)).toDouble();
+    value_str = bionet_value_to_str(bionet_value);
+    if (value_str == NULL) {
+        qWarning() << "error adding datapoint" << 
+            bionet_resource_get_name(bionet_datapoint_get_resource(datapoint)) << 
+            ": unable to convert value to string!";
+        return;
+    }
+
+    value = QString(value_str).toDouble();
+    free(value_str);
     
     tv = new timeval;
     tv->tv_sec = bionet_datapoint_get_timestamp(datapoint)->tv_sec;
