@@ -237,6 +237,11 @@ void BDMIO::pollBDM() {
             dpStop
         );
 
+        if (tvStart != NULL)
+            delete tvStart;
+        if (tvStop != NULL)
+            delete tvStop;
+
         if (hab_list == NULL) {
             continue;
         } else {
@@ -294,11 +299,6 @@ void BDMIO::pollBDM() {
 
             bdm_hab_list_free(hab_list);
         }
-
-        if (tvStart != NULL)
-            delete tvStart;
-        if (tvStop != NULL)
-            delete tvStop;
     }
 }
 
