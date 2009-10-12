@@ -11,21 +11,22 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
 {
     // This assumes that the History has >= 1 entry;
     QString xLabel;
+    QString title("BioNet Monitor" + key);
 
     /* Setup the plot window attributes */
     setObjectName(key);
     setWindowFlags(Qt::Window);
-    setWindowTitle(QString("BioNet Monitor: ") + key);
+    setWindowTitle(title);
     setAttribute(Qt::WA_DeleteOnClose);
 
     this->history = history;
 
     /* Creating & Setting up the Plot & PlotCurve */
-    p = new QwtPlot();
-    c = new QwtPlotCurve(key);
+    plot = new QwtPlot(this);
+    curve = new QwtPlotCurve(key);
     QwtSymbol s(QwtSymbol::Ellipse, QBrush(), QPen(), QSize());
-    c->setStyle(QwtPlotCurve::Lines);
-    c->setSymbol(s); 
+    curve->setStyle(QwtPlotCurve::Lines);
+    curve->setSymbol(s); 
     
     /* We need to set the ScaleInfo start time in order for it to work properly */
     start = history->getFirstTime(-1);
@@ -47,7 +48,7 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
         setScaleInfo(scale);
     
     xLabel = createXLabel();
-    p->setAxisTitle(QwtPlot::xBottom, xLabel);
+    plot->setAxisTitle(QwtPlot::xBottom, xLabel);
 
     /* Create two push buttons for preferences & plotting */
     prefButton = new QPushButton(tr("&Plot Preferences"), this);
@@ -62,7 +63,7 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
 
     /* Setting up the entire window's layout */
     layout = new QVBoxLayout(this);
-    layout->addWidget(p);
+    layout->addWidget(plot);
     layout->addLayout(bottom);
     layout->setSpacing(1);
     setLayout(layout);
@@ -75,6 +76,15 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
 }
 
 
+PlotWindow::~PlotWindow() {
+    delete closeAction;
+    if (scale != NULL)
+        delete scale;
+    delete curve;
+    delete plot;
+}
+
+
 void PlotWindow::updatePlot() {
     QString xLabel;
     double *x, *y;
@@ -84,11 +94,11 @@ void PlotWindow::updatePlot() {
     y = history->getValues();
     size = history->size();
     
-    c->setData(x, y, size);
-    c->attach(p);
+    curve->setData(x, y, size);
+    curve->attach(plot);
 
-    scale->update(p, x, size);
-    p->replot();
+    scale->update(plot, x, size);
+    plot->replot();
 
     delete[] x;
     delete[] y;
@@ -142,6 +152,7 @@ QString PlotWindow::createXLabel() {
     }
 
     label += QString(time_str) + QString(".%06").arg(start->tv_usec);
+
     return label;
 }
 

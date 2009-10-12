@@ -44,7 +44,10 @@ class PlotWindow : public QWidget {
             SLIDING_TIME_WINDOW, 
             SLIDING_DATAPOINT_WINDOW
         };
+
         PlotWindow(QString key, History *history, ScaleInfo *scale=0, QWidget* parent = 0);
+        ~PlotWindow();
+
         QString createXLabel();
         void setScaleInfo(ScaleInfo *newScale);
 
@@ -56,8 +59,8 @@ class PlotWindow : public QWidget {
         void openOptions();
 
     private:
-        QwtPlot* p;
-        QwtPlotCurve* c;
+        QwtPlot* plot;
+        QwtPlotCurve* curve;
         QAction *closeAction, *options;
         QPushButton *prefButton, *closeButton;
         QVBoxLayout *layout;

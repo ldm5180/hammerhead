@@ -10,12 +10,12 @@
 MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     int sampleSize = -1;
     int require_security = 0;
-    QString security_dir;
+    QString security_dir, title("Bionet Monitor");
 
     setAttribute(Qt::WA_DeleteOnClose);
     setAttribute(Qt::WA_QuitOnClose);
     argv ++;
-    setWindowTitle(QString("BioNet Monitor"));
+    setWindowTitle(title);
 
     defaultPreferencesIsOpen = false;
 
@@ -90,6 +90,8 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
 
 
 MainWindow::~MainWindow() {
+    //qDebug() << "bionet cache size is:" << bionet_cache_get_num_habs();
+
     delete quitAction; 
     delete plotAction; 
     delete aboutAction; 
@@ -100,6 +102,7 @@ MainWindow::~MainWindow() {
     delete connectToBDMAction; 
     delete disconnectFromBDMAction;
 
+    delete bdmio;
     delete scaleInfoTemplate;
 }
 
@@ -156,7 +159,7 @@ void MainWindow::setupBDM() {
         bdmView, SLOT(repaint()));
 
     bdmView->setModel(bdmModel);
-    bdmView->selectAll();
+    //bdmView->selectAll();
 
     // Edit/adjust the header
     QHeaderView* header;
@@ -208,7 +211,7 @@ void MainWindow::setupTreeView() {
         view, SLOT(repaint()));
     
     view->setModel(liveModel);
-    view->selectAll();
+    //view->selectAll();
     
     // Edit/adjust the header
     QHeaderView* header;
@@ -390,7 +393,7 @@ void MainWindow::setupWindow() {
 }
 
 
-void MainWindow::closeEvent(QCloseEvent* event) {
+void MainWindow::closeEvent(QCloseEvent* /*event*/) {
     unsubscribe();
 
     archive->disconnect();
@@ -408,8 +411,8 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     }
     
     delete archive;
-
-    event->accept();
+    
+    //qDebug() << "bionet cache size is:" << bionet_cache_get_num_habs();
 }
 
 

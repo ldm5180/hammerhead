@@ -5,7 +5,7 @@ SubscriptionController::SubscriptionController(QStandardItemModel *subscriptions
     QWidget* parent, 
     Qt::WindowFlags /*flags*/) :
     QWidget(parent)
-    {
+{
 
     subs = subscriptions;
     setAttribute(Qt::WA_QuitOnClose);
@@ -39,6 +39,15 @@ SubscriptionController::SubscriptionController(QStandardItemModel *subscriptions
 
     setLayout(layout);
     resize(611, 206);
+
+}
+
+
+SubscriptionController::~SubscriptionController() {
+    delete view;
+    delete add;
+    delete remove; 
+    delete cancel;
 }
 
 

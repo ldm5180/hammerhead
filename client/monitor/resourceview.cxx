@@ -19,8 +19,6 @@
 using namespace std;
 
 ResourceView :: ResourceView (QWidget* parent) : QGridLayout(parent) {
-    popupError = new QErrorMessage();
-
     habTypeTitle = new QLabel("HAB Type");
     habIdTitle = new QLabel("HAB ID");
     nodeIdTitle = new QLabel("Node ID");
@@ -76,8 +74,6 @@ ResourceView :: ResourceView (QWidget* parent) : QGridLayout(parent) {
 
 
 ResourceView::~ResourceView() {
-    delete popupError;
-
     delete habTypeTitle;
     delete habIdTitle;
     delete nodeIdTitle;
@@ -273,7 +269,8 @@ void ResourceView::textEntered() {
     r = bionet_set_resource_by_name(qPrintable(name), qPrintable(valueEditor->text()));
     
     if (r < 0) {
-        popupError->showMessage("Unable to set resource value");
+        QErrorMessage popupError;
+        popupError.showMessage("Unable to set resource value");
     }
 
     valueEditor->clear();

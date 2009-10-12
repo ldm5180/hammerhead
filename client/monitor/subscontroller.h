@@ -31,6 +31,7 @@ class SubscriptionController : public QWidget {
 
 public:
     SubscriptionController(QStandardItemModel *subscriptions, QWidget *parent=0, Qt::WindowFlags flags = 0);
+    ~SubscriptionController();
 
 public slots:
     void addSubscription();

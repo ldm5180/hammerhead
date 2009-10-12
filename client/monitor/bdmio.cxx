@@ -100,6 +100,13 @@ BDMIO::BDMIO(QWidget *parent) {
 }
 
 
+BDMIO::~BDMIO() {
+    delete timer;
+    delete controller;
+    clearBDMCache();
+}
+
+
 History* BDMIO::createHistory(QString key) {
     bdm_hab_list_t *hab_list;
     History *history;

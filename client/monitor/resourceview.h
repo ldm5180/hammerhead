@@ -78,8 +78,6 @@ class ResourceView  : public QGridLayout {
         QLineEdit *valueEditor;
         QPushButton *submitResourceValue;
         QPushButton *plotButton;
-
-        QErrorMessage *popupError;
 };
 
 #endif

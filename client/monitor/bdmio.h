@@ -36,6 +36,7 @@ class BDMIO : public QWidget {
 
     public:
         BDMIO(QWidget *parent=0);
+        ~BDMIO();
         
         History* createHistory(QString key);
         void setPollingFrequency(double freq);
@@ -68,7 +69,6 @@ class BDMIO : public QWidget {
         float freq;
         int bdmFD, port;
         QString hostname;
-        QWidget *bdmConnectionDialog;
         QHash<QString, History*> histories;
 
         bionet_hab_t *copy_hab(bionet_hab_t* orig);
