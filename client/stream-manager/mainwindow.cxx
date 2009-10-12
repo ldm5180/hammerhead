@@ -50,6 +50,11 @@ MainWindow::MainWindow(char* argv[], QWidget* parent) : QWidget(parent) {
     setLayout(layout);
 
     bionet->setup();
+
+    // has to be done after all the signals/slots are connected so that we
+    // receive all bionet messages
+    bionet_subscribe_hab_list_by_name("*.*");
+    bionet_subscribe_node_list_by_name("*.*.*");
 }
 
 void MainWindow::createActions () {
@@ -125,9 +130,6 @@ void MainWindow::createMenus () {
 
 void MainWindow::setupBionet() {
     bionet = new BionetIO(this);
-
-    bionet->addHabSubscription("*.*");
-    bionet->addNodeSubscription("*.*.*");
 }
 
 void MainWindow::setupModel() {

@@ -23,6 +23,10 @@
 #include "bionetmodel.h"
 #include "streamview.h"
 
+extern "C" {
+#include "bionet.h"
+};
+
 using namespace std;
 
 class MainWindow : public QWidget {
