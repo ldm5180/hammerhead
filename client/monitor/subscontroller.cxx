@@ -159,7 +159,10 @@ void SubscriptionController::removeSubscription() {
         index = selected.takeLast();
         pattern = index.data(Qt::DisplayRole).toString();
 
-        subs->removeRow(index.row());
+        if ( !subs->removeRow(index.row(), QModelIndex()) ) {
+            qWarning() << "unable to remove subscription" << qPrintable(pattern);
+            continue;
+        }
 
         emit removePattern(pattern);
     }

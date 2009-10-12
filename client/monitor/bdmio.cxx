@@ -386,7 +386,10 @@ bionet_resource_t* BDMIO::copyResource(bionet_node_t *cached_node, bionet_resour
         bionet_resource_get_id(orig)
     );
 
-    bionet_node_add_resource(cached_node, copy);
+    if ( bionet_node_add_resource(cached_node, copy) ) {
+        qWarning() << "failed to add resource" << bionet_resource_get_id(copy) << 
+            "to node" << bionet_node_get_id(cached_node);
+    }
 
     emit newResource(copy);
     return copy;
@@ -405,6 +408,11 @@ void BDMIO::copyDatapoint(bionet_resource_t* cached_resource, bionet_datapoint_t
             bionet_value_dup(cached_resource, bionet_datapoint_get_value(dp)),
             bionet_datapoint_get_timestamp(dp)
         );
+
+        if (cached_dp == NULL) {
+            qWarning() << "unable to create new datapoint";
+            return;
+        }
 
         bionet_resource_add_datapoint(cached_resource, cached_dp);
 
