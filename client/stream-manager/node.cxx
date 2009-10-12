@@ -16,6 +16,10 @@ Node::Node(QString name, QWidget* parent) :
     QRegExp nodeRX(".*\\..*\\..*");     // matches *.*.*
     QRegExp habRX(".*\\..*");           // matches *.*
 
+    bionetPtr = NULL;
+    bionetType = ROOT;
+    endpointType = NEITHER;
+
     if ( streamRX.exactMatch(name) ) {
         id = name.section('.', 2, 2).section(':', 1, 1);
         bionetType = STREAM;
