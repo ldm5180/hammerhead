@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 
 	case 'd':
 	    gpi_delay = strtol(optarg, NULL, 0);
-	    if (LONG_MAX == gpi_delay) {
+	    if (INT_MAX == gpi_delay) {
 		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse GPI Delay: %m");
 	    }
 	    break;
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 
 	case 'l':
 	    scan_idle = strtol(optarg, NULL, 0);
-	    if (LONG_MAX == scan_idle) {
+	    if (INT_MAX == scan_idle) {
 		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse Scan Idle: %m");
 	    }
 	    break;
@@ -94,14 +94,14 @@ int main(int argc, char *argv[]) {
 
 	case 'n':
 	    num_scans = strtol(optarg, NULL, 0);
-	    if (LONG_MAX == num_scans) {
+	    if (INT_MAX == num_scans) {
 		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse Num Scans: %m");
 	    }
 	    break;
 
 	case 'p':
 	    gpi_polarity = strtol(optarg, NULL, 0);
-	    if (LONG_MAX == gpi_polarity) {
+	    if (INT_MAX == gpi_polarity) {
 		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse GPI Polarity: %m");
 	    }
 	    break;
@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
 
 	case 't':
 	    scan_timeout = strtol(optarg, NULL, 0);
-	    if (LONG_MAX == scan_timeout) {
+	    if (INT_MAX == scan_timeout) {
 		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse Scan Timeout: %m");
 	    }
 	    break;
