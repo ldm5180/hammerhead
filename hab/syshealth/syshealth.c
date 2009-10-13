@@ -76,7 +76,7 @@ void usage(FILE * fp) {
 
 
 int main(int argc, char **argv) {
-    int seconds_to_sleep = 300;
+    long int seconds_to_sleep = 300;
 
     bionet_node_t *node;
     bionet_hab_t *hab;
