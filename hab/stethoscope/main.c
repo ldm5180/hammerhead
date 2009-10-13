@@ -149,7 +149,7 @@ int main(int argc, char** argv)
 
 	case 'g':
 	    gain = strtol(optarg, NULL, 0);
-	    if (LONG_MAX == gain) {
+	    if (UINT32_MAX == gain) {
 		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse gain: %m");
 		print_help(stderr);
 		exit(1);
@@ -171,7 +171,7 @@ int main(int argc, char** argv)
 
 	case 'p':
 	    period = strtol(optarg, NULL, 0);
-	    if (LONG_MAX == gain) {
+	    if (UINT32_MAX == gain) {
 		g_log("", G_LOG_LEVEL_WARNING, "Failed to parse period: %m");
 		print_help(stderr);
 		exit(1);
