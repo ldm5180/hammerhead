@@ -176,7 +176,7 @@ static void parse_cmdline(int argc, char** argv)
 	    
 	case 'p':
 	    port = strtoul(optarg, NULL, 0);
-	    if (ULONG_MAX == port) {
+	    if (UINT_MAX == port) {
 		g_error("Unable to interpret port: %s - %m\n", optarg);
 	    }
 	    if (65535 < port) {
