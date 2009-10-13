@@ -243,7 +243,7 @@ bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern,
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
 	}
-        goto cleanup4;
+        goto cleanup5;
     }
 
     rdpq->entryStart = entryStart;
@@ -252,7 +252,7 @@ bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern,
     enc_rval = der_encode(&asn_DEF_BDM_C2S_Message, &m, bdm_send_asn, NULL);
     if (enc_rval.encoded == -1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error with der_encode(): %s", strerror(errno));
-        goto cleanup4;
+        goto cleanup6;
     }
 
 
@@ -266,11 +266,11 @@ bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern,
         r = read(bdm_fd, &buf[index], sizeof(buf) - index);
         if (r < 0) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error reading reply from server: %s", strerror(errno));
-            goto cleanup4;
+            goto cleanup6;
         }
         if (r == 0) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): short read from server: %s", strerror(errno));
-            goto cleanup4;
+            goto cleanup6;
         }
 
         total_bytes_read += r;
@@ -282,7 +282,7 @@ bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern,
             bdm_hab_list_t *hab_list;
             if (message->present != BDM_S2C_Message_PR_resourceDatapointsReply) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "bdm_get_resource_datapoints(): unexpected message %d", message->present);
-                goto cleanup4;
+                goto cleanup6;
             }
             hab_list = handle_Resource_Datapoints_Reply(&message->choice.resourceDatapointsReply);
             asn_DEF_BDM_S2C_Message.free_struct(&asn_DEF_BDM_S2C_Message, message, 0);
@@ -306,6 +306,15 @@ bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern,
         }
     } while (1);
 
+cleanup6:
+    if (OCTET_STRING_fromString(&rdpq->datapointEndTime, NULL)) {
+	g_warning("clearing datapoint end time failed");
+    }
+
+cleanup5:
+    if (OCTET_STRING_fromString(&rdpq->datapointStartTime, NULL)) {
+	g_warning("clearing datapoint start time failed");
+    }
 
 cleanup4:
     if (OCTET_STRING_fromString(&rdpq->resourceId, NULL)) {
