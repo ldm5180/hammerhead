@@ -51,7 +51,7 @@ int bdm_get_hab_list_last_entry_seq(bdm_hab_list_t * hab_list) {
 void bdm_hab_list_free(bdm_hab_list_t * hab_list) {
     if (hab_list) {
 	if (hab_list->hab_list) {
-	    g_ptr_array_free(hab_list->hab_list, FALSE);
+	    g_ptr_array_free(hab_list->hab_list, TRUE);
 	}
 	free(hab_list);
     }
