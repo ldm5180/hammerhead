@@ -286,16 +286,19 @@ bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern,
             }
             hab_list = handle_Resource_Datapoints_Reply(&message->choice.resourceDatapointsReply);
             asn_DEF_BDM_S2C_Message.free_struct(&asn_DEF_BDM_S2C_Message, message, 0);
-            return hab_list;
+            retval = hab_list;
+            goto cleanup6;
         } else if (dec_rval.code == RC_WMORE) {
             // ber_decode is waiting for more data, but so far so good
         } else if (dec_rval.code == RC_FAIL) {
             // received invalid junk
             g_warning("ber_decode failed to decode the server's message");
-            return NULL;
+            retval = NULL;
+            goto cleanup6;
         } else {
             g_warning("unknown error with ber_decode (code=%d)", dec_rval.code);
-            return NULL;
+            retval = NULL;
+            goto cleanup6;
         }
 
         if (dec_rval.consumed > 0) {
@@ -307,33 +310,33 @@ bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern,
     } while (1);
 
 cleanup6:
-    if (OCTET_STRING_fromString(&rdpq->datapointEndTime, NULL)) {
-	g_warning("clearing datapoint end time failed");
+    if (OCTET_STRING_fromBuf(&rdpq->datapointEndTime, NULL, 0)) {
+	g_warning("clearing datapoint end time failed: %s", strerror(errno));
     }
 
 cleanup5:
-    if (OCTET_STRING_fromString(&rdpq->datapointStartTime, NULL)) {
-	g_warning("clearing datapoint start time failed");
+    if (OCTET_STRING_fromBuf(&rdpq->datapointStartTime, NULL, 0)) {
+	g_warning("clearing datapoint start time failed: %s", strerror(errno));
     }
 
 cleanup4:
-    if (OCTET_STRING_fromString(&rdpq->resourceId, NULL)) {
-	g_warning("clearing resourceId failed");
+    if (OCTET_STRING_fromBuf(&rdpq->resourceId, NULL, 0)) {
+	g_warning("clearing resourceId failed: %s", strerror(errno));
     }
 
 cleanup3:
-    if (OCTET_STRING_fromString(&rdpq->nodeId, NULL)) {
-	g_warning("clearing nodeId failed");
+    if (OCTET_STRING_fromBuf(&rdpq->nodeId, NULL, 0)) {
+	g_warning("clearing nodeId failed: %s", strerror(errno));
     }
 
 cleanup2:
-    if (OCTET_STRING_fromString(&rdpq->habId, NULL)) {
-	g_warning("clearing habId failed");
+    if (OCTET_STRING_fromBuf(&rdpq->habId, NULL, 0)) {
+	g_warning("clearing habId failed: %s", strerror(errno));
     }
 
 cleanup1:
-    if (OCTET_STRING_fromString(&rdpq->habType, NULL)) {
-	g_warning("clearing habType failed");
+    if (OCTET_STRING_fromBuf(&rdpq->habType, NULL, 0)) {
+	g_warning("clearing habType failed: %s", strerror(errno));
     }
 
 cleanup0:
