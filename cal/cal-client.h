@@ -58,7 +58,7 @@ typedef struct {
     //!     topic does not match.  Thus strcmp() is a valid option, and
     //!     results in only exact peer name matches being accepted.  This
     //!     is also the default if NULL is passed in for peer_matches.
-    //!     peer_matches must be reenstrant.
+    //!     peer_matches must be reentrant.
     //!
     //! \return On success, returns a non-blocking file descriptor which
     //!     should be monitored by the caller.  When the fd is readable,
