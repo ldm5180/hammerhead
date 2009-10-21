@@ -197,7 +197,7 @@ typedef struct {
      * @param[in] require 0 for optional security, 1 for required 
      * security. (default: 0)
      *
-     * @return 1 Succes
+     * @return 1 Success
      * @return 0 Failure
      */
     int (*init_security)(const char * dir, int require);

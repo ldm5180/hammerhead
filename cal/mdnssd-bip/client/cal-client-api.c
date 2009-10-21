@@ -362,6 +362,10 @@ int cal_client_mdnssd_bip_read(struct timeval * timeout) {
             break;
         }
 
+        case CAL_EVENT_SUBSCRIBE: {
+            break;
+        }
+
         default: {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got unhandled event type %d", event->type);
             return 1;  // dont free events we dont understand
@@ -575,7 +579,7 @@ void cal_client_mdnssd_bip_force_discover(const char * peer_name, const char * h
         return;
     }
     
-    event = cal_event_new(CAL_EVENT_MESSAGE);
+    event = cal_event_new(CAL_EVENT_FORCE_DISCOVER);
     if (event == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "force_discover: out of memory");
         return;

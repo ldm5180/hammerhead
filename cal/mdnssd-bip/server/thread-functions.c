@@ -684,7 +684,7 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
         }
 
         default: {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: dont know what to do with message type %d", net->header[BIP_MSG_HEADER_TYPE_OFFSET]);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: don't know what to do with message type %d", net->header[BIP_MSG_HEADER_TYPE_OFFSET]);
             cal_event_free(event);
             bip_net_clear(net);
             return -1;
