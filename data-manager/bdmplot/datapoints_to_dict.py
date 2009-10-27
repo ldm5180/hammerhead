@@ -55,8 +55,8 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None,
     
     # Stuff the result dictionary.
     results = {}
-    for hi in range(hab_list.len):
-        hab = bionet_get_hab(hab_list, hi);
+    for hi in range(bdm_get_hab_list_len(hab_list)):
+        hab = bdm_get_hab_by_index(hab_list, hi);
         
         for ni in range(bionet_hab_get_num_nodes(hab)):
             node = bionet_hab_get_node_by_index(hab, ni)
