@@ -30,6 +30,11 @@ void * libbdm_callback_stream_usr_data = NULL;
 
 int libbdm_cal_fd = -1;
 
+// THIS IS NOT USED.
+// Old clients will assign the result of bdm_connect(host,port) to this.
+// The global variable is here to maintain backword library compatibility
+int bdm_fd = -1;
+
 GSList *libbdm_bdms = NULL;
 
 GSList *libbdm_bdm_subscriptions = NULL;
@@ -37,3 +42,8 @@ GSList *libbdm_hab_subscriptions = NULL;
 GSList *libbdm_node_subscriptions = NULL;
 GSList *libbdm_datapoint_subscriptions = NULL;
 GSList *libbdm_stream_subscriptions = NULL;
+
+// API globals. Never eposed to user
+GSList *libbdm_bdm_api_subscriptions = NULL;
+GSList *libbdm_api_new_peers = NULL;
+GSList *libbdm_api_lost_peers = NULL;

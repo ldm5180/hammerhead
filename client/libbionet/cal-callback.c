@@ -477,6 +477,11 @@ void libbionet_cal_callback(const cal_event_t *event) {
             break;
         }
 
+        case CAL_EVENT_SUBSCRIBE: {
+            // CAL has sent a subscription request to a peer for us. We don't care
+            break;
+        }
+
         default: {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL unknown event type %d", event->type);
             break;

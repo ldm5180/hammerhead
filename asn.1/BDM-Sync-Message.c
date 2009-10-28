@@ -30,8 +30,8 @@ static asn_TYPE_member_t asn_MBR_BDM_Sync_Message_1[] = {
 		},
 };
 static asn_TYPE_tag2member_t asn_MAP_BDM_Sync_Message_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* metadataMessage at 232 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* datapointsMessage at 234 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* metadataMessage at 260 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* datapointsMessage at 262 */
 };
 static asn_CHOICE_specifics_t asn_SPC_BDM_Sync_Message_specs_1 = {
 	sizeof(struct BDM_Sync_Message),

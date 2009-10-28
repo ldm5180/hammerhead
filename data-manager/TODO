@@ -1,3 +1,11 @@
+For "PUB SUB Release":
+ - Add datapoint timestamp filters tp cal-tapoic-matches
+ - Verify the new library is a drop-in replacement for the old BDM (Same ABI)
+   I know that the query_resource_datapoints() has changes, to support specifying a hostname.
+
+ - Fix the write blocking issue. I've disabled non-block writes, which causes large queries to fail...
+
+--------------------------
 
 Write a client that spits out a plot, like webplots...
 

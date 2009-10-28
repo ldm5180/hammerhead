@@ -20,6 +20,10 @@ bionet_data_manager_SOURCES =         \
 libbionet_data_manager_la_SOURCES =      \
     bionet-io.c                       \
     db.c                              \
+    bdm-asn.c                         \
+    subscription.c                    \
+    cal-callback.c                    \
+    cal-topic-matches.c               \
     client-connecting-handler.c       \
     client-readable-handler.c         \
     handle-client-message.c           \
@@ -31,21 +35,24 @@ libbionet_data_manager_la_SOURCES =      \
     sync-receive-connecting-handler.c \
     sync-receive-readable-handler.c   \
     sync-receive-ion.c                \
+    sync-record-asn.c                 \
     handle-sync-datapoints-message.c  \
     handle-sync-metadata-message.c    \
     cfg-parser.y                      \
     cfg-lexer.l
 
-bionet_data_manager_CFLAGS = $(AM_CFLAGS) $(OPENSSL_CFLAGS) $(GLIB_CFLAGS) $(OPENSSL_CFLAGS) -I../include $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) $(ION_CFLAGS)
+extra_cflags = $(OPENSSL_CFLAGS) $(GLIB_CFLAGS) $(OPENSSL_CFLAGS) -I../include $(CFLAGS_BIONET_CAL_SERVER) $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) $(ION_CFLAGS)
+
+bionet_data_manager_CFLAGS = $(AM_CFLAGS) $(extra_cflags)
 
 bionet_data_manager_LDFLAGS = $(AM_LDFLAGS) $(OPENSSL_LIBS) $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_CLIENT) $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_CAL_CLIENT) $(ION_LDFLAGS)
 
-bionet_data_manager_LDADD = libbionet-data-manager.la  $(LIBS_ION) $(AM_LDADD) -lpthread -lm 
+bionet_data_manager_LDADD = libbionet-data-manager.la  $(LIBS_ION) $(AM_LDADD) -lpthread -lm $(LIBS_BIONET_CAL_SERVER)
 
 bionet_data_manager_DEPENDENCIES = $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_ASN1) $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_CAL_CLIENT) $(BUILT_SOURCES) $(libbionet_data_manager_la_SOURCES) $(noinst_LTLIBRARIES)
 
 
-libbionet_data_manager_la_CFLAGS = $(AM_CFLAGS) $(OPENSSL_CFLAGS) $(GLIB_CFLAGS) $(OPENSSL_CFLAGS) -I../include $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) $(ION_CFLAGS) -fno-strict-aliasing
+libbionet_data_manager_la_CFLAGS = $(AM_CFLAGS) $(extra_cflags)
 
 libbionet_data_manager_la_LDFLAGS = $(AM_LDFLAGS) $(OPENSSL_LIBS) $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_CLIENT) $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_CAL_CLIENT) $(ION_LDFALGS)
 

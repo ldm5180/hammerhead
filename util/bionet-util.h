@@ -177,6 +177,31 @@ int bionet_split_resource_name(
     char **resource_id
 );
 
+/**
+ * @brief Take a resource name string and split the name up into its components
+ *
+ * Resource name string shall be in the format 
+ *    <HAB-type>.<HAB-ID>.<Node-ID>:<Resource-ID>[?<Topic Query params>]
+ * 
+ * If the caller passes in NULL for any of the "out" arguments, that part
+ * of the name component will be skipped.
+ *
+ * @param[in] resource_name Resource name to split
+ * @param[out] hab_type HAB-type from resource name
+ * @param[out] hab_id HAB-ID from resource name
+ * @param[out] node_id Node-ID from resource name
+ * @param[out] resource_id Resource-ID from resource name
+ *
+ * @retval N The offest of the Topic Query Parameters, or 0 if none
+ * @retval -1 Failure
+ */
+int bionet_split_resource_name_r(
+    const char *resource_name,
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN+1]);
+
 
 /**
  * @brief Take a node name string and split the name up into its components

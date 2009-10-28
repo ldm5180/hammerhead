@@ -11,14 +11,14 @@ lib_LTLIBRARIES = libbdm.la
 include_HEADERS = bdm-client.h
 
 libbdm_la_SOURCES =             \
-    read.c \
-    cal-callback.c \
+    read.c                      \
+    cache-lookup-bdm.c          \
+    cal-callback.c              \
     connect.c                   \
     disconnect.c                \
     get-resource-datapoints.c   \
-    global.c   \
-    register-callback.c \
-    send-asn.c                  
+    global.c                    \
+    register-callback.c 
 
 libbdm_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -I$(top_srcdir)/data-manager/include $(CFLAGS_BIONET_CAL_CLIENT) $(CFLAGS_BIONET_CAL_UTIL)
 

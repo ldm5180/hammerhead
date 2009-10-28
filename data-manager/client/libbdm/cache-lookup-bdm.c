@@ -11,8 +11,6 @@
 #include "bionet-util.h"
 #include "libbdm-internal.h"
 
-extern GSList *bionet_bdms;
-
 static int libbdm_find_bdm_by_bdmid(const void *vp_bdm, const void *vp_target) {
     const char *target = vp_target;
     const bionet_bdm_t *bdm = vp_bdm;
@@ -28,7 +26,7 @@ static int libbdm_find_bdm_by_bdmid(const void *vp_bdm, const void *vp_target) {
 bionet_bdm_t *bdm_cache_lookup_bdm(const char *bdm_id) {
     GSList *p;
 
-    char * target;
+    const char * target;
 
 
     if (bdm_id == NULL) {
@@ -38,7 +36,7 @@ bionet_bdm_t *bdm_cache_lookup_bdm(const char *bdm_id) {
 
     target = bdm_id;
 
-    p = g_slist_find_custom(bionet_bdms, &target, libbdm_find_bdm_by_bdmtype_bdmid);
+    p = g_slist_find_custom(libbdm_bdms, &target, libbdm_find_bdm_by_bdmid);
     if (p == NULL) {
         return NULL;
     }

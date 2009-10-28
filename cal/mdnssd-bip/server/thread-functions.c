@@ -431,6 +431,7 @@ static int accept_connection(cal_server_mdnssd_bip_t *this) {
     }
 
     // Make accepted socket non-blocking
+#if 0
     {
         int flags = fcntl(net->socket, F_GETFL, 0);
         if (flags < 0) {
@@ -445,6 +446,7 @@ static int accept_connection(cal_server_mdnssd_bip_t *this) {
                     __FUNCTION__, strerror(errno));
         }
     }
+#endif
 
     net->pending_bio = BIO_new_socket(net->socket, BIO_CLOSE);
     

@@ -34,6 +34,8 @@ libbionet_util_la_LIBADD = \
 
 libbionet_util_la_SOURCES =    \
     bdm-new.c                  \
+    bdm-free.c                 \
+    bdm-matches.c              \
     hab-add-node.c             \
     hab-remove-node.c          \
     hab-matches.c              \

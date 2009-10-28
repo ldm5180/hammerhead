@@ -33,6 +33,7 @@
 //
 
 #define BDM_PORT      (11002)
+#define BDM_DEFAULT_HOST ("localhost")
 #define BDM_SYNC_PORT (11003)
 
 

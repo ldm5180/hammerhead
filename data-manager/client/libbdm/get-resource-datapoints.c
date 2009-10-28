@@ -13,8 +13,6 @@
 #include "libbdm-internal.h"
 #include "bdm-util.h"
 
-extern int bdm_fd;
-
 libbdm_datapoint_query_response_t * _libbdm_query_response = NULL;
 
 void bdm_handle_query_response(const cal_event_t *event,
@@ -127,13 +125,17 @@ libbdm_datapoint_query_response_t *bdm_get_resource_datapoints(
     BDM_C2S_Message_t m;
     ResourceDatapointsQuery_t *rdpq;
 
-    bionet_asn_buffer_t buf;
-    memset(&buf, 0, sizeof(buf));
-
     int r;
     asn_enc_rval_t enc_rval;
 
     struct timeval tv;
+
+    bionet_asn_buffer_t buf;
+    memset(&buf, 0, sizeof(buf));
+
+    if (bdm_id == NULL) {
+        bdm_id = BDM_DEFAULT_HOST;
+    }
 
     memset(&m, 0x00, sizeof(BDM_C2S_Message_t));
     m.present = BDM_C2S_Message_PR_resourceDatapointsQuery;
@@ -221,15 +223,18 @@ libbdm_datapoint_query_response_t *bdm_get_resource_datapoints(
 
     // send the request to the BDM
     // NOTE: cal_client.sendto assumes controll of buf
-    cal_client.sendto(bdm_id, buf.buf, buf.size);
+    libbdm_datapoint_query_response_t * this_response = NULL;
+    r = cal_client.sendto(bdm_id, buf.buf, buf.size);
+    if ( r ) {
 
-    while(_libbdm_query_response == NULL) {
-        g_usleep(1000);
-        bdm_read();
+        while(_libbdm_query_response == NULL) {
+            g_usleep(1000);
+            bdm_read();
+        }
+
+        this_response = _libbdm_query_response;
+        _libbdm_query_response = NULL;
     }
-
-    libbdm_datapoint_query_response_t * this_response = _libbdm_query_response;
-    _libbdm_query_response = NULL;
 
     return this_response;
 

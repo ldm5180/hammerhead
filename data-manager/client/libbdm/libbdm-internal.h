@@ -15,6 +15,8 @@ extern libbdm_datapoint_query_response_t * _libbdm_query_response;
 int bdm_send_asn(const void *buffer, size_t size, void *unused);
 
 void libbdm_cal_callback(const cal_event_t *event);
+void bdm_handle_query_response(const cal_event_t *event,
+        ResourceDatapointsReply_t *rdr);
 
 extern void (*libbdm_callback_new_bdm)(bionet_bdm_t *bdm, void* usr_data);
 extern void * libbdm_callback_new_bdm_usr_data;
@@ -77,6 +79,10 @@ extern GSList *libbdm_hab_subscriptions;
 extern GSList *libbdm_node_subscriptions;
 extern GSList *libbdm_datapoint_subscriptions;
 extern GSList *libbdm_stream_subscriptions;
+
+extern GSList *libbdm_bdm_api_subscriptions;
+extern GSList *libbdm_api_new_peers;
+extern GSList *libbdm_api_lost_peers;
 
 //
 // functions for dealing with the cache

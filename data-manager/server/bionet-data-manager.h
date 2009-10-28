@@ -15,6 +15,7 @@
 
 #include "bionet-asn.h"
 #include "bionet-util.h"
+#include "cal-event.h"
 
 #if ENABLE_ION
 #include "zco.h"
@@ -38,6 +39,11 @@ extern GHashTable * bdm_opts_table;
 
 // Global flag. Set true to stop all auxillary threads
 extern int bdm_shutdown_now;
+
+// Global CAL vars
+extern int libbdm_cal_fd;
+extern void libbdm_cal_callback(const cal_event_t *event);
+extern int libbdm_cal_topic_matches(const char * topic, const char *subscription);
 
 // Call from threads instead of sleep.
 // Returns early with non-zero status if thread should exit
@@ -206,6 +212,16 @@ int db_get_last_sync_seq_metadata(sqlite3 *db, char * bdm_id);
 void db_set_last_sync_seq_metadata(sqlite3 *db, char * bdm_id, int seq);
 int db_get_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id);
 void db_set_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id, int seq);
+
+//
+// Stuff to handle messages and asn
+//
+void libbdm_handle_resourceDatapointsQuery(
+        const char * peer_name, 
+        ResourceDatapointsQuery_t *rdpq);
+
+BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray *bdm_list);
+BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray *bdm_list);
 
 // 
 // stuff for being a bionet client

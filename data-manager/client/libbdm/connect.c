@@ -31,11 +31,8 @@
 #include "libbdm-internal.h"
 
 
-int bdm_cal_fd = -1;
-
-
 int bdm_is_connected() {
-    if (bdm_cal_fd < 0) {
+    if (libbdm_cal_fd < 0) {
         return 0;
     }
 
@@ -181,7 +178,7 @@ static int libbdm_cal_peer_matches(const char *peer_name, const char *pattern) {
 //
 // Returns the fd if the connection is open, -1 if there's a problem.
 //
-int bdm_connect(void) {
+int bdm_start(void) {
 
     // if the connection is already open we just return it's fd
     if (libbdm_cal_fd > -1) return libbdm_cal_fd;
@@ -263,6 +260,7 @@ int bdm_connect(void) {
 //
 
 void bdm_add_server(char *hostname, uint16_t port) {
+    if (libbdm_cal_fd < 0) if ( bdm_start() < 0 ) return;
 
     if (port == 0)
     {
@@ -275,6 +273,68 @@ void bdm_add_server(char *hostname, uint16_t port) {
 
 
     cal_client.force_discover(hostname, hostname, port, 0);
+
+}
+
+// 
+// Opens a TCP connection to the BDM server specified by
+// bdm_hostname and bdm_port, and waits for completion
+//
+// if port == 0, BDM_PORT will be used
+//
+// Returns the socket fd if the connection is open, -1 if there's a problem.
+//
+
+int bdm_connect(char *hostname, uint16_t port) {
+    int rc = 0;
+
+    if (libbdm_cal_fd < 0) if( bdm_start() < 0 ) return -1;
+
+    if (port == 0)
+    {
+	port = BDM_PORT;
+    }
+
+    if (hostname == NULL) {
+        hostname = BDM_DEFAULT_HOST;
+    }
+
+
+    bionet_bdm_t * bdm = bionet_bdm_new(hostname);
+    if ( bdm == NULL ) return -1; // Error has already been logged
+    libbdm_bdm_api_subscriptions = g_slist_prepend(libbdm_bdm_api_subscriptions, bdm);
+
+    cal_client.force_discover(hostname, hostname, port, 0);
+
+    int found = 0;
+    while(!found) {
+        bdm_read();
+        GSList * l;
+
+        for(l = libbdm_api_new_peers; l != NULL;) {
+            char * peer_name = l->data;
+            if (!strcmp(peer_name, bdm->id)) {
+                found = 1;
+                rc = 0;
+            }
+            free(l->data);
+            l = g_slist_delete_link(l, l);
+        }
+
+        for(l = libbdm_api_lost_peers; l != NULL;) {
+            char * peer_name = l->data;
+            if (!strcmp(peer_name, bdm->id)) {
+                found = 1;
+                rc = -1;
+            }
+            free(l->data);
+            l = g_slist_delete_link(l, l);
+        }
+    }
+    libbdm_bdm_api_subscriptions = g_slist_remove(libbdm_bdm_api_subscriptions, bdm);
+
+
+    return rc;
 
 }
 

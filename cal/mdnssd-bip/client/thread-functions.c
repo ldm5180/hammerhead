@@ -432,6 +432,7 @@ static void read_from_user(void) {
                 return;
             }
 
+
             bip_peer_network_info_t *net;
             net = bip_net_new(event->force_discover.hostname, event->force_discover.port);
             if (net == NULL) {
@@ -444,6 +445,8 @@ static void read_from_user(void) {
                 net->sectype = BIP_SEC_OPT;
             }
 
+            g_ptr_array_add(peer->nets, net);
+
             if (peer->nets->len > 1) {
                 // this peer was known, initialized, and reported to the user
                 // before no need for any more action this time
@@ -451,7 +454,7 @@ static void read_from_user(void) {
             }
 
             //
-            // New peer just showed up on the network. Push it on the list of
+            // Pretend peer just showed up on the network. Push it on the list of
             // hosts to connect to
             // 
             if(bip_peer_connect_nonblock(peer) < 0) {
@@ -1061,6 +1064,11 @@ SELECT_LOOP_CONTINUE:
                         if(fd >= 0) {
                             // The next net is not ready yet
                             connecting_peer_list = g_list_append(connecting_peer_list, peer);
+                        } else {
+                            // No more nets to try.
+                            // TODO Send an error message instead of a duplicate 
+                            // PEER_LEAVING
+                            report_peer_lost(peer);
                         }
                     } else {
                         // Do post-connect stuff

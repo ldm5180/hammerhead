@@ -154,6 +154,132 @@ int bionet_split_resource_name(
     return 0;
 }
 
+int bionet_split_resource_name_r(
+        const char * topic,
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char resource_id[BIONET_NAME_COMPONENT_MAX_LEN+1])
+{
+    const char *p;
+    int size;
+    char *separator;
+
+
+    //
+    // sanity checks
+    //
+
+    if (topic == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): NULL Topic passed in");
+        return -1;
+    }
+
+
+    p = topic;
+
+    // get the HAB-Type
+    separator = strchr(p, '.');
+    if (separator == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): error parsing Topic '%s'", topic);
+        return -1;
+    }
+    size = separator - p;
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): HAB-Type of Topic '%s' has zero length", topic);
+        return -1;
+    }
+    if (size > (sizeof(hab_type) - 1)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): HAB-Type of Topic '%s' is too long (%d bytes, max %lu)", topic, size, (long unsigned)(sizeof(hab_type) - 1));
+        return -1;
+    }
+    memcpy(hab_type, p, size);
+    hab_type[size] = '\0';
+
+    if (! bionet_is_valid_name_component_or_wildcard(hab_type)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): HAB-Type of Topic '%s' is not a valid name component or a wildcard", topic);
+        return -1;
+    }
+
+
+    // get the HAB-ID
+    p = separator + 1;
+    separator = strchr(p, '.');
+    if (separator == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): error parsing Topic '%s'", topic);
+        return -1;
+    }
+    size = separator - p;
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): HAB-ID of Topic '%s' has zero length", topic);
+        return -1;
+    }
+    if (size > (sizeof(hab_id) - 1)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): HAB-ID of Topic '%s' is too long (%d bytes, max %lu)", topic, size, (long unsigned)(sizeof(hab_id) - 1));
+        return -1;
+    }
+    memcpy(hab_id, p, size);
+    hab_id[size] = '\0';
+
+    if (! bionet_is_valid_name_component_or_wildcard(hab_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): HAB-ID of Topic '%s' is not a valid name component or a wildcard", topic);
+        return -1;
+    }
+
+
+    // get the Node-ID
+    p = separator + 1;
+    separator = strchr(p, ':');
+    if (separator == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): error parsing Topic'%s'", topic);
+        return -1;
+    }
+    size = separator - p;
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): Node-ID of Topic '%s' has zero length", topic);
+        return -1;
+    }
+    if (size > (sizeof(node_id) - 1)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): Node-ID of Topic '%s' is too long (%d bytes, max %lu)", topic, size, (long unsigned)(sizeof(node_id) - 1));
+        return -1;
+    }
+    memcpy(node_id, p, size);
+    node_id[size] = '\0';
+
+    if (! bionet_is_valid_name_component_or_wildcard(node_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): Node-ID of Topic '%s' is not a valid name component or a wildcard", topic);
+        return -1;
+    }
+
+
+    // get the Resource-ID
+    int query_offset = 0;
+    p = separator + 1;
+    separator = strchr(p, '?');
+    if (separator) {
+        size = separator - p;
+        query_offset = p-topic;
+    } else {
+        size = strlen(p);
+    }
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): Resource-ID of Topic '%s' has zero length", topic);
+        return -1;
+    }
+    if (size > (sizeof(resource_id) - 1)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): Resource-ID of Topic '%s' is too long (%d bytes, max %lu)", topic, size, (long unsigned)(sizeof(resource_id) - 1));
+        return -1;
+    }
+    memcpy(resource_id, p, size);
+    resource_id[size] = '\0';
+
+    if (! bionet_is_valid_name_component_or_wildcard(resource_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "split_bdm_topic(): Resource-ID of Topic '%s' is not a valid name component or a wildcard", topic);
+        return -1;
+    }
+
+    return query_offset;
+}
 
 
 

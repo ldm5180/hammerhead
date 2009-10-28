@@ -55,7 +55,7 @@ static void bdm_handle_new_node(const cal_event_t *event, const Node_t *newNode)
 
 
 // FIXME: these should go in the internal cache
-static void bdm_handle_resource_metadata(const cal_event_t *event, const ResourceMetadata_t *rm) {
+static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMResourceMetadata_t *rm) {
     char *hab_type;
     char *hab_id;
 
@@ -132,10 +132,6 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const Resourc
 }
 
 
-
-
-
-
 static void bdm_handle_lost_node(const cal_event_t *event, const PrintableString_t *nodeId) {
     char *hab_type;
     char *hab_id;
@@ -171,10 +167,7 @@ static void bdm_handle_lost_node(const cal_event_t *event, const PrintableString
     bionet_node_free(node);
 }
 
-
-
-
-static void bdm_handle_resource_datapoints(const cal_event_t *event, ResourceDatapoints_t *rd) {
+static void bdm_handle_resource_datapoints(const cal_event_t *event, BDMResourceDatapoints_t *rd) {
     char *hab_type;
     char *hab_id;
 
@@ -210,8 +203,8 @@ static void bdm_handle_resource_datapoints(const cal_event_t *event, ResourceDat
         return;
     }
 
-    for (i = 0; i < rd->newDatapoints.list.count; i ++) {
-        Datapoint_t *asn_d = rd->newDatapoints.list.array[i];
+    for (i = 0; i < rd->newDatapointsBDM.list.count; i ++) {
+        Datapoint_t *asn_d = rd->newDatapointsBDM.list.array[i];
         bionet_datapoint_t *new_d = bionet_asn_to_datapoint(asn_d, resource);
 
         if( NULL == new_d ){
@@ -229,8 +222,8 @@ static void bdm_handle_resource_datapoints(const cal_event_t *event, ResourceDat
 }
 
 
-
-
+#if 0
+// TODO: Handle streams over BDM
 static void bdm_handle_stream_data(const cal_event_t *event, StreamData_t *sd) {
     char *hab_type;
     char *hab_id;
@@ -270,15 +263,14 @@ static void bdm_handle_stream_data(const cal_event_t *event, StreamData_t *sd) {
                 libbdm_callback_stream_usr_data);
     }
 }
-
-
+#endif
 
 
 static void bdm_handle_server_message(const cal_event_t *event) {
-    H2C_Message_t *m = NULL;
+    BDM_S2C_Message_t *m = NULL;
     asn_dec_rval_t rval;
 
-    rval = ber_decode(NULL, &asn_DEF_H2C_Message, (void **)&m, event->msg.buffer, event->msg.size);
+    rval = ber_decode(NULL, &asn_DEF_BDM_S2C_Message, (void **)&m, event->msg.buffer, event->msg.size);
     if (rval.code == RC_WMORE) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained an incomplete ASN.1 message", event->peer_name);
         return;
@@ -298,50 +290,48 @@ static void bdm_handle_server_message(const cal_event_t *event) {
 
     switch (m->present) {
 
-        case H2C_Message_PR_newNode: {
+        case BDM_S2C_Message_PR_newNode: {
             bdm_handle_new_node(event, &m->choice.newNode);
             break;
         }
 
-        case H2C_Message_PR_lostNode: {
+        case BDM_S2C_Message_PR_lostNode: {
             bdm_handle_lost_node(event, &m->choice.lostNode);
             break;
         }
 
-        case H2C_Message_PR_resourceMetadata: {
+        case BDM_S2C_Message_PR_resourceMetadata: {
             bdm_handle_resource_metadata(event, &m->choice.resourceMetadata);
             break;
         }
 
-        case H2C_Message_PR_datapointsUpdate: {
+        case BDM_S2C_Message_PR_datapointsUpdate: {
             bdm_handle_resource_datapoints(event, &m->choice.datapointsUpdate);
             break;
         }
 
-        case H2C_Message_PR_streamData: {
+        /* TODO: Handle Stream Data
+        case BDM_S2C_Message_PR_streamData: {
             bdm_handle_stream_data(event, &m->choice.streamData);
-            break;
-        }
-
-        /*  TODO: Handle query requert/response
-        case BDM_S2C_Message_PR_resourceDatapointsReply: {
-            bdm_handle_query_response(event, &m->choice.queryresponse);
             break;
         }
         */
 
+        case BDM_S2C_Message_PR_resourceDatapointsReply: {
+            bdm_handle_query_response(event, &m->choice.resourceDatapointsReply);
+            break;
+        }
+
         default: {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dont know what to do with H2C message type %d from %s", m->present, event->peer_name);
-            xer_fprint(stdout, &asn_DEF_H2C_Message, m);
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dont know what to do with BDM_S2C message type %d from %s", m->present, event->peer_name);
+            xer_fprint(stdout, &asn_DEF_BDM_S2C_Message, m);
             break;
         }
 
     }
 
-    asn_DEF_H2C_Message.free_struct(&asn_DEF_H2C_Message, m, 0);
+    asn_DEF_BDM_S2C_Message.free_struct(&asn_DEF_BDM_S2C_Message, m, 0);
 }
-
-
 
 
 void libbdm_cal_callback(const cal_event_t *event) {
@@ -361,6 +351,23 @@ void libbdm_cal_callback(const cal_event_t *event) {
 
             // add the bdm to the bdm library's list of known bdms
             libbdm_bdms = g_slist_prepend(libbdm_bdms, bdm);
+
+
+            // see if we need to publish this to the BDM API
+            {
+                GSList *i;
+
+                for (i = libbdm_bdm_api_subscriptions; i != NULL; i = i->next) {
+                    libbdm_bdm_subscription_t *sub = i->data;
+
+                    if (!strcmp(event->peer_name, sub->bdm_id)) {
+                        char * newbdm = strdup(event->peer_name);
+                        libbdm_api_new_peers = g_slist_prepend(libbdm_api_new_peers, newbdm);
+                        break;
+                    }
+                }
+            }
+
 
             // see if we need to publish this to the user
             {
@@ -385,6 +392,19 @@ void libbdm_cal_callback(const cal_event_t *event) {
         case CAL_EVENT_LEAVE: {
             bionet_bdm_t *bdm = NULL;
 
+            {
+                GSList *i;
+
+                for (i = libbdm_bdm_api_subscriptions; i != NULL; i = i->next) {
+                    libbdm_bdm_subscription_t *sub = i->data;
+
+                    if (!strcmp(event->peer_name, sub->bdm_id)) {
+                        char * lostbdm = strdup(event->peer_name);
+                        libbdm_api_lost_peers = g_slist_prepend(libbdm_api_lost_peers, lostbdm);
+                        break;
+                    }
+                }
+            }
             //
             // it's a bit confusing because there are two lists of BDMs:
             // the list of BDMs that the client has been told about, and

@@ -113,6 +113,25 @@ BEGIN
         newDatapoints   SEQUENCE OF Datapoint
     }
 
+    BDMResourceMetadata ::= SEQUENCE {
+        bdmId        PrintableString,
+        habType      PrintableString,
+        habId        PrintableString,
+        nodeId       PrintableString,
+        resourceId   PrintableString,
+        flavor       ResourceFlavor,
+        datatype     ResourceDataType
+    }
+
+    BDMResourceDatapoints ::= SEQUENCE {
+        bdmId           PrintableString,
+        habType         PrintableString,
+        habId           PrintableString,
+        nodeId          PrintableString,
+        resourceId      PrintableString,
+        newDatapointsBDM   SEQUENCE OF Datapoint
+    }
+
 
     -- 
     -- ResourceDatapointsQuery: request from a client to the bdm server to
@@ -169,8 +188,8 @@ BEGIN
     -- 
 
     C2H-Message ::= CHOICE {
-        subscribeNode         PrintableString,
-        subscribeDatapoints   PrintableString,
+        --subscribeNode         PrintableString,
+        --subscribeDatapoints   PrintableString,
         setResourceValue      SetResourceValue,
         streamData            StreamData
     }
@@ -188,13 +207,16 @@ BEGIN
         streamData         StreamData
     }
 
-
     --
     -- BDM Client-to-Server messages
     --
 
     BDM-C2S-Message ::= CHOICE {
-        resourceDatapointsQuery ResourceDatapointsQuery
+        resourceDatapointsQuery ResourceDatapointsQuery,
+	sendState             INTEGER
+        -- subscribeHab          PrintableString,
+        -- subscribeNode         PrintableString,
+        -- subscribeDatapoints   PrintableString,
     }
 
 
@@ -203,7 +225,13 @@ BEGIN
     --
 
     BDM-S2C-Message ::= CHOICE {
-        resourceDatapointsReply ResourceDatapointsReply
+        resourceDatapointsReply ResourceDatapointsReply,
+        resourceMetadata        BDMResourceMetadata,
+        datapointsUpdate        BDMResourceDatapoints,
+        newHab                  Node,
+        lostHab                 PrintableString,
+        newNode                 Node,
+        lostNode                PrintableString
     }
 
 

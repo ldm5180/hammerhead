@@ -58,20 +58,42 @@ int bdm_read(void);
 
 
 /**
- * @brief Connect to a specific BDM server
+ * @brief Add a new BDM server that may not get discovered
  *
- * Connect to the specified BDM server, and act as if it has been discovered.
+ * Try to add the specified BDM server as if it has been discovered.
  * Usefull the the BDM server is not on the link-local network
+ *
+ * If the peer can be found, a new_bdm subscription notification will be sent,
+ * if it is subscribed to.
  *
  * @param[in] hostname The hostname or ipaddress string to connect to
  *
  * @param[in] port The port the server is available in (host-byte-ordered), or
  * 0 to use default
  */
-void bdm_add_server(char *hostname, uint16_t port); int bdm_is_connected(void);
+void bdm_add_server(char *hostname, uint16_t port); 
+
 
 /**
- * Connect to Bionet BDM network
+ * @brief Connect to a specific BDM server
+ *
+ * Connect to the specified BDM server, and act as if it has been discovered.
+ * Usefull the the BDM server is not on the link-local network
+ *
+ * If the peer can be found, a new_bdm subscription notification will be sent,
+ * if it is subscribed to
+ *
+ * @param[in] hostname The hostname or ipaddress string to connect to
+ *
+ * @param[in] port The port the server is available in (host-byte-ordered), or
+ * 0 to use default
+ */
+int bdm_connect(char *hostname, uint16_t port); 
+
+int bdm_is_connected(void);
+
+/**
+ * Connect to Bionet BDM network, and start looking for published BDM servers
  *
  * Calling this function from a BDM Client is optional, it will be called implicitly when needed by other Bionet BDM library finctions.
  *
@@ -87,7 +109,7 @@ void bdm_add_server(char *hostname, uint16_t port); int bdm_is_connected(void);
  * bdm_read() in a polling way, though this is less efficient than using
  * select() or poll() on the fd.
  */
-int bdm_connect(void);
+int bdm_start(void);
 
 /**
  * @brief Checks to see if Bionet BDM library is connected to Bionet BDM network

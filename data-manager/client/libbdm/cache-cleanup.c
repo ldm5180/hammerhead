@@ -8,8 +8,6 @@
 
 #include "libbdm-internal.h"
 
-extern GSList *bionet_habs;
-
 static void cache_cleanup_hab(bionet_hab_t *hab) {
     GSList *i;
 
@@ -109,7 +107,7 @@ void cache_cleanup_node(bionet_node_t *node) {
 void libbdm_cache_cleanup_habs() {
     GSList *i;
 
-    for (i = bionet_habs; i != NULL; i = i->next) {
+    for (i = libbdm_habs; i != NULL; i = i->next) {
         bionet_hab_t *hab = i->data;
 
         if (hab == NULL)
@@ -123,7 +121,7 @@ void libbdm_cache_cleanup_habs() {
 void libbdm_cache_cleanup_nodes() {
     GSList *i;
 
-    for (i = bionet_habs; i != NULL; i = i->next) {
+    for (i = libbdm_habs; i != NULL; i = i->next) {
         bionet_hab_t *hab = i->data;
         int j;
 

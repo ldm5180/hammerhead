@@ -11,8 +11,6 @@
 #include "bionet-util.h"
 #include "libbdm-internal.h"
 
-extern GSList *bionet_habs;
-
 typedef struct {
     const char *hab_type;
     const char *hab_id;
@@ -54,7 +52,7 @@ bionet_hab_t *bdm_cache_lookup_hab(const char *hab_type, const char *hab_id) {
     target.hab_type = hab_type;
     target.hab_id   = hab_id;
 
-    p = g_slist_find_custom(bionet_habs, &target, libbdm_find_hab_by_habtype_habid);
+    p = g_slist_find_custom(libbdm_habs, &target, libbdm_find_hab_by_habtype_habid);
     if (p == NULL) {
         return NULL;
     }

@@ -18,6 +18,7 @@
 #include "bionet-data-manager.h"
 #include "bdm-util.h"
 #include "config.h"
+#include "cal-server.h"
 
 GMainLoop *bdm_main_loop = NULL;
 
@@ -25,6 +26,8 @@ GMainLoop *bdm_main_loop = NULL;
 
 char * database_file = DB_NAME;
 extern char bdm_id[256];
+
+int libbdm_cal_fd = -1;
 
 GSList * sync_config_list = NULL;
 static GSList * sync_thread_list = NULL;
@@ -75,6 +78,20 @@ void usage(void) {
 }
 
 
+
+int cal_readable_handler(
+        GIOChannel *listening_ch,
+        GIOCondition condition,
+        gpointer usr_data) 
+{
+    struct timeval timeout;
+
+
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+
+    return cal_server.read(&timeout);
+}
 
 
 int main(int argc, char *argv[]) {
@@ -355,6 +372,23 @@ int main(int argc, char *argv[]) {
         g_io_add_watch(ch, G_IO_IN, client_connecting_handler, GINT_TO_POINTER(fd));
     }
 
+    //
+    // Publish BDM service...
+    //
+    {
+        GIOChannel *ch;
+
+        libbdm_cal_fd = 
+            cal_server.init("bionet-db", bdm_id, libbdm_cal_callback, libbdm_cal_topic_matches);
+        if (libbdm_cal_fd == -1) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error initializing CAL");
+            return 1;
+        }
+
+        ch = g_io_channel_unix_new(libbdm_cal_fd);
+        g_io_add_watch(ch, G_IO_IN, cal_readable_handler, NULL);
+    }
+
     
     // add the TCP sync receiver
     if (enable_tcp_sync_receiver) {
@@ -365,7 +399,6 @@ int main(int argc, char *argv[]) {
 	ch = g_io_channel_unix_new(fd);
 	g_io_add_watch(ch, G_IO_IN, sync_receive_connecting_handler, GINT_TO_POINTER(fd));
     }
-
 
     // 
     // we're not connected to the Bionet, so add an idle function to the main loop to try to connect

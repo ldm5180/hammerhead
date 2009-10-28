@@ -10,25 +10,23 @@
 #include "libbdm-internal.h"
 
 
-extern GSList *bionet_habs;
-
 void libbdm_cache_add_bdm(bionet_bdm_t *bdm) {
-    bionet_bdms = g_slist_prepend(bionet_bdms, bdm);
+    libbdm_bdms = g_slist_prepend(libbdm_bdms, bdm);
 }
 
 
 void libbdm_cache_remove_bdm(bionet_bdm_t *bdm) {
-    bionet_bdms = g_slist_remove(bionet_bdms, bdm);
+    libbdm_bdms = g_slist_remove(libbdm_bdms, bdm);
 }
 
 
 void libbdm_cache_add_hab(bionet_hab_t *hab) {
-    bionet_habs = g_slist_prepend(bionet_habs, hab);
+    libbdm_habs = g_slist_prepend(libbdm_habs, hab);
 }
 
 
 void libbdm_cache_remove_hab(bionet_hab_t *hab) {
-    bionet_habs = g_slist_remove(bionet_habs, hab);
+    libbdm_habs = g_slist_remove(libbdm_habs, hab);
 }
 
 
