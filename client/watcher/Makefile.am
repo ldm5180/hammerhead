@@ -26,6 +26,7 @@ bionet_watcher_LDFLAGS = \
 bionet_watcher_LDADD = \
 	$(AM_LDADD) \
 	$(LIBS_BIONET_CLIENT) \
+	$(LIBS_BIONET_UTIL) \
 	-lpthread \
 	-lm 
 
