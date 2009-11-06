@@ -160,6 +160,21 @@ typedef struct {
      */
     int (*init_security)(const char * dir, int require);
 
+    /**
+     * @brief Force CAL to connect to the given service, and treat it 
+     * as if it had been discovered. Does nothing if the service has 
+     * been discovered.
+     *
+     * The only notification of a successful connection is a host join
+     * message
+     *
+     * @param hostname The host to connect to
+     *
+     * @param port The port the service is on
+     *
+     */
+    void (*force_discover)(const char * peer_name, const char *hostname, int port, int is_secure);
+
 } cal_client_t;
 
 

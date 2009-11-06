@@ -17,13 +17,17 @@
 
 #include "bionet-data-manager.h"
 #include "config.h"
+#include "cal-server.h"
 
 GMainLoop *bdm_main_loop = NULL;
+
 
 #define DB_NAME "bdm.db"
 
 char * database_file = DB_NAME;
-extern char bdm_id[256];
+
+int libbdm_cal_fd = -1;
+bionet_bdm_t * this_bdm = NULL;
 
 GSList * sync_config_list = NULL;
 static GSList * sync_thread_list = NULL;
@@ -75,11 +79,26 @@ void usage(void) {
 
 
 
+int cal_readable_handler(
+        GIOChannel *listening_ch,
+        GIOCondition condition,
+        gpointer usr_data) 
+{
+    struct timeval timeout;
+
+
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+
+    return cal_server.read(&timeout);
+}
+
 
 int main(int argc, char *argv[]) {
     //
     // we'll be using glib, so capture its log messages
     //
+    const char * bdm_id = NULL;
 
     bionet_log_context_t lc = {
         destination: BIONET_LOG_TO_STDOUT,
@@ -167,7 +186,6 @@ int main(int argc, char *argv[]) {
 	    enable_dtn_sync_receiver = 1;
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 		  "Starting BDM-DTN sync receiver");
-	    //BDM-BP TODO: complete me!
 #else
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "BDM Syncronization over DTN was disabled at compile time.");
@@ -199,7 +217,7 @@ int main(int argc, char *argv[]) {
 	    break;
 
 	case 'i':
-	    strncpy(bdm_id, optarg, sizeof(bdm_id) - 1);
+            bdm_id = optarg;
 	    break;
 
 	case 'I':
@@ -282,7 +300,7 @@ int main(int argc, char *argv[]) {
         {
             char * endptr = NULL;
             long tcp_port;
-            tcp_port = strtoul(optarg, &endptr, 10);
+            tcp_port = strtol(optarg, &endptr, 10);
             if(endptr > optarg 
             && endptr[0] == '\0' 
             && tcp_port < USHRT_MAX)
@@ -304,13 +322,10 @@ int main(int argc, char *argv[]) {
     } //while(1)
 
 
-    if (0 == bdm_id[0]) {
-	int r;
-	r = gethostname(bdm_id, sizeof(bdm_id));
-	if (r < 0) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Error getting hostname: %m");
-	    exit(1);
-	}
+    this_bdm = bionet_bdm_new(bdm_id);
+    if (NULL == this_bdm ) {
+        // Error already logged
+        return 1;
     }
 
     if (security_dir) {
@@ -325,7 +340,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Add self as bdm to db
-    db_add_bdm(main_db, bdm_id);
+    db_add_bdm(main_db, bionet_bdm_get_id(this_bdm));
 
 
    
@@ -337,21 +352,22 @@ int main(int argc, char *argv[]) {
     bdm_main_loop = g_main_loop_new(NULL, TRUE);
 
 
-
-
-    // 
-    // create the listening socket for bdm clients
     //
-    // This will succeed or exit.
+    // Publish BDM service...
     //
-
     {
         GIOChannel *ch;
-        int fd;
 
-        fd = make_listening_socket(bdm_port);
-        ch = g_io_channel_unix_new(fd);
-        g_io_add_watch(ch, G_IO_IN, client_connecting_handler, GINT_TO_POINTER(fd));
+        libbdm_cal_fd = 
+            cal_server.init_full("bionet-db", bionet_bdm_get_id(this_bdm), bdm_port, 
+                    libbdm_cal_callback, libbdm_cal_topic_matches);
+        if (libbdm_cal_fd == -1) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error initializing CAL");
+            return 1;
+        }
+
+        ch = g_io_channel_unix_new(libbdm_cal_fd);
+        g_io_add_watch(ch, G_IO_IN, cal_readable_handler, NULL);
     }
 
     
@@ -364,7 +380,6 @@ int main(int argc, char *argv[]) {
 	ch = g_io_channel_unix_new(fd);
 	g_io_add_watch(ch, G_IO_IN, sync_receive_connecting_handler, GINT_TO_POINTER(fd));
     }
-
 
     // 
     // we're not connected to the Bionet, so add an idle function to the main loop to try to connect

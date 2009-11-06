@@ -71,8 +71,12 @@ int bip_send_message(const bip_peer_t *peer, uint8_t msg_type, const void *msg, 
     }
 
     if (size > 0) {
-        r = BIO_write(net->socket_bio, msg, size);
-        if (r != size) {
+        const void * p = msg;
+        while(size && (r = BIO_write(net->socket_bio, msg, size)) > 0) {
+            p += r;
+            size -= r;
+        }
+        if (r <= 0 ) {
             if(BIO_should_retry(net->socket_bio)){
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: error sending data: timeout");
             } else {

@@ -10,6 +10,7 @@ include $(top_srcdir)/common.am
 ASN_SOURCE = bionet-protocol-0.asn1
 
 
+
 ASN_MODULE_SOURCES =              \
     ResourceFlavor.c              \
     ResourceDataType.c            \
@@ -28,12 +29,17 @@ ASN_MODULE_SOURCES =              \
     StreamData.c                  \
     C2H-Message.c                 \
     H2C-Message.c                 \
+    BDMNewHab.c                   \
+    BDMNewNode.c                  \
     BDM-C2S-Message.c             \
     BDM-S2C-Message.c             \
     BDM-Sync-Metadata-Message.c   \
     BDM-Sync-Datapoints-Message.c \
     BDM-Sync-Ack.c                \
+    BDMResourceMetadata.c         \
+    BDMResourceDatapoints.c       \
     BDMRecord.c                   \
+    BDMSendState.c                \
     BDMSyncRecord.c               \
     ResourceRecord.c              \
     BDM-Sync-Message.c            
@@ -57,14 +63,19 @@ ASN_MODULE_HEADS =                \
     StreamData.h                  \
     C2H-Message.h                 \
     H2C-Message.h                 \
+    BDMNewHab.h                   \
+    BDMNewNode.h                  \
     BDM-C2S-Message.h             \
     BDM-S2C-Message.h             \
     BDM-Sync-Metadata-Message.h   \
     BDM-Sync-Datapoints-Message.h \
     BDM-Sync-Ack.h                \
     BDMRecord.h                   \
+    BDMSendState.h                \
     BDMSyncRecord.h               \
     ResourceRecord.h              \
+    BDMResourceMetadata.h         \
+    BDMResourceDatapoints.h       \
     BDM-Sync-Message.h            
 
 
@@ -131,6 +142,7 @@ ASN_MODULE_SOURCES+=per_decoder.c
 ASN_MODULE_HEADS+=per_encoder.h
 ASN_MODULE_SOURCES+=per_encoder.c
 
+BUILT_SOURCES = $(ASN_MODULE_SOURCES) $(ASN_MODULE_HEADS)
 
 SRC = $(ASN_MODULE_SOURCES) bionet-asn-helpers.c
 
@@ -187,7 +199,11 @@ clean-asn1: clean
 # then applies our local patches
 #
 
-rebuild-asn1:
+rebuild-asn1: asn1-stamp
+$(BUILT_SOURCES): asn1-stamp
+
+asn1-stamp: $(ASN_SOURCE)
 	asn1c -Werror -fnative-types -fskeletons-copy -pdu=auto -gen-PER $(ASN_SOURCE)
 	patch --quiet -p1 < local-patch
+	touch $@
 

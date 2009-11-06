@@ -113,6 +113,41 @@ BEGIN
         newDatapoints   SEQUENCE OF Datapoint
     }
 
+    BDMResourceMetadata ::= SEQUENCE {
+        bdmId        PrintableString,
+        habType      PrintableString,
+        habId        PrintableString,
+        nodeId       PrintableString,
+        resourceId   PrintableString,
+        flavor       ResourceFlavor,
+        datatype     ResourceDataType,
+	entrySeq     INTEGER
+    }
+
+    BDMResourceDatapoints ::= SEQUENCE {
+        bdmId           PrintableString,
+        habType         PrintableString,
+        habId           PrintableString,
+        nodeId          PrintableString,
+        resourceId      PrintableString,
+        newDatapointsBDM   SEQUENCE OF Datapoint,
+	entrySeq     INTEGER
+    }
+
+    BDMNewNode ::= SEQUENCE {
+        bdmId     PrintableString,
+        habType   PrintableString,
+        habId     PrintableString,
+	entrySeq  INTEGER,
+        node      Node
+    }
+
+    BDMNewHab ::= SEQUENCE {
+        bdmId     PrintableString,
+	entrySeq  INTEGER,
+	hab       HardwareAbstractor
+    }
+
 
     -- 
     -- ResourceDatapointsQuery: request from a client to the bdm server to
@@ -169,8 +204,8 @@ BEGIN
     -- 
 
     C2H-Message ::= CHOICE {
-        subscribeNode         PrintableString,
-        subscribeDatapoints   PrintableString,
+        --subscribeNode         PrintableString,
+        --subscribeDatapoints   PrintableString,
         setResourceValue      SetResourceValue,
         streamData            StreamData
     }
@@ -188,13 +223,20 @@ BEGIN
         streamData         StreamData
     }
 
-
     --
     -- BDM Client-to-Server messages
     --
+    BDMSendState ::= SEQUENCE {
+        seq             INTEGER,
+        topic           PrintableString
+    }
 
     BDM-C2S-Message ::= CHOICE {
-        resourceDatapointsQuery ResourceDatapointsQuery
+        resourceDatapointsQuery ResourceDatapointsQuery,
+        -- subscribeHab          PrintableString,
+        -- subscribeNode         PrintableString,
+        -- subscribeDatapoints   PrintableString,
+	sendState               BDMSendState
     }
 
 
@@ -203,7 +245,14 @@ BEGIN
     --
 
     BDM-S2C-Message ::= CHOICE {
-        resourceDatapointsReply ResourceDatapointsReply
+        resourceDatapointsReply ResourceDatapointsReply,
+        resourceMetadata        BDMResourceMetadata,
+        datapointsUpdate        BDMResourceDatapoints,
+        newHab                  BDMNewHab,
+        lostHab                 PrintableString,
+        newNode                 BDMNewNode,
+        lostNode                PrintableString,
+	sendState               BDMSendState
     }
 
 

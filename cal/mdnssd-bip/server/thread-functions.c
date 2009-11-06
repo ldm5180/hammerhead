@@ -431,6 +431,7 @@ static int accept_connection(cal_server_mdnssd_bip_t *this) {
     }
 
     // Make accepted socket non-blocking
+#if 0
     {
         int flags = fcntl(net->socket, F_GETFL, 0);
         if (flags < 0) {
@@ -445,6 +446,7 @@ static int accept_connection(cal_server_mdnssd_bip_t *this) {
                     __FUNCTION__, strerror(errno));
         }
     }
+#endif
 
     net->pending_bio = BIO_new_socket(net->socket, BIO_CLOSE);
     
@@ -684,7 +686,7 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
         }
 
         default: {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: dont know what to do with message type %d", net->header[BIP_MSG_HEADER_TYPE_OFFSET]);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: don't know what to do with message type %d", net->header[BIP_MSG_HEADER_TYPE_OFFSET]);
             cal_event_free(event);
             bip_net_clear(net);
             return -1;

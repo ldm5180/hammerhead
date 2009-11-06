@@ -182,6 +182,14 @@ int bionet_datapoint_is_dirty(const bionet_datapoint_t *datapoint);
  */
 void bionet_datapoint_make_clean(bionet_datapoint_t *datapoint);
 
+/**
+ * @brief Compare timevals like strcmp
+ *
+ * @return <0 if tva < tvb
+ * @return 0 if tva == tvb
+ * @return >0 if tva > tvb
+ */
+int bionet_timeval_compare(const struct timeval * tva, const struct timeval * tvb);
 
 #endif /* __BIONET_DATAPOINT_H */
 

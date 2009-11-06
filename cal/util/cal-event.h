@@ -74,7 +74,9 @@ typedef enum {
     //!
     //! In the client, when the user calls cal_client.subscribe() this
     //! event is sent to the CAL client thread, which records it and sends
-    //! it to the appropriate server.
+    //! it to the appropriate server. This event is also sent back to the
+    //! thread with the peer name and subscription whenever a subscription
+    //! request has been sent.
     //!
     //! In the server, the user thread gets this event from the CAL thread
     //! when a client has requested a new subscription.  The user thread
@@ -121,7 +123,18 @@ typedef enum {
     //! other than event->type are unused set to 0.  The CAL thread
     //! responds to this event by cleaning up (including closing its end of
     //! the pipes) and cancelling itself.
-    CAL_EVENT_SHUTDOWN
+    CAL_EVENT_SHUTDOWN,
+
+    //! This event is used internally by the CAL client, and will never be
+    //! seen by user threads.  It is used by the mDNS-SD/BIP BIP CAL client
+    //! module, and in the future maybe other multi-threaded CAL modules.
+    //!
+    //! When the user thread calls the force_discover function, it
+    //! sends this event to the CAL thread.  The peer name, All event_t fields
+    //! other than event->type are unused set to 0.  The CAL thread
+    //! responds to this event by cleaning up (including closing its end of
+    //! the pipes) and cancelling itself.
+    CAL_EVENT_FORCE_DISCOVER
 
 } cal_event_type_t;
 
@@ -138,10 +151,14 @@ typedef struct {
 
     char *peer_name;        //!< the name of the peer that the event concerns
 
-    //fixme: below should be a union accessed by event type
     char *topic;            //!< for the Publish & Subscribe events, the subscription topic (NULL terminated ASCII string)
     cal_message_t msg;      ///< the message sent (only the CAL_EVENT_MESSAGE event type has this)
     int is_secure;
+    struct {
+        char * hostname;
+        int port;
+        int is_secure;
+    } force_discover;
 } cal_event_t;
 
 

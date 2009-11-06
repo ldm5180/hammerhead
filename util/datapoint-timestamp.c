@@ -15,6 +15,14 @@
 #include "bionet-util.h"
 #include "internal.h"
 
+int bionet_timeval_compare(const struct timeval * tva, const struct timeval * tvb) {
+    if(tva->tv_sec < tvb->tv_sec) return -1;
+    if(tva->tv_sec > tvb->tv_sec) return 1;
+    if(tva->tv_usec < tvb->tv_usec) return -1;
+    if(tva->tv_usec > tvb->tv_usec) return 1;
+    return 0;
+}
+
 
 // FIXME: better error handling here - return NULL and set errno if there are problems
 const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datapoint) {

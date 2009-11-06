@@ -13,6 +13,12 @@
 
 /* Including external dependencies */
 #include "ResourceDatapointsReply.h"
+#include "BDMResourceMetadata.h"
+#include "BDMResourceDatapoints.h"
+#include "BDMNewHab.h"
+#include <PrintableString.h>
+#include "BDMNewNode.h"
+#include "BDMSendState.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
@@ -22,7 +28,14 @@ extern "C" {
 /* Dependencies */
 typedef enum BDM_S2C_Message_PR {
 	BDM_S2C_Message_PR_NOTHING,	/* No components present */
-	BDM_S2C_Message_PR_resourceDatapointsReply
+	BDM_S2C_Message_PR_resourceDatapointsReply,
+	BDM_S2C_Message_PR_resourceMetadata,
+	BDM_S2C_Message_PR_datapointsUpdate,
+	BDM_S2C_Message_PR_newHab,
+	BDM_S2C_Message_PR_lostHab,
+	BDM_S2C_Message_PR_newNode,
+	BDM_S2C_Message_PR_lostNode,
+	BDM_S2C_Message_PR_sendState
 } BDM_S2C_Message_PR;
 
 /* BDM-S2C-Message */
@@ -30,6 +43,13 @@ typedef struct BDM_S2C_Message {
 	BDM_S2C_Message_PR present;
 	union BDM_S2C_Message_u {
 		ResourceDatapointsReply_t	 resourceDatapointsReply;
+		BDMResourceMetadata_t	 resourceMetadata;
+		BDMResourceDatapoints_t	 datapointsUpdate;
+		BDMNewHab_t	 newHab;
+		PrintableString_t	 lostHab;
+		BDMNewNode_t	 newNode;
+		PrintableString_t	 lostNode;
+		BDMSendState_t	 sendState;
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */

@@ -104,22 +104,20 @@ void usage(void) {
 	    "\n"
 	    " -?,--help                          Show this usage information\n"
 	    " -v,--version                       Show the version number\n"
-	    " -E,--entry-start <entryStart>      Timestamp of datapoint entry in this local BDM\n"
-	    "                                    must be equal to or newer than the \"entry start\"\n"
-	    "                                    time (default: infinite past)\n"
-	    " -e,--entry-end <entryEnd>          Timestamp of datapoint entry in this local BDM\n"
-	    "                                    must be equal to or older than the \"entry end\"\n"
-	    "                                    time (default: infinite future)\n"
+	    " -E,--entry-start <entryStart>      Exclude results before this datapoint entry in this\n"
+            "                                    local BDM.\n"
+	    "                                    integer (default: infinite past)\n"
+	    " -e,--entry-end <entryEnd>          Exclude results after this datapoint entry in this\n"
+            "                                    local BDM\n"
+	    "                                    integer (default: infinite future)\n"
 	    " -f,--frequency <seconds>           Query the BDM every N seconds\n"
 	    " -p,--port <Port>                   Port number to connect on the server\n"
 	    " -r,--resources <Resources>         Resource name pattern of resources to retrieve.\n"
 	    "                                    May contain wildcards. (default: \"*.*.*:*\")\n"
 	    " -s,--server <server>               BDM server hostname (default: localhost)\n"
 	    " -T,--datapoint-start <entryStart>  Timestamp of datapoint as reported by the HAB\n"
-	    "                                    must be equal to or newer than the \"entry start\"\n"
 	    "                                    time (default: infinite past)\n"
 	    " -t,--datapoint-end <entryEnd>      Timestamp of datapoint as reported by the HAB\n"
-	    "                                    must be equal to or older than the \"entry end\"\n"
 	    "                                    time (default: infinite future)\n"
 	    "\n"
 	    "note: StartTime and EndTime are given in this format: \"YYYY-MM-DD hh:mm:ss\"\n"
@@ -164,7 +162,7 @@ int main(int argc, char *argv[]) {
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?hvT:t:E:e:p:r:f:", long_options, &i);
+	c = getopt_long(argc, argv, "?hvT:t:E:e:p:r:s:f:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -218,6 +216,14 @@ int main(int argc, char *argv[]) {
 	}
     }
 
+    if (optind < argc ) {
+        printf("Extra unknown arguments:\n");
+        for(; optind<argc; optind++ ) printf("   %s\n", argv[optind]);
+        printf("\n");
+        usage();
+        exit(1);
+    }
+
 
     bdm_fd = bdm_connect(bdm_hostname, bdm_port);
     if (bdm_fd < 0) {
@@ -225,9 +231,9 @@ int main(int argc, char *argv[]) {
     }
 
 restart_poll:
-    hab_list = bdm_get_resource_datapoints(resource_name_pattern, 
-					   pDatapointStart, pDatapointEnd, 
-					   entryStart, entryEnd);
+    hab_list = bdm_get_resource_datapoints(bdm_hostname,
+            resource_name_pattern,
+            pDatapointStart, pDatapointEnd, entryStart, entryEnd);
     if (hab_list == NULL) {
         g_message("error getting resource datapoints");
     } else {

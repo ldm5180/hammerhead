@@ -362,6 +362,10 @@ int cal_client_mdnssd_bip_read(struct timeval * timeout) {
             break;
         }
 
+        case CAL_EVENT_SUBSCRIBE: {
+            break;
+        }
+
         default: {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got unhandled event type %d", event->type);
             return 1;  // dont free events we dont understand
@@ -561,6 +565,57 @@ int cal_client_mdnssd_bip_init_security(const char * dir, int require) {
 } /* cal_client_mdnssd_bip_init_security() */
 
 
+void cal_client_mdnssd_bip_force_discover(const char * peer_name, const char * hostname, int port, int is_secure) {
+    cal_event_t *event;
+    int r;
+
+    if (cal_client_mdnssd_bip_thread == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "force_discover: called before init()!");
+        return;
+    }
+
+    if (!cal_peer_name_is_valid(peer_name)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "force_discover: called with invalid peer_name!");
+        return;
+    }
+    
+    event = cal_event_new(CAL_EVENT_FORCE_DISCOVER);
+    if (event == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "force_discover: out of memory");
+        return;
+    }
+
+    event->peer_name = strdup(peer_name);
+    if (event->peer_name == NULL) {
+        cal_event_free(event);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "force_discover: out of memory");
+        return;
+    }
+
+    event->force_discover.hostname = strdup(hostname);
+    event->force_discover.port = port;
+    event->is_secure = is_secure;
+
+    r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    if (r < 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "force_discover: error writing to client thread: %s", strerror(errno));
+        cal_event_free(event);
+        return;
+    }
+    if (r < sizeof(event)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "force_discover: short write to client thread!!");
+        cal_event_free(event);
+        return;
+    }
+
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
+    return;
+
+
+}
+
 
 cal_client_t cal_client = {
     .callback = NULL,
@@ -575,6 +630,8 @@ cal_client_t cal_client = {
 
     .sendto = cal_client_mdnssd_bip_sendto,
 
-    .init_security = cal_client_mdnssd_bip_init_security
+    .init_security = cal_client_mdnssd_bip_init_security,
+
+    .force_discover = cal_client_mdnssd_bip_force_discover
 };
 
