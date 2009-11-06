@@ -36,6 +36,8 @@ int libbdm_cal_fd = -1;
 int bdm_fd = -1;
 
 GSList *libbdm_bdms = NULL;
+GHashTable *libbdm_all_peers = NULL;
+GSList *libbdm_habs = NULL;
 
 GSList *libbdm_bdm_subscriptions = NULL;
 GSList *libbdm_hab_subscriptions = NULL;

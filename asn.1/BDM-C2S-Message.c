@@ -22,7 +22,7 @@ static asn_TYPE_member_t asn_MBR_BDM_C2S_Message_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct BDM_C2S_Message, choice.sendState),
 		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
+		&asn_DEF_BDMSendState,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
@@ -30,8 +30,8 @@ static asn_TYPE_member_t asn_MBR_BDM_C2S_Message_1[] = {
 		},
 };
 static asn_TYPE_tag2member_t asn_MAP_BDM_C2S_Message_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* resourceDatapointsQuery at 215 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* sendState at 220 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* resourceDatapointsQuery at 235 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* sendState at 240 */
 };
 static asn_CHOICE_specifics_t asn_SPC_BDM_C2S_Message_specs_1 = {
 	sizeof(struct BDM_C2S_Message),

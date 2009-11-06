@@ -42,26 +42,19 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray * bdm_list)
 
     for (bi = 0; bi < bdm_list->len; bi++) {
 	int hi;
-	bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
+	bionet_bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
 	if (NULL == bdm) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to get BDM %d from BDM list", bi);
 	    goto cleanup;
 	}
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-              "       BDM %s", bdm->bdm_id);
+              "       BDM %s", bionet_bdm_get_id(bdm));
 
-	GPtrArray * hab_list = bdm->hab_list;
-	if (NULL == hab_list) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "sync_send_metadata(): Failed to get HAB list from array of BDMs");
-	    goto cleanup;
-	}
-
-	for (hi = 0; hi < hab_list->len; hi++) {
+	for (hi = 0; hi < bionet_bdm_get_num_habs(bdm); hi++) {
 	    int ni;
 	    HardwareAbstractor_t * asn_hab;
-	    bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);
+	    bionet_hab_t * hab = bionet_bdm_get_hab_by_index(bdm, hi);
 	    if (NULL == hab) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		      "sync_send_metadata(): Failed to get HAB %d from array of HABs", hi);
@@ -216,17 +209,10 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray * bdm_list)
     //create a sync record for each BDM
     for (bi = 0; bi < bdm_list->len; bi++) {
 	int hi;
-	bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
+	bionet_bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
 	if (NULL == bdm) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to get BDM %d from BDM list", bi);
-	    goto cleanup;
-	}
-
-	GPtrArray * hab_list = bdm->hab_list;
-	if (NULL == hab_list) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "sync_send_metadata(): Failed to get HAB list from array of BDMs");
 	    goto cleanup;
 	}
 
@@ -244,7 +230,7 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray * bdm_list)
     
     
 	//add BDM-ID to BDM Sync Record, not just a NULL
-	r = OCTET_STRING_fromString(&sync_record->bdmID, bdm->bdm_id);
+	r = OCTET_STRING_fromString(&sync_record->bdmID, bionet_bdm_get_id(bdm));
 	if (r != 0) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "sync_send_datapoints(): Failed to set BDM ID");
@@ -252,9 +238,9 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray * bdm_list)
     
     
 	//walk list of habs
-	for (hi = 0; hi < hab_list->len; hi++) {
+	for (hi = 0; hi < bionet_bdm_get_num_habs(bdm); hi++) {
 	    int ni;
-	    bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);
+	    bionet_hab_t * hab = bionet_bdm_get_hab_by_index(bdm, hi);
 	    if (NULL == hab) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		      "Failed to get HAB %d from array of HABs", hi);
@@ -322,11 +308,11 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray * bdm_list)
 			    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 				  "send_sync_datapoints(): error adding Datapoint to Resource: %m");
 			}
-		    } //for (di = 0; di < bionet_resource_get_num_datapoints(resource); di++) 
-		} //for (ri = 0; ri < bionet_node_get_num_resources(node); ri++)
-	    } //for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++)
-	} //for (hi = 0; hi < hab_list->len; hi++)
-    } //for (bi = 0; bi < bdm_list->len; bi++)
+		    } //for each datapoint
+		} //for each resource
+	    } //for each node
+	} //for each hab
+    } //for each bdm
 
     if (bi) {
         return sync_message;

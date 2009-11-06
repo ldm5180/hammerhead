@@ -8,6 +8,7 @@
 
 #include "bdm-client.h"
 #include "cal-client.h"
+#include "bdm-util.h"
 #include "internal.h"
 
 extern libbdm_datapoint_query_response_t * _libbdm_query_response;
@@ -44,7 +45,9 @@ extern int libbdm_cal_fd;
 
 
 
+extern GHashTable *libbdm_all_peers; // All peers reported by CAL
 extern GSList *libbdm_bdms;
+extern GSList *libbdm_habs;
 
 typedef struct {
     char *bdm_id;
@@ -55,23 +58,32 @@ typedef struct {
 //
 
 typedef struct {
+    char *bdm_id;
     char *hab_type;
     char *hab_id;
+    struct timeval *timestamp_start;
+    struct timeval *timeval_end;
 } libbdm_hab_subscription_t;
 
 
 typedef struct {
+    char *bdm_id;
     char *hab_type;
     char *hab_id;
     char *node_id;
+    struct timeval *timestamp_start;
+    struct timeval *timeval_end;
 } libbdm_node_subscription_t;
 
 
 typedef struct {
+    char *bdm_id;
     char *hab_type;
     char *hab_id;
     char *node_id;
     char *resource_id;
+    struct timeval *timestamp_start;
+    struct timeval *timeval_end;
 } libbdm_datapoint_subscription_t;
 
 extern GSList *libbdm_bdm_subscriptions;

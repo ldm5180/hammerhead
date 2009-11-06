@@ -42,7 +42,7 @@ static int bionet_bdm_set_id(bionet_bdm_t *bdm, const char *id) {
     }
 
     if ((id != NULL) && !bionet_is_valid_name_component(id)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_bdm_set_id(): invalid BDM-ID passed in!");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_bdm_set_id(): invalid BDM-ID passed in (%s)", id);
         return -1;
     }
 
@@ -104,6 +104,8 @@ bionet_bdm_t* bionet_bdm_new(const char* id) {
         bionet_bdm_free(bdm);
         return NULL;
     }
+
+    bdm->curr_seq = -1;
 
     return bdm;
 }

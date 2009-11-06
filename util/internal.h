@@ -16,11 +16,12 @@ struct bionet_bdm_opaque_t {
 
     GSList *habs;
 
+    long curr_seq;
+
     const void *user_data;
 };
 
 struct bionet_hab_opaque_t {
-    bionet_bdm_t *bdm; // NULL unless in bdm library
     char *type;
     char *id;
 
@@ -31,6 +32,8 @@ struct bionet_hab_opaque_t {
     const void *user_data;
 
     int is_secure;
+
+    GSList *bdms; // NULL unless in bdm library
 };
 
 

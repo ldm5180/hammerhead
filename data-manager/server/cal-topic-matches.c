@@ -10,6 +10,8 @@
 
 
 int libbdm_cal_topic_matches(const char *topic, const char *subscription) {
+    int r;
+    int matches = 0;
 
     //
     // There are four kinds of subscriptions: hab subscriptions, node subscriptions, stream
@@ -106,24 +108,51 @@ int libbdm_cal_topic_matches(const char *topic, const char *subscription) {
         if (!bionet_name_component_matches(topic_node_id, sub_node_id)) return -1;
         if (!bionet_name_component_matches(topic_resource_id, sub_resource_id)) return -1;
 
-        /*
-        if(sub_off) {
+        if(sub_off && topic_off) {
             GHashTable * topic_params = NULL;
             GHashTable * sub_params = NULL;
+            
+            struct timeval tv_start, tv_stop, tv_max, tv_min;
+            struct timeval *tsStart = NULL;
+            struct timeval *tsStop = NULL;
+            struct timeval *tsMax = NULL;
+            struct timeval *tsMin = NULL;
 
-            r = parse_topic_params(subscription + 2 + sub_off, &params);
+            // TODO: The parsing of the subscription should happen once, and the results 
+            // attached to the subscription structure... Same with the topic...
+            r = bionet_parse_topic_params(subscription + 2 + sub_off, &topic_params);
             if (r != 0) return -1;
+            if( 0 == bionet_param_to_timeval(topic_params, "tsmin", &tv_min) 
+            &&  0 == bionet_param_to_timeval(topic_params, "tsmax", &tv_max) ) {
+                tsMin = &tv_min;
+                tsMax = &tv_max;
 
-            r = parse_topic_params(topic + 2 + topic_off, &params);
-            if (r != 0) return -1;
+                r = bionet_parse_topic_params(topic + 2 + topic_off, &sub_params);
+                if (r != 0) g_hash_table_destroy(topic_params); return -1;
+
+                if( 0 == bionet_param_to_timeval(sub_params, "dpstart", &tv_start) ) {
+                        tsStart = &tv_start;
+                }
+                if( 0 == bionet_param_to_timeval(sub_params, "dpend", &tv_stop) ) {
+                        tsStop = &tv_stop;
+                }
+
+                if ( tsStart && bionet_timeval_compare(tsMax, tsStart) < 0 ) {
+                    matches = -1;
+                }
+                if ( tsStop && bionet_timeval_compare(tsMin, tsStop) >= 0 ) {
+                    matches = -1;
+                }
+
+                g_hash_table_destroy(sub_params);
+            }
+
+
+            g_hash_table_destroy(topic_params);
 
         }
-        */
 
-
-
-
-        return 0;
+        return matches;
     }
 
 

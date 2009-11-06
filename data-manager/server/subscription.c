@@ -3,13 +3,44 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
-#include "bionet-data-manager.h"
-#include "subscription.h"
-#include <glib.h>
+#include "config.h"
 
-bdm_peer_states_t * bdm_subscriptions_new() {
+#include <glib.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "bdm-util.h"
+#include "subscription.h"
+
+bdm_peer_states_t * bdm_subscriptions_new(void) {
     return (bdm_peer_states_t*)g_hash_table_new_full(
-            NULL, NULL, free, (GDestroyNotify)g_hash_table_destroy);
+            g_str_hash, g_str_equal, free, (GDestroyNotify)g_hash_table_destroy);
+}
+
+int bdm_subscriptions_add(
+        bdm_peer_states_t *tbl,
+        const char * peer_name,
+        const char * topic,
+        bdm_subscription_t * sub)
+{
+    if ( tbl == NULL ) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: NULL param passed in!", __FUNCTION__);
+        return -1;
+    }
+
+    GHashTable * peer = (GHashTable*)g_hash_table_lookup(tbl, peer_name); 
+    if(peer == NULL) {
+        peer = g_hash_table_new_full(g_str_hash, g_str_equal, free, free);
+        if (NULL == peer) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: Out of memory!", __FUNCTION__);
+            return -1;
+        }
+        g_hash_table_insert(tbl, strdup(peer_name), peer); 
+    }
+
+    g_hash_table_insert(peer, strdup(topic), sub); 
+
+    return 0;
 }
 
 int bdm_subscriptions_add_request(
@@ -19,13 +50,19 @@ int bdm_subscriptions_add_request(
 {
 
     bdm_subscription_t * sub;
+
+    if ( tbl == NULL ) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: NULL param passed in!", __FUNCTION__);
+        return -1;
+    }
+
     GHashTable * peer = (GHashTable*)g_hash_table_lookup(tbl, peer_name); 
     if(peer) {
         sub = (bdm_subscription_t*)g_hash_table_lookup(peer, topic); 
     } else {
-        peer = g_hash_table_new_full(NULL, NULL, free, free);
+        peer = g_hash_table_new_full(g_str_hash, g_str_equal, free, free);
         if (NULL == peer) {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: Out of memory!", __FUNCTION__);
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: Out of memory!", __FUNCTION__);
             return -1;
         }
         g_hash_table_insert(tbl, strdup(peer_name), peer); 
@@ -40,7 +77,7 @@ int bdm_subscriptions_add_request(
 
     sub = malloc(sizeof(bdm_subscription_t));
     if (NULL == sub) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: Out of memory!", __FUNCTION__);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: Out of memory!", __FUNCTION__);
         return -1;
     }
 
@@ -67,6 +104,13 @@ bdm_subscription_t * bdm_subscriptions_get(
         const char * topic)
 {
     bdm_subscription_t * sub;
+
+
+    if ( tbl == NULL ) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: NULL param passed in!", __FUNCTION__);
+        return NULL;
+    }
+
     GHashTable * peer = (GHashTable*)g_hash_table_lookup(tbl, peer_name); 
     if( NULL == peer) {
         return NULL;

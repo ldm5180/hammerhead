@@ -9,7 +9,7 @@ include $(top_srcdir)/common.am
 SUBDIRS = libbdm
 
 if ENABLE_CLIENTS
-SUBDIRS += bdm-client
+SUBDIRS += bdm-client bdm-watcher
 endif
 
 if ENABLE_PYTHON

@@ -164,10 +164,10 @@ static const char *libbdm_get_id(void) {
 
 static int libbdm_cal_peer_matches(const char *peer_name, const char *pattern) {
 
-    if (strcmp(pattern, "*") == 0) return 1;
-    if (strcmp(pattern, peer_name) == 0) return 1;
+    if (strcmp(pattern, "*") == 0) return 0;
+    if (strcmp(pattern, peer_name) == 0) return 0;
 
-    return 0;
+    return 1;
 }
 
 
@@ -185,67 +185,17 @@ int bdm_start(void) {
 
 
     //
-    // If we get here we need to actually open the connection.
+    // If we get here we need to actually open the connection, and do one-time init
     //
 
+    libbdm_all_peers = g_hash_table_new_full(g_str_hash, g_str_equal, free, NULL);
 
-    libbdm_cal_fd = cal_client.init("bdm", libbdm_cal_callback, libbdm_cal_peer_matches);
+
+    libbdm_cal_fd = cal_client.init("bionet-db", libbdm_cal_callback, libbdm_cal_peer_matches);
     if (libbdm_cal_fd == -1) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect(): error initializing CAL");
         return -1;
     }
-
-
-#if 0
-
-    //
-    // Send our ident string to the server, it's useful for keeping
-    // statistics and for debugging.
-    //
-    // If the client app did not specifically set the ID by calling
-    // bdm_set_id(), we use the default: "user@host:port (program [pid])"
-    //
-
-    if (libbdm_client_id != NULL) {
-        bdm_message_t m;
-        m.type = Bionet_Message_C2N_Set_ID;
-        m.body.c2n_set_id.id = libbdm_client_id;
-        r = bdm_nxio_send_message(libbdm_nag_nxio, &m);
-
-    } else {
-	bdm_message_t m;
-        char *id;
-
-        id = (char *)libbdm_get_id();
-        if (id == NULL) {
-            // the _get_id() function will have logged an error
-            libbdm_kill_nag_connection();
-            return -1;
-        }
-
-        m.type = Bionet_Message_C2N_Set_ID;
-        m.body.c2n_set_id.id = (char *)libbdm_get_id();
-        r = bdm_nxio_send_message(libbdm_nag_nxio, &m);
-    }
-
-    // r is from the bdm_nxio_send_message()
-    if (r < 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect_to_nag(): error sending ident string");
-        libbdm_kill_nag_connection();
-        return -1;
-    }
-
-    r = libbdm_read_ok_from_nag();
-    if (r < 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect_to_nag(): error setting id: %s", bdm_get_nag_error());
-        libbdm_kill_nag_connection();
-        return -1;
-    }
-
-
-    libbdm_clear_cache();
-#endif
-
 
     return libbdm_cal_fd;
 }

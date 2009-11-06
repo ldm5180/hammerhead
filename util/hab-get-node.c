@@ -47,7 +47,7 @@ int bionet_hab_get_num_nodes(const bionet_hab_t *hab) {
 }
 
 
-bionet_node_t *bionet_hab_get_node_by_index(bionet_hab_t *hab, unsigned int index) {
+bionet_node_t *bionet_hab_get_node_by_index(const bionet_hab_t *hab, unsigned int index) {
     if (hab == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_get_node_by_index(): NULL HAB passed in");
         return NULL;

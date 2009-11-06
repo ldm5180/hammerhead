@@ -15,6 +15,7 @@
 #include <PrintableString.h>
 #include "ResourceFlavor.h"
 #include "ResourceDataType.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -30,6 +31,7 @@ typedef struct BDMResourceMetadata {
 	PrintableString_t	 resourceId;
 	ResourceFlavor_t	 flavor;
 	ResourceDataType_t	 datatype;
+	long	 entrySeq;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

@@ -38,12 +38,11 @@ static sqlite3_stmt * set_last_sync_bdm_stmt_metadata = NULL;
 static sqlite3_stmt * set_last_sync_bdm_stmt_datapoints = NULL;
 
 extern char * database_file;
-char bdm_id[256] = { 0 };
 
 static int _datapoint_bionet_to_bdm(
     bionet_datapoint_t * datapoint,
     bdm_datapoint_t *dp,
-    char * bdm_id) 
+    const char * bdm_id) 
 {
 
     bionet_resource_data_type_t type;
@@ -792,7 +791,7 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
         bionet_resource_get_flavor(resource),
         resource_key);
 
-    r = _datapoint_bionet_to_bdm(datapoint, &dp, bdm_id);
+    r = _datapoint_bionet_to_bdm(datapoint, &dp, bionet_bdm_get_id(this_bdm));
     if (r != 0) goto fail;
 
     r = add_datapoint_to_db(db, resource_key, &dp); 
@@ -802,6 +801,9 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     // it all worked, commit it to the DB
     r = do_commit(db);
     if (r != 0) goto fail;
+
+    bdm_report_datapoint(this_bdm, resource, datapoint, entry_seq);
+
 
     return 0;
 
@@ -907,7 +909,7 @@ int db_add_node(sqlite3* db, bionet_node_t *node) {
                 bionet_resource_get_flavor(resource),
                 resource_key);
 
-            r = _datapoint_bionet_to_bdm(d, &dp, bdm_id);
+            r = _datapoint_bionet_to_bdm(d, &dp, bionet_bdm_get_id(this_bdm));
             if (r != 0) goto fail;
 
             r = add_datapoint_to_db(db, resource_key, &dp);
@@ -919,6 +921,8 @@ int db_add_node(sqlite3* db, bionet_node_t *node) {
     // it all worked, commit it to the DB
     r = do_commit(db);
     if (r != 0) goto fail;
+
+    bdm_report_new_node(this_bdm, node, entry_seq);
 
     return 0;
 
@@ -957,36 +961,29 @@ int db_add_hab(sqlite3* db, bionet_hab_t *hab) {
         return -1;
     }
 
+    bdm_report_new_hab(this_bdm, hab, entry_seq);
+
     return 0;
 }
 
 
 void bdm_list_free(GPtrArray *bdm_list) {
-    int b, h;
+    int b;
     for (b = 0; b < bdm_list->len; b++) {
-        bdm_t * bdm = g_ptr_array_index(bdm_list, b);
-
-        for (h = 0; h < bdm->hab_list->len; h++) {
-            bionet_hab_t * hab = g_ptr_array_index(bdm->hab_list, h);
-
-            bionet_hab_free(hab);
-        }
-
-        free(bdm->bdm_id);
-        g_ptr_array_free(bdm->hab_list, TRUE);
-        free(bdm);
+        bionet_bdm_t * bdm = g_ptr_array_index(bdm_list, b);
+        bionet_bdm_free(bdm);
     }
-    g_ptr_array_free(bdm_list, TRUE);
 
+    g_ptr_array_free(bdm_list, TRUE);
 }
 
-static bdm_t *find_bdm(GPtrArray *bdm_list, const char *bdm_id) {
+static bionet_bdm_t *find_bdm(GPtrArray *bdm_list, const char *bdm_id) {
     int i;
-    bdm_t *bdm;
+    bionet_bdm_t *bdm;
 
     for (i = 0; i < bdm_list->len; i ++) {
         bdm = g_ptr_array_index(bdm_list, i);
-	if ( strcmp(bdm->bdm_id, bdm_id) == 0) {
+	if ( strcmp(bionet_bdm_get_id(bdm), bdm_id) == 0) {
             return bdm;
         }
     }
@@ -995,30 +992,20 @@ static bdm_t *find_bdm(GPtrArray *bdm_list, const char *bdm_id) {
     // the requested bdm is not in the list, so add it
     //
 
-    bdm = malloc(sizeof(bdm_t));
+    bdm = bionet_bdm_new(bdm_id);
     if (bdm == NULL) return NULL;
-    bdm->hab_list = g_ptr_array_new();
-    if (bdm_id) {
-	bdm->bdm_id = strdup(bdm_id);
-    } else {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "find_hab(): BDM has no ID");
-    } 
+
     g_ptr_array_add(bdm_list, bdm);
     return bdm;
 }
 
-static bionet_hab_t *find_hab(bdm_t * bdm, const char *hab_type, const char *hab_id) {
-    int i;
+static bionet_hab_t *find_hab(bionet_bdm_t * bdm, const char *hab_type, const char *hab_id) {
     bionet_hab_t *hab;
-    GPtrArray * hab_list = bdm->hab_list;
 
-    for (i = 0; i < hab_list->len; i ++) {
-        hab = g_ptr_array_index(hab_list, i);
-        if ((strcmp(bionet_hab_get_type(hab), hab_type) == 0) 
-	    && (strcmp(bionet_hab_get_id(hab), hab_id) == 0)) {
-            return hab;
-        }
+    hab = bionet_bdm_get_hab_by_type_id(bdm, hab_type, hab_id);
+
+    if ( hab ) {
+        return hab;
     }
 
     //
@@ -1028,7 +1015,7 @@ static bionet_hab_t *find_hab(bdm_t * bdm, const char *hab_type, const char *hab
     hab = bionet_hab_new(hab_type, hab_id);
     if (hab == NULL) return NULL;
 
-    g_ptr_array_add(hab_list, hab);
+    bionet_bdm_add_hab(bdm, hab);
     return hab;
 }
 
@@ -1107,7 +1094,7 @@ static int _add_to_bdm_list(
     timestamp.tv_usec        =               sqlite3_column_int (stmt, 8);
     const char * bdm_id      = (const char *)sqlite3_column_text(stmt, 9); 
     
-    bdm_t * bdm = find_bdm(bdm_list, bdm_id);
+    bionet_bdm_t * bdm = find_bdm(bdm_list, bdm_id);
     if (bdm == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding bdm %s", 
             bdm_id);

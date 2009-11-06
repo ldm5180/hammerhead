@@ -15,6 +15,7 @@
 
 #include <glib.h>
 
+#include "bionet-util.h"
 
 
 
@@ -25,6 +26,7 @@
 
 #define  BDM_LOG_DOMAIN  "bdm"
 
+#define BDM_TOPIC_MAX_LEN (4*BIONET_NAME_COMPONENT_MAX_LEN + 4)
 
 
 

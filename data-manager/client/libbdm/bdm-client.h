@@ -90,6 +90,12 @@ void bdm_add_server(char *hostname, uint16_t port);
  */
 int bdm_connect(char *hostname, uint16_t port); 
 
+/**
+ * @brief Checks to see if Bionet BDM library is connected to Bionet BDM network
+ *
+ * @retval TRUO (non-zero) - the library is connected
+ * @retval FALSE (0) - the library is not connected
+ */
 int bdm_is_connected(void);
 
 /**
@@ -110,13 +116,6 @@ int bdm_is_connected(void);
  * select() or poll() on the fd.
  */
 int bdm_start(void);
-
-/**
- * @brief Checks to see if Bionet BDM library is connected to Bionet BDM network
- *
- * @retval TRUO (non-zero) - the library is connected
- * @retval FALSE (0) - the library is not connected
- */
 
 /**
  * @brief Disconnect from the bionet BDM network and free all resources
@@ -313,6 +312,21 @@ void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *da
  * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
 void bdm_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, void *buffer, int size, void* usr_data), void*usr_data);
+
+
+int bdm_subscribe_bdm_list_by_name(const char * bdm_name);
+int bdm_subscribe_hab_list_by_name(const char * hab_name);
+int bdm_subscribe_node_list_by_name(const char * node_name);
+int bdm_subscribe_datapoints_by_name(const char * resource_name);
+
+int bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
+        const char *bdm_id,
+        const char *hab_type,
+        const char *hab_id,
+        const char *node_id,
+        const char *resource_id,
+        struct timeval *datapoint_start,
+        struct timeval *datapoint_end) ;
 
 
 /**

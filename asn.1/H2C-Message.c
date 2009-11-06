@@ -57,11 +57,11 @@ static asn_TYPE_member_t asn_MBR_H2C_Message_1[] = {
 		},
 };
 static asn_TYPE_tag2member_t asn_MAP_H2C_Message_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* newNode at 203 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* lostNode at 204 */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* resourceMetadata at 205 */
-    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* datapointsUpdate at 206 */
-    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 } /* streamData at 208 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* newNode at 219 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* lostNode at 220 */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* resourceMetadata at 221 */
+    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* datapointsUpdate at 222 */
+    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 } /* streamData at 224 */
 };
 static asn_CHOICE_specifics_t asn_SPC_H2C_Message_specs_1 = {
 	sizeof(struct H2C_Message),

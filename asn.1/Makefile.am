@@ -29,6 +29,8 @@ ASN_MODULE_SOURCES =              \
     StreamData.c                  \
     C2H-Message.c                 \
     H2C-Message.c                 \
+    BDMNewHab.c                   \
+    BDMNewNode.c                  \
     BDM-C2S-Message.c             \
     BDM-S2C-Message.c             \
     BDM-Sync-Metadata-Message.c   \
@@ -37,6 +39,7 @@ ASN_MODULE_SOURCES =              \
     BDMResourceMetadata.c         \
     BDMResourceDatapoints.c       \
     BDMRecord.c                   \
+    BDMSendState.c                \
     BDMSyncRecord.c               \
     ResourceRecord.c              \
     BDM-Sync-Message.c            
@@ -60,12 +63,15 @@ ASN_MODULE_HEADS =                \
     StreamData.h                  \
     C2H-Message.h                 \
     H2C-Message.h                 \
+    BDMNewHab.h                   \
+    BDMNewNode.h                  \
     BDM-C2S-Message.h             \
     BDM-S2C-Message.h             \
     BDM-Sync-Metadata-Message.h   \
     BDM-Sync-Datapoints-Message.h \
     BDM-Sync-Ack.h                \
     BDMRecord.h                   \
+    BDMSendState.h                \
     BDMSyncRecord.h               \
     ResourceRecord.h              \
     BDMResourceMetadata.h         \

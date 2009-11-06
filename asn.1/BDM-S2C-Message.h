@@ -15,8 +15,10 @@
 #include "ResourceDatapointsReply.h"
 #include "BDMResourceMetadata.h"
 #include "BDMResourceDatapoints.h"
-#include "Node.h"
+#include "BDMNewHab.h"
 #include <PrintableString.h>
+#include "BDMNewNode.h"
+#include "BDMSendState.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
@@ -32,7 +34,8 @@ typedef enum BDM_S2C_Message_PR {
 	BDM_S2C_Message_PR_newHab,
 	BDM_S2C_Message_PR_lostHab,
 	BDM_S2C_Message_PR_newNode,
-	BDM_S2C_Message_PR_lostNode
+	BDM_S2C_Message_PR_lostNode,
+	BDM_S2C_Message_PR_sendState
 } BDM_S2C_Message_PR;
 
 /* BDM-S2C-Message */
@@ -42,10 +45,11 @@ typedef struct BDM_S2C_Message {
 		ResourceDatapointsReply_t	 resourceDatapointsReply;
 		BDMResourceMetadata_t	 resourceMetadata;
 		BDMResourceDatapoints_t	 datapointsUpdate;
-		Node_t	 newHab;
+		BDMNewHab_t	 newHab;
 		PrintableString_t	 lostHab;
-		Node_t	 newNode;
+		BDMNewNode_t	 newNode;
 		PrintableString_t	 lostNode;
+		BDMSendState_t	 sendState;
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */

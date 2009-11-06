@@ -21,7 +21,6 @@ libbionet_data_manager_la_SOURCES =      \
     bionet-io.c                       \
     db.c                              \
     bdm-asn.c                         \
-    subscription.c                    \
     cal-callback.c                    \
     cal-topic-matches.c               \
     client-connecting-handler.c       \
@@ -31,11 +30,13 @@ libbionet_data_manager_la_SOURCES =      \
     make-listening-socket.c           \
     make-shutdowns-clean.c            \
     keepalive.c                       \
+    subscription.c                    \
     sync-send.c                       \
     sync-receive-connecting-handler.c \
     sync-receive-readable-handler.c   \
     sync-receive-ion.c                \
     sync-record-asn.c                 \
+    publish.c                         \
     handle-sync-datapoints-message.c  \
     handle-sync-metadata-message.c    \
     cfg-parser.y                      \

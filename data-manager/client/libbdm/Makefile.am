@@ -12,11 +12,22 @@ include_HEADERS = bdm-client.h
 
 libbdm_la_SOURCES =             \
     read.c                      \
+    cache-cleanup.c             \
+    cache-internal.c            \
+    cache-get-bdm.c             \
+    cache-get-hab.c             \
     cache-lookup-bdm.c          \
+    cache-lookup-hab.c          \
+    cache-lookup-node.c         \
+    cache-lookup-resource.c     \
     cal-callback.c              \
     connect.c                   \
     disconnect.c                \
     get-resource-datapoints.c   \
+    subscribe-bdm-list.c        \
+    subscribe-hab-list.c        \
+    subscribe-node-list.c       \
+    subscribe-datapoints.c      \
     global.c                    \
     register-callback.c 
 

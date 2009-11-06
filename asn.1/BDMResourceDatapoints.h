@@ -13,6 +13,7 @@
 
 /* Including external dependencies */
 #include <PrintableString.h>
+#include <NativeInteger.h>
 #include <asn_SEQUENCE_OF.h>
 #include <constr_SEQUENCE_OF.h>
 #include <constr_SEQUENCE.h>
@@ -37,6 +38,7 @@ typedef struct BDMResourceDatapoints {
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
 	} newDatapointsBDM;
+	long	 entrySeq;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

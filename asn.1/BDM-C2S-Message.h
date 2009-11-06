@@ -13,7 +13,7 @@
 
 /* Including external dependencies */
 #include "ResourceDatapointsQuery.h"
-#include <NativeInteger.h>
+#include "BDMSendState.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
@@ -32,7 +32,7 @@ typedef struct BDM_C2S_Message {
 	BDM_C2S_Message_PR present;
 	union BDM_C2S_Message_u {
 		ResourceDatapointsQuery_t	 resourceDatapointsQuery;
-		long	 sendState;
+		BDMSendState_t	 sendState;
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */

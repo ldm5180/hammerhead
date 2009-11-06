@@ -117,7 +117,7 @@ int bionet_hab_get_num_nodes(const bionet_hab_t *hab);
  * @retval NULL Invalid HAB pointer or index is greater than number of nodes
  * @retval Valid node pointer on success
  */
-bionet_node_t *bionet_hab_get_node_by_index(bionet_hab_t *hab, 
+bionet_node_t *bionet_hab_get_node_by_index(const bionet_hab_t *hab, 
 					    unsigned int index);
 
 
@@ -232,6 +232,87 @@ int bionet_hab_is_secure(const bionet_hab_t *hab);
  * @note This function is used exclusively by the Bionet Client library.
  */
 void bionet_hab_set_secure(bionet_hab_t *hab, int is_secure);
+
+/**
+ * @brief Get pointer to a bdm of a HAB by its ID
+ *
+ * @param[in] hab Pointer to a HAB
+ * @param[in] bdm_id ID of the bdm requested 
+ *
+ * @retval Valid bdm pointer on success
+ * @retval NULL if bdm with that ID does not exist
+ */
+bionet_bdm_t *bionet_hab_get_bdm_by_id(bionet_hab_t *hab, 
+					 const char *bdm_id);
+
+
+/**
+ * @brief Get the number of bdms in the HAB
+ * 
+ * @param[in] hab Pointer to a HAB
+ * 
+ * @retval -1 Invalid HAB pointer
+ * @retval Number of bdms in the HAB on success
+ */
+int bionet_hab_get_num_bdms(const bionet_hab_t *hab);
+
+
+/**
+ * @brief Get a bdm by its index in the HABs list
+ * 
+ * Useful for iterating over all the bdms in a HAB
+ *
+ * @param[in] hab Pointer to a HAB
+ * @param[in] index Index of the bdm desired
+ *
+ * @retval NULL Invalid HAB pointer or index is greater than number of bdms
+ * @retval Valid bdm pointer on success
+ */
+bionet_bdm_t *bionet_hab_get_bdm_by_index(bionet_hab_t *hab, 
+					    unsigned int index);
+
+
+/**
+ * @brief Add a bdm to the HAB
+ *
+ * @param[in] hab Pointer to a HAB
+ * @param[in] bdm Pointer to a bdm
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ *
+ * @Note The BDM memory is not managed by the hab. The hab only tracks BDMs
+ * for cross-linking purposes
+ */
+int bionet_hab_add_bdm(bionet_hab_t *hab, const bionet_bdm_t *bdm);
+
+
+/**
+ * @brief Remove a specific bdm from a HAB
+ * 
+ * @param[in] hab Pointer to a HAB
+ * @param[in] bdm_id ID of bdm to remove
+ *
+ * @return 0 Success
+ * @return -1 Failure
+ *
+ * @note BDM is not free'd. The memory is mananged in the cache
+ */
+bionet_bdm_t * bionet_hab_remove_bdm_by_id(bionet_hab_t *hab, const char *bdm_id);
+
+
+/**
+ * @brief Remove all bdms from a HAB
+ *
+ * @param[in] hab Pointer to a HAB
+ *
+ * @return 0 Success
+ * @return -1 Failure
+ *
+ * @note The BDMs are not freed. The memory is still owed by the cache
+ */
+int bionet_hab_remove_all_bdms(bionet_hab_t *hab);
+
 
 
 #endif //  BIONET_HAB_H

@@ -26,7 +26,7 @@ static int libbdm_find_bdm_by_bdmid(const void *vp_bdm, const void *vp_target) {
 bionet_bdm_t *bdm_cache_lookup_bdm(const char *bdm_id) {
     GSList *p;
 
-    const char * target;
+    const void * target;
 
 
     if (bdm_id == NULL) {
@@ -36,7 +36,7 @@ bionet_bdm_t *bdm_cache_lookup_bdm(const char *bdm_id) {
 
     target = bdm_id;
 
-    p = g_slist_find_custom(libbdm_bdms, &target, libbdm_find_bdm_by_bdmid);
+    p = g_slist_find_custom(libbdm_bdms, target, libbdm_find_bdm_by_bdmid);
     if (p == NULL) {
         return NULL;
     }

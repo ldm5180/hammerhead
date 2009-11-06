@@ -100,21 +100,25 @@ void libbdm_handle_resourceDatapointsQuery(
     // debuggingly print out what we got
     for (bi = 0; bi < bdm_list->len; bi++) {
         int hi;
-	bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
-	GPtrArray * hab_list = bdm->hab_list;
+	bionet_bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
 
 	//BDM-BP TODO someday add the BDM ID to the client message
 
         rdpr->lastEntry = entry_end;
 
-        for (hi = 0; hi < hab_list->len; hi ++) {
-            int ni;
+        for (hi = 0; hi < bionet_bdm_get_num_habs(bdm); hi ++) {
             HardwareAbstractor_t *asn_hab;
-            bionet_hab_t *hab = g_ptr_array_index(hab_list, hi);
+            bionet_hab_t *hab = bionet_bdm_get_hab_by_index(bdm, hi);
 
             asn_hab = (HardwareAbstractor_t *)calloc(1, sizeof(HardwareAbstractor_t));
             if (asn_hab == NULL) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): out of memory!", __FUNCTION__);
+                goto cleanup;
+            }
+
+            r = bionet_hab_to_asn(hab, asn_hab);
+            if (r != 0) {
+                free(asn_hab);
                 goto cleanup;
             }
 
@@ -124,95 +128,6 @@ void libbdm_handle_resourceDatapointsQuery(
                 goto cleanup;
             }
 
-            r = OCTET_STRING_fromString(&asn_hab->type, bionet_hab_get_type(hab));
-            if (r != 0) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error making OCTET_STRING for HAB-Type %s", __FUNCTION__, bionet_hab_get_type(hab));
-                goto cleanup;
-            }
-
-            r = OCTET_STRING_fromString(&asn_hab->id, bionet_hab_get_id(hab));
-            if (r != 0) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error making OCTET_STRING for HAB-ID %s", __FUNCTION__, bionet_hab_get_id(hab));
-                goto cleanup;
-            }
-
-            for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
-                int ri;
-                Node_t *asn_node;
-                bionet_node_t *node = bionet_hab_get_node_by_index(hab, ni);
-
-                asn_node = (Node_t *)calloc(1, sizeof(Node_t));
-                if (asn_node == NULL) {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): out of memory!", __FUNCTION__);
-                    goto cleanup;
-                }
-
-                r = asn_sequence_add(&asn_hab->nodes.list, asn_node);
-                if (r != 0) {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error adding Node to ResourceDatapointReply: %s", __FUNCTION__, strerror(errno));
-                    goto cleanup;
-                }
-
-                r = OCTET_STRING_fromString(&asn_node->id, bionet_node_get_id(node));
-                if (r != 0) {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error making OCTET_STRING for Node-ID %s", __FUNCTION__, bionet_node_get_id(node));
-                    goto cleanup;
-                }
-
-                for (ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
-                    int di;
-                    Resource_t *asn_resource;
-                    bionet_resource_t *resource = bionet_node_get_resource_by_index(node, ri);
-
-                    asn_resource = (Resource_t *)calloc(1, sizeof(Resource_t));
-                    if (asn_resource == NULL) {
-                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): out of memory!", __FUNCTION__);
-                        goto cleanup;
-                    }
-
-                    r = asn_sequence_add(&asn_node->resources.list, asn_resource);
-                    if (r != 0) {
-                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error adding Resource to ResourceDatapointReply: %s", __FUNCTION__, strerror(errno));
-                        goto cleanup;
-                    }
-
-                    r = OCTET_STRING_fromString(&asn_resource->id, bionet_resource_get_id(resource));
-                    if (r != 0) {
-                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error making OCTET_STRING for Resource-ID %s", __FUNCTION__, bionet_resource_get_id(resource));
-                        goto cleanup;
-                    }
-
-                    asn_resource->flavor = bionet_flavor_to_asn(bionet_resource_get_flavor(resource));
-                    if (asn_resource->flavor == -1) {
-                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): resource has invalid flavor", __FUNCTION__);
-                        goto cleanup;
-                    }
-
-                    asn_resource->datatype = bionet_datatype_to_asn(bionet_resource_get_data_type(resource));
-                    if (asn_resource->datatype == -1) {
-                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): resource has invalid datatype", __FUNCTION__);
-                        goto cleanup;
-                    }
-
-                    for (di = 0; di < bionet_resource_get_num_datapoints(resource); di ++) {
-                        bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, di);
-                        Datapoint_t *asn_datapoint;
-
-                        asn_datapoint = bionet_datapoint_to_asn(d);
-                        if (asn_datapoint == NULL) {
-                            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): out of memory!", __FUNCTION__);
-                            goto cleanup;
-                        }
-
-                        r = asn_sequence_add(&asn_resource->datapoints.list, asn_datapoint);
-                        if (r != 0) {
-                            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error adding Datapoint to Resource: %s", __FUNCTION__, strerror(errno));
-                            goto cleanup;
-                        }
-
-                    }
-                }
-            }
         }
     }
 

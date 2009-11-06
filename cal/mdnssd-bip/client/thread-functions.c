@@ -352,6 +352,8 @@ static void read_from_user(void) {
                     if (r != 0) {
                         reset_connection(peer);
                     }
+
+                    report_new_subscription(peer, s->topic);
                 }
             }
 

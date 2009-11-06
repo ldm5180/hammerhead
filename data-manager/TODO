@@ -1,9 +1,15 @@
 For "PUB SUB Release":
- - Add datapoint timestamp filters tp cal-tapoic-matches
+ - Test new bdm/hab/node messages
+ - Test datapoint timestamp filters with sub-second resolution
  - Verify the new library is a drop-in replacement for the old BDM (Same ABI)
    I know that the query_resource_datapoints() has changes, to support specifying a hostname.
+ - Verify that duplicate events created by BDM-Sync messages are correctly eliminated, so they only show up once in the client..
 
  - Fix the write blocking issue. I've disabled non-block writes, which causes large queries to fail...
+
+ - Support Unsubscribe (fix cache-cleanup.c)
+ - Is there a race/blocking contiditon where datapoint updates will get overritten by subsequent datapoint updates if the user (db writer) thread is not reading from cal fast enough? Write a "slow processor" test to verify
+   Either way, there may be an optimization to be made were the messages are stacked up by the CAL thread, and then inserted in batches by the DB writer, and published in batches to BDM subscribers....
 
 --------------------------
 

@@ -204,6 +204,130 @@ int bionet_split_resource_name_r(
 
 
 /**
+ * @brief Take a hab name string and split the name up into its components
+ *
+ * Hab name string shall be in the format:
+ *    [<BDM-ID>/]<HAB-type>.<HAB-ID>
+ * 
+ * If the caller passes in NULL for any of the "out" arguments, that part
+ * of the name component will be skipped.
+ *
+ * If BDM-ID/ is not present it defaults to *
+ *
+ * @param[in] resource_name Resource name to split
+ * @param[out] bdm_id BDM-ID from resource name
+ * @param[out] hab_type HAB-type from resource name
+ * @param[out] hab_id HAB-ID from resource name
+ *
+ * @retval N The offest of the Topic Query Parameters, or 0 if none
+ * @retval -1 Failure
+ */
+int bdm_split_hab_name_r(
+        const char * topic,
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1]);
+
+
+/**
+ * @brief Take a node name string and split the name up into its components
+ *
+ * Node name string shall be in the format:
+ *    [<BDM-ID>/]<HAB-type>.<HAB-ID>.<Node-ID>
+ * 
+ * If the caller passes in NULL for any of the "out" arguments, that part
+ * of the name component will be skipped.
+
+ * If BDM-ID/ is not present it defaults to *
+ *
+ * @param[in] resource_name Resource name to split
+ * @param[out] bdm_id BDM-ID from resource name
+ * @param[out] hab_type HAB-type from resource name
+ * @param[out] hab_id HAB-ID from resource name
+ * @param[out] node_id Node-ID from resource name
+ *
+ * @retval N The offest of the Topic Query Parameters, or 0 if none
+ * @retval -1 Failure
+ */
+int bdm_split_node_name_r(
+        const char * topic,
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1]);
+
+/**
+ * @brief Take a resource name string and split the name up into its components
+ *
+ * Resource name string shall be in the format:
+ *    [<BDM-ID>/]<HAB-type>.<HAB-ID>.<Node-ID>:<Resource-ID>[?<Topic Query params>]
+ * 
+ * If the caller passes in NULL for any of the "out" arguments, that part
+ * of the name component will be skipped.
+
+ * If BDM-ID/ is not present it defaults to *
+ *
+ * @param[in] resource_name Resource name to split
+ * @param[out] bdm_id BDM-ID from resource name
+ * @param[out] hab_type HAB-type from resource name
+ * @param[out] hab_id HAB-ID from resource name
+ * @param[out] node_id Node-ID from resource name
+ * @param[out] resource_id Resource-ID from resource name
+ *
+ * @retval N The offest of the Topic Query Parameters, or 0 if none
+ * @retval -1 Failure
+ */
+int bdm_split_resource_name_r(
+        const char * topic,
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+        char resource_id[BIONET_NAME_COMPONENT_MAX_LEN+1]);
+
+/**
+ * @brief Parse out the parameters from the querystring
+ *
+ * Querystring is very close to a URI querystring
+ *
+ * The params are all strings, and can be converted with bionet_param_to_timeval,
+ * bionet_param_to_int, etc...
+ *
+ * @param [in]querystring
+ *   The string that has the parameters encoded
+ *
+ * @param [out]ret_params
+ *   Points to a newly alloceaded GHAshTable containing the parameters decoded
+ *   from the query string
+ *
+ * @retval 0 Parsed successfully, ret_params alloced
+ * @retval -1 Parse error. ret_params not allocated
+ */
+int bionet_parse_topic_params(
+        const char * querystring,
+        GHashTable ** ret_params);
+
+
+/**
+ * @brief Convert the string to a timeval
+ *
+ * Convert the string which was decoded from a topic query string into a timeval struct
+ *
+ * @param params
+ *   Hash table created with bionet_parse_topic_params
+ *
+ * @param key
+ *   The param name to convert
+ *
+ * @param tv
+ *   Points to a timeval struct that will be populated with the result
+ *
+ * @retval -1 THe parameter doesn't exist, or conversion error
+ * @retval 0 The tv struct ahs been populated with the value extracted from the string
+ */
+int bionet_param_to_timeval(GHashTable * params, const char * key, struct timeval * tv);
+
+/**
  * @brief Take a node name string and split the name up into its components
  *
  * Node name string shall be in the format 
@@ -232,6 +356,29 @@ int bionet_split_node_name(
     char **node_id
 );
 
+/**
+ * @brief Take a node name string and split the name up into its components
+ *
+ * Node name string shall be in the format 
+ *    <HAB-type>.<HAB-ID>.<Node-ID>
+ *
+ * If the caller passes in NULL for any of the "out" arguments, that part
+ * of the name component will be skipped.
+ *
+ * @param[in] node_name Node name to split
+ * @param[out] hab_type HAB-type
+ * @param[out] hab_id HAB-ID 
+ * @param[out] node_id Node-ID
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+int bionet_split_node_name_r(
+    const char *node_name,
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1]
+);
 
 /**
  * @brief Take a HAB name string and split the name up into its components

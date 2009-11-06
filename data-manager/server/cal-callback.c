@@ -23,127 +23,86 @@ static void libbdm_process_subscription_request(
         const char *topic,
         bdm_subscription_t *state);
 
-
-#if 0
-static long getLongParam(GHashTable * params, const char * key) {
-    long lval = -1;
-
-    const char * valstr = (const char *)g_hash_table_lookup(params, key);
-
-    if ( valstr ) {
-        char * endptr;
-        lval = strtol(valstr, &endptr, 10);
-        if (*endptr != '\0' ) {
-            // Conversion found bad bytes
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "%s(): Bad param (%s=%s)", __FUNCTION__, 
-                    key, valstr);
-            return -1;
-        }
-    }
-
-    return lval;
-}
-#endif
-
-static int getTimevalParam(GHashTable * params, const char * key, struct timeval * tv) {
-    const char * valstr = (const char *)g_hash_table_lookup(params, key);
-    if ( valstr ) {
-        long lval;
-        char * endptr;
-        lval = strtol(valstr, &endptr, 10);
-        if (*endptr != '\0' ) {
-            // Conversion found bad bytes
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "%s(): Bad param (%s=%s)", __FUNCTION__, 
-                    key, valstr);
-            return -1;
-        }
-        tv->tv_sec = lval;
-        tv->tv_usec = 0;
-        return 0;
-    }
-
-    return -1;
-}
-//
-// Parse out the specific params from the query string.
-//
-// Will find the querystring starting at '?'. 
-// If '?' missing, looks at start of querysting
-//
-// @param ret_params
-//   GHashTable pointer reference that will return a newly allocated GHashTable
-//   on success. This must be destroyed be caller with g_hash_table_destroy()
-//
-// Returns 0 on success, -1 on failure
-//
-static int parse_topic_params(
-        const char * querystring,
-        GHashTable ** ret_params)
+static void libbdm_publishto_each_resource(
+        GPtrArray * bdm_list,
+        int this_seq,
+        const char * peer_name,
+        int (*encode_resource)(bionet_bdm_t * bdm, bionet_resource_t *resource, 
+                                long entry_seq, bionet_asn_buffer_t *buf) 
+        ) 
 {
-    const char *p;
-    char *separator;
-    int size = 0;
+    int bi, r;
+    char datapoint_topic[4*BIONET_NAME_COMPONENT_MAX_LEN + 4];
 
-    GHashTable * params = g_hash_table_new_full(NULL, NULL, free, free);
-    if ( params == NULL ) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "%s: Out of memory!", __FUNCTION__);
-        return -1;
-    }
+    for (bi = 0; bi < bdm_list->len; bi++) {
+	int hi;
+	bionet_bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
+	if (NULL == bdm) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to get BDM %d from BDM list", bi);
+            continue;
+	}
 
-    if( (p = strchr(querystring, '?')) ) {
-        querystring = p + 1;
-    }
+	//walk list of habs
+	for (hi = 0; hi < bionet_bdm_get_num_habs(bdm); hi++) {
+	    int ni;
+	    bionet_hab_t * hab = bionet_bdm_get_hab_by_index(bdm, hi);
+	    if (NULL == hab) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+		      "Failed to get HAB %d from array of HABs", hi);
+                continue;
+	    }
+	    
+	    //walk list of nodes
+	    for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
+		int ri;
+		bionet_node_t * node = bionet_hab_get_node_by_index(hab, ni);
+		if (NULL == node) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+			  "Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
+                    continue;
+		}
+		
+		
+		//walk list of resources
+		for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
+                    bionet_asn_buffer_t buf;
+		    bionet_resource_t * resource;
+                   
+                    resource = bionet_node_get_resource_by_index(node, ri);
+		    if (NULL == resource) {
+			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+			      "Failed to get resource %d from Node %s",
+                              ri, bionet_node_get_name(node));
+                        continue;
+		    }
 
-    for(p = querystring; p && p[0] != '\0'; p+=(size+1)) {
-        int key_size, val_size;
-        char *key, *value;
-        separator = strchr(p, '&');
-        if (separator != NULL) {
-            size = separator - p;
-        } else {
-            size = strlen(p);
-        }
+                    snprintf(datapoint_topic, sizeof(datapoint_topic), "D %s/%s.%s", 
+                        bionet_bdm_get_id(bdm), bionet_hab_get_name(hab), 
+                        bionet_resource_get_local_name(resource));
 
-        separator = memchr(p, '=', size);
-        if (separator == NULL) {
-            g_hash_table_destroy(params);
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "%s(): Bad topic param format", __FUNCTION__);
-            return -1;
-        }
 
-        key_size = separator - p;
-        val_size = size - (key_size + 1);
+                    //
+                    // Encode the resource with the supplied function
+                    r = encode_resource(bdm, resource, this_seq, &buf);
+                    if (r != 0) {
+                        // an error has already been logged, and the buffer has been freed
+                        continue;
+                    }
 
-        key = malloc(key_size + 1);
-        if ( key == NULL ) {
-            g_hash_table_destroy(params);
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: Out of memory!", __FUNCTION__);
-            return -1;
-        }
-        memcpy(key, p, key_size);
-        key[key_size] = '\0';
+                    // "publish" the message to the newly connected subscriber (via publishto)
+                    // if the datapoint topic does not match any previous topics
+                    cal_server.publishto(peer_name, datapoint_topic, buf.buf, buf.size);
 
-        value = malloc(val_size + 1);
-        if ( value == NULL ) {
-            g_hash_table_destroy(params);
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: Out of memory!", __FUNCTION__);
-            return -1;
-        }
-        memcpy(value, separator + 1, val_size);
-        value[val_size] = '\0';
+                    // FIXME: cal_server.publish should take the buf
+                    free(buf.buf);
 
-        g_hash_table_insert(params, key, value);
-
-    }
-
-    *ret_params = params;
-
-    return 0;
+		} //for each resource
+	    } //for each node
+	} //for each hab
+    } //for each bdm
 }
+
 
 //
 // Handle the subscription request once both the actual subscription and state have been sent
@@ -177,11 +136,13 @@ static void libbdm_process_datapoint_subscription_request(
     char topic_hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char topic_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char topic_resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
-    char datapoint_topic[4*BIONET_NAME_COMPONENT_MAX_LEN + 4];
     int r;
     GPtrArray *bdm_list;
-    int bi;
 
+    struct timeval tv_start;
+    struct timeval *pDatapointStart = NULL;
+    struct timeval tv_stop;
+    struct timeval *pDatapointEnd = NULL;
 
     r = bionet_split_resource_name_r(&topic[2], topic_hab_type, topic_hab_id, topic_node_id, topic_resource_id);
     if (r < 0) {
@@ -190,132 +151,56 @@ static void libbdm_process_datapoint_subscription_request(
         return;
     }
 
-    GHashTable * params = NULL;
-    r = parse_topic_params(topic + 2 + r, &params);
-    if (r != 0) {
-        // Error logged
-        return;
+    if ( r > 0 ) {
+        GHashTable * params = NULL;
+        r = bionet_parse_topic_params(topic + 2 + r, &params);
+        if (r != 0) {
+            // Error logged
+            return;
+        }
+
+        if( 0 == bionet_param_to_timeval(params, "dpstart", &tv_start) ) {
+            pDatapointStart = &tv_start;
+        }
+        if( 0 == bionet_param_to_timeval(params, "dpend", &tv_stop) ) {
+            pDatapointEnd = &tv_stop;
+        }
     }
 
-    struct timeval tv_start;
-    struct timeval *pDatapointStart = NULL;
-    struct timeval tv_stop;
-    struct timeval *pDatapointEnd = NULL;
-    if( 0 == getTimevalParam(params, "dpstart", &tv_start) ) {
-        pDatapointStart = &tv_start;
+    // do that database lookup
+    long this_seq = db_get_latest_entry_seq(main_db);
+
+    bdm_list = db_get_metadata(main_db,
+        strcmp("*",topic_hab_type)?topic_hab_type:NULL,
+        strcmp("*",topic_hab_id)?topic_hab_id:NULL,
+        strcmp("*",topic_node_id)?topic_node_id:NULL,
+        strcmp("*",topic_resource_id)?topic_resource_id:NULL,
+        pDatapointStart, pDatapointEnd, 
+        0, this_seq);
+    if (NULL == bdm_list) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "Failed to get a BDM list.");
+	return;
     }
-    if( 0 == getTimevalParam(params, "dpend", &tv_stop) ) {
-        pDatapointEnd = &tv_stop;
-    }
+    libbdm_publishto_each_resource(bdm_list, this_seq, peer_name, 
+            bdm_resource_metadata_to_asnbuf); 
 
     
-    // do that database lookup
     bdm_list = db_get_resource_datapoints(main_db,
         strcmp("*",topic_hab_type)?topic_hab_type:NULL,
         strcmp("*",topic_hab_id)?topic_hab_id:NULL,
         strcmp("*",topic_node_id)?topic_node_id:NULL,
         strcmp("*",topic_resource_id)?topic_resource_id:NULL,
         pDatapointStart, pDatapointEnd, 
-        state->curr_seq, db_get_latest_entry_seq(main_db));
-
+        state->curr_seq, this_seq);
     if (NULL == bdm_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 	      "Failed to get a BDM list.");
 	return;
     }
 
-    for (bi = 0; bi < bdm_list->len; bi++) {
-	int hi;
-	bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
-	if (NULL == bdm) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "Failed to get BDM %d from BDM list", bi);
-            continue;
-	}
-
-	GPtrArray * hab_list = bdm->hab_list;
-	if (NULL == hab_list) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "sync_send_metadata(): Failed to get HAB list from array of BDMs");
-            continue;
-	}
-
-	//walk list of habs
-	for (hi = 0; hi < hab_list->len; hi++) {
-	    int ni;
-	    bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);
-	    if (NULL == hab) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-		      "Failed to get HAB %d from array of HABs", hi);
-                continue;
-	    }
-	    
-	    //walk list of nodes
-	    for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
-		int ri;
-		bionet_node_t * node = bionet_hab_get_node_by_index(hab, ni);
-		if (NULL == node) {
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-			  "Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
-                    continue;
-		}
-		
-		
-		//walk list of resources
-		for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
-                    bionet_asn_buffer_t buf;
-		    bionet_resource_t * resource;
-                   
-                    resource = bionet_node_get_resource_by_index(node, ri);
-		    if (NULL == resource) {
-			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-			      "Failed to get resource %d from Node %s",
-                              ri, bionet_node_get_name(node));
-                        continue;
-		    }
-
-                    snprintf(datapoint_topic, sizeof(datapoint_topic), "D %s/%s.%s", 
-                        bdm->bdm_id, bionet_hab_get_name(hab), 
-                        bionet_resource_get_local_name(resource));
-
-
-                    //
-                    // first send the metadata for this matching resource
-                    //
-
-                    r = bdm_resource_metadata_to_asnbuf(bdm, resource, &buf);
-                    if (r != 0) {
-                        // an error has already been logged, and the buffer has been freed
-                        continue;
-                    }
-
-                    // "publish" the message to the newly connected subscriber (via publishto)
-                    // if the datapoint topic does not match any previous topics
-                    cal_server.publishto(peer_name, datapoint_topic, buf.buf, buf.size);
-
-                    // FIXME: cal_server.publish should take the buf
-                    free(buf.buf);
-
-                    //
-                    // then send the datapoints (if there are any)
-                    //
-
-                    r = bdm_resource_datapoints_to_asnbuf(bdm, resource, &buf);
-                    if (r != 0) {
-                        // an error has already been logged, and the buffer has been freed
-                        continue;
-                    }
-
-                    // "publish" the message to the newly connected subscriber (via publishto)
-                    // if the datapoint topic does not match any previous topics
-                    cal_server.publishto(peer_name, datapoint_topic, buf.buf, buf.size);
-                    
-                    // FIXME: cal_server.publish should take the buf
-                    free(buf.buf);
-		} //for each resource
-	    } //for each node
-	} //for each hab
-    } //for each bdm
+    libbdm_publishto_each_resource(bdm_list, this_seq, peer_name, 
+            bdm_resource_datapoints_to_asnbuf); 
 
     // Tell CAL we'll accept this subscription
     cal_server.subscribe(peer_name, topic);
@@ -323,10 +208,13 @@ static void libbdm_process_datapoint_subscription_request(
 
 static void libbdm_handle_sent_state(
         const char * peer_name,
-        const char * topic,
-        long *pSeq)
+        BDMSendState_t *ss)
 {
+    if(NULL == peer_states){
+        peer_states = bdm_subscriptions_new();
+    }
 
+    char * topic = (char*)ss->topic.buf;
     bdm_subscription_t * state =  bdm_subscriptions_get(peer_states, peer_name, topic);
     if (state == NULL ) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -335,10 +223,10 @@ static void libbdm_handle_sent_state(
     }
 
 
-    if(*pSeq < 0){
+    if(ss->seq < 0){
         state->curr_seq = 0;
     } else {
-        state->curr_seq = *pSeq;
+        state->curr_seq = ss->seq;
     }
 
     libbdm_process_subscription_request(peer_name, topic, state);
@@ -444,6 +332,10 @@ static void libbdm_handle_node_list_subscription_request(const char *peer_name, 
 #endif
 
 static void libbdm_handle_subscription_request(const char *peer_name, const char *topic) {
+    if(NULL == peer_states){
+        peer_states = bdm_subscriptions_new();
+    }
+
     bdm_subscriptions_add_request(peer_states, peer_name, topic); 
 }
 
@@ -629,7 +521,7 @@ void libbdm_cal_callback(const cal_event_t *event) {
                     break;
 
                 case BDM_C2S_Message_PR_sendState:
-                    libbdm_handle_sent_state(event->peer_name, event->topic, &m->choice.sendState);
+                    libbdm_handle_sent_state(event->peer_name, &m->choice.sendState);
                     break;
 
                 default:

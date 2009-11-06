@@ -120,7 +120,8 @@ BEGIN
         nodeId       PrintableString,
         resourceId   PrintableString,
         flavor       ResourceFlavor,
-        datatype     ResourceDataType
+        datatype     ResourceDataType,
+	entrySeq     INTEGER
     }
 
     BDMResourceDatapoints ::= SEQUENCE {
@@ -129,7 +130,22 @@ BEGIN
         habId           PrintableString,
         nodeId          PrintableString,
         resourceId      PrintableString,
-        newDatapointsBDM   SEQUENCE OF Datapoint
+        newDatapointsBDM   SEQUENCE OF Datapoint,
+	entrySeq     INTEGER
+    }
+
+    BDMNewNode ::= SEQUENCE {
+        bdmId     PrintableString,
+        habType   PrintableString,
+        habId     PrintableString,
+	entrySeq  INTEGER,
+        node      Node
+    }
+
+    BDMNewHab ::= SEQUENCE {
+        bdmId     PrintableString,
+	entrySeq  INTEGER,
+	hab       HardwareAbstractor
     }
 
 
@@ -210,13 +226,17 @@ BEGIN
     --
     -- BDM Client-to-Server messages
     --
+    BDMSendState ::= SEQUENCE {
+        seq             INTEGER,
+        topic           PrintableString
+    }
 
     BDM-C2S-Message ::= CHOICE {
         resourceDatapointsQuery ResourceDatapointsQuery,
-	sendState             INTEGER
         -- subscribeHab          PrintableString,
         -- subscribeNode         PrintableString,
         -- subscribeDatapoints   PrintableString,
+	sendState               BDMSendState
     }
 
 
@@ -228,10 +248,11 @@ BEGIN
         resourceDatapointsReply ResourceDatapointsReply,
         resourceMetadata        BDMResourceMetadata,
         datapointsUpdate        BDMResourceDatapoints,
-        newHab                  Node,
+        newHab                  BDMNewHab,
         lostHab                 PrintableString,
-        newNode                 Node,
-        lostNode                PrintableString
+        newNode                 BDMNewNode,
+        lostNode                PrintableString,
+	sendState               BDMSendState
     }
 
 

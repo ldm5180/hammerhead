@@ -32,7 +32,6 @@
  */
 bionet_bdm_t *bionet_bdm_new(const char *id);
 
-
 /**
  * @brief Get the ID of an existing BDM 
  *
@@ -47,16 +46,30 @@ const char * bionet_bdm_get_id(const bionet_bdm_t *bdm);
 
 
 /**
- * @brief Get pointer to a hab of a BDM by its ID
+ * @brief Get pointer to a hab of a BDM by its name
  *
  * @param[in] bdm Pointer to a BDM
+ * @param[in] hab_name Name of the hab requested 
+ *
+ * @retval Valid hab pointer on success
+ * @retval NULL if hab with that ID does not exist
+ */
+bionet_hab_t *bionet_bdm_get_hab_by_name(bionet_bdm_t *bdm, 
+					 const char *hab_name);
+
+
+/**
+ * @brief Get pointer to a hab of a BDM by its Type.Name
+ *
+ * @param[in] bdm Pointer to a BDM
+ * @param[in] hab_type type of the hab requested 
  * @param[in] hab_id ID of the hab requested 
  *
  * @retval Valid hab pointer on success
  * @retval NULL if hab with that ID does not exist
  */
-bionet_hab_t *bionet_bdm_get_hab_by_id(bionet_bdm_t *bdm, 
-					 const char *hab_id);
+bionet_hab_t *bionet_bdm_get_hab_by_type_id(
+        bionet_bdm_t *bdm, const char *hab_type, const char *hab_id);
 
 
 /**
@@ -101,14 +114,15 @@ int bionet_bdm_add_hab(bionet_bdm_t *bdm, const bionet_hab_t *hab);
  * @brief Remove a specific hab from a BDM
  * 
  * @param[in] bdm Pointer to a BDM
+ * @param[in] hab_type Type of hab to remove
  * @param[in] hab_id ID of hab to remove
  *
  * @return 0 Success
  * @return -1 Failure
  *
- * @note Hab is not free'd. The caller needs to free.
+ * @note Hab's memory is still owned by the cache
  */
-bionet_hab_t * bionet_bdm_remove_hab_by_id(bionet_bdm_t *bdm, const char *hab_id);
+bionet_hab_t * bionet_bdm_remove_hab_by_type_id(bionet_bdm_t *bdm, const char * hab_type, const char *hab_id);
 
 
 /**
@@ -119,7 +133,7 @@ bionet_hab_t * bionet_bdm_remove_hab_by_id(bionet_bdm_t *bdm, const char *hab_id
  * @return 0 Success
  * @return -1 Failure
  *
- * @note As a side-effect all habs are free'd
+ * @note All habs are still owned by the cache
  */
 int bionet_bdm_remove_all_habs(bionet_bdm_t *bdm);
 
@@ -129,7 +143,7 @@ int bionet_bdm_remove_all_habs(bionet_bdm_t *bdm);
  *
  * @param[in] bdm Pointer to a BDM
  *
- * @note As a side-effect all associated habs are removed and free'd
+ * @note All habs still exist in the cache
  */
 void bionet_bdm_free(bionet_bdm_t *bdm);
 

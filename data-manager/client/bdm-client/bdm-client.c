@@ -215,6 +215,14 @@ int main(int argc, char *argv[]) {
 	}
     }
 
+    if (optind < argc ) {
+        printf("Extra unknown arguments:\n");
+        for(; optind<argc; optind++ ) printf("   %s\n", argv[optind]);
+        printf("\n");
+        usage();
+        exit(1);
+    }
+
 
     bdm_fd = bdm_connect(bdm_hostname, bdm_port);
     if (bdm_fd < 0) {
