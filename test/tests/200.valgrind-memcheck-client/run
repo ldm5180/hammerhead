@@ -25,9 +25,12 @@ if [ -z "$ENABLE_DARWIN" ]; then
     VGLEAK=--leak-check=full
 fi
 
+# uncomment this to enable printing of suppressions:
+#GEN_SUPPRESSIONS="--gen-suppressions=all"
+
 
 echo starting bionet-watcher under valgrind memcheck
-G_SLICE=always-malloc G_DEBUG=gc-friendly,resident-modules $LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.watcher --num-callers=25 --tool=memcheck --trace-children=yes $VGLEAK  $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher &
+G_SLICE=always-malloc G_DEBUG=gc-friendly,resident-modules $LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.watcher $GEN_SUPPRESSIONS --num-callers=25 --tool=memcheck --trace-children=yes $VGLEAK  $ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher &
 
 sleep 4  # let the client come up before starting the hab (valgrind makes it slow)
 
