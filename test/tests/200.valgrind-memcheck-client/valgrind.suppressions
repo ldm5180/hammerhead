@@ -41,3 +41,88 @@
     fun:main
 }
 
+{
+    libc/gethostbyname/0
+    Memcheck:Addr4
+    obj:/lib/ld-2.7.so
+    obj:/lib/ld-2.7.so
+    obj:/lib/ld-2.7.so
+    obj:/lib/ld-2.7.so
+    obj:/lib/ld-2.7.so
+    obj:/lib/ld-2.7.so
+    obj:/lib/tls/i686/cmov/libc-2.7.so
+    obj:/lib/ld-2.7.so
+    fun:__libc_dlopen_mode
+    fun:__nss_lookup_function
+    obj:/lib/tls/i686/cmov/libc-2.7.so
+    fun:__nss_hosts_lookup
+    fun:gethostbyname2_r
+    obj:/lib/tls/i686/cmov/libc-2.7.so
+    fun:getaddrinfo
+    fun:bip_net_connect_nonblock
+    fun:bip_peer_connect_nonblock
+    fun:resolve_callback
+    obj:/usr/lib/libdns_sd.so.1.0.0
+    fun:avahi_service_resolver_event
+    obj:/usr/lib/libavahi-client.so.3.2.4
+    fun:dbus_connection_dispatch
+    obj:/usr/lib/libavahi-client.so.3.2.4
+    obj:/usr/lib/libavahi-common.so.3.5.0
+}
+
+{
+    libc/gethostbyname/1
+    Memcheck:Addr4
+    obj:/lib/ld-2.7.so
+    obj:/lib/ld-2.7.so
+    obj:/lib/ld-2.7.so
+    obj:/lib/ld-2.7.so
+    obj:/lib/ld-2.7.so
+    obj:/lib/ld-2.7.so
+    obj:/lib/tls/i686/cmov/libc-2.7.so
+    obj:/lib/ld-2.7.so
+    fun:__libc_dlopen_mode
+    fun:__nss_lookup_function
+    fun:__nss_next
+    fun:gethostbyname2_r
+    obj:/lib/tls/i686/cmov/libc-2.7.so
+    fun:getaddrinfo
+    fun:bip_net_connect_nonblock
+    fun:bip_peer_connect_nonblock
+    fun:resolve_callback
+    obj:/usr/lib/libdns_sd.so.1.0.0
+    fun:avahi_service_resolver_event
+    obj:/usr/lib/libavahi-client.so.3.2.4
+    fun:dbus_connection_dispatch
+    obj:/usr/lib/libavahi-client.so.3.2.4
+    obj:/usr/lib/libavahi-common.so.3.5.0
+    fun:avahi_simple_poll_dispatch
+}
+
+{
+    avahi/free
+    Memcheck:Free
+    fun:free
+    obj:/lib/tls/i686/cmov/libc-2.7.so
+    fun:__libc_freeres
+    fun:_vgnU_freeres
+    fun:poll
+    obj:/usr/lib/libdns_sd.so.1.0.0
+    fun:avahi_simple_poll_run
+    obj:/usr/lib/libdns_sd.so.1.0.0
+    fun:start_thread
+    fun:clone
+}
+
+{
+    clone/free
+    Memcheck:Free
+    fun:free
+    obj:/lib/tls/i686/cmov/libc-2.7.so
+    fun:__libc_freeres
+    fun:_vgnU_freeres
+    fun:select
+    fun:start_thread
+    fun:clone
+}
+
