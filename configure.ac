@@ -40,6 +40,10 @@ AC_PROG_LIBTOOL
 AC_PROG_YACC
 AM_PROG_LEX
 
+if test "`which $YACC`x" = "x"; then
+    AC_MSG_ERROR([some version of yacc is required to build], [1])
+fi
+
 CFLAGS="$USERCFLAGS"
 CPPFLAGS="$USERCPPFLAGS"
 CXXFLAGS="$USERCXXFLAGS"
