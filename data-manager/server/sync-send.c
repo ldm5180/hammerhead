@@ -89,10 +89,12 @@ static int sync_send_metadata(
     if( sync_message) {
 	// send the reply to the client
 	asn_enc_rval_t asn_r;
-	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &sync_message, 
+	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, sync_message, 
             write_data_to_message, config);
 	if (asn_r.encoded == -1) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_metadata(): error with der_encode(): %m");
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "send_sync_metadata(): error with der_encode(): %p, %p", 
+                    asn_r.failed_type, asn_r.structure_ptr);
 	}
 
     }
@@ -197,10 +199,16 @@ static int write_data_to_socket(const void *buffer, size_t size, void * config_v
 
     r = write(config->fd, buffer, size);
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-	  "    %d bytes written", r);
+    if( r < 0 ) { 
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+              "    ERROR writing to %d: %s", config->fd, strerror(errno));
+    } else {
 
-    config->bytes_sent += r;
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+              "    %d bytes written", r);
+
+        config->bytes_sent += r;
+    }
 
     return r;
 } /* write_data_to_socket() */
@@ -600,9 +608,12 @@ static int sync_init_connection_tcp(sync_sender_config_t * config) {
         g_log(
             BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
-            "sync_init_connection_tcp(): failed to connect to server %s:%d: %m",
+            "sync_init_connection_tcp(): failed to connect to server %s:%d: %s",
             server_host->h_name,
-            config->remote_port);
+            config->remote_port,
+            strerror(errno));
+        close(config->fd);
+        config->fd = -1;
         return -1;
     }
 

@@ -358,6 +358,7 @@ void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node, v
 void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint, void* usr_data), void*usr_data);
 
 
+#if 0
 /**
  * @brief Registers Stream callback function with the Bionet library.
  *         
@@ -370,6 +371,7 @@ void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *da
  * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
 void bdm_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, void *buffer, int size, void* usr_data), void*usr_data);
+#endif
 
 
 int bdm_subscribe_bdm_list_by_name(const char * bdm_name);
@@ -467,6 +469,7 @@ bionet_node_t *bdm_cache_lookup_node(const char *hab_type, const char *hab_id, c
 bionet_resource_t *bdm_cache_lookup_resource(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
 
 
+#if 0
 /**
  * @brief Looks through the locally cached information for a specific Stream.
  *
@@ -479,6 +482,7 @@ bionet_resource_t *bdm_cache_lookup_resource(const char *hab_type, const char *h
  * @retval NULL Not found
  */
 bionet_stream_t *bdm_cache_lookup_stream(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
+#endif
 
 #endif
 

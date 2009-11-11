@@ -404,9 +404,6 @@ int main(int argc, char *argv[]) {
 
 
     if (sync_config_list || enable_dtn_sync_receiver) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-	      "Initializing GThreads.");
-	g_thread_init(NULL);
         make_shutdowns_clean(1);
     } else {
         make_shutdowns_clean(0);

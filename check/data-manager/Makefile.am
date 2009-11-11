@@ -18,6 +18,8 @@ nodist_check_data_manager_SOURCES = \
 check_data_manager_CFLAGS = $(CHECK_CFLAGS) \
     -I.. \
     -I$(top_srcdir)/data-manager/include \
+    $(CFLAGS_BIONET_CAL_SERVER) \
+    $(CFLAGS_BIONET_CAL_UTIL) \
     $(CFLAGS_BIONET_CLIENT) \
     $(CFLAGS_BIONET_ASN1) \
     $(CFLAGS_BIONET_UTIL) \

@@ -951,7 +951,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     ERR_load_BIO_strings();
     // TODO: Lots more
 
-    browse = malloc(sizeof(struct cal_client_mdnssd_bip_service_context));
+    browse = calloc(1, sizeof(struct cal_client_mdnssd_bip_service_context));
     if (browse == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "client thread: out of memory!");
         return NULL;

@@ -164,6 +164,7 @@ static void libbdm_process_datapoint_subscription_request(
         if( 0 == bionet_param_to_timeval(params, "dpend", &tv_stop) ) {
             pDatapointEnd = &tv_stop;
         }
+        g_hash_table_destroy(params);
     }
 
     // do that database lookup
@@ -476,7 +477,9 @@ void libbdm_cal_callback(const cal_event_t *event) {
         }
 
         case CAL_EVENT_DISCONNECT: {
-            bdm_subscriptions_remove_peer(peer_states, event->peer_name);
+            if ( peer_states ) {
+                bdm_subscriptions_remove_peer(peer_states, event->peer_name);
+            }
             break;
         }
 
