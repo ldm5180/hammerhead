@@ -1,0 +1,101 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
+
+UNIQUE=$$
+RETVAL=0
+
+
+YEAR=`date +%Y`
+PREV_YEAR=$(($YEAR-1))
+NEXT_YEAR=$(($YEAR+1))
+
+echo "making DB file"
+rm -f bdm.db
+pushd $ROOT/data-manager/server > /dev/null
+./make-db.sh > /dev/null
+popd > /dev/null
+mv $ROOT/data-manager/server/bdm.db .
+
+echo starting BDM
+$ROOT/data-manager/server/bionet-data-manager --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
+BDMPID=$!
+sleep 3 # let the bdm come up before starting the HAB
+
+WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -r 'random-hab.$UNIQUE.*:*'"
+
+echo "bdm-watcher args: $WATCHCMD"
+
+
+echo "no datapoints generated, starting bdm-watcher.0"
+eval "$WATCHCMD >| out.bdm-watcher.0 &"
+WPID0=$!
+
+echo starting random-hab
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+HABPID=$!
+
+sleep `expr $TEST_DURATION / 2`
+
+echo "some datapoints generated, starting bdm-watcher.1"
+eval "$WATCHCMD >| out.bdm-watcher.1 &"
+WPID1=$!
+
+sleep `expr $TEST_DURATION / 2`
+
+echo "all datapoints generated. Killing random-hab"
+kill $HABPID
+wait $HABPID
+
+# Let the BDM commit the last info to disk
+sleep 10
+
+echo "all datapoints generated. Killing  bdm-watcher.0 and bdm-watcher.1"
+kill $WPID0
+kill $WPID1
+wait $WPID0
+wait $WPID1
+
+echo "all datapoints generated. Starting bdm-watcher.2"
+eval "$WATCHCMD >| out.bdm-watcher.2 & "
+WPID2=$!
+
+sleep 15
+kill $WPID2
+wait $WPID2
+
+echo "Killing  bdm-watcher.2"
+
+echo "killing BDM"
+kill $BDMPID
+wait
+
+for i in 0 1 2; do
+    sort out.bdm-watcher.$i > sorted.bdm-watcher.$i
+    if ! diff -q out.random-hab sorted.bdm-watcher.$i; then
+	echo "ERROR: bdm-watcher.$i output differs from random-hab output:"
+	diff -u out.random-hab sorted.bdm-watcher.$i
+	RETVAL=1
+    fi
+done
+
+if [ $RETVAL -eq 0 ] ; then
+    echo "bdm-watcher output is identical to random-hab output, yay"
+fi
+
+exit $RETVAL
+
