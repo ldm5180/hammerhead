@@ -352,6 +352,25 @@ int main(int argc, char *argv[]) {
     bdm_main_loop = g_main_loop_new(NULL, TRUE);
 
 
+
+
+    // 
+    // create the listening socket for bdm clients
+    //
+    // This will succeed or exit.
+    //
+
+    {
+        GIOChannel *ch;
+        int fd;
+
+        fd = make_listening_socket(bdm_port);
+        ch = g_io_channel_unix_new(fd);
+        g_io_add_watch(ch, G_IO_IN, client_connecting_handler, GINT_TO_POINTER(fd));
+    }
+
+
+
     //
     // Publish BDM service...
     //
@@ -359,7 +378,7 @@ int main(int argc, char *argv[]) {
         GIOChannel *ch;
 
         libbdm_cal_fd = 
-            cal_server.init_full("bionet-db", bionet_bdm_get_id(this_bdm), bdm_port, 
+            cal_server.init("bionet-db", bionet_bdm_get_id(this_bdm), 
                     libbdm_cal_callback, libbdm_cal_topic_matches);
         if (libbdm_cal_fd == -1) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error initializing CAL");

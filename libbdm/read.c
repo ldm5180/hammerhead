@@ -25,7 +25,7 @@
 int bdm_read_with_timeout(struct timeval *timeout) {
     int r;
 
-    if (!bdm_is_connected()) return -1;
+    if (libbdm_cal_fd < 0) return -1;
 
     r = cal_client.read(timeout);
     if (r) return 0;

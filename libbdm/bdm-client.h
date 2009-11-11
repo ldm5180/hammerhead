@@ -73,10 +73,10 @@ int bdm_read_with_timeout(struct timeval *timeout);
 
 
 /**
- * @brief Reads the bionet file descriptor returned from bdm_connect()
+ * @brief Reads the bionet file descriptor returned from bdm_start()
  *
  * This function should be called whenever the Bionet file
- * descriptor returned from bdm_connect() is readable, or
+ * descriptor returned from bdm_start() is readable, or
  * if the Client application wants to poll the file descriptor.
  * The function will read any pending messages from Bionet and
  * if appropriate call the callback functions.
@@ -86,23 +86,6 @@ int bdm_read_with_timeout(struct timeval *timeout);
  */
 int bdm_read(void);
 
-
-
-/**
- * @brief Add a new BDM server that may not get discovered
- *
- * Try to add the specified BDM server as if it has been discovered.
- * Usefull the the BDM server is not on the link-local network
- *
- * If the peer can be found, a new_bdm subscription notification will be sent,
- * if it is subscribed to.
- *
- * @param[in] hostname The hostname or ipaddress string to connect to
- *
- * @param[in] port The port the server is available in (host-byte-ordered), or
- * 0 to use default
- */
-void bdm_add_server(char *hostname, uint16_t port); 
 
 /**
  * @brief Checks to see if Bionet BDM library is connected to Bionet BDM network
@@ -144,15 +127,14 @@ typedef struct bdm_hab_list_t_opaque bdm_hab_list_t;
 /**
  * @brief Query a bionet data manager for a list of datapoints
  *
- * Get all datapoints that match the query parameters that are currently
+ * Query the bionet-data-manager connected to with bdm_connect() to 
+ * get all datapoints that match the query parameters that are currently
  * available in the bionet data manager.
  *
  * @note There may be additional datapoints that match the query parameters
  *   that show up at a later time. To return only the new points, use an 
  *   entry number range greater than the largest number returned in the past
  * 
- * @param[in] bdm_id The bdm to request from
-
  * @param[in] resource_name_pattern The resource name pattern to query for
  * @param[in] datapointStart If not NULL, return only datapoints with a
  *            timestamp after this
@@ -167,13 +149,11 @@ typedef struct bdm_hab_list_t_opaque bdm_hab_list_t;
  *         the query.
  */
 bdm_hab_list_t *bdm_get_resource_datapoints(
-       const char * bdm_id,
        const char *resource_name_pattern, 
        struct timeval *datapointStart, 
        struct timeval *datapointEnd,
        int entryStart,
        int entryEnd);
-
 
 /**
  * @brief Get the length of a HAB List

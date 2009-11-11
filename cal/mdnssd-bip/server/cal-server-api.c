@@ -28,10 +28,9 @@
 extern SSL_CTX * ssl_ctx_server;
 int server_require_security = 0;
 
-int cal_server_mdnssd_bip_init_full(
+int cal_server_mdnssd_bip_init(
     const char *network_type,
     const char *name,
-    int port,
     void (*callback)(const cal_event_t *event),
     int (*topic_matches)(const char *a, const char *b)
 ) {
@@ -117,25 +116,7 @@ int cal_server_mdnssd_bip_init_full(
 
 
     // ok! listen for connections
-
-    // we dont need to bind since listen on an unbound socket defaults to INADDR_ANY and 
-    // a random port. However, the user may have their reasons for binding to a specific port
-    // only bind if a port has been specified
-    if ( port >=0 ) {
-        memset(&my_address, 0, sizeof(my_address));
-        my_address.sin_family = AF_INET;
-        my_address.sin_port = g_htons(port);
-        my_address.sin_addr.s_addr = g_htonl(INADDR_ANY);
-        r = bind(this->socket, (struct sockaddr *)&my_address, sizeof(my_address));
-        if (r != 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot bind on port %d: %s", 
-                    port, strerror(errno));
-            goto fail2;
-        }
-
-    }
-
-
+    // we dont need to bind since listen on an unbound socket defaults to INADDR_ANY and a random port, which is what we want
     r = listen(this->socket, 20);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot listen on port: %s", strerror(errno));
@@ -260,15 +241,6 @@ fail1:
 fail0: 
     free(this);
     return -1;
-}
-
-int cal_server_mdnssd_bip_init(
-    const char *network_type,
-    const char *name,
-    void (*callback)(const cal_event_t *event),
-    int (*topic_matches)(const char *a, const char *b)
-) {
-    return cal_server_mdnssd_bip_init_full(network_type, name, -1, callback, topic_matches);
 }
 
 
@@ -838,7 +810,6 @@ cal_server_t cal_server = {
     .publish = cal_server_mdnssd_bip_publish,
     .publishto = cal_server_mdnssd_bip_publishto,
 
-    .init_security = cal_server_mdnssd_bip_init_security,
-    .init_full = cal_server_mdnssd_bip_init_full
+    .init_security = cal_server_mdnssd_bip_init_security
 };
 

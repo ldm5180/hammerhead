@@ -8,7 +8,11 @@ include $(top_srcdir)/common.am
 
 bin_PROGRAMS = bdm-watcher
 
-bdm_watcher_SOURCES = bdm-watcher.c                
+bdm_watcher_SOURCES = \
+    bdm-watcher.c \
+    default-output.c \
+    test-pattern-output.c \
+    bdm-client-output.c
 
 bdm_watcher_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -fno-strict-aliasing
 

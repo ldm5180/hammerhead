@@ -13,9 +13,14 @@
 #include "cal-server.h"
 
 
-void libbdm_handle_resourceDatapointsQuery(
-        const char * peer_name, 
-        ResourceDatapointsQuery_t *rdpq) 
+static int send_message_to_client(const void *buffer, size_t size, void *client_void) {
+    client_t *client = client_void;
+    return write(client->fd, buffer, size);
+}
+
+static int libbdm_process_resourceDatapointsQuery(
+        ResourceDatapointsQuery_t *rdpq,
+        asn_app_consume_bytes_f *consume_cb, void *consume_data)
 {
     GPtrArray *bdm_list;
     struct timeval datapoint_start, datapoint_end;
@@ -23,8 +28,6 @@ void libbdm_handle_resourceDatapointsQuery(
     struct timeval *pDatapointStart = NULL;
     struct timeval *pDatapointEnd = NULL;
     int r, bi;
-
-    bionet_asn_buffer_t buf;
 
     BDM_S2C_Message_t reply;
     ResourceDatapointsReply_t *rdpr;
@@ -49,7 +52,7 @@ void libbdm_handle_resourceDatapointsQuery(
             rdpq->datapointStartTime.buf,
             strerror(errno)
         );
-        return;  // FIXME: return an error message to the client
+        return -1;  // FIXME: return an error message to the client
     }
     if (datapoint_start.tv_sec != 0 || datapoint_start.tv_usec != 0) {
 	pDatapointStart = &datapoint_start;
@@ -64,7 +67,7 @@ void libbdm_handle_resourceDatapointsQuery(
             rdpq->datapointEndTime.buf,
             strerror(errno)
         );
-        return;  // FIXME: return an error message to the client
+        return -1;  // FIXME: return an error message to the client
     }
     if (datapoint_end.tv_sec != 0 || datapoint_end.tv_usec != 0) {
 	pDatapointEnd = &datapoint_end;
@@ -88,7 +91,7 @@ void libbdm_handle_resourceDatapointsQuery(
     if (NULL == bdm_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 	      "Failed to get a BDM list.");
-	return;
+	return -1;
     }
 
     memset(&reply, 0x00, sizeof(BDM_S2C_Message_t));
@@ -135,26 +138,14 @@ void libbdm_handle_resourceDatapointsQuery(
     //
     // Encode ASN message andsend to requesting peer
     //
-    buf.buf = NULL;
-    buf.size = 0;
-    asn_r = der_encode(&asn_DEF_BDM_S2C_Message, &reply, bionet_accumulate_asn_buffer, &buf);
+    asn_r = der_encode(&asn_DEF_BDM_S2C_Message, &reply, consume_cb, consume_data);
     if (asn_r.encoded == -1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                 "bdm_get_resource_datapoints(): error with der_encode(): %s", strerror(errno));
-        free(buf.buf);
-        buf.buf = NULL;
         goto cleanup;
     }
 
-    // send to the peer that requested the result
-    if(!cal_server.sendto(peer_name, buf.buf, buf.size)) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "bdm_get_resource_datapoints(): error sending to peer");
-        free(buf.buf);
-        buf.buf = NULL;
-        goto cleanup;
-    }
-    buf.buf = NULL;
+    return 0;
 
 
 cleanup:
@@ -162,17 +153,52 @@ cleanup:
         bdm_list_free(bdm_list);
     }
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_S2C_Message, &reply);
-    return;
+    return -1;
 }
+
+static void handle_client_message_resourceDatapointsQuery(
+        client_t *client,
+        ResourceDatapointsQuery_t *rdpq) 
+{
+    libbdm_process_resourceDatapointsQuery(rdpq, send_message_to_client, client);
+}
+
+void libbdm_handle_resourceDatapointsQuery(
+        const char * peer_name, 
+        ResourceDatapointsQuery_t *rdpq) 
+{
+
+    bionet_asn_buffer_t buf;
+    int r;
+    buf.buf = NULL;
+    buf.size = 0;
+
+    r = libbdm_process_resourceDatapointsQuery(rdpq, 
+            bionet_accumulate_asn_buffer, &buf);
+
+    if ( r < 0 ) goto cleanup;
+
+    // send to the peer that requested the result
+    if(!cal_server.sendto(peer_name, buf.buf, buf.size)) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "bdm_get_resource_datapoints(): error sending to peer");
+        goto cleanup;
+    }
+
+    return;
+
+cleanup:
+    free(buf.buf);
+    buf.buf = NULL;
+}
+
 
 
 void handle_client_message(client_t *client, BDM_C2S_Message_t *message) {
     switch (message->present) {
         case BDM_C2S_Message_PR_resourceDatapointsQuery: {
-            /* TODO: Are direct client connections needed with 'force subscribe?'
-            libbdm_handle_resourceDatapointsQuery(client->peer_name,
+            handle_client_message_resourceDatapointsQuery(client, 
                     &message->choice.resourceDatapointsQuery);
-            */
             break;
         }
 

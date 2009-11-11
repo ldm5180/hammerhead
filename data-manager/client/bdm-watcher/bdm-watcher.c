@@ -19,12 +19,16 @@
 
 #include "bdm-client.h"
    
+extern void default_output_register_callbacks(void);
+extern void test_pattern_output_register_callbacks(void);
+extern void bdm_client_output_register_callbacks(void);
 
 static GMainLoop *bdmsub_main_loop = NULL;
 
 typedef enum {
     OM_NORMAL,
-    OM_TEST_PATTERN
+    OM_TEST_PATTERN,
+    OM_BDM_CLIENT
 } om_t;
 
 om_t output_mode = OM_NORMAL;
@@ -100,231 +104,6 @@ void signal_handler(int signo) {
 }
 
 #endif /* defined(LINUX) || defined(MACOSX) */
-
-
-static const char *current_timestamp_string(void)
-{
-    static char time_str[200];
-
-    char usec_str[10];
-    struct tm *tm;
-    int r;
-
-    // 
-    // sanity tests
-    //
-    struct timeval timestamp;
-    r = gettimeofday(&timestamp, NULL);
-    if (r != 0) {
-        g_message("gettimeofday() error: %s", strerror(errno));
-        exit(1);
-    }
-
-
-    tm = gmtime(&timestamp.tv_sec);
-    if (tm == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_datapoint_timestamp_to_string_human_readable(): error with gmtime: %s", 
-	      strerror(errno));
-        return "invalid time";
-    }
-
-    r = strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", tm);
-    if (r <= 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_datapoint_timestamp_to_string_human_readable(): error with strftime: %s", 
-	      strerror(errno));
-        return "invalid time";
-    }
-
-    r = snprintf(usec_str, sizeof(usec_str), ".%06ld", (long)timestamp.tv_usec);
-    if (r >= sizeof(usec_str)) {
-        // this should never happen, but it keeps Coverity happy
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_datapoint_timestamp_to_string_human_readable(): usec_str too small?!");
-        return "invalid time";
-    }
-
-    // sanity check destination memory size available
-    if ((strlen(usec_str) + 1 + strlen(time_str)) > sizeof(time_str)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_datapoint_timestamp_to_string_human_readable(): time_str too small?!");
-        return "invalid time";
-    }
-    strncat(time_str, usec_str, strlen(usec_str));
-
-    return time_str;
-}
-
-
-void cb_datapoint(bionet_datapoint_t *datapoint, void * usr_data) {
-    bionet_value_t * value = bionet_datapoint_get_value(datapoint);
-    if (NULL == value) {
-	g_log("", G_LOG_LEVEL_WARNING, "Failed to get value from datapoint.");
-	return;
-    }
-
-    bionet_resource_t * resource = bionet_value_get_resource(value);
-    if (NULL == resource) {
-	g_log("", G_LOG_LEVEL_WARNING, "Failed to get resource from value.");
-	return;
-    }
-
-    char * value_str = bionet_value_to_str(value);
-
-    if (output_mode == OM_NORMAL) {
-        g_message(
-            "%s = %s %s %s @ %s",
-            bionet_resource_get_name(resource),
-            bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-            bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-            value_str,
-            bionet_datapoint_timestamp_to_string(datapoint)
-        );
-    } else if (output_mode == OM_TEST_PATTERN) {
-        g_message(
-            "%s %s %s '%s'",
-            bionet_datapoint_timestamp_to_string(datapoint),
-            bionet_node_get_id(bionet_resource_get_node(resource)),
-            bionet_resource_get_id(resource),
-            value_str
-        );
-    }
-
-    free(value_str);
-}
-
-
-void cb_lost_node(bionet_node_t *node, void* usr_data) {
-    if (output_mode == OM_NORMAL) {
-        g_message("lost node: %s", bionet_node_get_name(node));
-    } else if (output_mode == OM_TEST_PATTERN) {
-        g_message("%s - %s", 
-            current_timestamp_string(),
-            bionet_node_get_id(node));
-    }
-}
-
-
-void cb_new_node(bionet_node_t *node, void* usr_data) {
-    int i;
-
-    if (output_mode == OM_NORMAL) {
-        g_message("new node: %s", bionet_node_get_name(node));
-    } else if (output_mode == OM_TEST_PATTERN) {
-        g_message("%s + %s", 
-            current_timestamp_string(),
-            bionet_node_get_id(node));
-    }
-
-    if (bionet_node_get_num_resources(node)) {
-        if (output_mode == OM_NORMAL)
-            g_message("    Resources:");
-
-        for (i = 0; i < bionet_node_get_num_resources(node); i++) {
-            bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
-	    if (NULL == resource) {
-		g_log("", G_LOG_LEVEL_WARNING, "Failed to get resource at index %d from node", i);
-		continue;
-	    }
-            bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
-
-            if (datapoint == NULL) {
-                if (output_mode == OM_NORMAL) {
-                    g_message(
-                        "        %s %s %s (no known value)", 
-                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                        bionet_resource_get_id(resource)
-                    );
-                } else if (output_mode == OM_TEST_PATTERN) {
-                    g_message(
-                        "    %s %s %s ?",
-                        bionet_resource_get_id(resource),
-                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
-                    );
-                }
-            } else {
-                char * value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
-
-                if (output_mode == OM_NORMAL) {
-                    g_message(
-                        "        %s %s %s = %s @ %s", 
-                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                        bionet_resource_get_id(resource),
-                        value_str,
-                        bionet_datapoint_timestamp_to_string(datapoint)
-                    );
-                } else if (output_mode == OM_TEST_PATTERN) {
-                    g_message(
-                        "    %s %s %s '%s'",
-                        bionet_resource_get_id(resource),
-                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                        value_str
-                    );
-                }
-
-		free(value_str);
-            }
-
-        }
-    }
-
-    if (bionet_node_get_num_streams(node)) {
-        if (output_mode == OM_NORMAL)
-            g_message("    Streams:");
-
-        for (i = 0; i < bionet_node_get_num_streams(node); i++) {
-            bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
-            if (NULL == stream) {
-                g_log("", G_LOG_LEVEL_WARNING, "Failed to get stream at index %d from node", i);
-            }
-
-            if (output_mode == OM_NORMAL) {
-                g_message(
-                    "        %s %s %s", 
-                    bionet_stream_get_id(stream),
-                    bionet_stream_get_type(stream),
-                    bionet_stream_direction_to_string(bionet_stream_get_direction(stream))
-                );
-            }
-        }
-    }
-}
-
-
-void cb_lost_hab(bionet_hab_t *hab, void* usr_data) {
-    if (output_mode == OM_NORMAL) {
-        g_message("lost hab: %s", bionet_hab_get_name(hab));
-    }
-}
-
-
-void cb_new_hab(bionet_hab_t *hab, void* usr_data) {
-    if (output_mode == OM_NORMAL) {
-        g_message("new hab: %s", bionet_hab_get_name(hab));
-        if (bionet_hab_is_secure(hab)) {
-            g_message("    %s: security enabled", bionet_hab_get_name(hab));
-        }
-    }
-}
-
-void cb_lost_bdm(bionet_bdm_t *bdm, void* usr_data) {
-    if (output_mode == OM_NORMAL) {
-        g_message("lost bdm: %s", bionet_bdm_get_id(bdm));
-    }
-}
-
-
-void cb_new_bdm(bionet_bdm_t *bdm, void* usr_data) {
-    if (output_mode == OM_NORMAL) {
-        g_message("new bdm: %s", bionet_bdm_get_id(bdm));
-    }
-}
-
 
 
 static int str_to_int(const char * str) {
@@ -423,6 +202,7 @@ void usage(void) {
             " -0,--output-mode <MODE>            Format the output. Can be one of:\n"
             "                                     normal (default)\n"
             "                                     test-pattern (For generating test-pattern-hab input)\n"
+            "                                     bdm-client (Datapoints only, like bdm client)\n"
 	    "\n"
 	    "note: StartTime and EndTime are given in this format: \"YYYY-MM-DD hh:mm:ss\"\n"
 	    "      YYYY is the four-digit year, for example 2008\n"
@@ -459,6 +239,8 @@ int main(int argc, char *argv[]) {
 
     memset(&datapointStart, 0, sizeof(struct timeval));
     memset(&datapointEnd, 0, sizeof(struct timeval));
+
+    g_log_set_default_handler(bionet_glib_log_handler, NULL);
 
     int i;
     int c;
@@ -520,6 +302,7 @@ int main(int argc, char *argv[]) {
         case 'o':
             if (strcmp(optarg, "normal") == 0) output_mode = OM_NORMAL;
             else if (strcmp(optarg, "test-pattern") == 0) output_mode = OM_TEST_PATTERN;
+            else if (strcmp(optarg, "bdm-client") == 0) output_mode = OM_BDM_CLIENT;
             else {
                 fprintf(stderr, "unknown output mode %s\n", optarg);
                 usage();
@@ -552,16 +335,13 @@ int main(int argc, char *argv[]) {
 
 
     // register callbacks
-    bdm_register_callback_new_bdm(cb_new_bdm, NULL);
-    bdm_register_callback_lost_bdm(cb_lost_bdm, NULL);
-
-    bdm_register_callback_new_hab(cb_new_hab, NULL);
-    bdm_register_callback_lost_hab(cb_lost_hab, NULL);
-
-    bdm_register_callback_new_node(cb_new_node, NULL);
-    bdm_register_callback_lost_node(cb_lost_node, NULL);
-    bdm_register_callback_datapoint(cb_datapoint, NULL);
-
+    if ( output_mode == OM_NORMAL ) {
+        default_output_register_callbacks();
+    } else if ( output_mode == OM_TEST_PATTERN ) {
+        test_pattern_output_register_callbacks();
+    } else if ( output_mode == OM_BDM_CLIENT ) {
+        bdm_client_output_register_callbacks();
+    }
 
     // Add subscriptions
     if (! subscribed_to_something) {

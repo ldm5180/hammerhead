@@ -106,7 +106,7 @@ while 1:
     li = []
 
     # get the big HAB list
-    hab_list = bdm_get_resource_datapoints(None, options.resource, datapoint_start, datapoint_end, entry_start, entry_end)
+    hab_list = bdm_get_resource_datapoints(options.resource, datapoint_start, datapoint_end, entry_start, entry_end)
 
     for hi in range(bdm_get_hab_list_len(hab_list)):  # loop over all the HABs
         hab = bdm_get_hab_by_index(hab_list, hi); 

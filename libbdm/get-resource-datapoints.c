@@ -13,7 +13,9 @@
 #include "bdm-client.h"
 #include "libbdm-internal.h"
 
-bdm_hab_list_t * _libbdm_query_response = NULL;
+int bdm_send_asn(const void *buffer, size_t size, void *unused) {
+    return write(bdm_fd, buffer, size);
+}
 
 struct bdm_hab_list_t_opaque {
     GPtrArray * hab_list;
@@ -58,16 +60,13 @@ void bdm_hab_list_free(bdm_hab_list_t * hab_list) {
 }
 
 
-
-void bdm_handle_query_response(const cal_event_t *event,
-        ResourceDatapointsReply_t *rdr) 
-{
+static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
     bdm_hab_list_t *hab_list;
     int hi;
 
     hab_list = calloc(1, sizeof(bdm_hab_list_t));
     if (NULL == hab_list) {
-	return;
+	return NULL;
     }
     hab_list->bdm_last_entry = -1;
 
@@ -143,23 +142,28 @@ void bdm_handle_query_response(const cal_event_t *event,
     }
 
 
-    _libbdm_query_response = hab_list;
-    return;
+    return hab_list;
 
 cleanup:
     bdm_hab_list_free(hab_list);
-    return;
+    return NULL;
 }
 
-
-bdm_hab_list_t *bdm_get_resource_datapoints(
-    const char * bdm_id,
-    const char *resource_name_pattern, 
-    struct timeval *datapointStart, 
-    struct timeval *datapointEnd,
-    int entryStart,
-    int entryEnd) 
+void bdm_handle_query_response(const cal_event_t *event,
+        ResourceDatapointsReply_t *rdr) 
 {
+    bdm_hab_list_t * hab_list = 
+        handle_Resource_Datapoints_Reply(rdr);
+
+    bdm_hab_list_free(hab_list);
+
+}
+
+bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern, 
+				       struct timeval *datapointStart, 
+				       struct timeval *datapointEnd,
+				       int entryStart,
+				       int entryEnd) {
     char *hab_type;
     char *hab_id;
     char *node_id;
@@ -168,17 +172,16 @@ bdm_hab_list_t *bdm_get_resource_datapoints(
     BDM_C2S_Message_t m;
     ResourceDatapointsQuery_t *rdpq;
 
+    bdm_hab_list_t *retval = NULL;
+
     int r;
     asn_enc_rval_t enc_rval;
 
+    BDM_S2C_Message_t *message = NULL;
+    int index = 0;
+    int total_bytes_read = 0;
+    
     struct timeval tv;
-
-    bionet_asn_buffer_t buf;
-    memset(&buf, 0, sizeof(buf));
-
-    if (bdm_id == NULL) {
-        bdm_id = BDM_DEFAULT_HOST;
-    }
 
     memset(&m, 0x00, sizeof(BDM_C2S_Message_t));
     m.present = BDM_C2S_Message_PR_resourceDatapointsQuery;
@@ -186,31 +189,31 @@ bdm_hab_list_t *bdm_get_resource_datapoints(
 
     r = bionet_split_resource_name(resource_name_pattern, &hab_type, &hab_id, &node_id, &resource_id);
     if (r != 0) {
-        goto cleanup;
+        goto cleanup0;
     }
 
     r = OCTET_STRING_fromString(&rdpq->habType, hab_type);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error making OCTET STRING for %s", hab_type);
-        goto cleanup;
+        goto cleanup0;
     }
 
     r = OCTET_STRING_fromString(&rdpq->habId, hab_id);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error making OCTET STRING for %s", hab_id);
-        goto cleanup;
+        goto cleanup1;
     }
 
     r = OCTET_STRING_fromString(&rdpq->nodeId, node_id);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error making OCTET STRING for %s", node_id);
-        goto cleanup;
+        goto cleanup2;
     }
 
     r = OCTET_STRING_fromString(&rdpq->resourceId, resource_id);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error making OCTET STRING for %s", resource_id);
-        goto cleanup;
+        goto cleanup3;
     }
 
     if (datapointStart) {
@@ -230,7 +233,7 @@ bdm_hab_list_t *bdm_get_resource_datapoints(
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
 	}
-        goto cleanup;
+        goto cleanup4;
     }
 
     if (datapointEnd) {
@@ -250,42 +253,104 @@ bdm_hab_list_t *bdm_get_resource_datapoints(
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bdm_get_resource_datapoints(): error making GeneralizedTime from NULL: %m");
 	}
-        goto cleanup;
+        goto cleanup5;
     }
 
     rdpq->entryStart = entryStart;
     rdpq->entryEnd = entryEnd;
 
-    enc_rval = der_encode(&asn_DEF_BDM_C2S_Message, &m, bionet_accumulate_asn_buffer, &buf);
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_C2S_Message, &m);
+    enc_rval = der_encode(&asn_DEF_BDM_C2S_Message, &m, bdm_send_asn, NULL);
     if (enc_rval.encoded == -1) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error with der_encode(): %s", strerror(errno));
-        goto cleanup;
+        goto cleanup6;
     }
 
 
-    // send the request to the BDM
-    // NOTE: cal_client.sendto assumes control of buf
-    bdm_hab_list_t * this_response = NULL;
-    r = cal_client.sendto(bdm_id, buf.buf, buf.size);
-    if ( r ) {
+    // FIXME: bogus loop to read the reply
+    unsigned char buf[10 * 1024];
+    asn_dec_rval_t dec_rval;
 
-        while(_libbdm_query_response == NULL) {
-            g_usleep(1000);
-            bdm_read();
+    do {
+        int r;
+
+        r = read(bdm_fd, &buf[index], sizeof(buf) - index);
+        if (r < 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error reading reply from server: %s", strerror(errno));
+            goto cleanup6;
+        }
+        if (r == 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): short read from server: %s", strerror(errno));
+            goto cleanup6;
         }
 
-        this_response = _libbdm_query_response;
-        _libbdm_query_response = NULL;
+        total_bytes_read += r;
+        index += r;
+
+        dec_rval = ber_decode(NULL, &asn_DEF_BDM_S2C_Message, (void **)&message, buf, index);
+
+        if (dec_rval.code == RC_OK) {
+            bdm_hab_list_t *hab_list;
+            if (message->present != BDM_S2C_Message_PR_resourceDatapointsReply) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "bdm_get_resource_datapoints(): unexpected message %d", message->present);
+                goto cleanup6;
+            }
+            hab_list = handle_Resource_Datapoints_Reply(&message->choice.resourceDatapointsReply);
+            asn_DEF_BDM_S2C_Message.free_struct(&asn_DEF_BDM_S2C_Message, message, 0);
+            retval = hab_list;
+            goto cleanup6;
+        } else if (dec_rval.code == RC_WMORE) {
+            // ber_decode is waiting for more data, but so far so good
+        } else if (dec_rval.code == RC_FAIL) {
+            // received invalid junk
+            g_warning("ber_decode failed to decode the server's message");
+            retval = NULL;
+            goto cleanup6;
+        } else {
+            g_warning("unknown error with ber_decode (code=%d)", dec_rval.code);
+            retval = NULL;
+            goto cleanup6;
+        }
+
+        if (dec_rval.consumed > 0) {
+            index -= dec_rval.consumed;
+            if (index > 0) {
+                memmove(buf, &buf[dec_rval.consumed], index);
+            }
+        }
+    } while (1);
+
+cleanup6:
+    if (OCTET_STRING_fromBuf(&rdpq->datapointEndTime, NULL, 0)) {
+	g_warning("clearing datapoint end time failed: %s", strerror(errno));
     }
 
-    return this_response;
+cleanup5:
+    if (OCTET_STRING_fromBuf(&rdpq->datapointStartTime, NULL, 0)) {
+	g_warning("clearing datapoint start time failed: %s", strerror(errno));
+    }
 
+cleanup4:
+    if (OCTET_STRING_fromBuf(&rdpq->resourceId, NULL, 0)) {
+	g_warning("clearing resourceId failed: %s", strerror(errno));
+    }
 
-cleanup:
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_C2S_Message, &m);
+cleanup3:
+    if (OCTET_STRING_fromBuf(&rdpq->nodeId, NULL, 0)) {
+	g_warning("clearing nodeId failed: %s", strerror(errno));
+    }
 
-    return NULL;
+cleanup2:
+    if (OCTET_STRING_fromBuf(&rdpq->habId, NULL, 0)) {
+	g_warning("clearing habId failed: %s", strerror(errno));
+    }
+
+cleanup1:
+    if (OCTET_STRING_fromBuf(&rdpq->habType, NULL, 0)) {
+	g_warning("clearing habType failed: %s", strerror(errno));
+    }
+
+cleanup0:
+    return retval;
 }
 
 // Emacs cruft

@@ -19,8 +19,6 @@
 #include "bdm-client.h"
 
 
-extern int bdm_fd;
-
 static int str_to_int(const char * str) {
     char * endptr;
     int i;
@@ -225,14 +223,14 @@ int main(int argc, char *argv[]) {
     }
 
 
-    bdm_fd = bdm_connect(bdm_hostname, bdm_port);
-    if (bdm_fd < 0) {
+    int fd;
+    fd = bdm_connect(bdm_hostname, bdm_port);
+    if ( fd < 0 ) {
         exit(1);
     }
 
 restart_poll:
-    hab_list = bdm_get_resource_datapoints(bdm_hostname,
-            resource_name_pattern,
+    hab_list = bdm_get_resource_datapoints(resource_name_pattern,
             pDatapointStart, pDatapointEnd, entryStart, entryEnd);
     if (hab_list == NULL) {
         g_message("error getting resource datapoints");

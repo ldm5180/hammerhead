@@ -31,7 +31,7 @@
 
 
 int bdm_is_connected() {
-    if (libbdm_cal_fd < 0) {
+    if (bdm_fd < 0) {
         return 0;
     }
 
@@ -199,6 +199,7 @@ int bdm_start(void) {
     return libbdm_cal_fd;
 }
 
+
 // 
 // Opens a TCP connection to the BDM server specified by
 // bdm_hostname and bdm_port.
@@ -208,8 +209,13 @@ int bdm_start(void) {
 // Returns the socket fd if the connection is open, -1 if there's a problem.
 //
 
-void bdm_add_server(char *hostname, uint16_t port) {
-    if (libbdm_cal_fd < 0) if ( bdm_start() < 0 ) return;
+int bdm_connect(char *hostname, uint16_t port) {
+    struct sockaddr_in server_address;
+    struct hostent *server_host;
+
+
+    // if the connection is already open we just return it's fd
+    if (bdm_fd > -1) return bdm_fd;
 
     if (port == 0)
     {
@@ -221,69 +227,151 @@ void bdm_add_server(char *hostname, uint16_t port) {
     }
 
 
-    cal_client.force_discover(hostname, hostname, port, 0);
+    //
+    // If the server dies or the connection is lost somehow, writes will
+    // cause us to receive SIGPIPE, and the default SIGPIPE handler
+    // terminates the process.  So we need to change the handler to ignore
+    // the signal, unless the process has explicitly changed the action.
+    //
 
-}
-
-// 
-// Opens a TCP connection to the BDM server specified by
-// bdm_hostname and bdm_port, and waits for completion
-//
-// if port == 0, BDM_PORT will be used
-//
-// Returns the socket fd if the connection is open, -1 if there's a problem.
-//
-
-int bdm_connect(char *hostname, uint16_t port) {
-    int rc = 0;
-
-    if (libbdm_cal_fd < 0) if( bdm_start() < 0 ) return -1;
-
-    if (port == 0)
     {
-	port = BDM_PORT;
-    }
+        int r;
+        struct sigaction sa;
 
-    if (hostname == NULL) {
-        hostname = BDM_DEFAULT_HOST;
-    }
-
-
-    bionet_bdm_t * bdm = bionet_bdm_new(hostname);
-    if ( bdm == NULL ) return -1; // Error has already been logged
-    libbdm_bdm_api_subscriptions = g_slist_prepend(libbdm_bdm_api_subscriptions, bdm);
-
-    cal_client.force_discover(hostname, hostname, port, 0);
-
-    int found = 0;
-    while(!found) {
-        bdm_read();
-        GSList * l;
-
-        for(l = libbdm_api_new_peers; l != NULL;) {
-            char * peer_name = l->data;
-            if (!strcmp(peer_name, bdm->id)) {
-                found = 1;
-                rc = 0;
-            }
-            free(l->data);
-            l = g_slist_delete_link(l, l);
+        r = sigaction(SIGPIPE, NULL, &sa);
+        if (r < 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect(): error getting old SIGPIPE sigaction: %s", strerror(errno));
+            return -1;
         }
 
-        for(l = libbdm_api_lost_peers; l != NULL;) {
-            char * peer_name = l->data;
-            if (!strcmp(peer_name, bdm->id)) {
-                found = 1;
-                rc = -1;
+        if (sa.sa_handler == SIG_DFL) {
+            sa.sa_handler = SIG_IGN;
+            r = sigaction(SIGPIPE, &sa, NULL);
+            if (r < 0) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect(): error setting SIGPIPE sigaction to SIG_IGN: %s", strerror(errno));
+                return -1;
             }
-            free(l->data);
-            l = g_slist_delete_link(l, l);
         }
     }
-    libbdm_bdm_api_subscriptions = g_slist_remove(libbdm_bdm_api_subscriptions, bdm);
 
 
-    return rc;
+    // get the hostent for the server
+    server_host = gethostbyname(hostname);
 
+    if (server_host == NULL) {
+	const char *error_string;
+	error_string = hstrerror(h_errno);
+
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bdm_connect(): gethostbyname(\"%s\"): %s",
+            hostname,
+            error_string
+        );
+        return -1;
+    }
+
+
+    // create the socket
+    if ((bdm_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bdm_connect(): cannot create local socket: %s",
+            strerror(errno)
+        );
+        return -1;
+    }
+
+
+    //  This makes it to the underlying networking code tries to send any
+    //  buffered data, even after we've closed the socket.
+    {
+        struct linger linger;
+
+        linger.l_onoff = 1;
+        linger.l_linger = 60;
+        if (setsockopt(bdm_fd, SOL_SOCKET, SO_LINGER, (char *)&linger, sizeof(linger)) != 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect(): WARNING: cannot make socket linger: %s", strerror(errno));
+        }
+    }
+
+
+    // prepare the server address
+    memset((char *)&server_address, '\0', sizeof(server_address));
+    server_address.sin_family = AF_INET;
+    server_address.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)(*server_host->h_addr_list)));
+    server_address.sin_port = g_htons(port);
+
+
+    // connect to the server
+    if (connect(bdm_fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) {
+        g_log(
+            BDM_LOG_DOMAIN,
+            G_LOG_LEVEL_WARNING,
+            "bdm_connect(): failed to connect to server %s:%d: %s",
+            server_host->h_name,
+            port,
+            strerror(errno)
+        );
+
+        bdm_disconnect();
+
+        return -1;
+    }
+
+
+
+
+#if 0
+    //
+    // Send our ident string to the server, it's useful for keeping
+    // statistics and for debugging.
+    //
+    // If the client app did not specifically set the ID by calling
+    // bdm_set_id(), we use the default: "user@host:port (program [pid])"
+    //
+
+    if (libbionet_client_id != NULL) {
+        bionet_message_t m;
+        m.type = Bionet_Message_C2N_Set_ID;
+        m.body.c2n_set_id.id = libbionet_client_id;
+        r = bionet_nxio_send_message(libbionet_nag_nxio, &m);
+
+    } else {
+	bionet_message_t m;
+        char *id;
+
+        id = (char *)libbionet_get_id();
+        if (id == NULL) {
+            // the _get_id() function will have logged an error
+            libbionet_kill_nag_connection();
+            return -1;
+        }
+
+        m.type = Bionet_Message_C2N_Set_ID;
+        m.body.c2n_set_id.id = (char *)libbionet_get_id();
+        r = bionet_nxio_send_message(libbionet_nag_nxio, &m);
+    }
+
+    // r is from the bionet_nxio_send_message()
+    if (r < 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_connect_to_nag(): error sending ident string");
+        libbionet_kill_nag_connection();
+        return -1;
+    }
+
+    r = libbionet_read_ok_from_nag();
+    if (r < 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_connect_to_nag(): error setting id: %s", bionet_get_nag_error());
+        libbionet_kill_nag_connection();
+        return -1;
+    }
+#endif
+
+
+    return bdm_fd;
 }
+
 

@@ -16,8 +16,6 @@
 #include "cal-client.h"
 #include "libbdm-internal.h"
 
-extern int bdm_fd;
-
 void bdm_disconnect() {
     if (libbdm_cal_fd < 0) return;
 

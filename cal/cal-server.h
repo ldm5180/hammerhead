@@ -202,44 +202,6 @@ typedef struct {
      */
     int (*init_security)(const char * dir, int require);
 
-    //!
-    //! \brief Make this peer available for connections.
-    //!
-    //! \param network_type A NULL-terminated ASCII string containing the
-    //!     name of the CAL network to join.
-    //!
-    //! \param name The name to announce this CAL server as on the network.
-    //!
-    //! \param port The port to bind to, or -1 to pick a random available port
-    //!
-    //! \param callback The callback function to be called by the CAL
-    //!     library when events happen to this peer.
-    //!
-    //! \param topic_matches The topic_matches function will be called by
-    //!     the CAL Server library to check if the topic of a published
-    //!     message matches a CAL Client's subscription.  The function
-    //!     should return 0 if the topic matches, and non-zero if the topic
-    //!     does not match.  Thus strcmp() is a valid option, and results
-    //!     in only exact topic matches being accepted.  This is also the
-    //!     default if NULL is passed in for topic_matches.  topic_matches
-    //!     must be reentrant.
-    //!
-    //! \return On success, returns a file descriptor which should be
-    //!     monitored by the caller.  When the fd is readable, or when the
-    //!     caller wants to poll it, the caller should call the .read()
-    //!     function.  The caller must never read or write the returned
-    //!     file descriptor directly.  On failure, returns -1.
-    //!
-
-    int (*init_full)(
-        const char *network_name,
-        const char *name,
-        int port,
-        void (*callback)(const cal_event_t *event),
-        int (*topic_matches)(const char *topic, const char *subscription)
-    );
-
-
 } cal_server_t;
 
 

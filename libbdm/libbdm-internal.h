@@ -46,6 +46,8 @@ extern void * libbdm_callback_stream_usr_data;
 
 extern int libbdm_cal_fd;
 
+// Backword compatibility for old client/server interface
+extern int bdm_fd;
 
 
 extern GHashTable *libbdm_all_peers; // All peers reported by CAL
