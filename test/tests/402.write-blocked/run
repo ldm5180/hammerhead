@@ -97,9 +97,10 @@ kill $WATCH2PID
 wait $WATCH2PID
 
 if ! diff -q out.watcher.0 testpattern.out; then
-    echo "ERROR: watcher output differs from test-pattern-hab output"
-    echo "Differences not shown. Look at output of:"
-    echo "  diff -u testpattern.out out.watcher.0"
+    echo "ERROR: watcher output differs from test-pattern-hab output:"
+    #echo "Differences not shown. Look at output of:"
+    #echo "  diff -u testpattern.out out.watcher.0"
+    diff -u testpattern.out out.watcher.0
     RETVAL=1
 else
     echo "watcher outputs are identical to test-pattern-hab output, yay"
