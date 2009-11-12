@@ -227,6 +227,7 @@ static int read_from_user(void) {
                 //
 
                 g_hash_table_iter_init(&iter, clients);
+                GSList * errored_clients = NULL;
                 while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&client)) {
                     GSList *si;
 
@@ -237,12 +238,20 @@ static int read_from_user(void) {
                             r = bip_send_message(client, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
                             if( r != 0 ) {
                                 handle_client_disconnect(name);
-                                g_hash_table_remove(clients, name);  // close the network connection, free all allocated memory for key & value
-                                goto fail;
+                                // We can't remove the peer from the hash table while we're
+                                // iterating through it...
+                                errored_clients = g_slist_prepend(errored_clients, strdup(name));
                             }
                             break;
                         }
                     }
+                }
+                while(errored_clients) {
+                    GSList * item = errored_clients;
+                    char * name = (char *)item->data;
+                    g_hash_table_remove(clients, name);  // close the network connection, free all allocated memory for key & value
+                    free(name);
+                    errored_clients = g_slist_delete_link(errored_clients, item);
                 }
             } else {
                 bip_peer_t *peer;
@@ -290,7 +299,6 @@ static int read_from_user(void) {
             break;
         }
     }
-fail:
 
     cal_event_free(event);
 

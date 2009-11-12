@@ -1,0 +1,239 @@
+new hab: test-pattern-hab.XXPIDXX
+new node: test-pattern-hab.XXPIDXX.Morris
+    Resources:
+        Int16 Parameter caper (no known value)
+        UInt32 Parameter ragas (no known value)
+        Int8 Parameter pumps = 84 @ 2009-08-05 15:39:38.702896
+        UInt32 Parameter tush (no known value)
+        Float Actuator jibe = -8.407664e+21 @ 2009-08-05 15:39:38.702896
+        Int16 Actuator has (no known value)
+        Float Actuator crisp = 4.609175e-28 @ 2009-08-05 15:39:38.702896
+        Int32 Parameter mob (no known value)
+        Int16 Actuator wheel = 3598 @ 2009-08-05 15:39:38.702896
+        Int16 Parameter hogs = -25444 @ 2009-08-05 15:39:38.702896
+        Double Actuator privy = -1.5873688947596e-151 @ 2009-08-05 15:39:38.702896
+        Int32 Sensor hypes (no known value)
+        Float Parameter julep = 12689.57 @ 2009-08-05 15:39:38.702896
+        Int16 Actuator opus (no known value)
+        Int8 Sensor incur (no known value)
+        Binary Actuator plaza (no known value)
+        UInt32 Actuator frats (no known value)
+        UInt8 Parameter shelf = 67 @ 2009-08-05 15:39:38.702896
+        UInt32 Sensor baser (no known value)
+        String Sensor raven = mute peach gurus eased @ 2009-08-05 15:39:38.702896
+test-pattern-hab.XXPIDXX.Morris:pumps = Int8 Parameter 84 @ 2009-08-05 15:39:38.702896
+test-pattern-hab.XXPIDXX.Morris:jibe = Float Actuator -8.407664e+21 @ 2009-08-05 15:39:38.702896
+test-pattern-hab.XXPIDXX.Morris:crisp = Float Actuator 4.609175e-28 @ 2009-08-05 15:39:38.702896
+test-pattern-hab.XXPIDXX.Morris:wheel = Int16 Actuator 3598 @ 2009-08-05 15:39:38.702896
+test-pattern-hab.XXPIDXX.Morris:hogs = Int16 Parameter -25444 @ 2009-08-05 15:39:38.702896
+test-pattern-hab.XXPIDXX.Morris:privy = Double Actuator -1.5873688947596e-151 @ 2009-08-05 15:39:38.702896
+test-pattern-hab.XXPIDXX.Morris:julep = Float Parameter 12689.57 @ 2009-08-05 15:39:38.702896
+test-pattern-hab.XXPIDXX.Morris:shelf = UInt8 Parameter 67 @ 2009-08-05 15:39:38.702896
+test-pattern-hab.XXPIDXX.Morris:raven = String Sensor mute peach gurus eased @ 2009-08-05 15:39:38.702896
+test-pattern-hab.XXPIDXX.Morris:pumps = Int8 Parameter 84 @ 2009-08-05 15:39:38.696871
+test-pattern-hab.XXPIDXX.Morris:jibe = Float Actuator -8.407664e+21 @ 2009-08-05 15:39:38.697050
+test-pattern-hab.XXPIDXX.Morris:crisp = Float Actuator 4.609175e-28 @ 2009-08-05 15:39:38.697120
+test-pattern-hab.XXPIDXX.Morris:wheel = Int16 Actuator 3598 @ 2009-08-05 15:39:38.697160
+test-pattern-hab.XXPIDXX.Morris:hogs = Int16 Parameter -25444 @ 2009-08-05 15:39:38.697175
+test-pattern-hab.XXPIDXX.Morris:privy = Double Actuator -1.5873688947596e-151 @ 2009-08-05 15:39:38.697204
+test-pattern-hab.XXPIDXX.Morris:julep = Float Parameter 12689.57 @ 2009-08-05 15:39:38.697234
+test-pattern-hab.XXPIDXX.Morris:shelf = UInt8 Parameter 67 @ 2009-08-05 15:39:38.697317
+test-pattern-hab.XXPIDXX.Morris:raven = String Sensor mute peach gurus eased @ 2009-08-05 15:39:38.697365
+new node: test-pattern-hab.XXPIDXX.Knudsen
+    Resources:
+        Binary Sensor boats = 1 @ 2009-08-05 15:39:38.704068
+        Int16 Sensor pore = 29298 @ 2009-08-05 15:39:38.704068
+        UInt8 Parameter tams = 19 @ 2009-08-05 15:39:38.704068
+        UInt8 Parameter adobe (no known value)
+        Int16 Actuator lazy (no known value)
+        UInt16 Actuator tapir (no known value)
+        UInt16 Sensor patio (no known value)
+        String Sensor ankle (no known value)
+        Int8 Sensor fiat = 118 @ 2009-08-05 15:39:38.704068
+        Int16 Actuator yule = 3855 @ 2009-08-05 15:39:38.704068
+        Int32 Sensor shale = -1886417009 @ 2009-08-05 15:39:38.704068
+        Int32 Actuator fades (no known value)
+        Int32 Sensor inept (no known value)
+        Int32 Sensor mom (no known value)
+test-pattern-hab.XXPIDXX.Knudsen:boats = Binary Sensor 1 @ 2009-08-05 15:39:38.704068
+test-pattern-hab.XXPIDXX.Knudsen:pore = Int16 Sensor 29298 @ 2009-08-05 15:39:38.704068
+test-pattern-hab.XXPIDXX.Knudsen:tams = UInt8 Parameter 19 @ 2009-08-05 15:39:38.704068
+test-pattern-hab.XXPIDXX.Knudsen:fiat = Int8 Sensor 118 @ 2009-08-05 15:39:38.704068
+test-pattern-hab.XXPIDXX.Knudsen:yule = Int16 Actuator 3855 @ 2009-08-05 15:39:38.704068
+test-pattern-hab.XXPIDXX.Knudsen:shale = Int32 Sensor -1886417009 @ 2009-08-05 15:39:38.704068
+test-pattern-hab.XXPIDXX.Knudsen:boats = Binary Sensor 1 @ 2009-08-05 15:39:38.698373
+test-pattern-hab.XXPIDXX.Knudsen:pore = Int16 Sensor 29298 @ 2009-08-05 15:39:38.698390
+test-pattern-hab.XXPIDXX.Knudsen:tams = UInt8 Parameter 19 @ 2009-08-05 15:39:38.698411
+test-pattern-hab.XXPIDXX.Knudsen:fiat = Int8 Sensor 118 @ 2009-08-05 15:39:38.698488
+test-pattern-hab.XXPIDXX.Knudsen:yule = Int16 Actuator 3855 @ 2009-08-05 15:39:38.698511
+test-pattern-hab.XXPIDXX.Knudsen:shale = Int32 Sensor -1886417009 @ 2009-08-05 15:39:38.698526
+new node: test-pattern-hab.XXPIDXX.Isabelle
+    Resources:
+        Binary Sensor refed (no known value)
+        Int32 Sensor hoped = -1397969748 @ 2009-08-05 15:39:38.704765
+        Float Actuator drank = -5.965414e+29 @ 2009-08-05 15:39:38.704765
+        Double Actuator abash = 1.6340899438725e+69 @ 2009-08-05 15:39:38.704765
+        Float Parameter vista (no known value)
+        Int32 Sensor oaf = 151587081 @ 2009-08-05 15:39:38.704765
+        Binary Actuator shift (no known value)
+        Double Sensor torso = 8.1968741124263e+107 @ 2009-08-05 15:39:38.704765
+        Binary Sensor hexes (no known value)
+        UInt32 Actuator five (no known value)
+        Binary Parameter axles (no known value)
+        Int16 Parameter oars = -9510 @ 2009-08-05 15:39:38.704765
+        String Sensor spate (no known value)
+        Float Parameter vegan (no known value)
+        UInt8 Sensor teeth (no known value)
+        Int16 Sensor ohos (no known value)
+        Int16 Sensor crape = 2570 @ 2009-08-05 15:39:38.704765
+        UInt8 Sensor urge = 16 @ 2009-08-05 15:39:38.704765
+        String Parameter abeam (no known value)
+        Int16 Actuator horsy (no known value)
+        Int16 Actuator lint (no known value)
+        Int16 Parameter bulgy = 30840 @ 2009-08-05 15:39:38.704765
+        Int8 Sensor lined (no known value)
+        Float Sensor spits (no known value)
+        Int32 Parameter names (no known value)
+        Int16 Parameter real (no known value)
+        Binary Actuator numbs (no known value)
+        UInt32 Sensor foils = 2509608341 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:hoped = Int32 Sensor -1397969748 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:drank = Float Actuator -5.965414e+29 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:abash = Double Actuator 1.6340899438725e+69 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:oaf = Int32 Sensor 151587081 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:torso = Double Sensor 8.1968741124263e+107 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:oars = Int16 Parameter -9510 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:crape = Int16 Sensor 2570 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:urge = UInt8 Sensor 16 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:bulgy = Int16 Parameter 30840 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:foils = UInt32 Sensor 2509608341 @ 2009-08-05 15:39:38.704765
+test-pattern-hab.XXPIDXX.Isabelle:hoped = Int32 Sensor -1397969748 @ 2009-08-05 15:39:38.699106
+test-pattern-hab.XXPIDXX.Isabelle:drank = Float Actuator -5.965414e+29 @ 2009-08-05 15:39:38.699121
+test-pattern-hab.XXPIDXX.Isabelle:abash = Double Actuator 1.6340899438725e+69 @ 2009-08-05 15:39:38.699140
+test-pattern-hab.XXPIDXX.Isabelle:oaf = Int32 Sensor 151587081 @ 2009-08-05 15:39:38.699168
+test-pattern-hab.XXPIDXX.Isabelle:torso = Double Sensor 8.1968741124263e+107 @ 2009-08-05 15:39:38.699192
+test-pattern-hab.XXPIDXX.Isabelle:oars = Int16 Parameter -9510 @ 2009-08-05 15:39:38.699240
+test-pattern-hab.XXPIDXX.Isabelle:crape = Int16 Sensor 2570 @ 2009-08-05 15:39:38.699306
+test-pattern-hab.XXPIDXX.Isabelle:urge = UInt8 Sensor 16 @ 2009-08-05 15:39:38.699321
+test-pattern-hab.XXPIDXX.Isabelle:bulgy = Int16 Parameter 30840 @ 2009-08-05 15:39:38.699365
+test-pattern-hab.XXPIDXX.Isabelle:foils = UInt32 Sensor 2509608341 @ 2009-08-05 15:39:38.699431
+new node: test-pattern-hab.XXPIDXX.Malloy
+    Resources:
+        String Parameter minx = delis @ 2009-08-05 15:39:38.705994
+        UInt8 Sensor lungs (no known value)
+        UInt32 Sensor condo (no known value)
+        UInt8 Sensor cold = 136 @ 2009-08-05 15:39:38.705994
+        UInt32 Sensor over (no known value)
+        Int8 Actuator techs (no known value)
+        Int16 Parameter heros = 13621 @ 2009-08-05 15:39:38.705994
+        UInt32 Parameter frays = 2307492233 @ 2009-08-05 15:39:38.705994
+        Float Parameter moses (no known value)
+        UInt32 Parameter churn = 2762253476 @ 2009-08-05 15:39:38.705994
+        Int8 Parameter mild = -106 @ 2009-08-05 15:39:38.705994
+        Float Actuator toads = 3.85009e-37 @ 2009-08-05 15:39:38.705994
+        Binary Sensor legs = 0 @ 2009-08-05 15:39:38.705994
+        UInt32 Sensor mutts = 3318072773 @ 2009-08-05 15:39:38.705994
+        UInt32 Parameter showy = 2324335242 @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:minx = String Parameter delis @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:cold = UInt8 Sensor 136 @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:heros = Int16 Parameter 13621 @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:frays = UInt32 Parameter 2307492233 @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:churn = UInt32 Parameter 2762253476 @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:mild = Int8 Parameter -106 @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:toads = Float Actuator 3.85009e-37 @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:legs = Binary Sensor 0 @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:mutts = UInt32 Sensor 3318072773 @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:showy = UInt32 Parameter 2324335242 @ 2009-08-05 15:39:38.705994
+test-pattern-hab.XXPIDXX.Malloy:minx = String Parameter delis @ 2009-08-05 15:39:38.700422
+test-pattern-hab.XXPIDXX.Malloy:cold = UInt8 Sensor 136 @ 2009-08-05 15:39:38.700459
+test-pattern-hab.XXPIDXX.Malloy:heros = Int16 Parameter 13621 @ 2009-08-05 15:39:38.700501
+test-pattern-hab.XXPIDXX.Malloy:frays = UInt32 Parameter 2307492233 @ 2009-08-05 15:39:38.700516
+test-pattern-hab.XXPIDXX.Malloy:churn = UInt32 Parameter 2762253476 @ 2009-08-05 15:39:38.700541
+test-pattern-hab.XXPIDXX.Malloy:mild = Int8 Parameter -106 @ 2009-08-05 15:39:38.700915
+test-pattern-hab.XXPIDXX.Malloy:toads = Float Actuator 3.85009e-37 @ 2009-08-05 15:39:38.700933
+test-pattern-hab.XXPIDXX.Malloy:legs = Binary Sensor 0 @ 2009-08-05 15:39:38.700950
+test-pattern-hab.XXPIDXX.Malloy:mutts = UInt32 Sensor 3318072773 @ 2009-08-05 15:39:38.700966
+test-pattern-hab.XXPIDXX.Malloy:showy = UInt32 Parameter 2324335242 @ 2009-08-05 15:39:38.700990
+new node: test-pattern-hab.XXPIDXX.Deirdre
+lost node: test-pattern-hab.XXPIDXX.Knudsen
+new node: test-pattern-hab.XXPIDXX.Bobbie
+    Resources:
+        String Sensor dells (no known value)
+        String Sensor happy (no known value)
+        Int32 Parameter said = -1431655766 @ 2009-08-05 15:39:42.267890
+        Binary Parameter thaws = 0 @ 2009-08-05 15:39:42.267890
+        Double Parameter frost (no known value)
+        String Sensor dives = movie topic lip iris @ 2009-08-05 15:39:42.267890
+        Int16 Actuator gunny = -2314 @ 2009-08-05 15:39:42.267890
+        Int8 Actuator poles = -61 @ 2009-08-05 15:39:42.267890
+        String Actuator lain = sore downs bract @ 2009-08-05 15:39:42.267890
+        Double Sensor right = -4.2525583765009e+71 @ 2009-08-05 15:39:42.267890
+        Int16 Sensor gorge = 14135 @ 2009-08-05 15:39:42.267890
+        Float Parameter miler = 2.520702e-35 @ 2009-08-05 15:39:42.267890
+        String Parameter due =  @ 2009-08-05 15:39:42.267890
+        Float Parameter pews (no known value)
+        UInt32 Actuator tamps (no known value)
+        Binary Actuator ennui (no known value)
+        Binary Parameter fades (no known value)
+        Int32 Actuator icon (no known value)
+        Binary Actuator waste = 0 @ 2009-08-05 15:39:42.267890
+        Int16 Parameter ply = 1542 @ 2009-08-05 15:39:42.267890
+        Binary Actuator stymy = 0 @ 2009-08-05 15:39:42.267890
+        UInt16 Actuator bones = 47031 @ 2009-08-05 15:39:42.267890
+        Int16 Parameter blind = -8739 @ 2009-08-05 15:39:42.267890
+        UInt8 Sensor hurl = 212 @ 2009-08-05 15:39:42.267890
+        String Sensor zeros (no known value)
+test-pattern-hab.XXPIDXX.Bobbie:said = Int32 Parameter -1431655766 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:thaws = Binary Parameter 0 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:dives = String Sensor movie topic lip iris @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:gunny = Int16 Actuator -2314 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:poles = Int8 Actuator -61 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:lain = String Actuator sore downs bract @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:right = Double Sensor -4.2525583765009e+71 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:gorge = Int16 Sensor 14135 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:miler = Float Parameter 2.520702e-35 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:due = String Parameter  @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:waste = Binary Actuator 0 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:ply = Int16 Parameter 1542 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:stymy = Binary Actuator 0 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:bones = UInt16 Actuator 47031 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:blind = Int16 Parameter -8739 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:hurl = UInt8 Sensor 212 @ 2009-08-05 15:39:42.267890
+test-pattern-hab.XXPIDXX.Bobbie:said = Int32 Parameter -1431655766 @ 2009-08-05 15:39:42.265458
+test-pattern-hab.XXPIDXX.Bobbie:thaws = Binary Parameter 0 @ 2009-08-05 15:39:42.265495
+test-pattern-hab.XXPIDXX.Bobbie:dives = String Sensor movie topic lip iris @ 2009-08-05 15:39:42.265529
+test-pattern-hab.XXPIDXX.Bobbie:gunny = Int16 Actuator -2314 @ 2009-08-05 15:39:42.265545
+test-pattern-hab.XXPIDXX.Bobbie:poles = Int8 Actuator -61 @ 2009-08-05 15:39:42.265560
+test-pattern-hab.XXPIDXX.Bobbie:lain = String Actuator sore downs bract @ 2009-08-05 15:39:42.265581
+test-pattern-hab.XXPIDXX.Bobbie:right = Double Sensor -4.2525583765009e+71 @ 2009-08-05 15:39:42.265598
+test-pattern-hab.XXPIDXX.Bobbie:gorge = Int16 Sensor 14135 @ 2009-08-05 15:39:42.265645
+test-pattern-hab.XXPIDXX.Bobbie:miler = Float Parameter 2.520702e-35 @ 2009-08-05 15:39:42.265661
+test-pattern-hab.XXPIDXX.Bobbie:due = String Parameter  @ 2009-08-05 15:39:42.265680
+test-pattern-hab.XXPIDXX.Bobbie:waste = Binary Actuator 0 @ 2009-08-05 15:39:42.265746
+test-pattern-hab.XXPIDXX.Bobbie:ply = Int16 Parameter 1542 @ 2009-08-05 15:39:42.265761
+test-pattern-hab.XXPIDXX.Bobbie:stymy = Binary Actuator 0 @ 2009-08-05 15:39:42.265776
+test-pattern-hab.XXPIDXX.Bobbie:bones = UInt16 Actuator 47031 @ 2009-08-05 15:39:42.265796
+test-pattern-hab.XXPIDXX.Bobbie:blind = Int16 Parameter -8739 @ 2009-08-05 15:39:42.265811
+test-pattern-hab.XXPIDXX.Bobbie:hurl = UInt8 Sensor 212 @ 2009-08-05 15:39:42.265826
+lost node: test-pattern-hab.XXPIDXX.Malloy
+new node: test-pattern-hab.XXPIDXX.Henrietta
+lost node: test-pattern-hab.XXPIDXX.Deirdre
+new node: test-pattern-hab.XXPIDXX.Naomi
+test-pattern-hab.XXPIDXX.Bobbie:dells = String Sensor tuba coats drown bimbo @ 2009-08-05 15:39:47.842960
+test-pattern-hab.XXPIDXX.Bobbie:said = Int32 Parameter -1549556829 @ 2009-08-05 15:39:47.842990
+test-pattern-hab.XXPIDXX.Bobbie:frost = Double Parameter -2.1455548238549e+110 @ 2009-08-05 15:39:47.843006
+test-pattern-hab.XXPIDXX.Bobbie:gunny = Int16 Actuator 21588 @ 2009-08-05 15:39:47.843028
+test-pattern-hab.XXPIDXX.Bobbie:poles = Int8 Actuator 122 @ 2009-08-05 15:39:47.843038
+test-pattern-hab.XXPIDXX.Bobbie:right = Double Sensor 7.4770802645436e+20 @ 2009-08-05 15:39:47.843052
+test-pattern-hab.XXPIDXX.Bobbie:gorge = Int16 Sensor 7196 @ 2009-08-05 15:39:47.843063
+test-pattern-hab.XXPIDXX.Bobbie:pews = Float Parameter -8.799083e+24 @ 2009-08-05 15:39:47.843081
+test-pattern-hab.XXPIDXX.Bobbie:fades = Binary Parameter 1 @ 2009-08-05 15:39:47.843100
+test-pattern-hab.XXPIDXX.Bobbie:icon = Int32 Actuator 320017171 @ 2009-08-05 15:39:47.843109
+test-pattern-hab.XXPIDXX.Bobbie:stymy = Binary Actuator 1 @ 2009-08-05 15:39:47.843128
+test-pattern-hab.XXPIDXX.Morris:jibe = Float Actuator 7.914983e-24 @ 2009-08-05 15:39:52.411461
+test-pattern-hab.XXPIDXX.Morris:crisp = Float Actuator -1.095257e-18 @ 2009-08-05 15:39:52.411502
+test-pattern-hab.XXPIDXX.Morris:wheel = Int16 Actuator 13621 @ 2009-08-05 15:39:52.411525
+test-pattern-hab.XXPIDXX.Morris:shelf = UInt8 Parameter 252 @ 2009-08-05 15:39:52.411569
+test-pattern-hab.XXPIDXX.Morris:baser = UInt32 Sensor 1397969747 @ 2009-08-05 15:39:52.411579
+test-pattern-hab.XXPIDXX.Morris:raven = String Sensor medic jinns dupes lied @ 2009-08-05 15:39:52.411597
+test-pattern-hab.XXPIDXX.Morris:shelf = UInt8 Parameter 252 @ 2009-08-05 15:39:52.411569
