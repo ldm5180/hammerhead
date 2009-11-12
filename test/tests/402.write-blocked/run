@@ -62,7 +62,7 @@ sleep 5 # Let the watcher connect
 echo Sending SIGSTOP to second watcher
 kill -STOP $WATCH2PID
 
-MYTIMEOUT=100
+MYTIMEOUT=200
 echo "Waiting $MYTIMEOUT seconds for test-pattern-hab"
 x=0
 while test "$x" -lt 500; do
