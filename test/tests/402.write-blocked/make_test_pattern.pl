@@ -6,8 +6,8 @@ use strict;
 # Hard-coded options for this test:
 #
 my $starttime = 1249508394.0;
-my $timespan = 60;
-my $points = 65550;
+my $timespan = 120;
+my $points = 10000;
 my $UNIQUE = shift;
 
 # No inputs after this

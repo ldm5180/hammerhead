@@ -62,7 +62,7 @@ sleep 5 # Let the watcher connect
 echo Sending SIGSTOP to second watcher
 kill -STOP $WATCH2PID
 
-MYTIMEOUT=200
+MYTIMEOUT=500
 echo "Waiting $MYTIMEOUT seconds for test-pattern-hab"
 x=0
 while test "$x" -lt 500; do
@@ -97,9 +97,9 @@ kill $WATCH2PID
 wait $WATCH2PID
 
 if ! diff -q out.watcher.0 testpattern.out; then
-    echo "ERROR: watcher output differs from test-pattern-hab output:"
+    echo "ERROR: watcher output differs from test-pattern-hab output"
     #echo "Differences not shown. Look at output of:"
-    #echo "  diff -u testpattern.out out.watcher.0"
+    #echo "  diff -u $PWD/testpattern.out $PWD/out.watcher.0"
     diff -u testpattern.out out.watcher.0
     RETVAL=1
 else
