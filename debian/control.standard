@@ -34,7 +34,7 @@ Description: A network-transparent pub/sub system for information exchange
 Package: bionet2-dev
 Section: devel
 Architecture: any
-Depends: ${shlibs:Depends}, libavahi-compat-libdnssd-dev, libglib2.0-dev, libssl-dev, python-gobject
+Depends: ${shlibs:Depends}, bionet2, libavahi-compat-libdnssd-dev, libglib2.0-dev, libssl-dev, python-gobject
 Description: A network-transparent pub/sub system for information exchange (devel files)
  Bionet2 headers and static libraries
 
