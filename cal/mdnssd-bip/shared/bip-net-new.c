@@ -34,6 +34,8 @@ bip_peer_network_info_t *bip_net_new(const char *hostname, uint16_t port) {
     net->security_status = BIP_SEC_NOT_CONNECTED;
     // bio already NULL
 
+    g_queue_init(&net->msg_send_queue);
+
     return net;
 }
 

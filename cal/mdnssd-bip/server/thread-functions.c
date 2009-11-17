@@ -962,6 +962,9 @@ SELECT_LOOP_CONTINUE:
                 bip_peer_network_info_t *net = bip_peer_get_connected_net(peer);
                 if (net == NULL) continue;
                 FD_SET(net->socket, &readers);
+                if (net->write_pending) {
+                    FD_SET(net->socket, &writers);
+                }
                 max_fd = Max(max_fd, net->socket);
             }
         }
@@ -985,6 +988,29 @@ SELECT_LOOP_CONTINUE:
         // block until there's something to do
         r = select(max_fd + 1, &readers, NULL, NULL, NULL);
 
+        // First, see if we can write to our peers
+        {
+            GHashTableIter iter;
+            const char *name;
+            bip_peer_t *peer;
+
+            g_hash_table_iter_init (&iter, clients);
+            while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
+                bip_peer_network_info_t *net;
+
+                net = bip_peer_get_connected_net(peer);
+                if (net == NULL) continue;
+
+                if (FD_ISSET(net->socket, &writers)) {
+                    r = bip_drain_pending_msgs(net);
+                    if ( r < 0 ) {
+                        handle_client_disconnect(name);
+                        g_hash_table_remove(clients, name);  // close the network connection, free all allocated memory for key & value
+                        goto SELECT_LOOP_CONTINUE;
+                    }
+                }
+            }
+        }
 
         if (FD_ISSET(cal_server_mdnssd_bip_fds_from_user[0], &readers)) {
             if (read_from_user() < 0) {

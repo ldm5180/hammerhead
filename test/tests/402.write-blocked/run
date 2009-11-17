@@ -38,6 +38,9 @@ else
     export PYTHONPATH=$PYPATHADD:$PYTHONPATH
 fi
 
+#Shrink the write buffer to ensure a write-blockage
+export BIP_WRITE_BUFSIZE=1024
+
 echo Making the test pattern input/output
 sed -e "s/XXPIDXX/$UNIQUE/" < testpattern.out.head > testpattern.out
 cat testpattern.in > testpattern.in.big

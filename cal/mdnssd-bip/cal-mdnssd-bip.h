@@ -25,6 +25,7 @@
 
 #include "cal-util.h"
 
+#define BIP_MAX_WRITE_BUF_SIZE (1024 * 256)
 
 #define BIP_MSG_MAX_SIZE (1024 * 1024)
 
@@ -78,8 +79,19 @@ typedef struct {
     int msg_size;  //!< size of message we're receiving (we get this from the header)
     char *buffer;  //!< buffer holding the message payload we're receiving
     int index;     //!< number of bytes of payload received so far
+
+    // Send queue. Msgs queued to be sent to this net. They are invalidated if the net gets disconnected
+    uint32_t bytes_queued;  // Number of bytes in the queues below. Used to limit resource consumption
+    GQueue msg_send_queue;    // list of message buffers (bip_buf_t) that are pending to be sent when 
+                               // the socket becomes writable
+    size_t curr_msg_bytes_sent; // Number of bytes sent from the top-most msg
+    int write_pending; // If set, this net has data to be sent once the socket becomes writable
 } bip_peer_network_info_t;
 
+typedef struct {
+    void * data;
+    size_t size;
+} bip_buf_t;
 
 typedef struct {
     uint8_t type;
@@ -95,6 +107,15 @@ typedef struct {
 } bip_peer_t;
 
 
+typedef struct {
+    size_t max_write_buf_size;
+} bip_shared_config_t;
+
+extern bip_shared_config_t bip_shared_cfg;
+
+// Initialize the shared config to the default values
+// unless overridden by the environment
+void bip_shared_config_init(void);
 
 
 #define Max(a, b) ((a) > (b) ? (a) : (b))
@@ -390,5 +411,15 @@ int bip_read_from_peer(const char *peer_name, bip_peer_t *peer);
  */
 int bip_ssl_verify_callback(int ok, X509_STORE_CTX *store);
 
+/**
+ * @brief Send pending data in the peer's write queue
+ *
+ * @param peer
+ *   The peer whose socket is writable
+ *
+ * @return 0 on success
+ * @return -1 There is an error sending data, and the peer should be reset by caller
+ */
+int bip_drain_pending_msgs(bip_peer_network_info_t *net);
 
 #endif  // __CAL_MDNSSD_BIP_H

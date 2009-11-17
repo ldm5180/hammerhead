@@ -39,6 +39,7 @@ int cal_client_mdnssd_bip_init(
 
     cal_client_mdnssd_bip_t *this;
 
+    bip_shared_config_init();
 
     // initialize threading, if the user hasn't already
     if (!g_thread_supported()) g_thread_init(NULL);

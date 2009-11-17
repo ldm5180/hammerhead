@@ -925,7 +925,8 @@ SELECT_LOOP_CONTINUE:
         FD_SET(cal_client_mdnssd_bip_fds_from_user[0], &readers);
         max_fd = Max(max_fd, cal_client_mdnssd_bip_fds_from_user[0]);
 
-        // each server we're connected to might want to say something
+        // each server we're connected to might want to say something,
+        // or have data to be sent
         {
             GHashTableIter iter;
             const char *name;
@@ -936,13 +937,74 @@ SELECT_LOOP_CONTINUE:
                 bip_peer_network_info_t *net = bip_peer_get_connected_net(peer);
                 if (net == NULL) continue;
                 FD_SET(net->socket, &readers);
+                if(net->write_pending) {
+                    FD_SET(net->socket, &writers);
+                }
                 max_fd = Max(max_fd, net->socket);
             }
         }
 
-
         // block until there's something to do
         r = select(max_fd + 1, &readers, &writers, NULL, NULL);
+
+        // see if any DNS-SD service requests finished
+        for (ptr = service_list; ptr != NULL; ptr = ptr->next) {
+            struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
+            int fd = DNSServiceRefSockFD(sc->service_ref);
+
+            if (FD_ISSET(fd, &readers)) {
+                DNSServiceErrorType err;
+
+                // this will call the service_ref's callback, which will
+                // change the service_list (and possibly known_peers and
+                // connected_publishers)
+                err = DNSServiceProcessResult(sc->service_ref);
+                if (err != kDNSServiceErr_NoError) {
+                    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "client thread: Error processing service reference result: %d.", err);
+                    sleep(1);
+                }
+
+                // since the service_list has changed, we should stop iterating over it
+		// Also, the open file descriptors may have changed, so we need to 
+		// check select() again
+		goto SELECT_LOOP_CONTINUE;
+            }
+        }
+
+        // see if the user thread said anything
+        if (FD_ISSET(cal_client_mdnssd_bip_fds_from_user[0], &readers)) {
+            read_from_user();
+        }
+
+        // see if any of our servers said/read anything
+        {
+            GHashTableIter iter;
+            const char *name;
+            bip_peer_t *peer;
+
+            g_hash_table_iter_init(&iter, peers);
+            while (g_hash_table_iter_next (&iter, (gpointer)&name, (gpointer)&peer)) {
+                bip_peer_network_info_t *net;
+
+                net = bip_peer_get_connected_net(peer);
+                if (net == NULL) continue;
+
+                if (FD_ISSET(net->socket, &readers)) {
+                    read_from_publisher(name, peer, net);
+                    // read_from_publisher can disconnect the peer, so we need to stop iterating over it now
+                    goto SELECT_LOOP_CONTINUE;
+                }
+
+                if (FD_ISSET(net->socket, &writers)) {
+                    r = bip_drain_pending_msgs(net);
+                    if ( r < 0 ) {
+                        // peer should be discnnected
+                        reset_connection(peer);
+                        goto SELECT_LOOP_CONTINUE;
+                    }
+                }
+            }
+        }
 
         // See if any connect()s have finished. 
         for ( dptr = connecting_peer_list; dptr != NULL; dptr = dptr->next) {
@@ -974,55 +1036,6 @@ SELECT_LOOP_CONTINUE:
             }
         }
 
-        // see if any DNS-SD service requests finished
-        for (ptr = service_list; ptr != NULL; ptr = ptr->next) {
-            struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
-            int fd = DNSServiceRefSockFD(sc->service_ref);
-
-            if (FD_ISSET(fd, &readers)) {
-                DNSServiceErrorType err;
-
-                // this will call the service_ref's callback, which will
-                // change the service_list (and possibly known_peers and
-                // connected_publishers)
-                err = DNSServiceProcessResult(sc->service_ref);
-                if (err != kDNSServiceErr_NoError) {
-                    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "client thread: Error processing service reference result: %d.", err);
-                    sleep(1);
-                }
-
-                // since the service_list has changed, we should stop iterating over it
-		// Also, the open file descriptors may have changed, so we need to 
-		// check select() again
-		goto SELECT_LOOP_CONTINUE;
-            }
-        }
-
-        // see if the user thread said anything
-        if (FD_ISSET(cal_client_mdnssd_bip_fds_from_user[0], &readers)) {
-            read_from_user();
-        }
-
-        // see if any of our servers said anything
-        {
-            GHashTableIter iter;
-            const char *name;
-            bip_peer_t *peer;
-
-            g_hash_table_iter_init(&iter, peers);
-            while (g_hash_table_iter_next (&iter, (gpointer)&name, (gpointer)&peer)) {
-                bip_peer_network_info_t *net;
-
-                net = bip_peer_get_connected_net(peer);
-                if (net == NULL) continue;
-
-                if (FD_ISSET(net->socket, &readers)) {
-                    read_from_publisher(name, peer, net);
-                    // read_from_publisher can disconnect the peer, so we need to stop iterating over it now
-                    break;
-                }
-            }
-        }
     }
 
     //

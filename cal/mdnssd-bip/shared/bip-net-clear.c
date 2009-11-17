@@ -21,5 +21,11 @@ void bip_net_clear(bip_peer_network_info_t *net) {
         free(net->buffer);
         net->buffer = NULL;
     }
+    
+    bip_buf_t * buf;
+    while( (buf = g_queue_pop_head(&net->msg_send_queue))) {
+        free(buf->data);
+        free(buf);
+    }
 }
 
