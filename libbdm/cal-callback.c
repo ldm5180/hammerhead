@@ -212,16 +212,25 @@ static void bdm_handle_resource_datapoints(const cal_event_t *event, BDMResource
     for (i = 0; i < rd->newDatapointsBDM.list.count; i ++) {
         Datapoint_t *asn_d = rd->newDatapointsBDM.list.array[i];
         bionet_datapoint_t *new_d = bionet_asn_to_datapoint(asn_d, resource);
+        int do_notify = 0;
 
         if( NULL == new_d ){
             // An error has been logged already
             continue;
         }
 
+        if(libbdm_callback_datapoint) {
+            bionet_datapoint_t * curr_d = bionet_resource_get_datapoint_by_index(resource, 0);
+            if(curr_d == NULL || bionet_datapoint_iseq(curr_d, new_d)) {
+                do_notify =1;
+            }
+        }
+
+
         bionet_resource_remove_datapoint_by_index(resource, 0);
         bionet_resource_add_datapoint(resource, new_d);
 
-        if (libbdm_callback_datapoint != NULL) {
+        if (do_notify) {
             libbdm_callback_datapoint(new_d, libbdm_callback_datapoint_usr_data);
         }
     }

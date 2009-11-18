@@ -124,6 +124,61 @@ bionet_hab_t * bionet_datapoint_get_hab(const bionet_datapoint_t * datapoint)
 } /* bionet_datapoint_get_hab() */
 
 
+int bionet_datapoint_iseq(const bionet_datapoint_t *dp1, const bionet_datapoint_t *dp2) {
+    if(dp1->timestamp.tv_sec != dp2->timestamp.tv_sec) return 1;
+    if(dp1->timestamp.tv_usec != dp2->timestamp.tv_usec) return 1;
+
+    if(dp1->value->resource->data_type != dp2->value->resource->data_type) return 1;
+
+    switch(dp1->value->resource->data_type){
+        case BIONET_RESOURCE_DATA_TYPE_BINARY:
+            if ( dp1->value->content.binary_v != dp2->value->content.binary_v) return 1;
+            break;
+
+        case BIONET_RESOURCE_DATA_TYPE_UINT8:
+            if ( dp1->value->content.uint8_v != dp2->value->content.uint8_v) return 1;
+            break;
+
+        case BIONET_RESOURCE_DATA_TYPE_INT8:
+            if ( dp1->value->content.int8_v != dp2->value->content.int8_v) return 1;
+            break;
+
+        case BIONET_RESOURCE_DATA_TYPE_UINT16:
+            if ( dp1->value->content.uint16_v != dp2->value->content.uint16_v) return 1;
+            break;
+
+        case BIONET_RESOURCE_DATA_TYPE_INT16:
+            if ( dp1->value->content.int16_v != dp2->value->content.int16_v) return 1;
+            break;
+
+        case BIONET_RESOURCE_DATA_TYPE_UINT32:
+            if ( dp1->value->content.uint32_v != dp2->value->content.uint32_v) return 1;
+            break;
+
+        case BIONET_RESOURCE_DATA_TYPE_INT32:
+            if ( dp1->value->content.int32_v != dp2->value->content.int32_v) return 1;
+            break;
+
+        case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+            if ( dp1->value->content.float_v != dp2->value->content.float_v) return 1;
+            break;
+
+        case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+            if ( dp1->value->content.double_v != dp2->value->content.double_v) return 1;
+            break;
+
+        case BIONET_RESOURCE_DATA_TYPE_STRING:
+            if ( strcmp(dp1->value->content.string_v, dp2->value->content.string_v) ) return 1;
+            break;
+
+        default:
+            return 1;
+    }
+
+    return 0;
+
+}
+
 // Emacs cruft
 // Local Variables:
 // mode: C
