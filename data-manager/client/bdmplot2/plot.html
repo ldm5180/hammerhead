@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Bionet Data Manager Plots</title>
+    <link href="layout.css" rel="stylesheet" type="text/css"></link>
+    <!--[if IE]><script language="javascript" type="text/javascript" src="flot/excanvas.min.js"></script><![endif]-->
+    <script language="javascript" type="text/javascript" src="flot/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="flot/jquery.flot.selection.js"></script>
+ </head>
+    <body>
+    <h1>Bionet Data Manager Plots</h1>
+
+    <div id="placeholder" style="width: 80%; height: 500px;"></div>
+
+    <p id="hoverdata"><span id="clickdata"></span></p>
+
+    <p>
+      <input class="dataUpdate" type="button" value="Start Plotting"><input type="text" size="60" id="subscription" maxlength="400"><br />
+      <!--Timespan: <input type="radio" id="span-all" name="span" value="span-all" checked="checked"><label for="span-all">All</label> <input type="radio" id="span-1d" name="span" value="span-1d"><label for="span-1d">Past 1 Day</label> <input type="radio" id="span-1hr" name="span" value="span-1hr"><label for="span-1hr">Past 1 Hour</label> <input type="radio" id="span-100" name="span" value="span-100"><label for="span-100">Last 100 Datapoints</label>-->
+    </p>
+
+    <p>
+      <input id="live" type="radio" name="livedata" value="live" checked="checked" onClick="poll = 1;">Live Data<br />
+      <input id="zoom" type="radio" name="livedata" value="zoom" onClick="poll = 0;">Zoom Mode
+    </p>
+
+    <p>
+      <br />
+      <table border="0">
+        <tr>
+          <td width="100px">Hide</td>
+          <td width="100px">Y-Axis 1</td>
+          <td width="100px">Y-Axis 2</td>
+          <td>Resource Name</td>
+        </tr>
+      </table>
+    </p>
+
+    <p id="choices"></p>
+    
+<script id="source" language="javascript" type="text/javascript">
+//polling or not?
+var poll = 0;
+
+$(function () {
+    var yesterday = new Date();
+    yesterday.setTime(yesterday.getTime());
+    yesterday.setDate(yesterday.getDate()-1);
+ 
+    var options = {
+        lines: { show: true },
+        points: { show: true },
+        xaxis: { mode: "time", timeformat: "%y/%m/%d %H:%M:%S", ticks: 5 },
+        selection: { mode: "x" },
+        grid: { hoverable: true, clickable: true }
+    };
+//min: (new Date(yesterday.getFullYear()+"/"+(yesterday.getMonth()+1)+"/"+yesterday.getDate())).getTime() }
+
+    var data = [];
+    var placeholder = $("#placeholder");
+    var choiceContainer = $("#choices");
+
+    var firsttime = "full";
+    
+    $.plot(placeholder, data, options);
+    
+    // fetch one series, adding to what we got
+    var alreadyFetched = {};
+    
+    placeholder.bind("plotselected", function (event, ranges) {
+        $("#selection").text(ranges.xaxis.from.toFixed(1) + " to " + ranges.xaxis.to.toFixed(1));
+
+        var zoom = $("#zoom").attr("checked");
+        if (zoom)
+            plot = $.plot(placeholder, data,
+                          $.extend(true, {}, options, {
+                              xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to }
+                          }));
+    });
+
+    function showTooltip(x, y, contents) {
+        $('<div id="tooltip">' + contents + '</div>').css( {
+            position: 'absolute',
+            display: 'none',
+            top: y + 5,
+            left: x + 5,
+            border: '1px solid #fdd',
+            padding: '2px',
+            'background-color': '#fee',
+            opacity: 0.80
+        }).appendTo("body").fadeIn(200);
+    }
+
+    var previousPoint = null;
+    $("#placeholder").bind("plothover", function (event, pos, item) {
+        $("#x").text(pos.x.toFixed(2));
+        $("#y").text(pos.y.toFixed(2));
+
+        if (item) {
+            if (previousPoint != item.datapoint) {
+                previousPoint = item.datapoint;
+                    
+                $("#tooltip").remove();
+                var mydate = new Date(item.datapoint[0].toFixed(0) / 1000 * 1000);
+                var x = mydate.toGMTString(),
+                    y = item.datapoint[1].toFixed(2);
+                    
+                showTooltip(item.pageX, item.pageY,
+                            item.series.label + " : " + x + " = " + y);
+            }
+        }
+        else {
+            $("#tooltip").remove();
+            previousPoint = null;            
+        }
+    });
+
+    $("#placeholder").bind("plotclick", function (event, pos, item) {
+        if (item) {
+            var mydate = new Date(item.datapoint[0].toFixed(0) / 1000 * 1000);
+            var x = mydate.toGMTString(),
+                y = item.datapoint[1].toFixed(2);
+            $("#clickdata").text(item.series.label + " : " + x + " = " + y);
+            plot.highlight(item.series, item.datapoint);
+        }
+    });
+
+    // initiate a recurring data update
+    $("input.dataUpdate").click(function () {
+        // reset data
+        poll = 1;
+
+        $.plot(placeholder, data, options);
+
+        var iteration = 0;
+        
+        function fetchData() {
+            if (poll == 0) {
+                setTimeout(fetchData, 500);
+                return;
+            }
+
+            ++iteration;
+
+            function sortNumber(a,b)
+            {
+                return a[0] - b[0];
+            }
+
+            function onDataReceived(series) {
+                for (j = 0; j < series.length; j++) {
+                    if (!alreadyFetched[series[j].label]) {
+                        alreadyFetched[series[j].label] = true;
+                        data.push(series[j]);
+
+  	                // insert checkboxes 
+			var series1 = series[j].label + "1";
+			var series2 = series[j].label + "2";
+			choiceContainer.append('<table border="0"><tr><td width="100px"><input type="radio" name="' + series[j].label + '" checked="checked" id="id' + series[j].label + '"></td><td width="100px"><input type="radio" name="' + series[j].label + '" checked="checked" id="id' + series1 + '"></td><td width="100px"><input type="radio" name="' + series[j].label + '" id="id' + series2 + '"></td><td>' + series[j].label + '</td></tr></table>');
+                    } else {
+                        for (i = 0; i < series[j].data.length; i++) {
+			    for (k = 0; k < data.length; k++) {
+			        if (data[k].label == series[j].label) {
+       				    data[k].data.push(series[j].data[i]);
+                                }
+			    }
+                        }
+                    }
+                }
+                choiceContainer.find("input").click(plotAccordingToChoices);
+                plotAccordingToChoices();
+            }
+
+            function plotAccordingToChoices() {
+		var plotdata = []
+                choiceContainer.find("input:name").each(function () {
+                    if ($(this).attr("checked")) {
+                        var key = $(this).attr("id");
+	  	        for (i = 0; i < data.length; i++) {
+			    data[i].data.sort(sortNumber);
+                            if (key == ("id" + data[i].label + "1")) {
+		                data[i].yaxis = 1;
+                                plotdata.push(data[i]);
+                            }
+                            if (key == ("id" + data[i].label + "2")) {
+		                data[i].yaxis = 2;
+                                plotdata.push(data[i]);
+                            }
+                        }
+                    }
+                });
+
+//                if ($("#span-1d").attr("checked")) {
+//		   options.xaxis.min = yesterday;
+//                }
+
+                $.plot($("#placeholder"), plotdata , options);
+            }
+
+            var subscription = $("#subscription").attr("value");
+
+            $.ajax({
+		url: "/" + firsttime + "/?resource="+subscription+"&timespan=1d",
+                method: 'GET',
+                dataType: 'json',
+                success: onDataReceived
+            });
+
+            setTimeout(fetchData, 2000);
+	    firsttime = "data";
+        }
+
+        setTimeout(fetchData, 500);
+    });
+});
+</script>
+
+ </body>
+</html>

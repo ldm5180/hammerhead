@@ -6,12 +6,6 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = 
+cgibin_SCRIPTS = bdmplot2.py \
+        bdmplot2_callback.py
 
-if ENABLE_CLIENTS
-SUBDIRS += bdm-client bdm-watcher 
-endif
-
-if ENABLE_PYTHON
-SUBDIRS += py-libbdm bdmplot2 twisted
-endif
