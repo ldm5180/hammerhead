@@ -15,6 +15,7 @@
 
 #include "bionet-asn.h"
 #include "bionet-util.h"
+#include "cal-event.h"
 
 #if ENABLE_ION
 #include "zco.h"
@@ -45,6 +46,7 @@
 
 
 
+extern bionet_bdm_t * this_bdm;
 extern char *bdm_pidfile;
 extern GMainLoop *bdm_main_loop;
 
@@ -53,6 +55,11 @@ extern GHashTable * bdm_opts_table;
 
 // Global flag. Set true to stop all auxillary threads
 extern int bdm_shutdown_now;
+
+// Global CAL vars
+extern int libbdm_cal_fd;
+extern void libbdm_cal_callback(const cal_event_t *event);
+extern int libbdm_cal_topic_matches(const char * topic, const char *subscription);
 
 // Call from threads instead of sleep.
 // Returns early with non-zero status if thread should exit
@@ -71,7 +78,7 @@ typedef union {
 } db_value_t;
 
 typedef struct {
-    char * bdm_id;
+    const char * bdm_id;
     struct timeval timestamp;
     db_type_t type;
     db_value_t value;
@@ -114,12 +121,6 @@ typedef struct {
     int fd;
     int bytes_sent;
 } sync_sender_config_t;
-
-typedef struct { 
-    GPtrArray * hab_list;
-    char * bdm_id;
-} bdm_t;
-
 
 // 
 // interface to the database backend
@@ -181,7 +182,7 @@ int db_add_datapoint_sync(
 
 
 // 
-// Finds all matching datapoints, and returns them as a GPtrArray of bdm_t.
+// Finds all matching datapoints, and returns them as a GPtrArray of bionet_bdm_t.
 // Use bdm_list_free to free the list returned
 //
 GPtrArray *db_get_resource_datapoints(
@@ -197,7 +198,7 @@ GPtrArray *db_get_resource_datapoints(
 );
 
 // 
-// Finds all matching metadata, and returns them as a GPtrArray of bdm_t.
+// Finds all matching metadata, and returns them as a GPtrArray of bionet_bdm_t.
 // Use bdm_list_free to free the list returned
 //
 GPtrArray *db_get_metadata(
@@ -221,6 +222,33 @@ int db_get_last_sync_seq_metadata(sqlite3 *db, char * bdm_id);
 void db_set_last_sync_seq_metadata(sqlite3 *db, char * bdm_id, int seq);
 int db_get_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id);
 void db_set_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id, int seq);
+
+//
+// Stuff to handle messages and asn
+//
+void libbdm_handle_resourceDatapointsQuery(
+        const char * peer_name, 
+        ResourceDatapointsQuery_t *rdpq);
+
+BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray *bdm_list);
+BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray *bdm_list);
+
+
+int bdm_report_datapoint(
+        bionet_bdm_t * bdm,
+        bionet_resource_t * resource,
+        bionet_datapoint_t * datapoint,
+        int entry_seq) ;
+
+int bdm_report_new_node(
+        bionet_bdm_t * bdm,
+        bionet_node_t * node,
+        int entry_seq) ;
+
+int bdm_report_new_hab(
+        bionet_bdm_t * bdm,
+        bionet_hab_t * hab,
+        int entry_seq) ;
 
 // 
 // stuff for being a bionet client

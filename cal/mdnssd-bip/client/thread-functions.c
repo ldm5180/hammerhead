@@ -70,6 +70,8 @@ typedef struct {
 static GPtrArray *subscriptions = NULL;
 
 
+static void report_new_peer(bip_peer_t * peer);
+static void report_new_subscription(bip_peer_t * peer, const char * subscription);
 
 
 /**
@@ -192,7 +194,7 @@ static void _peer_add_pending_msg(
  *     annother available net
  */
 
-int send_subscriptions(bip_peer_t *peer) {
+static int send_subscriptions(bip_peer_t *peer) {
     int r = 0;
     int i;
 
@@ -221,6 +223,8 @@ int send_subscriptions(bip_peer_t *peer) {
                     peer->peer_name);
             break;
         }
+
+        report_new_subscription(peer, s->topic);
     }
 
     return r;
@@ -348,6 +352,8 @@ static void read_from_user(void) {
                     if (r != 0) {
                         reset_connection(peer);
                     }
+
+                    report_new_subscription(peer, s->topic);
                 }
             }
 
@@ -741,42 +747,58 @@ static void free_peer(void *peer_as_void) {
     bip_peer_free(peer);
 }
 
-// Call after connect has succeeded to:
-//   1 - Send any subscriptions matching this peer
-//   2 - Send all pending messages for this peer
-//   3 - Send PEER_JOIN to user
 //
-// If there is an error sending, attempt to re-connect
-// 
-static void post_connect(bip_peer_t * peer) {
-    int r;
+// Notify the user thread of a new subscription
+//
+static void report_new_subscription(bip_peer_t * peer, const char * subscription){
     cal_event_t * event;
+    int r;
 
-    // Send subscriptions first. No point notifying the user of a new peer if
-    // we can't communicate with it
-    r = send_subscriptions(peer);
-    if (r != 0) {
-        reset_connection(peer);
+    event = cal_event_new(CAL_EVENT_SUBSCRIBE);
+    if (event == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "new_connection: out of memory!");
         return;
     }
 
-    // Send any pending messages before notifying user thread
-    GSList *ptr;
-    while ((ptr = peer->pending_msgs)) {
-        bip_msg_t * msg = ptr->data;
-        r = bip_send_message(peer, msg->type, msg->data, msg->size);
-        if (r != 0) {
-            reset_connection(peer);
-            return;
-        }
-
-        free(msg->data);
-        free(msg);
-        ptr->data = NULL;
-        peer->pending_msgs = g_slist_delete_link(peer->pending_msgs, ptr);
+    event->peer_name = strdup(peer->peer_name);
+    if (event->peer_name == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "new_connection: out of memory!");
+        cal_event_free(event);
+        return;
     }
 
-    // Notify user thread of new peer
+    event->topic = strdup(subscription);
+    if (event->topic == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "new_connection: out of memory!");
+        cal_event_free(event);
+        return;
+    }
+
+    event->is_secure = bip_peer_is_secure(peer);
+
+    // send the Subcribe event
+    // the event becomes the responsibility of the callback now, so they might leak memory but we're not
+    r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
+    if (r < 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "new_connection: error writing event: %s", strerror(errno));
+        cal_event_free(event);
+    } else if (r != sizeof(event)) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "new_connection: short write while writing event");
+        cal_event_free(event);
+    }
+
+    // 'event' passes out of scope here, but we don't leak its memory
+    // because we have successfully sent a pointer to it to the user thread
+    // coverity[leaked_storage]
+}
+
+//
+// Notify the user thread of a new peer
+//
+static void report_new_peer(bip_peer_t * peer){
+    cal_event_t * event;
+    int r;
+
     event = cal_event_new(CAL_EVENT_JOIN);
     if (event == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "new_connection: out of memory!");
@@ -807,6 +829,45 @@ static void post_connect(bip_peer_t * peer) {
     // because we have successfully sent a pointer to it to the user thread
     // coverity[leaked_storage]
 }
+// Call after connect has succeeded to:
+//   1 - Send any subscriptions matching this peer
+//   2 - Send all pending messages for this peer
+//   3 - Send PEER_JOIN to user
+//
+// If there is an error sending, attempt to re-connect
+// 
+static void post_connect(bip_peer_t * peer) {
+    int r;
+
+    // Notify user thread of new peer before
+    // the thread is notified of subscriptions
+    report_new_peer(peer);
+
+    // Send subscriptions first. 
+    r = send_subscriptions(peer);
+    if (r != 0) {
+        reset_connection(peer);
+        return;
+    }
+
+    // Send any pending messages
+    GSList *ptr;
+    while ((ptr = peer->pending_msgs)) {
+        bip_msg_t * msg = ptr->data;
+        r = bip_send_message(peer, msg->type, msg->data, msg->size);
+        if (r != 0) {
+            reset_connection(peer);
+            return;
+        }
+
+        free(msg->data);
+        free(msg);
+        ptr->data = NULL;
+        peer->pending_msgs = g_slist_delete_link(peer->pending_msgs, ptr);
+    }
+
+}
+
 
 //
 // this function gets run in the thread started by init()
@@ -849,7 +910,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     ERR_load_BIO_strings();
     // TODO: Lots more
 
-    browse = malloc(sizeof(struct cal_client_mdnssd_bip_service_context));
+    browse = calloc(1, sizeof(struct cal_client_mdnssd_bip_service_context));
     if (browse == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "client thread: out of memory!");
         return NULL;
@@ -947,6 +1008,41 @@ SELECT_LOOP_CONTINUE:
         // block until there's something to do
         r = select(max_fd + 1, &readers, &writers, NULL, NULL);
 
+        // See if any connect()s have finished. 
+        for ( dptr = connecting_peer_list; dptr != NULL; dptr = dptr->next) {
+            bip_peer_t *peer = dptr->data;
+            if ( peer->nets->len > 0 ) {
+                bip_peer_network_info_t *net;
+                int fd;
+
+                net = g_ptr_array_index(peer->nets, 0);
+                fd = net->socket;
+                if (FD_ISSET(fd, &writers) || FD_ISSET(fd, &readers)) {
+                    r = bip_peer_connect_finish(peer);
+                    if (r == 0 ) continue; // Call again later
+
+                    connecting_peer_list = g_list_delete_link(connecting_peer_list, dptr);
+                    if( r < 0 ) {
+                        // This connect failed. Try the next one
+                        int fd = bip_peer_connect_nonblock(peer);
+                        if(fd >= 0) {
+                            // The next net is not ready yet
+                            connecting_peer_list = g_list_append(connecting_peer_list, peer);
+                        } else {
+                            // No more nets to try.
+                            // TODO Send an error message instead of a duplicate 
+                            // PEER_LEAVING
+                            report_peer_lost(peer);
+                        }
+                    } else {
+                        // Do post-connect stuff
+                        post_connect(peer);
+                    }
+                    goto SELECT_LOOP_CONTINUE;
+                }
+            }
+        }
+
         // see if any DNS-SD service requests finished
         for (ptr = service_list; ptr != NULL; ptr = ptr->next) {
             struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
@@ -1005,37 +1101,6 @@ SELECT_LOOP_CONTINUE:
                 }
             }
         }
-
-        // See if any connect()s have finished. 
-        for ( dptr = connecting_peer_list; dptr != NULL; dptr = dptr->next) {
-            bip_peer_t *peer = dptr->data;
-            if ( peer->nets->len > 0 ) {
-                bip_peer_network_info_t *net;
-                int fd;
-
-                net = g_ptr_array_index(peer->nets, 0);
-                fd = net->socket;
-                if (FD_ISSET(fd, &writers) || FD_ISSET(fd, &readers)) {
-                    r = bip_peer_connect_finish(peer);
-                    if (r == 0 ) continue; // Call again later
-
-                    connecting_peer_list = g_list_delete_link(connecting_peer_list, dptr);
-                    if( r < 0 ) {
-                        // This connect failed. Try the next one
-                        int fd = bip_peer_connect_nonblock(peer);
-                        if(fd >= 0) {
-                            // The next net is not ready yet
-                            connecting_peer_list = g_list_append(connecting_peer_list, peer);
-                        }
-                    } else {
-                        // Do post-connect stuff
-                        post_connect(peer);
-                    }
-                    goto SELECT_LOOP_CONTINUE;
-                }
-            }
-        }
-
     }
 
     //

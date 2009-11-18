@@ -4,15 +4,17 @@
 // NNC07CB47C.
 
 
-#ifndef __BDM_H
-#define __BDM_H
+#ifndef __BDM_CLIENT_H
+#define __BDM_CLIENT_H
 
 
 #include <stdint.h>
 
 #include <glib.h>
 
+#include "bionet-util.h"
 #include "bionet-asn.h"
+#include "bionet-bdm.h"
 
 
 /**
@@ -34,22 +36,99 @@
 #define BDM_PORT      (11002)
 
 
+/**
+ * @brief Connect to a specific BDM server
+ *
+ * Connect to the specified BDM server, and act as if it has been discovered.
+ * Usefull the the BDM server is not on the link-local network
+ *
+ * If the peer can be found, a new_bdm subscription notification will be sent,
+ * if it is subscribed to
+ *
+ * @param[in] hostname The hostname or ipaddress string to connect to
+ *
+ * @param[in] port The port the server is available in (host-byte-ordered), or
+ * 0 to use default
+ */
+int bdm_connect(char *hostname, uint16_t port); 
+
+/**
+ * @brief Reads the bdm file descriptor returned from bdm_connect()
+ *
+ * This function should be called whenever the Client application wants to
+ * read from Bionet.  The function will read any pending messages from
+ * Bionet and if appropriate call the callback functions.
+ *
+ * @param[in] timeout This is like the timeout argument to select(2).
+ * If NULL, the function will block indefinitely until something is read.
+ * If not NULL but the value is zero (0 seconds and 0 microseconds), then
+ * the function will return immediately, whether or not anything was read.
+ * If the timeout is greater than zero, then the function will block until
+ * something is read from the fd, but not longer than the timeout.
+ *
+ * @retval 0 on success.
+ * @retval -1 on failure.
+ */
+int bdm_read_with_timeout(struct timeval *timeout);
 
 
-// FIXME: switch to CAL and this'll use mDNS-SD
-int bdm_connect(char *hostname, uint16_t port);
+/**
+ * @brief Reads the bionet file descriptor returned from bdm_start()
+ *
+ * This function should be called whenever the Bionet file
+ * descriptor returned from bdm_start() is readable, or
+ * if the Client application wants to poll the file descriptor.
+ * The function will read any pending messages from Bionet and
+ * if appropriate call the callback functions.
+ *
+ * @retval TRUE (non-zero) - success
+ * @retval FALSE (zero) - failure.
+ */
+int bdm_read(void);
+
+
+/**
+ * @brief Checks to see if Bionet BDM library is connected to Bionet BDM network
+ *
+ * @retval TRUO (non-zero) - the library is connected
+ * @retval FALSE (0) - the library is not connected
+ */
 int bdm_is_connected(void);
+
+/**
+ * Connect to Bionet BDM network, and start looking for published BDM servers
+ *
+ * Calling this function from a BDM Client is optional, it will be called implicitly when needed by other Bionet BDM library finctions.
+ *
+ * @note If the connection is already opened, this function does nothing and just returns the file descriptor.
+ *
+ * @retval >=0 success, a non-blocking file descriptor.
+ * @retval -1 failure, check errno
+ *
+ *  @note file descriptor is associated with the Bionet network.  The file 
+ * descriptor should not be read or written directly by the Client.
+ * If the file descriptor is readable, the Client should call bdm_read()
+ * to service it.  Since the fd is non-blocking, the client may also call
+ * bdm_read() in a polling way, though this is less efficient than using
+ * select() or poll() on the fd.
+ */
+int bdm_start(void);
+
+/**
+ * @brief Disconnect from the bionet BDM network and free all resources
+ *
+ * Dissconect from the Bionet BDM network and free all resources. This will
+ * trigger 'lost' messages for any active subscriptions
+ */
 void bdm_disconnect(void);
-
-
-typedef struct bionet_bdm_t_opaque bionet_bdm_t;
 
 typedef struct bdm_hab_list_t_opaque bdm_hab_list_t;
 
 /**
  * @brief Query a bionet data manager for a list of datapoints
  *
- * Get all datapoints that match the query parameters that are currently
+ * Query the bionet-data-manager connected to with bdm_connect() to 
+ * get all datapoints that match the query parameters that are currently
  * available in the bionet data manager.
  *
  * @note There may be additional datapoints that match the query parameters
@@ -69,12 +148,12 @@ typedef struct bdm_hab_list_t_opaque bdm_hab_list_t;
  * @return A HAB List which can be walked to find all the datapoints satisfying 
  *         the query.
  */
-bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern, 
-				       struct timeval *datapointStart, 
-				       struct timeval *datapointEnd,
-				       int entryStart,
-				       int entryEnd);
-
+bdm_hab_list_t *bdm_get_resource_datapoints(
+       const char *resource_name_pattern, 
+       struct timeval *datapointStart, 
+       struct timeval *datapointEnd,
+       int entryStart,
+       int entryEnd);
 
 /**
  * @brief Get the length of a HAB List
@@ -122,18 +201,18 @@ int bdm_get_hab_list_last_entry_seq(bdm_hab_list_t * hab_list);
  */
 void bdm_hab_list_free(bdm_hab_list_t * hab_list);
 
-int bdm_send_asn(const void *buffer, size_t size, void *unused);
 
 
-#if 0
 /**
  * @brief Register new-bdm callback function with the Bionet library.
  * 
  * The registered function will be called when a new BDM Server is discovered
  *
  * @param[in] cb_new_bdm the "new-bdm" callback function
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_new_bdm(void (*cb_new_bdm)(bionet_bdm_t *bdm));
+void bdm_register_callback_new_bdm(void (*cb_new_bdm)(bionet_bdm_t *bdm, void * use_data), void * usr_data);
 
 /**
  * @brief Register lost-bdm callback function with the Bionet library.
@@ -143,8 +222,10 @@ void bdm_register_callback_new_bdm(void (*cb_new_bdm)(bionet_bdm_t *bdm));
  *
  * @param[in] cb_new_bdm the "new-bdm" callback function
  *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
+ *
  */
-void bdm_register_callback_lost_bdm(void (*cb_lost_bdm)(bionet_bdm_t *bdm));
+void bdm_register_callback_lost_bdm(void (*cb_lost_bdm)(bionet_bdm_t *bdm, void* usr_data), void*usr_data);
 
 /**
  * @brief Registers new hab callback function with the Bionet library.
@@ -159,8 +240,10 @@ void bdm_register_callback_lost_bdm(void (*cb_lost_bdm)(bionet_bdm_t *bdm));
  * subscription leaves the network. 
  *
  * @param[in] cb_new_hab The "new hab" callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab));
+void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab, void* usr_data), void*usr_data);
 
 
 /**
@@ -180,8 +263,10 @@ void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab));
  * member.   
  *
  * @param[in] cb_lost_hab The "lost hab" callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab));
+void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab, void* usr_data), void*usr_data);
 
 
 /**
@@ -202,8 +287,10 @@ void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab));
  * the bionet_node_t's 'user_data' member.
  *
  * @param[in] cb_new_node The "new node" callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node));
+void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node, void* usr_data), void*usr_data);
 
 
 /**
@@ -224,8 +311,10 @@ void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node));
  * 'user_data'  member or the application will leak memory.
  *
  * @param[in] cb_lost_node The "lost node" callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node));
+void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node, void* usr_data), void*usr_data);
 
 
 /**
@@ -243,10 +332,13 @@ void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node));
  * callback function.
  *
  * @param[in] cb_datapoint The "datapoint" callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint));
+void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint, void* usr_data), void*usr_data);
 
 
+#if 0
 /**
  * @brief Registers Stream callback function with the Bionet library.
  *         
@@ -255,12 +347,122 @@ void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *da
  * with bdm_subscribe_stream().
  *
  * @param[in] cb_stream The new callback function.
+ *
+ * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, void *buffer, int size));
-
+void bdm_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, void *buffer, int size, void* usr_data), void*usr_data);
 #endif
 
 
+int bdm_subscribe_bdm_list_by_name(const char * bdm_name);
+int bdm_subscribe_hab_list_by_name(const char * hab_name);
+int bdm_subscribe_node_list_by_name(const char * node_name);
+int bdm_subscribe_datapoints_by_name(const char * resource_name);
+
+int bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
+        const char *bdm_id,
+        const char *hab_type,
+        const char *hab_id,
+        const char *node_id,
+        const char *resource_id,
+        struct timeval *datapoint_start,
+        struct timeval *datapoint_end) ;
+
+
+/**
+ * @brief Get the number of HABs available
+ * 
+ * @return Number of available HABs
+ */
+unsigned int bdm_cache_get_num_habs(void);
+
+/**
+ * @brief Get a BDM by its index
+ *
+ * Used for iterating over all known BDM
+ *
+ * @param[in] index Index of the BDM requested
+ *
+ * @return Pointer to the BDM requested or NULL if no BDM exists at index
+ */
+bionet_bdm_t *bdm_cache_get_bdm_by_index(unsigned int index);
+
+
+/**
+ * @brief Looks through the locally cached information for a specific BDM.
+ *
+ * @param[in] bdm_id The BDM-ID to look up
+ *
+ * @return Pointer to the BDM if found
+ * @retval NULL Not found
+ */
+bionet_bdm_t *bdm_cache_lookup_bdm(const char *bdm_id);
+
+/**
+ * @brief Get a HAB by its index
+ *
+ * Used for iterating over all known HABs
+ *
+ * @param[in] index Index of the HAB requested
+ *
+ * @return Pointer to the HAB requested or NULL if no HAB exists at index
+ */
+bionet_hab_t *bdm_cache_get_hab_by_index(unsigned int index);
+
+
+/**
+ * @brief Looks through the locally cached information for a specific HAB.
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ *
+ * @return Pointer to the HAB if found
+ * @retval NULL Not found
+ */
+bionet_hab_t *bdm_cache_lookup_hab(const char *hab_type, const char *hab_id);
+
+
+/**
+ * @brief Looks through the locally cached information for a specific Node.
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ * @param[in] node_id The Node-ID to look up
+ *
+ * @return Pointer to the Node if found
+ * @retval NULL Not found
+ */
+bionet_node_t *bdm_cache_lookup_node(const char *hab_type, const char *hab_id, const char *node_id);
+
+
+/**
+ * @brief Looks through the locally cached information for a specific Resource
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ * @param[in] node_id The Node-ID to look up
+ * @param[in] resource_id The Resource-ID to look up
+ *
+ * @return Pointer to the Resource if found
+ * @retval NULL Not found
+ */
+bionet_resource_t *bdm_cache_lookup_resource(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
+
+
+#if 0
+/**
+ * @brief Looks through the locally cached information for a specific Stream.
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ * @param[in] node_id The Node-ID to look up
+ * @param[in] resource_id The Resource-ID to look up
+ *
+ * @return Pointer to the stream if found
+ * @retval NULL Not found
+ */
+bionet_stream_t *bdm_cache_lookup_stream(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
+#endif
 
 #endif
 

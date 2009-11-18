@@ -74,7 +74,9 @@ typedef enum {
     //!
     //! In the client, when the user calls cal_client.subscribe() this
     //! event is sent to the CAL client thread, which records it and sends
-    //! it to the appropriate server.
+    //! it to the appropriate server. This event is also sent back to the
+    //! thread with the peer name and subscription whenever a subscription
+    //! request has been sent.
     //!
     //! In the server, the user thread gets this event from the CAL thread
     //! when a client has requested a new subscription.  The user thread

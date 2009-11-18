@@ -363,6 +363,10 @@ int cal_client_mdnssd_bip_read(struct timeval * timeout) {
             break;
         }
 
+        case CAL_EVENT_SUBSCRIBE: {
+            break;
+        }
+
         default: {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got unhandled event type %d", event->type);
             return 1;  // dont free events we dont understand

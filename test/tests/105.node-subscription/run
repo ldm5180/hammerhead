@@ -21,21 +21,24 @@ RETVAL=0
 
 echo starting two bionet-watchers
 $ROOT/client/watcher/bionet-watcher --nodes "test-pattern-hab.$UNIQUE.*" >| out.watcher.0 &
+WATCH0PID=$!
 $ROOT/client/watcher/bionet-watcher --nodes "test-pattern-hab.$UNIQUE.*" >| out.watcher.1 &
+WATCH1PID=$!
 
 echo starting test-pattern-hab
 $ROOT/hab/test-pattern/test-pattern-hab --id $UNIQUE --output-mode nodes-only input.pattern >| out.pattern &
+HABPID=$!
 
 
 # wait for test-pattern hab to complete completely
-wait %3
+wait $HABPID
 
 sleep 1  # to let the clients notice
 
 
 echo killing the bionet-watchers
-kill %1
-kill %2
+kill $WATCH0PID
+kill $WATCH1PID
 wait
 
 

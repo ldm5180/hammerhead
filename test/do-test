@@ -11,6 +11,7 @@ export ROOT="$(pwd)/.."
 NUM_SKIPPED=0
 NUM_PASSED=0
 NUM_FAILED=0
+FAIL_REPORT=""
 
 TESTS=$@
 
@@ -47,10 +48,20 @@ for TEST in $TESTS; do
         else
             echo "TEST FAILED!"
             NUM_FAILED=$(($NUM_FAILED+1))
+	    FAIL_REPORT="${FAIL_REPORT} ${TEST}"
         fi
     fi
     popd > /dev/null
 done
+
+
+if [ "$NUM_FAILED" != 0 ]; then
+	echo
+	echo "Failed Tests:"
+	for fail in $FAIL_REPORT; do
+		echo "  $fail"
+	done
+fi
 
 echo
 echo "passed: $NUM_PASSED"

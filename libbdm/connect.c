@@ -25,10 +25,9 @@
 
 #include <glib.h>
 
+#include "cal-client.h"
 #include "bdm-client.h"
-
-
-int bdm_fd = -1;
+#include "libbdm-internal.h"
 
 
 int bdm_is_connected() {
@@ -43,7 +42,7 @@ int bdm_is_connected() {
 
 
 #if 0
-static const char *libbionet_get_id(void) {
+static const char *libbdm_get_id(void) {
     struct passwd *passwd;
     struct hostent *host;
     struct sockaddr_in local_socket;
@@ -57,7 +56,7 @@ static const char *libbionet_get_id(void) {
 	g_log(
 	    BIONET_LOG_DOMAIN,
 	    G_LOG_LEVEL_WARNING,
-	    "bionet_connect_to_nag(): unable to determine user name for ident string: %s",
+	    "bdm_connect_to_nag(): unable to determine user name for ident string: %s",
 	    strerror(errno)
 	);
 	return NULL;
@@ -70,7 +69,7 @@ static const char *libbionet_get_id(void) {
 	g_log(
 	    BIONET_LOG_DOMAIN,
 	    G_LOG_LEVEL_WARNING,
-	    "bionet_connect_to_nag(): unable to gethostbyname(\"localhost\") for ident string (%s), oh well",
+	    "bdm_connect_to_nag(): unable to gethostbyname(\"localhost\") for ident string (%s), oh well",
 	    hstrerror(h_errno)
 	);
     }
@@ -82,12 +81,12 @@ static const char *libbionet_get_id(void) {
 	socklen_t len;
 
 	len = sizeof(struct sockaddr_in);
-	r = getsockname(libbionet_nag_nxio->socket, (struct sockaddr *)&local_socket, &len);
+	r = getsockname(libbdm_nag_nxio->socket, (struct sockaddr *)&local_socket, &len);
 	if (r < 0) {
 	    g_log(
 		BIONET_LOG_DOMAIN,
 		G_LOG_LEVEL_WARNING,
-		"bionet_connect_to_nag(): error getting local socket name: %s",
+		"bdm_connect_to_nag(): error getting local socket name: %s",
 		strerror(errno)
 	    );
 	    return NULL;
@@ -108,7 +107,7 @@ static const char *libbionet_get_id(void) {
 	    g_log(
 		BIONET_LOG_DOMAIN,
 		G_LOG_LEVEL_WARNING,
-		"bionet_connect_to_nag(): error opening /proc/self/cmdline: %s",
+		"bdm_connect_to_nag(): error opening /proc/self/cmdline: %s",
 		strerror(errno)
 	    );
 	    return NULL;
@@ -121,7 +120,7 @@ static const char *libbionet_get_id(void) {
             g_log(
                 BIONET_LOG_DOMAIN,
                 G_LOG_LEVEL_WARNING,
-                "bionet_connect_to_nag(): error reading /proc/self/cmdline: %s",
+                "bdm_connect_to_nag(): error reading /proc/self/cmdline: %s",
                 strerror(errno)
             );
             return NULL;
@@ -161,6 +160,44 @@ static const char *libbionet_get_id(void) {
 #endif
 
 
+
+static int libbdm_cal_peer_matches(const char *peer_name, const char *pattern) {
+
+    if (strcmp(pattern, "*") == 0) return 0;
+    if (strcmp(pattern, peer_name) == 0) return 0;
+
+    return 1;
+}
+
+
+
+
+// 
+// Opens a connection to the Bionet Data Manager network.
+//
+// Returns the fd if the connection is open, -1 if there's a problem.
+//
+int bdm_start(void) {
+
+    // if the connection is already open we just return it's fd
+    if (libbdm_cal_fd > -1) return libbdm_cal_fd;
+
+
+    //
+    // If we get here we need to actually open the connection, and do one-time init
+    //
+
+    libbdm_all_peers = g_hash_table_new_full(g_str_hash, g_str_equal, free, NULL);
+
+
+    libbdm_cal_fd = cal_client.init("bionet-db", libbdm_cal_callback, libbdm_cal_peer_matches);
+    if (libbdm_cal_fd == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect(): error initializing CAL");
+        return -1;
+    }
+
+    return libbdm_cal_fd;
+}
 
 
 // 

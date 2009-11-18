@@ -11,14 +11,16 @@
 #include <glib.h>
 
 #include "bdm-client.h"
+#include "libbdm-internal.h"
 
+int bdm_send_asn(const void *buffer, size_t size, void *unused) {
+    return write(bdm_fd, buffer, size);
+}
 
 struct bdm_hab_list_t_opaque {
     GPtrArray * hab_list;
     int bdm_last_entry;
 };
-
-extern int bdm_fd;
 
 
 int bdm_get_hab_list_len(bdm_hab_list_t * hab_list) {
@@ -58,7 +60,7 @@ void bdm_hab_list_free(bdm_hab_list_t * hab_list) {
 }
 
 
-bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
+static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
     bdm_hab_list_t *hab_list;
     int hi;
 
@@ -66,6 +68,7 @@ bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr)
     if (NULL == hab_list) {
 	return NULL;
     }
+    hab_list->bdm_last_entry = -1;
 
     hab_list->hab_list = g_ptr_array_new();
 
@@ -141,13 +144,20 @@ bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr)
 
     return hab_list;
 
-
 cleanup:
-    // FIXME
-    free(hab_list);
+    bdm_hab_list_free(hab_list);
     return NULL;
 }
 
+void bdm_handle_query_response(const cal_event_t *event,
+        ResourceDatapointsReply_t *rdr) 
+{
+    bdm_hab_list_t * hab_list = 
+        handle_Resource_Datapoints_Reply(rdr);
+
+    bdm_hab_list_free(hab_list);
+
+}
 
 bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern, 
 				       struct timeval *datapointStart, 

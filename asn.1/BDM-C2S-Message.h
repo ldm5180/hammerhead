@@ -13,6 +13,7 @@
 
 /* Including external dependencies */
 #include "ResourceDatapointsQuery.h"
+#include "BDMSendState.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
@@ -22,7 +23,8 @@ extern "C" {
 /* Dependencies */
 typedef enum BDM_C2S_Message_PR {
 	BDM_C2S_Message_PR_NOTHING,	/* No components present */
-	BDM_C2S_Message_PR_resourceDatapointsQuery
+	BDM_C2S_Message_PR_resourceDatapointsQuery,
+	BDM_C2S_Message_PR_sendState
 } BDM_C2S_Message_PR;
 
 /* BDM-C2S-Message */
@@ -30,6 +32,7 @@ typedef struct BDM_C2S_Message {
 	BDM_C2S_Message_PR present;
 	union BDM_C2S_Message_u {
 		ResourceDatapointsQuery_t	 resourceDatapointsQuery;
+		BDMSendState_t	 sendState;
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */

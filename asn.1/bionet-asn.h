@@ -131,6 +131,21 @@ int bionet_node_to_asn(const bionet_node_t *node, Node_t *asn_node);
 
 
 //!
+//! \brief Makes an asn1c HArdwareAbstractor_t from a bionet_hab_t
+//!
+//! \param hab The Bionet HAB to use as the source.
+//!
+//! \param asn_hab The asn1c HardwareAbstractor_t to use as the destination.
+//!     The asn_hab must be allocated but not initialized.  It does not
+//!     have to be zeroed.
+//!
+//! \return 0 on success, -1 on failure.
+//!
+
+int bionet_hab_to_asn(const bionet_hab_t * hab, HardwareAbstractor_t * asn_hab);
+
+
+//!
 //! \brief Makes an asn1c Resource_t from a bionet_resource_t
 //!
 //! \param node The Bionet Resource to use as the source.

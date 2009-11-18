@@ -77,6 +77,13 @@ void cal_callback(const cal_event_t *event) {
             break;
         }
 
+        case CAL_EVENT_SUBSCRIBE: {
+            printf("Subscription to topic '%s' sent to peer '%s'\n", 
+                    event->topic, event->peer_name);
+            break;
+        }
+
+
         default: {
             printf("unknown event type %d\n", event->type);
             break;

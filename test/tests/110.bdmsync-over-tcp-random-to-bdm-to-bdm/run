@@ -33,25 +33,28 @@ cp orig-bdm.db sync-bdm.db
 
 echo starting TCP sync receiver BDM
 $ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-receive --resources "a.a.a:a" --tcp-sync-receiver &
+RECVPID=$!
 
 echo starting TCP sync sender BDM
 $ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
+SENDPID=$!
 sleep 6 # let the bdm come up before starting the HAB
 
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+HABPID=$!
 
 sleep 30
 
 echo "killing random-hab"
-kill %3
-wait %3
+kill $HABPID
+wait $HABPID
 
 sleep 15
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
 echo "test run complete. killing the TCP sync sender BDM"
-kill %2
-wait %2
+kill $SENDPID
+wait $SENDPID
 
 echo "getting data from TCP sync receiver BDM"
 
@@ -59,7 +62,7 @@ echo "getting data from TCP sync receiver BDM"
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
 
 echo "killing BDM"
-kill %1
+kill $RECVPID
 wait
 
 if ! diff -q out.random-hab out.bdm-orig; then
