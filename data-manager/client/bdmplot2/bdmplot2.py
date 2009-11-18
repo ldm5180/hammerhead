@@ -7,9 +7,9 @@ from twisted.web.static import File
 from twisted.web.server import Site
 from twisted.web.resource import Resource
 
-from twisted_bionet_client import *
+from twisted_bdm_client import *
 from bdm_client import *
-from bdmplot_callback import *
+from bdmplot2_callback import *
 
 import optparse
 
@@ -54,7 +54,7 @@ class DataServer(resource.Resource):
             #subscribe to all the resources requested in the HTTP request
             for r in sessions[session]['resource']:
                 #print "Subscribing to %(resource)s" % { 'resource' : r }
-                bionet_subscribe_datapoints_by_name(r)
+                bdm_subscribe_datapoints_by_name(r)
 
             return "{}"
 
@@ -100,7 +100,7 @@ class Datapoints(resource.Resource):
             #subscribe to all the resources requested in the HTTP request
             for r in sessions[session]['resource']:
                 #print "Subscribing to %(resource)s" % { 'resource' : r }
-                bionet_subscribe_datapoints_by_name(r)
+                bdm_subscribe_datapoints_by_name(r)
 
             return "{}"
 
@@ -118,12 +118,12 @@ def main():
 
     twisted_bdmclient = BdmClient()
 
-    #register Bionet callbacks
-    pybionet_register_callback_new_hab(cb_new_hab)
-    pybionet_register_callback_lost_hab(cb_lost_hab);
-    pybionet_register_callback_new_node(cb_new_node);
-    pybionet_register_callback_lost_node(cb_lost_node);
-    pybionet_register_callback_datapoint(cb_datapoint);
+    #register BDM callbacks
+    pybdm_register_callback_new_hab(cb_new_hab, None)
+    pybdm_register_callback_lost_hab(cb_lost_hab, None);
+    pybdm_register_callback_new_node(cb_new_node, None);
+    pybdm_register_callback_lost_node(cb_lost_node, None);
+    pybdm_register_callback_datapoint(cb_datapoint, None);
     
     data = DataServer()
     full = Datapoints()
@@ -136,7 +136,7 @@ def main():
     factory = Site(root)
     
     reactor.listenTCP(options.port, factory)
-    reactor.addReader(twisted_client)
+    reactor.addReader(twisted_bdmclient)
     
     reactor.run()
 

@@ -8,7 +8,7 @@ class BdmClient():
     twisted.internet.interfaces.IReadDescriptor interface."""
 
     def __init__(self):
-        self.bdm_fd = bdm_connect()
+        self.bdm_fd = bdm_start()
         if self.bdm_fd < 0:
             # FIXME: retry later?
             print "problem connecting to BDM, exiting"
