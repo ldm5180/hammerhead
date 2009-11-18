@@ -199,9 +199,10 @@ clean-asn1: clean
 # then applies our local patches
 #
 
-rebuild-asn1: asn1-stamp
-$(BUILT_SOURCES): asn1-stamp
+# Uncomment the following to have asn.c code be regenerated automatically
+#$(BUILT_SOURCES): asn1-stamp
 
+rebuild-asn1: asn1-stamp
 asn1-stamp: $(ASN_SOURCE)
 	asn1c -Werror -fnative-types -fskeletons-copy -pdu=auto -gen-PER $(ASN_SOURCE)
 	patch --quiet -p1 < local-patch
