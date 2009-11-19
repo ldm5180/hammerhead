@@ -218,6 +218,13 @@ if test "x$ENABLE_BDM" = "xyes"; then
 fi
 AM_CONDITIONAL(ENABLE_BDM, test "x$ENABLE_BDM" = "xyes")
 
+
+
+
+# 
+# look for different versions of ION
+#
+
 AC_ARG_WITH(
     [ion],
     AC_HELP_STRING([--with-ion], [Use ION for BP @<:@default=check@:>@]),
@@ -228,32 +235,93 @@ AC_ARG_WITH(
 # Search for ION libs/Headers, and modify CFLAGS/LDFLAGS if needed 
 #(These all add to the list of libs to link into future tests)
 # Set ION_LIBS if ion enabled
-AS_IF([test "x$with_ion" != "xno"],
-      [if test "$cross_compiling" != yes; then
-        AX_EXT_HAVE_HEADER([ion.h], 
-                           [/usr/include/ion /usr/local/include /opt/include],
-                           [have_ion_h=yes]) 
-        AX_EXT_HAVE_LIB([/usr/lib/ion /usr/local/lib /opt/lib], 
-                        [bp], [bp_attach], 
-                        [have_libbp=yes],
-                        [],
-                        [-lbpP -lrfx -lici])
-        if test "x$have_ion_h" != "x" && test "x$have_libbp" != "x"; then
-          AC_DEFINE([ENABLE_ION], 1, [Define if you have BP support via ION])
-          AC_SUBST([ENABLE_ION], 1)
-          AC_SUBST([LIBS_ION], ["-lbp -lbpP -lrfx -lici"])
-#         Check if the bioserve features are present
-          AC_CHECK_FUNCS([bp_add_endpoint sm_set_basekey])
-        else
-          if test "x$with_ion" != xcheck; then
-            AC_MSG_FAILURE(
-               [--with-ion was given, but test for ion failed])
-          fi
-          with_ion=no
+
+if test "x$with_ion" != "xno"; then
+    if test "$cross_compiling" != yes; then
+        AX_EXT_HAVE_HEADER(
+            [ion.h], 
+            [/usr/include/ion /usr/local/include /opt/include],
+            [ have_ion_h=yes ],
+            [
+                if test "x$with_ion" != xcheck; then
+                    AC_MSG_FAILURE([--with-ion was given, but test for ion failed])
+                fi
+                with_ion=no
+            ]
+        ) 
+    fi
+fi
+
+
+if test "x$with_ion" != "xno"; then
+    #
+    # We have found ion.h, next we make sure we have some version of libbp.so.
+    #
+    # The first check looks for ION NASA Baseline 1.1.0.
+    #
+    # If that fails it looks for Bioserve's version of ION.
+    #
+
+    AX_EXT_HAVE_LIB(
+        [/usr/lib /usr/local/lib /opt/lib], 
+        [bp],
+        [bp_send], 
+        [
+            have_libbp=inb-1.1.0
+            AC_MSG_RESULT([Found ION INB-1.1.0])
+            AC_DEFINE([ENABLE_ION], 1, [Define if you have BP support via ION])
+            AC_DEFINE([ION_VERSION], [INB-1.1.0], [Select ION version, INB-1.1.0 or BST])
+            AC_SUBST([ENABLE_ION], 1)
+            AC_SUBST([LIBS_ION], ["-lbp -lbpP -lici"])
+        ],
+        [ have_libbp=no ],
+        [ -lbpP -lici ]
+    )
+
+    if test "x$have_libbp" == "xno"; then
+        # didnt find inb-1.1.0, look for the bioserve version of ion instead
+        AX_EXT_HAVE_LIB(
+            [/usr/lib /usr/local/lib /opt/lib], 
+            [bp],
+            [bp_detach], 
+            [
+                HAVE_BP_DETACH=yes
+                AC_DEFINE([ENABLE_ION], 1, [Define if you have BP support via ION])
+                AC_DEFINE([ION_VERSION], [BST], [Select ION version, INB-1.1.0 or BST])
+                AC_SUBST([ENABLE_ION], 1)
+                AC_SUBST([LIBS_ION], ["-lbp -lici"])
+            ],
+            [ 
+                if test "x$with_ion" != xcheck; then
+                    AC_MSG_FAILURE([--with-ion was given, but test for ion failed])
+                fi
+                with_ion=no
+            ],
+            [ -lici ]
+        )
+
+        if test "x$HAVE_BP_DETACH" != "x"; then
+            AC_CHECK_FUNCS([bp_add_endpoint sm_set_basekey])
+            if test "x$ac_cv_func_bp_add_endpoint" != "x" && test "x$ac_cv_func_sm_set_basekey" != "x"; then
+                have_libbp=bst
+                AC_MSG_RESULT([Found ION with Bioserve mods])
+            else
+                if test "x$with_ion" != xcheck; then
+                    AC_MSG_FAILURE([--with-ion was given, but test for ion failed])
+                fi
+                with_ion=no
+            fi
         fi
 
-     fi])
+    fi
+fi
+
+if test "x$with_ion" == "xno"; then
+    AC_MSG_RESULT([No ION found, disabling BDM sync over BP])
+fi
+
 AM_CONDITIONAL(ENABLE_ION, [test "x$with_ion" != "xno"])
+
 
 # optionally compile the mmod hab
 #
