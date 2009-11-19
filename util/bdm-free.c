@@ -45,6 +45,10 @@ void bionet_bdm_free(bionet_bdm_t *bdm) {
 
     }
 
+    if(bdm->habs) {
+        g_slist_free(bdm->habs);
+    }
+
     free(bdm);
 }
 
