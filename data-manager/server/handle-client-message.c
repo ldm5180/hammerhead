@@ -28,6 +28,7 @@ static int libbdm_process_resourceDatapointsQuery(
     struct timeval *pDatapointStart = NULL;
     struct timeval *pDatapointEnd = NULL;
     int r, bi;
+    int ret = -1;
 
     BDM_S2C_Message_t reply;
     ResourceDatapointsReply_t *rdpr;
@@ -136,7 +137,7 @@ static int libbdm_process_resourceDatapointsQuery(
     
 
     //
-    // Encode ASN message andsend to requesting peer
+    // Encode ASN message and send to requesting peer
     //
     asn_r = der_encode(&asn_DEF_BDM_S2C_Message, &reply, consume_cb, consume_data);
     if (asn_r.encoded == -1) {
@@ -145,7 +146,7 @@ static int libbdm_process_resourceDatapointsQuery(
         goto cleanup;
     }
 
-    return 0;
+    ret = 0;
 
 
 cleanup:
@@ -153,7 +154,7 @@ cleanup:
         bdm_list_free(bdm_list);
     }
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_S2C_Message, &reply);
-    return -1;
+    return ret;
 }
 
 static void handle_client_message_resourceDatapointsQuery(

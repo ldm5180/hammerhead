@@ -2,8 +2,6 @@ For "PUB SUB Release":
  - Test new bdm/hab/node messages
  - Test datapoint timestamp filters with sub-second resolution
  - Support Unsubscribe (fix cache-cleanup.c)
- - Is there a race/blocking contiditon where datapoint updates will get overritten by subsequent datapoint updates if the user (db writer) thread is not reading from cal fast enough? Write a "slow processor" test to verify
-   Either way, there may be an optimization to be made were the messages are stacked up by the CAL thread, and then inserted in batches by the DB writer, and published in batches to BDM subscribers....
 
 --------------------------
 
