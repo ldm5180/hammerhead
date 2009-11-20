@@ -1,0 +1,107 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+UNIQUE=$$
+RETVAL=0
+
+YEAR=`date +%Y`
+PREV_YEAR=$(($YEAR-1))
+NEXT_YEAR=$(($YEAR+1))
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
+. $ROOT/test/config.sh
+
+VGLEAK=
+if [ -z "$ENABLE_DARWIN" ]; then
+    VGLEAK="--leak-check=full --leak-resolution=high"
+fi
+
+
+echo "making DB file"
+rm -f orig-bdm.db sync-bdm.db
+sqlite3 orig-bdm.db < $ROOT/data-manager/server/schema
+cp orig-bdm.db sync-bdm.db
+
+export G_SLICE=always-malloc 
+export G_DEBUG=gc-friendly,resident-modules
+
+DOVALGRIND="$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --tool=memcheck --trace-children=yes $VGLEAK"
+
+echo starting TCP sync receiver BDM
+$DOVALGRIND --log-file=log.vg.send $ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-receive --resources "a.a.a:a" --tcp-sync-receiver &
+RECVPID=$!
+
+echo starting TCP sync sender BDM
+$DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
+SENDPID=$!
+sleep 6 # let the bdm come up before starting the HAB
+
+echo starting random-hab
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+HABPID=$!
+
+sleep 30
+
+echo "killing random-hab"
+kill $HABPID
+wait $HABPID
+
+sleep 15
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
+echo "test run complete. killing the TCP sync sender BDM"
+kill $SENDPID
+wait $SENDPID
+
+echo "getting data from TCP sync receiver BDM"
+
+
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
+
+echo "killing BDM"
+kill $RECVPID
+wait $RECVPID
+
+if ! diff -q out.random-hab out.bdm-orig; then
+    echo "ERROR: Originating BDM output differs from random-hab output:"
+    diff -u out.random-hab out.bdm-orig
+    RETVAL=1
+else
+    echo "Originating BDM output is identical to random-hab output, yay"
+fi
+
+if ! diff -q out.random-hab out.bdm-sync; then
+    echo "ERROR: Sync'd BDM output differs from random-hab output:"
+    diff -u out.random-hab out.bdm-sync
+    RETVAL=1
+else
+    echo "Sync'd BDM output is identical to random-hab output, yay"
+fi
+
+
+for log in log.vg.send log.vg.recv; do
+    if [ $(wc -l < $log) -gt 0 ]; then
+	echo "valgrind memcheck output ($log):"
+	cat $log
+	RETVAL=1
+    else
+        echo "no valgrind errors in $log :-)"
+    fi
+done
+
+exit $RETVAL
+
+

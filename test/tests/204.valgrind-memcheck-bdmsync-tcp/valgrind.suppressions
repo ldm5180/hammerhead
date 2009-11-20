@@ -1,0 +1,22 @@
+
+{
+   glibc/pthread_create
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC*
+}
+
+{
+   glib/main-loop-new
+   Memcheck:Leak
+   fun:memalign
+   fun:posix_memalign
+   fun:g_slice_alloc
+   fun:g_ptr_array_sized_new
+   fun:g_main_context_new
+   fun:g_main_context_default
+   fun:g_main_loop_new
+   fun:main
+}
+
