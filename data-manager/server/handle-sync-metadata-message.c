@@ -152,7 +152,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
 	bionet_bdm_free(g_ptr_array_index(bdm_list, bi));
 	g_ptr_array_remove_index(bdm_list, bi);
     }
-    g_ptr_array_unref(bdm_list);
+    g_ptr_array_free(bdm_list, TRUE);
 }
 
 // Emacs cruft
