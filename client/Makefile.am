@@ -13,7 +13,7 @@ SUBDIRS += libbionet-qt4
 endif
 
 if ENABLE_PYTHON
-SUBDIRS += py-libbionet
+SUBDIRS += py-libbionet twisted plot
 endif
 
 if ENABLE_CLIENTS

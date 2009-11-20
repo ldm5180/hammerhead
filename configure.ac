@@ -543,14 +543,16 @@ AC_CONFIG_FILES([Makefile
                  libbionet/Makefile
                  libbdm/Makefile
                  client/Makefile
-                 client/libbionet-qt4/Makefile
-		 client/monitor/Makefile
-                 client/py-libbionet/Makefile
-                 client/watcher/Makefile
-                 client/stream/Makefile
-		 client/stream-manager/Makefile
 		 client/commander/Makefile
 		 client/get/Makefile
+                 client/libbionet-qt4/Makefile
+		 client/monitor/Makefile
+		 client/plot/Makefile
+                 client/py-libbionet/Makefile
+                 client/stream/Makefile
+		 client/stream-manager/Makefile
+		 client/twisted/Makefile
+                 client/watcher/Makefile
                  hab/Makefile
 		 hab/py-libhab/Makefile
 		 hab/libamedevice/Makefile

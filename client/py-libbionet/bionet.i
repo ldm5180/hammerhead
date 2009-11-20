@@ -54,6 +54,7 @@
     static PyObject * py_cb_new_node = NULL;
     static PyObject * py_cb_stream = NULL;
     static PyObject * py_cb_datapoint = NULL;
+    static GSList * user_data_list;
 
     void pybionet_callback_lost_hab(bionet_hab_t *hab) {
 	PyObject *arglist;
@@ -219,6 +220,31 @@
 	bionet_register_callback_stream(pybionet_callback_stream);
 
 	return py_cb_stream;
+    }
+
+    void pybionet_resource_set_user_data(bionet_resource_t *resource, PyObject *user_data) {
+
+	PyObject * old = bionet_resource_get_user_data(resource);
+	if (old == user_data) {
+	    return;
+	}
+
+	if (NULL != old) {
+	    user_data_list = g_slist_remove(user_data_list, old);
+	    bionet_resource_set_user_data(resource, NULL);
+	    Py_XDECREF(old);
+	    Py_XINCREF(user_data);
+	    bionet_resource_set_user_data(resource, user_data);
+	    user_data_list = g_slist_append(user_data_list, user_data);
+	} else {
+	    Py_XINCREF(user_data);
+	    bionet_resource_set_user_data(resource, user_data);
+	    user_data_list = g_slist_append(user_data_list, user_data);
+	}
+    }
+
+    PyObject * pybionet_resource_get_user_data(bionet_resource_t *resource) {
+	return (PyObject *)bionet_resource_get_user_data(resource);
     }
 
 %} 

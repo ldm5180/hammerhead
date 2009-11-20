@@ -112,6 +112,20 @@ int bionet_is_valid_name_component(const char *str);
 int bionet_name_component_matches(const char *name_component, const char *pattern);
 
 
+/**
+ * @brief Check if a resource name matches a specified pattern
+ * 
+ * @param[in] resource_name Resource name to check
+ * @param[in] pattern Pattern to check against
+ *
+ * @retval 0 Does not match
+ * @retval 1 Match
+ *
+ * @note pattern may be the wildcard "*", which matches all name components
+ */
+int bionet_resource_name_matches(const char *resource_name, const char *pattern);
+
+
 //
 // puts the glib log messages where you want them
 //
