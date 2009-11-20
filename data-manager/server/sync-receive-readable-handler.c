@@ -50,7 +50,7 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
 
     if (cond & (G_IO_ERR | G_IO_HUP | G_IO_NVAL)) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "disconnect event from sync sender");
-        disconnect_client(client);
+        disconnect_sync_sender(client);
         return FALSE;
     }
 
@@ -61,12 +61,12 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
 	bytes_read = read(client->fd, &client->buffer[client->index], bytes_to_read);
 	if (bytes_read < 0) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error reading from sync sender: %s", strerror(errno));
-	    disconnect_client(client);
+	    disconnect_sync_sender(client);
 	    return FALSE;
 	}
 	if (bytes_read == 0) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "eof from sync sender");
-	    disconnect_client(client);
+	    disconnect_sync_sender(client);
 	    return FALSE;
 	}
 	
@@ -102,7 +102,7 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
         } else if (rval.code == RC_FAIL) {
 	    // received invalid junk
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ber_decode failed to decode the sync sender's message");
-	    disconnect_client(client);
+	    disconnect_sync_sender(client);
             return FALSE;
         } else {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "unknown error with ber_decode (code=%d)", rval.code);
