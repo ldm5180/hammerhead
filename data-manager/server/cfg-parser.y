@@ -161,3 +161,15 @@ sync_sender_config_t * read_config_file(const char * fname) {
     return cfg;
     
 }
+
+void sync_sender_config_destroy(sync_sender_config_t *cfg) {
+    if(cfg->sync_recipient) {
+    	free(cfg->sync_recipient);
+    }
+
+    db_shutdown(cfg->db);
+	
+    free(cfg);
+}
+
+
