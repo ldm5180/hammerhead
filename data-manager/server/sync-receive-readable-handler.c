@@ -19,8 +19,11 @@ static int write_data_to_fd(const void *buffer, size_t size, void * fd_void) {
 
     r = write(fd, buffer, size);
 
+    /*
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	  "    %d bytes written %x%x", r, (int)((char*)buffer)[0], (int)((char*)buffer)[1]);
+	  "    %d bytes written %x%x", 
+          r, (int)((char*)buffer)[0], (int)((char*)buffer)[1]);
+    */
 
     return r;
 } /* write_data_to_socket() */
@@ -29,7 +32,7 @@ static void send_ack(client_t *client, BDM_Sync_Ack_t ack_type ) {
     asn_enc_rval_t asn_r;
     BDM_Sync_Ack_t sync_ack = ack_type;
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
         "Sending ACK (%ld)...", ack_type);
     
     asn_r = der_encode(&asn_DEF_BDM_Sync_Ack, &sync_ack, 
