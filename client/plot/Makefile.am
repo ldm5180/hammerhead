@@ -7,7 +7,5 @@
 include $(top_srcdir)/common.am
 
 cgibin_SCRIPTS = bionetplot.py \
-        bionetplot_callback.py \
-	datapoints_to_dict.py \
-	timechooser.py \
-	timespan.py
+        bionetplot_callback.py
+

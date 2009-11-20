@@ -539,6 +539,7 @@ AC_CONFIG_FILES([Makefile
                  asn.1/Makefile
                  util/Makefile
 		 util/version.c
+		 util/python/Makefile
                  libhab/Makefile
                  libbionet/Makefile
                  libbdm/Makefile

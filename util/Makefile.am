@@ -6,6 +6,8 @@
 
 include $(top_srcdir)/common.am
 
+SUBDIRS = python
+
 lib_LTLIBRARIES = libbionet-util.la
 
 include_HEADERS = \

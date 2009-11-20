@@ -11,6 +11,8 @@ from twisted_bionet_client import *
 from bionet import *
 from bionetplot_callback import *
 
+import optparse
+
 class DataServer(resource.Resource):
     isLeaf = True
 
@@ -103,27 +105,41 @@ class Datapoints(resource.Resource):
             return "{}"
 
 
-twisted_client = Client()
+def main():
+    # parse options 
+    parser = optparse.OptionParser()
+    parser.add_option("-p", "--port", dest="port",
+                      help="Webserver port.", 
+                      metavar="<port>",
+                      default=8080)
+    
+    (options, args) = parser.parse_args()
 
-#register Bionet callbacks
-pybionet_register_callback_new_hab(cb_new_hab)
-pybionet_register_callback_lost_hab(cb_lost_hab);
-pybionet_register_callback_new_node(cb_new_node);
-pybionet_register_callback_lost_node(cb_lost_node);
-pybionet_register_callback_datapoint(cb_datapoint);
 
-data = DataServer()
-full = Datapoints()
+    twisted_client = Client()
 
-root = Resource()
-root.putChild('plot', File("plot.html"))
-root.putChild('flot', File("flot"))
-root.putChild('data', data)
-root.putChild('full', full)
-factory = Site(root)
+    #register Bionet callbacks
+    pybionet_register_callback_new_hab(cb_new_hab)
+    pybionet_register_callback_lost_hab(cb_lost_hab);
+    pybionet_register_callback_new_node(cb_new_node);
+    pybionet_register_callback_lost_node(cb_lost_node);
+    pybionet_register_callback_datapoint(cb_datapoint);
+    
+    data = DataServer()
+    full = Datapoints()
+    
+    root = Resource()
+    root.putChild('plot', File("plot.html"))
+    root.putChild('flot', File("flot"))
+    root.putChild('data', data)
+    root.putChild('full', full)
+    factory = Site(root)
+    
+    reactor.listenTCP(options.port, factory)
+    reactor.addReader(twisted_client)
+    
+    reactor.run()
 
-reactor.listenTCP(8080, factory)
-reactor.addReader(twisted_client)
 
-reactor.run()
-
+if __name__ == "__main__":
+    main()
