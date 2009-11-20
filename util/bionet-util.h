@@ -195,7 +195,7 @@ int bionet_split_resource_name(
  * @brief Take a resource name string and split the name up into its components
  *
  * Resource name string shall be in the format 
- *    <HAB-type>.<HAB-ID>.<Node-ID>:<Resource-ID>[?<Topic Query params>]
+ *    \<HAB-type\>.\<HAB-ID\>.\<Node-ID\>:\<Resource-ID\>[?\<Topic Query params\>]
  * 
  * If the caller passes in NULL for any of the "out" arguments, that part
  * of the name component will be skipped.
@@ -228,7 +228,7 @@ int bionet_split_resource_name_r(
  *
  * If BDM-ID/ is not present it defaults to *
  *
- * @param[in] resource_name Resource name to split
+ * @param[in] topic Hab name to split
  * @param[out] bdm_id BDM-ID from resource name
  * @param[out] hab_type HAB-type from resource name
  * @param[out] hab_id HAB-ID from resource name
@@ -254,7 +254,7 @@ int bdm_split_hab_name_r(
 
  * If BDM-ID/ is not present it defaults to *
  *
- * @param[in] resource_name Resource name to split
+ * @param[in] topic Node name to split
  * @param[out] bdm_id BDM-ID from resource name
  * @param[out] hab_type HAB-type from resource name
  * @param[out] hab_id HAB-ID from resource name
@@ -274,14 +274,14 @@ int bdm_split_node_name_r(
  * @brief Take a resource name string and split the name up into its components
  *
  * Resource name string shall be in the format:
- *    [<BDM-ID>/]<HAB-type>.<HAB-ID>.<Node-ID>:<Resource-ID>[?<Topic Query params>]
+ *    [\<BDM-ID\>/]\<HAB-type\>.\<HAB-ID\>.\<Node-ID\>:\<Resource-ID\>[?\<Topic Query params\>]
  * 
  * If the caller passes in NULL for any of the "out" arguments, that part
  * of the name component will be skipped.
 
  * If BDM-ID/ is not present it defaults to *
  *
- * @param[in] resource_name Resource name to split
+ * @param[in] topic Resource name to split
  * @param[out] bdm_id BDM-ID from resource name
  * @param[out] hab_type HAB-type from resource name
  * @param[out] hab_id HAB-ID from resource name
@@ -307,10 +307,10 @@ int bdm_split_resource_name_r(
  * The params are all strings, and can be converted with bionet_param_to_timeval,
  * bionet_param_to_int, etc...
  *
- * @param [in]querystring
+ * @param[in] querystring
  *   The string that has the parameters encoded
  *
- * @param [out]ret_params
+ * @param[out] ret_params
  *   Points to a newly alloceaded GHAshTable containing the parameters decoded
  *   from the query string
  *

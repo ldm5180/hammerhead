@@ -281,7 +281,7 @@ bionet_bdm_t *bionet_hab_get_bdm_by_index(bionet_hab_t *hab,
  * @retval 0 Success
  * @retval -1 Failure
  *
- * @Note The BDM memory is not managed by the hab. The hab only tracks BDMs
+ * @note The BDM memory is not managed by the hab. The hab only tracks BDMs
  * for cross-linking purposes
  */
 int bionet_hab_add_bdm(bionet_hab_t *hab, const bionet_bdm_t *bdm);
