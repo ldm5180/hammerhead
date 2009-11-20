@@ -87,7 +87,7 @@ set_res         :       SET_RES ASSIGN STRINGVAL {
                                 bdmcfg->resource_name_pattern,
                                 $<stringval>3,
                                 sizeof(bdmcfg->resource_name_pattern) - 1);
-                            bdmcfg->end_time.tv_usec = $<timeval>3.tv_usec;
+			    free($<stringval>3);
                         }
 
 set_freq        :       SET_FREQ ASSIGN INTVAL {
@@ -102,13 +102,14 @@ set_recpt        :      SET_RECPT ASSIGN STRINGVAL {
                             if(bdmcfg->sync_recipient){
                                 free(bdmcfg->sync_recipient);
                             }
-                            bdmcfg->sync_recipient = strdup($<stringval>3);
+                            bdmcfg->sync_recipient = $<stringval>3;
                         }
 
 set_unknown     :       SET_UNKNOWN ASSIGN STRINGVAL {
                             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                                 "Unknown setting '%s'. Ignoring\n",
                                 $<stringval>1);
+			    free($<stringval>3);
                         }
 
 
@@ -161,3 +162,15 @@ sync_sender_config_t * read_config_file(const char * fname) {
     return cfg;
     
 }
+
+void sync_sender_config_destroy(sync_sender_config_t *cfg) {
+    if(cfg->sync_recipient) {
+    	free(cfg->sync_recipient);
+    }
+
+    db_shutdown(cfg->db);
+	
+    free(cfg);
+}
+
+

@@ -328,6 +328,8 @@ extern GSList * sync_config_list;
 
 sync_sender_config_t * read_config_file(const char * fname);
 
+void sync_sender_config_destroy(sync_sender_config_t * cfg);
+
 #endif //  BIONET_DATA_MANAGER_H
 
 // Emacs cruft

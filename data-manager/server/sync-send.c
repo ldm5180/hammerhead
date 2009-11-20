@@ -316,6 +316,8 @@ gpointer sync_thread(gpointer config) {
 	bdm_thread_sleep(cfg->frequency * G_USEC_PER_SEC);
     }
 
+    sync_sender_config_destroy(cfg);
+
     return NULL;
 } /* sync_thread() */
 

@@ -41,6 +41,7 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray * bdm_list)
 
     for (bi = 0; bi < bdm_list->len; bi++) {
 	int hi;
+        DataManager_t * asn_bdm;
 	bionet_bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
 	if (NULL == bdm) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -49,6 +50,29 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray * bdm_list)
 	}
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
               "       BDM %s", bionet_bdm_get_id(bdm));
+
+        //add the BDM to the message
+        asn_bdm = (DataManager_t *)calloc(1, sizeof(DataManager_t));
+        if (asn_bdm == NULL) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                  "sync_send_metadata(): out of memory!");
+            goto cleanup;
+        }
+
+        r = asn_sequence_add(&message->list, asn_bdm);
+        if (r != 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                  "sync_send_metadata(): error adding BDM to Sync Metadata: %s", strerror(errno));
+            goto cleanup;
+        }
+
+        r = OCTET_STRING_fromString(&asn_bdm->id, bionet_bdm_get_id(bdm));
+        if (r != 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                  "sync_send_metadata(): error making OCTET_STRING for BDM-ID %s", bionet_bdm_get_id(bdm));
+            goto cleanup;
+        }
+	    
 
 	for (hi = 0; hi < bionet_bdm_get_num_habs(bdm); hi++) {
 	    int ni;
@@ -69,7 +93,7 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray * bdm_list)
 		goto cleanup;
 	    }
 	    
-	    r = asn_sequence_add(&message->list, asn_hab);
+	    r = asn_sequence_add(&asn_bdm->hablist.list, asn_hab);
 	    if (r != 0) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "sync_send_metadata(): error adding HAB to Sync Metadata: %s", strerror(errno));

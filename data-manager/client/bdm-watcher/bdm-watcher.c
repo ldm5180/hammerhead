@@ -124,6 +124,7 @@ void str_to_timeval(const char *str, struct timeval *tv) {
     char *p;
     char *old_tz;
 
+    memset(&tm, 0, sizeof(tm));
     p = strptime(str, "%Y-%m-%d %T", &tm);
     if (p == NULL) {
         printf("error parsing time string '%s': %s\n", str, strerror(errno));
@@ -379,6 +380,11 @@ int main(int argc, char *argv[]) {
                 bdm_id, hab_type, hab_id, node_id, resource_id, 
                 pDatapointStart, pDatapointEnd);
     }
+
+    g_slist_free(bdm_list);
+    g_slist_free(hab_list);
+    g_slist_free(node_list);
+    g_slist_free(dp_list);
 
     signal(SIGUSR1, signal_handler);
     signal(SIGTERM, stop_signal_handler);
