@@ -34,6 +34,11 @@ void bionet_hab_free(bionet_hab_t *hab) {
         free(hab->name);
     }
 
+    if (hab->recording_bdm != NULL) {
+        free(hab->recording_bdm);
+    }
+
+
     bionet_hab_remove_all_nodes(hab);
 
     free(hab);

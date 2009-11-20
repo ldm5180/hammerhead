@@ -82,7 +82,7 @@ static int libbdm_process_resourceDatapointsQuery(
     }
 
     // do that database lookup
-    bdm_list = db_get_resource_datapoints(main_db,
+    bdm_list = db_get_resource_datapoints(main_db, NULL,
                                           (const char *)rdpq->habType.buf, 
 					  (const char *)rdpq->habId.buf, 
 					  (const char *)rdpq->nodeId.buf, 

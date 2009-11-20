@@ -19,7 +19,6 @@
 
 
 int bdm_new_hab_to_asnbuf(
-        bionet_bdm_t * bdm,
         bionet_hab_t *hab,
         long entry_seq,
         bionet_asn_buffer_t *buf) 
@@ -36,7 +35,7 @@ int bdm_new_hab_to_asnbuf(
     m.present = BDM_S2C_Message_PR_newHab;
     nh = &m.choice.newHab;
 
-    r = OCTET_STRING_fromBuf(&nh->bdmId, bionet_bdm_get_id(bdm), -1);
+    r = OCTET_STRING_fromBuf(&nh->bdmId, bionet_hab_get_recording_bdm(hab), -1);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
               "%s(): Failed to set bdm id", __FUNCTION__);
@@ -75,7 +74,6 @@ cleanup:
 }
 
 int bdm_new_node_to_asnbuf(
-        bionet_bdm_t * bdm,
         bionet_node_t *node,
         long entry_seq,
         bionet_asn_buffer_t *buf) 
@@ -95,7 +93,7 @@ int bdm_new_node_to_asnbuf(
     m.present = BDM_S2C_Message_PR_newNode;
     nn = &m.choice.newNode;
 
-    r = OCTET_STRING_fromBuf(&nn->bdmId, bionet_bdm_get_id(bdm), -1);
+    r = OCTET_STRING_fromBuf(&nn->bdmId, bionet_hab_get_recording_bdm(hab), -1);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
               "%s(): Failed to set bdm id", __FUNCTION__);
@@ -147,7 +145,6 @@ cleanup:
 }
 
 int bdm_resource_metadata_to_asnbuf(
-        bionet_bdm_t * bdm,
         bionet_resource_t *resource,
         long entry_seq,
         bionet_asn_buffer_t *buf) 
@@ -169,7 +166,7 @@ int bdm_resource_metadata_to_asnbuf(
     m.present = BDM_S2C_Message_PR_resourceMetadata;
     rm = &m.choice.resourceMetadata;
 
-    r = OCTET_STRING_fromBuf(&rm->bdmId, bionet_bdm_get_id(bdm), -1);
+    r = OCTET_STRING_fromBuf(&rm->bdmId, bionet_hab_get_recording_bdm(hab), -1);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
               "%s(): Failed to set bdm id", __FUNCTION__);
@@ -253,7 +250,6 @@ cleanup:
 
 
 int bdm_resource_datapoints_to_asnbuf(
-        bionet_bdm_t * bdm,
         bionet_resource_t *resource,
         long entry_seq,
         bionet_asn_buffer_t *buf)
@@ -277,10 +273,10 @@ int bdm_resource_datapoints_to_asnbuf(
     m.present = BDM_S2C_Message_PR_datapointsUpdate;
     rd = &m.choice.datapointsUpdate;
 
-    r = OCTET_STRING_fromBuf(&rd->bdmId, bionet_bdm_get_id(bdm), -1);
+    r = OCTET_STRING_fromBuf(&rd->bdmId, bionet_hab_get_recording_bdm(hab), -1);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set  bdm id", __FUNCTION__);
+              "%s(): Failed to set bdm id", __FUNCTION__);
         goto cleanup;
     }
 

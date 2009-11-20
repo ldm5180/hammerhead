@@ -187,6 +187,7 @@ int db_add_datapoint_sync(
 //
 GPtrArray *db_get_resource_datapoints(
     sqlite3 *db,
+    const char *bdm_id,
     const char *hab_type,
     const char *hab_id,
     const char *node_id,
@@ -203,6 +204,7 @@ GPtrArray *db_get_resource_datapoints(
 //
 GPtrArray *db_get_metadata(
     sqlite3 *db,
+    const char *bdm_id,
     const char *hab_type,
     const char *hab_id,
     const char *node_id,
@@ -235,18 +237,15 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray *bdm_list);
 
 
 int bdm_report_datapoint(
-        bionet_bdm_t * bdm,
         bionet_resource_t * resource,
         bionet_datapoint_t * datapoint,
         int entry_seq) ;
 
 int bdm_report_new_node(
-        bionet_bdm_t * bdm,
         bionet_node_t * node,
         int entry_seq) ;
 
 int bdm_report_new_hab(
-        bionet_bdm_t * bdm,
         bionet_hab_t * hab,
         int entry_seq) ;
 

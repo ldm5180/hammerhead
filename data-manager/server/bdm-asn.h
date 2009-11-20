@@ -9,26 +9,22 @@
 #include "bionet-util.h"
 
 int bdm_new_hab_to_asnbuf(
-        bionet_bdm_t * bdm,
         bionet_hab_t *hab,
         long entry_seq,
         bionet_asn_buffer_t *buf) ;
 
 int bdm_new_node_to_asnbuf(
-        bionet_bdm_t * bdm,
         bionet_node_t *node,
         long entry_seq,
         bionet_asn_buffer_t *buf) ;
 
 int bdm_resource_metadata_to_asnbuf(
-        bionet_bdm_t * bdm,
         bionet_resource_t *resource,
         long entry_seq,
         bionet_asn_buffer_t *buf);
 
 
 int bdm_resource_datapoints_to_asnbuf(
-        bionet_bdm_t * bdm,
         bionet_resource_t *resource,
         long entry_seq,
         bionet_asn_buffer_t *buf);

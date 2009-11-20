@@ -23,7 +23,8 @@ static int bdm_resource_to_topic_str_r(const bionet_resource_t *resource, char t
             if (bionet_timeval_compare(ts, tsmin) < 0 ) tsmin = ts;
             if (bionet_timeval_compare(ts, tsmax) > 0 ) tsmax = ts;
         }
-        snprintf(topic_str, BDM_TOPIC_MAX_LEN, "D %s.%s?tsmin=%ld.%06ld&tsmax=%ld.%06ld", 
+        snprintf(topic_str, BDM_TOPIC_MAX_LEN, "D %s/%s.%s?tsmin=%ld.%06ld&tsmax=%ld.%06ld", 
+            bionet_hab_get_recording_bdm(hab),
             bionet_hab_get_name(hab), 
             bionet_resource_get_local_name(resource),
             (long)tsmin->tv_sec, (long)tsmin->tv_usec,
@@ -36,7 +37,6 @@ static int bdm_resource_to_topic_str_r(const bionet_resource_t *resource, char t
 }
 
 int bdm_report_new_hab(
-        bionet_bdm_t * bdm,
         bionet_hab_t * hab,
         int entry_seq) 
 {
@@ -44,10 +44,11 @@ int bdm_report_new_hab(
     bionet_asn_buffer_t buf;
     char topic[BDM_TOPIC_MAX_LEN];
 
-    snprintf(topic, sizeof(topic), "H %s", 
+    snprintf(topic, sizeof(topic), "H %s/%s", 
+        bionet_hab_get_recording_bdm(hab),
         bionet_hab_get_name(hab));
 
-    r = bdm_new_hab_to_asnbuf(bdm, hab, entry_seq, &buf);
+    r = bdm_new_hab_to_asnbuf(hab, entry_seq, &buf);
     if ( r != 0 ) {
         // An error has already been logged
         return -1;
@@ -62,7 +63,6 @@ int bdm_report_new_hab(
 }
 
 int bdm_report_new_node(
-        bionet_bdm_t * bdm,
         bionet_node_t * node,
         int entry_seq) 
 {
@@ -72,11 +72,12 @@ int bdm_report_new_node(
 
     bionet_hab_t * hab = bionet_node_get_hab(node);
 
-    snprintf(topic, sizeof(topic), "N %s.%s", 
+    snprintf(topic, sizeof(topic), "N %s/%s.%s", 
+        bionet_hab_get_recording_bdm(hab),
         bionet_hab_get_name(hab), 
         bionet_node_get_id(node));
 
-    r = bdm_new_node_to_asnbuf(bdm, node, entry_seq, &buf);
+    r = bdm_new_node_to_asnbuf(node, entry_seq, &buf);
     if ( r != 0 ) {
         // An error has already been logged
         return -1;
@@ -98,10 +99,11 @@ int bdm_report_new_node(
             bionet_resource_t *resource = bionet_node_get_resource_by_index(node, ri);
             int r;
 
-            r = bdm_resource_metadata_to_asnbuf(bdm, resource, entry_seq, &buf);
+            r = bdm_resource_metadata_to_asnbuf(resource, entry_seq, &buf);
             if (r != 0) return -1;
 
-            snprintf(topic, sizeof(topic), "D %s.%s", 
+            snprintf(topic, sizeof(topic), "D %s/%s.%s", 
+                bionet_hab_get_recording_bdm(hab),
                 bionet_hab_get_name(hab), 
                 bionet_resource_get_local_name(resource));
 
@@ -114,7 +116,7 @@ int bdm_report_new_node(
 
             if ( bdm_resource_to_topic_str_r(resource, topic) ) {
                 // send all datapoints
-                r = bdm_resource_datapoints_to_asnbuf(bdm, resource, entry_seq, &buf);
+                r = bdm_resource_datapoints_to_asnbuf(resource, entry_seq, &buf);
                 if (r != 0) continue;
 
                 // publish the message to any connected subscribers
@@ -131,7 +133,6 @@ int bdm_report_new_node(
 }
 
 int bdm_report_datapoint(
-        bionet_bdm_t * bdm,
         bionet_resource_t * resource,
         bionet_datapoint_t * datapoint,
         int entry_seq) 
@@ -142,7 +143,7 @@ int bdm_report_datapoint(
 
     if ( bdm_resource_to_topic_str_r(resource, datapoint_topic) == 0 ) {
 
-        r = bdm_resource_datapoints_to_asnbuf(bdm, resource, entry_seq, &buf);
+        r = bdm_resource_datapoints_to_asnbuf(resource, entry_seq, &buf);
         if (r != 0) return -1;
 
 

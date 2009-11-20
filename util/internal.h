@@ -34,6 +34,7 @@ struct bionet_hab_opaque_t {
     int is_secure;
 
     GSList *bdms; // NULL unless in bdm library
+    char * recording_bdm; //NULL unless in bdm library
 };
 
 

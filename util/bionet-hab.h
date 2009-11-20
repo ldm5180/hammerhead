@@ -314,6 +314,24 @@ bionet_bdm_t * bionet_hab_remove_bdm_by_id(bionet_hab_t *hab, const char *bdm_id
 int bionet_hab_remove_all_bdms(bionet_hab_t *hab);
 
 
+/**
+ * @brief Get the id of the BDM that recorded this hab
+ *
+ * @param[in] hab Pointer to HAB
+ *
+ * @return Pointer to string that is valid until the hab is free'd
+ */ 
+const char * bionet_hab_get_recording_bdm(bionet_hab_t *hab);
+
+/**
+ * @brief Set the ID of the BDM that recorded this hab
+ *
+ * @param[in] hab Pointer to HAB
+ * @param[in] bdm_id ID of BDM
+ *
+ * @return Pointer to string that is valid until the hab is free'd
+ */ 
+void bionet_hab_set_recording_bdm(bionet_hab_t *hab, const char * bdm_id);
 
 #endif //  BIONET_HAB_H
 

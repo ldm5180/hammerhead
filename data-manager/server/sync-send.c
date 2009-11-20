@@ -72,7 +72,7 @@ static int sync_send_metadata(
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "    METADATA for %s.%s.%s:%s from seq %d to %d",
 	  hab_type, hab_id, node_id, resource_id, from_seq, to_seq);
-    bdm_list = db_get_metadata(config->db, hab_type, hab_id, node_id, resource_id,
+    bdm_list = db_get_metadata(config->db, NULL, hab_type, hab_id, node_id, resource_id,
 			       &config->start_time, &config->end_time,
 			       from_seq, to_seq);
 
@@ -150,7 +150,7 @@ static int sync_send_datapoints(
 	  "    DATAPOINTS for %s.%s.%s:%s from seq %d to %d",
 	  hab_type, hab_id, node_id, resource_id,
 	  from_seq, to_seq);
-    bdm_list = db_get_resource_datapoints(config->db, hab_type, hab_id, node_id, resource_id,
+    bdm_list = db_get_resource_datapoints(config->db, NULL, hab_type, hab_id, node_id, resource_id,
 					  &config->start_time, &config->end_time,
 					  from_seq, to_seq);
     if (NULL == bdm_list) {

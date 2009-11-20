@@ -20,6 +20,7 @@ int main(int argc, char * argv[])
     suite_t func_unit_test_suite[] = 
         {
             { "Bionet data Manager Config Read", &data_manager_config_suite },
+            { "Bionet data Manager Topic Subscriptions", &bdm_subscription_topic_suite },
         };
 
     /* run all the integration test suites */

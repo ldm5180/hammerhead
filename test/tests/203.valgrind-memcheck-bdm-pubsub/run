@@ -1,0 +1,94 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+UNIQUE=$$
+
+YEAR=`date +%Y`
+PREV_YEAR=$(($YEAR-1))
+NEXT_YEAR=$(($YEAR+1))
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
+. $ROOT/test/config.sh
+
+VGLEAK=
+if [ -z "$ENABLE_DARWIN" ]; then
+    VGLEAK="--leak-check=full --leak-resolution=high"
+fi
+
+WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -r 'random-hab.$UNIQUE.*:*'"
+
+echo "making DB file"
+rm -f bdm.db
+sqlite3 bdm.db < $ROOT/data-manager/server/schema || exit 1
+
+export G_SLICE=always-malloc 
+export G_DEBUG=gc-friendly,resident-modules 
+
+echo starting BDM under valgrind memcheck
+$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.bdm --tool=memcheck --trace-children=yes $VGLEAK $ROOT/data-manager/server/bionet-data-manager --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
+BDMPID=$!
+sleep 3 # let the bdm come up before starting the HAB
+
+echo starting random-hab
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+HABPID=$!
+
+sleep `expr $TEST_DURATION / 2`
+
+echo starting bdm-watcher under valgrind
+eval "$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.bdm-watch --tool=memcheck --trace-children=yes $VGLEAK $WATCHCMD >| out.watcher &"
+WATCHPID=$!
+
+sleep `expr $TEST_DURATION / 2`
+
+echo "test run complete, killing random-hab"
+kill $HABPID
+wait $HABPID
+sleep 20 # let the BDM get any last things sent by the random-hab
+
+
+echo "killing BDM"
+kill $BDMPID
+wait $BDMPID
+
+sleep 15 # Valgrind can take a while
+
+echo "killing BDM-watcher"
+kill $WATCHPID
+wait $WATCHPID
+# let the valgrind output finish
+sleep 1
+
+for log in out.watcher; do
+    sort -u $log > $log.sorted
+    if ! diff -q out.random-hab $log.sorted; then
+	echo "ERROR: $log output differs from random-hab output:"
+	diff -u out.random-hab $log.sorted
+	RETVAL=1
+    fi
+done
+
+for log in out.valgrind.bdm out.valgrind.bdm-watch; do
+	if [ $(wc -l < $log) -gt 0 ]; then
+	    echo "valgrind memcheck output ($log):"
+	    cat $log
+	    RETVAL=1
+	    echo
+	fi
+done
+
+exit $RETVAL

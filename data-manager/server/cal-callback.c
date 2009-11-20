@@ -26,7 +26,7 @@ static void libbdm_publishto_each_resource(
         GPtrArray * bdm_list,
         int this_seq,
         const char * peer_name,
-        int (*encode_resource)(bionet_bdm_t * bdm, bionet_resource_t *resource, 
+        int (*encode_resource)(bionet_resource_t *resource, 
                                 long entry_seq, bionet_asn_buffer_t *buf) 
         ) 
 {
@@ -83,7 +83,7 @@ static void libbdm_publishto_each_resource(
 
                     //
                     // Encode the resource with the supplied function
-                    r = encode_resource(bdm, resource, this_seq, &buf);
+                    r = encode_resource(resource, this_seq, &buf);
                     if (r != 0) {
                         // an error has already been logged, and the buffer has been freed
                         continue;
@@ -131,6 +131,7 @@ static void libbdm_process_datapoint_subscription_request(
         const char *topic,
         bdm_subscription_t *state)
 {
+    char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char topic_hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
     char topic_hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char topic_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
@@ -143,7 +144,7 @@ static void libbdm_process_datapoint_subscription_request(
     struct timeval tv_stop;
     struct timeval *pDatapointEnd = NULL;
 
-    r = bionet_split_resource_name_r(&topic[2], topic_hab_type, topic_hab_id, topic_node_id, topic_resource_id);
+    r = bdm_split_resource_name_r(&topic[2], bdm_id, topic_hab_type, topic_hab_id, topic_node_id, topic_resource_id);
     if (r < 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "client '%s' requests invalid Datapoint subscription topic '%s'", peer_name, &topic[2]);
@@ -171,6 +172,7 @@ static void libbdm_process_datapoint_subscription_request(
     long this_seq = db_get_latest_entry_seq(main_db);
 
     bdm_list = db_get_metadata(main_db,
+        strcmp("*",bdm_id)?bdm_id:NULL,
         strcmp("*",topic_hab_type)?topic_hab_type:NULL,
         strcmp("*",topic_hab_id)?topic_hab_id:NULL,
         strcmp("*",topic_node_id)?topic_node_id:NULL,
@@ -187,6 +189,7 @@ static void libbdm_process_datapoint_subscription_request(
 
     
     bdm_list = db_get_resource_datapoints(main_db,
+        strcmp("*",bdm_id)?bdm_id:NULL,
         strcmp("*",topic_hab_type)?topic_hab_type:NULL,
         strcmp("*",topic_hab_id)?topic_hab_id:NULL,
         strcmp("*",topic_node_id)?topic_node_id:NULL,
@@ -318,7 +321,7 @@ static void libbdm_handle_node_list_subscription_request(const char *peer_name, 
             continue;
         }
 
-        snprintf(node_topic, sizeof(node_topic), "N %s", bionet_node_get_id(node));
+        snprintf(node_topic, sizeof(node_topic), "N %s/%s", bdmid, bionet_node_get_id(node));
 
         // "publish" the message to the newly connected subscriber (via publishto)
         cal_server.publishto(peer_name, node_topic, buf.buf, buf.size);

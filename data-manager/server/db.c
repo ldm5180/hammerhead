@@ -801,7 +801,7 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     r = do_commit(db);
     if (r != 0) goto fail;
 
-    bdm_report_datapoint(this_bdm, resource, datapoint, entry_seq);
+    bdm_report_datapoint(resource, datapoint, entry_seq);
 
 
     return 0;
@@ -921,7 +921,7 @@ int db_add_node(sqlite3* db, bionet_node_t *node) {
     r = do_commit(db);
     if (r != 0) goto fail;
 
-    bdm_report_new_node(this_bdm, node, entry_seq);
+    bdm_report_new_node(node, entry_seq);
 
     return 0;
 
@@ -960,7 +960,7 @@ int db_add_hab(sqlite3* db, bionet_hab_t *hab) {
         return -1;
     }
 
-    bdm_report_new_hab(this_bdm, hab, entry_seq);
+    bdm_report_new_hab(hab, entry_seq);
 
     return 0;
 }
@@ -1013,6 +1013,7 @@ static bionet_hab_t *find_hab(bionet_bdm_t * bdm, const char *hab_type, const ch
 
     hab = bionet_hab_new(hab_type, hab_id);
     if (hab == NULL) return NULL;
+    bionet_hab_set_recording_bdm(hab, bionet_bdm_get_id(bdm));
 
     bionet_bdm_add_hab(bdm, hab);
     return hab;
@@ -1220,6 +1221,7 @@ static int _add_to_bdm_list(
 // Return data for the given filter parameters
 //
 static GPtrArray *_db_get_resource_info(sqlite3* db, 
+    const char *bdm_id,
     const char *hab_type,
     const char *hab_id,
     const char *node_id,
@@ -1233,6 +1235,7 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
     int r;
     char sql[2048];
 
+    char bdm_id_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     char hab_type_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     char hab_id_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     char node_id_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
@@ -1245,6 +1248,25 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
     GPtrArray *bdm_list;
 
     bdm_list = g_ptr_array_new();
+
+    if ((bdm_id == NULL) || (strcmp(bdm_id, "*") == 0)) {
+        bdm_id_restriction[0] = '\0';
+    } else {
+        r = snprintf(
+            bdm_id_restriction,
+            sizeof(bdm_id_restriction),
+            "AND BDMs.BDM_ID = '%s'",
+            bdm_id
+        );
+        if (r >= sizeof(bdm_id_restriction)) {
+            g_log(
+                BDM_LOG_DOMAIN,
+                G_LOG_LEVEL_WARNING,
+                "db_get_resource_datapoints(): BDM ID restriction too long!"
+            );
+            return NULL;
+        }
+    }
 
     if ((hab_type == NULL) || (strcmp(hab_type, "*") == 0)) {
         hab_type_restriction[0] = '\0';
@@ -1537,6 +1559,7 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
         "    %s"
         "    %s"
         "    %s"
+        "    %s"
         " %s", //ORDER BY
         sql_fields,
         sql_tables,
@@ -1544,6 +1567,7 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
         datapoint_start_restriction,
         datapoint_end_restriction,
         entry_restriction,
+        bdm_id_restriction,
         hab_type_restriction,
         hab_id_restriction,
         node_id_restriction,
@@ -1598,6 +1622,7 @@ static GPtrArray *_db_get_resource_info(sqlite3* db,
 
 GPtrArray *db_get_resource_datapoints(
     sqlite3 *db,
+    const char *bdm_id,
     const char *hab_type,
     const char *hab_id,
     const char *node_id,
@@ -1610,6 +1635,7 @@ GPtrArray *db_get_resource_datapoints(
 
     return _db_get_resource_info(
         db,
+        bdm_id,
         hab_type,
         hab_id,
         node_id,
@@ -1623,6 +1649,7 @@ GPtrArray *db_get_resource_datapoints(
 
 GPtrArray *db_get_metadata(
     sqlite3 *db,
+    const char *bdm_id,
     const char *hab_type,
     const char *hab_id,
     const char *node_id,
@@ -1635,6 +1662,7 @@ GPtrArray *db_get_metadata(
 
     return _db_get_resource_info(
         db,
+        bdm_id,
         hab_type,
         hab_id,
         node_id,

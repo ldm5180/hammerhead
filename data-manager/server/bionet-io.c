@@ -7,6 +7,7 @@
 #include <bionet.h>
 
 #include "bionet-data-manager.h"
+#include "bionet-util.h"
 
 
 
@@ -67,6 +68,7 @@ static void cb_new_hab(bionet_hab_t *hab) {
     g_log("", G_LOG_LEVEL_INFO, "new hab: %s.%s", 
 	  bionet_hab_get_type(hab), 
 	  bionet_hab_get_id(hab));
+    bionet_hab_set_recording_bdm(hab, bionet_bdm_get_id(this_bdm));
     (void) db_add_hab(main_db, hab);
 }
 

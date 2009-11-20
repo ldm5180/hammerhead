@@ -226,7 +226,7 @@ int bdm_split_hab_name_r(
     const char *p;
 
     p = _split_bdm(topic, bdm_id);
-    if (topic == NULL) {
+    if (p == NULL) {
         // Message already logged
         return -1;
     }
@@ -244,7 +244,7 @@ int bdm_split_node_name_r(
     const char *p;
 
     p = _split_bdm(topic, bdm_id);
-    if (topic == NULL) {
+    if (p == NULL) {
         // Message already logged
         return -1;
     }
@@ -263,7 +263,7 @@ int bdm_split_resource_name_r(
     const char *p;
 
     p = _split_bdm(topic, bdm_id);
-    if (topic == NULL) {
+    if (p == NULL) {
         // Message already logged
         return -1;
     }
