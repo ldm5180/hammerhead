@@ -381,6 +381,11 @@ int main(int argc, char *argv[]) {
                 pDatapointStart, pDatapointEnd);
     }
 
+    g_slist_free(bdm_list);
+    g_slist_free(hab_list);
+    g_slist_free(node_list);
+    g_slist_free(dp_list);
+
     signal(SIGUSR1, signal_handler);
     signal(SIGTERM, stop_signal_handler);
     signal(SIGINT, stop_signal_handler);
