@@ -53,6 +53,8 @@ int client_readable_handler(GIOChannel *unused, GIOCondition cond, client_t *cli
         } else if (rval.code == RC_FAIL) {
             // received invalid junk
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ber_decode failed to decode the client's message");
+            disconnect_client(client);
+            return FALSE;
         } else {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "unknown error with ber_decode (code=%d)", rval.code);
         }

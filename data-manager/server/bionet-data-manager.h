@@ -307,6 +307,7 @@ int client_connecting_handler(GIOChannel *ch, GIOCondition condition, gpointer l
 int client_readable_handler(GIOChannel *unused, GIOCondition unused2, client_t *client);
 void handle_client_message(client_t *client, BDM_C2S_Message_t *message);
 void disconnect_client(client_t *client);
+void disconnect_sync_sender(client_t *client);
 
 int sync_receive_connecting_handler(GIOChannel *ch, GIOCondition condition, gpointer listening_fd_as_pointer);
 int sync_receive_readable_handler(GIOChannel *unused, GIOCondition unused2, client_t *client);
