@@ -161,6 +161,7 @@ static int sync_send_datapoints(
 
 
     sync_message = bdm_sync_datapoints_to_asn(bdm_list);
+    bdm_list_free(bdm_list);
     if( sync_message) {
 	// send the reply to the client
 	asn_enc_rval_t asn_r;

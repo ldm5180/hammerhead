@@ -186,6 +186,7 @@ static void libbdm_process_datapoint_subscription_request(
     }
     libbdm_publishto_each_resource(bdm_list, this_seq, peer_name, 
             bdm_resource_metadata_to_asnbuf); 
+    bdm_list_free(bdm_list);
 
     
     bdm_list = db_get_resource_datapoints(main_db,
@@ -204,6 +205,7 @@ static void libbdm_process_datapoint_subscription_request(
 
     libbdm_publishto_each_resource(bdm_list, this_seq, peer_name, 
             bdm_resource_datapoints_to_asnbuf); 
+    bdm_list_free(bdm_list);
 
     // Tell CAL we'll accept this subscription
     cal_server.subscribe(peer_name, topic);
