@@ -42,11 +42,11 @@ export G_DEBUG=gc-friendly,resident-modules
 DOVALGRIND="$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --tool=memcheck --trace-children=yes $VGLEAK"
 
 echo starting TCP sync receiver BDM
-$DOVALGRIND --log-file=log.vg.send $ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-receive --resources "a.a.a:a" --tcp-sync-receiver &
+$DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-receive --resources "a.a.a:a" --tcp-sync-receiver &
 RECVPID=$!
 
 echo starting TCP sync sender BDM
-$DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
+$DOVALGRIND --log-file=log.vg.send $ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
 SENDPID=$!
 sleep 6 # let the bdm come up before starting the HAB
 

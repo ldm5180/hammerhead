@@ -5,39 +5,47 @@
  * 	`asn1c -Werror -fnative-types -fskeletons-copy -pdu=auto`
  */
 
-#ifndef	_BDM_Sync_Metadata_Message_H_
-#define	_BDM_Sync_Metadata_Message_H_
+#ifndef	_DataManager_H_
+#define	_DataManager_H_
 
 
 #include <asn_application.h>
 
 /* Including external dependencies */
+#include <PrintableString.h>
 #include <asn_SEQUENCE_OF.h>
 #include <constr_SEQUENCE_OF.h>
+#include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Forward declarations */
-struct DataManager;
+struct HardwareAbstractor;
 
-/* BDM-Sync-Metadata-Message */
-typedef struct BDM_Sync_Metadata_Message {
-	A_SEQUENCE_OF(struct DataManager) list;
+/* DataManager */
+typedef struct DataManager {
+	PrintableString_t	 id;
+	struct hablist {
+		A_SEQUENCE_OF(struct HardwareAbstractor) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} hablist;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} BDM_Sync_Metadata_Message_t;
+} DataManager_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_BDM_Sync_Metadata_Message;
+extern asn_TYPE_descriptor_t asn_DEF_DataManager;
 
 #ifdef __cplusplus
 }
 #endif
 
 /* Referred external types */
-#include "DataManager.h"
+#include "HardwareAbstractor.h"
 
-#endif	/* _BDM_Sync_Metadata_Message_H_ */
+#endif	/* _DataManager_H_ */

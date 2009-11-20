@@ -13,7 +13,7 @@ static asn_TYPE_member_t asn_MBR_BDM_Sync_Metadata_Message_1[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
-		&asn_DEF_HardwareAbstractor,
+		&asn_DEF_DataManager,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,

@@ -79,6 +79,14 @@ BEGIN
         nodes    SEQUENCE OF Node
     }
 
+    
+
+    DataManager ::= SEQUENCE {
+	id       PrintableString,
+	hablist     SEQUENCE OF HardwareAbstractor
+    }
+
+
     ResourceRecord ::= SEQUENCE {
         resourceKey            OCTET STRING,
         resourceDatapoints     SEQUENCE OF Datapoint
@@ -262,7 +270,7 @@ BEGIN
     -- note: there will never be datapoints in a BDM Sync Metadata 
     -- message. They belong in the BDM Sync Update message.
     --
-    BDM-Sync-Metadata-Message ::= SEQUENCE OF HardwareAbstractor
+    BDM-Sync-Metadata-Message ::= SEQUENCE OF DataManager
 
 
 
