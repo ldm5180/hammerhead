@@ -102,6 +102,8 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
         } else if (rval.code == RC_FAIL) {
 	    // received invalid junk
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ber_decode failed to decode the sync sender's message");
+	    disconnect_client(client);
+            return FALSE;
         } else {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "unknown error with ber_decode (code=%d)", rval.code);
         }
