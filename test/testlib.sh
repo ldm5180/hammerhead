@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 time_wait() {
     PID="$1"
     TIME="$2"

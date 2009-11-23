@@ -8,6 +8,8 @@
 
 UNIQUE=$$
 
+RETVAL=0
+
 YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
@@ -86,7 +88,7 @@ for log in out.valgrind.bdm out.valgrind.bdm-watch; do
 	if [ $(wc -l < $log) -gt 0 ]; then
 	    echo "valgrind memcheck output ($log):"
 	    cat $log
-	    RETVAL=1
+	    if [ $RETVAL -eq 0 ]; then RETVAL=$TEST_WARNING_CODE; fi
 	    echo
 	fi
 done

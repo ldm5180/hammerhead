@@ -65,7 +65,7 @@ fi
 if grep -q '^==' out.valgrind.watcher; then
     echo "valgrind memcheck output:"
     cat out.valgrind.watcher
-    RETVAL=1
+    if [ $RETVAL -eq 0 ]; then RETVAL=$TEST_WARNING_CODE; fi
 else
     echo "valgrind memcheck finds no errors :-)"
 fi

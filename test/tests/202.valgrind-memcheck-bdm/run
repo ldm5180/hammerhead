@@ -72,7 +72,7 @@ sleep 1
 if [ $(wc -l < out.valgrind.bdm) -gt 0 ]; then
     echo "valgrind memcheck output:"
     cat out.valgrind.bdm
-    exit 1
+    exit $TEST_WARNING_CODE
 fi
 
 echo "valgrind memcheck finds no errors :-)"

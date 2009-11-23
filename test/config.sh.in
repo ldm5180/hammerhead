@@ -24,3 +24,9 @@ LIBPATH=$ROOT/util/.libs:$ROOT/asn.1/.libs:$ROOT/libbdm/.libs:$ROOT/cal/mdnssd-b
 export DYLD_LIBRARY_PATH=$LIBPATH
 
 export LD_LIBRARY_PATH=$LIBPATH
+
+export TEST_SUCCEED_CODE=0
+export TEST_FAIL_CODE=1
+export TEST_SKIP_CODE=3
+export TEST_WARNING_CODE=4
+
