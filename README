@@ -49,3 +49,7 @@ Known issues:
     new-node or datapoint update message from a 64-bit machine if the message 
     contains an int32 resource with a negative datapoint value.  New-node and 
     datapoint-update callbacks will not called.
+
+
+    bionet-plot and bdmplot2 are in early development stages. They cannot yet 
+    handle overlapping subscriptions from multiple web clients.
