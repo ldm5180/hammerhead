@@ -6,7 +6,9 @@
 
 include $(top_srcdir)/common.am
 
+if ENABLE_PYTHON
 SUBDIRS = python
+endif
 
 lib_LTLIBRARIES = libbionet-util.la
 
