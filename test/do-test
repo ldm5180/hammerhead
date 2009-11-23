@@ -13,7 +13,7 @@ NUM_PASSED=0
 NUM_FAILED=0
 NUM_WARN=0
 NUM_TOTAL=0
-FAIL_REPORT=""
+declare -a TEST_REPORT
 
 TESTS=$@
 
@@ -49,15 +49,15 @@ for TEST in $TESTS; do
         if [ $RC -eq $TEST_SKIP_CODE ]; then
             echo "test disabled itself, skipping"
             NUM_SKIPPED=$(($NUM_SKIPPED+1))
-	    FAIL_REPORT="${TEST}:skip:Command returned skip code"
+	    TEST_REPORT=( ${TEST_REPORT[@]} "${TEST}:skip: Command returned skip code" )
         elif [ $RC -eq $TEST_WARNING_CODE ]; then
             echo "TEST WARNING!"
             NUM_WARN=$(($NUM_WARN+1))
-	    FAIL_REPORT="${TEST}:warning:Command returned warning code"
+	    TEST_REPORT=( ${TEST_REPORT[@]} "${TEST}:warning: Command returned warning code")
         else
             echo "TEST FAILED!"
             NUM_FAILED=$(($NUM_FAILED+1))
-	    FAIL_REPORT="${TEST}:failure:Command returned fail code"
+	    TEST_REPORT=( ${TEST_REPORT[@]} "${TEST}:failure: Command returned fail code")
         fi
     fi
     popd > /dev/null
@@ -66,9 +66,12 @@ done
 
 echo
 echo "Test Report:"
-for line in $FAIL_REPORT; do
-	echo "$line"
+cnt=${#TEST_REPORT[@]}
+for (( i = 0 ; i < cnt ; i++ ))
+do
+    echo "${TEST_REPORT[$i]}"
 done
+
 
 rate=`expr \( $NUM_PASSED \* 100 \) /  $NUM_TOTAL`
 
