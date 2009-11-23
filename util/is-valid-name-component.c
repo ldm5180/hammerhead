@@ -79,24 +79,24 @@ int bionet_name_component_matches(const char *name_component, const char *patter
 }
 
 int bionet_resource_name_matches(const char *resource_name, const char *pattern) {
-    char *hab_type;
-    char *hab_id;
-    char *node_id;
-    char *resource_id;
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
-    char *pattern_hab_type;
-    char *pattern_hab_id;
-    char *pattern_node_id;
-    char *pattern_resource_id;
+    char pattern_hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char pattern_hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char pattern_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char pattern_resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
-    if (bionet_split_resource_name(resource_name,
-				   &hab_type, &hab_id, &node_id, &resource_id)) {
+    if (bionet_split_resource_name_r(resource_name,
+				     hab_type, hab_id, node_id, resource_id)) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_name_matches(): Failed to split resource name.");
 	return 0;
     }
 
-    if (bionet_split_resource_name(pattern,
-				   &pattern_hab_type, &pattern_hab_id, &pattern_node_id, &pattern_resource_id)) {
+    if (bionet_split_resource_name_r(pattern,
+				   pattern_hab_type, pattern_hab_id, pattern_node_id, pattern_resource_id)) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_name_matches(): Failed to split resource name pattern.");
 	return 0;
     }

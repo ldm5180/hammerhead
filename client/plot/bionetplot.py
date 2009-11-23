@@ -13,6 +13,32 @@ from bionetplot_callback import *
 
 import optparse
 
+
+def process_new_session_or_subscription(sessions, session_id, request):
+    if ('resource' not in request.args):
+        return "<html>No subscription.</html>"
+
+    if (session_id not in sessions):
+        resource_list = [] #create the list of resources associated with this session
+
+        #create the session
+        sessions[session_id] = { 'resource' : request.args['resource'],
+                              'bionet-resources' : resource_list }
+
+        #subscribe to all the resources requested in the HTTP request
+        for r in sessions[session_id]['resource']:
+            #print "Subscribing to %(resource)s" % { 'resource' : r }
+            bionet_subscribe_datapoints_by_name(r)
+    else:
+        for r in request.args['resource']:
+            print "resources = ", sessions[session_id]['resource']
+            print 'r = ', r
+            sessions[session_id]['resource'].append(r)
+            bionet_subscribe_datapoints_by_name(r)
+
+    return "{}"
+
+
 class DataServer(resource.Resource):
     isLeaf = True
 
@@ -20,7 +46,7 @@ class DataServer(resource.Resource):
         session = request.getSession()
 
         # existing session
-        if (session in sessions) and (sessions[session]['resource'] == request.args['resource']) and (sessions[session]['timespan'] == request.args['timespan']):
+        if (session in sessions) and (sessions[session]['resource'] == request.args['resource']):
             retval = "[ "
             #print "Old session found." #debugging
             for name in sessions[session]['bionet-resources']:
@@ -40,23 +66,10 @@ class DataServer(resource.Resource):
             retval += " ]"
             return "%s" % retval
 
-        else: # new session!
-            if ('resource' not in request.args) or ('timespan' not in request.args):
-                return "<html>No subscription.</html>"
+        else: # new session or new subscription!
+            retval = process_new_session_or_subscription(sessions, session, request)
+            return retval
 
-            resource_list = [] #create the list of resources associated with this session
-
-            #create the session
-            sessions[session] = { 'resource' : request.args['resource'],
-                                  'timespan' : request.args['timespan'],
-                                  'bionet-resources' : resource_list }
-
-            #subscribe to all the resources requested in the HTTP request
-            for r in sessions[session]['resource']:
-                #print "Subscribing to %(resource)s" % { 'resource' : r }
-                bionet_subscribe_datapoints_by_name(r)
-
-            return "{}"
 
 
 class Datapoints(resource.Resource):
@@ -66,7 +79,7 @@ class Datapoints(resource.Resource):
         session = request.getSession()
 
         # existing session
-        if (session in sessions) and (sessions[session]['resource'] == request.args['resource']) and (sessions[session]['timespan'] == request.args['timespan']):
+        if (session in sessions) and (sessions[session]['resource'] == request.args['resource']):
             retval = "[ "
             #print "Old session found." #debugging
             for name in sessions[session]['bionet-resources']:
@@ -87,22 +100,8 @@ class Datapoints(resource.Resource):
             return "%s" % retval
 
         else: # new session!
-            if ('resource' not in request.args) or ('timespan' not in request.args):
-                return "<html>No subscription.</html>"
-
-            resource_list = [] #create the list of resources associated with this session
-
-            #create the session
-            sessions[session] = { 'resource' : request.args['resource'],
-                                  'timespan' : request.args['timespan'],
-                                  'bionet-resources' : resource_list }
-
-            #subscribe to all the resources requested in the HTTP request
-            for r in sessions[session]['resource']:
-                #print "Subscribing to %(resource)s" % { 'resource' : r }
-                bionet_subscribe_datapoints_by_name(r)
-
-            return "{}"
+            retval = process_new_session_or_subscription(sessions, session, request)
+            return retval
 
 
 def main():

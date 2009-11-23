@@ -156,10 +156,10 @@ int bionet_split_resource_name(
 
 int bionet_split_resource_name_r(
         const char * topic,
-        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char resource_id[BIONET_NAME_COMPONENT_MAX_LEN+1])
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char node_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char resource_id[BIONET_NAME_COMPONENT_MAX_LEN])
 {
     const char *p;
     int size;
