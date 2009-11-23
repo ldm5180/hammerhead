@@ -27,12 +27,9 @@ def process_new_session_or_subscription(sessions, session_id, request):
 
         #subscribe to all the resources requested in the HTTP request
         for r in sessions[session_id]['resource']:
-            #print "Subscribing to %(resource)s" % { 'resource' : r }
             bionet_subscribe_datapoints_by_name(r)
     else:
         for r in request.args['resource']:
-            print "resources = ", sessions[session_id]['resource']
-            print 'r = ', r
             sessions[session_id]['resource'].append(r)
             bionet_subscribe_datapoints_by_name(r)
 

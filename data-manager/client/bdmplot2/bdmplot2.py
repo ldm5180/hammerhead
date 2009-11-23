@@ -13,6 +13,33 @@ from bdmplot2_callback import *
 
 import optparse
 
+def process_new_session_or_subscription(sessions, session_id, request):
+    if ('resource' not in request.args) or ('timespan' not in request.args):
+        return "<html>No subscription.</html>"
+
+    if (session_id not in sessions):
+        resource_list = [] #create the list of resources associated with this session
+
+        #create the session
+        sessions[session_id] = { 'resource' : request.args['resource'],
+                              'timespan' : request.args['timespan'],
+                              'bionet-resources' : resource_list }
+
+        #subscribe to all the resources requested in the HTTP request
+        for r in sessions[session_id]['resource']:
+            #print "Subscribing to %(resource)s" % { 'resource' : r }
+            bdm_subscribe_datapoints_by_name(r)
+
+    else:
+        for r in request.args['resource']:
+            sessions[session_id]['resource'].append(r)
+            bdm_subscribe_datapoints_by_name(r)
+        for t in request.args['timespan']:
+            sessions[session_id]['timespan'].append(t)
+
+    return "{}"
+
+
 class DataServer(resource.Resource):
     isLeaf = True
 
@@ -40,23 +67,9 @@ class DataServer(resource.Resource):
             retval += " ]"
             return "%s" % retval
 
-        else: # new session!
-            if ('resource' not in request.args) or ('timespan' not in request.args):
-                return "<html>No subscription.</html>"
-
-            resource_list = [] #create the list of resources associated with this session
-
-            #create the session
-            sessions[session] = { 'resource' : request.args['resource'],
-                                  'timespan' : request.args['timespan'],
-                                  'bionet-resources' : resource_list }
-
-            #subscribe to all the resources requested in the HTTP request
-            for r in sessions[session]['resource']:
-                #print "Subscribing to %(resource)s" % { 'resource' : r }
-                bdm_subscribe_datapoints_by_name(r)
-
-            return "{}"
+        else: # new session or subscription!
+            retval = process_new_session_or_subscription(sessions, session, request)
+            return retval
 
 
 class Datapoints(resource.Resource):
@@ -87,22 +100,8 @@ class Datapoints(resource.Resource):
             return "%s" % retval
 
         else: # new session!
-            if ('resource' not in request.args) or ('timespan' not in request.args):
-                return "<html>No subscription.</html>"
-
-            resource_list = [] #create the list of resources associated with this session
-
-            #create the session
-            sessions[session] = { 'resource' : request.args['resource'],
-                                  'timespan' : request.args['timespan'],
-                                  'bionet-resources' : resource_list }
-
-            #subscribe to all the resources requested in the HTTP request
-            for r in sessions[session]['resource']:
-                #print "Subscribing to %(resource)s" % { 'resource' : r }
-                bdm_subscribe_datapoints_by_name(r)
-
-            return "{}"
+            retval = process_new_session_or_subscription(sessions, session, request)
+            return retval
 
 
 def main():
