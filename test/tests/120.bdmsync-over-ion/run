@@ -64,7 +64,7 @@ echo "Starting ION sync receiver BDM"
 $ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-recv --habs "X.X" --nodes "X.X.X" --resources "X.X.X:X" --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver &
 
 echo starting ION sync sender BDM
-$ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  ${CONFIGDIR}/sync-send.cfg --port 11111 &
+$ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  bdm-sync-send.cfg --port 11111 &
 sleep 12 # let the bdm come up before starting the HAB
 
 echo starting random-hab
