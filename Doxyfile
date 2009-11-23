@@ -560,6 +560,7 @@ WARN_LOGFILE           =
 INPUT                  = mainpage.h \
 		         libbionet/bionet.h \
                          libhab/hardware-abstractor.h \
+                         libbdm/bdm-client.h \
 			 util/bionet-datapoint.h \
                          util/bionet-hab.h \
 			 util/bionet-node.h \
