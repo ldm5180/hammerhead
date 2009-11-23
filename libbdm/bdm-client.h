@@ -220,7 +220,7 @@ void bdm_register_callback_new_bdm(void (*cb_new_bdm)(bionet_bdm_t *bdm, void * 
  * The registered function will be called when a BDM Server is no longer
  * available
  *
- * @param[in] cb_new_bdm the "new-bdm" callback function
+ * @param[in] cb_lost_bdm The "lost-bdm" callback function
  *
  * @param[in] usr_data A pointer to user data that will be passed into the function registered
  *
