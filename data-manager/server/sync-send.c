@@ -460,18 +460,34 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
     }
 
     if ( config->ion.bundle_size ) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+        int r;
+        Object unused_new_bundle;
+
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "Sending bundle with payload of %lu bytes",
             (unsigned long)config->ion.bundle_size);
-        if (bp_send(config->ion.sap, BP_BLOCKING, config->sync_recipient, 
-                        NULL, 300,
-                        BP_STD_PRIORITY, SourceCustodyRequired,
-                        0, 0, config->ion.bundleZco) < 1)
-        {
-                putSysErrmsg("bpsource can't send ADU", NULL);
-                return -1;
+
+        r = bp_send(
+            config->ion.sap,
+            BP_BLOCKING,
+            config->sync_recipient, 
+            NULL,                     // report-to EID
+            300,                      // TTL in seconds
+            BP_STD_PRIORITY,          // class of service
+            SourceCustodyRequired,
+            0,                        // reporting flags - all disabled
+            0,                        // app-level ack requested - what's this doing in BP?!
+            NULL,                     // extended CoS - not used when CoS is STD_PRIORITY as above
+            config->ion.bundleZco,
+            &unused_new_bundle        // handle to the bundle in the BA, we dont need it (wish we could pass in NULL here)
+        );
+
+        if (r < 1) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error sending bundle!");
+            return -1;
         }
     } else {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "no bundle to send!");
         zco_destroy_reference(config->ion.sdr, config->ion.bundleZco);
     }
 
