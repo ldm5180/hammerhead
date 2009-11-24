@@ -20,7 +20,6 @@
 #include "internal.h"
 #include "bionet-util.h"
 
-
 int bionet_param_to_timeval(GHashTable * params, const char * key, struct timeval * tv) {
 
     if ( params == NULL ) {
@@ -173,7 +172,55 @@ int bionet_parse_topic_params(
     return 0;
 }
 
-static const char * _split_bdm(
+int bdm_split_bdm_peer_id(
+        const char * name,
+        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN] )
+{
+    const char * peer_separator = strchr(name, ',');
+    int size;
+
+    if (peer_separator == NULL) {
+        // No Peer means all peers
+        if(peer_id) strncpy(peer_id, "*", BIONET_NAME_COMPONENT_MAX_LEN);
+        size = strlen(name);
+        peer_separator = name;
+    }else {
+        int peer_size = peer_separator - name;
+
+        if (peer_size > BIONET_NAME_COMPONENT_MAX_LEN-1) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "%s(): Peer-ID of Name '%s' is too long (%d bytes, max %lu)", 
+                    __FUNCTION__, name, peer_size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN-1);
+            return -1;
+        }
+
+        if(peer_id) {
+            memcpy(peer_id, name, peer_size);
+            peer_id[peer_size] = '\0';
+        }
+
+        size = strlen(peer_separator+1);
+    }
+
+    if (size > BIONET_NAME_COMPONENT_MAX_LEN-1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s(): BDM-ID of Topic '%s' is too long (%d bytes, max %lu)", 
+                __FUNCTION__, name, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN-1);
+        return -1;
+    }
+
+    if(bdm_id) {
+        memcpy(bdm_id, peer_separator, size);
+        bdm_id[size] = '\0';
+    }
+
+    return 0;
+}
+
+
+
+static const char * _remove_bdm_prefix(
         const char * name,
         char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
         char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN] )
@@ -253,7 +300,7 @@ int bdm_split_hab_name_r(
 {
     const char *p;
 
-    p = _split_bdm(topic, peer_id, bdm_id);
+    p = _remove_bdm_prefix(topic, peer_id, bdm_id);
     if (p == NULL) {
         // Message already logged
         return -1;
@@ -272,7 +319,7 @@ int bdm_split_node_name_r(
 {
     const char *p;
 
-    p = _split_bdm(topic, peer_id, bdm_id);
+    p = _remove_bdm_prefix(topic, peer_id, bdm_id);
     if (p == NULL) {
         // Message already logged
         return -1;
@@ -292,7 +339,7 @@ int bdm_split_resource_name_r(
 {
     const char *p;
 
-    p = _split_bdm(topic, peer_id, bdm_id);
+    p = _remove_bdm_prefix(topic, peer_id, bdm_id);
     if (p == NULL) {
         // Message already logged
         return -1;

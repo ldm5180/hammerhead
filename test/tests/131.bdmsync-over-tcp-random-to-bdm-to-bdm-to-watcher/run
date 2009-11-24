@@ -34,7 +34,7 @@ sqlite3 orig-bdm.db < $ROOT/data-manager/server/schema
 cp orig-bdm.db sync-bdm.db
 
 echo starting TCP sync receiver BDM
-$ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --resources "a.a.a:a" --tcp-sync-receiver &
+$ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --resources "a.a.a:a" --tcp-sync-receiver &
 RECVPID=$!
 echo " -> $ROOT/data-manager/server/bionet-data-manager $RECVPID"
 
@@ -45,7 +45,7 @@ echo " ->  $ROOT/data-manager/server/bionet-data-manager $SENDPID"
 sleep 6 # let the bdm come up before starting the HAB
 
 
-WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -r 'random-hab.$UNIQUE.*:*'"
+WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -r 'sync-recv-$SYNCUNIQUE,sync-send-$SYNCUNIQUE/random-hab.$UNIQUE.*:*'"
 
 echo "bdm-watcher args: $WATCHCMD"
 
@@ -100,7 +100,7 @@ kill $RECVPID
 wait
 
 for i in out.bdm-watcher.0 out.bdm-watcher.1 out.bdm-watcher.2 out.bdm-orig; do
-    sort -u $i > $i.sorted
+    sort $i > $i.sorted
     if ! diff -q out.random-hab $i.sorted; then
 	echo "ERROR: $i output differs from random-hab output:"
 	diff -u out.random-hab $i.sorted

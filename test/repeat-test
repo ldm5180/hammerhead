@@ -22,31 +22,36 @@ if [ -z "$TESTS" ]; then
 fi
 
 
+LOOP=0
 while : ; do
     for TEST in $TESTS; do
         [ ! -d "$TEST" ] && continue
 
         echo
-        echo "*** ${TEST}"
-
-        echo -n "*** " && date
+        echo "*** ${TEST} (Iteration $LOOP)"
+        echo -n "*** "; date
 
         if [ ! -x "$TEST/run" ]; then
             echo "disabled, skipping"
-            NUM_SKIPPED=$(($NUM_SKIPPED+1))
             continue
         fi
 
         pushd "$TEST" > /dev/null
         ./run
-        if [ $? -eq 0 ]; then
+	RC=$?
+        if [ $RC -eq 0 ]; then
             echo "TEST PASSED!"
+        elif [ $RC -eq $TEST_SKIP_CODE ]; then
+            echo "test disabled itself, skipping"
+        #elif [ $RC -eq $TEST_WARNING_CODE ]; then
+        #    echo "test generated a warning"
         else
-            echo "TEST FAILED!"
+	    echo "*** ${TEST} (Iteration $LOOP) FAILED!"
             exit 1
         fi
         popd > /dev/null
     done
     sleep 1
+    LOOP=`expr $LOOP + 1`
 done
 

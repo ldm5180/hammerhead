@@ -46,11 +46,23 @@ extern void * libbdm_callback_stream_usr_data;
 
 extern int libbdm_cal_fd;
 
+// Split the bdm pattern in the form [peer-id,]bdm-id
+// peer-id is '*' if not specified
+extern int bdm_split_bdm_peer_id(
+        const char * name,
+        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN] );
+
 // Backword compatibility for old client/server interface
 extern int bdm_fd;
 
+typedef struct {
+    char * bdm_id;
+    GSList * recording_bdms;
+    long curr_seq;
+} libbdm_peer_t;
 
-extern GHashTable *libbdm_all_peers; // All peers reported by CAL
+extern GHashTable *libbdm_all_peers; // All peers reported by CAL. Table of libbdm_peer_t pointers
 extern GSList *libbdm_bdms;
 extern GSList *libbdm_habs;
 
@@ -100,10 +112,6 @@ extern GSList *libbdm_hab_subscriptions;
 extern GSList *libbdm_node_subscriptions;
 extern GSList *libbdm_datapoint_subscriptions;
 extern GSList *libbdm_stream_subscriptions;
-
-extern GSList *libbdm_bdm_api_subscriptions;
-extern GSList *libbdm_api_new_peers;
-extern GSList *libbdm_api_lost_peers;
 
 //
 // functions for dealing with the cache

@@ -19,7 +19,7 @@ static GMutex * bdm_shutdown_mux = NULL;
 static GCond * bdm_shutdown_cond = NULL;
 
 static void exit_signal_handler(int signal_number) {
-    g_message("caught signal %d (%s), exiting\n", signal_number, strsignal(signal_number));
+    //g_message("caught signal %d (%s), exiting\n", signal_number, strsignal(signal_number));
 
     if(bdm_shutdown_mux && bdm_shutdown_cond) {
         g_mutex_lock (bdm_shutdown_mux);

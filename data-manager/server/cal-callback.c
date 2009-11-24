@@ -118,9 +118,9 @@ static void libbdm_publishto_each_resource(
 //
 // TODO: There are a few ways this is broken.
 //  1 - Like BDMSync, there's no way on initial subscribe to filter metadata by 
-//  datapoint time, becuase the database doesn't store naode/hab arrive/depart.
+//  datapoint time, because the database doesn't store node/hab arrive/depart.
 //
-//  2 - Becuase the messages are grouped in sync records, there's no way to filter out
+//  2 - Because the messages are grouped in sync records, there's no way to filter out
 //  metadata that match multiple subscriptions. This is a result of the compromise detailed in #1
 //  
 //  3 - This could be done more efficiently by re-writing db_get_resource_datapoints()

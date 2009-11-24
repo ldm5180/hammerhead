@@ -44,8 +44,3 @@ GSList *libbdm_hab_subscriptions = NULL;
 GSList *libbdm_node_subscriptions = NULL;
 GSList *libbdm_datapoint_subscriptions = NULL;
 GSList *libbdm_stream_subscriptions = NULL;
-
-// API globals. Never eposed to user
-GSList *libbdm_bdm_api_subscriptions = NULL;
-GSList *libbdm_api_new_peers = NULL;
-GSList *libbdm_api_lost_peers = NULL;

@@ -133,6 +133,11 @@ static void _bdmcache_delete_bdm(bionet_bdm_t * bdm) {
         libbdm_callback_lost_bdm(bdm, libbdm_callback_lost_bdm_usr_data);
     }
 
+    if ( bdm->peer_refcount > 0 ) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "libbdm_cache_remove_bdm(): refcount not 0");
+    }
+
     // Don't free this, because it is still in libbdm_all_peers
     //bionet_bdm_free(bdm);
 }

@@ -16,7 +16,7 @@ struct bionet_bdm_opaque_t {
 
     GSList *habs;
 
-    long curr_seq;
+    int peer_refcount; // Number of peers that point to this bdm
 
     const void *user_data;
 };
