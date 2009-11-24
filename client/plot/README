@@ -1,0 +1,14 @@
+Bionet Plot is both a Bionet Client and a Web Server. 
+
+The Bionet Client portion subscribes to data specified by a web client.
+
+The Web Server portion is a Twisted server written in Python and responds to AJAX queries with responses containing arrays of Bionet datapoints.
+
+
+Running Bionet Plot:
+- start the python script, bionetplot.py.
+
+- on the same machine point your web browser at http://localhost:8080/plot
+
+
+Bionet Plot can be accessed from other machines using the hostname of the machine running it. Also, the port can be changed by using the '--port' option on the command line.

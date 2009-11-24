@@ -1,0 +1,14 @@
+BDMplot2 is both a Bionet Data Manager Subscriber Client and a Web Server. 
+
+The BDM Client portion subscribes to data specified by a web client.
+
+The Web Server portion is a Twisted server written in Python and responds to AJAX queries with responses containing arrays of datapoints previously recorded by BDMs.
+
+
+Running BDMPlot2:
+- start the python script, bdmplot2.py.
+
+- on the same machine point your web browser at http://localhost:8081/bdmplot
+
+
+BDMPlot2 can be accessed from other machines using the hostname of the machine running it. Also, the port can be changed by using the '--port' option on the command line.

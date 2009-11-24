@@ -22,8 +22,13 @@
     </p>
 
     <p>
-      <input id="live" type="radio" name="livedata" value="live" checked="checked" onClick="poll = 1;">Live Data<br />
-      <input id="zoom" type="radio" name="livedata" value="zoom" onClick="poll = 0;">Zoom Mode
+      <input id="live" type="radio" name="livedata" value="live" checked="checked" onClick="poll = 1;"><label for="live">Live Data</label>
+      <input id="lastday" type="radio" name="livedata" value="lastday" onClick="poll = 1;"><label for="lastday">Last Day</label> 
+      <input id="lasthour" type="radio" name="livedata" value="lasthour" onClick="poll = 1;"><label for="lasthour">Last Hour</label>
+      <input id="last15min" type="radio" name="livedata" value="last15min" onClick="poll = 1;"><label for="last15min">Last 15 min</label>
+      <input id="last5min" type="radio" name="livedata" value="last5min" onClick="poll = 1;"><label for="last5min">Last 5 min</label>
+      <input id="last1min" type="radio" name="livedata" value="last1min" onClick="poll = 1;"><label for="last1min">Last 1 min</label>
+      <input id="zoom" type="radio" name="livedata" value="zoom" onClick="poll = 0;"><label for="zoom">Zoom Mode</label>
     </p>
 
     <p>
@@ -44,18 +49,15 @@
 //polling or not?
 var poll = 0;
 
-$(function () {
-    var yesterday = new Date();
-    yesterday.setTime(yesterday.getTime());
-    yesterday.setDate(yesterday.getDate()-1);
- 
+$(function () { 
     var options = {
         lines: { show: true },
         points: { show: true },
-        xaxis: { mode: "time", timeformat: "%y/%m/%d %H:%M:%S", ticks: 5 },
+        xaxis: { mode: "time", timeformat: "%y/%m/%d %H:%M:%S", ticks: 5, min: null }, 
         selection: { mode: "x" },
         grid: { hoverable: true, clickable: true }
     };
+
 //min: (new Date(yesterday.getFullYear()+"/"+(yesterday.getMonth()+1)+"/"+yesterday.getDate())).getTime() }
 
     var data = [];
@@ -104,7 +106,7 @@ $(function () {
                     
                 $("#tooltip").remove();
                 var mydate = new Date(item.datapoint[0].toFixed(0) / 1000 * 1000);
-                var x = mydate.toGMTString(),
+                var x = mydate.toUTCString(),
                     y = item.datapoint[1].toFixed(2);
                     
                 showTooltip(item.pageX, item.pageY,
@@ -120,7 +122,7 @@ $(function () {
     $("#placeholder").bind("plotclick", function (event, pos, item) {
         if (item) {
             var mydate = new Date(item.datapoint[0].toFixed(0) / 1000 * 1000);
-            var x = mydate.toGMTString(),
+            var x = mydate.toUTCString(),
                 y = item.datapoint[1].toFixed(2);
             $("#clickdata").text(item.series.label + " : " + x + " = " + y);
             plot.highlight(item.series, item.datapoint);
@@ -174,14 +176,26 @@ $(function () {
             }
 
             function plotAccordingToChoices() {
-		var plotdata = []
+		var now = new Date();
+
+                var lastday = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), (now.getUTCDate()-1), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+
+                var lasthour = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), (now.getUTCHours()-1), now.getUTCMinutes(), now.getUTCSeconds());
+
+                var last15min = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), (now.getUTCMinutes()-15), now.getUTCSeconds());
+
+                var last5min = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), (now.getUTCMinutes()-5), now.getUTCSeconds());
+
+                var last1min = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), (now.getUTCMinutes()-1), now.getUTCSeconds());
+
+		var plotdata = [];
                 choiceContainer.find("input:name").each(function () {
                     if ($(this).attr("checked")) {
                         var key = $(this).attr("id");
 	  	        for (i = 0; i < data.length; i++) {
 			    data[i].data.sort(sortNumber);
-                            if (key == ("id" + data[i].label + "1")) {
-		                data[i].yaxis = 1;
+			    if (key == ("id" + data[i].label + "1")) {
+    		                data[i].yaxis = 1;
                                 plotdata.push(data[i]);
                             }
                             if (key == ("id" + data[i].label + "2")) {
@@ -192,9 +206,29 @@ $(function () {
                     }
                 });
 
-//                if ($("#span-1d").attr("checked")) {
-//		   options.xaxis.min = yesterday;
-//                }
+                if ($("#lastday").attr("checked")) {
+		    options.xaxis.min = lastday;
+                }
+
+                else if ($("#lasthour").attr("checked")) {
+		    options.xaxis.min = lasthour;
+                }
+
+                else if ($("#last15min").attr("checked")) {
+		    options.xaxis.min = last15min;
+                }
+
+                else if ($("#last5min").attr("checked")) {
+		    options.xaxis.min = last5min;
+                }
+
+                else if ($("#last1min").attr("checked")) {
+		    options.xaxis.min = last1min;
+                }
+
+		else { 
+		    options.xaxis.min = null;
+		}
 
                 $.plot($("#placeholder"), plotdata , options);
             }
