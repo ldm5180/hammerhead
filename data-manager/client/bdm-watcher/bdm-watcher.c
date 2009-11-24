@@ -193,7 +193,7 @@ void usage(void) {
 	    " -r,--resources,--resources <Resources> \n"
             "                                    Subscribe to updates to this resource name pattern\n"
             "                                    \"[[BDM-ID,]Recording-BDM-ID/]HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
-	    "                                    May contain wildcards. (default: \"*.*/*.*.*:*\")\n"
+	    "                                    May contain wildcards. (default: \"*,*/*.*.*:*\")\n"
 	    " -s,--server <server:port>          Also subscribe to updates from this BDM\n"
             "                                    Needed only if the BDM is not on the local link\n"
 	    " -T,--datapoint-start <start-time>  Timestamp of datapoint as reported by the HAB\n"
