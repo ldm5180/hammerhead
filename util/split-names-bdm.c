@@ -209,7 +209,7 @@ static const char * _split_bdm(
             // No Peer means all peers
             if(peer_id) strncpy(peer_id, "*", BIONET_NAME_COMPONENT_MAX_LEN);
         }else {
-            int peer_size = separator - p;
+            int peer_size = peer_separator - p;
 
             if (peer_size > BIONET_NAME_COMPONENT_MAX_LEN-1) {
                 g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -229,13 +229,13 @@ static const char * _split_bdm(
 
         if (size > BIONET_NAME_COMPONENT_MAX_LEN-1) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "%s(): HAB-Type of Topic '%s' is too long (%d bytes, max %lu)", 
+                    "%s(): BDM-ID of Topic '%s' is too long (%d bytes, max %lu)", 
                     __FUNCTION__, name, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN-1);
             return NULL;
         }
 
         if(bdm_id) {
-            memcpy(bdm_id, name, size);
+            memcpy(bdm_id, p, size);
             bdm_id[size] = '\0';
         }
         p = separator+1;
