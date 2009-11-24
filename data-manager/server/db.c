@@ -2023,7 +2023,6 @@ static int _db_publish_synced_datapoint(sqlite3* db,
             continue;
         }
         if(r == SQLITE_ROW) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "publish sync row");
             _add_to_bdm_list(stmt, bdm_list);
             continue;
         }
@@ -2075,13 +2074,6 @@ static int _db_publish_synced_datapoint(sqlite3* db,
                               ri, bionet_node_get_name(node));
                         continue;
 		    }
-
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-			  "Publishing syncd Message '%s/%s.%s:%s",
-                            bionet_bdm_get_id(bdm),
-                            bionet_hab_get_name(hab),
-                            bionet_node_get_id(node),
-                            bionet_resource_get_id(resource));
 
                     bdm_report_datapoint(resource, bionet_resource_get_datapoint_by_index(resource, 0), entry_seq);
 
