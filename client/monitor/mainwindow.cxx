@@ -11,6 +11,7 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     int sampleSize = -1;
     int require_security = 0;
     QString security_dir, title("Bionet Monitor");
+    bionetMode = true; // should we connect to the bdm or bionet?
 
     setAttribute(Qt::WA_DeleteOnClose);
     setAttribute(Qt::WA_QuitOnClose);
@@ -32,6 +33,10 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
             security_dir = QString(*argv);
         } else if ((strcmp(*argv, "-e") == 0) || (strcmp(*argv, "--require-security") == 0)) {
             require_security = 1;
+        } else if ((strcmp(*argv, "-b") == 0) || (strcmp(*argv, "--bionet") == 0)) {
+            bionetMode = true;
+        } else if ((strcmp(*argv, "-d") == 0) || (strcmp(*argv, "--bdm") == 0)) {
+            bionetMode = false;
         } else {
             usage();
             exit(1);
@@ -53,8 +58,6 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     
 
     bionet = new BionetIO(this);
-    setupBionetModel();
-    setupBDM();
     setupTreeView();
     setupResourceView();
     setupArchive();
@@ -64,26 +67,20 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     createMenus();
 
     setupWindow();
+    
 
-    bionet->setup();
-    bdmio->setup();
-    subscribe();
-
-    connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
-        liveModel, SLOT(lineActivated(QModelIndex)));
-    connect(liveModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
-        resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
-    connect(liveModel, SIGNAL(habSelected(bionet_hab_t*)), 
-        resourceView, SLOT(clearView()));
-    connect(liveModel, SIGNAL(nodeSelected(bionet_node_t*)), 
-        resourceView, SLOT(clearView()));
-    connect(liveModel, SIGNAL(streamSelected(bionet_stream_t*)), 
-        resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
-
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        this, SLOT(updatePlot(bionet_datapoint_t*)));
-    connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        this, SLOT(updateBDMPlot(bionet_datapoint_t*)));
+    // this smells really bad, i have to make this check in a couple
+    // of functions. for now, i think it makes sense because the bdm
+    // and bionet will play nicely together in the awesome future,
+    // and both bdm/bdm will need to exist. 
+    if ( bionetMode ) {
+        setupBionetModel();
+        bionet->setup();
+        subscribe();
+    } else {
+        setupBDM();
+        bdmio->setup();
+    }
 
     scaleInfoTemplate = new ScaleInfo;
 }
@@ -97,10 +94,9 @@ MainWindow::~MainWindow() {
     delete aboutAction; 
     delete shortcuts;
     delete preferencesAction; 
-    delete updateSubscriptionsAction;
-    delete pollingFrequencyAction; 
-    delete connectToBDMAction; 
-    delete disconnectFromBDMAction;
+
+    if ( !bionetMode )
+        delete updateSubscriptionsAction;
 
     delete bdmio;
     delete scaleInfoTemplate;
@@ -133,6 +129,42 @@ void MainWindow::setupBionetModel() {
 
     connect(liveModel, SIGNAL(lostResource(QString)), 
         this, SLOT(lostPlot(QString)));
+    
+    /* connect to the bdm model */
+    connect(liveModel, SIGNAL(layoutChanged()), 
+        view, SLOT(repaint()));
+    view->setModel(liveModel);
+
+    // (for losing habs & updating the pane)
+    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
+    connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), 
+        resourceView, SLOT(lostHab(bionet_hab_t*)));
+    connect(bionet, SIGNAL(lostNode(bionet_node_t*)), 
+        resourceView, SLOT(lostNode(bionet_node_t*)));
+
+    // Connecting everything to the sample archive
+    connect(liveModel, SIGNAL(newResource(QString)), 
+        archive, SLOT(addResource(QString)));
+    connect(liveModel, SIGNAL(lostResource(QString)), 
+        archive, SLOT(removeResource(QString)));
+    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        archive, SLOT(recordSample(bionet_datapoint_t*)));
+
+    // connect the view to the model
+    connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
+        liveModel, SLOT(lineActivated(QModelIndex)));
+    connect(liveModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
+        resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
+    connect(liveModel, SIGNAL(habSelected(bionet_hab_t*)), 
+        resourceView, SLOT(clearView()));
+    connect(liveModel, SIGNAL(nodeSelected(bionet_node_t*)), 
+        resourceView, SLOT(clearView()));
+    connect(liveModel, SIGNAL(streamSelected(bionet_stream_t*)), 
+        resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
+
+    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        this, SLOT(updatePlot(bionet_datapoint_t*)));
 
     return;
 }
@@ -192,11 +224,53 @@ void MainWindow::setupBDM() {
         bdmModel, SLOT(newDatapoint(bionet_datapoint_t*)));
 
     // when we lose nodes, we lose all thier resources too
-    connect(liveModel, SIGNAL(lostResource(QString)), 
-        this, SLOT(lostBDMPlot(QString)));
+    connect(bdmModel, SIGNAL(lostResource(QString)), 
+        this, SLOT(lostPlot(QString)));
 
+    /*
     connect(bdmio, SIGNAL(enableTab(bool)),
         this, SLOT(enableTab(bool)));
+    */
+    
+    /* connect the view to the bdmModel */
+    connect(bdmModel, SIGNAL(layoutChanged()), view, SLOT(repaint()));
+    view->setModel(bdmModel);
+
+
+    // (for losing habs & updating the pane)
+    connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
+    connect(bdmio, SIGNAL(lostHab(bionet_hab_t*)), 
+        resourceView, SLOT(lostHab(bionet_hab_t*)));
+    connect(bdmio, SIGNAL(lostNode(bionet_node_t*)), 
+        resourceView, SLOT(lostNode(bionet_node_t*)));
+
+    // Connecting everything to the sample archive
+    connect(bdmModel, SIGNAL(newResource(QString)), 
+        archive, SLOT(addResource(QString)));
+    connect(bdmModel, SIGNAL(lostResource(QString)), 
+        archive, SLOT(removeResource(QString)));
+    connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        archive, SLOT(recordSample(bionet_datapoint_t*)));
+
+    // connect the view to the model
+    connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
+        bdmModel, SLOT(lineActivated(QModelIndex)));
+    connect(bdmModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
+        resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
+    connect(bdmModel, SIGNAL(habSelected(bionet_hab_t*)), 
+        resourceView, SLOT(clearView()));
+    connect(bdmModel, SIGNAL(nodeSelected(bionet_node_t*)), 
+        resourceView, SLOT(clearView()));
+    connect(bdmModel, SIGNAL(streamSelected(bionet_stream_t*)), 
+        resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
+
+    connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+        this, SLOT(updatePlot(bionet_datapoint_t*)));
+        
+    // connect the update subsciptions action to bdmio
+    connect(updateSubscriptionsAction, SIGNAL(triggered()), 
+        bdmio, SLOT(editSubscriptions()));
 }
 
 
@@ -207,10 +281,6 @@ void MainWindow::setupTreeView() {
     view->setDragEnabled(FALSE);
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     
-    connect(liveModel, SIGNAL(layoutChanged()), 
-        view, SLOT(repaint()));
-    
-    view->setModel(liveModel);
     //view->selectAll();
     
     // Edit/adjust the header
@@ -226,11 +296,12 @@ void MainWindow::setupTreeView() {
     view->setMinimumHeight(100);
     view->setMinimumWidth(100);
 
-    //view->show();
+    view->show();
     return;
 }
 
 
+/*
 void MainWindow::switchViews(int index) {
     // When switching between views, We don't want to:
     //  * disconnect from bionet, since when we switch back we still want to be updated
@@ -314,23 +385,18 @@ void MainWindow::switchViews(int index) {
             this, SLOT(makeBDMPlot(QString)));
     }
 }
+*/
 
 
+/*
 void MainWindow::enableTab(bool enable) {
     tabs->setTabEnabled(1, enable);
 }
+*/
 
 
 void MainWindow::setupResourceView() {
     resourceView = new ResourceView();
-
-    // (for losing habs & updating the pane)
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
-    connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), 
-        resourceView, SLOT(lostHab(bionet_hab_t*)));
-    connect(bionet, SIGNAL(lostNode(bionet_node_t*)), 
-        resourceView, SLOT(lostNode(bionet_node_t*)));
 
     // connecting the plot button
     connect(resourceView, SIGNAL(plotResource(QString)), 
@@ -342,15 +408,6 @@ void MainWindow::setupResourceView() {
 
 void MainWindow::setupArchive() {
     archive = new Archive(this);
-
-    // Connecting everything to the sample archive
-    connect(liveModel, SIGNAL(newResource(QString)), 
-        archive, SLOT(addResource(QString)));
-    connect(liveModel, SIGNAL(lostResource(QString)), 
-        archive, SLOT(removeResource(QString)));
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        archive, SLOT(recordSample(bionet_datapoint_t*)));
-
     return;
 }
 
@@ -370,12 +427,14 @@ void MainWindow::unsubscribe() {
 
 
 void MainWindow::setupWindow() {
+    
+    /*
+     * disable tabs since we can't run bdm & bionet at the same time
     tabs = new QTabWidget(this);
     tabs->addTab(view, "Live");
     tabs->addTab(bdmView, "History");
-
-    connect(tabs, SIGNAL(currentChanged(int)), 
-        this, SLOT(switchViews(int)));
+    connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(switchViews(int)));
+    */
 
     //view->setParent(views);
 
@@ -383,7 +442,8 @@ void MainWindow::setupWindow() {
     resViewHolder->setLayout(resourceView);
 
     splitter = new QSplitter(this);
-    splitter->addWidget(tabs);
+    //splitter->addWidget(tabs);
+    splitter->addWidget(view);
     splitter->addWidget(resViewHolder);
 
 
@@ -399,16 +459,24 @@ void MainWindow::closeEvent(QCloseEvent* /*event*/) {
     archive->disconnect();
     resourceView->disconnect();
     view->disconnect();
-    liveModel->disconnect();
-    bionet->disconnect();
+
+    if ( bionetMode ) {
+        liveModel->disconnect();
+        bionet->disconnect();
+    } else {
+        bdmModel->disconnect();
+        bdmio->disconnect();
+    }
 
     foreach(PlotWindow* p, livePlots) {
         delete p;
     }
 
+    /*
     foreach(PlotWindow* p, bdmPlots) {
         delete p;
     }
+    */
     
     delete archive;
     
@@ -455,35 +523,33 @@ void MainWindow::createActions() {
     preferencesAction = new QAction(tr("&All/Default Plot Preferences"), this);
     connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openDefaultPlotPreferences()));
 
-    updateSubscriptionsAction = new QAction(tr("&Change Subscriptions"), this);
-    updateSubscriptionsAction->setShortcut(tr("Ctrl+C"));
-    connect(updateSubscriptionsAction, SIGNAL(triggered()), bdmio, SLOT(editSubscriptions()));
-    
-    pollingFrequencyAction = new QAction(tr("BDM Polling &Frequency"), this);
-    pollingFrequencyAction->setShortcut(tr("Ctrl+F"));
-    connect(pollingFrequencyAction, SIGNAL(triggered()), bdmio, SLOT(changeFrequency()));
+    if ( !bionetMode ) {
+        updateSubscriptionsAction = new QAction(tr("&Change Subscriptions"), this);
+        updateSubscriptionsAction->setShortcut(tr("Ctrl+C"));
+        
+        /*
+        pollingFrequencyAction = new QAction(tr("BDM Polling &Frequency"), this);
+        pollingFrequencyAction->setShortcut(tr("Ctrl+F"));
+        connect(pollingFrequencyAction, SIGNAL(triggered()), bdmio, SLOT(changeFrequency()));
 
-    connectToBDMAction = new QAction(tr("Connect to &BDM"), this);
-    connectToBDMAction->setShortcut(tr("Ctrl+B"));
-    connect(connectToBDMAction, SIGNAL(triggered()), bdmio, SLOT(promptForConnection()));
+        connectToBDMAction = new QAction(tr("Connect to &BDM"), this);
+        connectToBDMAction->setShortcut(tr("Ctrl+B"));
+        connect(connectToBDMAction, SIGNAL(triggered()), bdmio, SLOT(promptForConnection()));
 
-    disconnectFromBDMAction = new QAction(tr("&Disconnect from BDM"), this);
-    disconnectFromBDMAction->setShortcut(tr("Ctrl+D"));
-    connect(disconnectFromBDMAction, SIGNAL(triggered()), bdmio, SLOT(disconnectFromBDM()));
-    connect(disconnectFromBDMAction, SIGNAL(triggered()), this, SLOT(clearBDMPlots()));
+        disconnectFromBDMAction = new QAction(tr("&Disconnect from BDM"), this);
+        disconnectFromBDMAction->setShortcut(tr("Ctrl+D"));
+        connect(disconnectFromBDMAction, SIGNAL(triggered()), bdmio, SLOT(disconnectFromBDM()));
+        connect(disconnectFromBDMAction, SIGNAL(triggered()), this, SLOT(clearBDMPlots()));
+        */
+    }
 }
 
 
 
 void MainWindow::createMenus() {
-
     fileMenu = menuBar->addMenu(tr("&File"));
-    fileMenu->addAction(updateSubscriptionsAction);
-    fileMenu->addAction(pollingFrequencyAction);
-    fileMenu->addSeparator();
-    fileMenu->addAction(connectToBDMAction);
-    fileMenu->addAction(disconnectFromBDMAction);
-    fileMenu->addSeparator();
+    if ( !bionetMode )
+        fileMenu->addAction(updateSubscriptionsAction);
     fileMenu->addAction(quitAction);
 
     plotMenu = menuBar->addMenu(tr("&Plotting"));
@@ -495,7 +561,6 @@ void MainWindow::createMenus() {
     helpMenu->addAction(shortcuts);
 
     connect(plotMenu, SIGNAL(aboutToShow()), this, SLOT(updatePlotMenu()));
-    connect(fileMenu, SIGNAL(aboutToShow()), this, SLOT(updateFileMenu()));
 } 
 
 
@@ -504,15 +569,16 @@ void MainWindow::updatePlotMenu() {
 }
 
 
-void MainWindow::updateFileMenu() {
-    connectToBDMAction->setEnabled( !bdm_is_connected() );
-    disconnectFromBDMAction->setEnabled( bdm_is_connected() );
-}
-
 void MainWindow::usage(void) {
     cout << "usage: bionet-monitor OPTIONS...\n\
 \n\
 OPTIONS:\n\
+\n\
+    -b, --bionet\n\
+        Connect to bionet (default)\n\
+\n\
+    -d, --bdm\n\
+        Connect to any number of bdms instead of bionet\n\
 \n\
     -e, --require-security\n\
         Require security\n\
@@ -585,6 +651,7 @@ void MainWindow::makePlot(QString key) {
 
 
 // keygen ok here
+/*
 void MainWindow::makeBDMPlot(QString key) {
     History *history;
     PlotWindow *p;
@@ -607,6 +674,7 @@ void MainWindow::makeBDMPlot(QString key) {
     
     bdmPlots.insert(key, p);
 }
+*/
 
 
 void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
@@ -633,6 +701,7 @@ void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
 }
 
 
+/*
 void MainWindow::updateBDMPlot(bionet_datapoint_t* datapoint) {
     bionet_resource_t* resource;
     const char *resource_name;
@@ -656,6 +725,7 @@ void MainWindow::updateBDMPlot(bionet_datapoint_t* datapoint) {
         p->updatePlot();
     }
 }
+*/
 
 
 void MainWindow::lostPlot(QString key) {
@@ -667,6 +737,7 @@ void MainWindow::lostPlot(QString key) {
 }
 
 
+/*
 void MainWindow::lostBDMPlot(QString key) {
     PlotWindow* p = bdmPlots.take(key);
 
@@ -675,6 +746,7 @@ void MainWindow::lostBDMPlot(QString key) {
         bdmio->removeHistory(key);
     }
 }
+*/
 
 
 // not sure what to do here
@@ -684,23 +756,27 @@ void MainWindow::destroyPlot(QObject* obj) {
 }
 
 
+/*
 void MainWindow::destroyBDMPlot(QObject* obj) {
     QString key = obj->objectName();
     bdmPlots.take(key); // its already going to be deleted so dont worry about it
     bdmio->removeHistory(key);
 }
+*/
 
 
+/*
 void MainWindow::clearBDMPlots() {
     foreach(QString key, bdmPlots.keys())
         lostBDMPlot(key);
 }
+*/
 
 
 void MainWindow::openDefaultPlotPreferences() {
     if (!defaultPreferencesIsOpen) {
         defaultPreferencesIsOpen = true;
-        QList<PlotWindow*> windows = livePlots.values() + bdmPlots.values();
+        QList<PlotWindow*> windows = livePlots.values(); // + bdmPlots.values();
         defaultPreferences = new PlotPreferences(windows, scaleInfoTemplate, QString("All"), this);
 
         connect(defaultPreferences, SIGNAL(applyChanges(ScaleInfo*)), this, SLOT(updateScaleInfo(ScaleInfo*)));
@@ -738,18 +814,18 @@ void MainWindow::openPrefs(PlotWindow *pw, ScaleInfo *current) {
     }
 
     keys = livePlots.keys(pw);
-    if (keys.isEmpty()) {
-        keys = bdmPlots.keys(pw);
+    //if (keys.isEmpty())
+        //keys = bdmPlots.keys(pw);
 
-        if (keys.isEmpty()) {
-            qDebug("Tried to open preferences for a non-existant plot window");
-            return;
-        }
+    if (keys.isEmpty()) {
+        qDebug("Tried to open preferences for a non-existant plot window");
+        return;
     }
+
     key = keys.first();
 
     if (preferences.contains(key)) {
-        /* Don't open twice! raise it instead */
+        /* don't open twice! raise it instead */
         pp = preferences[key];
         pp->raise();
         return;
