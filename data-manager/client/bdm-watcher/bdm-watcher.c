@@ -192,12 +192,12 @@ void usage(void) {
 	    " -v,--version                       Show the version number\n"
 	    " -r,--resources,--resources <Resources> \n"
             "                                    Subscribe to updates to this resource name pattern\n"
-            "                                    \"HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
-	    "                                    May contain wildcards. (default: \"*/*.*.*:*\")\n"
+            "                                    \"[[BDM-ID,]Recording-BDM-ID/]HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
+	    "                                    May contain wildcards. (default: \"*.*/*.*.*:*\")\n"
 	    " -s,--server <server:port>          Also subscribe to updates from this BDM\n"
             "                                    Needed only if the BDM is not on the local link\n"
 	    " -T,--datapoint-start <start-time>  Timestamp of datapoint as reported by the HAB\n"
-	    "                                    time (default: infinite past)\n"
+	    "                                    time (default: Current time)\n"
 	    " -t,--datapoint-end <end-time>      Timestamp of datapoint as reported by the HAB\n"
 	    "                                    time (default: infinite future)\n"
             " -0,--output-mode <MODE>            Format the output. Can be one of:\n"
@@ -241,10 +241,15 @@ int main(int argc, char *argv[]) {
     memset(&datapointStart, 0, sizeof(struct timeval));
     memset(&datapointEnd, 0, sizeof(struct timeval));
 
+
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
 
     int i;
     int c;
+
+    if ( 0 == gettimeofday(&datapointStart, NULL) ) {
+        pDatapointStart = &datapointStart;
+    }
 
     while(1) {
 	static struct option long_options[] = {
@@ -361,6 +366,7 @@ int main(int argc, char *argv[]) {
         bdm_subscribe_node_list_by_name(g_slist_nth_data(node_list, i));
     }
     for (i = 0; i < g_slist_length(dp_list); i++) {
+        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
         char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
         char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1];
         char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
@@ -370,14 +376,14 @@ int main(int argc, char *argv[]) {
 
         const char * dp_name = g_slist_nth_data(dp_list, i);
 
-        r = bdm_split_resource_name_r(dp_name, bdm_id, hab_type, hab_id, node_id, resource_id);
+        r = bdm_split_resource_name_r(dp_name, peer_id, bdm_id, hab_type, hab_id, node_id, resource_id);
         if ( r < 0 ) {
             printf("error parsing subscriptions string '%s'\n", dp_name);
             exit(1);
         }
 
         bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
-                bdm_id, hab_type, hab_id, node_id, resource_id, 
+                peer_id, bdm_id, hab_type, hab_id, node_id, resource_id, 
                 pDatapointStart, pDatapointEnd);
     }
 

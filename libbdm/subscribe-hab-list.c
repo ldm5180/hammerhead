@@ -14,18 +14,24 @@
 
 int bdm_subscribe_hab_list_by_name(const char *hab_name) {
     libbdm_hab_subscription_t *new_hab_sub;
+    char peer_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
     char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
     char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1];
     char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
     char topic[BDM_TOPIC_MAX_LEN+1];
 
-    if ( 0 != bdm_split_hab_name_r(hab_name, bdm_id, hab_type, hab_id) ) {
+    if ( 0 != bdm_split_hab_name_r(hab_name, peer_id, bdm_id, hab_type, hab_id) ) {
         return -1;
     }
 
     new_hab_sub = calloc(1, sizeof(libbdm_hab_subscription_t));
     if (new_hab_sub == NULL) {
         goto fail0;
+    }
+
+    new_hab_sub->peer_id = strdup(peer_id);
+    if (new_hab_sub->peer_id == NULL) {
+        goto fail1;
     }
 
     new_hab_sub->bdm_id = strdup(bdm_id);
@@ -50,11 +56,12 @@ int bdm_subscribe_hab_list_by_name(const char *hab_name) {
         goto fail1;
     }
 
-    if ( !cal_client.subscribe(bdm_id, topic) ) return -1;
+    if ( !cal_client.subscribe(peer_id, topic) ) return -1;
 
     return 0;
 
 fail1:
+    free(new_hab_sub->peer_id);
     free(new_hab_sub->bdm_id);
     free(new_hab_sub->hab_type);
     free(new_hab_sub->hab_id);

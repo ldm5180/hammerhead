@@ -175,10 +175,12 @@ int bionet_parse_topic_params(
 
 static const char * _split_bdm(
         const char * name,
-        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1] )
+        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN] )
 {
     const char *p;
     char *separator;
+    char *peer_separator;
 
     //
     // sanity checks
@@ -196,19 +198,44 @@ static const char * _split_bdm(
     separator = strchr(p, '/');
     if (separator == NULL) {
         // No BDM means all bdms
+        if(peer_id) strncpy(peer_id, "*", BIONET_NAME_COMPONENT_MAX_LEN);
         if(bdm_id) strncpy(bdm_id, "*", BIONET_NAME_COMPONENT_MAX_LEN);
     } else {
         int size;
         size = separator - p;
 
-        if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+        peer_separator = memchr(p, ',', size);
+        if (peer_separator == NULL) {
+            // No Peer means all peers
+            if(peer_id) strncpy(peer_id, "*", BIONET_NAME_COMPONENT_MAX_LEN);
+        }else {
+            int peer_size = peer_separator - p;
+
+            if (peer_size > BIONET_NAME_COMPONENT_MAX_LEN-1) {
+                g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                        "%s(): Peer-ID of Topic '%s' is too long (%d bytes, max %lu)", 
+                        __FUNCTION__, name, peer_size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN-1);
+                return NULL;
+            }
+
+            if(peer_id) {
+                memcpy(peer_id, name, peer_size);
+                peer_id[peer_size] = '\0';
+            }
+
+            p = peer_separator + 1;
+            size = separator - p;
+        }
+
+        if (size > BIONET_NAME_COMPONENT_MAX_LEN-1) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "%s(): HAB-Type of Topic '%s' is too long (%d bytes, max %lu)", 
-                    __FUNCTION__, name, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
+                    "%s(): BDM-ID of Topic '%s' is too long (%d bytes, max %lu)", 
+                    __FUNCTION__, name, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN-1);
             return NULL;
         }
+
         if(bdm_id) {
-            memcpy(bdm_id, name, size);
+            memcpy(bdm_id, p, size);
             bdm_id[size] = '\0';
         }
         p = separator+1;
@@ -219,13 +246,14 @@ static const char * _split_bdm(
 
 int bdm_split_hab_name_r(
         const char * topic,
-        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1])
+        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN])
 {
     const char *p;
 
-    p = _split_bdm(topic, bdm_id);
+    p = _split_bdm(topic, peer_id, bdm_id);
     if (p == NULL) {
         // Message already logged
         return -1;
@@ -236,14 +264,15 @@ int bdm_split_hab_name_r(
 
 int bdm_split_node_name_r(
         const char * topic,
-        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1])
+        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char node_id[BIONET_NAME_COMPONENT_MAX_LEN])
 {
     const char *p;
 
-    p = _split_bdm(topic, bdm_id);
+    p = _split_bdm(topic, peer_id, bdm_id);
     if (p == NULL) {
         // Message already logged
         return -1;
@@ -254,15 +283,16 @@ int bdm_split_node_name_r(
 
 int bdm_split_resource_name_r(
         const char * topic,
-        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char resource_id[BIONET_NAME_COMPONENT_MAX_LEN+1])
+        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char node_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char resource_id[BIONET_NAME_COMPONENT_MAX_LEN])
 {
     const char *p;
 
-    p = _split_bdm(topic, bdm_id);
+    p = _split_bdm(topic, peer_id, bdm_id);
     if (p == NULL) {
         // Message already logged
         return -1;

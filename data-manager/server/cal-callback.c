@@ -144,7 +144,7 @@ static void libbdm_process_datapoint_subscription_request(
     struct timeval tv_stop;
     struct timeval *pDatapointEnd = NULL;
 
-    r = bdm_split_resource_name_r(&topic[2], bdm_id, topic_hab_type, topic_hab_id, topic_node_id, topic_resource_id);
+    r = bdm_split_resource_name_r(&topic[2], NULL, bdm_id, topic_hab_type, topic_hab_id, topic_node_id, topic_resource_id);
     if (r < 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "client '%s' requests invalid Datapoint subscription topic '%s'", peer_name, &topic[2]);

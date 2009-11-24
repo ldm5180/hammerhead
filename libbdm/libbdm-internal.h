@@ -55,6 +55,7 @@ extern GSList *libbdm_bdms;
 extern GSList *libbdm_habs;
 
 typedef struct {
+    char *peer_id;
     char *bdm_id;
 } libbdm_bdm_subscription_t;
 
@@ -63,6 +64,7 @@ typedef struct {
 //
 
 typedef struct {
+    char *peer_id;
     char *bdm_id;
     char *hab_type;
     char *hab_id;
@@ -72,6 +74,7 @@ typedef struct {
 
 
 typedef struct {
+    char *peer_id;
     char *bdm_id;
     char *hab_type;
     char *hab_id;
@@ -82,6 +85,7 @@ typedef struct {
 
 
 typedef struct {
+    char *peer_id;
     char *bdm_id;
     char *hab_type;
     char *hab_id;

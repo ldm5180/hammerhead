@@ -211,10 +211,10 @@ int bionet_split_resource_name(
  */
 int bionet_split_resource_name_r(
     const char *resource_name,
-    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
-    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-    char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN+1]);
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN],
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN]);
 
 
 /**
@@ -229,7 +229,8 @@ int bionet_split_resource_name_r(
  * If BDM-ID/ is not present it defaults to *
  *
  * @param[in] topic Hab name to split
- * @param[out] bdm_id BDM-ID from resource name
+ * @param[out] peer_id Peer BDM-ID from resource name
+ * @param[out] bdm_id Recording BDM-ID from resource name
  * @param[out] hab_type HAB-type from resource name
  * @param[out] hab_id HAB-ID from resource name
  *
@@ -238,9 +239,10 @@ int bionet_split_resource_name_r(
  */
 int bdm_split_hab_name_r(
         const char * topic,
-        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1]);
+        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN]);
 
 
 /**
@@ -255,7 +257,8 @@ int bdm_split_hab_name_r(
  * If BDM-ID/ is not present it defaults to *
  *
  * @param[in] topic Node name to split
- * @param[out] bdm_id BDM-ID from resource name
+ * @param[out] peer_id Peer BDM-ID from resource name
+ * @param[out] bdm_id Recording BDM-ID from resource name
  * @param[out] hab_type HAB-type from resource name
  * @param[out] hab_id HAB-ID from resource name
  * @param[out] node_id Node-ID from resource name
@@ -265,10 +268,11 @@ int bdm_split_hab_name_r(
  */
 int bdm_split_node_name_r(
         const char * topic,
-        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1]);
+        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char node_id[BIONET_NAME_COMPONENT_MAX_LEN]);
 
 /**
  * @brief Take a resource name string and split the name up into its components
@@ -282,7 +286,8 @@ int bdm_split_node_name_r(
  * If BDM-ID/ is not present it defaults to *
  *
  * @param[in] topic Resource name to split
- * @param[out] bdm_id BDM-ID from resource name
+ * @param[out] peer_id Peer BDM-ID from resource name
+ * @param[out] bdm_id Recording BDM-ID from resource name
  * @param[out] hab_type HAB-type from resource name
  * @param[out] hab_id HAB-ID from resource name
  * @param[out] node_id Node-ID from resource name
@@ -293,11 +298,12 @@ int bdm_split_node_name_r(
  */
 int bdm_split_resource_name_r(
         const char * topic,
-        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-        char resource_id[BIONET_NAME_COMPONENT_MAX_LEN+1]);
+        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char node_id[BIONET_NAME_COMPONENT_MAX_LEN],
+        char resource_id[BIONET_NAME_COMPONENT_MAX_LEN]);
 
 /**
  * @brief Parse out the parameters from the querystring
@@ -389,9 +395,9 @@ int bionet_split_node_name(
  */
 int bionet_split_node_name_r(
     const char *node_name,
-    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
-    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-    char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1]
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN]
 );
 
 /**
