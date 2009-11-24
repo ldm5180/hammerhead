@@ -98,11 +98,11 @@ int libbdm_cal_topic_matches(const char *topic, const char *subscription) {
         int sub_off, topic_off;
 
         sub_off = bdm_split_resource_name_r(&subscription[2], 
-                sub_bdm_id, sub_hab_type, sub_hab_id, sub_node_id, sub_resource_id);
+                NULL, sub_bdm_id, sub_hab_type, sub_hab_id, sub_node_id, sub_resource_id);
         if (sub_off < 0) return -1;
 
         topic_off = bdm_split_resource_name_r(&topic[2], 
-                topic_bdm_id, topic_hab_type, topic_hab_id, topic_node_id, topic_resource_id);
+                NULL, topic_bdm_id, topic_hab_type, topic_hab_id, topic_node_id, topic_resource_id);
         if (topic_off < 0) return -1;
 
         if (!bionet_name_component_matches(topic_bdm_id, sub_bdm_id)) return -1;

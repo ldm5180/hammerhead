@@ -360,6 +360,7 @@ int bdm_subscribe_node_list_by_name(const char * node_name);
 int bdm_subscribe_datapoints_by_name(const char * resource_name);
 
 int bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
+        const char *peer_id,
         const char *bdm_id,
         const char *hab_type,
         const char *hab_id,

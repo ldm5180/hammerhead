@@ -15,13 +15,14 @@
 int bdm_subscribe_node_list_by_name(const char *node_name) {
     libbdm_node_subscription_t *new_node_sub;
 
+    char peer_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
     char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
     char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1];
     char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
     char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
     char topic[BDM_TOPIC_MAX_LEN+1];
 
-    if ( 0 != bdm_split_node_name_r(node_name, bdm_id, hab_type, hab_id, node_id) ) {
+    if ( 0 != bdm_split_node_name_r(node_name, peer_id, bdm_id, hab_type, hab_id, node_id) ) {
         return -1;
     }
 
@@ -30,6 +31,10 @@ int bdm_subscribe_node_list_by_name(const char *node_name) {
         goto fail0;
     }
 
+    new_node_sub->peer_id = strdup(peer_id);
+    if (new_node_sub->peer_id == NULL) {
+        goto fail1;
+    }
     new_node_sub->bdm_id = strdup(bdm_id);
     if (new_node_sub->bdm_id == NULL) {
         goto fail1;
@@ -54,11 +59,13 @@ int bdm_subscribe_node_list_by_name(const char *node_name) {
         goto fail1;
     }
 
-    if ( !cal_client.subscribe(bdm_id, topic) ) return -1;
+    if ( !cal_client.subscribe(peer_id, topic) ) return -1;
 
     return 0;
 
 fail1:
+
+    free(new_node_sub->peer_id);
     free(new_node_sub->bdm_id);
     free(new_node_sub->hab_type);
     free(new_node_sub->hab_id);
