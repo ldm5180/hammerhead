@@ -71,6 +71,8 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMReso
     bionet_node_t *node;
     bionet_resource_t *resource;
 
+    int notify_new_node = 0;
+
     const char * bdm_id = (const char*)rm->bdmId.buf;
     const char * hab_type = (const char*)rm->habType.buf;
     const char * hab_id = (const char*)rm->habId.buf;
@@ -82,7 +84,9 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMReso
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
     }
 
-    bdm_state->curr_seq = rm->entrySeq;
+    if(rm->entrySeq > bdm_state->curr_seq) {
+        bdm_state->curr_seq = rm->entrySeq;
+    }
 
 
     bdm = bdm_cache_lookup_bdm(bdm_id);
@@ -162,16 +166,14 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMReso
         libbdm_cache_add_node(node);
 
         // see if we need to publish this to the user
-        {
+        if (libbdm_callback_new_node != NULL) {
             GSList *i;
 
             for (i = libbdm_node_subscriptions; i != NULL; i = i->next) {
                 libbdm_node_subscription_t *sub = i->data;
 
                 if (bionet_node_matches_id(node, sub->node_id)) {
-                    if (libbdm_callback_new_node != NULL) {
-                        libbdm_callback_new_node(node, libbdm_callback_new_node_usr_data);
-                    }
+                    notify_new_node = 1;
                     break;
                 }
             }
@@ -209,6 +211,10 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMReso
         }
         libbdm_cache_add_resource(resource);
     }
+
+    if(notify_new_node){
+        libbdm_callback_new_node(node, libbdm_callback_new_node_usr_data);
+    }
 }
 
 static void bdm_handle_resource_datapoints(const cal_event_t *event, BDMResourceDatapoints_t *rd) {
@@ -225,7 +231,9 @@ static void bdm_handle_resource_datapoints(const cal_event_t *event, BDMResource
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
     }
 
-    bdm_state->curr_seq = rd->entrySeq;
+    if ( rd->entrySeq > bdm_state->curr_seq) {
+        bdm_state->curr_seq = rd->entrySeq;
+    }
 
     resource = bdm_cache_lookup_resource(hab_type, hab_id, node_id, resource_id);
     if (resource == NULL) {
@@ -320,8 +328,11 @@ static void bdm_handle_server_subscribe(const cal_event_t *event) {
     memset(&m, 0x00, sizeof(BDM_C2S_Message_t));
     memset(&buf, 0, sizeof(buf));
 
+    // TODO: The sequence number should be per (subscription*peer)
+    // otherwise multiple subscriptions will be missing datapoints
+    // This means that user also needs to track the state per subscription
     m.present = BDM_C2S_Message_PR_sendState;
-    m.choice.sendState.seq = bdm_state->curr_seq;
+    m.choice.sendState.seq = bdm_state->curr_seq + 1;
 
     r = OCTET_STRING_fromBuf(&m.choice.sendState.topic, topic, -1);
     if (r != 0) {
@@ -355,7 +366,9 @@ static void bdm_handle_server_state_update(const cal_event_t *event, BDMSendStat
     if (NULL == bdm_state) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
     }
-    bdm_state->curr_seq = state->seq;
+    if(state->seq > bdm_state->curr_seq) {
+        bdm_state->curr_seq = state->seq;
+    }
 }
 
 static void bdm_handle_server_message(const cal_event_t *event) {
