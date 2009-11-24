@@ -105,8 +105,6 @@ bionet_bdm_t* bionet_bdm_new(const char* id) {
         return NULL;
     }
 
-    bdm->curr_seq = -1;
-
     return bdm;
 }
 

@@ -71,27 +71,56 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMReso
     bionet_node_t *node;
     bionet_resource_t *resource;
 
+    const char * bdm_id = (const char*)rm->bdmId.buf;
     const char * hab_type = (const char*)rm->habType.buf;
     const char * hab_id = (const char*)rm->habId.buf;
     const char * node_id = (const char*)rm->nodeId.buf;
     const char * resource_id = (const char*)rm->resourceId.buf;
 
-    bionet_bdm_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
+    libbdm_peer_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
     if (NULL == bdm_state) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
     }
 
     bdm_state->curr_seq = rm->entrySeq;
 
 
-    bdm = bdm_cache_lookup_bdm(event->peer_name);
+    bdm = bdm_cache_lookup_bdm(bdm_id);
     if (bdm == NULL) {
-        bdm = bionet_bdm_new(event->peer_name);
+        bdm = bionet_bdm_new(bdm_id);
         if (bdm == NULL) {
             // an error has been logged already
             return;
         }
         libbdm_cache_add_bdm(bdm);
+
+        {
+            // see if we need to publish this to the user
+            GSList *i;
+            for (i = libbdm_bdm_subscriptions; i != NULL; i = i->next) {
+                libbdm_bdm_subscription_t *sub = i->data;
+
+                if (bionet_name_component_matches(bdm_id, sub->peer_id)
+                &&  bionet_name_component_matches(bdm->id, sub->bdm_id)) 
+                {
+                    if (libbdm_callback_new_bdm != NULL) {
+                        libbdm_callback_new_bdm(bdm, libbdm_callback_new_bdm_usr_data);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    {
+        // Do linkage if this is the first time this peer has reported this bdm
+        GSList * b;
+        b = g_slist_find( bdm_state->recording_bdms, bdm );
+        if ( NULL == b ) {
+            // New BDM for this peer
+            bdm_state->recording_bdms = g_slist_prepend(bdm_state->recording_bdms, bdm);
+            bdm->peer_refcount++;
+        }
     }
 
     hab = bdm_cache_lookup_hab(hab_type, hab_id);
@@ -103,17 +132,17 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMReso
         }
         libbdm_cache_add_hab(hab);
 
-        bionet_hab_add_bdm(hab, bdm);
-        bionet_bdm_add_hab(bdm, hab);
-
         // see if we need to publish this to the user
         {
             GSList *i;
-
             for (i = libbdm_hab_subscriptions; i != NULL; i = i->next) {
                 libbdm_hab_subscription_t *sub = i->data;
 
                 if (bionet_hab_matches_type_and_id(hab, sub->hab_type, sub->hab_id)) {
+
+                    bionet_hab_add_bdm(hab, bdm);
+                    bionet_bdm_add_hab(bdm, hab);
+
                     if (libbdm_callback_new_hab != NULL) {
                         libbdm_callback_new_hab(hab, libbdm_callback_new_hab_usr_data);
                     }
@@ -191,9 +220,9 @@ static void bdm_handle_resource_datapoints(const cal_event_t *event, BDMResource
     const char * node_id = (const char*)rd->nodeId.buf;
     const char * resource_id = (const char*)rd->resourceId.buf;
 
-    bionet_bdm_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
+    libbdm_peer_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
     if (NULL == bdm_state) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
     }
 
     bdm_state->curr_seq = rd->entrySeq;
@@ -201,7 +230,7 @@ static void bdm_handle_resource_datapoints(const cal_event_t *event, BDMResource
     resource = bdm_cache_lookup_resource(hab_type, hab_id, node_id, resource_id);
     if (resource == NULL) {
         g_log(
-            BIONET_LOG_DOMAIN,
+            BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
             "got a Datapoint for unknown Resource %s.%s.%s:%s",
             hab_type, hab_id, node_id, resource_id
@@ -253,7 +282,7 @@ static void bdm_handle_stream_data(const cal_event_t *event, StreamData_t *sd) {
     );
     if (stream == NULL) {
         g_log(
-            BIONET_LOG_DOMAIN,
+            BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
             "got Stream data for unknown Stream %s.%s.%s:%s",
             rm->habType.buf,
@@ -283,9 +312,9 @@ static void bdm_handle_server_subscribe(const cal_event_t *event) {
     bionet_asn_buffer_t buf;
     asn_enc_rval_t enc_rval;
 
-    bionet_bdm_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, peer_name);
+    libbdm_peer_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, peer_name);
     if (NULL == bdm_state) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
     }
 
     memset(&m, 0x00, sizeof(BDM_C2S_Message_t));
@@ -322,9 +351,9 @@ cleanup:
 
 static void bdm_handle_server_state_update(const cal_event_t *event, BDMSendState_t *state) {
 
-    bionet_bdm_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
+    libbdm_peer_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
     if (NULL == bdm_state) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
     }
     bdm_state->curr_seq = state->seq;
 }
@@ -335,19 +364,19 @@ static void bdm_handle_server_message(const cal_event_t *event) {
 
     rval = ber_decode(NULL, &asn_DEF_BDM_S2C_Message, (void **)&m, event->msg.buffer, event->msg.size);
     if (rval.code == RC_WMORE) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained an incomplete ASN.1 message", event->peer_name);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained an incomplete ASN.1 message", event->peer_name);
         return;
     } else if (rval.code == RC_FAIL) {
         // received invalid junk
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained an invalid ASN.1 message", event->peer_name);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained an invalid ASN.1 message", event->peer_name);
         return;
     } else if (rval.code != RC_OK) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "unknown error (code=%d) decoding server message from '%s'", rval.code, event->peer_name);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "unknown error (code=%d) decoding server message from '%s'", rval.code, event->peer_name);
         return;
     }
 
     if (rval.consumed != event->msg.size) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained junk at end of message (consumed %d of %d)", event->peer_name, (int)rval.consumed, event->msg.size);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "server message from '%s' contained junk at end of message (consumed %d of %d)", event->peer_name, (int)rval.consumed, event->msg.size);
     }
 
 
@@ -401,7 +430,7 @@ static void bdm_handle_server_message(const cal_event_t *event) {
         }
 
         default: {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dont know what to do with BDM_S2C message type %d from %s", m->present, event->peer_name);
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dont know what to do with BDM_S2C message type %d from %s", m->present, event->peer_name);
             xer_fprint(stdout, &asn_DEF_BDM_S2C_Message, m);
             break;
         }
@@ -415,91 +444,48 @@ static void bdm_handle_server_message(const cal_event_t *event) {
 void libbdm_cal_callback(const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_JOIN: {
-            bionet_bdm_t *bdm;
+            libbdm_peer_t *bdm_peer;
 
             // add the bdm to the bdm library's list of known bdms
-            if ( NULL == (bdm = g_hash_table_lookup( libbdm_all_peers, event->peer_name)) ) {
+            if ( NULL == (bdm_peer = g_hash_table_lookup( libbdm_all_peers, event->peer_name)) ) {
 
-                bdm = bionet_bdm_new(event->peer_name);
-                if (NULL == bdm) {
-                    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                          "Failed to get a new BDM.");
+                bdm_peer = calloc(1, sizeof(libbdm_peer_t));
+                if (NULL == bdm_peer) {
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                          "Out of memory!");
                     return;
                 }
-                g_hash_table_insert(libbdm_all_peers, strdup(event->peer_name), bdm);
+                bdm_peer->curr_seq = -1;
+                g_hash_table_insert(libbdm_all_peers, strdup(event->peer_name), bdm_peer);
             }
 
             // TODO: Implement BDM cal-security
-	    //bionet_bdm_set_secure(bdm, event->is_secure);
-
-
-            // see if we need to publish this to the BDM API
-            {
-                GSList *i;
-
-                for (i = libbdm_bdm_api_subscriptions; i != NULL; i = i->next) {
-                    libbdm_bdm_subscription_t *sub = i->data;
-
-                    if (bionet_name_component_matches(event->peer_name, sub->bdm_id)) {
-                        char * newbdm = strdup(event->peer_name);
-                        libbdm_api_new_peers = g_slist_prepend(libbdm_api_new_peers, newbdm);
-                        break;
-                    }
-                }
-            }
-
-
-            // see if we need to publish this to the user
-            {
-                GSList *i;
-
-                for (i = libbdm_bdm_subscriptions; i != NULL; i = i->next) {
-                    libbdm_bdm_subscription_t *sub = i->data;
-
-                    if (bionet_name_component_matches(bdm->id, sub->bdm_id)) {
-                        libbdm_cache_add_bdm(bdm);
-                        if (libbdm_callback_new_bdm != NULL) {
-                            libbdm_callback_new_bdm(bdm, libbdm_callback_new_bdm_usr_data);
-                        }
-                        break;
-                    }
-                }
-            }
-
+	    //bionet_bdm_set_secure(bdm_peer, event->is_secure);
             break;
         }
 
         case CAL_EVENT_LEAVE: {
-            bionet_bdm_t *bdm = NULL;
+            GSList *b;
+            libbdm_peer_t * peer = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
+            if ( NULL == peer ) {
+                // This can happen if a connect failed
+                return;
+            }
 
-            {
-                GSList *i;
+            // Decrement refcounts of all recording bdms this peer has seen,
+            // and remove the BDMs from the cache with no reporting peers.
+            //
+            // keep the peer in libbdm_all_peers, so that the state is 
+            // maintained if the peer returns
+            for (b = peer->recording_bdms; b != NULL; b = b->next) {
+                bionet_bdm_t * bdm = b->data;
 
-                for (i = libbdm_bdm_api_subscriptions; i != NULL; i = i->next) {
-                    libbdm_bdm_subscription_t *sub = i->data;
-
-                    if (bionet_name_component_matches(event->peer_name, sub->bdm_id)) {
-                        char * lostbdm = strdup(event->peer_name);
-                        libbdm_api_lost_peers = g_slist_prepend(libbdm_api_lost_peers, lostbdm);
-                        break;
-                    }
+                if ( --bdm->peer_refcount <= 0 ) {
+                    libbdm_cache_remove_bdm(bdm); // this sends lost callbacks as needed
                 }
             }
-            //
-            // it's a bit confusing because there are two lists of BDMs:
-            // the list of BDMs that the client has been told about (the cache), and
-            // the "master" internal list of every BDM the process has discovered 
-            // (libbdm_all_peers)
-            //
-
-
-            bdm = bdm_cache_lookup_bdm(event->peer_name);
-            if (bdm != NULL) {
-                libbdm_cache_remove_bdm(bdm);
-            }
-
-            // keep the bdm in libbdm_all_peers, so that the state is maintained if the peer returns
-
+            g_slist_free(peer->recording_bdms);
+            peer->recording_bdms = NULL;
             break;
         }
 
@@ -519,7 +505,7 @@ void libbdm_cal_callback(const cal_event_t *event) {
         }
 
         default: {
-            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL unknown event type %d", event->type);
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "CAL unknown event type %d", event->type);
             break;
         }
     }

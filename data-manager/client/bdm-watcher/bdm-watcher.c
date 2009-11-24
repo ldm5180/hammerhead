@@ -351,10 +351,10 @@ int main(int argc, char *argv[]) {
 
     // Add subscriptions
     if (! subscribed_to_something) {
-        bdm_list = g_slist_append(bdm_list, "*");
-        hab_list = g_slist_append(hab_list, "*/*.*");
-        node_list = g_slist_append(node_list, "*/*.*.*");
-        dp_list = g_slist_append(dp_list, "*/*.*.*:*");
+        bdm_list = g_slist_append(bdm_list, "*,*");
+        hab_list = g_slist_append(hab_list, "*,*/*.*");
+        node_list = g_slist_append(node_list, "*,*/*.*.*");
+        dp_list = g_slist_append(dp_list, "*,*/*.*.*:*");
     }
     for (i = 0; i < g_slist_length(bdm_list); i++) {
         bdm_subscribe_bdm_list_by_name(g_slist_nth_data(bdm_list, i));
