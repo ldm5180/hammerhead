@@ -55,10 +55,9 @@ $(function () {
         points: { show: true },
         xaxis: { mode: "time", timeformat: "%y/%m/%d %H:%M:%S", ticks: 5, min: null }, 
         selection: { mode: "x" },
-        grid: { hoverable: true, clickable: true }
+        grid: { hoverable: true, clickable: true },
+        legend: { backgroundOpacity: 0 }
     };
-
-//min: (new Date(yesterday.getFullYear()+"/"+(yesterday.getMonth()+1)+"/"+yesterday.getDate())).getTime() }
 
     var data = [];
     var placeholder = $("#placeholder");

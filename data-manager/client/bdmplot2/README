@@ -12,3 +12,8 @@ Running BDMPlot2:
 
 
 BDMPlot2 can be accessed from other machines using the hostname of the machine running it. Also, the port can be changed by using the '--port' option on the command line.
+
+
+
+Known Issues:
+- multiple web clients with overlapping subscriptions will cause only one of the clients to get the datapoints for a given resource. Don't do this.
