@@ -23,6 +23,10 @@ static int db_get_next_entry_seq(sqlite3 *db);
 static int db_get_last_sync_seq(sqlite3 *db, char * bdm_id, sqlite3_stmt *stmt);
 static void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int last_sync, sqlite3_stmt *stmt);
 
+static int _db_publish_synced_datapoint(sqlite3* db, 
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
+    bdm_datapoint_t * dp,
+    int entry_seq);
 
 static int entry_seq = -1; // Always set before calling add_*_to_db
 
@@ -849,7 +853,11 @@ int db_add_datapoint_sync(
     }
 
     // Single insert, so no transaction needed
-    return add_datapoint_to_db(db, resource_key, dp);
+    r = add_datapoint_to_db(db, resource_key, dp);
+    if ( 0 == r ){
+        _db_publish_synced_datapoint(db, resource_key, dp, entry_seq);
+    }
+    return r;
 }
 
 
@@ -1923,6 +1931,178 @@ static void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int last_sync, sqli
 }
 
 
+
+static int _db_publish_synced_datapoint(sqlite3* db, 
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
+    bdm_datapoint_t * dp,
+    int entry_seq)
+{
+    int r;
+    GPtrArray *bdm_list;
+
+    bdm_list = g_ptr_array_new();
+
+    const char * sql = 
+        " SELECT"
+        "   Hardware_Abstractors.HAB_TYPE,"
+        "   Hardware_Abstractors.HAB_ID,"
+        "   Nodes.Node_ID,"
+        "   Resource_Data_Types.Data_Type,"
+        "   Resource_Flavors.Flavor,"
+        "   Resources.Resource_ID,"
+        "   Datapoints.Value,"
+        "   Datapoints.Timestamp_Sec,"
+        "   Datapoints.Timestamp_Usec,"
+        "   BDMs.BDM_ID"
+        " FROM "
+        "    Hardware_Abstractors,"
+        "    Nodes,"
+        "    Resources,"
+        "    Resource_Data_Types,"
+        "    Resource_Flavors,"
+        "    Datapoints,"
+        "    BDMs"
+        " WHERE"
+        "    Nodes.HAB_Key=Hardware_Abstractors.Key"
+        "    AND Resources.Node_Key=Nodes.Key"
+        "    AND Resource_Data_Types.Key=Resources.Data_Type_Key"
+        "    AND Resource_Flavors.Key=Resources.Flavor_Key"
+        "    AND Datapoints.Resource_Key=Resources.Key"
+        "    AND Datapoints.BDM_Key=BDMs.Key"
+        "    AND Resources.Key=?"
+        "    AND Datapoints.Timestamp_Sec=?"
+        "    AND Datapoints.Timestamp_USec=?"
+        "    AND Datapoints.Entry_Num=?"
+        ;
+
+    g_log(
+        BDM_LOG_DOMAIN,
+        G_LOG_LEVEL_DEBUG,
+        "db_get_resource_datapoints(): SQL is %s X'%02x%02x%02x%02x%02x%02x%02x%02x'",
+        sql,
+        resource_key[0],
+        resource_key[1],
+        resource_key[2],
+        resource_key[3],
+        resource_key[4],
+        resource_key[5],
+        resource_key[6],
+        resource_key[7]
+    );
+
+    sqlite3_stmt *stmt;
+    r = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (r != SQLITE_OK) goto db_fail;
+
+    int param = 1;
+    r = sqlite3_bind_blob(stmt, param++, resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s():SQL bind error", __FUNCTION__);
+	goto db_fail;
+    }
+    r = sqlite3_bind_int(stmt, param++, dp->timestamp.tv_sec);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s():SQL bind error", __FUNCTION__);
+	goto db_fail;
+    }
+    r = sqlite3_bind_int(stmt, param++, dp->timestamp.tv_usec);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s():SQL bind error", __FUNCTION__);
+	goto db_fail;
+    }
+    r = sqlite3_bind_int(stmt, param++, entry_seq);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s():SQL bind error", __FUNCTION__);
+	goto db_fail;
+    }
+
+    for(;;) {
+        r = sqlite3_step(stmt);
+        if(r == SQLITE_BUSY) {
+            g_usleep(20 * 1000);
+            continue;
+        }
+        if(r == SQLITE_ROW) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "publish sync row");
+            _add_to_bdm_list(stmt, bdm_list);
+            continue;
+        }
+        break;
+    }
+    if (r != SQLITE_DONE) goto db_fail;
+
+    sqlite3_finalize(stmt);
+
+    int bi;
+    for (bi = 0; bi < bdm_list->len; bi++) {
+	int hi;
+	bionet_bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
+	if (NULL == bdm) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to get BDM %d from BDM list", bi);
+            continue;
+	}
+
+	//walk list of habs
+	for (hi = 0; hi < bionet_bdm_get_num_habs(bdm); hi++) {
+	    int ni;
+	    bionet_hab_t * hab = bionet_bdm_get_hab_by_index(bdm, hi);
+	    if (NULL == hab) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+		      "Failed to get HAB %d from array of HABs", hi);
+                continue;
+	    }
+	    
+	    //walk list of nodes
+	    for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
+		int ri;
+		bionet_node_t * node = bionet_hab_get_node_by_index(hab, ni);
+		if (NULL == node) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+			  "Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
+                    continue;
+		}
+		
+		
+		//walk list of resources
+		for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
+		    bionet_resource_t * resource;
+                   
+                    resource = bionet_node_get_resource_by_index(node, ri);
+		    if (NULL == resource) {
+			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+			      "Failed to get resource %d from Node %s",
+                              ri, bionet_node_get_name(node));
+                        continue;
+		    }
+
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+			  "Publishing syncd Message '%s/%s.%s:%s",
+                            bionet_bdm_get_id(bdm),
+                            bionet_hab_get_name(hab),
+                            bionet_node_get_id(node),
+                            bionet_resource_get_id(resource));
+
+                    bdm_report_datapoint(resource, bionet_resource_get_datapoint_by_index(resource, 0), entry_seq);
+
+		} //for each resource
+	    } //for each node
+	} //for each hab
+    } //for each bdm
+
+    bdm_list_free(bdm_list);
+
+    return 0;
+
+    db_fail:
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "db_get_resource_datapoints(): SQL error: %s", sqlite3_errmsg(db));
+        sqlite3_reset(stmt);
+        sqlite3_finalize(stmt);
+        bdm_list_free(bdm_list);
+        return -1;
+
+}
 // Emacs cruft
 // Local Variables:
 // mode: C
