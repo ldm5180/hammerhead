@@ -19,6 +19,7 @@
     <p>
       Enter Bionet resource name pattern:<br />
       <input id="dataUpdate" class="dataUpdate" type="button" value="Start Plotting"><input type="text" size="60" id="subscription" maxlength="400"><br />
+      <!--<label for="starttime">Start Time</label><input id="starttime" size="23" type="text" maxlength="256"> <label for="stoptime">Stop Time</label><input id="stoptime" size="23" type="text" maxlength="256">-->
     </p>
 
     <p>
@@ -29,6 +30,10 @@
       <input id="last5min" type="radio" name="livedata" value="last5min" onClick="poll = 1;"><label for="last5min">Last 5 min</label>
       <input id="last1min" type="radio" name="livedata" value="last1min" onClick="poll = 1;"><label for="last1min">Last 1 min</label>
       <input id="zoom" type="radio" name="livedata" value="zoom" onClick="poll = 0;"><label for="zoom">Zoom Mode</label>
+    </p>
+
+    <p>
+      <label for="drawline">Draw Line</label><input type="checkbox" value="drawline" checked="checked" id="drawline">
     </p>
 
     <p>
@@ -191,11 +196,14 @@ $(function () {
                 var last1min = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), (now.getUTCMinutes()-1), now.getUTCSeconds());
 
 		var plotdata = [];
+
                 choiceContainer.find("input:name").each(function () {
                     if ($(this).attr("checked")) {
                         var key = $(this).attr("id");
 	  	        for (i = 0; i < data.length; i++) {
-			    data[i].data.sort(sortNumber);
+			    if ($("#drawline").attr("checked")) {
+ 			        data[i].data.sort(sortNumber);
+                            }
 			    if (key == ("id" + data[i].label + "1")) {
     		                data[i].yaxis = 1;
                                 plotdata.push(data[i]);
@@ -231,6 +239,12 @@ $(function () {
 		else { 
 		    options.xaxis.min = null;
 		}
+
+		if ($("#drawline").attr("checked")) {
+		    options.lines.show = true;
+		} else {
+                    options.lines.show = false;
+                }
 
                 $.plot($("#placeholder"), plotdata , options);
             }

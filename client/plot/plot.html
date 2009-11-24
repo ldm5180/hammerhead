@@ -32,6 +32,10 @@
     </p>
 
     <p>
+      <label for="drawline">Draw Line</label><input type="checkbox" value="drawline" checked="checked" id="drawline">
+    </p>
+
+    <p>
       <br />
       <table border="0">
         <tr>
@@ -191,11 +195,14 @@ $(function () {
                 var last1min = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), (now.getUTCMinutes()-1), now.getUTCSeconds());
 
 		var plotdata = [];
+
                 choiceContainer.find("input:name").each(function () {
                     if ($(this).attr("checked")) {
                         var key = $(this).attr("id");
 	  	        for (i = 0; i < data.length; i++) {
-			    data[i].data.sort(sortNumber);
+			    if ($("#drawline").attr("checked")) {
+ 			        data[i].data.sort(sortNumber);
+                            }
 			    if (key == ("id" + data[i].label + "1")) {
     		                data[i].yaxis = 1;
                                 plotdata.push(data[i]);
@@ -231,6 +238,12 @@ $(function () {
 		else { 
 		    options.xaxis.min = null;
 		}
+
+		if ($("#drawline").attr("checked")) {
+		    options.lines.show = true;
+		} else {
+                    options.lines.show = false;
+                }
 
                 $.plot($("#placeholder"), plotdata , options);
             }
