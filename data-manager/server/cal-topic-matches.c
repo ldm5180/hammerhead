@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "bionet-data-manager.h"
+#include "internal.h"
 
 
 int libbdm_cal_topic_matches(const char *topic, const char *subscription) {

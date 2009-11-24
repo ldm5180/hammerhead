@@ -14,6 +14,7 @@
 #include "cal-server.h"
 #include "bdm-asn.h"
 #include "subscription.h"
+#include "internal.h"
 
 static bdm_peer_states_t * peer_states = NULL;
 

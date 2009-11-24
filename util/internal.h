@@ -126,6 +126,48 @@ struct bionet_datapoint_opaque_t {
     int dirty;  // 1 if the datapoint has new information that hasnt been reported to Bionet, 0 if the datapoint has nothing new
 };
 
+/**
+ * @brief Parse out the parameters from the querystring
+ *
+ * Querystring is very close to a URI querystring
+ *
+ * The params are all strings, and can be converted with bionet_param_to_timeval,
+ * bionet_param_to_int, etc...
+ *
+ * @param[in] querystring
+ *   The string that has the parameters encoded
+ *
+ * @param[out] ret_params
+ *   Points to a newly alloceaded GHAshTable containing the parameters decoded
+ *   from the query string
+ *
+ * @retval 0 Parsed successfully, ret_params alloced
+ * @retval -1 Parse error. ret_params not allocated
+ */
+int bionet_parse_topic_params(
+        const char * querystring,
+        GHashTable ** ret_params);
+
+
+/**
+ * @brief Convert the string to a timeval
+ *
+ * Convert the string which was decoded from a topic query string into a timeval struct
+ *
+ * @param params
+ *   Hash table created with bionet_parse_topic_params
+ *
+ * @param key
+ *   The param name to convert
+ *
+ * @param tv
+ *   Points to a timeval struct that will be populated with the result
+ *
+ * @retval -1 THe parameter doesn't exist, or conversion error
+ * @retval 0 The tv struct ahs been populated with the value extracted from the string
+ */
+int bionet_param_to_timeval(GHashTable * params, const char * key, struct timeval * tv);
+
 #endif /* INTERNAL_H */
 
 // Emacs cruft
