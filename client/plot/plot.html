@@ -17,8 +17,8 @@
     <p id="hoverdata"><span id="clickdata"></span></p>
 
     <p>
-      <input class="dataUpdate" type="button" value="Start Plotting"><input type="text" size="60" id="subscription" maxlength="400"><br />
-      <!--Timespan: <input type="radio" id="span-all" name="span" value="span-all" checked="checked"><label for="span-all">All</label> <input type="radio" id="span-1d" name="span" value="span-1d"><label for="span-1d">Past 1 Day</label> <input type="radio" id="span-1hr" name="span" value="span-1hr"><label for="span-1hr">Past 1 Hour</label> <input type="radio" id="span-100" name="span" value="span-100"><label for="span-100">Last 100 Datapoints</label>-->
+      Enter Bionet resource name pattern:<br />
+      <input id="dataUpdate" class="dataUpdate" type="button" value="Start Plotting"><input type="text" size="60" id="subscription" maxlength="400"><br />
     </p>
 
     <p>
@@ -131,8 +131,11 @@ $(function () {
 
     // initiate a recurring data update
     $("input.dataUpdate").click(function () {
-        // reset data
         poll = 1;
+
+        var subscription = $("#subscription").attr("value");
+
+        document.getElementById("dataUpdate").disabled=true;
 
         $.plot(placeholder, data, options);
 
@@ -232,8 +235,6 @@ $(function () {
 
                 $.plot($("#placeholder"), plotdata , options);
             }
-
-            var subscription = $("#subscription").attr("value");
 
             $.ajax({
 		url: "/" + firsttime + "/?resource="+subscription+"&timespan=1d",
