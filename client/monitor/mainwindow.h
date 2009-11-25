@@ -73,24 +73,26 @@ class MainWindow : public QWidget {
         void about();
         void cuts();
         void changeHostname();
+
         void makePlot(QString key);
-        void makeBDMPlot(QString key);
         void updatePlot(bionet_datapoint_t* datapoint);
-        void updateBDMPlot(bionet_datapoint_t* datapoint);
         void lostPlot(QString key);
-        void lostBDMPlot(QString key);
         void destroyPlot(QObject *obj);
-        void destroyBDMPlot(QObject *obj);
-        void clearBDMPlots();
+
+        //void makeBDMPlot(QString key);
+        //void updateBDMPlot(bionet_datapoint_t* datapoint);
+        //void lostBDMPlot(QString key);
+        //void destroyBDMPlot(QObject *obj);
+        //void clearBDMPlots();
+
         void updatePlotMenu();
-        void updateFileMenu();
         void openPrefs(PlotWindow *pw=NULL, ScaleInfo *current=NULL);
         void openDefaultPlotPreferences();
         void closedDefaultPlotPreferences();
         void closedPreferences(QObject *obj);
         void updateScaleInfo(ScaleInfo *si);
-        void switchViews(int index);
-        void enableTab(bool enable);
+        //void switchViews(int index);
+        //void enableTab(bool enable);
 
     private:
         QHBoxLayout* layout;
@@ -102,9 +104,10 @@ class MainWindow : public QWidget {
         QWidget *resViewHolder;
         Archive *archive;
         BDMIO *bdmio;
+        bool bionetMode;
 
         QHash<QString, PlotWindow*> livePlots;
-        QHash<QString, PlotWindow*> bdmPlots;
+        //QHash<QString, PlotWindow*> bdmPlots;
         QHash<QString, PlotPreferences*> preferences;
         PlotPreferences *defaultPreferences;
         ScaleInfo *scaleInfoTemplate;
@@ -117,9 +120,9 @@ class MainWindow : public QWidget {
         QAction* preferencesAction;
         //QAction* hostnameAction;
         QAction* updateSubscriptionsAction;
-        QAction* pollingFrequencyAction;
-        QAction* connectToBDMAction;
-        QAction* disconnectFromBDMAction;
+        //QAction* pollingFrequencyAction;  FIXME: remove polling frequency, connect & disconnect
+        //QAction* connectToBDMAction; FIXME: remove promptForConnection & disconnect
+        //QAction* disconnectFromBDMAction;
 
         QMenuBar* menuBar;
         QMenu* fileMenu;

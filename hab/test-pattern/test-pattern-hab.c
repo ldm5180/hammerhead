@@ -118,11 +118,15 @@ int main(int argc, char *argv[]) {
     if (hab == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "unable to create new hab: %s", strerror(errno));
     }
+    
+    hab_register_callback_set_resource(NULL);
 
     bionet_fd = hab_connect(hab);
     if (bionet_fd < 0) {
         g_log("", G_LOG_LEVEL_ERROR, "hab_connect failed: %s", strerror(errno));
     }
+
+
 
     {
         time_t start, now;

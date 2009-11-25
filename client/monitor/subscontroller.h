@@ -21,10 +21,9 @@
 #define NAME_PATTERN_COL    (0)
 #define DP_START_COL        (1)
 #define DP_STOP_COL         (2)
-#define ENTRY_START_COL     (3)
-#define ENTRY_STOP_COL      (4)
 
 #define ITEM_DATA_ROLE      (Qt::UserRole+1)
+#define Q_DATE_TIME_FORMAT  "yyyy-MM-dd hh:mm:ss"
 
 class SubscriptionController : public QWidget {
     Q_OBJECT;
@@ -39,14 +38,15 @@ public slots:
     void submitSubscription();
 
 signals:
-    void removePattern(QString);
+    void removePattern(QString pattern);
+    void addedSubscription(int row);
 
 private:
     QVBoxLayout *layout;
     QHBoxLayout *buttons;
     QStandardItemModel *subs;
     QTableView *view;
-    QPushButton *add, *remove, *cancel;
+    QPushButton *add, *submit, *cancel;
     QWidget *adder;
 
     QLineEdit *habType, *habID, *nodeID, *resID;

@@ -1,6 +1,9 @@
 #include "bdmio.h"
 
 
+BDMIO *BDMIO::io = NULL;
+
+
 void BDMModel::addResource(bionet_resource_t *resource) {
     QString habName, nodeName;
     QModelIndex hab, node;
@@ -68,42 +71,107 @@ void BDMModel::addResource(bionet_resource_t *resource) {
 }
 
 
+void BDMModel::newDatapoint(bionet_datapoint_t* dp) {
+    QModelIndex resourceIndex;
+    bionet_resource_t *resource;
+    const char *resource_name;
+
+    //qDebug() << "bdmModel: new datapoint!";
+    if (dp == NULL) {
+        qWarning() << "newDatapoint(): recieved NULL datapoint!?!";
+    }
+
+    resource = bionet_datapoint_get_resource(dp);
+
+    resource_name = bionet_resource_get_name(resource);
+    if (resource_name == NULL) {
+        qWarning() << "newDatapoint(): unable to get resource name string";
+        return;
+    }
+
+    QString myName = QString(resource_name);
+    
+    QModelIndexList resources = match(index(0, 0, invisibleRootItem()->index()), 
+            FULLNAMEROLE, QVariant(myName), 1, 
+            Qt::MatchExactly | Qt::MatchRecursive);
+    
+    if ( resources.isEmpty() ) { /* resource doesn't exist, add it */
+        //qDebug() << bionet_resource_get_name(resource) << "resource doesn't exists, creating it";
+        QString nodeName = myName.section(':', 0, 0);
+     
+        QModelIndexList nodes = match(index(0, 0, invisibleRootItem()->index()), 
+                FULLNAMEROLE, QVariant(nodeName), 1, 
+                Qt::MatchExactly | Qt::MatchRecursive);
+
+        if ( nodes.isEmpty() ) { /* node doesn't exist! (create it) */
+            QString habName = nodeName.section('.', 0, 1);
+
+            QModelIndexList habs = match(index(0, 0, invisibleRootItem()->index()), 
+                    FULLNAMEROLE, QVariant(habName), 1, 
+                    Qt::MatchExactly | Qt::MatchRecursive);
+
+            if ( habs.isEmpty() ) { /* hab doesn't exist! (create it) */
+                //qDebug() << bionet_resource_get_node(resource) << "hab doesn't exist, creating it";
+                newHab(bionet_resource_get_hab(resource));
+            }
+
+            qDebug() << bionet_resource_get_name(resource) << "node&resource doesn't exist, creating it";
+            /* create the node (and it's resources) */
+            newNode(bionet_resource_get_node(resource));
+        } else {
+            /* add the resource, since the node already exists */
+            //qDebug() << bionet_resource_get_name(resource) << "resource doesn't exist, creating it";
+            addResource(resource);
+        }
+    }
+
+    /* ok, the resource exists */
+    BionetModel::newDatapoint(dp);
+}
+
+
 
 BDMIO::BDMIO(QWidget *parent) {
     QStringList horizontalHeaderLabels;
+    io = this;
 
+    /*
     timer = new QTimer(this);
     timer->setInterval(2000);
     timer->setSingleShot(false);
     connect(timer, SIGNAL(timeout()), this, SLOT(pollBDM()));
+    */
 
     horizontalHeaderLabels << 
         "Resource Name Pattern" << 
         "Start Time" << 
-        "Stop Time" <<
-        "Entry Start" << 
-        "Entry Stop";
+        "Stop Time";
 
     subscriptions = new QStandardItemModel(this);
-    subscriptions->setColumnCount(5);
+    subscriptions->setColumnCount(3);
     //subscriptions->setRowCount(6);
     subscriptions->setHorizontalHeaderLabels(horizontalHeaderLabels);
 
     controller = new SubscriptionController(subscriptions, parent);
-    connect(controller, SIGNAL(removePattern(QString)),
-        this, SLOT(removeSubscription(QString)));
+    //connect(controller, SIGNAL(removePattern(QString)), this, SLOT(removeSubscription(QString)));
 
-    hostname = QString("localhost");
-    port = 0;
+    bdm_register_callback_new_hab(new_hab_cb, NULL);
+    bdm_register_callback_lost_hab(lost_hab_cb, NULL);
+    bdm_register_callback_new_node(new_node_cb, NULL);
+    bdm_register_callback_lost_node(lost_node_cb, NULL);
+    bdm_register_callback_datapoint(datapoint_cb, NULL);
 
-    hab_cache = NULL;
+    connect(controller, SIGNAL(addedSubscription(int)),
+        this, SLOT(subscribe(int)));
+
+    //hab_cache = NULL;
 }
 
 
 BDMIO::~BDMIO() {
-    delete timer;
+    //delete timer;
     delete controller;
-    clearBDMCache();
+    //clearBDMCache();
 }
 
 
@@ -153,28 +221,6 @@ History* BDMIO::createHistory(QString key) {
 }
 
 
-void BDMIO::setPollingFrequency(double freq) {
-    double rate;
-
-    if ((freq < 0.0) || (freq > 1000.0)) {
-        return;
-    }
-
-    rate = 1000.0/freq;
-
-    timer->setInterval((int)rate);
-}
-
-
-double BDMIO::getPollingFrequency() {
-    double freq;
-
-    freq = 1000.0/(double)timer->interval();
-
-    return freq;
-}
-
-
 void BDMIO::removeHistory(QString key) {
     History *history = histories.take(key);
 
@@ -186,256 +232,92 @@ void BDMIO::removeHistory(QString key) {
 
 
 void BDMIO::setup() {
-    bdmFD = bdm_connect(hostname.toAscii().data(), port);
+    bdmFD = bdm_start();
+
     if (bdmFD < 0) {
-        emit enableTab(false);
-        timer->stop();
-    } else {
-        emit enableTab(true);
-        timer->start();
+        qWarning() << "error connecting to bionet BDM network";
+        return;
     }
+
+    bdm = new QSocketNotifier(bdmFD, QSocketNotifier::Read, this);
+    connect(bdm, SIGNAL(activated(int)), this, SLOT(messageReceived()));
 }
 
 
-void BDMIO::pollBDM() {
-    int i;
-
-    for (i = 0; i < subscriptions->rowCount(); i++) {
-        bdm_hab_list_t *hab_list;
-        struct timeval *tvStart = NULL, *tvStop = NULL;
-        int dpStart = -1, dpStop = -1, secs;
-        QString pattern;
-
-        // if there is no data in the table, skip it
-        if ( subscriptions->item(i,0) == NULL )
-            continue;
-
-        // extracting the values from the subscription model
-        pattern = subscriptions->item(i, NAME_PATTERN_COL)->data(Qt::DisplayRole).toString();
-        dpStart = subscriptions->item(i, ENTRY_START_COL)->data(Qt::DisplayRole).toInt();
-        dpStop = subscriptions->item(i, ENTRY_STOP_COL)->data(Qt::DisplayRole).toInt();
-
-        secs = subscriptions->item(i, DP_START_COL)->data(Qt::DisplayRole).toInt();
-        if (secs != 0) {
-            tvStart = new struct timeval;
-            tvStart->tv_sec = secs;
-            tvStart->tv_usec = 0;
-        }
-
-        secs = subscriptions->item(i, DP_STOP_COL)->data(Qt::DisplayRole).toInt();
-        if (secs != 0) {
-            tvStop = new struct timeval;
-            tvStop->tv_sec = secs;
-            tvStop->tv_usec = 0;
-        }
-
-        hab_list = bdm_get_resource_datapoints(
-            qPrintable(pattern),
-            tvStart,
-            tvStop,
-            dpStart,
-            dpStop
-        );
-
-        if (tvStart != NULL)
-            delete tvStart;
-        if (tvStop != NULL)
-            delete tvStop;
-
-        if (hab_list == NULL) {
-            continue;
-        } else {
-            int hi;
-
-            // walk through the hab array & emit new hab/node/datapoint messages
-
-            for (hi = 0; hi < bdm_get_hab_list_len(hab_list); hi ++) {
-                bionet_hab_t *hab, *cached_hab;
-
-                hab = bdm_get_hab_by_index(hab_list, hi);
-
-                cached_hab = cacheFindHab(hab);
-                if ( cached_hab == NULL )
-                    cached_hab = copyHab(hab);
-
-                for (int ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
-                    bionet_node_t *node, *cached_node;
-                    
-                    node = bionet_hab_get_node_by_index(hab, ni);
-
-                    cached_node = cacheFindNode(cached_hab, node);
-                    if ( cached_node == NULL )
-                        cached_node = copyNode(cached_hab, node);
-
-                    for (int ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
-                        bionet_resource_t *resource, *cached_resource;
-
-                        resource = bionet_node_get_resource_by_index(node, ri);
-
-                        cached_resource = cacheFindResource(cached_node, resource);
-                        if ( cached_resource == NULL ) 
-                            cached_resource = copyResource(cached_node, resource);
-
-                        for (int di = 0; di < bionet_resource_get_num_datapoints(resource); di ++) {
-                            bionet_datapoint_t *d;
-
-                            d = bionet_resource_get_datapoint_by_index(resource, di);
-
-                            copyDatapoint(cached_resource, d);
-                        }
-                    }
-                }
-
-                bionet_hab_free(hab);
-            }
-
-            // only change the last subscription value when we receive a seq num
-            if ( bdm_get_hab_list_last_entry_seq(hab_list) ) {
-                subscriptions->item(i, ENTRY_START_COL)->setData(
-                    bdm_get_hab_list_last_entry_seq(hab_list)+1, 
-                    Qt::DisplayRole
-                );
-            }
-
-            bdm_hab_list_free(hab_list);
-        }
-    }
+void BDMIO::messageReceived() {
+    bdm->setEnabled(false);
+    bdm_read();
+    bdm->setEnabled(true);
 }
 
 
-bionet_hab_t* BDMIO::cacheFindHab(bionet_hab_t *hab) {
-    bionet_hab_t *cached_hab;
+void BDMIO::subscribe(int row) {
+    struct timeval *tvStart = NULL, *tvStop = NULL;
+    QString pattern, bdmName, bionetName, habName, nodeName;
+    int r;
 
-    for (GSList *cursor = hab_cache; cursor != NULL; cursor = cursor->next) {
-        cached_hab = (bionet_hab_t*)cursor->data;
+    // if there is no data in the table, skip it
+    if ( subscriptions->item(row,0) == NULL )
+        return;
 
-        if (bionet_hab_matches_type_and_id(cached_hab, 
-          bionet_hab_get_type(hab), 
-          bionet_hab_get_id(hab))) {
-            return cached_hab;
-        }
+    pattern = subscriptions->item(row, NAME_PATTERN_COL)->data(Qt::DisplayRole).toString();
+
+    bdmName = pattern.section('/', 0, 0);
+    bionetName = pattern.section('/', 1, 1);
+
+    /* case: no bdm name given */
+    if (bionetName.length() <= 0) {
+        bionetName = bdmName;
+        bdmName = QString("*,*");
     }
 
-    return NULL;
-}
+    //qDebug() << "bdmName =" << qPrintable(bdmName);
+    //qDebug() << "bionet pattern =" << qPrintable(bionetName);
 
+    habName = pattern.section('.', 0, 1);
+    nodeName = pattern.section(':', 0, 0);
 
-bionet_node_t* BDMIO::cacheFindNode(bionet_hab_t *cached_hab, bionet_node_t *node) {
+    //qDebug() << "bdm:" << qPrintable(bdmName);
+    //qDebug() << "hab:" << qPrintable(habName);
+    //qDebug() << "node:" << qPrintable(nodeName);
+    //qDebug() << "resource:" << qPrintable(pattern);
 
-    for (int ni = 0; ni < bionet_hab_get_num_nodes(cached_hab); ni++) {
-        bionet_node_t *cached_node = bionet_hab_get_node_by_index(cached_hab, ni);
-            
-        if ( bionet_node_matches_id(cached_node, bionet_node_get_id(node)) )
-            return cached_node;
-    }
+    tvStart = toTimeval(subscriptions->item(row, DP_START_COL));
+    tvStop = toTimeval(subscriptions->item(row, DP_STOP_COL));
 
-    return NULL;
-}
+    bdm_subscribe_bdm_list_by_name(qPrintable(bdmName));
+    bdm_subscribe_hab_list_by_name(qPrintable(habName));
+    bdm_subscribe_node_list_by_name(qPrintable(nodeName));
+    //bdm_subscribe_datapoints_by_name(qPrintable(bionetName));
 
-
-bionet_resource_t* BDMIO::cacheFindResource(bionet_node_t *cached_node, bionet_resource_t *resource) {
-
-    for (int ri = 0; ri < bionet_node_get_num_resources(cached_node); ri++) {
-        bionet_resource_t *cached_resource = bionet_node_get_resource_by_index(cached_node, ri);
-            
-        if ( bionet_resource_matches_id(cached_resource, bionet_resource_get_id(resource)) )
-            return cached_resource;
-    }
-
-    return NULL;
-}
-
-
-bionet_hab_t* BDMIO::copyHab(bionet_hab_t* orig) {
-    bionet_hab_t *copy;
-
-    copy = bionet_hab_new(
-        bionet_hab_get_type(orig),
-        bionet_hab_get_id(orig)
+    r = bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
+        qPrintable(bdmName.section(',', 0, 0)), // peer id
+        qPrintable(bdmName.section(',', 1, 1)), // bdm id
+        qPrintable(habName.section('/', 1, 1).section('.',0,0)),
+        qPrintable(habName.section('/', 1, 1).section('.',1,1)),
+        qPrintable(nodeName.section('/', 1, 1).section('.',2,2)),
+        qPrintable(pattern.section(':', 1, 1)),
+        tvStart,
+        tvStop
     );
 
-    hab_cache = g_slist_prepend(hab_cache, copy);
+    /*
+    qDebug() << qPrintable(bdmName.section(',', 0, 0)); // peer id
+    qDebug() << qPrintable(bdmName.section(',', 1, 1)); // bdm i
+    qDebug() << qPrintable(habName.section('/', 1, 1).section('.',0,0));
+    qDebug() << qPrintable(habName.section('/', 1, 1).section('.',1,1));
+    qDebug() << qPrintable(nodeName.section('/', 1, 1).section('.',2,2));
+    qDebug() << qPrintable(pattern.section(':', 1, 1));
+    */
 
-    emit newHab(copy);
-    return copy;
-}
-
-
-bionet_node_t* BDMIO::copyNode(bionet_hab_t *cached_hab, bionet_node_t* orig) {
-    bionet_node_t *copy;
-
-    copy = bionet_node_new(
-        cached_hab,
-        bionet_node_get_id(orig)
-    );
-
-    bionet_hab_add_node(cached_hab, copy);
-
-    emit newNode(copy);
-    return copy;
-}
-
-
-bionet_resource_t* BDMIO::copyResource(bionet_node_t *cached_node, bionet_resource_t* orig) {
-    bionet_resource_t *copy;
-
-    copy = bionet_resource_new(
-        cached_node,
-        bionet_resource_get_data_type(orig),
-        bionet_resource_get_flavor(orig),
-        bionet_resource_get_id(orig)
-    );
-
-    if ( bionet_node_add_resource(cached_node, copy) ) {
-        qWarning() << "failed to add resource" << bionet_resource_get_id(copy) << 
-            "to node" << bionet_node_get_id(cached_node);
+    if (r < 0) {
+        qWarning() << "error subscribing!";
     }
 
-    emit newResource(copy);
-    return copy;
-}
-
-
-void BDMIO::copyDatapoint(bionet_resource_t* cached_resource, bionet_datapoint_t *dp) {
-    bionet_datapoint_t *cached_dp;
-    QString name;
-
-    cached_dp = BIONET_RESOURCE_GET_DATAPOINT( cached_resource );
-
-    if (cached_dp == NULL) {
-        cached_dp = bionet_datapoint_new(
-            cached_resource,
-            bionet_value_dup(cached_resource, bionet_datapoint_get_value(dp)),
-            bionet_datapoint_get_timestamp(dp)
-        );
-
-        if (cached_dp == NULL) {
-            qWarning() << "unable to create new datapoint";
-            return;
-        }
-
-        bionet_resource_add_datapoint(cached_resource, cached_dp);
-
-    } else {
-
-        bionet_datapoint_set_value(
-            cached_dp, 
-            bionet_value_dup(cached_resource, bionet_datapoint_get_value(dp))
-        );
-
-        bionet_datapoint_set_timestamp(
-            cached_dp,
-            bionet_datapoint_get_timestamp(dp)
-        );
-    }
-
-    name = bionet_resource_get_name(cached_resource);
-
-    // add the datapoint to the history if it exists
-    if (histories.contains(QString(name)))
-        histories.value(name)->append(cached_dp);
-
-    emit newDatapoint(cached_dp);
+    if (tvStart != NULL)
+        delete tvStart;
+    if (tvStop != NULL)
+        delete tvStop;
 }
 
 
@@ -446,146 +328,26 @@ void BDMIO::editSubscriptions() {
 
     controller->show();
 }
-        
-        
-void BDMIO::changeFrequency() {
-    bool ok;
-    double d;
-    
-    d = QInputDialog::getDouble((QWidget*)parent(),
-        tr("Change BDM Polling Frequency"),
-        tr("BDM Polling Frequency (Hz):"), 
-        getPollingFrequency(), 
-        0, 
-        1000, 
-        2,
-        &ok,
-        Qt::SubWindow
-    );
 
-    if (ok)
-        setPollingFrequency(d);
-}
+struct timeval* BDMIO::toTimeval(QStandardItem *entry) {
+    struct timeval *tv;
 
-
-void BDMIO::removeSubscription(QString pattern) {
-    QString habType, habID, nodeID;
-    GSList *cursor = hab_cache;
-
-    habType = pattern.section('.', 0, 0);
-    habID = pattern.section('.', 1, 1);
-    nodeID = pattern.section('.', 2, 2).section(':', 1, 1);
-
-    // walk throught all the habs to see if they match
-    while (cursor != NULL) {
-        bionet_hab_t* hab = (bionet_hab_t*)(cursor->data);
-
-        if ( bionet_hab_matches_type_and_id(hab, qPrintable(habType), qPrintable(habID)) ) {
-            bool habMatchesOtherSubscriptions = false;
-
-            // check if the hab matches any other subscriptions
-            for (int i = 0; i < subscriptions->rowCount(); i++) {
-                QString subscription = subscriptions->item(i, NAME_PATTERN_COL)->data(Qt::DisplayRole).toString();
-
-                if ( bionet_hab_matches_type_and_id(hab, 
-                         qPrintable(subscription.section('.', 0, 0)),
-                         qPrintable(subscription.section('.', 1, 1)))) {
-                    habMatchesOtherSubscriptions = true;
-                    break;
-                }
-            }
-
-            // if it doesn't remove it!
-            if ( !habMatchesOtherSubscriptions ) {
-
-                for (int ni=0; ni < bionet_hab_get_num_nodes(hab); ni ++)
-                    emit lostNode(bionet_hab_get_node_by_index(hab, ni));
-                emit lostHab(hab);
-
-                cursor = cursor->next;
-                hab_cache = g_slist_remove(hab_cache, hab);
-
-                bionet_hab_free(hab);
-                continue;
-            }
-        }
-
-        // walk through all the hab's node's to see whether they match the subscription
-        for (int ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
-            bionet_node_t* node = bionet_hab_get_node_by_index(hab, ni);
-            bool nodeMatchesOtherSubscriptions = false;
-
-            if (bionet_node_matches_habtype_habid_nodeid(node,
-                    qPrintable(habType),
-                    qPrintable(habID),
-                    qPrintable(nodeID))) {
-                
-                // walk through other subscriptions to make sure there is no overlap
-                for (int i = 0; i < subscriptions->rowCount(); i++) {
-                    QString subscription = subscriptions->item(i, NAME_PATTERN_COL)->data(Qt::DisplayRole).toString();
-
-                    if ( bionet_node_matches_habtype_habid_nodeid(node, 
-                             qPrintable(subscription.section('.', 0, 0)),
-                             qPrintable(subscription.section('.', 1, 1)),
-                             qPrintable(subscription.section('.', 2, 2).section(':', 0, 0)))) {
-                        nodeMatchesOtherSubscriptions = true;
-                        break;
-                    }
-                }
-
-                if ( !nodeMatchesOtherSubscriptions ) {
-                    emit lostNode(node);
-                    node = bionet_hab_remove_node_by_id(hab, qPrintable(nodeID));
-                    bionet_node_free(node);
-                }
-            }
-        }
-
-        cursor = cursor->next;
+    if (entry == NULL) {
+        return NULL;
     }
-}
 
+    QString pattern = entry->data(Qt::DisplayRole).toString();
+    QDateTime qtDate = QDateTime::fromString(pattern, Q_DATE_TIME_FORMAT);
 
-void BDMIO::promptForConnection() {
-    BDMConnectionDialog *dialog;
-    dialog = new BDMConnectionDialog(hostname, port, this);
-
-    connect(dialog, SIGNAL(newHostnameAndPort(QString, int)), 
-        this, SLOT(setHostnameAndPort(QString, int)));
-}
-
-
-void BDMIO::setHostnameAndPort(QString name, int num) {
-    hostname = name;
-    port = num;
-    setup();
-}
-
-
-void BDMIO::disconnectFromBDM() {
-    clearBDMCache();
-    bdm_disconnect();
-    emit enableTab(false);
-    timer->stop();
-    // reset all of the subscriptions #received to -1
-    for (int i = 0; i < subscriptions->rowCount(); i++) {
-        QStandardItem *item = subscriptions->item(i, ENTRY_START_COL);
-        item->setData(-1, Qt::DisplayRole);
+    if ( qtDate.isNull() || !qtDate.isValid() ) {
+        qWarning() << "error parsing date (is it in" << Q_DATE_TIME_FORMAT << "format?)";
+        return NULL;
     }
+
+    tv = new struct timeval;
+
+    tv->tv_sec = qtDate.toTime_t();
+    tv->tv_usec = 0;
+
+    return tv;
 }
-
-
-void BDMIO::clearBDMCache() {
-    while (hab_cache != NULL) {
-        bionet_hab_t* hab = (bionet_hab_t*)(hab_cache->data);
-
-        for (int ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++)
-            emit lostNode(bionet_hab_get_node_by_index(hab, ni));
-        emit lostHab(hab);
-
-        // cleanup
-        bionet_hab_free(hab);
-        hab_cache = g_slist_delete_link(hab_cache, hab_cache);
-    }
-}
-
