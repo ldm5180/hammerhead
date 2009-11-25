@@ -37,15 +37,14 @@
 
 
 /**
- * @brief Connect to a specific BDM server
+ * @brief Connect to a specific BDM server for querying
  *
- * Connect to the specified BDM server, and act as if it has been discovered.
- * Usefull the the BDM server is not on the link-local network
+ * Connect to the specified BDM server, before calling
+ * bdm_get_resource_datapoints()
  *
- * If the peer can be found, a new_bdm subscription notification will be sent,
- * if it is subscribed to
+ * @note This is not for subscribing. See bdm_start() that 
  *
- * @param[in] hostname The hostname or ipaddress string to connect to
+ * @param[in] hostname The hostname or ip address string to connect to
  *
  * @param[in] port The port the server is available in (host-byte-ordered), or
  * 0 to use default
@@ -53,7 +52,7 @@
 int bdm_connect(char *hostname, uint16_t port); 
 
 /**
- * @brief Reads the bdm file descriptor returned from bdm_connect()
+ * @brief Reads the bdm file descriptor returned from bdm_start()
  *
  * This function should be called whenever the Client application wants to
  * read from Bionet.  The function will read any pending messages from
@@ -88,7 +87,7 @@ int bdm_read(void);
 
 
 /**
- * @brief Checks to see if Bionet BDM library is connected to Bionet BDM network
+ * @brief Checks to see if currently connected to a BDM Server for querying
  *
  * @retval TRUO (non-zero) - the library is connected
  * @retval FALSE (0) - the library is not connected
@@ -98,14 +97,15 @@ int bdm_is_connected(void);
 /**
  * Connect to Bionet BDM network, and start looking for published BDM servers
  *
- * Calling this function from a BDM Client is optional, it will be called implicitly when needed by other Bionet BDM library finctions.
+ * Calling this function from a BDM Client is optional, it will be called 
+ * implicitly when needed by other Bionet BDM library functions.
  *
  * @note If the connection is already opened, this function does nothing and just returns the file descriptor.
  *
  * @retval >=0 success, a non-blocking file descriptor.
  * @retval -1 failure, check errno
  *
- *  @note file descriptor is associated with the Bionet network.  The file 
+ *  @note file descriptor is associated with the Bionet BDM network.  The file 
  * descriptor should not be read or written directly by the Client.
  * If the file descriptor is readable, the Client should call bdm_read()
  * to service it.  Since the fd is non-blocking, the client may also call
@@ -115,10 +115,9 @@ int bdm_is_connected(void);
 int bdm_start(void);
 
 /**
- * @brief Disconnect from the bionet BDM network and free all resources
+ * @brief Disconnect from the BDM server.
  *
- * Dissconect from the Bionet BDM network and free all resources. This will
- * trigger 'lost' messages for any active subscriptions
+ * Disconnect from server after connecting with bdm_connect()
  */
 void bdm_disconnect(void);
 
@@ -168,7 +167,7 @@ int bdm_get_hab_list_len(bdm_hab_list_t * hab_list);
 /**
  * @brief Get a HAB from a HAB List
  *
- * The range of indicies is 0 to bdm_get_hab_list_len()
+ * The range of indexes is 0 to bdm_get_hab_list_len() - 1
  *
  * @param[in] hab_list The HAB List being queried.
  * @param[in] index Index of the HAB to fetch.
@@ -212,7 +211,7 @@ void bdm_hab_list_free(bdm_hab_list_t * hab_list);
  *
  * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_new_bdm(void (*cb_new_bdm)(bionet_bdm_t *bdm, void * use_data), void * usr_data);
+void bdm_register_callback_new_bdm(void (*cb_new_bdm)(bionet_bdm_t *bdm, void * usr_data), void * usr_data);
 
 /**
  * @brief Register lost-bdm callback function with the Bionet library.
@@ -360,9 +359,8 @@ void bdm_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, voi
  * When any BDMs matching the specified pattern join or leave, that fact will
  * be reported to the client via the registered callbacks
  *
- * @param[in] bdm_name A String in the form "[\<Peer-ID\>,]\<BDM-ID\>" where any
- * component may be the wildcard "*"
- *
+ * @param[in] bdm_name A String in the form "[<Peer-ID>,]<BDM-ID>" where any
+ * component may be the wildcard "*".
  * Optional components default to "*"
  *
  * @retval 0 Success
@@ -376,10 +374,9 @@ int bdm_subscribe_bdm_list_by_name(const char * bdm_name);
  * When any HABs matching the specified pattern join or leave, that fact will
  * be reported to the client via the registered callbacks
  *
- * @param[in] bdm_name A String in the form 
- * "[[\<Peer-ID\>,]\<BDM-ID\>/]<HAB-Type>.<HAB-ID>" where any
- * component may be the wildcard "*"
- 2yy
+ * @param[in] hab_name A String in the form 
+ * "[[<Peer-ID>,]<BDM-ID>/]<HAB-Type>.<HAB-ID>" where any
+ * component may be the wildcard "*".
  * Optional components default to "*"
  *
  * @retval 0 Success
@@ -393,11 +390,11 @@ int bdm_subscribe_hab_list_by_name(const char * hab_name);
  * When any Nodes matching the specified pattern join or leave, that fact will
  * be reported to the client via the registered callbacks
  *
- * @param[in] bdm_name A String in the form 
- * "[[\<Peer-ID\>,]\<BDM-ID\>/]<HAB-Type>.<HAB-ID>.<Node-ID>" where any
+ * @param[in] node_name A String in the form 
+ * "[[<Peer-ID>,]<BDM-ID>/]<HAB-Type>.<HAB-ID>.<Node-ID>" where any
  * component may be the wildcard "*".
- *
  * Optional components default to "*"
+ *
  *
  * @retval 0 Success
  * @retval -1 Failure
@@ -410,9 +407,10 @@ int bdm_subscribe_node_list_by_name(const char * node_name);
  * When any datapoints matching the specified pattern are published, that fact will
  * be reported to the client via the registered callbacks
  *
- * @param[in] bdm_name A String in the form 
- * "[[\<Peer-ID\>,]\<BDM-ID\>/]<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>" where any
+ * @param[in] resource_name A String in the form 
+ * "[[<Peer-ID>,]<BDM-ID>/]<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>" where any
  * component may be the wildcard "*".
+ * Optional components default to "*"
  *
  * @param[in] start_time Only report datapoints with a timestamp after this value. May be NULL
  * for no start filter
@@ -420,7 +418,6 @@ int bdm_subscribe_node_list_by_name(const char * node_name);
  * @param[in] stop_time Only report datapoints with a timestamp before this value. May be NULL
  * for no stop filter
  *
- * Optional components default to "*"
  *
  * @retval 0 Success
  * @retval -1 Failure

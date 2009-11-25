@@ -562,6 +562,7 @@ INPUT                  = mainpage.h \
                          libhab/hardware-abstractor.h \
                          libbdm/bdm-client.h \
 			 util/bionet-datapoint.h \
+                         util/bionet-bdm.h \
                          util/bionet-hab.h \
 			 util/bionet-node.h \
                          util/bionet-resource.h \
