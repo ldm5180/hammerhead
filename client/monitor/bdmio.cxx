@@ -290,16 +290,7 @@ void BDMIO::subscribe(int row) {
     bdm_subscribe_node_list_by_name(qPrintable(nodeName));
     //bdm_subscribe_datapoints_by_name(qPrintable(bionetName));
 
-    r = bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
-        qPrintable(bdmName.section(',', 0, 0)), // peer id
-        qPrintable(bdmName.section(',', 1, 1)), // bdm id
-        qPrintable(habName.section('/', 1, 1).section('.',0,0)),
-        qPrintable(habName.section('/', 1, 1).section('.',1,1)),
-        qPrintable(nodeName.section('/', 1, 1).section('.',2,2)),
-        qPrintable(pattern.section(':', 1, 1)),
-        tvStart,
-        tvStop
-    );
+    r = bdm_subscribe_datapoints_by_name(qPrintable(pattern), tvStart, tvStop);
 
     /*
     qDebug() << qPrintable(bdmName.section(',', 0, 0)); // peer id

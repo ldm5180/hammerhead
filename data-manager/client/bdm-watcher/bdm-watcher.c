@@ -366,25 +366,9 @@ int main(int argc, char *argv[]) {
         bdm_subscribe_node_list_by_name(g_slist_nth_data(node_list, i));
     }
     for (i = 0; i < g_slist_length(dp_list); i++) {
-        char peer_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
-        char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
-        char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1];
-        char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
-        char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
-        char resource_id[BIONET_NAME_COMPONENT_MAX_LEN+1];
-        int r;
-
         const char * dp_name = g_slist_nth_data(dp_list, i);
 
-        r = bdm_split_resource_name_r(dp_name, peer_id, bdm_id, hab_type, hab_id, node_id, resource_id);
-        if ( r < 0 ) {
-            printf("error parsing subscriptions string '%s'\n", dp_name);
-            exit(1);
-        }
-
-        bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
-                peer_id, bdm_id, hab_type, hab_id, node_id, resource_id, 
-                pDatapointStart, pDatapointEnd);
+        bdm_subscribe_datapoints_by_name(dp_name, pDatapointStart, pDatapointEnd);
     }
 
     g_slist_free(bdm_list);

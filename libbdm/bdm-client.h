@@ -354,20 +354,79 @@ void bdm_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, voi
 #endif
 
 
+/**
+ * @brief Subscribes the BDM client to the list of BDMs matching the pattern
+ *
+ * When any BDMs matching the specified pattern join or leave, that fact will
+ * be reported to the client via the registered callbacks
+ *
+ * @param[in] bdm_name A String in the form "[\<Peer-ID\>,]\<BDM-ID\>" where any
+ * component may be the wildcard "*"
+ *
+ * Optional components default to "*"
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */ 
 int bdm_subscribe_bdm_list_by_name(const char * bdm_name);
-int bdm_subscribe_hab_list_by_name(const char * hab_name);
-int bdm_subscribe_node_list_by_name(const char * node_name);
-int bdm_subscribe_datapoints_by_name(const char * resource_name);
 
-int bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
-        const char *peer_id,
-        const char *bdm_id,
-        const char *hab_type,
-        const char *hab_id,
-        const char *node_id,
-        const char *resource_id,
-        struct timeval *datapoint_start,
-        struct timeval *datapoint_end) ;
+/**
+ * @brief Subscribes the BDM client to the list of HABs matching the pattern
+ *
+ * When any HABs matching the specified pattern join or leave, that fact will
+ * be reported to the client via the registered callbacks
+ *
+ * @param[in] bdm_name A String in the form 
+ * "[[\<Peer-ID\>,]\<BDM-ID\>/]<HAB-Type>.<HAB-ID>" where any
+ * component may be the wildcard "*"
+ 2yy
+ * Optional components default to "*"
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */ 
+int bdm_subscribe_hab_list_by_name(const char * hab_name);
+
+/**
+ * @brief Subscribes the BDM client to the list of Nodes matching the pattern
+ *
+ * When any Nodes matching the specified pattern join or leave, that fact will
+ * be reported to the client via the registered callbacks
+ *
+ * @param[in] bdm_name A String in the form 
+ * "[[\<Peer-ID\>,]\<BDM-ID\>/]<HAB-Type>.<HAB-ID>.<Node-ID>" where any
+ * component may be the wildcard "*".
+ *
+ * Optional components default to "*"
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */ 
+int bdm_subscribe_node_list_by_name(const char * node_name);
+
+/**
+ * @brief Subscribes the BDM client to the list of datapoints matching the pattern
+ *
+ * When any datapoints matching the specified pattern are published, that fact will
+ * be reported to the client via the registered callbacks
+ *
+ * @param[in] bdm_name A String in the form 
+ * "[[\<Peer-ID\>,]\<BDM-ID\>/]<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>" where any
+ * component may be the wildcard "*".
+ *
+ * @param[in] start_time Only report datapoints with a timestamp after this value. May be NULL
+ * for no start filter
+ *
+ * @param[in] stop_time Only report datapoints with a timestamp before this value. May be NULL
+ * for no stop filter
+ *
+ * Optional components default to "*"
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */ 
+int bdm_subscribe_datapoints_by_name(const char * resource_name, 
+        struct timeval *start_time, struct timeval *stop_time);
 
 
 /**

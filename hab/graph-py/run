@@ -2,7 +2,9 @@
 
 ROOT=$PWD/../..
 
-export DYLD_LIBRARY_PATH=$ROOT/hab/py-libhab:$ROOT/hab/py-libhab/.libs:$ROOT/hab/libhab/.libs:$ROOT/util/.libs:$ROOT/asn.1/.libs:$ROOT/cal/mdnssd-bip/shared/.libs:$ROOT/cal/mdnssd-bip/server/.libs:$ROOT/cal/mdnssd-bip/client/.libs
+. $ROOT/test/config.sh
+
+export DYLD_LIBRARY_PATH=$ROOT/hab/py-libhab:$ROOT/hab/py-libhab/.libs:$ROOT/libhab/.libs:$ROOT/util/.libs:$ROOT/asn.1/.libs:$ROOT/cal/mdnssd-bip/shared/.libs:$ROOT/cal/mdnssd-bip/server/.libs:$ROOT/cal/mdnssd-bip/client/.libs
 export PYTHONPATH=$PYTHONPATH:$ROOT/hab/py-libhab:$ROOT/hab/py-libhab/.libs 
 
 python ./graph-hab.py 
