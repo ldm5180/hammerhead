@@ -328,11 +328,27 @@ static void bdm_handle_server_subscribe(const cal_event_t *event) {
     memset(&m, 0x00, sizeof(BDM_C2S_Message_t));
     memset(&buf, 0, sizeof(buf));
 
-    // TODO: The sequence number should be per (subscription*peer)
-    // otherwise multiple subscriptions will be missing datapoints
-    // This means that user also needs to track the state per subscription
+    // If this is a new subscription being sent to this peer, send the new sequence number
+    // if this is just a re-connect, then send the global peer curr_seq
+    // 
+    // If the topic is present with a sequence number >=0 then the subscription is
+    // in progress. It will be set to -1 when the subscription is complete and the server
+    // sends the state.
+    long send_seq = bdm_state->curr_seq +1;
+    long *plong;
+    if ( (plong = g_hash_table_lookup(bdm_state->new_seq_by_topic, topic)) ) {
+        if ( *plong >= 0 ) {
+            send_seq = *plong;
+        }
+    } else {
+        plong = malloc(sizeof(long));
+        *plong = 0; // TODO: Query the user for the sequence number to use
+        g_hash_table_insert(bdm_state->new_seq_by_topic, strdup(topic), plong );
+        send_seq = -1;
+    }
+
     m.present = BDM_C2S_Message_PR_sendState;
-    m.choice.sendState.seq = bdm_state->curr_seq + 1;
+    m.choice.sendState.seq = send_seq;
 
     r = OCTET_STRING_fromBuf(&m.choice.sendState.topic, topic, -1);
     if (r != 0) {
@@ -361,11 +377,19 @@ cleanup:
 }
 
 static void bdm_handle_server_state_update(const cal_event_t *event, BDMSendState_t *state) {
+    long *plong;
+    const char * topic = (const char*)state->topic.buf;
 
     libbdm_peer_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
     if (NULL == bdm_state) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
+        return;
     }
+
+    if ( (plong = g_hash_table_lookup(bdm_state->new_seq_by_topic, topic)) ) {
+        *plong = -1; // Use the global value from now on
+    }
+
     if(state->seq > bdm_state->curr_seq) {
         bdm_state->curr_seq = state->seq;
     }
@@ -469,6 +493,7 @@ void libbdm_cal_callback(const cal_event_t *event) {
                     return;
                 }
                 bdm_peer->curr_seq = -1;
+                bdm_peer->new_seq_by_topic = g_hash_table_new_full(g_str_hash, g_str_equal, free, free);
                 g_hash_table_insert(libbdm_all_peers, strdup(event->peer_name), bdm_peer);
             }
 

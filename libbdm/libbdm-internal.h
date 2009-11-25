@@ -59,7 +59,8 @@ extern int bdm_fd;
 typedef struct {
     char * bdm_id;
     GSList * recording_bdms;
-    long curr_seq;
+    long curr_seq; // The sequence for all completed subscriptions
+    GHashTable * new_seq_by_topic; // The starting secuence for new subscriptions
 } libbdm_peer_t;
 
 extern GHashTable *libbdm_all_peers; // All peers reported by CAL. Table of libbdm_peer_t pointers

@@ -15,6 +15,7 @@ if [ -z "$TEST_DURATION" ]; then
     TEST_DURATION=30
 fi
 
+. $ROOT/test/testlib.sh
 
 UNIQUE=$$
 RETVAL=0
@@ -24,12 +25,7 @@ YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
 
-echo "making DB file"
-rm -f bdm.db
-pushd $ROOT/data-manager/server > /dev/null
-./make-db.sh > /dev/null
-popd > /dev/null
-mv $ROOT/data-manager/server/bdm.db .
+make_bdm_db "bdm.db"
 
 echo starting BDM
 $ROOT/data-manager/server/bionet-data-manager --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &

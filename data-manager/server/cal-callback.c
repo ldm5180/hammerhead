@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <glib.h>
+#include <errno.h>
 
 #include "bionet-data-manager.h"
 #include "cal-server.h"
@@ -103,6 +104,46 @@ static void libbdm_publishto_each_resource(
     } //for each bdm
 }
 
+static void bdm_send_state(
+        int send_seq,
+        const char * peer_name,
+        const char * topic)
+{
+    int r;
+    BDM_S2C_Message_t m;
+    bionet_asn_buffer_t buf;
+    asn_enc_rval_t enc_rval;
+
+    memset(&m, 0x00, sizeof(m));
+    buf.buf = NULL;
+    buf.size = 0;
+
+    m.present = BDM_S2C_Message_PR_sendState;
+    m.choice.sendState.seq = send_seq;
+
+    r = OCTET_STRING_fromBuf(&m.choice.sendState.topic, topic, -1);
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+              "%s(): Failed to set topic", __FUNCTION__);
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_S2C_Message, &m);
+        return;
+    }
+
+    enc_rval = der_encode(&asn_DEF_BDM_S2C_Message, &m, bionet_accumulate_asn_buffer, &buf);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_S2C_Message, &m);
+    if (enc_rval.encoded == -1) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s(): error with der_encode(): %s", 
+                __FUNCTION__, strerror(errno));
+        free(buf.buf);
+        return;
+    }
+
+    // send the state to the BDM
+    // NOTE: cal_client.sendto assumes control of buf
+    r = cal_server.sendto(peer_name, buf.buf, buf.size);
+
+}
 
 //
 // Handle the subscription request once both the actual subscription and state have been sent
@@ -207,6 +248,8 @@ static void libbdm_process_datapoint_subscription_request(
     libbdm_publishto_each_resource(bdm_list, this_seq, peer_name, 
             bdm_resource_datapoints_to_asnbuf); 
     bdm_list_free(bdm_list);
+
+    bdm_send_state(this_seq, peer_name, topic);
 
     // Tell CAL we'll accept this subscription
     cal_server.subscribe(peer_name, topic);

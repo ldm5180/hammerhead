@@ -19,6 +19,7 @@ TESTS=$@
 
 . $ROOT/test/config.sh
 
+ulimit -Sc unlimited
 
 if [ -z "$TESTS" ]; then
     TESTS=$(ls -1d tests/* | sort)

@@ -775,6 +775,8 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     node = bionet_resource_get_node(resource);
     hab = bionet_node_get_hab(node);
 
+    bionet_hab_set_recording_bdm(hab, bionet_bdm_get_id(this_bdm));
+
     r = add_hab_to_db(db, hab);
     if (r != 0) goto fail;
 

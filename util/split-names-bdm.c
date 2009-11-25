@@ -180,11 +180,12 @@ int bdm_split_bdm_peer_id(
     const char * peer_separator = strchr(name, ',');
     int size;
 
+    const char * p = name;
+
     if (peer_separator == NULL) {
         // No Peer means all peers
         if(peer_id) strncpy(peer_id, "*", BIONET_NAME_COMPONENT_MAX_LEN);
         size = strlen(name);
-        peer_separator = name;
     }else {
         int peer_size = peer_separator - name;
 
@@ -201,6 +202,7 @@ int bdm_split_bdm_peer_id(
         }
 
         size = strlen(peer_separator+1);
+        p = peer_separator + 1;
     }
 
     if (size > BIONET_NAME_COMPONENT_MAX_LEN-1) {
@@ -211,7 +213,7 @@ int bdm_split_bdm_peer_id(
     }
 
     if(bdm_id) {
-        memcpy(bdm_id, peer_separator, size);
+        memcpy(bdm_id, p, size);
         bdm_id[size] = '\0';
     }
 

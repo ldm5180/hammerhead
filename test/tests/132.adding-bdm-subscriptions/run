@@ -1,0 +1,122 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+# Test Theory:
+#
+# Start a data-manager, then 2 habs that the manager 
+# will record
+#
+# Start a bdm subscriber before the data-manager, in the middle of datapoint
+# generateion, and after all generation has stopped
+#
+# Each subscriber will initially subscribe to the first hab,
+# and then will subscribe to the second after a delay
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=11
+fi
+
+. $ROOT/test/testlib.sh
+
+UNIQUE=$$
+RETVAL=0
+
+YEAR=`date +%Y`
+PREV_YEAR=$(($YEAR-1))
+NEXT_YEAR=$(($YEAR+1))
+
+#python ./clienttest.py > test.out
+#exit
+
+make_bdm_db bdm.db
+
+mkfifo fifo0 fifo1
+
+echo "Starting BDM Client 0 Before data-manager"
+./clienttest.py --log=out.client.0 < fifo0 &
+exec 8> fifo0
+WFD0=8
+
+
+echo starting BDM
+$ROOT/data-manager/server/bionet-data-manager --habs "random-hab.A$UNIQUE" --habs "random-hab.B$UNIQUE" --nodes "random-hab.A$UNIQUE.*"  --nodes "random-hab.B$UNIQUE.*" --resources "random-hab.A$UNIQUE.*:*" --resources "random-hab.B$UNIQUE.*:*" &
+BDMPID=$!
+sleep 3 # let the bdm come up before starting the HAB
+
+echo "Client 0 subscribing to hab A"
+echo "subscribe_datapoints random-hab.A$UNIQUE.*:*" >&8
+
+echo "starting random-hab A"
+$ROOT/hab/random/random-hab --id A$UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab.A &
+HABAPID=$!
+
+echo "starting random-hab B"
+$ROOT/hab/random/random-hab --id B$UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab.B &
+HABBPID=$!
+
+echo "Generate some data..."
+sleep `expr $TEST_DURATION / 2`
+
+echo "Client 0 subscribing to hab B"
+echo "subscribe_datapoints random-hab.B$UNIQUE.*:*" >&$WFD0
+
+echo "BDM Client 1 After some data generated"
+exec 7> >(./clienttest.py --log=out.client.1)
+WFD1=7
+
+echo "Client 1 subscribing to hab B"
+echo "subscribe_datapoints random-hab.B$UNIQUE.*:*" >&$WFD1
+
+
+echo "Generate some more data..."
+sleep `expr $TEST_DURATION / 2`
+
+echo "Client 1 subscribing to hab A"
+echo "subscribe_datapoints random-hab.A$UNIQUE.*:*" >&$WFD1
+
+
+echo "all datapoints generated. Killing random-habs"
+kill $HABAPID
+wait $HABAPID
+kill $HABBPID
+wait $HABBPID
+
+# Let the BDM commit the last info to disk
+echo "Allowing dust to settle..."
+sleep 20
+
+echo "all datapoints generated. Killing  bdm-watcher.0 and bdm-watcher.1"
+exec 8>&-
+exec 7>&-
+
+echo "killing BDM"
+kill $BDMPID
+wait
+
+for log in out.client.0 out.client.1; do
+    cat out.random-hab.A out.random-hab.B | sort > sorted.random-habs
+    sort $log > sorted.$log
+    if ! diff -q sorted.random-habs sorted.$log; then
+	echo "ERROR: $log output differs from random-hab output:"
+	diff -u sorted.random-habs sorted.$log
+	RETVAL=1
+    fi
+done
+
+if [ $RETVAL -eq 0 ] ; then
+    echo "bdm-watcher output is identical to random-hab outputs, yay"
+fi
+
+exit $RETVAL
+

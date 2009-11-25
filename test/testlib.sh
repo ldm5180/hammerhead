@@ -1,5 +1,13 @@
 #!/bin/sh
 
+make_bdm_db() {
+    FILE="$1"
+
+    echo "Making bdm database file $FILE"
+    rm -f "$FILE"
+    sqlite3 "$FILE" < $ROOT/data-manager/server/schema
+}
+
 time_wait() {
     PID="$1"
     TIME="$2"
