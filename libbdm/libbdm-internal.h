@@ -46,6 +46,16 @@ extern void * libbdm_callback_stream_usr_data;
 
 extern int libbdm_cal_fd;
 
+int bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
+        const char *peer_id,
+        const char *bdm_id,
+        const char *hab_type,
+        const char *hab_id,
+        const char *node_id,
+        const char *resource_id,
+        struct timeval *datapoint_start,
+        struct timeval *datapoint_end) ;
+
 // Split the bdm pattern in the form [peer-id,]bdm-id
 // peer-id is '*' if not specified
 extern int bdm_split_bdm_peer_id(

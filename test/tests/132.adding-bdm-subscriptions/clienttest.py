@@ -53,7 +53,7 @@ class BdmWatcher(basic.LineReceiver):
     def do_subscribe_datapoints(self, pattern):
         """subscribe to a resource name pattern"""
         self.sendLine('Subscribing to "' + pattern + '"')
-        bdm_subscribe_datapoints_by_name(pattern)
+        bdm_subscribe_datapoints_by_name(pattern, None, None)
 
     def do_quit(self):
         """quit: Quit this session"""

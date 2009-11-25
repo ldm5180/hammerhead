@@ -124,39 +124,28 @@ fail0:
 
 
 
-int bdm_subscribe_datapoints_by_name(const char *resource_name) {
+int bdm_subscribe_datapoints_by_name(
+        const char *resource_name,
+        struct timeval * pDatapointStart,
+        struct timeval * pDatapointEnd) 
+{
     char peer_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
     char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
-    int querystr, r;
-
-    struct timeval tv_start;
-    struct timeval *pDatapointStart = NULL;
-    struct timeval tv_stop;
-    struct timeval *pDatapointEnd = NULL;
+    int querystr;
 
     querystr = bdm_split_resource_name_r(resource_name, peer_id, bdm_id, hab_type, hab_id, node_id, resource_id);
     if (querystr < 0) {
         // a helpful error message has already been logged
         return -1;
     }
-    GHashTable * params = NULL;
     if(querystr) {
-            r = bionet_parse_topic_params(resource_name + querystr, &params);
-            if (r != 0) {
-                    // Error logged
-                    return -1;
-            }
-
-            if( 0 == bionet_param_to_timeval(params, "dpstart", &tv_start) ) {
-                    pDatapointStart = &tv_start;
-            }
-            if( 0 == bionet_param_to_timeval(params, "dpend", &tv_stop) ) {
-                    pDatapointEnd = &tv_stop;
-            }
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s(): resource_name '%s' contains extra data", __FUNCTION__, resource_name);
+        return -1;
     }
 
     return bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
