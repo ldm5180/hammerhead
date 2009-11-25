@@ -378,7 +378,7 @@ cleanup:
 
 static void bdm_handle_server_state_update(const cal_event_t *event, BDMSendState_t *state) {
     long *plong;
-    const char * topic = event->topic;
+    const char * topic = (const char*)state->topic.buf;
 
     libbdm_peer_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
     if (NULL == bdm_state) {

@@ -5,6 +5,7 @@
 
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "internal.h"
 #include "bionet-util.h"
@@ -79,6 +80,12 @@ void bionet_hab_set_recording_bdm(bionet_hab_t *hab, const char * bdm_id)
         return;
     }
 
+    if(hab->recording_bdm) {
+        if(!strcmp(hab->recording_bdm, bdm_id)) 
+            return;
+
+        free(hab->recording_bdm);
+    }
     hab->recording_bdm = strdup(bdm_id);
 }
 

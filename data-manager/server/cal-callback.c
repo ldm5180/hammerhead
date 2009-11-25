@@ -114,6 +114,10 @@ static void bdm_send_state(
     bionet_asn_buffer_t buf;
     asn_enc_rval_t enc_rval;
 
+    memset(&m, 0x00, sizeof(m));
+    buf.buf = NULL;
+    buf.size = 0;
+
     m.present = BDM_S2C_Message_PR_sendState;
     m.choice.sendState.seq = send_seq;
 
@@ -121,7 +125,8 @@ static void bdm_send_state(
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
               "%s(): Failed to set topic", __FUNCTION__);
-        goto cleanup;
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_S2C_Message, &m);
+        return;
     }
 
     enc_rval = der_encode(&asn_DEF_BDM_S2C_Message, &m, bionet_accumulate_asn_buffer, &buf);
@@ -130,15 +135,14 @@ static void bdm_send_state(
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                 "%s(): error with der_encode(): %s", 
                 __FUNCTION__, strerror(errno));
-        goto cleanup;
+        free(buf.buf);
+        return;
     }
 
     // send the state to the BDM
     // NOTE: cal_client.sendto assumes control of buf
     r = cal_server.sendto(peer_name, buf.buf, buf.size);
 
-cleanup:
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_S2C_Message, &m);
 }
 
 //
