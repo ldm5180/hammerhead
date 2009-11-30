@@ -1,9 +1,18 @@
 Bionet 2.5.0
-	
+    * Add BDM Pub/Sub feature so that historical data can be subscribed to just like live Bionet data.
+
+    * Add support for INB 1.1.0 (ION Baseline) in BDM-sync-over-BP
+
+    * Add bdmplot2 client for BDM Pub/Sub
+
+    * Add BDM Pub/Sub support in the Bionet Monitor
+
+    * Add Bionet Plot webclient
+
+
 Bionet 2.4.1, 2009 September 21
 
-    * Add bdm_get_last_entry_seq() and bdm_free_hab_list() to BDM client to enable 
-      Python bindings to use this feature.
+    * Add bdm_get_last_entry_seq() and bdm_free_hab_list() to BDM client to enable Python bindings to use this feature.
 
 Bionet 2.4.0, 2009 August 18
 
