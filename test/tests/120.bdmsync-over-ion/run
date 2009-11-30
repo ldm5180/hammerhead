@@ -101,6 +101,9 @@ else
     echo "bdm-client.py output is identical to random-hab output, yay"
 fi
 
+# see what we got
+bpstats
+
 # shut down ion processes
 echo "Stopping ion..."
 ionstop
