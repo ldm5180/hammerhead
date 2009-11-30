@@ -6,9 +6,4 @@
 
 include $(top_srcdir)/common.am
 
-LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.version_info[0]) + \".\" + str(sys.version_info[1])" | python`
-
 python_PYTHON = twisted_bdm_client.py
-
-install-data-local:
-	cp *.py $(LIB_INST_DIR)/.
