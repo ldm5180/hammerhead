@@ -2,10 +2,13 @@
 
 use strict;
 
+use Time::Local
+
 #
 # Hard-coded options for this test:
 #
-my $starttime = 1249508394.0;
+# starttime = "2009-08-05 15:39:54" localtime
+my $starttime = timelocal(54, 39, 15, 5, 7, 109);
 my $timespan = 240;;
 my $points = 20000;
 my $UNIQUE = shift;
