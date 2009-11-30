@@ -141,4 +141,5 @@ class MainWindow : public QWidget {
         void setupResourceView();
         void setupTreeView();
         void setupWindow();
+        void resizeView(Tree *view);
 };

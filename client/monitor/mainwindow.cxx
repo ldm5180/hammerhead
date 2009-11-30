@@ -57,29 +57,32 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
         sampleSize = 10000;
     
 
-    bionet = new BionetIO(this);
-    setupTreeView();
     setupResourceView();
-    setupArchive();
-    
+    setupArchive(); 
     menuBar = new QMenuBar(this);
     createActions();
     createMenus();
-
-    setupWindow();
     
-
     // this smells really bad, i have to make this check in a couple
     // of functions. for now, i think it makes sense because the bdm
     // and bionet will play nicely together in the awesome future,
     // and both bdm/bdm will need to exist. 
     if ( bionetMode ) {
+        bionet = new BionetIO(this);
+        setupTreeView();
         setupBionetModel();
+
         bionet->setup();
         subscribe();
+
+        setupWindow();
+        resizeView(view);
     } else {
         setupBDM();
         bdmio->setup();
+
+        setupWindow();
+        resizeView(bdmView);
     }
 
     scaleInfoTemplate = new ScaleInfo;
@@ -131,7 +134,7 @@ void MainWindow::setupBionetModel() {
     connect(liveModel, SIGNAL(lostResource(QString)), 
         this, SLOT(lostPlot(QString)));
     
-    /* connect to the bdm model */
+    /* connect to the bionet model */
     connect(liveModel, SIGNAL(layoutChanged()), 
         view, SLOT(repaint()));
     view->setModel(liveModel);
@@ -194,15 +197,6 @@ void MainWindow::setupBDM() {
     bdmView->setModel(bdmModel);
     //bdmView->selectAll();
 
-    // Edit/adjust the header
-    QHeaderView* header;
-    header = bdmView->header();
-    header->setMovable(FALSE);
-    header->resizeSection(0,200); // resizing the columns
-    header->resizeSection(1,75); 
-    header->resizeSection(2,50); 
-    bdmView->setHeader(header);
-
     // Edit the size of the bdmView frame
     bdmView->setMinimumHeight(100);
     bdmView->setMinimumWidth(100);
@@ -234,8 +228,8 @@ void MainWindow::setupBDM() {
     */
     
     /* connect the view to the bdmModel */
-    connect(bdmModel, SIGNAL(layoutChanged()), view, SLOT(repaint()));
-    view->setModel(bdmModel);
+    connect(bdmModel, SIGNAL(layoutChanged()), bdmView, SLOT(repaint()));
+        bdmView->setModel(bdmModel);
 
 
     // (for losing habs & updating the pane)
@@ -255,7 +249,7 @@ void MainWindow::setupBDM() {
         archive, SLOT(recordSample(bionet_datapoint_t*)));
 
     // connect the view to the model
-    connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
+    connect(bdmView->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
         bdmModel, SLOT(lineActivated(QModelIndex)));
     connect(bdmModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
         resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
@@ -284,21 +278,24 @@ void MainWindow::setupTreeView() {
     
     //view->selectAll();
     
-    // Edit/adjust the header
-    QHeaderView* header;
-    header = view->header();
-    header->setMovable(FALSE);
-    header->resizeSection(0,200); // resizing the columns
-    header->resizeSection(1,75); 
-    header->resizeSection(2,50); 
-    view->setHeader(header);
-    
     // Edit the size of the view frame
     view->setMinimumHeight(100);
     view->setMinimumWidth(100);
 
     view->show();
     return;
+}
+
+
+void MainWindow::resizeView(Tree *vw) {
+    // Edit/adjust the header
+    QHeaderView* header;
+    header = vw->header();
+    header->setMovable(FALSE);
+    header->resizeSection(0,200); // resizing the columns
+    header->resizeSection(1,75); 
+    header->resizeSection(2,50); 
+    vw->setHeader(header);
 }
 
 
@@ -444,7 +441,10 @@ void MainWindow::setupWindow() {
 
     splitter = new QSplitter(this);
     //splitter->addWidget(tabs);
-    splitter->addWidget(view);
+    if (bionetMode)
+        splitter->addWidget(view);
+    else
+        splitter->addWidget(bdmView);
     splitter->addWidget(resViewHolder);
 
 
@@ -459,14 +459,15 @@ void MainWindow::closeEvent(QCloseEvent* /*event*/) {
 
     archive->disconnect();
     resourceView->disconnect();
-    view->disconnect();
 
     if ( bionetMode ) {
         liveModel->disconnect();
         bionet->disconnect();
+        view->disconnect();
     } else {
         bdmModel->disconnect();
         bdmio->disconnect();
+        bdmView->disconnect();
     }
 
     foreach(PlotWindow* p, livePlots) {

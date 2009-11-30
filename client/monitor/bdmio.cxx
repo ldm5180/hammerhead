@@ -281,8 +281,6 @@ void BDMIO::subscribe(int row) {
     //bdm_subscribe_bdm_list_by_name(qPrintable(bdmName));
     //bdm_subscribe_hab_list_by_name(qPrintable(habName));
     //bdm_subscribe_node_list_by_name(qPrintable(nodeName));
-    //bdm_subscribe_datapoints_by_name(qPrintable(bionetName));
-
     r = bdm_subscribe_datapoints_by_name(qPrintable(pattern), tvStart, tvStop);
 
     if (r < 0) {
