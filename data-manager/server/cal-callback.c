@@ -24,7 +24,7 @@ static void libbdm_process_subscription_request(
         const char *topic,
         bdm_subscription_t *state);
 
-static void libbdm_publishto_each_resource(
+static void bdm_sendto_each_resource(
         GPtrArray * bdm_list,
         int this_seq,
         const char * peer_name,
@@ -33,7 +33,6 @@ static void libbdm_publishto_each_resource(
         ) 
 {
     int bi, r;
-    char datapoint_topic[4*BIONET_NAME_COMPONENT_MAX_LEN + 4];
 
     for (bi = 0; bi < bdm_list->len; bi++) {
 	int hi;
@@ -78,11 +77,6 @@ static void libbdm_publishto_each_resource(
                         continue;
 		    }
 
-                    snprintf(datapoint_topic, sizeof(datapoint_topic), "D %s/%s.%s", 
-                        bionet_bdm_get_id(bdm), bionet_hab_get_name(hab), 
-                        bionet_resource_get_local_name(resource));
-
-
                     //
                     // Encode the resource with the supplied function
                     r = encode_resource(resource, this_seq, &buf);
@@ -91,13 +85,10 @@ static void libbdm_publishto_each_resource(
                         continue;
                     }
 
-                    // "publish" the message to the newly connected subscriber (via publishto)
-                    // if the datapoint topic does not match any previous topics
-                    cal_server.publishto(peer_name, datapoint_topic, buf.buf, buf.size);
-
-                    // FIXME: cal_server.publish should take the buf
-                    free(buf.buf);
-
+                    // "send" the message to the newly connected subscriber
+                    // Can't use publishto, becuase the topic string it would
+                    // use to weed out duplicates does the wrong thing
+                    cal_server.sendto(peer_name, buf.buf, buf.size);
 		} //for each resource
 	    } //for each node
 	} //for each hab
@@ -226,7 +217,7 @@ static void libbdm_process_datapoint_subscription_request(
 	      "Failed to get a BDM list.");
 	return;
     }
-    libbdm_publishto_each_resource(bdm_list, this_seq, peer_name, 
+    bdm_sendto_each_resource(bdm_list, this_seq, peer_name, 
             bdm_resource_metadata_to_asnbuf); 
     bdm_list_free(bdm_list);
 
@@ -245,7 +236,7 @@ static void libbdm_process_datapoint_subscription_request(
 	return;
     }
 
-    libbdm_publishto_each_resource(bdm_list, this_seq, peer_name, 
+    bdm_sendto_each_resource(bdm_list, this_seq, peer_name, 
             bdm_resource_datapoints_to_asnbuf); 
     bdm_list_free(bdm_list);
 
