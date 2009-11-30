@@ -100,7 +100,8 @@ gpointer dtn_receive_thread(gpointer config) {
                     running = 0;
                     continue;
                 }
-                
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "got a bundle of %d bytes", bytes_read);
+
                 client->index += bytes_read;
 
                 rval = ber_decode(NULL, 
