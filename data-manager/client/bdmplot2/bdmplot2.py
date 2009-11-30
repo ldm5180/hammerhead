@@ -28,12 +28,12 @@ def process_new_session_or_subscription(sessions, session_id, request):
         #subscribe to all the resources requested in the HTTP request
         for r in sessions[session_id]['resource']:
             #print "Subscribing to %(resource)s" % { 'resource' : r }
-            bdm_subscribe_datapoints_by_name(r, None)
+            bdm_subscribe_datapoints_by_name(r, None, None)
 
     else:
         for r in request.args['resource']:
             sessions[session_id]['resource'].append(r)
-            bdm_subscribe_datapoints_by_name(r, None)
+            bdm_subscribe_datapoints_by_name(r, None, None)
         for t in request.args['timespan']:
             sessions[session_id]['timespan'].append(t)
 
