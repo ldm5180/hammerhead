@@ -26,6 +26,8 @@ To see it do something:
 
 
 Known issues:
+
+  Ubuntu 9.0.4 (Jaunty Jackalope):
     avahi-daemon does not work correctly in Ubuntu 9.04 (Jaunty Jackalope) and
     possibly other distributions due to misconfiguration. If the service
     discovery is not working or working inconsistently, edit
@@ -34,7 +36,7 @@ Known issues:
 
     
 
-    ASN.1 Compiler:
+  ASN.1 Compiler:
     The ASN1c compiler has two known bugs affecting Bionet.
 
     32-bit machines output an 'error converting ASN INTEGER to native 
@@ -45,11 +47,38 @@ Known issues:
     update is not.
 
     32-bit machines will also output an error message (indicating that the 
-    server message 'contained an invalid ASN.1 message') if they recieve a 
+    server message 'contained an invalid ASN.1 message') if they receive a 
     new-node or datapoint update message from a 64-bit machine if the message 
     contains an int32 resource with a negative datapoint value.  New-node and 
     datapoint-update callbacks will not called.
 
 
+
+  BDM-Sync w/ ION 1.1.0:
+    As specified by RFC 5050, Bionet Data Manager sync sends bundles that
+    represent logical application units, and under certain situations, BDM sync
+    messages can be quite large. Since ION 1.1.0 baseline does not fragment
+    or reassemble bundles, so care must be taken to ensure that the sync
+    messages will fit in the maximum bundle size supported by the trasport
+    being used. 
+
+    It is suggested that the transport be configured to support the largest
+    bundle possible, and the following steps are taken to ensure that BDM
+    sync messages are as small as possible. Each sync message includes all
+    the new datapoints since the last sync, so to keep those messages
+    small:
+
+      1 - Set the sync interval often enough so that the number of
+          datapoints in each messages is smaller than the maximum bundle size
+
+      2 - Don't allow a data-manager to accumulate data before the initial
+          sync message is sent. Doing so will cause the first bundle to be 
+          quite large. Either delete the bdm database after modifying the 
+          sync-send configuration, or use a start_time filter to send only 
+          the datapoints that are generated after the configuration was 
+          modified.
+
+
+  Experimental Software:
     bionet-plot and bdmplot2 are in early development stages. They cannot yet 
     handle overlapping subscriptions from multiple web clients.
