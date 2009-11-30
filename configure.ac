@@ -253,15 +253,13 @@ if test "x$with_ion" != "xno"; then
 fi
 
 
-if test "x$with_ion" != "xno"; then
-    #
-    # We have found ion.h, next we make sure we have some version of libbp.so.
-    #
-    # The first check looks for ION NASA Baseline 1.1.0.
-    #
-    # If that fails it looks for Bioserve's version of ION.
-    #
+#
+# If we have found ion.h, next we make sure we have *some* version of libbp.so.
+#
 
+if test "x$with_ion" != "xno"; then
+
+    # this first check looks for ION NASA Baseline 1.1.0
     AX_EXT_HAVE_LIB(
         [/usr/lib /usr/local/lib /opt/lib], 
         [bp],
