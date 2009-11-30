@@ -53,7 +53,6 @@ def bdmplot(**kwargs):
         for k in form.keys():
             args[k] = form[k].value
     
-    # Convert the timespan into timevals and timestamps
     timespan_vals = timespan_to_timevals(args["timespan"])
     timespan_stamps = map(timeval_to_float, timespan_vals)
     timespan_stamps_now = map(lambda x : timeval_to_float(x, evaluateNow = True), timespan_vals)
@@ -98,13 +97,19 @@ def bdmplot(**kwargs):
 
     # Render the plot.
     pylab.show()
+
+    retval = { 'pylab' : pylab, 'args' : args }
     
+    return retval
+
+
+
+if __name__ == "__main__":
+    retval = bdmplot()
+
     # If CGI, add MIME header
     if os.environ.has_key("GATEWAY_INTERFACE"):
         print "Content-Type: image/" + args["format"] + "\n"
 
     # Print the plot.
-    pylab.savefig(os.sys.stdout, format=args["format"], dpi=args["dpi"])
-
-if __name__ == "__main__":
-    bdmplot()
+    retval['pylab'].savefig(os.sys.stdout, format=retval['args']["format"], dpi=retval['args']["dpi"])
