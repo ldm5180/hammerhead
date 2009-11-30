@@ -11,7 +11,7 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
 {
     // This assumes that the History has >= 1 entry;
     QString xLabel;
-    QString title("BioNet Monitor" + key);
+    QString title("BioNet Monitor: " + key);
 
     /* Setup the plot window attributes */
     setObjectName(key);

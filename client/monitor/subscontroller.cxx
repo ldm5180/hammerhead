@@ -9,6 +9,7 @@ SubscriptionController::SubscriptionController(QStandardItemModel *subscriptions
 
     subs = subscriptions;
     setAttribute(Qt::WA_QuitOnClose);
+    setWindowTitle(tr("Bionet Monitor: Manage Subscriptions"));
 
     view = new QTableView(this);
     view->setModel(subs);
