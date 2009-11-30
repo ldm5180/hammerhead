@@ -19,6 +19,10 @@ SubscriptionController::SubscriptionController(QStandardItemModel *subscriptions
     add = new QPushButton(tr("Add Subscription"), this);
     submit = new QPushButton(tr("Submit Selected"), this);
     cancel = new QPushButton(tr("Close"), this);
+    
+    directions = new QLabel(tr("Directions: Click \'Add Subscription\' to add a subscription. Double click to edit subscription parameters.\n\
+Click \'Submit Selected\' to submit the subscription. Submitted subscriptions cannot be edited."), this);
+    directions->setAlignment(Qt::AlignCenter);
 
     connect(add, SIGNAL(clicked()), this, SLOT(addSubscription()));
     connect(submit, SIGNAL(clicked()), this, SLOT(submitSubscription()));
@@ -30,11 +34,12 @@ SubscriptionController::SubscriptionController(QStandardItemModel *subscriptions
     buttons->addWidget(cancel);
 
     layout = new QVBoxLayout();
+    layout->addWidget(directions);
     layout->addWidget(view);
     layout->addLayout(buttons);
 
     setLayout(layout);
-    resize(611, 206);
+    resize(611, 306);
 }
 
 

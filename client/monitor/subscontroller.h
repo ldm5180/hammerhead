@@ -53,6 +53,7 @@ private:
     QSpinBox *entryStart, *entryStop;
     QLabel *first, *second, *third, *typeLabel, *habIDLabel,
         *nodeIDLabel, *resIDLabel;
+    QLabel *directions;
     QDateTimeEdit *startTime, *stopTime;
     QCheckBox *startLabel, *stopLabel, *entryStartLabel, *entryStopLabel;
 
