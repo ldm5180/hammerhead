@@ -76,7 +76,6 @@ void BDMModel::newDatapoint(bionet_datapoint_t* dp) {
     bionet_resource_t *resource;
     const char *resource_name;
 
-    //qDebug() << "bdmModel: new datapoint!";
     if (dp == NULL) {
         qWarning() << "newDatapoint(): recieved NULL datapoint!?!";
     }
@@ -88,6 +87,8 @@ void BDMModel::newDatapoint(bionet_datapoint_t* dp) {
         qWarning() << "newDatapoint(): unable to get resource name string";
         return;
     }
+
+    //qDebug() << "got new datapoint from" << resource_name;
 
     QString myName = QString(resource_name);
     
@@ -115,7 +116,7 @@ void BDMModel::newDatapoint(bionet_datapoint_t* dp) {
                 newHab(bionet_resource_get_hab(resource));
             }
 
-            qDebug() << bionet_resource_get_name(resource) << "node&resource doesn't exist, creating it";
+            //qDebug() << bionet_resource_get_name(resource) << "node&resource doesn't exist, creating it";
             /* create the node (and it's resources) */
             newNode(bionet_resource_get_node(resource));
         } else {
@@ -271,38 +272,28 @@ void BDMIO::subscribe(int row) {
         bdmName = QString("*,*");
     }
 
-    //qDebug() << "bdmName =" << qPrintable(bdmName);
-    //qDebug() << "bionet pattern =" << qPrintable(bionetName);
-
     habName = pattern.section('.', 0, 1);
     nodeName = pattern.section(':', 0, 0);
-
-    //qDebug() << "bdm:" << qPrintable(bdmName);
-    //qDebug() << "hab:" << qPrintable(habName);
-    //qDebug() << "node:" << qPrintable(nodeName);
-    //qDebug() << "resource:" << qPrintable(pattern);
 
     tvStart = toTimeval(subscriptions->item(row, DP_START_COL));
     tvStop = toTimeval(subscriptions->item(row, DP_STOP_COL));
 
-    bdm_subscribe_bdm_list_by_name(qPrintable(bdmName));
-    bdm_subscribe_hab_list_by_name(qPrintable(habName));
-    bdm_subscribe_node_list_by_name(qPrintable(nodeName));
+    //bdm_subscribe_bdm_list_by_name(qPrintable(bdmName));
+    //bdm_subscribe_hab_list_by_name(qPrintable(habName));
+    //bdm_subscribe_node_list_by_name(qPrintable(nodeName));
     //bdm_subscribe_datapoints_by_name(qPrintable(bionetName));
 
     r = bdm_subscribe_datapoints_by_name(qPrintable(pattern), tvStart, tvStop);
 
-    /*
-    qDebug() << qPrintable(bdmName.section(',', 0, 0)); // peer id
-    qDebug() << qPrintable(bdmName.section(',', 1, 1)); // bdm i
-    qDebug() << qPrintable(habName.section('/', 1, 1).section('.',0,0));
-    qDebug() << qPrintable(habName.section('/', 1, 1).section('.',1,1));
-    qDebug() << qPrintable(nodeName.section('/', 1, 1).section('.',2,2));
-    qDebug() << qPrintable(pattern.section(':', 1, 1));
-    */
-
     if (r < 0) {
         qWarning() << "error subscribing!";
+    }
+
+    /* disable the row so it can't be edited any more */
+    for (int i = 0; i < subscriptions->columnCount(); i++) {
+        QStandardItem *ii;
+        ii = subscriptions->item(row, i);
+        ii->setEnabled(false);
     }
 
     if (tvStart != NULL)
@@ -331,7 +322,7 @@ struct timeval* BDMIO::toTimeval(QStandardItem *entry) {
     QDateTime qtDate = QDateTime::fromString(pattern, Q_DATE_TIME_FORMAT);
 
     if ( qtDate.isNull() || !qtDate.isValid() ) {
-        qWarning() << "error parsing date (is it in" << Q_DATE_TIME_FORMAT << "format?)";
+        //qWarning() << "warning (is it in" << Q_DATE_TIME_FORMAT << "format?)";
         return NULL;
     }
 

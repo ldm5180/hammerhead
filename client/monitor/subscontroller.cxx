@@ -14,7 +14,7 @@ SubscriptionController::SubscriptionController(QStandardItemModel *subscriptions
     view->setModel(subs);
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-    view->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    view->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
     add = new QPushButton(tr("Add Subscription"), this);
     submit = new QPushButton(tr("Submit Selected"), this);
@@ -90,8 +90,19 @@ void SubscriptionController::resizeEvent(QResizeEvent *event) {
 
 void SubscriptionController::submitSubscription() {
     int row;
+    QModelIndexList rows;
 
-    row = view->selectionModel()->selectedRows().first().row();
+    rows = view->selectionModel()->selectedRows();
+
+    /* no row was selected */
+    if (rows.isEmpty())
+        return;
+
+    row = rows.first().row();
+
+    /* this should never happen, but just in case */
+    if (row < 0)
+        return;
 
     emit addedSubscription(row);
 }
