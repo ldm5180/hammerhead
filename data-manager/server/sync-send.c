@@ -32,6 +32,7 @@ char * dtn_endpoint_id = NULL;
 #endif
 
 static int sync_init_connection(sync_sender_config_t * config);
+static void sync_cancel_connection(sync_sender_config_t * config);
 static int sync_finish_connection(sync_sender_config_t * config);
 static int write_data_to_message(const void *buffer, size_t size, void * config_void);
 static int write_data_to_socket(const void *buffer, size_t size, void * config_void);
@@ -66,6 +67,7 @@ static int sync_send_metadata(
 				   &hab_type, &hab_id, &node_id, &resource_id)) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "Failed to split resource name pattern: %s", config->resource_name_pattern);
+        sync_cancel_connection(config);
         return -1;
     }
 
@@ -79,6 +81,7 @@ static int sync_send_metadata(
     if (NULL == bdm_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "send_sync_metadata(): NULL BDM list from db_get_metadata()");
+        sync_cancel_connection(config);
         return -1;
     } else {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
@@ -95,6 +98,8 @@ static int sync_send_metadata(
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                     "send_sync_metadata(): error with der_encode(): %p, %p", 
                     asn_r.failed_type, asn_r.structure_ptr);
+            sync_cancel_connection(config);
+            return -1;
 	}
 
     }
@@ -143,6 +148,7 @@ static int sync_send_datapoints(
 				   &hab_type, &hab_id, &node_id, &resource_id)) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "Failed to split resource name pattern: %s", config->resource_name_pattern);
+        goto cleanup;
     }
 
 
@@ -169,6 +175,7 @@ static int sync_send_datapoints(
             write_data_to_message, config);
 	if (asn_r.encoded == -1) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
+            goto cleanup;
 	}
 
     }
@@ -190,6 +197,7 @@ static int sync_send_datapoints(
 
 cleanup:
     if (sync_message) ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
+    sync_cancel_connection(config);
     return -1;
 } /* sync_send_datapoints() */
 
@@ -338,6 +346,32 @@ static int sync_init_connection_ion(sync_sender_config_t * config) {
 
 }
 #endif
+
+
+static void sync_cancel_connection(sync_sender_config_t *config) {
+    switch ( config->method ) {
+        case BDM_SYNC_METHOD_TCP:
+            // nothing to do here
+            break;
+
+#if ENABLE_ION
+        case BDM_SYNC_METHOD_ION:
+            sdr_cancel_xn(config->ion.sdr);
+            config->ion.sdr = NULL;
+            break;
+#endif
+        
+        default:
+            g_log(
+                BDM_LOG_DOMAIN,
+                G_LOG_LEVEL_WARNING,
+                "sync_cancel_connection(): failed to cancel: unknown method %d",
+                config->method
+            );
+    }
+}
+
+
 
 /*
  * Read the TCP ack, which is sent once this message has been committed to disk
@@ -488,7 +522,8 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
         }
     } else {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "no bundle to send!");
-        zco_destroy_reference(config->ion.sdr, config->ion.bundleZco);
+        // FIXME: what's the right way to delete the bundle?
+        // zco_destroy_reference(config->ion.sdr, config->ion.bundleZco);
     }
 
 
