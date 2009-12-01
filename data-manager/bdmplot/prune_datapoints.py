@@ -15,12 +15,16 @@ def prune_datapoints(subscriptions, bionet_resources):
                 elif (tvfloat < oldest_timeval):
                     oldest_timeval = tvfloat
 
+        # see if there are no subscriptions which want this resource at all
+        if (oldest_timeval == None):
+            bionet_resources.pop(name)
+
         # get rid of datapoints older than the oldest timeval
         for dp in dpcache['list']:
             if (dp[0] < oldest_timeval):
                 dpcache['list'].remove(dp)
                 dpcache['new'] += 1
-                print "Removed dp: ", dp
+                #print "Removed dp: ", dp
             else:
                 break
 
