@@ -2,6 +2,7 @@ from bdm_client import *
 from timespan import *
 
 def prune_datapoints(subscriptions, bionet_resources):
+    removal_list = []
     for name, dpcache in bionet_resources.iteritems():
         oldest_timeval = None
 
@@ -17,7 +18,9 @@ def prune_datapoints(subscriptions, bionet_resources):
 
         # see if there are no subscriptions which want this resource at all
         if (oldest_timeval == None):
-            bionet_resources.pop(name)
+            #print "removing entire bionet resource: ", name
+            # don't remove items in a dict while iterating the dict
+            removal_list.append(name)
 
         # get rid of datapoints older than the oldest timeval
         for dp in dpcache['list']:
@@ -28,5 +31,19 @@ def prune_datapoints(subscriptions, bionet_resources):
             else:
                 break
 
+    # done iterating the dict, so remove the ones that need to be removed now
+    for name in removal_list:
+        bionet_resources.pop(name)
+
+
 def prune_subscriptions(subscriptions):
-    None
+    current = time.time()
+    removed = False
+    for sub in subscriptions:
+        if ((current - 60) >= sub['last requested']):
+            #print "removing old subscription: %(name)s at %(span)s" % { 'name' : sub['filter'], 'span' : sub['timespan'] }
+            #TODO: unsubscribe from BDM
+            subscriptions.remove(sub)
+            removed = True
+
+    return removed

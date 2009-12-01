@@ -7,6 +7,8 @@ from twisted.web.static import File
 from twisted.web.server import Site
 from twisted.web.resource import Resource
 
+import time
+
 from twisted_bdm_client import *
 from bdm_client import *
 from bdmplot_callback_cacher import *
@@ -14,13 +16,16 @@ import bdmplot
 
 import optparse
 
+from prune_datapoints import *
+
 def process_new_session_or_subscription(request):
     if ('resource' not in request.args) or ('timespan' not in request.args):
         return
 
     #create the session
     subscriptions.append( { 'filter' : request.args['resource'][0],
-                            'timespan' : request.args['timespan'] } )
+                            'timespan' : request.args['timespan'],
+                            'last requested' : time.time() } )
 
     # Convert the timespan into timevals and timestamps
     timespan_vals = timespan_to_timevals(request.args["timespan"][0])
@@ -38,6 +43,7 @@ class Datapoints(resource.Resource):
         # existing session
         for sub in subscriptions:
             if (sub['filter'] == request.args['resource'][0]) and (sub['timespan'] == request.args['timespan']):
+                sub['last requested'] = time.time()
                 found = sub
                 break
 
@@ -48,7 +54,6 @@ class Datapoints(resource.Resource):
                     found = sub
                     break
         
-
         (fname, format) = bdmplot.bdmplot(sub, bionet_resources)
         request.setHeader('Content-Type', 'image/' + format)
         f = open(fname, 'rb')

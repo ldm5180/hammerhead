@@ -88,4 +88,6 @@ def cb_datapoint(datapoint):
     bionet_resources[resource_name]['list'].append(dp)
     bionet_resources[resource_name]['list'].sort(compare_datapoint_timestamps)
 
+    #TODO: add subscription pruning when bdm_unsubscribe() exists
+    #prune_subscriptions(subscriptions)
     prune_datapoints(subscriptions, bionet_resources)
