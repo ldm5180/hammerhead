@@ -8,6 +8,22 @@ from bdm_client import *
 from bdm_normal_output import BDMNormalOutput
 
 import optparse
+import time
+
+
+def str2timeval(str):
+    if (str != None):
+        tv = timeval()
+        tv.tv_sec = 
+            gmt_convert(int(time.mktime(time.strptime(stop_time,
+                                                      "%Y-%m-%d %H:%M:%S"))))
+        tv.tv_usec = 0
+    else:
+        tv = None
+
+    return tv
+
+
 
 class BdmWatcher(basic.LineReceiver):
     delimiter = '\n'
@@ -50,10 +66,11 @@ class BdmWatcher(basic.LineReceiver):
             commands = [cmd[3:] for cmd in dir(self) if cmd.startswith('do_')]
             self.sendLine("Valid commands: " +" ".join(commands))
         
-    def do_subscribe_datapoints(self, pattern):
+    def do_subscribe_datapoints(self, pattern, start_time=None, stop_time=None):
         """subscribe to a resource name pattern"""
-        self.sendLine('Subscribing to "' + pattern + '"')
-        bdm_subscribe_datapoints_by_name(pattern, None, None)
+        self.sendLine('Subscribing to "' + pattern + '" From ' + start_time + ' to ' + stop_time)
+
+        bdm_subscribe_datapoints_by_name(pattern, str2timeval(start_time), str2timeval(stop_time))
 
     def do_quit(self):
         """quit: Quit this session"""
