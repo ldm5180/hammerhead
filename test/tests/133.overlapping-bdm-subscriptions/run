@@ -1,0 +1,123 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+# Test Theory:
+#
+# Start a data-manager and a HAB
+#
+# Start a bdm subscriber that fist subscribes to a pattern with a restrictive time range,
+# then subscribes to the same pattern with a less restirctive time range
+#
+# This will verify that the all the datapoints get produced
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=11
+fi
+
+. $ROOT/test/testlib.sh
+
+UNIQUE=$$
+RETVAL=0
+
+
+STEP_DURATION=`expr $TEST_DURATION / 2`
+
+#python $ROOT/test/pylib/BdmClientTest.py > test.out
+#exit
+
+make_bdm_db bdm.db
+
+
+
+echo starting BDM
+$ROOT/data-manager/server/bionet-data-manager --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*"  --resources "random-hab.$UNIQUE.*:*" &
+BDMPID=$!
+sleep 3 # let the bdm come up before starting the HAB
+
+
+
+
+echo "starting random-hab"
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+HABPID=$!
+START_TIME=`date -v+3S '+%Y-%m-%d %H:%M:%S'`
+
+echo "Starting BDM Client"
+mkfifo fifo0
+$ROOT/test/pylib/BdmClientTest.py --log=out.client.0 < fifo0 &
+WPID0=$!
+exec 8> fifo0
+WFD0=8
+
+
+echo "Generate some data for $STEP_DURATION seconds..."
+sleep $STEP_DURATION
+
+
+
+
+
+STOP_TIME=`date '+%Y-%m-%d %H:%M:%S'`
+
+echo "Client subscribing to hab with restrictive time range"
+echo "subscribe_datapoints random-hab.$UNIQUE.*:* $START_TIME $STOP_TIME" >&$WFD0
+
+
+
+
+echo "Generate some more data for $STEP_DURATION seconds..."
+sleep $STEP_DURATION
+
+echo "Client subscribing to hab with no time filter"
+echo "subscribe_datapoints random-hab.$UNIQUE.*:*" >&$WFD0
+
+echo "Generate final chunk of data for $STEP_DURATION seconds..."
+sleep $STEP_DURATION
+
+echo "all datapoints generated. Killing random-habs"
+kill $HABPID
+wait $HABPID
+
+# Let the BDM commit the last info to disk
+echo "Allowing dust to settle..."
+sleep 20
+
+echo "all datapoints generated. Killing  bdm-watcher"
+echo "quit" >&$WFD0
+
+echo "Waiting for watchers to exit"
+wait $WPID0
+
+rm -f fifo0
+
+echo "killing BDM"
+kill $BDMPID
+wait
+
+for log in out.client.0; do
+    sort -u out.random-hab > sorted.random-habs
+    sort -u $log > sorted.$log
+    if ! diff -q sorted.random-habs sorted.$log; then
+	echo "ERROR: $log output differs from random-hab output:"
+	diff -u sorted.random-habs sorted.$log
+	RETVAL=1
+    fi
+done
+
+if [ $RETVAL -eq 0 ] ; then
+    echo "bdm-watcher output is identical to random-hab outputs, yay"
+fi
+
+exit $RETVAL
+

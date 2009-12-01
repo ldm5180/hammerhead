@@ -36,18 +36,17 @@ YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
 
-#python ./clienttest.py > test.out
+#python $ROOT/test/pylib/BdmClientTest.py > test.out
 #exit
 
 make_bdm_db bdm.db
 
-mkfifo fifo0 fifo1
-
 echo "Starting BDM Client 0 Before data-manager"
-./clienttest.py --log=out.client.0 < fifo0 &
+mkfifo fifo0
+$ROOT/test/pylib/BdmClientTest.py --log=out.client.0 < fifo0 &
+WPID0=$!
 exec 8> fifo0
 WFD0=8
-
 
 echo starting BDM
 $ROOT/data-manager/server/bionet-data-manager --habs "random-hab.A$UNIQUE" --habs "random-hab.B$UNIQUE" --nodes "random-hab.A$UNIQUE.*"  --nodes "random-hab.B$UNIQUE.*" --resources "random-hab.A$UNIQUE.*:*" --resources "random-hab.B$UNIQUE.*:*" &
@@ -72,7 +71,10 @@ echo "Client 0 subscribing to hab B"
 echo "subscribe_datapoints random-hab.B$UNIQUE.*:*" >&$WFD0
 
 echo "BDM Client 1 After some data generated"
-exec 7> >(./clienttest.py --log=out.client.1)
+mkfifo fifo1
+$ROOT/test/pylib/BdmClientTest.py --log=out.client.1 < fifo1 &
+WPID1=$!
+exec 7> fifo1
 WFD1=7
 
 echo "Client 1 subscribing to hab B"
@@ -97,8 +99,14 @@ echo "Allowing dust to settle..."
 sleep 20
 
 echo "all datapoints generated. Killing  bdm-watcher.0 and bdm-watcher.1"
-exec 8>&-
-exec 7>&-
+echo "quit" >&$WFD0
+echo "quit" >&$WFD1
+
+echo "Waiting for watchers to exit"
+wait $WPID0
+wait $WPID1
+
+rm -f fifo0 fifo1
 
 echo "killing BDM"
 kill $BDMPID
