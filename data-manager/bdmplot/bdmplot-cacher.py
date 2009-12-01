@@ -19,16 +19,14 @@ def process_new_session_or_subscription(request):
         return
 
     #create the session
-    subscriptions.append( { 'filter' : request.args['resource'],
-                            'timespan' : request.args['timespan'],
-                            'bionet-resources' : {} } )
+    subscriptions.append( { 'filter' : request.args['resource'][0],
+                            'timespan' : request.args['timespan'] } )
 
     # Convert the timespan into timevals and timestamps
     timespan_vals = timespan_to_timevals(request.args["timespan"][0])
     
-    #subscribe to all the resources requested in the HTTP request
-    for r in request.args['resource']:
-        bdm_subscribe_datapoints_by_name(r, timespan_vals[0], timespan_vals[1])
+    #subscribe to the resource name pattern requested in the HTTP request
+    bdm_subscribe_datapoints_by_name(request.args['resource'][0], timespan_vals[0], timespan_vals[1])
 
 
 
@@ -39,19 +37,19 @@ class Datapoints(resource.Resource):
         found = None
         # existing session
         for sub in subscriptions:
-            if (sub['filter'] == request.args['resource']) and (sub['timespan'] == request.args['timespan']):
+            if (sub['filter'] == request.args['resource'][0]) and (sub['timespan'] == request.args['timespan']):
                 found = sub
                 break
 
         if (found == None): # new subscription!
             retval = process_new_session_or_subscription(request)
             for sub in subscriptions:
-                if (sub['filter'] == request.args['resource']) and (sub['timespan'] == request.args['timespan']):
+                if (sub['filter'] == request.args['resource'][0]) and (sub['timespan'] == request.args['timespan']):
                     found = sub
                     break
         
 
-        (fname, format) = bdmplot.bdmplot(sub)
+        (fname, format) = bdmplot.bdmplot(sub, bionet_resources)
         request.setHeader('Content-Type', 'image/' + format)
         f = open(fname, 'rb')
         return f.read()

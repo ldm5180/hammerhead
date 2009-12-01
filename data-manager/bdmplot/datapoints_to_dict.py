@@ -42,13 +42,23 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, 
         import re
         re_compiled = re.compile(regexp);
     
+    updated = False
+
+    if (len(resources) == 0):
+        updated = True
+
     # Stuff the result dictionary.
     results = {}
-    for name, dp_list in resources.iteritems():
-        results[name] = []
-        for dp in dp_list['datapoints']:
-            results[name].append((dp[0], dp[1]))
-    return results
+    for name, dpcache in resources.iteritems():
+        if (bionet_resource_name_matches(name, filter_string)):
+            if (dpcache['new'] > 0):
+                updated = True
+                dpcache['new'] = 0
+                results[name] = []
+                for dp in dpcache['list']:
+                    results[name].append((dp[0], dp[1]))
+                results[name].sort()
+    return (updated, results)
 
 if __name__ == "__main__":
     print datapoints_to_dict("last 7d", "eris-talker.*.*:limit")

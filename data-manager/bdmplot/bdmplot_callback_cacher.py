@@ -75,21 +75,11 @@ def cb_datapoint(datapoint):
     resource_name = bionet_resource_get_name(resource)
     found = False
     dp = (timeval_to_float(bionet_datapoint_get_timestamp(datapoint)), float(value_str))
-    for sub in subscriptions:
-        for r in sub['filter']:
-            if (bionet_resource_name_matches(resource_name, r)):
-                for name in sub['bionet-resources']:
-                    if (name == resource_name):
-                        u = sub['bionet-resources'][name]
-                        if (None == u) or ('datapoints' not in u): # no user data is set yet
-                            u = { 'datapoints' : [ dp ] }
-                            sub['bionet-resources'][name].append(u)
-                        else: # user data is set, just append to it
-                            u['datapoints'].append(dp)
-                        
-                        found = True
-                        
-                if (False == found):
-                    u = { 'datapoints' : [ dp ] }
-                    sub['bionet-resources'][resource_name] = u
+
+    # make sure the key exists
+    if (resource_name not in bionet_resources):
+        bionet_resources[resource_name] = { 'new' : 0 , 'list' : [] }
+
+    bionet_resources[resource_name]['new'] += 1
+    bionet_resources[resource_name]['list'].append(dp)
                      
