@@ -98,4 +98,4 @@ def cb_datapoint(datapoint):
                     bionet_resources[resource_name] = u
                     #print "Added datapoint to new user data of new resource"
                      
-    #print "Datapoint added"
+    
