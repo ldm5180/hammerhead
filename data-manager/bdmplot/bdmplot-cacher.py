@@ -28,7 +28,6 @@ def process_new_session_or_subscription(request):
     
     #subscribe to all the resources requested in the HTTP request
     for r in request.args['resource']:
-        print "Subscribing to %(resource)s" % { 'resource' : r }
         bdm_subscribe_datapoints_by_name(r, timespan_vals[0], timespan_vals[1])
 
 
@@ -44,22 +43,16 @@ class Datapoints(resource.Resource):
                 found = sub
                 break
 
-        if (found):
-            None
-
-        else: # new subscription!
+        if (found == None): # new subscription!
             retval = process_new_session_or_subscription(request)
             for sub in subscriptions:
                 if (sub['filter'] == request.args['resource']) and (sub['timespan'] == request.args['timespan']):
                     found = sub
                     break
         
-        retval = bdmplot.bdmplot(sub)
-        fname = "/tmp/" + request.args['resource'][0] + "." + request.args['timespan'][0]
-        retval['pylab'].savefig(fname, format=retval['args']["format"], dpi=retval['args']["dpi"])
 
-
-        request.setHeader('Content-Type', 'image/' + retval['args']["format"])
+        (fname, format) = bdmplot.bdmplot(sub)
+        request.setHeader('Content-Type', 'image/' + format)
         f = open(fname, 'rb')
         return f.read()
 

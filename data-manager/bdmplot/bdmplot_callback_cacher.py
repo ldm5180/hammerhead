@@ -74,7 +74,7 @@ def cb_datapoint(datapoint):
     
     resource_name = bionet_resource_get_name(resource)
     found = False
-    dp = (bionet_datapoint_get_timestamp(datapoint), float(value_str))
+    dp = (timeval_to_float(bionet_datapoint_get_timestamp(datapoint)), float(value_str))
     for sub in subscriptions:
         for r in sub['filter']:
             if (bionet_resource_name_matches(resource_name, r)):
@@ -83,19 +83,13 @@ def cb_datapoint(datapoint):
                         u = sub['bionet-resources'][name]
                         if (None == u) or ('datapoints' not in u): # no user data is set yet
                             u = { 'datapoints' : [ dp ] }
-                            #bionet_resources[name] = u
                             sub['bionet-resources'][name].append(u)
-                            #print "Added datapoint to new user data"
                         else: # user data is set, just append to it
                             u['datapoints'].append(dp)
-                            #print "Added datapoint to existing user data"
                         
                         found = True
                         
                 if (False == found):
                     u = { 'datapoints' : [ dp ] }
-                    #bionet_resources[resource_name] = u
                     sub['bionet-resources'][resource_name] = u
-                    #print "Added datapoint to new user data of new resource"
                      
-    #print "Datapoint added"

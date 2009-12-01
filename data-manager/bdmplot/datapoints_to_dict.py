@@ -35,15 +35,6 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, 
     However, the regex is applied after BDM executes the database query, so if
     you do not supply filter_string, the BDM query may take longer.
     """
-    # Connect to the BDM.
-    if bdm_fd == None:
-        try:
-            bdm_fd = bdm_connect(bdm_hostname, bdm_port)
-        except:
-            raise SystemError("Can't connect to BDM")
-        if bdm_fd < 0:
-            raise SystemError("Can't connect to BDM")
-    
 
     # If there's a regular expression, compile it.
     re_compiled = None
@@ -54,13 +45,9 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, 
     # Stuff the result dictionary.
     results = {}
     for name, dp_list in resources.iteritems():
-        #print name
         results[name] = []
         for dp in dp_list['datapoints']:
-            #print dp
-            tv = timeval_to_float(dp[0])
-            results[name].append([ tv, dp[1] ])
-
+            results[name].append((dp[0], dp[1]))
     return results
 
 if __name__ == "__main__":

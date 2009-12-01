@@ -99,9 +99,10 @@ def bdmplot(kwargs):
     # Render the plot.
     pylab.show()
 
-    retval = { 'pylab' : pylab, 'args' : args }
+    fname = "/tmp/" + args['filter'][0] + "." + args['timespan'][0]
+    pylab.savefig(fname, format=args["format"], dpi=args["dpi"])
     
-    return retval
+    return (fname, args['format'])
 
 
 
