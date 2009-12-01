@@ -55,9 +55,7 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, 
                 updated = True
                 dpcache['new'] = 0
                 results[name] = []
-                for dp in dpcache['list']:
-                    results[name].append((dp[0], dp[1]))
-                results[name].sort()
+                results[name] = dpcache['list']
     return (updated, results)
 
 if __name__ == "__main__":

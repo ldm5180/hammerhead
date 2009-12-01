@@ -1,8 +1,12 @@
 from bdm_client import *
 from timespan import *
+from prune_datapoints import *
 
 subscriptions = []
 bionet_resources = {}
+
+def compare_datapoint_timestamps(a, b):
+    return cmp(a[0], b[0])
 
 #callbacks
 def cb_lost_bdm(bdm, user_data):
@@ -82,4 +86,6 @@ def cb_datapoint(datapoint):
 
     bionet_resources[resource_name]['new'] += 1
     bionet_resources[resource_name]['list'].append(dp)
-                     
+    bionet_resources[resource_name]['list'].sort(compare_datapoint_timestamps)
+
+    prune_datapoints(subscriptions, bionet_resources)
