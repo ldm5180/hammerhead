@@ -2,7 +2,7 @@
 
 use strict;
 
-use Time::Local
+use Time::Local;
 
 #
 # Hard-coded options for this test:
