@@ -5,7 +5,7 @@
 from bdm_client import *
 from timespan import timeval_to_float
 
-def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None,
+def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, resources = None,
     bdm_hostname = "localhost", bdm_port = 11002, bdm_fd = None):
     """
     Gets a bunch of datapoints from the Bionet Data Manager (BDM) and converts
@@ -44,8 +44,6 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None,
         if bdm_fd < 0:
             raise SystemError("Can't connect to BDM")
     
-    # Get the HAB list, prefiltered.
-    hab_list=bdm_get_resource_datapoints(filter_string, timespan_vals[0], timespan_vals[1], -1, -1)
 
     # If there's a regular expression, compile it.
     re_compiled = None
@@ -55,27 +53,14 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None,
     
     # Stuff the result dictionary.
     results = {}
-    for hi in range(bdm_get_hab_list_len(hab_list)):
-        hab = bdm_get_hab_by_index(hab_list, hi);
-        
-        for ni in range(bionet_hab_get_num_nodes(hab)):
-            node = bionet_hab_get_node_by_index(hab, ni)
-            nodeid = bionet_node_get_id(node)
-            
-            for ri in range(bionet_node_get_num_resources(node)):
-                res = bionet_node_get_resource_by_index(node, ri)
-                resname = bionet_resource_get_name(res)
-                # If there's a regex, and it doesn't match a resource, skip.
-                if (re_compiled != None) and (re_compiled.search(resname) == None):
-                    continue
-                # Otherwise, stuff the resource and its datapoints in the result set.
-                results[resname] = []
-                for di in range(0, bionet_resource_get_num_datapoints(res)):
-                    dp = bionet_resource_get_datapoint_by_index(res, di)
-                    v  = bionet_datapoint_get_value(dp)
-                    vs = bionet_value_to_str(v)
-                    tv = timeval_to_float(bionet_datapoint_get_timestamp(dp))
-                    results[resname].append([ tv, float(vs) ])
+    for name, dp_list in resources.iteritems():
+        #print name
+        results[name] = []
+        for dp in dp_list['datapoints']:
+            #print dp
+            tv = timeval_to_float(dp[0])
+            results[name].append([ tv, dp[1] ])
+
     return results
 
 if __name__ == "__main__":

@@ -70,7 +70,7 @@ def cb_datapoint(datapoint):
     
     value_str = bionet_value_to_str(value);
     #"%s.%s.%s:%s = %s %s %s @ %s"    
-    print(bionet_resource_get_name(resource) + " = " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
+    #print(bionet_resource_get_name(resource) + " = " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
     
     resource_name = bionet_resource_get_name(resource)
     found = False
@@ -80,21 +80,22 @@ def cb_datapoint(datapoint):
             if (bionet_resource_name_matches(resource_name, r)):
                 for name in sub['bionet-resources']:
                     if (name == resource_name):
-                        u = bionet_resources[name]
+                        u = sub['bionet-resources'][name]
                         if (None == u) or ('datapoints' not in u): # no user data is set yet
                             u = { 'datapoints' : [ dp ] }
-                            bionet_resources[name] = u
-                            print "Added datapoint to new user data"
+                            #bionet_resources[name] = u
+                            sub['bionet-resources'][name].append(u)
+                            #print "Added datapoint to new user data"
                         else: # user data is set, just append to it
                             u['datapoints'].append(dp)
-                            print "Added datapoint to existing user data"
+                            #print "Added datapoint to existing user data"
                         
                         found = True
                         
                 if (False == found):
-                    sub['bionet-resources'].append(resource_name)
                     u = { 'datapoints' : [ dp ] }
-                    bionet_resources[resource_name] = u
-                    print "Added datapoint to new user data of new resource"
+                    #bionet_resources[resource_name] = u
+                    sub['bionet-resources'][resource_name] = u
+                    #print "Added datapoint to new user data of new resource"
                      
-    print "Datapoint added"
+    #print "Datapoint added"

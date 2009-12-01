@@ -17,7 +17,7 @@ import matplotlib.dates as mdates
 from timespan import timespan_to_timevals, timeval_to_float
 import timechooser
 
-def bdmplot(**kwargs):
+def bdmplot(kwargs):
     """
     Plots a time series of Bionet Data Manager datapoints on a Matplotlib
     plot, renders that to png, and prints the png to stdout.  If called from 
@@ -38,7 +38,8 @@ def bdmplot(**kwargs):
              "format": "png",
              "width": 7,
              "height": 5,
-             "dpi": 60 }
+             "dpi": 60,
+             "bionet-resources" : {} }
     
     # Get args from the caller; these override the defaults but are 
     #         overriden by CGI.
@@ -53,13 +54,13 @@ def bdmplot(**kwargs):
         for k in form.keys():
             args[k] = form[k].value
     
-    timespan_vals = timespan_to_timevals(args["timespan"])
+    timespan_vals = timespan_to_timevals(args["timespan"][0])
     timespan_stamps = map(timeval_to_float, timespan_vals)
     timespan_stamps_now = map(lambda x : timeval_to_float(x, evaluateNow = True), timespan_vals)
     
     # Get the results
     from datapoints_to_dict import datapoints_to_dict
-    results = datapoints_to_dict(timespan_vals, args["filter"], args["regexp"])
+    results = datapoints_to_dict(timespan_vals, args["filter"], args["regexp"], args['bionet-resources'])
 
     # Split the dictionary into:
     #   - an array of legends based on the keys

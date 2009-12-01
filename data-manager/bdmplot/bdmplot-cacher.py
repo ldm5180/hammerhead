@@ -10,6 +10,7 @@ from twisted.web.resource import Resource
 from twisted_bdm_client import *
 from bdm_client import *
 from bdmplot_callback_cacher import *
+import bdmplot
 
 import optparse
 
@@ -17,12 +18,10 @@ def process_new_session_or_subscription(request):
     if ('resource' not in request.args) or ('timespan' not in request.args):
         return
 
-    resource_list = [] #create the list of resources associated with this session
-
     #create the session
     subscriptions.append( { 'filter' : request.args['resource'],
                             'timespan' : request.args['timespan'],
-                            'bionet-resources' : resource_list } )
+                            'bionet-resources' : {} } )
 
     # Convert the timespan into timevals and timestamps
     timespan_vals = timespan_to_timevals(request.args["timespan"][0])
@@ -38,21 +37,33 @@ class Datapoints(resource.Resource):
     isLeaf = True
 
     def render_GET(self, request):
-        found = False
+        found = None
         # existing session
         for sub in subscriptions:
             if (sub['filter'] == request.args['resource']) and (sub['timespan'] == request.args['timespan']):
-                found = True
+                found = sub
                 break
 
         if (found):
-            print "Found subscription"
-            return None
+            None
 
         else: # new subscription!
             retval = process_new_session_or_subscription(request)
-            return retval
+            for sub in subscriptions:
+                if (sub['filter'] == request.args['resource']) and (sub['timespan'] == request.args['timespan']):
+                    found = sub
+                    break
+        
+        retval = bdmplot.bdmplot(sub)
+        fname = "/tmp/" + request.args['resource'][0] + "." + request.args['timespan'][0]
+        retval['pylab'].savefig(fname, format=retval['args']["format"], dpi=retval['args']["dpi"])
 
+
+        request.setHeader('Content-Type', 'image/' + retval['args']["format"])
+        f = open(fname, 'rb')
+        return f.read()
+
+        #return retval
 
 def main():
     # parse options 
