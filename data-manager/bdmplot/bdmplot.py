@@ -17,7 +17,7 @@ import matplotlib.dates as mdates
 from timespan import timespan_to_timevals, timeval_to_float
 import timechooser
 
-def bdmplot(**kwargs):
+def bdmplot(kwargs, bionet_resources):
     """
     Plots a time series of Bionet Data Manager datapoints on a Matplotlib
     plot, renders that to png, and prints the png to stdout.  If called from 
@@ -38,7 +38,10 @@ def bdmplot(**kwargs):
              "format": "png",
              "width": 7,
              "height": 5,
-             "dpi": 60 }
+             "dpi": 60,
+             "bionet-resources" : {} }
+
+    fname = "/tmp/" + args['filter'][0] + "." + args['timespan'][0]
     
     # Get args from the caller; these override the defaults but are 
     #         overriden by CGI.
@@ -53,14 +56,17 @@ def bdmplot(**kwargs):
         for k in form.keys():
             args[k] = form[k].value
     
-    # Convert the timespan into timevals and timestamps
-    timespan_vals = timespan_to_timevals(args["timespan"])
+    timespan_vals = timespan_to_timevals(args["timespan"][0])
     timespan_stamps = map(timeval_to_float, timespan_vals)
     timespan_stamps_now = map(lambda x : timeval_to_float(x, evaluateNow = True), timespan_vals)
     
     # Get the results
     from datapoints_to_dict import datapoints_to_dict
-    results = datapoints_to_dict(timespan_vals, args["filter"], args["regexp"])
+    (updated, results) = datapoints_to_dict(timespan_vals, args["filter"], args["regexp"], bionet_resources)
+
+    # if it hasn't been updated then just use the cached image
+    if (updated == False):
+        return (fname, args['format'])
 
     # Split the dictionary into:
     #   - an array of legends based on the keys
@@ -98,13 +104,19 @@ def bdmplot(**kwargs):
 
     # Render the plot.
     pylab.show()
+
+    pylab.savefig(fname, format=args["format"], dpi=args["dpi"])
     
+    return (fname, args['format'])
+
+
+
+if __name__ == "__main__":
+    retval = bdmplot()
+
     # If CGI, add MIME header
     if os.environ.has_key("GATEWAY_INTERFACE"):
         print "Content-Type: image/" + args["format"] + "\n"
 
     # Print the plot.
-    pylab.savefig(os.sys.stdout, format=args["format"], dpi=args["dpi"])
-
-if __name__ == "__main__":
-    bdmplot()
+    retval['pylab'].savefig(os.sys.stdout, format=retval['args']["format"], dpi=retval['args']["dpi"])
