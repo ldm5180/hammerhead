@@ -9,7 +9,6 @@
 # Prelude.
 AC_PREREQ([2.59])
 AC_INIT([Bionet], [2.3], [bionet@bioserve.colorado.edu])
-
 # unique source file --- primitive safety check 
 AC_CONFIG_SRCDIR([cal/cal-server.h])
 
@@ -19,12 +18,17 @@ AC_CONFIG_AUX_DIR([build-aux])
 # local m4 scripts
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 
+#
+# Needed to support cross-compiling
+AC_CANONICAL_SYSTEM
+
+#AC_CANONICAL_TARGET
+
 # fairly severe build strictness
 # change foreign to gnu or gnits to comply with gnu standards
 AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.9.2])
 
-#AC_CANONICAL_TARGET
-#AC_CANONICAL_SYSTEM
+
 
 # Checks for programs.
 # We don't want to use the default AC_PROG_* flags set by these macros,
@@ -52,6 +56,19 @@ CXXFLAGS="$USERCXXFLAGS"
 AC_CHECK_TOOL([STRIP],[strip])
 
 AC_SUBST(docdir)
+
+
+AC_ARG_VAR([PKG_CONFIG_LIBDIR], [Replacement search path for pkg-config. Set when cross-compiling])
+# $cross_compiling is set automatically by this point
+if test "x$cross_compiling" = "xyes"; then
+    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "x")
+    if test "x$PKG_CONFIG_LIBDIR" = "x"; then
+        AC_MSG_FAILURE(["If cross compiling, you MUST set PKG_CONFIG_LIBDIR to the directory containing .pc files for $host_alias"])
+    fi
+else
+    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
+fi
+
 
 # Checks for libraries.
 AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
@@ -103,27 +120,9 @@ esac
 #                 [Define if you have want featureX support])
 #    ])
 
-if test "x$host_alias" != x; then
-  if test "x$build_alias" = x; then
-    cross_compiling=maybe
-    $as_echo "$as_me: WARNING: If you wanted to set the --build type, don't use --host.
-    If a cross compiler is detected then cross compile mode will be used." >&2
-    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
-  elif test "x$build_alias" != "x$host_alias"; then
-    cross_compiling=yes
-    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "x")
-  else
-    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
-  fi
-else
-    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
-fi
-
 if test "x$GLIB_CFLAGS" = "x" && test "x$GLIB_LIBS" = "x"; then
-    if test "$cross_compiling" != yes; then
     AM_PATH_GLIB_2_0([2.12.0], 
         [], [], [gthread])
-    fi
 fi
 if test "x$GLIB_CFLAGS" = "x" && test "x$GLIB_LIBS" = "x"; then
     AC_MSG_ERROR([GLIB required to build], [1])

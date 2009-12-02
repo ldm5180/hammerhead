@@ -19,6 +19,7 @@ BIONET_INTERFACE_VERSION=2:1:0
 #Purely aesthetic marketing version number
 BIONET_RELEASE_VERSION=2.5.0
 
+# Should be a check for specific gcc versions
 if CROSS_COMPILING
 AM_CFLAGS=-Wall -g -DBIONET_VERSION=\"$(BIONET_RELEASE_VERSION)\"
 else
