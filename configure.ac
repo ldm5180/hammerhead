@@ -86,23 +86,31 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-uname=`uname`
-case $uname in
-     Linux)
-     AC_MSG_RESULT(checking OS... Linux)
-     HAVE_LINUX=yes
-     HAVE_DARWIN=no
-     ALSA_ABLE=yes
+AC_MSG_CHECKING(["Checking OS"])
+case "$host_os" in
+     linux*)
+         AC_MSG_RESULT([Linux])
+         HAVE_LINUX=yes
+         HAVE_DARWIN=no
+         HAVE_WIN32=no
+         ALSA_ABLE=yes
      ;;
-     Darwin)
-     AC_MSG_RESULT(checking OS... Darwin/OSX)
-     HAVE_DARWIN=yes
-     HAVE_LINUX=no
-     ALSA_ABLE=no
+     darwin*)
+         AC_MSG_RESULT([Darwin/OSX])
+         HAVE_DARWIN=yes
+         HAVE_LINUX=no
+         HAVE_WIN32=no
+         ALSA_ABLE=no
+     ;;
+     mingw32*)
+         AC_MSG_RESULT([Windows (mingw32)])
+         HAVE_DARWIN=no
+         HAVE_LINUX=no
+         HAVE_WIN32=yes
+         ALSA_ABLE=no
      ;;
      *)
-     echo "[!] Your system architecture is not supported by Bionet v2"
-     exit 0
+         AC_MSG_FAILURE(["System architecture '$host_os' is not supported"])
      ;;
 esac
 
@@ -146,6 +154,7 @@ fi
 
 AM_CONDITIONAL(ENABLE_DARWIN, test "x$HAVE_DARWIN" = "xyes")
 AM_CONDITIONAL(ENABLE_LINUX, test "x$HAVE_LINUX" = "xyes")
+AM_CONDITIONAL(ENABLE_WIN32, test "x$HAVE_WIN32" = "xyes")
 
 
 ###
