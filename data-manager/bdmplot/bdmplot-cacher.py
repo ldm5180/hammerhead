@@ -22,10 +22,15 @@ def process_new_session_or_subscription(request):
     if ('resource' not in request.args) or ('timespan' not in request.args):
         return
 
+    regex = None
+    if 'regexp' in request.args:
+        regex = request.args['regexp'][0]
+
     #create the session
     subscriptions.append( { 'filter' : request.args['resource'][0],
                             'timespan' : request.args['timespan'],
-                            'last requested' : time.time() } )
+                            'last requested' : time.time(),
+                            'regexp' : regex } )
 
     # Convert the timespan into timevals and timestamps
     timespan_vals = timespan_to_timevals(request.args["timespan"][0])

@@ -50,6 +50,11 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, 
     # Stuff the result dictionary.
     results = {}
     for name, dpcache in resources.iteritems():
+        if (re_compiled != None):
+            m = re_compiled.match(name)
+            if (not m):
+                #print name, " does not match regex ", regexp
+                continue
         if (bionet_resource_name_matches(name, filter_string)):
             if (dpcache['new'] > 0):
                 updated = True
