@@ -11,7 +11,7 @@ from twisted_bionet_client import *
 from bionet import *
 from bionetplot_callback import *
 
-import optparse
+import optparse, time
 
 
 def process_new_session_or_subscription(sessions, session_id, request):
@@ -22,8 +22,9 @@ def process_new_session_or_subscription(sessions, session_id, request):
         resource_list = [] #create the list of resources associated with this session
 
         #create the session
-        sessions[session_id] = { 'resource' : request.args['resource'],
-                              'bionet-resources' : resource_list }
+        sessions[session_id] = { 'resource'         : request.args['resource'],
+                                 'bionet-resources' : resource_list,
+                                 'last requested'   : None}
 
         #subscribe to all the resources requested in the HTTP request
         for r in sessions[session_id]['resource']:
@@ -33,6 +34,8 @@ def process_new_session_or_subscription(sessions, session_id, request):
             sessions[session_id]['resource'].append(r)
             bionet_subscribe_datapoints_by_name(r)
 
+    sessions[session_id]['last requested'] = time.time()
+
     return "{}"
 
 
@@ -41,6 +44,9 @@ class DataServer(resource.Resource):
 
     def render_GET(self, request):
         session = request.getSession()
+
+        if (session in sessions):
+            sessions[session]['last requested'] = time.time()
 
         # existing session
         if (session in sessions) and (sessions[session]['resource'] == request.args['resource']):
@@ -74,6 +80,9 @@ class Datapoints(resource.Resource):
 
     def render_GET(self, request):
         session = request.getSession()
+
+        if (session in sessions):
+            sessions[session]['last requested'] = time.time()
 
         # existing session
         if (session in sessions) and (sessions[session]['resource'] == request.args['resource']):

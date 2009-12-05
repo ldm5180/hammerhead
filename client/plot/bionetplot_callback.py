@@ -1,6 +1,8 @@
 from bionet import *
 from timespan import timeval_to_int
 
+import time
+
 sessions = {}
 bionet_resources = {}
 
@@ -63,10 +65,15 @@ def cb_datapoint(datapoint):
     value_str = bionet_value_to_str(value);
     #"%s.%s.%s:%s = %s %s %s @ %s"    
     #print(bionet_resource_get_name(resource) + " = " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
+
+    now = time.time()
     
     resource_name = bionet_resource_get_name(resource)
     found = False
     dp = (timeval_to_int(bionet_datapoint_get_timestamp(datapoint)), value_str)
+
+    removal = []
+
     for session_id, session in sessions.iteritems():
         #print "Checking session", session_id
         for r in session['resource']:
@@ -91,5 +98,14 @@ def cb_datapoint(datapoint):
                     u = { 'datapoints' : [ dp ], 'sessions' : { session_id : [ dp ] } }
                     bionet_resources[resource_name] = u
                     #print "Added datapoint to new user data of new resource"
-                     
+
+        if (now > (session['last requested'] + 60)):
+            # this session hasn't been requested in more than 10 minutes. remove it
+            removal.append(session_id)
+                
+    for session_id in removal:
+        #print "removed subscription ", sessions[session_id]['resource']
+        del sessions[session_id]
+        # TODO: unsubscribe when bionet_unsubscribe() is implemented
+
     #print "Datapoint added"
