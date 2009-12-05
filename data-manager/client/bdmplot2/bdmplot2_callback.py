@@ -78,21 +78,24 @@ def cb_datapoint(datapoint):
     removal = []
 
     resource_name = bionet_resource_get_name(resource)
-    found = False
     dp = (timeval_to_int(bionet_datapoint_get_timestamp(datapoint)), value_str)
     for session_id, session in sessions.iteritems():
+        found = False
         for r in session['resource']:
             if (bionet_resource_name_matches(resource_name, r)):
                 for name in session['bionet-resources']:
                     if (name == resource_name):
                         u = bionet_resources[name]
-                        if (None == u) or ('datapoints' not in u): # no user data is set yet
+                        if (None == u) or ('datapoints' not in u) or ('sessions' not in u): # no user data is set yet
                             u = { 'datapoints' : [ dp ], 'sessions' : { session_id : [ dp ] } }
                             bionet_resources[name] = u
                             print "Added datapoint to new user data"
                         else: # user data is set, just append to it
                             u['datapoints'].append(dp)
-                            u['sessions'][session_id].append(dp)
+                            if session_id in u['sessions']:
+                                u['sessions'][session_id].append(dp)
+                            else:
+                                u['sessions'][session_id] = [ dp ]
                             #print "Added datapoint to existing user data"
                         
                         found = True
@@ -103,7 +106,7 @@ def cb_datapoint(datapoint):
                     bionet_resources[resource_name] = u
                     #print "Added datapoint to new user data of new resource"
                      
-        if (now > (session['last requested'] + 60)):
+        if (now > (session['last requested'] + 600)):
             # this session hasn't been requested in more than 10 minutes. remove it
             removal.append(session_id)
                 
