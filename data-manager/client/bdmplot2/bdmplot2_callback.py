@@ -1,6 +1,8 @@
 from bdm_client import *
 from timespan import timeval_to_int
 
+import time
+
 sessions = {}
 bionet_resources = {}
 
@@ -72,6 +74,9 @@ def cb_datapoint(datapoint):
     #"%s.%s.%s:%s = %s %s %s @ %s"    
     #print(bionet_resource_get_name(resource) + " = " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
     
+    now = time.time()
+    removal = []
+
     resource_name = bionet_resource_get_name(resource)
     found = False
     dp = (timeval_to_int(bionet_datapoint_get_timestamp(datapoint)), value_str)
@@ -98,4 +103,12 @@ def cb_datapoint(datapoint):
                     bionet_resources[resource_name] = u
                     #print "Added datapoint to new user data of new resource"
                      
+        if (now > (session['last requested'] + 60)):
+            # this session hasn't been requested in more than 10 minutes. remove it
+            removal.append(session_id)
+                
+    for session_id in removal:
+        #print "removed subscription ", sessions[session_id]['resource']
+        del sessions[session_id]
+        # TODO: unsubscribe when bdm_unsubscribe() is implemented
     

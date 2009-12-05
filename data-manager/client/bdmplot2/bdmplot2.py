@@ -11,7 +11,7 @@ from twisted_bdm_client import *
 from bdm_client import *
 from bdmplot2_callback import *
 
-import optparse
+import optparse, time
 
 def process_new_session_or_subscription(sessions, session_id, request):
     if ('resource' not in request.args) or ('timespan' not in request.args):
@@ -22,8 +22,9 @@ def process_new_session_or_subscription(sessions, session_id, request):
 
         #create the session
         sessions[session_id] = { 'resource' : request.args['resource'],
-                              'timespan' : request.args['timespan'],
-                              'bionet-resources' : resource_list }
+                                 'timespan' : request.args['timespan'],
+                                 'bionet-resources' : resource_list,
+                                 'last requested'   : None }
 
         #subscribe to all the resources requested in the HTTP request
         for r in sessions[session_id]['resource']:
@@ -37,6 +38,8 @@ def process_new_session_or_subscription(sessions, session_id, request):
         for t in request.args['timespan']:
             sessions[session_id]['timespan'].append(t)
 
+    sessions[session_id]['last requested'] = time.time()
+
     return "{}"
 
 
@@ -45,6 +48,9 @@ class DataServer(resource.Resource):
 
     def render_GET(self, request):
         session = request.getSession()
+
+        if (session in sessions):
+            sessions[session]['last requested'] = time.time()
 
         # existing session
         if (session in sessions) and (sessions[session]['resource'] == request.args['resource']) and (sessions[session]['timespan'] == request.args['timespan']):
@@ -77,6 +83,9 @@ class Datapoints(resource.Resource):
 
     def render_GET(self, request):
         session = request.getSession()
+
+        if (session in sessions):
+            sessions[session]['last requested'] = time.time()
 
         # existing session
         if (session in sessions) and (sessions[session]['resource'] == request.args['resource']) and (sessions[session]['timespan'] == request.args['timespan']):

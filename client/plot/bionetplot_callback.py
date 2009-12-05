@@ -99,7 +99,7 @@ def cb_datapoint(datapoint):
                     bionet_resources[resource_name] = u
                     #print "Added datapoint to new user data of new resource"
 
-        if (now > (session['last requested'] + 60)):
+        if (now > (session['last requested'] + 600)):
             # this session hasn't been requested in more than 10 minutes. remove it
             removal.append(session_id)
                 
