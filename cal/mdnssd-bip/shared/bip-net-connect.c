@@ -4,22 +4,22 @@
 // NNC07CB47C.
 
 
+#include "config.h"
+
 #include <ctype.h>
-#include <errno.h>
-#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <arpa/inet.h>
+// This includes all the platform specific sock headers
+// and defines some bip-socket-* warppers
+#include "bip-socket-api.h"
 
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-
-#include <sys/socket.h>
-#include <sys/types.h>
+// use errno only for setting, since errno codes on winsock are completely
+// incompatible with posix
+#include <errno.h>
 
 #include "cal-mdnssd-bip.h"
 
@@ -66,48 +66,33 @@ int bip_net_connect_nonblock(const char* peer_name, bip_peer_network_info_t *net
         return -1;
     }
 
-    s = socket(AF_INET, SOCK_STREAM, 0);
+    s = bip_socket_tcp();
     if (s < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: error making socket: %s", 
-            __FUNCTION__, strerror(errno));
         return -1;
     }
 
     //enable keep-alives
     {
         int one = 1;
-        if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, &one, sizeof(one))) {
+        if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, (void*)&one, sizeof(one))) {
             g_warning("%s: error setting SO_KEEPALIVE: %m", __FUNCTION__);
         }
 #ifdef LINUX
         int idle = 10, intvl = 10, cnt = 3;
-        if (setsockopt(s, SOL_TCP, TCP_KEEPIDLE, &idle, sizeof(idle))) {
+        if (setsockopt(s, SOL_TCP, TCP_KEEPIDLE, (void*)&idle, sizeof(idle))) {
             g_warning("%s: error setting TCP_KEEPIDLE: %m", __FUNCTION__);
         }
-        if (setsockopt(s, SOL_TCP, TCP_KEEPINTVL, &intvl, sizeof(intvl))) {
+        if (setsockopt(s, SOL_TCP, TCP_KEEPINTVL, (void*)&intvl, sizeof(intvl))) {
             g_warning("%s: error setting SO_KEEPINTVL: %m", __FUNCTION__);
         }
-        if (setsockopt(s, SOL_TCP, TCP_KEEPCNT, &cnt, sizeof(cnt))) {
+        if (setsockopt(s, SOL_TCP, TCP_KEEPCNT, (void*)&cnt, sizeof(cnt))) {
             g_warning("%s: error setting SO_KEEPCNT: %m", __FUNCTION__);
         }
 #endif
     }
 
     // Make socket non-blocking
-    {
-        int flags = fcntl(s, F_GETFL, 0);
-        if (flags < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-                "%s: error getting scket flags: %s", 
-                    __FUNCTION__, strerror(errno));
-            flags = 0;
-        }
-        if (fcntl(s, F_SETFL, flags | O_NONBLOCK) < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-                "%s: error setting scket flags: %s", 
-                    __FUNCTION__, strerror(errno));
-        }
-    }
+    bip_socket_set_blocking(s, 0);
 
     memset(&ai_hints, 0, sizeof(ai_hints));
     ai_hints.ai_family = AF_INET;  // IPv4
@@ -129,22 +114,8 @@ int bip_net_connect_nonblock(const char* peer_name, bip_peer_network_info_t *net
     ((struct sockaddr_in *)ai->ai_addr)->sin_port = htons(net->port);
 
     net->socket = s;
-    while((r = connect(s, ai->ai_addr, ai->ai_addrlen)) <0 && errno == EINTR);
     net->security_status = BIP_SEC_NONE;
-    if (r < 0 && errno != EINPROGRESS ) {
-        struct sockaddr_in *sin = (struct sockaddr_in *)ai->ai_addr;
-        g_log(
-            CAL_LOG_DOMAIN,
-            G_LOG_LEVEL_WARNING,
-            "%s: error connecting to peer '%s' at %s:%hu (%s): %s",
-            __FUNCTION__,
-            peer_name,
-            net->hostname,
-            net->port,
-            inet_ntoa(sin->sin_addr),
-            strerror(errno)
-        );
-        freeaddrinfo(ai);
+    if( 0 != bip_socket_connect(s, ai->ai_addr, ai->ai_addrlen, peer_name, net) ) {
         return -1;
     }
 
@@ -222,7 +193,7 @@ int bip_net_connect_check(const char * peer_name, bip_peer_network_info_t *net) 
                     ERR_error_string(ERR_get_error(), NULL));
             }
 	    BIO_free_all(bio);
-            errno = EPROTO;
+            errno = SSL_ERROR_ERNO_VAL;
 	    return -1;
 	} else {
 	    net->security_status = BIP_SEC_REQ;

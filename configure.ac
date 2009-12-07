@@ -94,6 +94,7 @@ case "$host_os" in
          HAVE_DARWIN=no
          HAVE_WIN32=no
          ALSA_ABLE=yes
+	 SYSAPI=posix
      ;;
      darwin*)
          AC_MSG_RESULT([Darwin/OSX])
@@ -101,18 +102,34 @@ case "$host_os" in
          HAVE_LINUX=no
          HAVE_WIN32=no
          ALSA_ABLE=no
+	 SYSAPI=posix
      ;;
+
+     *wince* | *mingwce* | *mingw32ce* | *pe*)
+         AC_MSG_RESULT([Windows CE])
+         HAVE_DARWIN=no
+         HAVE_LINUX=no
+         HAVE_WIN32=yes
+         ALSA_ABLE=no
+	 SYSAPI=wince
+	 AC_DEFINE([_WIN32_WINNT], 0x0501, [Define to '0x0501' for Windows 2000 APIs.])
+     ;;
+
      mingw32*)
          AC_MSG_RESULT([Windows (mingw32)])
          HAVE_DARWIN=no
          HAVE_LINUX=no
          HAVE_WIN32=yes
          ALSA_ABLE=no
+	 SYSAPI=win32
+	 AC_DEFINE([_WIN32_WINNT], 0x0501, [Define to '0x0501' for Windows 2000 APIs.])
      ;;
      *)
          AC_MSG_FAILURE(["System architecture '$host_os' is not supported"])
      ;;
 esac
+
+AC_SUBST([SYSAPI])
 
 # User Selected features template
 #AC_ARG_ENABLE([featureX],

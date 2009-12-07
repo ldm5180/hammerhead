@@ -25,7 +25,8 @@ libcal_mdnssd_bip_shared_la_SOURCES =   \
     bip-peer-free.c                     \
     bip-security.c			\
     bip-shared-cfg.c			\
-    bip-peer-is-secure.c
+    bip-peer-is-secure.c                \
+    $(SYSAPI)/bip-socket.c
 
 libcal_mdnssd_bip_shared_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) $(DBUS_CFLAGS) -I.. -I../.. -I../../util $(OPENSSL_CFLAGS)
 libcal_mdnssd_bip_shared_la_LIBADD = $(AM_LDADD) $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_CFLAGS) $(OPENSSL_LIBS)
