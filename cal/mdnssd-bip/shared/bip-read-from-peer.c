@@ -3,24 +3,20 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
+#include "config.h"
+
+#include "bip-socket-api.h"
 
 #include <ctype.h>
-#include <errno.h>
-#include <netdb.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <arpa/inet.h>
-
-#include <netinet/in.h>
-
-#include <sys/socket.h>
-#include <sys/types.h>
-
 #include <glib.h>
-#include <dns_sd.h>
+
+// This inclues the correct headers for the platform,
+// and defiens the platform abstraction layer for mdns-sd
+#include "bip-mdnssd-api.h"
 
 #include "cal-mdnssd-bip.h"
 

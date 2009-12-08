@@ -9,7 +9,6 @@
 # Prelude.
 AC_PREREQ([2.59])
 AC_INIT([Bionet], [2.3], [bionet@bioserve.colorado.edu])
-
 # unique source file --- primitive safety check 
 AC_CONFIG_SRCDIR([cal/cal-server.h])
 
@@ -19,12 +18,17 @@ AC_CONFIG_AUX_DIR([build-aux])
 # local m4 scripts
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 
+#
+# Needed to support cross-compiling
+AC_CANONICAL_SYSTEM
+
+#AC_CANONICAL_TARGET
+
 # fairly severe build strictness
 # change foreign to gnu or gnits to comply with gnu standards
 AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.9.2])
 
-#AC_CANONICAL_TARGET
-#AC_CANONICAL_SYSTEM
+
 
 # Checks for programs.
 # We don't want to use the default AC_PROG_* flags set by these macros,
@@ -53,6 +57,19 @@ AC_CHECK_TOOL([STRIP],[strip])
 
 AC_SUBST(docdir)
 
+
+AC_ARG_VAR([PKG_CONFIG_LIBDIR], [Replacement search path for pkg-config. Set when cross-compiling])
+# $cross_compiling is set automatically by this point
+if test "x$cross_compiling" = "xyes"; then
+    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "x")
+    if test "x$PKG_CONFIG_LIBDIR" = "x"; then
+        AC_MSG_FAILURE(["If cross compiling, you MUST set PKG_CONFIG_LIBDIR to the directory containing .pc files for $host_alias"])
+    fi
+else
+    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
+fi
+
+
 # Checks for libraries.
 AC_ARG_ENABLE(check, AC_HELP_STRING([--disable-check],
       [disable check unit testing]),
@@ -69,25 +86,50 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-uname=`uname`
-case $uname in
-     Linux)
-     AC_MSG_RESULT(checking OS... Linux)
-     HAVE_LINUX=yes
-     HAVE_DARWIN=no
-     ALSA_ABLE=yes
+AC_MSG_CHECKING(["Checking OS"])
+case "$host_os" in
+     linux*)
+         AC_MSG_RESULT([Linux])
+         HAVE_LINUX=yes
+         HAVE_DARWIN=no
+         HAVE_WIN32=no
+         ALSA_ABLE=yes
+	 SYSAPI=posix
      ;;
-     Darwin)
-     AC_MSG_RESULT(checking OS... Darwin/OSX)
-     HAVE_DARWIN=yes
-     HAVE_LINUX=no
-     ALSA_ABLE=no
+     darwin*)
+         AC_MSG_RESULT([Darwin/OSX])
+         HAVE_DARWIN=yes
+         HAVE_LINUX=no
+         HAVE_WIN32=no
+         ALSA_ABLE=no
+	 SYSAPI=posix
+     ;;
+
+     *wince* | *mingwce* | *mingw32ce* | *pe*)
+         AC_MSG_RESULT([Windows CE])
+         HAVE_DARWIN=no
+         HAVE_LINUX=no
+         HAVE_WIN32=yes
+         ALSA_ABLE=no
+	 SYSAPI=wince
+	 AC_DEFINE([_WIN32_WINNT], 0x0501, [Define to '0x0501' for Windows 2000 APIs.])
+     ;;
+
+     mingw32*)
+         AC_MSG_RESULT([Windows (mingw32)])
+         HAVE_DARWIN=no
+         HAVE_LINUX=no
+         HAVE_WIN32=yes
+         ALSA_ABLE=no
+	 SYSAPI=win32
+	 AC_DEFINE([_WIN32_WINNT], 0x0501, [Define to '0x0501' for Windows 2000 APIs.])
      ;;
      *)
-     echo "[!] Your system architecture is not supported by Bionet v2"
-     exit 0
+         AC_MSG_FAILURE(["System architecture '$host_os' is not supported"])
      ;;
 esac
+
+AC_SUBST([SYSAPI])
 
 # User Selected features template
 #AC_ARG_ENABLE([featureX],
@@ -103,27 +145,9 @@ esac
 #                 [Define if you have want featureX support])
 #    ])
 
-if test "x$host_alias" != x; then
-  if test "x$build_alias" = x; then
-    cross_compiling=maybe
-    $as_echo "$as_me: WARNING: If you wanted to set the --build type, don't use --host.
-    If a cross compiler is detected then cross compile mode will be used." >&2
-    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
-  elif test "x$build_alias" != "x$host_alias"; then
-    cross_compiling=yes
-    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "x")
-  else
-    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
-  fi
-else
-    AM_CONDITIONAL(CROSS_COMPILING, test "x" = "y")
-fi
-
 if test "x$GLIB_CFLAGS" = "x" && test "x$GLIB_LIBS" = "x"; then
-    if test "$cross_compiling" != yes; then
     AM_PATH_GLIB_2_0([2.12.0], 
         [], [], [gthread])
-    fi
 fi
 if test "x$GLIB_CFLAGS" = "x" && test "x$GLIB_LIBS" = "x"; then
     AC_MSG_ERROR([GLIB required to build], [1])
@@ -147,6 +171,7 @@ fi
 
 AM_CONDITIONAL(ENABLE_DARWIN, test "x$HAVE_DARWIN" = "xyes")
 AM_CONDITIONAL(ENABLE_LINUX, test "x$HAVE_LINUX" = "xyes")
+AM_CONDITIONAL(ENABLE_WIN32, test "x$HAVE_WIN32" = "xyes")
 
 
 ###
