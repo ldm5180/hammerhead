@@ -12,8 +12,6 @@ if ENABLE_LINUX
 LDCONFIG_EXE = /sbin/ldconfig
 endif
 
-LIB_INST_DIR=`echo "import sys; print sys.prefix + \"/lib/python\" + str(sys.version_info[0]) + \".\" + str(sys.version_info[1])" | python`
-
 python_PYTHON = bionet.py
 python_LTLIBRARIES = _bionet.la
 
