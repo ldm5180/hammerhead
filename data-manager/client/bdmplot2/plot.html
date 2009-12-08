@@ -17,8 +17,8 @@
     <p id="hoverdata"><span id="clickdata"></span></p>
 
     <p>
-      Enter Bionet resource name pattern:<br />
-      <input id="dataUpdate" class="dataUpdate" type="button" value="Start Plotting"><input type="text" size="60" id="subscription" maxlength="400"><br />
+      Enter Bionet resource name pattern and timespan:<br />
+      <input id="dataUpdate" class="dataUpdate" type="button" value="Start Plotting"><input type="text" size="60" id="subscription" maxlength="400"><input type="text" size="20" id="timespan" maxlength="100" value="last 1d"><br />
       <!--<label for="starttime">Start Time</label><input id="starttime" size="23" type="text" maxlength="256"> <label for="stoptime">Stop Time</label><input id="stoptime" size="23" type="text" maxlength="256">-->
     </p>
 
@@ -138,6 +138,7 @@ $(function () {
         poll = 1;
 
         var subscription = $("#subscription").attr("value");
+        var timespan = $("#timespan").attr("value");
 
         document.getElementById("dataUpdate").disabled=true;
 
@@ -250,7 +251,7 @@ $(function () {
             }
 
             $.ajax({
-		url: "/" + firsttime + "/?resource="+subscription+"&timespan=1d",
+		url: "/" + firsttime + "/?resource="+subscription+"&timespan="+timespan,
                 method: 'GET',
                 dataType: 'json',
                 success: onDataReceived

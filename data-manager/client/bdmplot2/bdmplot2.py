@@ -11,6 +11,8 @@ from twisted_bdm_client import *
 from bdm_client import *
 from bdmplot2_callback import *
 
+from timespan import timespan_to_timevals
+
 import optparse, time
 
 def process_new_session_or_subscription(sessions, session_id, request):
@@ -26,10 +28,12 @@ def process_new_session_or_subscription(sessions, session_id, request):
                                  'bionet-resources' : resource_list,
                                  'last requested'   : None }
 
+        timespan_vals = timespan_to_timevals(request.args["timespan"][0])
+
         #subscribe to all the resources requested in the HTTP request
         for r in sessions[session_id]['resource']:
             #print "Subscribing to %(resource)s" % { 'resource' : r }
-            bdm_subscribe_datapoints_by_name(r, None, None)
+            bdm_subscribe_datapoints_by_name(r, timespan_vals[0], timespan_vals[1])
 
     else:
         for r in request.args['resource']:
