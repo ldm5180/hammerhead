@@ -18,7 +18,9 @@ Build-Depends: debhelper (>= 6),
  libsqlite3-dev,
  check,
  bison,
- flex
+ flex,
+ libsqlite3-0,
+ python-gobject
 Standards-Version: 3.8.0
 Section: net
 Homepage: http://bioserve.colorado.edu/bionet
