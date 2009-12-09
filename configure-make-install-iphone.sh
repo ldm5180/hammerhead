@@ -59,6 +59,14 @@ autoreconf --force --install
 #export AR="$XPORTROOT/bin/$XHOST-ar"
 #export NM="$XPORTROOT/bin/$XHOST-nm"
 
+
+ 
+#
+# Answer configure tests that can't be solved for iPhoneOS SDK
+#
+export GLIB_CFLAGS=`$PKG_CONFIG --cflags glib-2.0 gthread-2.0`
+export GLIB_LIBS=`$PKG_CONFIG --libs glib-2.0 gthread-2.0`
+
 ./configure \
 	--host=$XHOST \
 	--enable-static \

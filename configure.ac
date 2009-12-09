@@ -59,7 +59,7 @@ AC_SUBST(docdir)
 
 
 AC_ARG_VAR([PKG_CONFIG_LIBDIR], [Replacement search path for pkg-config. Set when cross-compiling])
-# $cross_compiling is set automatically by this point
+# $cross_compiling is set automatically by this point, 
 if test "x$cross_compiling" = "xyes"; then
     AM_CONDITIONAL(CROSS_COMPILING, test "x" = "x")
     if test "x$PKG_CONFIG_LIBDIR" = "x"; then
@@ -155,18 +155,14 @@ fi
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
-if test "$cross_compiling" != yes; then
 PKG_CHECK_MODULES(OPENSSL, [ openssl >= 0.9.8 ])
-fi
 AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
 
-if test "$cross_compiling" != yes; then
-if test "x$HAVE_DARWIN" = "xno"; then
+if test "x$HAVE_LINUX" = "xyes"; then
     PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
     AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
     AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)
-fi
 fi
 
 AM_CONDITIONAL(ENABLE_DARWIN, test "x$HAVE_DARWIN" = "xyes")
