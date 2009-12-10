@@ -7,7 +7,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <netdb.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,25 +49,10 @@ struct cal_client_mdnssd_bip_service_context {
     char * peer_name;
 };
 
-static GSList *service_list = NULL;
-
-static GList *connecting_peer_list = NULL;
-
-
-
-// the key is a peer name
-// the value is a bip_peer_t pointer if the peer is known, NULL if it's unknown
-static GHashTable *peers = NULL;
-
-
-
 typedef struct {
     char *peer_name;
     char *topic;
 } cal_client_mdnssd_bip_subscription_t;
-
-static GPtrArray *subscriptions = NULL;
-
 
 static void report_new_peer(bip_peer_t * peer);
 static void report_new_subscription(bip_peer_t * peer, const char * subscription);
@@ -89,7 +73,7 @@ bip_peer_t *get_peer_by_name(const char *peer_name) {
     char *hash_key;
     bip_peer_t *peer;
 
-    peer = g_hash_table_lookup(peers, peer_name);
+    peer = g_hash_table_lookup(this->peers, peer_name);
     if (peer != NULL) return peer;
 
     peer = bip_peer_new();
@@ -111,7 +95,7 @@ bip_peer_t *get_peer_by_name(const char *peer_name) {
         return NULL;
     };
 
-    g_hash_table_insert(peers, hash_key, peer);
+    g_hash_table_insert(this->peers, hash_key, peer);
 
     return peer;
 }
@@ -208,10 +192,10 @@ static int send_subscriptions(bip_peer_t *peer) {
         return -1;
     }
 
-    for (i = 0; i < subscriptions->len; i ++) {
+    for (i = 0; i < this->subscriptions->len; i ++) {
         cal_client_mdnssd_bip_subscription_t *s;
 
-        s = (cal_client_mdnssd_bip_subscription_t *)g_ptr_array_index(subscriptions, i);
+        s = (cal_client_mdnssd_bip_subscription_t *)g_ptr_array_index(this->subscriptions, i);
         if (s == NULL) continue;
 
         if (this->peer_matches(peer->peer_name, s->peer_name) != 0) continue;
@@ -238,7 +222,7 @@ static void reset_connection(bip_peer_t * peer) {
     int fd = bip_peer_connect_nonblock(peer);
     if(fd >= 0) {
         // The next net is not ready yet
-        connecting_peer_list = g_list_append(connecting_peer_list, peer);
+        this->connecting_peer_list = g_list_append(this->connecting_peer_list, peer);
     }
 }
 
@@ -252,7 +236,10 @@ static void read_from_user(void) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: error reading from user: %s", strerror(errno));
         return;
     } else if (r != sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: short read from user");
+        if ( r > 0 ) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: short read from user");
+        }
+        this->running = 0;
         return;
     }
 
@@ -330,7 +317,7 @@ static void read_from_user(void) {
             s->topic = event->topic;
             event->topic = NULL;
 
-            g_ptr_array_add(subscriptions, s);
+            g_ptr_array_add(this->subscriptions, s);
 
 
             //
@@ -342,7 +329,7 @@ static void read_from_user(void) {
                 const char *name;
                 bip_peer_t *peer;
 
-                g_hash_table_iter_init (&iter, peers);
+                g_hash_table_iter_init (&iter, this->peers);
                 while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
                     if (bip_peer_get_connected_net(peer) == NULL) continue;
                     if (this->peer_matches(name, s->peer_name) != 0) continue;
@@ -380,13 +367,13 @@ static void read_from_user(void) {
             //
 
             i = 0;
-            while (i < subscriptions->len) {
-                s = (cal_client_mdnssd_bip_subscription_t*)g_ptr_array_index(subscriptions, i);
+            while (i < this->subscriptions->len) {
+                s = (cal_client_mdnssd_bip_subscription_t*)g_ptr_array_index(this->subscriptions, i);
 
                 if ((strcmp(event->peer_name, s->peer_name) == 0) &&
                     (strcmp(event->topic, s->topic) == 0)) {
 
-                    s = (cal_client_mdnssd_bip_subscription_t*)g_ptr_array_remove_index(subscriptions, i);
+                    s = (cal_client_mdnssd_bip_subscription_t*)g_ptr_array_remove_index(this->subscriptions, i);
 
                     if (s->peer_name != NULL) free(s->peer_name);
                     if (s->topic != NULL) free(s->topic);
@@ -409,7 +396,7 @@ static void read_from_user(void) {
                 const char *name;
                 bip_peer_t *peer;
 
-                g_hash_table_iter_init (&iter, peers);
+                g_hash_table_iter_init (&iter, this->peers);
                 while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
                     if (bip_peer_get_connected_net(peer) == NULL) continue;
                     if (this->peer_matches(name, event->peer_name) != 0) continue;
@@ -560,7 +547,7 @@ static void resolve_callback(
 
     // remove this service_ref from the list
     DNSServiceRefDeallocate(sc->service_ref);
-    service_list = g_slist_remove(service_list, sc);
+    this->service_list = g_slist_remove(this->service_list, sc);
     free(sc);
 
     if (errorCode != kDNSServiceErr_NoError) {
@@ -617,7 +604,7 @@ static void resolve_callback(
     if(bip_peer_connect_nonblock(peer) < 0) {
         return;
     }
-    connecting_peer_list = g_list_append(connecting_peer_list, peer);
+    this->connecting_peer_list = g_list_append(this->connecting_peer_list, peer);
 
     return;
 }
@@ -676,12 +663,12 @@ static void browse_callback(
         }
 
         // add this new service ref to the list
-        service_list = g_slist_prepend(service_list, sc);
+        this->service_list = g_slist_prepend(this->service_list, sc);
     } else {
 #if 0
         bip_peer_t *peer;
 
-        peer = g_hash_table_lookup(peers, name);
+        peer = g_hash_table_lookup(this->peers, name);
         if (peer == NULL) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "browse_callback: got an mDNS Leave event for unknown server '%s', ignoring", name);
             return;
@@ -699,16 +686,16 @@ static void browse_callback(
 
 
 // cancel all pending mDNS-SD service requests
-void cleanup_service_list(void *unused) {
+static void cleanup_service_list(cal_client_mdnssd_bip_t * this) {
     GSList *ptr;
 
-    ptr = service_list;
+    ptr = this->service_list;
     while (ptr != NULL) {
         GSList *next = ptr->next;
         struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
 
         DNSServiceRefDeallocate(sc->service_ref);
-        service_list = g_slist_remove(service_list, sc);
+        this->service_list = g_slist_remove(this->service_list, sc);
         free(sc->peer_name);
         free(sc);
         ptr = next;
@@ -717,24 +704,31 @@ void cleanup_service_list(void *unused) {
 
 
 // clean up the peers hash table
-void cleanup_peers(void *unused) {
-    g_hash_table_unref(peers);
+static void cleanup_peers(cal_client_mdnssd_bip_t * this) {
+    if ( NULL == this->peers) return;
+
+    g_hash_table_unref(this->peers);
+    this->peers = NULL;
 }
 
 
 // clean up the subscriptions list
-void cleanup_subscriptions(void *unused) {
+static void cleanup_subscriptions(cal_client_mdnssd_bip_t * this) {
     int i;
 
-    for (i = 0; i < subscriptions->len; i ++) {
-        cal_client_mdnssd_bip_subscription_t *s = g_ptr_array_index(subscriptions, i);
+    if ( NULL == this->subscriptions ) return;
+
+    for (i = 0; i < this->subscriptions->len; i ++) {
+        cal_client_mdnssd_bip_subscription_t *s = g_ptr_array_index(this->subscriptions, i);
         if (s == NULL) continue;
         if (s->peer_name != NULL) free(s->peer_name);
         if (s->topic != NULL) free(s->topic);
         free(s);
     }
 
-    g_ptr_array_free(subscriptions, 1);
+    g_ptr_array_free(this->subscriptions, 1);
+
+    this->subscriptions = NULL;
 }
 
 
@@ -882,13 +876,16 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     int r;
 
     // block all signals in this thread
+#if 0
     {
         sigset_t ss;
         sigfillset(&ss);
         pthread_sigmask(SIG_BLOCK, &ss, NULL);
     }
+#endif
 
     this = (cal_client_mdnssd_bip_t *)arg;
+    this->running = 1;
 
     r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", cal_client_mdnssd_bip_network_type);
     if (r >= sizeof(mdnssd_service_name)) {
@@ -896,14 +893,10 @@ void *cal_client_mdnssd_bip_function(void *arg) {
         return NULL;
     }
 
-    subscriptions = g_ptr_array_new();
-    pthread_cleanup_push(cleanup_subscriptions, NULL);
+    this->subscriptions = g_ptr_array_new();
 
     // Shutup annoying nag message on Linux.
     setenv("AVAHI_COMPAT_NOWARN", "1", 1);
-
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
 
     // Initialize SSL library
     //SSL_load_error_strings();
@@ -935,14 +928,11 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 	return NULL;
     }
 
-    service_list = g_slist_prepend(service_list, browse);
-    pthread_cleanup_push(cleanup_service_list, NULL);
+    this->service_list = g_slist_prepend(this->service_list, browse);
 
-    peers = g_hash_table_new_full(g_str_hash, g_str_equal, free, free_peer);
-    pthread_cleanup_push(cleanup_peers, NULL);
+    this->peers = g_hash_table_new_full(g_str_hash, g_str_equal, free, free_peer);
 
-
-    while (1) {
+    while (this->running) {
         fd_set readers;
         fd_set writers;
         int max_fd;
@@ -958,7 +948,7 @@ SELECT_LOOP_CONTINUE:
 
 
         // each DNS-SD service request has its own fd
-        for (ptr = service_list; ptr != NULL; ptr = ptr->next) {
+        for (ptr = this->service_list; ptr != NULL; ptr = ptr->next) {
             struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
             int fd = DNSServiceRefSockFD(sc->service_ref);
             FD_SET(fd, &readers);
@@ -966,7 +956,7 @@ SELECT_LOOP_CONTINUE:
         }
 
         // each connect-pending socket
-        for ( dptr = connecting_peer_list; dptr != NULL; dptr = dptr->next) {
+        for ( dptr = this->connecting_peer_list; dptr != NULL; dptr = dptr->next) {
             bip_peer_t *peer = dptr->data;
             if ( peer->nets->len > 0 ) {
                 bip_peer_network_info_t *net;
@@ -993,7 +983,7 @@ SELECT_LOOP_CONTINUE:
             const char *name;
             bip_peer_t *peer;
 
-            g_hash_table_iter_init (&iter, peers);
+            g_hash_table_iter_init (&iter, this->peers);
             while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
                 bip_peer_network_info_t *net = bip_peer_get_connected_net(peer);
                 if (net == NULL) continue;
@@ -1009,7 +999,7 @@ SELECT_LOOP_CONTINUE:
         r = select(max_fd + 1, &readers, &writers, NULL, NULL);
 
         // See if any connect()s have finished. 
-        for ( dptr = connecting_peer_list; dptr != NULL; dptr = dptr->next) {
+        for ( dptr = this->connecting_peer_list; dptr != NULL; dptr = dptr->next) {
             bip_peer_t *peer = dptr->data;
             if ( peer->nets->len > 0 ) {
                 bip_peer_network_info_t *net;
@@ -1021,13 +1011,13 @@ SELECT_LOOP_CONTINUE:
                     r = bip_peer_connect_finish(peer);
                     if (r == 0 ) continue; // Call again later
 
-                    connecting_peer_list = g_list_delete_link(connecting_peer_list, dptr);
+                    this->connecting_peer_list = g_list_delete_link(this->connecting_peer_list, dptr);
                     if( r < 0 ) {
                         // This connect failed. Try the next one
                         int fd = bip_peer_connect_nonblock(peer);
                         if(fd >= 0) {
                             // The next net is not ready yet
-                            connecting_peer_list = g_list_append(connecting_peer_list, peer);
+                            this->connecting_peer_list = g_list_append(this->connecting_peer_list, peer);
                         } else {
                             // No more nets to try.
                             // TODO Send an error message instead of a duplicate 
@@ -1044,7 +1034,7 @@ SELECT_LOOP_CONTINUE:
         }
 
         // see if any DNS-SD service requests finished
-        for (ptr = service_list; ptr != NULL; ptr = ptr->next) {
+        for (ptr = this->service_list; ptr != NULL; ptr = ptr->next) {
             struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
             int fd = DNSServiceRefSockFD(sc->service_ref);
 
@@ -1078,7 +1068,7 @@ SELECT_LOOP_CONTINUE:
             const char *name;
             bip_peer_t *peer;
 
-            g_hash_table_iter_init(&iter, peers);
+            g_hash_table_iter_init(&iter, this->peers);
             while (g_hash_table_iter_next (&iter, (gpointer)&name, (gpointer)&peer)) {
                 bip_peer_network_info_t *net;
 
@@ -1104,11 +1094,17 @@ SELECT_LOOP_CONTINUE:
     }
 
     //
-    // NOT REACHED!
+    // We were asked to exit
     //
+    close(cal_client_mdnssd_bip_fds_to_user[1]);
+    cal_client_mdnssd_bip_fds_to_user[1] = -1;
+    
+    return 0;
+}
 
-    pthread_cleanup_pop(0);  // don't execute cleanup_peers
-    pthread_cleanup_pop(0);  // don't execute cleanup_service_list
-    pthread_cleanup_pop(0);  // don't execute cleanup_subscriptions
+void cal_client_mdnssd_bip_thread_destroy(cal_client_mdnssd_bip_t* thread_data) {
+    cleanup_peers(thread_data);
+    cleanup_service_list(thread_data);
+    cleanup_subscriptions(thread_data);
 }
 

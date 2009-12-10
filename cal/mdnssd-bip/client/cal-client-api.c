@@ -18,6 +18,8 @@
 #include "cal-mdnssd-bip.h"
 #include "cal-client-mdnssd-bip.h"
 
+static GThread *client_thread = NULL;
+static cal_client_mdnssd_bip_t *client_thread_data = NULL;
 
 extern SSL_CTX * ssl_ctx_client;
 extern bip_sec_type_t client_require_security;
@@ -28,8 +30,6 @@ int cal_client_mdnssd_bip_init(
     int (*peer_matches)(const char *peer_name, const char *subscription)
 ) {
     int r;
-
-    cal_client_mdnssd_bip_t *this;
 
     bip_shared_config_init();
 
@@ -50,16 +50,16 @@ int cal_client_mdnssd_bip_init(
 
 
     // set up the context
-    this = (cal_client_mdnssd_bip_t *)calloc(1, sizeof(cal_client_mdnssd_bip_t));
-    if (this == NULL) {
+    client_thread_data = (cal_client_mdnssd_bip_t *)calloc(1, sizeof(cal_client_mdnssd_bip_t));
+    if (client_thread_data == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: out of memory!");
         goto fail1;
     }
 
     if (peer_matches == NULL) {
-        this->peer_matches = strcmp;
+        client_thread_data->peer_matches = strcmp;
     } else {
-        this->peer_matches = peer_matches;
+        client_thread_data->peer_matches = peer_matches;
     }
 
     // create the pipe for passing events back to the user thread
@@ -76,50 +76,39 @@ int cal_client_mdnssd_bip_init(
         goto fail3;
     }
 
-    cal_client_mdnssd_bip_thread = (pthread_t *)malloc(sizeof(pthread_t));
-    if (cal_client_mdnssd_bip_thread == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot allocate memory for thread: %s", strerror(errno));
-        goto fail4;
-    }
-
-    // record the user's callback function
-    cal_client.callback = callback;
-
-    // start the Client thread
-    r = pthread_create(cal_client_mdnssd_bip_thread, NULL, cal_client_mdnssd_bip_function, this);
-    if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot create thread: %s", strerror(errno));
-        goto fail5;
-    }
-
 
     // make the cal_fd non-blocking
     r = fcntl(cal_client_mdnssd_bip_fds_to_user[0], F_SETFL, O_NONBLOCK);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot make cal_fd nonblocking: %s", strerror(errno));
-        goto fail6;
+        goto fail3;
+    }
+
+    // record the user's callback function
+    cal_client.callback = callback;
+
+    // Create and start the client thread
+    GError *err = NULL;
+    client_thread = g_thread_create(
+            cal_client_mdnssd_bip_function,
+            client_thread_data,
+            TRUE,
+            &err);
+
+    if ( client_thread == NULL ) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot create thread: %s", err->message);
+        g_error_free(err);
+        goto fail4;
     }
 
 
     return cal_client_mdnssd_bip_fds_to_user[0];
 
 
-fail6: 
-    r = pthread_cancel(*cal_client_mdnssd_bip_thread);
-    if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error canceling client thread: %s", strerror(errno));
-    } else {
-        pthread_join(*cal_client_mdnssd_bip_thread, NULL);
-        free(cal_client_mdnssd_bip_thread);
-        cal_client_mdnssd_bip_thread = NULL;
-    }
-
-fail5:
-    free(cal_client_mdnssd_bip_thread);
-    cal_client_mdnssd_bip_thread = NULL;
+fail4:
+    client_thread = NULL;
     cal_client.callback = NULL;
 
-fail4:
     close(cal_client_mdnssd_bip_fds_from_user[0]);
     close(cal_client_mdnssd_bip_fds_from_user[1]);
 
@@ -128,7 +117,7 @@ fail3:
     close(cal_client_mdnssd_bip_fds_to_user[1]);
 
 fail2:
-    free(this);
+    cal_client_mdnssd_bip_thread_destroy(client_thread_data);
 
 fail1:
     free(cal_client_mdnssd_bip_network_type);
@@ -140,24 +129,31 @@ fail0:
 
 
 
+static void _eat_messages_until_shutdown(void) {
+    char buf[1024];
+
+    while(read(cal_client_mdnssd_bip_fds_to_user[0], buf, sizeof(buf)) > 0 );
+
+}
 
 void cal_client_mdnssd_bip_shutdown(void) {
-    int r;
-
-    if (cal_client_mdnssd_bip_thread == NULL) {
+    if (client_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: called before init()!");
         return;
     }
 
-    r = pthread_cancel(*cal_client_mdnssd_bip_thread);
-    if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: error canceling client thread: %s", strerror(errno));
-        return;
-    } else {
-        pthread_join(*cal_client_mdnssd_bip_thread, NULL);
-        free(cal_client_mdnssd_bip_thread);
-        cal_client_mdnssd_bip_thread = NULL;
-    }
+    close(cal_client_mdnssd_bip_fds_from_user[1]);
+    cal_client_mdnssd_bip_fds_from_user[1] = -1;
+
+    _eat_messages_until_shutdown();
+
+    g_thread_join(client_thread);
+
+    // Thread has exited, clean up its state
+    cal_client_mdnssd_bip_thread_destroy(client_thread_data);
+
+    client_thread = NULL;
+    client_thread_data = NULL;
 
     close(cal_client_mdnssd_bip_fds_to_user[0]);
     close(cal_client_mdnssd_bip_fds_to_user[1]);
@@ -179,7 +175,7 @@ int cal_client_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
     int r;
     cal_event_t *event;
 
-    if (cal_client_mdnssd_bip_thread == NULL) {
+    if (client_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: called before init()!");
         return 0;
     }
@@ -237,7 +233,7 @@ int cal_client_mdnssd_bip_unsubscribe(const char *peer_name, const char *topic) 
     int r;
     cal_event_t *event;
 
-    if (cal_client_mdnssd_bip_thread == NULL) {
+    if (client_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: called before init()!");
         return 0;
     }
@@ -295,7 +291,7 @@ int cal_client_mdnssd_bip_read(struct timeval * timeout) {
     cal_event_t *event;
     int r;
 
-    if (cal_client_mdnssd_bip_thread == NULL) {
+    if (client_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: called before init()!");
         return 0;
     }
@@ -377,7 +373,7 @@ int cal_client_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
     int r;
     cal_event_t *event;
 
-    if (cal_client_mdnssd_bip_thread == NULL) {
+    if (client_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: called before init()!");
         return 0;
     }

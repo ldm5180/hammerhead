@@ -8,8 +8,6 @@
 #define __CAL_MDNSSD_BIP_CLIENT_H
 
 
-#include <pthread.h>
-
 #include <dns_sd.h>
 #include <glib.h>
 
@@ -25,6 +23,17 @@
 
 typedef struct {
     int (*peer_matches)(const char *peer_name, const char *subscription);
+    int running;
+    GSList *service_list;
+    GList *connecting_peer_list;
+    //
+    // the key is a peer name
+    // the value is a bip_peer_t pointer if the peer is known, NULL if it's unknown
+    GHashTable *peers;
+
+    GPtrArray *subscriptions;
+
+
 } cal_client_mdnssd_bip_t;
 
 
@@ -41,10 +50,10 @@ extern int cal_client_mdnssd_bip_fds_from_user[2];
 
 
 // the Client thread
-extern pthread_t *cal_client_mdnssd_bip_thread;
 void *cal_client_mdnssd_bip_function(void *arg);
 
 
+extern void cal_client_mdnssd_bip_thread_destroy(cal_client_mdnssd_bip_t* thread_data);
 
 
 #endif  //  __CAL_MDNSSD_BIP_CLIENT_H
