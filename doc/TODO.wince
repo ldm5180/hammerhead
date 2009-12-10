@@ -15,6 +15,9 @@ Major Porting Issues:
         Some reports on success compiling the mDNS stack into an application:
           - http://lists.apple.com/archives/bonjour-dev/2007/Mar/msg00001.html
 
+        Est: 20h
+        Risk: 10h-80h 
+
 
     2.  Glib: There is no GLIB for WinCE. It looks like there are clear
         instruction to cross-compile for Win32. WinCE is the last thing on the
@@ -32,6 +35,9 @@ Major Porting Issues:
          - g_thread
          - g_warn / g_log ....
 
+        Est: 40h
+        Risk: 40h-120h
+
     3.  System API: There are a number of standard POSIX system APIs used by
         bionet:
          - libc: WinCE provides an ANSI compatible version
@@ -43,6 +49,9 @@ Major Porting Issues:
                     this will work on WinCE, so this may have to be
                     implemented as queue with thread sync, or something
                     else...
+
+        Est: 40h
+        Risk: 20h-60h
         
     4.  Build DLLs for WinCE. There is no explicit support mentioned to build
         DLLs on the CeGCC page, but mingw32 does support it. Also the DLL
@@ -54,12 +63,18 @@ Major Porting Issues:
         developer would have to statically compile in. Note, that this would
         have to include mDNSResponder, GLib2, and all of its deps....
 
+        Est: 20h
+        Risk: 20h-160h
+
     5.  OpenSSL: There are instructions to build openSSL for WinCE on
         a windows platform using Embedded Visual C++ 3.0.
 
         To not use OpenSSL, we need to add our own IO abstraction to replace
         the 'BIO' interface when compiling for WinCE. (That might be the best
         approach).
+
+        Est: 16h
+        Risk: 8h-80h
 
 
     6.  Process model (Good News):  
@@ -71,6 +86,8 @@ Major Porting Issues:
             threads
           - There is a system thread limit
           - The OEM may limit 3rdparty applications to lower priorities
+
+        Est: 0h
 
 
     7.  Integration/Debugging: The MS WinCE development environment will 
@@ -96,6 +113,9 @@ Major Porting Issues:
         actual hardware with CeGCC, which sounds awesome. There's pretty clear
         instructions, but there still may be issues setting it up if we need
         to debug the hab.dll
+
+        Est: 60h
+        Risk:  40h-80h
 
         
 
