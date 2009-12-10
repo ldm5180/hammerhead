@@ -34,16 +34,6 @@ extern int server_require_security;
 
 // key is a bip peer name "bip://$HOST:$PORT"
 // value is a bip_peer_t*
-static GHashTable *clients = NULL;
-
-static DNSServiceRef *advertisedRef = NULL;
-static TXTRecordRef txt_ref;
-
-static cal_server_mdnssd_bip_t *this = NULL;
-
-static GList *accept_pending_list = NULL; // List of bip_peer_t
-
-
 
 static void register_callback(
     DNSServiceRef sdRef, 
@@ -59,7 +49,7 @@ static void register_callback(
     }
 }
 
-static void handle_client_disconnect(const char *peer_name);
+static void handle_client_disconnect(cal_server_mdnssd_bip_t * this, const char *peer_name);
 
 // returns 0 on succes, -1 if the requested subscription is invalid
 static int valid_subscription_type_check(bip_peer_network_info_t *net, cal_event_t *event, const char *peer_name) {
@@ -99,7 +89,7 @@ static int valid_subscription_type_check(bip_peer_network_info_t *net, cal_event
 
 
 // returns 0 on succes, -1 if it's time to die
-static int read_from_user(void) {
+static int read_from_user(cal_server_mdnssd_bip_t * this) {
     cal_event_t *event;
     int r;
     int ret_val = 0;
@@ -109,7 +99,10 @@ static int read_from_user(void) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: error reading from user: %s", strerror(errno));
         return -1;
     } else if (r != sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: short read from user");
+        if ( r > 0 ) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: short read from user");
+        }
+        this->running = 0;
         return -1;
     }
 
@@ -123,7 +116,7 @@ static int read_from_user(void) {
         case CAL_EVENT_MESSAGE: {
             bip_peer_t *peer;
 
-            peer = g_hash_table_lookup(clients, event->peer_name);
+            peer = g_hash_table_lookup(this->clients, event->peer_name);
             if (peer == NULL) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping outgoing Message event", event->peer_name);
                 break;
@@ -141,8 +134,8 @@ static int read_from_user(void) {
 
             r = bip_send_message(peer, BIP_MSG_TYPE_MESSAGE, event->msg.buffer, event->msg.size);
             if( r != 0 ) {
-                handle_client_disconnect(event->peer_name);
-                g_hash_table_remove(clients, event->peer_name);  // close the network connection, free all allocated memory for key & value
+                handle_client_disconnect(this, event->peer_name);
+                g_hash_table_remove(this->clients, event->peer_name);  // close the network connection, free all allocated memory for key & value
             }
 
 
@@ -152,7 +145,7 @@ static int read_from_user(void) {
         case CAL_EVENT_SUBSCRIBE: {
             bip_peer_t *peer;
 
-            peer = g_hash_table_lookup(clients, event->peer_name);
+            peer = g_hash_table_lookup(this->clients, event->peer_name);
             if (peer == NULL) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping Subscribe event", event->peer_name);
                 break;
@@ -168,7 +161,7 @@ static int read_from_user(void) {
             GSList *cursor;
             bip_peer_t *peer;
 
-            peer = g_hash_table_lookup(clients, event->peer_name);
+            peer = g_hash_table_lookup(this->clients, event->peer_name);
             if (peer == NULL) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping Unsubscribe event", event->peer_name);
                 break;
@@ -226,7 +219,7 @@ static int read_from_user(void) {
                 // publish the message to all peers with matching topics 
                 //
 
-                g_hash_table_iter_init(&iter, clients);
+                g_hash_table_iter_init(&iter, this->clients);
                 GSList * errored_clients = NULL;
                 while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&client)) {
                     GSList *si;
@@ -237,7 +230,7 @@ static int read_from_user(void) {
                         if (this->topic_matches(event->topic, sub_topic) == 0) {
                             r = bip_send_message(client, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
                             if( r != 0 ) {
-                                handle_client_disconnect(name);
+                                handle_client_disconnect(this, name);
                                 // We can't remove the peer from the hash table while we're
                                 // iterating through it...
                                 errored_clients = g_slist_prepend(errored_clients, strdup(name));
@@ -249,7 +242,7 @@ static int read_from_user(void) {
                 while(errored_clients) {
                     GSList * item = errored_clients;
                     char * name = (char *)item->data;
-                    g_hash_table_remove(clients, name);  // close the network connection, free all allocated memory for key & value
+                    g_hash_table_remove(this->clients, name);  // close the network connection, free all allocated memory for key & value
                     free(name);
                     errored_clients = g_slist_delete_link(errored_clients, item);
                 }
@@ -262,7 +255,7 @@ static int read_from_user(void) {
                 // publish the message to the given peer IF the peer has not already subscribed to this topic
                 //
 
-                peer = g_hash_table_lookup(clients, event->peer_name);
+                peer = g_hash_table_lookup(this->clients, event->peer_name);
                 if (peer == NULL) {
                     g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping outgoing Message event", event->peer_name);
                     break;
@@ -280,8 +273,8 @@ static int read_from_user(void) {
                 if ( !topic_already_exists ) {
                     r = bip_send_message(peer, BIP_MSG_TYPE_PUBLISH, event->msg.buffer, event->msg.size);
                     if( r != 0 ) {
-                        handle_client_disconnect(event->peer_name);
-                        g_hash_table_remove(clients, event->peer_name);  // close the network connection, free all allocated memory for key & value
+                        handle_client_disconnect(this, event->peer_name);
+                        g_hash_table_remove(this->clients, event->peer_name);  // close the network connection, free all allocated memory for key & value
                     }
                 }
             }
@@ -290,6 +283,7 @@ static int read_from_user(void) {
  
         case CAL_EVENT_SHUTDOWN: {
             ret_val = -1;
+            this->running = 0;
             break;
         }
 
@@ -306,7 +300,7 @@ static int read_from_user(void) {
 }
 
 
-static int accept_handshake( bip_peer_network_info_t * net ) {
+static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_info_t * net ) {
     BIO * bio = net->pending_bio;
     SSL *ssl;
     BIO_get_ssl(bio, &ssl);
@@ -380,7 +374,7 @@ static int accept_handshake( bip_peer_network_info_t * net ) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
             goto fail_handshake2;
         }
-        g_hash_table_insert(clients, name_key, client);
+        g_hash_table_insert(this->clients, name_key, client);
     }
 
 
@@ -480,9 +474,9 @@ skip_security:
 
 
 
-    r = accept_handshake(net);
+    r = accept_handshake(this, net);
     if(r == 0){
-        accept_pending_list = g_list_append(accept_pending_list, net);
+        this->accept_pending_list = g_list_append(this->accept_pending_list, net);
     }
     return r;
 
@@ -503,13 +497,13 @@ fail1:
 
 
 
-static void handle_client_disconnect(const char *peer_name) {
+static void handle_client_disconnect(cal_server_mdnssd_bip_t * this, const char *peer_name) {
     int r;
     cal_event_t *event;
     GSList *si;
     bip_peer_t *client;
 
-    client = g_hash_table_lookup(clients, peer_name);
+    client = g_hash_table_lookup(this->clients, peer_name);
     if (client == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: unknown client name '%s' passed in, oh well", peer_name);
     } else {
@@ -583,14 +577,14 @@ static void handle_client_disconnect(const char *peer_name) {
 
 // reads from the peer, sends a Message event to the user thread
 // returns 0 on success, -1 on failure (in which case the peer has been disconnected and removed from the clients hash)
-static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_network_info_t *net) {
+static int read_from_client(cal_server_mdnssd_bip_t *this, const char *peer_name, bip_peer_t *peer, bip_peer_network_info_t *net) {
     int r;
     cal_event_t *event;
 
     r = bip_read_from_peer(peer_name, peer);
     if (r < 0) {
-        handle_client_disconnect(peer_name);
-        g_hash_table_remove(clients, peer_name);  // close the network connection, free all allocated memory for key & value
+        handle_client_disconnect(this, peer_name);
+        g_hash_table_remove(this->clients, peer_name);  // close the network connection, free all allocated memory for key & value
         return -1;
     }
 
@@ -663,7 +657,7 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
             // Walk through the subscriptions and remove any matching ones
             //
 
-            this_peer = g_hash_table_lookup(clients, peer_name);
+            this_peer = g_hash_table_lookup(this->clients, peer_name);
             if (this_peer == NULL) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: unknown peer name '%s' passed in, dropping Unsubscribe event", event->peer_name);
                 break;
@@ -728,11 +722,11 @@ static int read_from_client(const char *peer_name, bip_peer_t *peer, bip_peer_ne
 
 
 
-void cleanup_advertisedRef(void *unused) {
-    if (advertisedRef != NULL) {
-        DNSServiceRefDeallocate(*advertisedRef);
-	free(advertisedRef);
-	advertisedRef = NULL;
+void cleanup_advertisedRef(cal_server_mdnssd_bip_t * this) {
+    if (this->advertisedRef != NULL) {
+        DNSServiceRefDeallocate(*this->advertisedRef);
+	free(this->advertisedRef);
+	this->advertisedRef = NULL;
     }
 }
 
@@ -747,28 +741,26 @@ static void free_peer(void *peer_as_void) {
 }
 
 // clean up the clients hash table
-void cleanup_clients_and_listener(void *unused) {
+void cleanup_clients_and_listener(cal_server_mdnssd_bip_t * this) {
+    if(this->clients == NULL) return;
+
     if(this && this->socket >= 0) {
         close(this->socket); // Stop listening to new connections
         this->socket = -1;
     }
-    g_hash_table_unref(clients);
+    g_hash_table_unref(this->clients);
+    this->clients = NULL;
 }
 
-
-// close the pipes to the user thread
-void cleanup_pipes(void *unused) {
-    close(cal_server_mdnssd_bip_fds_to_user[1]);
-    close(cal_server_mdnssd_bip_fds_from_user[0]);
-}
 
 
 // free storage of the text record
-void cleanup_text_record(void *unused) {
-    TXTRecordDeallocate(&txt_ref);
+void cleanup_text_record(cal_server_mdnssd_bip_t * this) {
+    TXTRecordDeallocate(&this->txt_ref);
+    memset(&this->txt_ref, 0, sizeof(TXTRecordRef));
 }
 
-void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
+void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
     char mdnssd_service_name[100];
     int r;
 
@@ -777,46 +769,40 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
     cal_event_t *event;
 
 
+
+#if 0
     // block all signals in this thread
     {
         sigset_t ss;
         sigfillset(&ss);
         pthread_sigmask(SIG_BLOCK, &ss, NULL);
     }
+#endif
 
 
-    // at exit, close the pipes to the user thread
-    pthread_cleanup_push(cleanup_pipes, NULL)
+    cal_server_mdnssd_bip_t * this = this_as_voidp;
 
-
-    this = this_as_voidp;
-
-    clients = g_hash_table_new_full(g_str_hash, g_str_equal, free, free_peer);
-    pthread_cleanup_push(cleanup_clients_and_listener, NULL)
+    this->clients = g_hash_table_new_full(g_str_hash, g_str_equal, free, free_peer);
 
     r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", cal_server_mdnssd_bip_network_type);
     if (r >= sizeof(mdnssd_service_name)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: network type '%s' is too long!", cal_server_mdnssd_bip_network_type);
-        pthread_exit(NULL);
+        return (void*)1;
     }
 
-
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
 
     // Shutup annoying nag message on Linux.
     setenv("AVAHI_COMPAT_NOWARN", "1", 1);
 
 
 
-    advertisedRef = malloc(sizeof(DNSServiceRef));
-    if (advertisedRef == NULL) {
+    this->advertisedRef = malloc(sizeof(DNSServiceRef));
+    if (this->advertisedRef == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: out of memory!");
-        pthread_exit(NULL);
+        return (void*)1;
     }
 
-    TXTRecordCreate(&txt_ref, 0, NULL);
-    pthread_cleanup_push(cleanup_text_record, NULL)
+    TXTRecordCreate(&this->txt_ref, 0, NULL);
 
 #if 0
     for (i = 0; i < peer->num_unicast_addresses; i ++) {
@@ -824,16 +810,16 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
         sprintf(key, "unicast-address-%d", i);
         error = TXTRecordSetValue ( 
-            &txt_ref,                          // TXTRecordRef *txtRecord, 
+            &this->txt_ref,                          // TXTRecordRef *txtRecord, 
             key,                               // const char *key, 
             strlen(peer->unicast_address[i]),  // uint8_t valueSize, /* may be zero */
             peer->unicast_address[i]           // const void *value /* may be NULL */
         );  
 
         if (error != kDNSServiceErr_NoError) {
-            free(advertisedRef);
-            advertisedRef = NULL;
-            TXTRecordDeallocate(&txt_ref);
+            free(this->advertisedRef);
+            this->advertisedRef = NULL;
+            TXTRecordDeallocate(&this->txt_ref);
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dnssd: Error registering service: %d", error);
             return 0;
         }
@@ -844,38 +830,38 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
 	bip_txtvers_t value = BIP_TXTVERS;
 
         error = TXTRecordSetValue ( 
-            &txt_ref,                          // TXTRecordRef *txtRecord, 
+            &this->txt_ref,                          // TXTRecordRef *txtRecord, 
             "txtvers",                         // const char *key, 
             sizeof(value),                     // uint8_t valueSize, /* may be zero */
             &value                             // const void *value /* may be NULL */
         );  
 
         if (error != kDNSServiceErr_NoError) {
-            free(advertisedRef);
-            advertisedRef = NULL;
-            TXTRecordDeallocate(&txt_ref);
+            free(this->advertisedRef);
+            this->advertisedRef = NULL;
+            TXTRecordDeallocate(&this->txt_ref);
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dnssd: Error registering service: %d", error);
             return 0;
         }
 
         error = TXTRecordSetValue ( 
-            &txt_ref,                          // TXTRecordRef *txtRecord, 
+            &this->txt_ref,                          // TXTRecordRef *txtRecord, 
             "sec",                             // const char *key, 
             3,                                 // uint8_t valueSize, /* may be zero */
             "req"                              // const void *value /* may be NULL */
         );  
 
         if (error != kDNSServiceErr_NoError) {
-            free(advertisedRef);
-            advertisedRef = NULL;
-            TXTRecordDeallocate(&txt_ref);
+            free(this->advertisedRef);
+            this->advertisedRef = NULL;
+            TXTRecordDeallocate(&this->txt_ref);
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "dnssd: Error registering service: %d", error);
             return 0;
         }
     }
 
     error = DNSServiceRegister(
-        advertisedRef,                        // DNSServiceRef *sdRef
+        this->advertisedRef,                        // DNSServiceRef *sdRef
         0,                                    // DNSServiceFlags flags
         0,                                    // uint32_t interfaceIndex
         this->name,                           // const char *name
@@ -883,43 +869,42 @@ void *cal_server_mdnssd_bip_function(void *this_as_voidp) {
         "",                                   // const char *domain
         NULL,                                 // const char *host
         htons(this->port),                    // uint16_t port (in network byte order)
-        TXTRecordGetLength(&txt_ref),         // uint16_t txtLen
-        TXTRecordGetBytesPtr(&txt_ref),       // const void *txtRecord
+        TXTRecordGetLength(&this->txt_ref),         // uint16_t txtLen
+        TXTRecordGetBytesPtr(&this->txt_ref),       // const void *txtRecord
         register_callback,                    // DNSServiceRegisterReply callBack
         NULL                                  // void *context
     );
 
     if (error != kDNSServiceErr_NoError) {
         // the dns_sd api astonishingly lacks a strerror() function
-        free(advertisedRef);
-        advertisedRef = NULL;
+        free(this->advertisedRef);
+        this->advertisedRef = NULL;
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: Error registering service: %d", error);
         if (error == kDNSServiceErr_Unknown) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: make sure the avahi-daemon is running");
         }
-        pthread_exit(NULL);
+        return (void*)1;
     }
-
-    pthread_cleanup_push(cleanup_advertisedRef, NULL);
 
 
     event = cal_event_new(CAL_EVENT_INIT);
     if (event == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: out of memory!");
-        pthread_exit(NULL);
+        return (void*)1;
     }
 
     r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: error writing INIT event to user thread!!");
-        pthread_exit(NULL);
+        return (void*)1;
     } else if (r < sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: short write of INIT event to user thread!!");
-        pthread_exit(NULL);
+        return (void*)1;
     }
 
+    this->running = 1;
 
-    while (1) {
+    while (this->running) {
         fd_set readers;
         fd_set writers;
         int max_fd;
@@ -957,7 +942,7 @@ SELECT_LOOP_CONTINUE:
             const char *name;
             bip_peer_t *peer;
 
-            g_hash_table_iter_init (&iter, clients);
+            g_hash_table_iter_init (&iter, this->clients);
             while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
                 bip_peer_network_info_t *net = bip_peer_get_connected_net(peer);
                 if (net == NULL) continue;
@@ -973,7 +958,7 @@ SELECT_LOOP_CONTINUE:
         // See if any connect handshakes have made progress
         //
         GList * dptr;
-        for ( dptr = accept_pending_list; dptr != NULL; dptr = dptr->next) {
+        for ( dptr = this->accept_pending_list; dptr != NULL; dptr = dptr->next) {
             bip_peer_network_info_t * net = dptr->data;
             int fd = net->socket;
             if(net->pending_bio && BIO_should_read(net->pending_bio)) {
@@ -994,7 +979,7 @@ SELECT_LOOP_CONTINUE:
             const char *name;
             bip_peer_t *peer;
 
-            g_hash_table_iter_init (&iter, clients);
+            g_hash_table_iter_init (&iter, this->clients);
             while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
                 bip_peer_network_info_t *net;
 
@@ -1004,8 +989,8 @@ SELECT_LOOP_CONTINUE:
                 if (FD_ISSET(net->socket, &writers)) {
                     r = bip_drain_pending_msgs(net);
                     if ( r < 0 ) {
-                        handle_client_disconnect(name);
-                        g_hash_table_remove(clients, name);  // close the network connection, free all allocated memory for key & value
+                        handle_client_disconnect(this, name);
+                        g_hash_table_remove(this->clients, name);  // close the network connection, free all allocated memory for key & value
                         goto SELECT_LOOP_CONTINUE;
                     }
                 }
@@ -1013,8 +998,8 @@ SELECT_LOOP_CONTINUE:
         }
 
         if (FD_ISSET(cal_server_mdnssd_bip_fds_from_user[0], &readers)) {
-            if (read_from_user() < 0) {
-                pthread_exit(NULL);
+            if (read_from_user(this) < 0) {
+                goto shutdown_thread;
             }
         }
 
@@ -1026,16 +1011,16 @@ SELECT_LOOP_CONTINUE:
         //
         // See if any connect handshakes have made progress
         //
-        for ( dptr = accept_pending_list; dptr != NULL; dptr = dptr->next) {
+        for ( dptr = this->accept_pending_list; dptr != NULL; dptr = dptr->next) {
             bip_peer_network_info_t * net = dptr->data;
             int fd = net->socket;
             if(FD_ISSET(fd, &readers) || FD_ISSET(fd, &writers)) {
-                r = accept_handshake(net);
+                r = accept_handshake(this, net);
                 if(r == 1) {
-                    accept_pending_list = g_list_delete_link(accept_pending_list, dptr);
+                    this->accept_pending_list = g_list_delete_link(this->accept_pending_list, dptr);
                     break;
                 } else if (r < 0 ) {
-                    accept_pending_list = g_list_delete_link(accept_pending_list, dptr);
+                    this->accept_pending_list = g_list_delete_link(this->accept_pending_list, dptr);
                     goto SELECT_LOOP_CONTINUE;
                 }
             }
@@ -1047,7 +1032,7 @@ SELECT_LOOP_CONTINUE:
             const char *name;
             bip_peer_t *peer;
 
-            g_hash_table_iter_init (&iter, clients);
+            g_hash_table_iter_init (&iter, this->clients);
             while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
                 bip_peer_network_info_t *net;
 
@@ -1055,7 +1040,7 @@ SELECT_LOOP_CONTINUE:
                 if (net == NULL) continue;
 
                 if (FD_ISSET(net->socket, &readers)) {
-                    read_from_client(name, peer, net);
+                    read_from_client(this, name, peer, net);
                     // read_from_client can disconnect the client, so we need to stop iterating over it now
                     goto SELECT_LOOP_CONTINUE;
                 }
@@ -1064,13 +1049,21 @@ SELECT_LOOP_CONTINUE:
 
     }
 
-    // 
-    // NOT REACHED
-    //
+shutdown_thread:
 
-    pthread_cleanup_pop(0);  // cleanup_advertisedRef
-    pthread_cleanup_pop(0);  // cleanup_text_record
-    pthread_cleanup_pop(0);  // cleanup_clients_and_listener
-    pthread_cleanup_pop(0);  // cleanup_pipes
+    // 
+    // User asked we shutdown
+    //
+    close(cal_server_mdnssd_bip_fds_to_user[1]);
+    cal_server_mdnssd_bip_fds_to_user[1] = -1;
+
+    return 0;
 }
+
+void cal_server_mdnssd_bip_destroy(cal_server_mdnssd_bip_t * server_thread_data) {
+    cleanup_advertisedRef(server_thread_data);
+    cleanup_text_record(server_thread_data);
+    cleanup_clients_and_listener(server_thread_data);
+}
+
 

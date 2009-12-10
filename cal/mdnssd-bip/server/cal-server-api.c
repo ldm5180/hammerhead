@@ -28,6 +28,9 @@
 extern SSL_CTX * ssl_ctx_server;
 int server_require_security = 0;
 
+static GThread* server_thread = NULL;
+static cal_server_mdnssd_bip_t * server_thread_data = NULL;
+
 int cal_server_mdnssd_bip_init(
     const char *network_type,
     const char *name,
@@ -38,8 +41,6 @@ int cal_server_mdnssd_bip_init(
 
     struct sockaddr_in my_address;
     socklen_t my_address_len;
-
-    cal_server_mdnssd_bip_t *this;
 
     bip_shared_config_init();
 
@@ -64,20 +65,20 @@ int cal_server_mdnssd_bip_init(
     }
 
 
-    this = (cal_server_mdnssd_bip_t *)calloc(1, sizeof(cal_server_mdnssd_bip_t));
-    if (this == NULL) {
+    server_thread_data = (cal_server_mdnssd_bip_t *)calloc(1, sizeof(cal_server_mdnssd_bip_t));
+    if (server_thread_data == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: out of memory");
         return -1;
     }
 
     if (topic_matches == NULL) {
-        this->topic_matches = strcmp;
+        server_thread_data->topic_matches = strcmp;
     } else {
-        this->topic_matches = topic_matches;
+        server_thread_data->topic_matches = topic_matches;
     }
 
-    this->name = strdup(name);
-    if (this->name == NULL) {
+    server_thread_data->name = strdup(name);
+    if (server_thread_data->name == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: out of memory");
         goto fail0;
     }
@@ -87,8 +88,8 @@ int cal_server_mdnssd_bip_init(
     // create the listening socket
     //
 
-    this->socket = socket(PF_INET, SOCK_STREAM, 0);
-    if (this->socket == -1) {
+    server_thread_data->socket = socket(PF_INET, SOCK_STREAM, 0);
+    if (server_thread_data->socket == -1) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot create TCP socket: %s", strerror(errno));
         goto fail1;
     }
@@ -99,7 +100,7 @@ int cal_server_mdnssd_bip_init(
         int flag = 1;
         int r;
 
-        r = setsockopt(this->socket, SOL_SOCKET, SO_REUSEADDR, (void*)&flag, sizeof(int));
+        r = setsockopt(server_thread_data->socket, SOL_SOCKET, SO_REUSEADDR, (void*)&flag, sizeof(int));
         if (r < 0) g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: ignoring setsockopt SO_REUSEADDR error: %s", strerror(errno));
     }
 
@@ -111,14 +112,14 @@ int cal_server_mdnssd_bip_init(
         l.l_onoff = 1;
         l.l_linger = 10;  // 10 seconds
 
-        r = setsockopt(this->socket, SOL_SOCKET, SO_LINGER, (void*)&l, sizeof(l));
+        r = setsockopt(server_thread_data->socket, SOL_SOCKET, SO_LINGER, (void*)&l, sizeof(l));
         if (r < 0) g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: ignoring setsockopt SO_LINGER error: %s", strerror(errno));
     }
 
 
     // ok! listen for connections
     // we dont need to bind since listen on an unbound socket defaults to INADDR_ANY and a random port, which is what we want
-    r = listen(this->socket, 20);
+    r = listen(server_thread_data->socket, 20);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot listen on port: %s", strerror(errno));
         goto fail2;
@@ -126,13 +127,13 @@ int cal_server_mdnssd_bip_init(
 
     memset(&my_address, 0, sizeof(my_address));
     my_address_len = sizeof(my_address);
-    r = getsockname(this->socket, (struct sockaddr *)&my_address, &my_address_len);
+    r = getsockname(server_thread_data->socket, (struct sockaddr *)&my_address, &my_address_len);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot get socket port: %s", strerror(errno));
         goto fail2;
     }
 
-    this->port = ntohs(my_address.sin_port);
+    server_thread_data->port = ntohs(my_address.sin_port);
 
 
     // 
@@ -154,21 +155,20 @@ int cal_server_mdnssd_bip_init(
         goto fail3;
     }
 
-    cal_server_mdnssd_bip_thread = (pthread_t *)malloc(sizeof(pthread_t));
-    if (cal_server_mdnssd_bip_thread == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: cannot allocate memory for publisher thread: %s", strerror(errno));
-        goto fail4;
-    }
-
     // record the user's callback function
     cal_server.callback = callback;
 
-
-    // start the publisher thread to talk to the peers
-    r = pthread_create(cal_server_mdnssd_bip_thread, NULL, cal_server_mdnssd_bip_function, this);
-    if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot start publisher thread: %s", strerror(errno));
-        goto fail5;
+    GError *err = NULL;
+    server_thread = g_thread_create(
+            cal_server_mdnssd_bip_function, 
+            server_thread_data,
+            TRUE,
+            &err);
+    if ( server_thread == NULL ) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                ID "init: cannot start publisher thread: %s", err->message);
+        g_error_free(err);
+        goto fail4;
     }
 
     // wait to see if the CAL thread started up successfully
@@ -199,33 +199,23 @@ int cal_server_mdnssd_bip_init(
         cal_event_free(event);
     }
 
-
     // make the cal_fd non-blocking
     r = fcntl(cal_server_mdnssd_bip_fds_to_user[0], F_SETFL, O_NONBLOCK);
     if (r != 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot make cal_fd nonblocking: %s", strerror(errno));
-        goto fail6;
+        goto fail4;
     }
+
+
+
 
 
     return cal_server_mdnssd_bip_fds_to_user[0];
 
-
-fail6: 
-    r = pthread_cancel(*cal_server_mdnssd_bip_thread);
-    if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error canceling server thread: %s", strerror(errno));
-    } else {
-        pthread_join(*cal_server_mdnssd_bip_thread, NULL);
-        free(cal_server_mdnssd_bip_thread);
-        cal_server_mdnssd_bip_thread = NULL;
-    }
-
-fail5:
-    free(cal_server_mdnssd_bip_thread);
-    cal_server_mdnssd_bip_thread = NULL;
-
 fail4:
+    server_thread = NULL;
+    cal_server.callback = NULL;
+
     close(cal_server_mdnssd_bip_fds_from_user[0]);
     close(cal_server_mdnssd_bip_fds_from_user[1]);
 
@@ -234,13 +224,13 @@ fail3:
     close(cal_server_mdnssd_bip_fds_to_user[1]);
 
 fail2:
-    close(this->socket);
+    close(server_thread_data->socket);
 
 fail1:
-    free(this->name);
+    free(server_thread_data->name);
 
 fail0: 
-    free(this);
+    free(server_thread_data);
     return -1;
 }
 
@@ -251,7 +241,7 @@ void cal_server_mdnssd_bip_shutdown(void) {
     cal_event_t *event;
     int r;
 
-    if (cal_server_mdnssd_bip_thread == NULL) {
+    if (server_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: called before init!");
         return;
     }
@@ -261,29 +251,11 @@ void cal_server_mdnssd_bip_shutdown(void) {
     // first tell the CAL thread to shut itself down
     //
 
-    event = cal_event_new(CAL_EVENT_SHUTDOWN);
-    if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: out of memory!");
-        return;
-    }
-
-    r = write(cal_server_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    r = close(cal_server_mdnssd_bip_fds_from_user[1]);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: error writing to server thread: %s", strerror(errno));
-        cal_event_free(event);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: error closing server thread fd: %s", strerror(errno));
         return;
     }
-    if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: short write to server thread!!");
-        cal_event_free(event);
-        return;
-    }
-
-    // we don't leak the memory assigned to 'event' here because we have
-    // successfully sent a pointer to it to the CAL Server thread
-    // coverity[overwrite_var]
-    event = NULL;
-
 
     //
     // read and handle any pending events from the CAL thread,
@@ -312,7 +284,7 @@ void cal_server_mdnssd_bip_shutdown(void) {
             break;
         } else if (event == NULL) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: got NULL event!");
-            return;
+            break;
         }
 
         if (cal_server.callback != NULL) {
@@ -327,12 +299,20 @@ void cal_server_mdnssd_bip_shutdown(void) {
     // when we get here, the CAL thread has closed the pipe
     //
 
-    pthread_join(*cal_server_mdnssd_bip_thread, NULL);
-    free(cal_server_mdnssd_bip_thread);
-    cal_server_mdnssd_bip_thread = NULL;
+    g_thread_join(server_thread);
+    server_thread = NULL;
 
-    close(cal_server_mdnssd_bip_fds_to_user[0]);
-    close(cal_server_mdnssd_bip_fds_from_user[1]);
+    cal_server_mdnssd_bip_destroy(server_thread_data);
+    server_thread_data = NULL;
+
+    if (cal_server_mdnssd_bip_fds_to_user[0] >=0 ) 
+        close(cal_server_mdnssd_bip_fds_to_user[0]);
+    if (cal_server_mdnssd_bip_fds_to_user[1] >=0 ) 
+        close(cal_server_mdnssd_bip_fds_to_user[1]);
+    if (cal_server_mdnssd_bip_fds_from_user[0] >=0 ) 
+        close(cal_server_mdnssd_bip_fds_from_user[0]);
+    if (cal_server_mdnssd_bip_fds_from_user[1] >=0 ) 
+        close(cal_server_mdnssd_bip_fds_from_user[1]);
 
     cal_server.callback = NULL;
 
@@ -349,7 +329,7 @@ int cal_server_mdnssd_bip_read(struct timeval *timeout) {
     int r;
     cal_event_t *event;
 
-    if (cal_server_mdnssd_bip_thread == NULL) {
+    if (server_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: called before init!");
         return 0;
     }
@@ -403,7 +383,7 @@ int cal_server_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
     int r;
     cal_event_t *event;
 
-    if (cal_server_mdnssd_bip_thread == NULL) {
+    if (server_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: called before init!");
         return 0;
     }
@@ -460,7 +440,7 @@ int cal_server_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
     int r;
     cal_event_t *event;
 
-    if (cal_server_mdnssd_bip_thread == NULL) {
+    if (server_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: called before init!");
         return 0;
     }
@@ -519,7 +499,7 @@ void cal_server_mdnssd_bip_publish(const char *topic, const void *msg, int size)
     int r;
     cal_event_t *event;
 
-    if (cal_server_mdnssd_bip_thread == NULL) {
+    if (server_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: called before init!");
         return;
     }
@@ -582,7 +562,7 @@ void cal_server_mdnssd_bip_publishto(const char *peer_name, const char *topic, c
     int r;
     cal_event_t *event;
 
-    if (cal_server_mdnssd_bip_thread == NULL) {
+    if (server_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "publish: called before init!");
         return;
     }
