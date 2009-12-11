@@ -1,0 +1,70 @@
+
+Information Sources:  
+
+    http://en.wikipedia.org/wiki/Advanced_Message_Queuing_Protocol
+    http://jira.amqp.org/confluence/display/AMQP/Advanced+Message+Queuing+Protocol
+
+
+Availability:
+
+    Karmic (but not earlier versions of Ubuntu) has an implementation
+    of AMQP (in Python).
+
+    There exist a couple of open-source implementations of varying
+    degrees of quality and completeness.
+
+
+In Bionet terms, AMQP is most like CAL.  It's a mechanism for
+communicating arbitrary blobs of data between processes.  AMQP uses a
+server network to relay messages between clients.
+
+
+AMQP is a wire-level protocol, a description of the format of the data
+that is sent across the network as a stream of octets. Any tool that
+can create and interpret messages that conform to this data format can
+interoperate with any other compliant tool.
+
+Typical AMQP messaging patterns are: request-response, in which messages
+are sent to or from specific recipients, publish-and-subscribe, in
+which information is distributed to a set of recipients according to
+various subscription criteria, and round-robin, in which tasks are
+distributed fairly among a set of recipients ("anycast"?). Realistic
+applications combine these, e.g. round-robin for distributing work plus
+request-response for sending back responses.
+
+Processes using AMQP are either "clients" or "brokers".  Brokers provide
+two kinds of services to clients: "exchanges" and "message queues".
+
+    Message queues provide storage of messages (and can do so in
+    different ways, for example putting messages in RAM in a single
+    process or putting them on many geographically distributed disks).
+    Clients can "subscribe" to queues, or can "pull" from queues.
+    Messages are delivered from a queue to a client in the order the
+    messages entered the queue.
+
+    Exchanges route massages to queues.  The routing can be one-to-one,
+    one-to-many, one-to-one-of-many, or custom rules.
+
+Messages are made up of a header (which has many fields), and a payload
+(opaque-to-amqp binary blob of arbitrary size).
+
+"Bindings" specify how messages are routed from exchanges to queues.
+Bindings are a bit like the routing table of the IP network stack.
+Bindings examine message headers and route based on the header fields.
+Bindings can even examine the supposedly opaque content of the message,
+but that way lies madness.
+
+Clients connect to brokers, and use the broker's services to trade
+messages with other brokers.  AMQP does not define a way to discover
+what clients are available.
+
+
+
+Questions:
+
+    Is AMQP's "round-robin" messaging pattern the same as anycast?
+
+    Can you use AMQP to replicate mDNS/SD?  Or how would you do "hab
+    discovery" in AMQP?
+
+
