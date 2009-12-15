@@ -4,10 +4,7 @@ Building on WindowsCE:
     Device: ACC Systems 570 (PXA 270 520MHz ARMv5 Processor)
 
 Major Porting Issues:
-    1.  mDNS-SD: No Bonjour for winCE. Windows does provide "LLMNR" for WinCE, 
-        but I think that it is only for link-local addressing, not service
-        discovery. Wikipedia says that it is not "compatible" with Bonjour. I
-        hope that means its not API compatible. 
+    1.  mDNS-SD: No Bonjour for winCE. 
 
         We will have to either port mDNSResponder to a wince service, compile
         it into our library, or roll our own that only publishes. 
