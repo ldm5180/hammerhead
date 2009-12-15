@@ -52,8 +52,7 @@ The Bionet Information Exchange protocol is a publication/subscribe
 protocol built on top of TCP/IP.  The subscription topic space is
 federated, with each HAB managing its own topic space.
 
-HABs and Clients are mutually authenticated (FIXME: how?), and the HABs
-enforce per-topic authorization of Clients (FIXME: how?).  All Information
+HABs and Clients are mutually authenticated using public key cryptography. HABs enforce per-topic authorization of Clients (FIXME: how?).  All Information
 Exchange communications use Transport Layer Security (TLS) for privacy.
 
 
