@@ -1,0 +1,53 @@
+{\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf540
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid2}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
+{\info
+{\author Brian Marshall}}\margl1440\margr1440\vieww9000\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0\b\fs24 \cf0 Product Type\
+
+\b0 Transport protocol at the level of TCP and UDP with a feature set somewhere between the two.\
+\
+
+\b OSS/Std:\
+
+\b0 RFC 4336,4340,4341,4242\
+Included in Linux kernel since 2.6.14\
+Other Open Source implementations exist\
+\
+
+\b Technology Advantages:
+\b0 \
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\ql\qnatural\pardirnatural
+\ls1\ilvl0
+\b \cf0 {\listtext	\'95	}
+\b0 Prefers timeliness over reliability like UDP, but keeps congestion control\
+{\listtext	\'95	}Smaller headers size than TCP\
+{\listtext	\'95	}ECN Support\
+{\listtext	\'95	}Configurable congestion control\
+\pard\tx560\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+
+\b Technology Disadvantages:
+\b0 \
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\ql\qnatural\pardirnatural
+\ls2\ilvl0\cf0 {\listtext	\'95	}Does not support multicast\
+{\listtext	\'95	}Somewhat new; Adoption seems limited.\
+\pard\tx560\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+
+\b Bionet Positioning Strategy:\
+
+\b0 For non-stream bionet data, TCP's reliability is required due the Bionet's stageful protocol.\
+\
+For streaming, RTP could be used for streaming over any transport layer. If unicast streaming is OK, the n DCCP should be used. However, multicast would likely give better network performance than DCCP.\
+\
+Optimal use of DCCP would require a mechanism to adjust the stream encoding to achieve best AV quality with minimal network congestion.\
+\
+ \
+\
+}

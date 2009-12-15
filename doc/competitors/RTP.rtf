@@ -1,0 +1,83 @@
+{\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf540
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid2}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
+\margl1440\margr1440\vieww10860\viewh13640\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 Talking Points:\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\fs24 \cf0 \
+Product Type\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\b0 \cf0 Audio/Video Realtime streaming protocol. Planned integration with Bionet for stream support.
+\b \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+OSS/Std\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 RFC 3550. \
+Several Open Source Implementations.
+\b \
+\
+Technology Advantages:\
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\ql\qnatural\pardirnatural
+\ls1\ilvl0
+\b0 \cf0 {\listtext	\'95	}Wide industry adoption. \
+{\listtext	\'95	}Extensible. Allows any number of codecs/profiles as a payload, which may add header extensions if needed.\
+{\listtext	\'95	}Provides the mechanism to synchronize multiple streams of any type, including multi-source conferences.\
+{\listtext	\'95	}Supports multicast with recipient-selected bandwidth/quality (with supporting Codecs)\
+{\listtext	\'95	}Lightweight. Relies on higher-level protocol to initiate/adversize streams.\
+{\listtext	\'95	}Can support multiple producers/consumers/mixers/translators/recorders which should allow a number of voice-loop scenarios to be engineered.\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 Technology Disadvantages:\
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\ql\qnatural\pardirnatural
+\ls2\ilvl0
+\b0 \cf0 {\listtext	\'95	}Requires  underlaying transport to multiplex multiple streams to a peer. For tcp/udp, this means using several ports for each session.\
+{\listtext	\'95	}Synchronization of multiple streams often requires an RTCP stream to manage the session's synchronization. Other approaches send all streams interleaved in one channel, so synchronization is inherent. Combining the streams isn't perfect, since it requires that all recipients receive both audio and video data.\
+{\listtext	\'95	}Since virtually and codec may be used, its possible for a receiver to be sent a stream that it cannot playback.\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 BioNet Positioning Strategy:\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 Plan on using RTP/RTCP to stream Audio/Visual data of any codec. Use Bionet to advertise available streams as a "stream" resource. Use standard Session Description Protocol (SDP) for stream details. This design would allow a Bionet HAB to advertise an existing RTP stream (say, one provided by an IP camera), or to generate an RTP stream for raw A/V data (say from a USB attached camera). \
+\
+An alternate approach would be to use rtsp as the normalize Bionet stream description format, which would allow some advanced cameras that publish with Bonjour to operate without an additional HAB. \
+\
+RTP allows recording/routing of streams without understanding the codec/profile. This would allow BDMs to subscribe to A/V streams, optionally record the stream for later playback, and/or forward the stream over BP to another BDM that could re-publish the stream to additional subscribers in as near to real time as DTN would allow.\
+\
+Streaming over BP could could have several issues. Bundle overhead may require that several RTP packets be ganged together in a single bundle, which would introduce latency. If there are large variations in delay, the stream may be incomprehensible until more bundles arrive, and are re-ordered into a recording. \
+\
+If a profile that supports Layered Encoding were used (Such as H.264 SVC), then a low-bandwidth stream could be sent over DTN with high priority, and additional bitstream that would additively increase video quality of the stream could be sent with lower priority. This would allow a realtime stream to be sent with minimal DTN impact, and a full quality stream to be sent when the link allows with minimal extra bandwidth requirements as if the full quality stream were sent up-front.  \
+\
+\
+\
+\
+
+\b\fs30 Details:
+\b0 \
+
+\fs24 RTP (including RTCP)  is a realtime stream protocol for multimedia streams. It allows many profiles (extensible) that define the CODECS used by the streams. It provides semantics to assemble and synchronize multiple streams into a multi-media presentation without understanding the profile being used.\
+\
+For RTP to be effective it also needs a supervisory protocol to manage the streams. i.e. distribute multicast addresses, negotiate encryption keys, and identify non-standard profiles. Also  start, stop, pause, transfer meta stream information information like location, etc.  There are many protocols that so this: RTSP, SIP, SAP, H.323, ...\
+\
+Bionet should advertise streams as Node entities, and then use SDP (Used by RTSP) to describe/setup the streams. A bionet client could then either handle the straems directly, or construct a URI to hand to an external application to play the stream.\
+\
+The BDM should record streams to files, and the allow BDM clients to download the file in a lossless way, or stream live as it arrives.....\
+\
+RTP with layered encodings: RFC 3550 Section 6.3.9, 8.3, and 11 (Stripe progressive layers of a hierarchically represented signal accross multiple RTP sessions, each carried on its own multicast group)\
+\
+Layered Encoding w/ H.264: H.264/SVC (Scalable Video Coding). Goal is to produce a stream with where dropping (specific?) packets will result in graceful degradation of the full-quality, larger stream. \
+  Implemetations: GE VisioWave ?}
