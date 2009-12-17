@@ -2,15 +2,15 @@
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid1}
-{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid2}}
-{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid2}
+{\list\listtemplateid3\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid1\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid3}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}}
 \margl1440\margr1440\vieww10860\viewh13640\viewkind0
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
 \f0\b\fs28 \cf0 Talking Points:\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
-\fs24 \cf0 \
+\fs24 \
 Product Type\
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
 
@@ -65,11 +65,13 @@ If a profile that supports Layered Encoding were used (Such as H.264 SVC), then 
 \
 \
 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
-\b\fs30 Details:
+\b\fs30 \cf0 Details:
 \b0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
-\fs24 RTP (including RTCP)  is a realtime stream protocol for multimedia streams. It allows many profiles (extensible) that define the CODECS used by the streams. It provides semantics to assemble and synchronize multiple streams into a multi-media presentation without understanding the profile being used.\
+\fs24 \cf0 RTP (including RTCP)  is a realtime stream protocol for multimedia streams. It allows many profiles (extensible) that define the CODECS used by the streams. It provides semantics to assemble and synchronize multiple streams into a multi-media presentation without understanding the profile being used.\
 \
 For RTP to be effective it also needs a supervisory protocol to manage the streams. i.e. distribute multicast addresses, negotiate encryption keys, and identify non-standard profiles. Also  start, stop, pause, transfer meta stream information information like location, etc.  There are many protocols that so this: RTSP, SIP, SAP, H.323, ...\
 \
@@ -80,4 +82,21 @@ The BDM should record streams to files, and the allow BDM clients to download th
 RTP with layered encodings: RFC 3550 Section 6.3.9, 8.3, and 11 (Stripe progressive layers of a hierarchically represented signal accross multiple RTP sessions, each carried on its own multicast group)\
 \
 Layered Encoding w/ H.264: H.264/SVC (Scalable Video Coding). Goal is to produce a stream with where dropping (specific?) packets will result in graceful degradation of the full-quality, larger stream. \
-  Implemetations: GE VisioWave ?}
+  Implemetations: GE VisioWave ?\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b\fs26 \cf0 RTP over BP\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0\fs24 \cf0 RTP over BP is a desired (by some) implementation, which would require several engineering efforts.\
+\
+An incomplete list of these is:\
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\ql\qnatural\pardirnatural
+\ls3\ilvl0\cf0 {\listtext	\'95	}BP may be a one-way link protocol. This is fine for the data stream, but the control channel will not be able to perform these functions:\
+\pard\tx940\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li1440\fi-1440\ql\qnatural\pardirnatural
+\ls3\ilvl1\cf0 {\listtext	\uc0\u8259 	}reception quality feedback. The quality level will have to be engineered for one-way links. (The RTP profile allows reception reports to be entirely disabled)\
+{\listtext	\uc0\u8259 	}SSRC Conflict discovery (?)\
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\ql\qnatural\pardirnatural
+\ls3\ilvl0\cf0 {\listtext	\'95	}Delay/Distuption in BP must be handled by BP applications. RTP prefers to discard packets that are delayed. For live stream viewing, discarding delayed bundles is fine, but a backup recording system that reassembles the full-quality stream as bundles arrive will likely be desired.\
+}
