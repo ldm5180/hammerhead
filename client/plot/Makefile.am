@@ -6,6 +6,6 @@
 
 include $(top_srcdir)/common.am
 
-cgibin_SCRIPTS = bionetplot.py \
+python_PYTHON = bionetplot.py \
         bionetplot_callback.py
 

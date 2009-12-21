@@ -6,6 +6,6 @@
 
 include $(top_srcdir)/common.am
 
-cgibin_SCRIPTS = bdmplot2.py \
+python_PYTHON = bdmplot2.py \
         bdmplot2_callback.py
 
