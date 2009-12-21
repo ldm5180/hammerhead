@@ -36,12 +36,3 @@ Architecture: any
 Depends: ${shlibs:Depends}, bionet2, libavahi-compat-libdnssd-dev, libglib2.0-dev, libssl-dev, python-gobject
 Description: A network-transparent pub/sub system for information exchange (devel files)
  Bionet2 headers and static libraries
-
-Package: bionet2-www
-Section: net
-Architecture: any
-Depends: bionet2, python, python-matplotlib
-Recommends: httpd-cgi
-Description: A network-transparent pub/sub system for information exchange (web gui stuff)
- This package contains bdmplots, a system for plotting historical Bionet
- data (from the Bionet Data Manager) onto web pages.
