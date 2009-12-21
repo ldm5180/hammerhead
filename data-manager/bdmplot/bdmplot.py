@@ -33,7 +33,7 @@ def bdmplot(kwargs, bionet_resources):
     # Supply default values
     args = { "label": "plot",
              "filter": "syshealth.*.*:15-min-load-average",
-             "timespan": "last 6h",
+             "timespan": ["last 6h"],
              "regexp": None,
              "format": "png",
              "width": 7,

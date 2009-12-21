@@ -59,7 +59,7 @@ class Datapoints(resource.Resource):
                     found = sub
                     break
         
-        (fname, format) = bdmplot.bdmplot(sub, bionet_resources)
+        (fname, format) = bdmplot.bdmplot(found, bionet_resources)
         request.setHeader('Content-Type', 'image/' + format)
         f = open(fname, 'rb')
         return f.read()
