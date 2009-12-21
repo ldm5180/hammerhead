@@ -7,6 +7,7 @@
 include $(top_srcdir)/common.am
 
 cgibin_SCRIPTS = bdmplot.py \
+	bdmplot-cacher.py \
 	datapoints_to_dict.py \
 	timechooser.py \
 	timespan.py
