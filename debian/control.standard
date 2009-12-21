@@ -43,7 +43,7 @@ Description: A network-transparent pub/sub system for information exchange (deve
 Package: bionet2-www
 Section: net
 Architecture: any
-Depends: bionet2, python
+Depends: bionet2, python, python-matplotlib
 Recommends: httpd-cgi
 Description: A network-transparent pub/sub system for information exchange (web gui stuff)
  This package contains bdmplots, a system for plotting historical Bionet
