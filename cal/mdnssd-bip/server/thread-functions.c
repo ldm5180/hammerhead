@@ -1060,7 +1060,6 @@ shutdown_thread:
     // 
     // User asked we shutdown
     //
-    cal_event_free(event);
     close(cal_server_mdnssd_bip_fds_to_user[1]);
     cal_server_mdnssd_bip_fds_to_user[1] = -1;
 
