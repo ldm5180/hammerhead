@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Unix)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGEDBY" CONTENT="Sebastian Kuzminsky">
+	<META NAME="CHANGED" CONTENT="20091222;15064600">
+	<STYLE TYPE="text/css">
+	<!--
+		@page { size: 8.5in 11in; margin: 0.79in }
+		P { margin-bottom: 0.08in }
+		H3 { margin-bottom: 0.08in }
+		H3.western { font-family: "Arial", sans-serif }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P>Some of the info in this file is taken from the &quot;Bionet/AMS
+misalignment paper&quot;, written in December 2008.  That paper is an
+in-depth examination of several different (unsatisfactory) ways in
+which Bionet could use AMS to communicate.  In this current document
+I will try to describe just the specific features of Bionet and AMS
+that cause friction.</P>
+<H3 CLASS="western">Overview</H3>
+<P>Bionet is a network transparent device driver framework that uses
+stateful peer&shy;to&shy;peer pub/sub communications internally.</P>
+<P>AMS is a delay tolerant, stateless peer&shy;to&shy;peer pub/sub
+communications framework.</P>
+<P>This fundamental difference between the two systems shows that
+Bionet and AMS are not competing products.  They have different
+domains, goals, and capabilities.  Bionet might potentially use AMS
+for its communication needs, or AMS might provide the communications
+infrastructure for a product that competes with Bionet.</P>
+<P>If Bionet were to usesAMS, the collaboration would take the form
+of a Bionet CAL module that uses AMS to transit Bionet messages,
+instead of (or possibly in addition to) the mDNS-SD/BIP CAL module
+Bionet currently uses.</P>
+<H3 CLASS="western">DTN Pub/Sub</H3>
+<P>One of the appealing things advertised by AMS is that it provides
+delay tolerant pub/sub communication.  Sounds like just the thing for
+Bionet!  However, closer examination of this statement reveals
+several problems.</P>
+<P>AMS uses BP (RFC 5050) for its delay-tolerant networking needs,
+and BP does not guarantee delivery in transmission order.  Bionet
+pub/sub conversations are context sensitive - decoding later messages
+may required using information contained in earlier messages.  Thus,
+to use AMS for the DTN part of the Bionet communications, additional
+smarts would be needed in Bionet to undo the message reordering. 
+This addition would not be of any use to Bionet on normal,
+well-behaved networks where TCP can do its job.</P>
+<P>The dynamic nature of the subscription topic set in Bionet also
+does not lend itself well to DTN operations.  Delayed networks prefer
+pre-positioned subscriptions to more statically chosen topics, and
+this is not how the Bionet protocol operates.  The Bionet
+subscription model is not a good match for DTNs.</P>
+<P>Rather than redesign the Bionet protocol to work over DTN (and
+thereby sacrificing some of the things we like about Bionet), we came
+up with a new, different protocol that <B>is</B> very DTN friendly,
+and that carries Bionet information across DTN.  This is the BDM Sync
+Protocol.  This protocol uses pre-positioned static wildcard
+subscriptions, and it uses application-level intelligence to
+efficiently compress lots of data into small bundles.  It is
+resistant to message loss and message reordering.  It works very well
+over DTN.</P>
+<P>This issue is not a show-stopper, but solving it incurs an
+unnecessary cost in terms of code complexity and/or run-time
+efficiency.</P>
+<H3 CLASS="western">Subscription topics</H3>
+<P>Bionet topics are structured strings.  AMS topics are 16-bit
+integers.  Thus Bionet topics would have to be mapped onto the 16-bit
+integers somehow, resulting in collisions and superfluously published
+information.  Bionet can easily filter out the incorrectly received
+information, but at some cost in run-time efficiency.  This cost
+grows as the size of the network grows.</P>
+<P>Bionet topics are federally managed; each publisher gets its own
+corner of the address space to manage as it wants.  When Bionet
+Clients register subscriptions, the topics are prefixed with the name
+of the publisher (or by grouping operators which can specify multiple
+publishers).  In contrast, in AMS, the 16-bit topic space is shared
+by all publishers in the “Unit”, so Bionet would need to
+subdivide the topic space into “publisher” part and a
+“publisher's topic” part (similar to how CIDR specifies a network
+part and a host part to an IP address).  The AMS topic space can be
+subdivided by “Unit”.  This suggests that each HAB can be in its
+own Unit, somewhat alleviating this problem (though not solving it). 
+But that work-around has the drawback that each AMS Unit requires its
+own Registrar server, leading to a top-heavy network.</P>
+<P>The Bionet topic space changes during run-time, as publishers come
+and go, and as the publishers add and remove topics in their own
+space of topics.  This clashes with the AMS setup where the topic
+space is managed by the MIB, and fixed at system startup.</P>
+<P>Bionet topic strings can contain wildcard operators that are
+expanded by the publisher, so that subscribers can subscribe to
+multiple related topics with a single request, and the publisher will
+publish all messages on all current and future topics that matches
+the wildcard subscription.  I believe no such mechanism exists in
+AMS.  This problem could be worked around by first registering a
+subscription that will inform the subscriber of all potentially
+interesting topics as they come and go, then in the subscriber
+registering and unregistering subscriptions for all the topics that
+match, as they come and go.  In this workaround there is a window in
+between the publisher announcing the new topic and the subscriber
+subscribing to it during which data can be published, yet not
+received by the subscriber.  It also results in a more chatty
+protocol.</P>
+<H3 CLASS="western">Minor other issues</H3>
+<OL>
+	<LI><P>Peer Discovery.  In Bionet, subscribers currently find
+	publishers using multicast Domain Name Service/Service Discovery
+	(mDNS-SD, a widely used protocol on the IETF standards track).  AMS
+	uses explicit registration/deregistration and query with a network
+	of Registrar servers.  Bionet could use the AMS mechanism, but at
+	the cost of additional superstructure requirements.</P>
+	<LI><P>Bionet publications are one-to-many, meaning each topic is
+	published by exactly one publisher.  AMS publications are
+	many-to-many, meaning multiple publishers can publish on the same
+	topic.  Bionet would have to filter out any messages erroneously
+	published by invalid publishers, but that's no big deal.</P>
+	<LI><P>Bionet security is implemented and enforced in a p2p way,
+	whereas AMS security is centrally managed.</P>
+</OL>
+<P><BR><BR>
+</P>
+</BODY>
+</HTML>
