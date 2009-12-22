@@ -157,6 +157,7 @@ int bionet_parse_topic_params(
             if ( value == NULL ) {
                 g_hash_table_destroy(params);
                 g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: Out of memory!", __FUNCTION__);
+		free(key);
                 return -1;
             }
             memcpy(value, separator + 1, val_size);
