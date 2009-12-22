@@ -33,7 +33,7 @@ int bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
     if (new_datapoint_sub == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                 "%s(): out of memory", __FUNCTION__);
-        goto fail0;
+	return -1;
     }
 
     new_datapoint_sub->peer_id = strdup(peer_id);

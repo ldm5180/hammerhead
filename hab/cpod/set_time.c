@@ -44,6 +44,9 @@ int set_time(int fd)
 
     utime = time(NULL);
     broken_time = gmtime(&utime);
+    if (NULL == broken_time) {
+	return -3;
+    }
 
     command.seconds = broken_time->tm_sec;
     command.minutes = broken_time->tm_min;
