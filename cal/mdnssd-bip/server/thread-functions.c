@@ -742,9 +742,13 @@ static void free_peer(void *peer_as_void) {
 
 // clean up the clients hash table
 void cleanup_clients_and_listener(cal_server_mdnssd_bip_t * this) {
+    if (NULL == this) {
+	return;
+    }
+
     if(this->clients == NULL) return;
 
-    if(this && this->socket >= 0) {
+    if(this->socket >= 0) {
         close(this->socket); // Stop listening to new connections
         this->socket = -1;
     }
@@ -896,9 +900,11 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
     r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: error writing INIT event to user thread!!");
+	cal_event_free(event);
         return (void*)1;
     } else if (r < sizeof(event)) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: short write of INIT event to user thread!!");
+	cal_event_free(event);
         return (void*)1;
     }
 
@@ -1054,6 +1060,7 @@ shutdown_thread:
     // 
     // User asked we shutdown
     //
+    cal_event_free(event);
     close(cal_server_mdnssd_bip_fds_to_user[1]);
     cal_server_mdnssd_bip_fds_to_user[1] = -1;
 

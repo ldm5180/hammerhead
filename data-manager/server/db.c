@@ -1992,11 +1992,11 @@ static int _db_publish_synced_datapoint(sqlite3* db,
         resource_key[7]
     );
 
+    int param = 1;
     sqlite3_stmt *stmt;
     r = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (r != SQLITE_OK) goto db_fail;
 
-    int param = 1;
     r = sqlite3_bind_blob(stmt, param++, resource_key, BDM_RESOURCE_KEY_LENGTH, SQLITE_TRANSIENT);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s():SQL bind error", __FUNCTION__);
