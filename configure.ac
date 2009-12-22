@@ -470,12 +470,23 @@ fi
 
 
 #ccache
-AC_PATH_PROG(CCACHE, ccache, no)
-AM_CONDITIONAL([ENABLE_CCACHE], [test "x$CCACHE" != "xno"])
-if test "x$CCACHE" != "xno"; then
-   CC="ccache $CC"
-   CXX="ccache $CXX"
+AC_ARG_ENABLE(ccache, AC_HELP_STRING([--disable-ccache],
+      [disable ccash compilation speedup]),
+      [ENABLE_CCACHE=$enableval],
+      [ENABLE_CCACHE=check])
+CCACHE=no
+if test "x$ENABLE_CCACHE" != "xno" ; then
+  AC_PATH_PROG(CCACHE, ccache, no)
+  if test "x$CCACHE" != "xno"; then
+     CC="ccache $CC"
+     CXX="ccache $CXX"
+  else
+    if test "x$ENABLE_CCACHE" = "xyes"; then
+      AC_MSG_FAILURE([--enable-ccache was given, but test for ccache failed])
+    fi
+  fi
 fi
+AM_CONDITIONAL([ENABLE_CCACHE], [test "x$CCACHE" != "xno"])
 
 #bazaar
 AC_PATH_PROG(BAZAAR, bzr, no)
@@ -615,3 +626,7 @@ AC_CONFIG_FILES([Makefile
                  ])
 
 AC_OUTPUT
+
+#
+# vim: sw=2 sta expandtab
+#
