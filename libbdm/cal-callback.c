@@ -484,7 +484,8 @@ void libbdm_cal_callback(const cal_event_t *event) {
             libbdm_peer_t *bdm_peer;
 
             // add the bdm to the bdm library's list of known bdms
-            if ( NULL == (bdm_peer = g_hash_table_lookup( libbdm_all_peers, event->peer_name)) ) {
+	    bdm_peer = g_hash_table_lookup( libbdm_all_peers, event->peer_name );
+            if ( NULL == bdm_peer ) {
 
                 bdm_peer = calloc(1, sizeof(libbdm_peer_t));
                 if (NULL == bdm_peer) {
