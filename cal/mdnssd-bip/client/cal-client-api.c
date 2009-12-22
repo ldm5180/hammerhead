@@ -30,6 +30,7 @@ int cal_client_mdnssd_bip_init(
     int (*peer_matches)(const char *peer_name, const char *subscription)
 ) {
     int r;
+    GError *err = NULL;
 
     bip_shared_config_init();
 
@@ -88,7 +89,6 @@ int cal_client_mdnssd_bip_init(
     cal_client.callback = callback;
 
     // Create and start the client thread
-    GError *err = NULL;
     client_thread = g_thread_create(
             cal_client_mdnssd_bip_function,
             client_thread_data,

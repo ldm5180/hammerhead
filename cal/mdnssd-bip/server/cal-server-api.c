@@ -41,6 +41,7 @@ int cal_server_mdnssd_bip_init(
 
     struct sockaddr_in my_address;
     socklen_t my_address_len;
+    GError *err = NULL;
 
     bip_shared_config_init();
 
@@ -158,7 +159,6 @@ int cal_server_mdnssd_bip_init(
     // record the user's callback function
     cal_server.callback = callback;
 
-    GError *err = NULL;
     server_thread = g_thread_create(
             cal_server_mdnssd_bip_function, 
             server_thread_data,
