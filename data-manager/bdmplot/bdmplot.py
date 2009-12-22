@@ -32,7 +32,7 @@ def bdmplot(kwargs, bionet_resources):
     """
     # Supply default values
     args = { "label": "plot",
-             "filter": "syshealth.*.*:15-min-load-average",
+             "filter": ["syshealth.*.*:15-min-load-average"],
              "timespan": ["last 6h"],
              "regexp": None,
              "format": "png",
@@ -41,14 +41,14 @@ def bdmplot(kwargs, bionet_resources):
              "dpi": 60,
              "bionet-resources" : {} }
 
-    fname = "/tmp/" + args['filter'][0] + "." + args['timespan'][0]
-    
     # Get args from the caller; these override the defaults but are 
     #         overriden by CGI.
     if kwargs != None and len(kwargs) > 0:
         for k,v in kwargs.iteritems():
             args[k] = v
 
+    fname = "/tmp/" + args['filter'] + "." + args['timespan'][0]
+    
     # Get values from CGI
     # CGI overrides any previous values.
     form = cgi.FieldStorage()
