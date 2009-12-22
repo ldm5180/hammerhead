@@ -345,9 +345,9 @@ int bionet_split_node_name(
     char **hab_id,
     char **node_id
 ) {
-    static char internal_hab_type[BIONET_NAME_COMPONENT_MAX_LEN + 1];
-    static char internal_hab_id[BIONET_NAME_COMPONENT_MAX_LEN + 1];
-    static char internal_node_id[BIONET_NAME_COMPONENT_MAX_LEN + 1];
+    static char internal_hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    static char internal_hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    static char internal_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
 
     const char *p;
     int size;
@@ -445,9 +445,9 @@ int bionet_split_node_name(
 
 int bionet_split_node_name_r(
     const char *node_name,
-    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN+1],
-    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN+1],
-    char node_id[BIONET_NAME_COMPONENT_MAX_LEN+1])
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN])
 {
     const char *p;
     int size;
