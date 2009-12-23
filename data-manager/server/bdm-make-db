@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+set -e
+
+DB=bdm.db
+SCHEMA=/usr/share/bionet2/schema
+SCHEMABASE=$(basename "$SCHEMA")
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+    echo "bdm-make-db makes a Bionet Data Manager database file"
+    echo ""
+    echo "usage: bdm-make-db [DBFILE]"
+    echo ""
+    echo "The database will be created in the file [DBFILE], which defaults"
+    echo "to \"$DB\"."
+    echo "This script will attempt to use a file named \"$SCHEMABASE\" in the"
+    echo "working directory as the schema if found.  If one does not exist,"
+    echo "the site-wide \"$SCHEMA\" will be used instead."
+    exit 0
+fi
+
+# make the user-supplied database file, if they supplied one.
+if [ -n "$1" ]; then
+    DB=$1
+fi
+
+# make a fresh, empty database based on the current schema
+if [ -f "$DB" ]; then
+    echo "DB $DB already exists, quitting"
+    exit 1
+fi
+SQL="sqlite3 $DB"
+
+# if there's a local schema, prefer that to the installed one
+if [ -f "$SCHEMABASE" ]; then
+    SCHEMA=$SCHEMABASE
+fi
+
+$SQL < $SCHEMA
+
+
+# show the schema we ended up with
+$SQL .schema
+
+# show the Resource Data Types and Flavors tables
+echo "Resource Data Types:"
+$SQL "SELECT * FROM Resource_Data_Types;"
+
+echo "Resource Flavors:"
+$SQL "SELECT * FROM Resource_Flavors;"
+
+

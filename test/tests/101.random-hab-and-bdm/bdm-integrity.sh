@@ -16,7 +16,7 @@ rm -f $ORIG_DIR/bdm.db
 cd ../../../data-manager/server
 mv bdm.db bdm.db-old
 echo "Making DB file..."
-./make-db.sh > /dev/null
+./bdm-make-db > /dev/null
 mv bdm.db $ORIG_DIR/.
 mv bdm.db-old bdm.db
 cd $ORIG_DIR

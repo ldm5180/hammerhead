@@ -42,6 +42,9 @@ libbionet_data_manager_la_SOURCES =      \
     cfg-parser.y                      \
     cfg-lexer.l
 
+bin_SCRIPTS = bdm-make-db
+bionetdata_DATA = schema
+
 extra_cflags = $(OPENSSL_CFLAGS) $(GLIB_CFLAGS) $(OPENSSL_CFLAGS) $(CFLAGS_BIONET_CAL_SERVER) $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) $(ION_CFLAGS)
 
 bionet_data_manager_CFLAGS = $(AM_CFLAGS) $(extra_cflags)

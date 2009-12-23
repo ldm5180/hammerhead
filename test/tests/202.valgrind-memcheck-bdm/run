@@ -33,7 +33,7 @@ fi
 echo "making DB file"
 rm -f bdm.db
 pushd $ROOT/data-manager/server > /dev/null
-./make-db.sh > /dev/null
+./bdm-make-db > /dev/null
 popd > /dev/null
 mv $ROOT/data-manager/server/bdm.db .
 
