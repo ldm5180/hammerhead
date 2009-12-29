@@ -84,6 +84,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    if(argc == 1) {
+	usage();
+	exit(0);
+    }
+
     if (reader_ip == NULL) {
         g_warning("no reader IP specified (use --target)");
         exit(1);
