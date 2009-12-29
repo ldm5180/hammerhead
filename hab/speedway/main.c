@@ -32,7 +32,7 @@ llrp_u16_t rf_sensitivity = 0;
 
 
 int main(int argc, char *argv[]) {
-    int i = 2;
+    int i = 0;
     int bionet_fd;
 
     char* hab_type = "speedway";
