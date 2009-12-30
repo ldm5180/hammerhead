@@ -71,6 +71,17 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[i], "--show-messages") == 0) {
             show_messages = 1;
 
+	} else if (strcmp(argv[i], "--periodic-trigger") == 0) {
+	    periodic_trigger = 1;
+
+       } else if (strcmp(argv[i], "--null-trigger") == 0) {
+	    periodic_trigger = 0;
+	    null_trigger = 1;
+
+       } else if (strcmp(argv[i], "--gpi-trigger") == 0) {
+	    periodic_trigger = 0;
+	    gpi_trigger = 1;
+
         } else if (strcmp(argv[i], "--help") == 0) {
             usage();
             exit(0);

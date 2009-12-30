@@ -27,6 +27,9 @@ extern int gpi_polarity;
 extern int num_scans;
 extern int scan_idle;
 extern int scan_timeout;
+extern int periodic_trigger;
+extern int null_trigger;
+extern int gpi_trigger;
 
 extern llrp_u16_t rf_sensitivity;
 
@@ -61,7 +64,9 @@ int poll_reader();
 
 void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData);
 
-int addROSpec();
+int addROSpec_Periodic();
+int addROSpec_Null();
+int addROSpec_GPI();
 int startROSpec();
 int deleteAllROSpecs();
 int enableROSpec();

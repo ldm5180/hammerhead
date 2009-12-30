@@ -38,7 +38,13 @@ int speedway_configure() {
         return -1;
     }
 
-    r = addROSpec();
+    if (periodic_trigger == 1) {
+	r = addROSpec_Periodic();
+    } else if (null_trigger == 1) {
+	r = addROSpec_Null();
+    } else if (gpi_trigger == 1) {
+	r = addROSpec_GPI();
+    }
     if (r != 0) {
         g_warning("addROSpec error");
         return -1;
