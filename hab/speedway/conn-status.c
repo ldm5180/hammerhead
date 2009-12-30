@@ -104,6 +104,32 @@ int checkConnectionStatus(void)
 fail:
     g_warning("checkConnectionStatus failed");
 
+    switch (pEvent->eStatus) {
+			
+ 	case 0:	
+	    g_warning("LLRP_ConnectionAttemptStatusType_Success");
+	    break;
+			
+	case 1:
+	    g_warning("LLRP_ConnectionAttemptStatusType_Failed_A_Reader_Initiated_Connection_Already_Exists");
+	    break;
+			
+	case 2:
+	    g_warning("LLRP_ConnectionAttemptStatusType_Failed_A_Client_Initiated_Connection_Already_Exists");
+	    break;
+			
+	case 3:
+	    g_warning("LLRP_ConnectionAttemptStatusType_Failed_Reason_Other_Than_A_Connection_Already_Exists");
+	    break;
+			
+	case 4:
+	    g_warning("LLRP_ConnectionAttemptStatusType_Another_Connection_Attempted");
+	    break;
+			
+	default:
+	    break;
+    }
+
     freeMessage(pMessage);
 
     return -1;

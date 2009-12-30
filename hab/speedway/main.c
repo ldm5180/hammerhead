@@ -161,6 +161,7 @@ int main(int argc, char *argv[]) {
     // set up the main loop
     //
 
+
     main_loop = g_main_loop_new(NULL, TRUE);
 
     {

@@ -20,7 +20,7 @@ int addROSpec(void) {
     // The RO start & stop specs
     //
 
-#if 0
+#if 1
 #define RO_TRIGGER_PERIOD 1100
     // this is a periodic trigger
     LLRP_tSPeriodicTriggerValue PeriodicTriggerValue = {
@@ -36,7 +36,7 @@ int addROSpec(void) {
     };
 #endif
 
-#if 1
+#if 0
     // this is a Null trigger, so it just starts when we tell it to
     LLRP_tSROSpecStartTrigger ROSpecStartTrigger = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpecStartTrigger,
