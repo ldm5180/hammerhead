@@ -55,10 +55,13 @@ int main(int argc, char *argv[]) {
 	    {"scan-timeout", 1, 0, 't'},
 	    {"show-messages", 0, 0, 'm'},
 	    {"security-dir", 1, 0, 's'},
+	    {"periodic-trigger", 0, 0, 'c'},
+	    {"null-trigger", 0, 0, 'u'},
+	    {"gpi-trigger", 0, 0, 'g'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:", long_options, &i);
+	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:cug", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -138,16 +141,35 @@ int main(int argc, char *argv[]) {
 	    print_bionet_version(stdout);
 	    exit(0);
 
+	case 'c':
+	    periodic_trigger = 1;
+	    break;
+
+	case 'u':
+	    periodic_trigger = 0;
+	    null_trigger = 1;
+	    break;
+
+	case 'g':
+	    periodic_trigger = 0;
+	    gpi_trigger = 1;
+	    break;
+
 	default:
 	    break;
 	}
     }
 
+    if(argc == 1) {
+	usage();
+	exit(0);
+    }
+
     if (argv[argc-1][0] == '-') {
-	g_warning("unknown command-line argument '%s'", argv[i]);
+	g_warning("unknown command-line argument '%s'", argv[optind]);
 	exit(1);
     } else {
-	reader_ip = argv[i];
+	reader_ip = argv[optind];
     }
 
     if (reader_ip == NULL) {
@@ -229,6 +251,7 @@ int main(int argc, char *argv[]) {
     //
     // set up the main loop
     //
+
 
     main_loop = g_main_loop_new(NULL, TRUE);
 
