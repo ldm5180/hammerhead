@@ -246,11 +246,14 @@ void cal_server_mdnssd_bip_shutdown(void) {
         return;
     }
 
+    if (cal_server_mdnssd_bip_fds_from_user[1] < 0) {
+	g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "invalid file descriptor");
+	return;
+    }
 
     //
     // first tell the CAL thread to shut itself down
     //
-
     r = close(cal_server_mdnssd_bip_fds_from_user[1]);
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: error closing server thread fd: %s", strerror(errno));
