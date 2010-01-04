@@ -45,24 +45,17 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
    /usr/local/bin/*
-   /usr/local/lib/cgi-bin/bionet/bdmplot*
-   /usr/local/lib/cgi-bin/bionet/datapoints_to_dict*
-   /usr/local/lib/cgi-bin/bionet/time*
    /usr/local/lib/libamedevice*
    /usr/local/lib/libbionet*
    /usr/local/lib/libcal-mdnssd-bip*
    /usr/local/lib/libevent*
    /usr/local/lib/libhab*
-   /usr/local/lib/python2.6/site-packages/_bdm_client*
+   /usr/local/lib/python2.6/site-packages/*.py
    /usr/local/lib/python2.6/site-packages/_bionet*
    /usr/local/lib/python2.6/site-packages/_hab.*
-   /usr/local/lib/python2.6/site-packages/bdm_client*
-   /usr/local/lib/python2.6/site-packages/bionet*
-   /usr/local/lib/python2.6/site-packages/hab*
    /usr/local/lib/libbdm*
    /usr/local/etc/mon-hab.d/*
-   /usr/local/etc/mon-hab.d/nodes.d/*
-   /usr/local/lib/python2.6/site-packages/twisted_bionet*
+   /usr/local/share/bionet2/schema
 
 %defattr(-,root,root,-)
 %doc /usr/local/share/doc/bionet/index.html
@@ -75,5 +68,7 @@ rm -rf $RPM_BUILD_ROOT
 /usr/local/lib/python2.6/site-packages/_bonjour.la
 /usr/local/lib/python2.6/site-packages/_bonjour.so
 /usr/local/lib/python2.6/site-packages/_bonjour.so.*
+/usr/local/lib/python2.6/site-packages/*.pyc
+/usr/local/lib/python2.6/site-packages/*.pyo
 
 %changelog
