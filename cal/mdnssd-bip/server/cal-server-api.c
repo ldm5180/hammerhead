@@ -276,6 +276,11 @@ void cal_server_mdnssd_bip_shutdown(void) {
             return;
         }
 
+	if (cal_server_mdnssd_bip_fds_to_user[0] < 0) {
+	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Invalid file description");
+	    return;
+	}
+
         r = read(cal_server_mdnssd_bip_fds_to_user[0], &event, sizeof(cal_event_t*));
         if (r < 0) {
             if ((errno == EAGAIN) || (errno == EINTR)) continue;
