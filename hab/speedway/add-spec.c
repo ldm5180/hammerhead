@@ -13,6 +13,7 @@
 #include "ltkc.h"
 #include "speedway.h"
 
+#define RO_TRIGGER_PERIOD 1100
 
 int addROSpec_Periodic(void) {
 
@@ -20,7 +21,6 @@ int addROSpec_Periodic(void) {
     // The RO start & stop specs
     //
     // this is a periodic trigger
-    #define RO_TRIGGER_PERIOD 1100
     LLRP_tSPeriodicTriggerValue PeriodicTriggerValue = {
         .hdr.elementHdr.pType = &LLRP_tdPeriodicTriggerValue,
         .Period = RO_TRIGGER_PERIOD,
