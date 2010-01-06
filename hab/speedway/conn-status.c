@@ -42,7 +42,7 @@ int checkConnectionStatus(void)
     LLRP_tSMessage *pMessage;
     LLRP_tSREADER_EVENT_NOTIFICATION *pNtf;
     LLRP_tSReaderEventNotificationData *pNtfData;
-    LLRP_tSConnectionAttemptEvent *pEvent;
+    LLRP_tSConnectionAttemptEvent *pEvent = NULL;
 
     /*
      * Expect the notification within 10 seconds.
