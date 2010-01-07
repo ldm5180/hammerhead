@@ -82,11 +82,14 @@ def cb_datapoint(datapoint):
 
     # make sure the key exists
     if (resource_name not in bionet_resources):
-        bionet_resources[resource_name] = { 'new' : 0 , 'list' : [] }
+        bionet_resources[resource_name] = { 'list' : [] }
 
-    bionet_resources[resource_name]['new'] += 1
     bionet_resources[resource_name]['list'].append(dp)
     bionet_resources[resource_name]['list'].sort(compare_datapoint_timestamps)
+
+    for s in subscriptions:
+        if (bionet_resource_name_matches(resource_name, s['filter'])):
+            s['new'] += 1
 
     #TODO: add subscription pruning when bdm_unsubscribe() exists
     #prune_subscriptions(subscriptions)

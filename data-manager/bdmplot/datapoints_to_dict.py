@@ -4,6 +4,8 @@
 
 from bdm_client import *
 from timespan import timeval_to_float
+from bdmplot_callback_cacher import *
+
 
 def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, resources = None,
     bdm_hostname = "localhost", bdm_port = 11002, bdm_fd = None):
@@ -56,11 +58,13 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, 
                 #print name, " does not match regex ", regexp
                 continue
         if (bionet_resource_name_matches(name, filter_string)):
-            if (dpcache['new'] > 0):
-                updated = True
-                dpcache['new'] = 0
-                results[name] = []
-                results[name] = dpcache['list']
+            for s in subscriptions:
+                if (bionet_resource_name_matches(name, s['filter'])):
+                    if (s['new'] > 0):
+                        updated = True
+                        dpcache['new'] = 0
+                        results[name] = []
+                        results[name] = dpcache['list']
     return (updated, results)
 
 if __name__ == "__main__":

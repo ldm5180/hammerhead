@@ -30,7 +30,8 @@ def process_new_session_or_subscription(request):
     subscriptions.append( { 'filter' : request.args['resource'][0],
                             'timespan' : request.args['timespan'],
                             'last requested' : time.time(),
-                            'regexp' : regex } )
+                            'regexp' : regex,
+                            'new' : 0 } )
 
     # Convert the timespan into timevals and timestamps
     timespan_vals = timespan_to_timevals(request.args["timespan"][0])

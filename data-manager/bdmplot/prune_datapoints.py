@@ -1,5 +1,6 @@
 from bdm_client import *
 from timespan import *
+from bdmplot_callback_cacher import *
 
 def prune_datapoints(subscriptions, bionet_resources):
     removal_list = []
@@ -26,7 +27,10 @@ def prune_datapoints(subscriptions, bionet_resources):
         for dp in dpcache['list']:
             if (dp[0] < oldest_timeval):
                 dpcache['list'].remove(dp)
-                dpcache['new'] += 1
+                for s in subscriptions:
+                    if (bionet_resource_name_matches(name, s['filter'])):
+                        s['new'] += 1
+
                 #print "Removed dp: ", dp
             else:
                 break
