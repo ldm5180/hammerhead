@@ -184,7 +184,7 @@ int bionet_split_resource_name_r(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name_r(): HAB-Type of Topic '%s' has zero length", topic);
         return -1;
     }
-    if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name_r(): HAB-Type of Topic '%s' is too long (%d bytes, max %lu)", topic, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
         return -1;
     }
@@ -209,7 +209,7 @@ int bionet_split_resource_name_r(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name_r(): HAB-ID of Topic '%s' has zero length", topic);
         return -1;
     }
-    if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name_r(): HAB-ID of Topic '%s' is too long (%d bytes, max %lu)", topic, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
         return -1;
     }
@@ -234,7 +234,7 @@ int bionet_split_resource_name_r(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name_r(): Node-ID of Topic '%s' has zero length", topic);
         return -1;
     }
-    if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name_r(): Node-ID of Topic '%s' is too long (%d bytes, max %lu)", topic, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
         return -1;
     }
@@ -261,7 +261,7 @@ int bionet_split_resource_name_r(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name_r(): Resource-ID of Topic '%s' has zero length", topic);
         return -1;
     }
-    if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name_r(): Resource-ID of Topic '%s' is too long (%d bytes, max %lu)", topic, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
         return -1;
     }
@@ -310,7 +310,7 @@ int bionet_split_nodeid_resourceid_r(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_nodeid_resourceid_r(): Node-ID of input-string '%s' has zero length", node_and_resource);
         return -1;
     }
-    if (size > (BIONET_NAME_COMPONENT_MAX_LEN - 1)) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_nodeid_resourceid_r(): Node-ID of input-string '%s' is too long (%d bytes, max %d)", node_and_resource, size, (BIONET_NAME_COMPONENT_MAX_LEN - 1));
         return -1;
     }
@@ -325,7 +325,7 @@ int bionet_split_nodeid_resourceid_r(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_nodeid_resourceid_r(): Resource-ID of input-string '%s' has zero length", node_and_resource);
         return -1;
     }
-    if (size > (BIONET_NAME_COMPONENT_MAX_LEN - 1)) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_nodeid_resourceid_r(): Resource-ID of input-string '%s' is too long (%d bytes, max %d)", node_and_resource, size, (BIONET_NAME_COMPONENT_MAX_LEN - 1));
         return -1;
     }
@@ -377,7 +377,7 @@ int bionet_split_node_name(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): HAB-Type of Node Name '%s' has zero length", node_name);
         return -1;
     }
-    if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): HAB-Type of Node Name '%s' is too long (%d bytes, max %lu)", node_name, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
         return -1;
     }
@@ -402,7 +402,7 @@ int bionet_split_node_name(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): HAB-ID of Node Name '%s' has zero length", node_name);
         return -1;
     }
-    if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): HAB-ID of Node Name '%s' is too long (%d bytes, max %lu)", node_name, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
         return -1;
     }
@@ -422,7 +422,7 @@ int bionet_split_node_name(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): Node-ID of Node Name '%s' has zero length", node_name);
         return -1;
     }
-    if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): Node-ID of Node Name '%s' is too long (%d bytes, max %lu)", node_name, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
         return -1;
     }
@@ -477,7 +477,7 @@ int bionet_split_node_name_r(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): HAB-Type of Node Name '%s' has zero length", node_name);
         return -1;
     }
-    if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): HAB-Type of Node Name '%s' is too long (%d bytes, max %lu)", node_name, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
         return -1;
     }
@@ -504,7 +504,7 @@ int bionet_split_node_name_r(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): HAB-ID of Node Name '%s' has zero length", node_name);
         return -1;
     }
-    if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): HAB-ID of Node Name '%s' is too long (%d bytes, max %lu)", node_name, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
         return -1;
     }
@@ -526,7 +526,7 @@ int bionet_split_node_name_r(
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): Node-ID of Node Name '%s' has zero length", node_name);
         return -1;
     }
-    if (size > BIONET_NAME_COMPONENT_MAX_LEN) {
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_node_name(): Node-ID of Node Name '%s' is too long (%d bytes, max %lu)", node_name, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
         return -1;
     }
