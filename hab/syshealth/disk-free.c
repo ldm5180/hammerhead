@@ -27,7 +27,8 @@
 
 typedef struct {
     char *mount_point;
-    char *resource_id;
+    char *mb_free_resource_id;
+    char *inodes_free_resource_id;
 } partition_t;
 
 static partition_t *partition = NULL;
@@ -78,6 +79,7 @@ static void get_partition_list(void) {
         part = &partition[num_partitions - 1];
         part->mount_point = strdup(start);
 
+        // MB free resource id
         {
             char rid[256];
             int r;
@@ -103,7 +105,36 @@ static void get_partition_list(void) {
                 }
             }
 
-            part->resource_id = strdup(rid);
+            part->mb_free_resource_id = strdup(rid);
+        }
+
+        // Inodes free resource id
+        {
+            char rid[256];
+            int r;
+
+            if (strcmp(start, "/") == 0) { 
+                r = snprintf(rid, sizeof(rid), "inodes-free-on-root");
+
+            } else {
+                char *p;
+
+                start ++;
+
+                for (p = start; *p != '\0'; p ++) {
+                    if (*p == '/') {
+                        *p = '-';
+                    }
+                }
+
+                r = snprintf(rid, sizeof(rid), "inodes-free-on-%s", start);
+                if (r >= sizeof(rid)) {
+                    g_log("", G_LOG_LEVEL_WARNING, "partition %s resource id too long!", part->mount_point);
+                    continue;
+                }
+            }
+
+            part->inodes_free_resource_id = strdup(rid);
         }
     }
 
@@ -111,17 +142,11 @@ static void get_partition_list(void) {
 }
 
 
-static int disk_free_get(char location[]) {
+static int disk_free_get(char location[], int *mb_free, int *inodes_free) {
     //Precondition: input a string of the harddrive sector; ie., "/";
-    //Postcondition: Returns the MB free as an int
-    //The function statvfs from the library <sys/statvfs.h>
-    //returns a struct containing (only noting the two imports/used
-    //variables:
-    //   f_bsize: the file system blocksize
-    //   f_bfree: the # of free blocks
+    //Postcondition: Returns 0 if it worked, -1 if it didnt work.
     
     struct statvfs buff;
-    int disk_fr = -1;
     
     if (statvfs(location, &buff) != 0)
     {
@@ -129,7 +154,10 @@ static int disk_free_get(char location[]) {
 	return -1;
     }
     
-    return disk_fr = ((uint64_t)buff.f_bsize * (uint64_t)buff.f_bfree) / (uint64_t)(1024 * 1024);
+    *mb_free = ((uint64_t)buff.f_bsize * (uint64_t)buff.f_bfree) / (uint64_t)(1024 * 1024);
+    *inodes_free = buff.f_ffree;
+
+    return 0;
 }
 
 
@@ -147,31 +175,62 @@ int disk_free_init(bionet_node_t *node) {
 
     for (i = 0; i < num_partitions; i ++) {
         int r;
-        int diskfree;
-        bionet_resource_t *resource;
+        int mb_free;
+        int inodes_free;
         partition_t *part = &partition[i];
+        bionet_resource_t *resource;
 
-        diskfree = disk_free_get(part->mount_point);
-
-        resource = bionet_resource_new(node,
-                BIONET_RESOURCE_DATA_TYPE_INT32, 
-                BIONET_RESOURCE_FLAVOR_SENSOR, 
-                part->resource_id);
-        if (resource == NULL) {
-            g_log("", G_LOG_LEVEL_WARNING, "disk_free_init(): error creating resource %s", part->resource_id);
+        if (disk_free_get(part->mount_point, &mb_free, &inodes_free) != 0) {
             continue;
         }
 
-        r = bionet_resource_set_int32(resource, diskfree, NULL);
+
+        resource = bionet_resource_new(node,
+                BIONET_RESOURCE_DATA_TYPE_INT32,
+                BIONET_RESOURCE_FLAVOR_SENSOR,
+                part->mb_free_resource_id);
+        if (resource == NULL) {
+            g_log("", G_LOG_LEVEL_WARNING, "disk_free_init(): error creating resource %s", part->mb_free_resource_id);
+            continue;
+        }
+
+        r = bionet_resource_set_int32(resource, mb_free, NULL);
         if (r < 0) {
-            g_log("", G_LOG_LEVEL_WARNING, "disk_free_init(): error setting resource %s", part->resource_id);
-        } else {
-            added_some = 1;
+            g_log("", G_LOG_LEVEL_WARNING, "disk_free_init(): error setting resource %s", part->mb_free_resource_id);
+            continue;
         }
 
         r = bionet_node_add_resource(node, resource);
-        if (r < 0)
-            g_log("", G_LOG_LEVEL_WARNING, "disk_free_init(): node unable to add resource \'%s\'", part->resource_id);
+        if (r < 0) {
+            g_log("", G_LOG_LEVEL_WARNING, "disk_free_init(): node unable to add resource %s", part->mb_free_resource_id);
+            continue;
+        }
+
+
+        added_some = 1;
+
+
+        resource = bionet_resource_new(node,
+                BIONET_RESOURCE_DATA_TYPE_INT32,
+                BIONET_RESOURCE_FLAVOR_SENSOR,
+                part->inodes_free_resource_id);
+        if (resource == NULL) {
+            g_log("", G_LOG_LEVEL_WARNING, "disk_free_init(): error creating resource %s", part->inodes_free_resource_id);
+            continue;
+        }
+
+        r = bionet_resource_set_int32(resource, inodes_free, NULL);
+        if (r < 0) {
+            g_log("", G_LOG_LEVEL_WARNING, "disk_free_init(): error setting resource %s", part->inodes_free_resource_id);
+            continue;
+        }
+
+        r = bionet_node_add_resource(node, resource);
+        if (r < 0) {
+            g_log("", G_LOG_LEVEL_WARNING, "disk_free_init(): node unable to add resource %s", part->inodes_free_resource_id);
+            continue;
+        }
+
     }
 
     if (added_some) return 0;
@@ -189,23 +248,40 @@ void disk_free_update(bionet_node_t *node) {
     int i;
 
     for (i = 0; i < num_partitions; i ++) {
-        int diskfree;
+        int mb_free;
+        int inodes_free;
         int r;
         partition_t *part = &partition[i];
         bionet_resource_t *resource;
 
-        diskfree = disk_free_get(part->mount_point);
-
-        resource = bionet_node_get_resource_by_id(node, part->resource_id);
-        if (resource == NULL) {
-            g_log("", G_LOG_LEVEL_WARNING, "disk_free_update(): looking for non-existent resource %s", part->resource_id);
+        if (disk_free_get(part->mount_point, &mb_free, &inodes_free) != 0) {
             continue;
         }
 
-        r = bionet_resource_set_int32(resource, diskfree, NULL);
-        if (r < 0) {
-            g_log("", G_LOG_LEVEL_WARNING, "disk_free_update(): error setting value for resource %s", part->resource_id);
+
+        resource = bionet_node_get_resource_by_id(node, part->mb_free_resource_id);
+        if (resource == NULL) {
+            g_log("", G_LOG_LEVEL_WARNING, "disk_free_update(): looking for non-existent resource %s", part->mb_free_resource_id);
+            continue;
         }
+
+        r = bionet_resource_set_int32(resource, mb_free, NULL);
+        if (r < 0) {
+            g_log("", G_LOG_LEVEL_WARNING, "disk_free_update(): error setting value for resource %s", part->mb_free_resource_id);
+        }
+
+
+        resource = bionet_node_get_resource_by_id(node, part->inodes_free_resource_id);
+        if (resource == NULL) {
+            g_log("", G_LOG_LEVEL_WARNING, "disk_free_update(): looking for non-existent resource %s", part->inodes_free_resource_id);
+            continue;
+        }
+
+        r = bionet_resource_set_int32(resource, inodes_free, NULL);
+        if (r < 0) {
+            g_log("", G_LOG_LEVEL_WARNING, "disk_free_update(): error setting value for resource %s", part->inodes_free_resource_id);
+        }
+
     }
 }
 
