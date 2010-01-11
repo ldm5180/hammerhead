@@ -26,7 +26,7 @@
  */
 
 int startROSpec() {
-	
+
 	LLRP_tSSTART_ROSPEC Cmd = {
 		.hdr.elementHdr.pType = &LLRP_tdSTART_ROSPEC,
 		.hdr.MessageID = 202,

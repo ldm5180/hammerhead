@@ -26,7 +26,7 @@ void usage(void) {
 	    " -t,--scan-timeout <N>   Stop scanning after N milliseconds (5000)\n"
 	    " -c,--periodic-trigger   Enables periodic trigger. Defaults to on.\n"
 	    " -u,--null-trigger       Enables null trigger, so it starts when we tell it to.\n"
-	    " -g,--gpi-trigger 	      Enables GPI trigger, so it starts when we push a button.\n"      
+	    " -g,--gpi-trigger        Enables GPI trigger, so it starts when we push a button.\n"      
 	    " -m,--show-messages      Printing all messages between the HAB and the Speedway device\n"
 	    " -s,--security-dir <dir> Directory containing security certificates\n"
 	    " -v,--version            Print version number\n"
