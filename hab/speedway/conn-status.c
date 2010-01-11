@@ -107,23 +107,23 @@ fail:
     switch (pEvent->eStatus) {
 			
  	case 0:	
-	    g_warning("LLRP_ConnectionAttemptStatusType_Success");
+	    g_warning("Connection Attempt Success");
 	    break;
 			
 	case 1:
-	    g_warning("LLRP_ConnectionAttemptStatusType_Failed_A_Reader_Initiated_Connection_Already_Exists");
+	    g_warning("Connection Attempt Failed a Reader Initiated Connection Already Exists");
 	    break;
 			
 	case 2:
-	    g_warning("LLRP_ConnectionAttemptStatusType_Failed_A_Client_Initiated_Connection_Already_Exists");
+	    g_warning("Connection Attempt Failed a Client Initiated Connection Already Exists");
 	    break;
 			
 	case 3:
-	    g_warning("LLRP_ConnectionAttemptStatusType_Failed_Reason_Other_Than_A_Connection_Already_Exists");
+	    g_warning("Connection Attempt Failed Reason Other Than a Connection Already Exists");
 	    break;
 			
 	case 4:
-	    g_warning("LLRP_ConnectionAttemptStatusType_Another_Connection_Attempted");
+	    g_warning("Connection Attempt Another Connection Attempted");
 	    break;
 			
 	default:

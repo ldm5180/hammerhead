@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <signal.h>
 
 #include <glib.h>
 
@@ -40,6 +41,8 @@ int main(int argc, char *argv[]) {
     char* hab_id = NULL;
     char* reader_ip = NULL;
     char* security_dir = NULL;
+
+    signal(SIGINT, handle_interrupt);
 
     int c;
     while(1) {
@@ -271,7 +274,6 @@ int main(int argc, char *argv[]) {
 
 end: 
     LLRP_TypeRegistry_destruct(pTypeRegistry);
-
     exit(0);
 }
 

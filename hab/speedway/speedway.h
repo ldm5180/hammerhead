@@ -75,6 +75,7 @@ void handleReaderEventNotification( LLRP_tSReaderEventNotificationData *pNftData
 void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent);
 void handleReaderExceptionEvent();
 void handle_gpi_event(LLRP_tSGPIEvent *pGPIEvent);
+void handle_interrupt(int sig);
 
 int resetConfigurationToFactoryDefaults();
 int freeMessage(LLRP_tSMessage *pMessage);

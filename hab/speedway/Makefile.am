@@ -39,7 +39,8 @@ speedway_SOURCES =         \
     factory-defaults.c     \
     delete-specs.c         \
     antenna-event.c        \
-    exception-event.c
+    exception-event.c	   \
+    handle-interrupt.c
 
 
 speedway_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) -I LTK-1.0.0.5/LTKC/Library $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) 

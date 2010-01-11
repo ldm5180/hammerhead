@@ -116,7 +116,6 @@ int poll_reader() {
 
         scans_left_to_do --;
         if (scans_left_to_do > 0) startROSpec();
-
         return 1;
     }
 
