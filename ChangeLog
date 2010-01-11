@@ -1,4 +1,5 @@
 Bionet 2.5.0
+
     * Add BDM Pub/Sub feature so that historical data can be subscribed to just like live Bionet data.
 
     * Add support for INB 1.1.0 (ION Baseline) in BDM-sync-over-BP
