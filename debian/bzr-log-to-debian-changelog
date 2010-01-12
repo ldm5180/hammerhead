@@ -6,8 +6,7 @@ use POSIX qw(strftime);
 
 
 
-my $distribution = `lsb_release -cs`;
-chomp $distribution;
+my $distribution = "unstable";
 
 
 # these get set by command-line parsing, below
