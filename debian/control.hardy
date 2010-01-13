@@ -25,7 +25,7 @@ Homepage: http://bioserve.colorado.edu/bionet
 Package: bionet2
 Section: net
 Architecture: any
-Depends: ${shlibs:Depends}, python-gobject
+Depends: ${shlibs:Depends}, python, python-gobject
 Suggests: bionet2-www
 Description: A network-transparent pub/sub system for information exchange
  Bionet2 HABs, Clients, and shared libraries, and BDM
@@ -33,6 +33,6 @@ Description: A network-transparent pub/sub system for information exchange
 Package: bionet2-dev
 Section: devel
 Architecture: any
-Depends: ${shlibs:Depends}, bionet2, libavahi-compat-libdnssd-dev, libglib2.0-dev, libssl-dev, python-gobject
+Depends: ${shlibs:Depends}, bionet2, libavahi-compat-libdnssd-dev, libglib2.0-dev, libssl-dev, python, python-gobject
 Description: A network-transparent pub/sub system for information exchange (devel files)
  Bionet2 headers and static libraries
