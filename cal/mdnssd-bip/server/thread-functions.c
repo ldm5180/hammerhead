@@ -314,7 +314,7 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
             if (server_require_security) {
                 goto fail_handshake;
             } else {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
                     "Failed to complete SSL handshake on accept. Trying unencrypted");
                 BIO_free_all(bio);
                 bio = BIO_new_socket(net->socket, BIO_CLOSE);
