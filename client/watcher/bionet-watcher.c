@@ -194,7 +194,8 @@ void usage(void) {
 
 
 int main(int argc, char *argv[]) {
-    int bionet_fd, bdm_fd;
+    int bionet_fd = 0;
+    int bdm_fd = 0;
     char * security_dir = NULL;
     int require_security = 0;
     GSList * hab_list = NULL;
@@ -479,8 +480,12 @@ int main(int argc, char *argv[]) {
             fd_set readers;
 
             FD_ZERO(&readers);
-            FD_SET(bionet_fd, &readers);
-            FD_SET(bdm_fd, &readers);
+	    if (bionet_fd) {
+		FD_SET(bionet_fd, &readers);
+	    }
+	    if (bdm_fd) {
+		FD_SET(bdm_fd, &readers);
+	    }
             r = select(max_fd + 1, &readers, NULL, NULL, diff);
 
             if ((r < 0) && (errno != EINTR)) {

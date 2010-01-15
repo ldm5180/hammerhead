@@ -76,13 +76,13 @@ for log in out.watcher; do
     grep "BDM" $log.sorted | sed 's/BDM //' | grep -v "no known value" | grep -v "    Resources:" | grep -v "new node: " > out.bdm
     if ! diff -q out.random-hab-sorted out.bionet; then
 	echo "ERROR: bionet output differs from random-hab output:"
-	diff -u out.random-hab out.bionet
+	diff -u out.random-hab-sorted out.bionet
 	RETVAL=1
     fi
 
     if ! diff -q out.random out.bdm; then
 	echo "ERROR: bdm output differs from random-hab output:"
-	diff -u out.random-hab out.bdm
+	diff -u out.random out.bdm
 	RETVAL=1
     fi
 done
