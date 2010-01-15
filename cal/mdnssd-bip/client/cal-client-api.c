@@ -22,7 +22,9 @@
 void * cal_client_mdnssd_bip_init(
     const char *network_type,
     void (*callback)(void * cal_handle, const cal_event_t *event),
-    int (*peer_matches)(const char *peer_name, const char *subscription)
+    int (*peer_matches)(const char *peer_name, const char *subscription),
+    void * ssl_ctx,
+    int require_security
 ) {
     int r;
     GError *err = NULL;
@@ -33,6 +35,14 @@ void * cal_client_mdnssd_bip_init(
     if (client_thread_data == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: out of memory!");
         goto fail0;
+    }
+
+    /* init the security stuff for the thread context */
+    client_thread_data->ssl_ctx_client = (SSL_CTX *)ssl_ctx;
+    if(require_security) {
+	client_thread_data->client_require_security = BIP_SEC_REQ;
+    } else {
+	client_thread_data->client_require_security = BIP_SEC_OPT;
     }
 
     bip_shared_config_init();
@@ -98,6 +108,7 @@ fail3:
     cal_client_mdnssd_bip_thread_destroy(client_thread_data);
 
 fail0:
+    free(client_thread_data);
     return NULL;
 }
 
@@ -387,8 +398,7 @@ int cal_client_mdnssd_bip_sendto(void * cal_handle,
 }
 
 
-int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int require) {
-    cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
+void * cal_client_mdnssd_bip_init_security(const char * dir, int require) {
     char cadir[1024];
     char pubcert[1024];
     char prvkey[1024];
@@ -397,7 +407,7 @@ int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int
     if (NULL == dir) {
 	g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "cal_server_mdnssd_bip_init_security(): NULL dir passed in.");
-	return 0;
+	return NULL;
     }
 
     r = snprintf(cadir, 1024, "%s/%s", dir, BIP_CA_DIR);
@@ -405,11 +415,11 @@ int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Failed to make CA Dir variable.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to make CA Dir variable.");
-	    return 1;
+	    return NULL;
 	}
     }
 
@@ -418,11 +428,11 @@ int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Failed to make CA Cert variable.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to make CA Cert variable.");
-	    return 1;
+	    return NULL;
 	}
     }
 
@@ -431,11 +441,11 @@ int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Failed to make Private Key variable.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to make Private Key variable.");
-	    return 1;
+	    return NULL;
 	}
     }
 
@@ -446,71 +456,66 @@ int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to init PRNG.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to init PRNG - continuing without security.");
-	    return 1;
+	    return NULL;
 	}
     }
 
     
     SSLeay_add_ssl_algorithms();
-    this->ssl_ctx_client = SSL_CTX_new(SSLv23_client_method());
+    SSL_CTX * ssl_ctx_client = SSL_CTX_new(SSLv23_client_method());
 
     //verify the SSL dir
-    if (1 != SSL_CTX_load_verify_locations(this->ssl_ctx_client, BIP_CA_FILE, cadir)) {
+    if (1 != SSL_CTX_load_verify_locations(ssl_ctx_client, BIP_CA_FILE, cadir)) {
 	ERR_print_errors_fp(stderr);
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to load CA directory.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to load CA directory - continuing without security.");
-	    return 1;
+	    return NULL;
 	}
     }
 
     //load the trusted CA list
-    if (1 != SSL_CTX_use_certificate_chain_file(this->ssl_ctx_client, pubcert)) {
+    if (1 != SSL_CTX_use_certificate_chain_file(ssl_ctx_client, pubcert)) {
 	ERR_print_errors_fp(stderr);
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to load certificate.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to load certificate - continuing without security.");
-	    return 1;
+	    return NULL;
 	}
     }
 
     //load the private key
-    if (1 != SSL_CTX_use_PrivateKey_file(this->ssl_ctx_client, prvkey, SSL_FILETYPE_PEM)) {
+    if (1 != SSL_CTX_use_PrivateKey_file(ssl_ctx_client, prvkey, SSL_FILETYPE_PEM)) {
 	ERR_print_errors_fp(stderr);
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to load private key.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to load private key - continuing without security.");
-	    return 1;
+	    return NULL;
 	}
     }
 
-    SSL_CTX_set_verify(this->ssl_ctx_client, 
+    SSL_CTX_set_verify(ssl_ctx_client, 
 		       SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, 
 		       bip_ssl_verify_callback);
-    SSL_CTX_set_verify_depth(this->ssl_ctx_client, 9); //arbitrary right now
+    SSL_CTX_set_verify_depth(ssl_ctx_client, 9); //arbitrary right now
 
-    if(require) {
-	this->client_require_security = BIP_SEC_REQ;
-    } else {
-	this->client_require_security = BIP_SEC_OPT;
-    }
-    return 1;
+    return (void *)ssl_ctx_client;
 } /* cal_client_mdnssd_bip_init_security() */
 
 

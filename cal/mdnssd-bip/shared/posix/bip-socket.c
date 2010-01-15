@@ -23,7 +23,6 @@
 
 #include <openssl/err.h>
 
-extern SSL_CTX * ssl_ctx_client;
 extern bip_sec_type_t client_require_security;
 
 int bip_socket_set_blocking(int s, int blocking) {

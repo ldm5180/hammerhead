@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
     make_shutdowns_clean();
 
 
-    cal_handle = cal_client.init("time", cal_callback, NULL);
+    cal_handle = cal_client.init("time", cal_callback, NULL, NULL, 0);
     if (cal_handle == NULL) exit(1);
 
     cal_client.subscribe(cal_handle, "time-publisher", "time");

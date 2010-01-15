@@ -87,6 +87,8 @@ typedef struct {
                                // the socket becomes writable
     size_t curr_msg_bytes_sent; // Number of bytes sent from the top-most msg
     int write_pending; // If set, this net has data to be sent once the socket becomes writable
+    SSL_CTX * ssl_ctx_server;
+    SSL_CTX * ssl_ctx_client;
 } bip_peer_network_info_t;
 
 typedef struct {
@@ -164,7 +166,7 @@ bip_peer_network_info_t *bip_net_new(const char *hostname, uint16_t port);
  * @return -1 on failure (in which case the caller should destroy the net).
  */
 
-int bip_net_connect_nonblock(const char *peer_name, bip_peer_network_info_t *net);
+int bip_net_connect_nonblock(void * cal_handle, const char *peer_name, bip_peer_network_info_t *net);
 
 /**
  * @brief Finish the connect, and check the status
@@ -181,7 +183,7 @@ int bip_net_connect_nonblock(const char *peer_name, bip_peer_network_info_t *net
  * @return 0 if connect is still in progress. Call this function later
  */
 
-int bip_net_connect_check(const char *peer_name, bip_peer_network_info_t *net);
+int bip_net_connect_check(void * cal_handle, const char *peer_name, bip_peer_network_info_t *net);
 
 
 
@@ -294,7 +296,7 @@ bip_peer_t *bip_peer_new(void);
  * @return -1 if no connection was possible, and all the nets have been exhausted.
  */
 
-int bip_peer_connect_nonblock(bip_peer_t * peer);
+int bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer);
 
 /**
  * @brief Connect to a peer.
@@ -315,7 +317,7 @@ int bip_peer_connect_nonblock(bip_peer_t * peer);
 
  * @return 1 if the connection has been established
  */
-int bip_peer_connect_finish(bip_peer_t * peer);
+int bip_peer_connect_finish(void * cal_handle, bip_peer_t * peer);
 
 /**
  * @brief Disconnect from a peer.

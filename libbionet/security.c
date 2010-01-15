@@ -13,6 +13,8 @@
 
 #include "glib.h"
 
+void * libbionet_ssl_ctx = NULL;
+int libbionet_require_security = 0;
 
 int bionet_init_security(const char * dir, int require) {
     if (libbionet_cal_handle != NULL) {
@@ -21,12 +23,17 @@ int bionet_init_security(const char * dir, int require) {
 	return (-1);
     }
 
-    if (cal_client.init_security(libbionet_cal_handle, dir, require)) {
-	return 0;
+    libbionet_require_security = require;
+
+    libbionet_ssl_ctx = cal_client.init_security(dir, require);
+    if ((NULL == libbionet_ssl_ctx) && (require)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "bionet_init_security(): Initializing CAL security failed.");
+	return (-1);
     }
 
-    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "bionet_init_security(): Initializing CAL security failed.");
-    return (-1);
+    //g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+    //	  "bionet_init_security(): CAL security initialized.");
+    return 0;
 } /* bionet_security_set_dir() */
 

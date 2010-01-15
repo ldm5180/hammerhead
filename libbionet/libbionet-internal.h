@@ -13,7 +13,8 @@
 
 
 extern char *libbionet_client_id;
-
+extern void * libbionet_ssl_ctx;
+extern int libbionet_require_security;
 
 extern void (*libbionet_callback_new_hab)(bionet_hab_t *hab);
 extern void (*libbionet_callback_lost_hab)(bionet_hab_t *hab);

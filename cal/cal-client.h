@@ -71,7 +71,9 @@ typedef struct {
     void * (*init)(
         const char *network_type,
         void (*callback)(void * cal_handle, const cal_event_t *event),
-        int (*peer_matches)(const char *peer_name, const char *subscription)
+        int (*peer_matches)(const char *peer_name, const char *subscription),
+	void * ssl_ctx,
+	int require_security
     );
 
 
@@ -160,10 +162,10 @@ typedef struct {
      * @param[in] require 0 for optional security, 1 for required 
      * security. (default: 0)
      *
-     * @return 1 Succes
-     * @return 0 Failure
+     * @return NULL Failure
+     * @return Otherwise Success
      */
-    int (*init_security)(void * cal_handle, const char * dir, int require);
+    void * (*init_security)(const char * dir, int require);
 
 
     /**

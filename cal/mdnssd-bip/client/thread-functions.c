@@ -210,7 +210,7 @@ static void reset_connection(cal_client_mdnssd_bip_t * this, bip_peer_t * peer) 
     report_peer_lost(this, peer);
 
     bip_peer_disconnect(peer);
-    int fd = bip_peer_connect_nonblock(peer);
+    int fd = bip_peer_connect_nonblock(this, peer);
     if(fd >= 0) {
         // The next net is not ready yet
         this->connecting_peer_list = g_list_append(this->connecting_peer_list, peer);
@@ -582,7 +582,7 @@ static void resolve_callback(
     //
     // New peer just showed up on the network. Push it on the list of hosts to connect to
     // 
-    if(bip_peer_connect_nonblock(peer) < 0) {
+    if(bip_peer_connect_nonblock(this, peer) < 0) {
         return;
     }
     this->connecting_peer_list = g_list_append(this->connecting_peer_list, peer);
@@ -984,13 +984,13 @@ SELECT_LOOP_CONTINUE:
                 net = g_ptr_array_index(peer->nets, 0);
                 fd = net->socket;
                 if (FD_ISSET(fd, &writers) || FD_ISSET(fd, &readers)) {
-                    r = bip_peer_connect_finish(peer);
+		    r = bip_peer_connect_finish(this, peer);
                     if (r == 0 ) continue; // Call again later
 
                     this->connecting_peer_list = g_list_delete_link(this->connecting_peer_list, dptr);
                     if( r < 0 ) {
                         // This connect failed. Try the next one
-                        int fd = bip_peer_connect_nonblock(peer);
+                        int fd = bip_peer_connect_nonblock(this, peer);
                         if(fd >= 0) {
                             // The next net is not ready yet
                             this->connecting_peer_list = g_list_append(this->connecting_peer_list, peer);

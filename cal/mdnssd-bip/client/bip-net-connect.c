@@ -22,12 +22,10 @@
 #include <errno.h>
 
 #include "cal-mdnssd-bip.h"
+#include "cal-client-mdnssd-bip.h"
 
 
 #include <openssl/err.h>
-
-extern SSL_CTX * ssl_ctx_client;
-extern bip_sec_type_t client_require_security;
 
 
 //
@@ -37,13 +35,19 @@ extern bip_sec_type_t client_require_security;
 // 
 // Use bip_net_connect_check() after the returned fd is writable to see if it succeeded
 //
-int bip_net_connect_nonblock(const char* peer_name, bip_peer_network_info_t *net) {
+int bip_net_connect_nonblock(void * cal_handle, const char* peer_name, bip_peer_network_info_t *net) {
     int s;
     int r;
 
     struct addrinfo ai_hints;
     struct addrinfo *ai;
 
+    cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
+
+    if (cal_handle == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_peer_connect: NULL cal handle passed in");
+        return -1;
+    }
 
     if (net == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: NULL net passed in", __FUNCTION__);
@@ -53,13 +57,13 @@ int bip_net_connect_nonblock(const char* peer_name, bip_peer_network_info_t *net
 
     if (net->socket >=0) return net->socket;
 
-    if (client_require_security == BIP_SEC_REQ && net->sectype == BIP_SEC_NONE){
+    if (this->client_require_security == BIP_SEC_REQ && net->sectype == BIP_SEC_NONE){
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
             "%s: Security required but not supported on peer '%s'. Refusing to connect",
                  __FUNCTION__, peer_name);
         return -1;
     }
-    if (client_require_security == BIP_SEC_NONE && net->sectype == BIP_SEC_REQ){
+    if (this->client_require_security == BIP_SEC_NONE && net->sectype == BIP_SEC_REQ){
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
             "%s: Security disabled, but required on peer '%s'. Refusing to connect",
                 __FUNCTION__, peer_name);
@@ -130,7 +134,13 @@ int bip_net_connect_nonblock(const char* peer_name, bip_peer_network_info_t *net
 // Returns BIO on success, or NULL on error. 
 // If error, check errno
 //
-int bip_net_connect_check(const char * peer_name, bip_peer_network_info_t *net) {
+int bip_net_connect_check(void * cal_handle, const char * peer_name, bip_peer_network_info_t *net) {
+    cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
+
+    if (cal_handle == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_peer_connect: NULL cal handle passed in");
+        return -1;
+    }
 
     if ( net->socket < 0 ) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -168,8 +178,8 @@ int bip_net_connect_check(const char * peer_name, bip_peer_network_info_t *net) 
 
         
         bio = BIO_new_socket(net->socket, BIO_CLOSE);
-        if (ssl_ctx_client && (net->sectype == BIP_SEC_OPT || net->sectype == BIP_SEC_REQ)) {
-            bio_ssl = BIO_new_ssl(ssl_ctx_client, 1);
+        if (this->ssl_ctx_client && (net->sectype == BIP_SEC_OPT || net->sectype == BIP_SEC_REQ)) {
+            bio_ssl = BIO_new_ssl(this->ssl_ctx_client, 1);
             if (!bio_ssl) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to create an SSL.");
                 BIO_free_all(bio);
@@ -183,7 +193,7 @@ int bip_net_connect_check(const char * peer_name, bip_peer_network_info_t *net) 
     }
 
 
-    if (ssl_ctx_client && (net->sectype == BIP_SEC_OPT || net->sectype == BIP_SEC_REQ)) {
+    if (this->ssl_ctx_client && (net->sectype == BIP_SEC_OPT || net->sectype == BIP_SEC_REQ)) {
 	if (1 != BIO_do_handshake(bio)) {
             if ( BIO_should_retry(bio)) {
                 net->pending_bio = bio;
