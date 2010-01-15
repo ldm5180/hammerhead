@@ -308,7 +308,7 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
                 return 0;
             } 
 
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to complete SSL handshake on accept: %s [%m]",
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Failed to complete SSL handshake on accept: %s [%m]",
                 ERR_error_string(SSL_get_error(ssl, r), NULL));
 
             if (server_require_security) {
