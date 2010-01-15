@@ -104,7 +104,7 @@ int bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
     }
 
     // send the subscription request to the HAB
-    r = cal_client.subscribe(peer_id, topic);
+    r = cal_client.subscribe(libbdm_cal_handle, peer_id, topic);
     if (!r) return -1;
 
     return 0;

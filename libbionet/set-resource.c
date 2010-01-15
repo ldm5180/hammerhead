@@ -80,7 +80,7 @@ int bionet_set_resource_by_habtype_habid_nodeid_resourceid(
 
     // send the command to the HAB
     // Note: cal_client.sendto steals the dynamically-allocated buffer
-    cal_client.sendto(peer_name, buf.buf, buf.size);
+    cal_client.sendto(libbionet_cal_handle, peer_name, buf.buf, buf.size);
 
     return 0;
 

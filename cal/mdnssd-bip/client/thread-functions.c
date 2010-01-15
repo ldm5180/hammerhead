@@ -33,11 +33,6 @@
 
 
 
-static cal_client_mdnssd_bip_t *this = NULL;
-
-
-
-
 // 
 // this is a linked list, each payload is a (struct cal_client_mdnssd_bip_service_context *)
 // we add the first one when we start the mDNS-SD browse running, then we add one each time we start a resolve
@@ -47,6 +42,7 @@ static cal_client_mdnssd_bip_t *this = NULL;
 struct cal_client_mdnssd_bip_service_context {
     DNSServiceRef service_ref;
     char * peer_name;
+    cal_client_mdnssd_bip_t * this;
 };
 
 typedef struct {
@@ -54,8 +50,8 @@ typedef struct {
     char *topic;
 } cal_client_mdnssd_bip_subscription_t;
 
-static void report_new_peer(bip_peer_t * peer);
-static void report_new_subscription(bip_peer_t * peer, const char * subscription);
+static void report_new_peer(cal_client_mdnssd_bip_t * this, bip_peer_t * peer);
+static void report_new_subscription(cal_client_mdnssd_bip_t * this, bip_peer_t * peer, const char * subscription);
 
 
 /**
@@ -69,7 +65,7 @@ static void report_new_subscription(bip_peer_t * peer, const char * subscription
  * @return NULL on out-of-memory.
  */
 
-bip_peer_t *get_peer_by_name(const char *peer_name) {
+bip_peer_t *get_peer_by_name(cal_client_mdnssd_bip_t * this, const char *peer_name) {
     char *hash_key;
     bip_peer_t *peer;
 
@@ -103,7 +99,7 @@ bip_peer_t *get_peer_by_name(const char *peer_name) {
 
 
 
-static void report_peer_lost(bip_peer_t *peer) {
+static void report_peer_lost(cal_client_mdnssd_bip_t * this, bip_peer_t *peer) {
     cal_event_t *event;
     int r;
 
@@ -121,7 +117,7 @@ static void report_peer_lost(bip_peer_t *peer) {
     }
 
     // the event and the peer become the responsibility of the user's callback now, so they might leak memory but we're not
-    r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
+    r = write(this->cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "browser_callback: error writing event: %s", strerror(errno));
         cal_event_free(event);
@@ -178,7 +174,7 @@ static void _peer_add_pending_msg(
  *     annother available net
  */
 
-static int send_subscriptions(bip_peer_t *peer) {
+static int send_subscriptions(cal_client_mdnssd_bip_t * this, bip_peer_t *peer) {
     int r = 0;
     int i;
 
@@ -208,15 +204,15 @@ static int send_subscriptions(bip_peer_t *peer) {
             break;
         }
 
-        report_new_subscription(peer, s->topic);
+        report_new_subscription(this, peer, s->topic);
     }
 
     return r;
 }
 
-static void reset_connection(bip_peer_t * peer) {
+static void reset_connection(cal_client_mdnssd_bip_t * this, bip_peer_t * peer) {
 
-    report_peer_lost(peer);
+    report_peer_lost(this, peer);
 
     bip_peer_disconnect(peer);
     int fd = bip_peer_connect_nonblock(peer);
@@ -227,11 +223,11 @@ static void reset_connection(bip_peer_t * peer) {
 }
 
 // this function is called by the thread main function when the user thread wants to tell it something
-static void read_from_user(void) {
+static void read_from_user(cal_client_mdnssd_bip_t * this) {
     cal_event_t *event;
     int r;
 
-    r = read(cal_client_mdnssd_bip_fds_from_user[0], &event, sizeof(event));
+    r = read(this->cal_client_mdnssd_bip_fds_from_user[0], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: error reading from user: %s", strerror(errno));
         return;
@@ -267,7 +263,7 @@ static void read_from_user(void) {
                 break;
             }
 
-            peer = get_peer_by_name(event->peer_name);
+            peer = get_peer_by_name(this, event->peer_name);
             if (peer == NULL) break;
             if (peer->nets->len == 0) break;
 
@@ -279,7 +275,7 @@ static void read_from_user(void) {
                     event->msg.buffer, event->msg.size);
                 event->msg.buffer = NULL; // Free'd when the peer finally sends the msg
                 event->msg.size = 0;
-                reset_connection(peer);
+                reset_connection(this, peer);
             }
 
             break;
@@ -337,10 +333,10 @@ static void read_from_user(void) {
                     r = bip_send_message(peer, BIP_MSG_TYPE_SUBSCRIBE, 
                         s->topic, strlen(s->topic) + 1);
                     if (r != 0) {
-                        reset_connection(peer);
+                        reset_connection(this, peer);
                     }
 
-                    report_new_subscription(peer, s->topic);
+                    report_new_subscription(this, peer, s->topic);
                 }
             }
 
@@ -404,7 +400,7 @@ static void read_from_user(void) {
                     r = bip_send_message(peer, BIP_MSG_TYPE_UNSUBSCRIBE, 
                         event->topic, strlen(event->topic) + 1);
                     if (r != 0 ) {
-                        reset_connection(peer);
+                        reset_connection(this, peer);
                     }
                 }
             }
@@ -426,13 +422,13 @@ static void read_from_user(void) {
 
 
 // this function is called by the thread main function when a connected publisher has something to say
-static void read_from_publisher(const char *peer_name, bip_peer_t *peer, bip_peer_network_info_t *net) {
+static void read_from_publisher(cal_client_mdnssd_bip_t * this, const char *peer_name, bip_peer_t *peer, bip_peer_network_info_t *net) {
     cal_event_t *event;
     int r;
 
     r = bip_read_from_peer(peer_name, peer);
     if (r < 0) {
-        reset_connection(peer);
+        reset_connection(this, peer);
         return;
     }
 
@@ -503,7 +499,7 @@ static void read_from_publisher(const char *peer_name, bip_peer_t *peer, bip_pee
 
     bip_net_clear(net);
 
-    r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
+    r = write(this->cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_publisher: error writing to user thread!!");
         cal_event_free(event);
@@ -540,6 +536,7 @@ static void resolve_callback(
 
     struct cal_client_mdnssd_bip_service_context *sc = context;
     char * peer_name = sc->peer_name;
+    cal_client_mdnssd_bip_t * this = sc->this;
 
     bip_peer_t *peer;
     bip_peer_network_info_t *net;
@@ -558,7 +555,7 @@ static void resolve_callback(
         return;
     }
 
-    peer = get_peer_by_name(peer_name);
+    peer = get_peer_by_name(this, peer_name);
     free(peer_name);
     if (peer == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: out of memory");
@@ -631,7 +628,6 @@ static void browse_callback(
         return;
     }
 
-
     if (flags & kDNSServiceFlagsAdd) {
         struct cal_client_mdnssd_bip_service_context *sc;
         DNSServiceErrorType error;
@@ -643,6 +639,7 @@ static void browse_callback(
         }
 
         sc->peer_name = strdup(name);
+	sc->this = (cal_client_mdnssd_bip_t *)context;
 
         // Now create a resolve call to fill out the network info part of the bip_peer
         error = DNSServiceResolve(
@@ -663,12 +660,12 @@ static void browse_callback(
         }
 
         // add this new service ref to the list
-        this->service_list = g_slist_prepend(this->service_list, sc);
+        sc->this->service_list = g_slist_prepend(sc->this->service_list, sc);
     } else {
 #if 0
         bip_peer_t *peer;
 
-        peer = g_hash_table_lookup(this->peers, name);
+        peer = g_hash_table_lookup(sc->this->peers, name);
         if (peer == NULL) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "browse_callback: got an mDNS Leave event for unknown server '%s', ignoring", name);
             return;
@@ -744,7 +741,9 @@ static void free_peer(void *peer_as_void) {
 //
 // Notify the user thread of a new subscription
 //
-static void report_new_subscription(bip_peer_t * peer, const char * subscription){
+static void report_new_subscription(cal_client_mdnssd_bip_t * this, 
+				    bip_peer_t * peer, 
+				    const char * subscription){
     cal_event_t * event;
     int r;
 
@@ -772,7 +771,7 @@ static void report_new_subscription(bip_peer_t * peer, const char * subscription
 
     // send the Subcribe event
     // the event becomes the responsibility of the callback now, so they might leak memory but we're not
-    r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
+    r = write(this->cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "new_connection: error writing event: %s", strerror(errno));
         cal_event_free(event);
@@ -789,7 +788,7 @@ static void report_new_subscription(bip_peer_t * peer, const char * subscription
 //
 // Notify the user thread of a new peer
 //
-static void report_new_peer(bip_peer_t * peer){
+static void report_new_peer(cal_client_mdnssd_bip_t * this, bip_peer_t * peer){
     cal_event_t * event;
     int r;
 
@@ -810,7 +809,7 @@ static void report_new_peer(bip_peer_t * peer){
 
     // send the Join event
     // the event becomes the responsibility of the callback now, so they might leak memory but we're not
-    r = write(cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
+    r = write(this->cal_client_mdnssd_bip_fds_to_user[1], &event, sizeof(event));  // heh
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "new_connection: error writing event: %s", strerror(errno));
         cal_event_free(event);
@@ -830,17 +829,17 @@ static void report_new_peer(bip_peer_t * peer){
 //
 // If there is an error sending, attempt to re-connect
 // 
-static void post_connect(bip_peer_t * peer) {
+static void post_connect(cal_client_mdnssd_bip_t * this, bip_peer_t * peer) {
     int r;
 
     // Notify user thread of new peer before
     // the thread is notified of subscriptions
-    report_new_peer(peer);
+    report_new_peer(this, peer);
 
     // Send subscriptions first. 
-    r = send_subscriptions(peer);
+    r = send_subscriptions(this, peer);
     if (r != 0) {
-        reset_connection(peer);
+        reset_connection(this, peer);
         return;
     }
 
@@ -850,7 +849,7 @@ static void post_connect(bip_peer_t * peer) {
         bip_msg_t * msg = ptr->data;
         r = bip_send_message(peer, msg->type, msg->data, msg->size);
         if (r != 0) {
-            reset_connection(peer);
+            reset_connection(this, peer);
             return;
         }
 
@@ -869,6 +868,7 @@ static void post_connect(bip_peer_t * peer) {
 //
 
 void *cal_client_mdnssd_bip_function(void *arg) {
+    cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)arg;
     struct cal_client_mdnssd_bip_service_context *browse;
     DNSServiceErrorType error;
 
@@ -884,12 +884,11 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     }
 #endif
 
-    this = (cal_client_mdnssd_bip_t *)arg;
     this->running = 1;
 
-    r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", cal_client_mdnssd_bip_network_type);
+    r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", this->cal_client_mdnssd_bip_network_type);
     if (r >= sizeof(mdnssd_service_name)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "client thread: network type '%s' too long!", cal_client_mdnssd_bip_network_type);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "client thread: network type '%s' too long!", this->cal_client_mdnssd_bip_network_type);
         return NULL;
     }
 
@@ -916,7 +915,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 	mdnssd_service_name,
         NULL,  
         browse_callback,
-        NULL
+        (void *)this
     );
 
     if (error != kDNSServiceErr_NoError) {
@@ -973,8 +972,8 @@ SELECT_LOOP_CONTINUE:
         }
 
         // the user thread might want to say something
-        FD_SET(cal_client_mdnssd_bip_fds_from_user[0], &readers);
-        max_fd = Max(max_fd, cal_client_mdnssd_bip_fds_from_user[0]);
+        FD_SET(this->cal_client_mdnssd_bip_fds_from_user[0], &readers);
+        max_fd = Max(max_fd, this->cal_client_mdnssd_bip_fds_from_user[0]);
 
         // each server we're connected to might want to say something,
         // or have data to be sent
@@ -1022,11 +1021,11 @@ SELECT_LOOP_CONTINUE:
                             // No more nets to try.
                             // TODO Send an error message instead of a duplicate 
                             // PEER_LEAVING
-                            report_peer_lost(peer);
+                            report_peer_lost(this, peer);
                         }
                     } else {
                         // Do post-connect stuff
-                        post_connect(peer);
+                        post_connect(this, peer);
                     }
                     goto SELECT_LOOP_CONTINUE;
                 }
@@ -1058,8 +1057,8 @@ SELECT_LOOP_CONTINUE:
         }
 
         // see if the user thread said anything
-        if (FD_ISSET(cal_client_mdnssd_bip_fds_from_user[0], &readers)) {
-            read_from_user();
+        if (FD_ISSET(this->cal_client_mdnssd_bip_fds_from_user[0], &readers)) {
+            read_from_user(this);
         }
 
         // see if any of our servers said/read anything
@@ -1076,7 +1075,7 @@ SELECT_LOOP_CONTINUE:
                 if (net == NULL) continue;
 
                 if (FD_ISSET(net->socket, &readers)) {
-                    read_from_publisher(name, peer, net);
+                    read_from_publisher(this, name, peer, net);
                     // read_from_publisher can disconnect the peer, so we need to stop iterating over it now
                     goto SELECT_LOOP_CONTINUE;
                 }
@@ -1085,7 +1084,7 @@ SELECT_LOOP_CONTINUE:
                     r = bip_drain_pending_msgs(net);
                     if ( r < 0 ) {
                         // peer should be discnnected
-                        reset_connection(peer);
+                        reset_connection(this, peer);
                         goto SELECT_LOOP_CONTINUE;
                     }
                 }
@@ -1096,8 +1095,8 @@ SELECT_LOOP_CONTINUE:
     //
     // We were asked to exit
     //
-    close(cal_client_mdnssd_bip_fds_to_user[1]);
-    cal_client_mdnssd_bip_fds_to_user[1] = -1;
+    close(this->cal_client_mdnssd_bip_fds_to_user[1]);
+    this->cal_client_mdnssd_bip_fds_to_user[1] = -1;
     
     return 0;
 }

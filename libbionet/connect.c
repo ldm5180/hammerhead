@@ -66,7 +66,7 @@ static void libbionet_clear_cache(void) {
 
 
 int bionet_is_connected(void) {
-    if (libbionet_cal_fd < 0) return 0;
+    if (libbionet_cal_handle == NULL) return 0;
     return 1;
 }
 
@@ -256,7 +256,7 @@ static int libbionet_cal_peer_matches(const char *peer_name, const char *pattern
 int bionet_connect(void) {
 
     // if the connection is already open we just return it's fd
-    if (libbionet_cal_fd > -1) return libbionet_cal_fd;
+    if (libbionet_cal_handle != NULL) return cal_client.get_fd(libbionet_cal_handle);
 
 
     //
@@ -264,8 +264,8 @@ int bionet_connect(void) {
     //
 
 
-    libbionet_cal_fd = cal_client.init("bionet", libbionet_cal_callback, libbionet_cal_peer_matches);
-    if (libbionet_cal_fd == -1) {
+    libbionet_cal_handle = cal_client.init("bionet", libbionet_cal_callback, libbionet_cal_peer_matches);
+    if (libbionet_cal_handle == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_connect(): error initializing CAL");
         return -1;
     }
@@ -321,7 +321,7 @@ int bionet_connect(void) {
     libbionet_clear_cache();
 #endif
 
-
+    int libbionet_cal_fd = cal_client.get_fd(libbionet_cal_handle);
     return libbionet_cal_fd;
 }
 

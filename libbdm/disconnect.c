@@ -17,11 +17,11 @@
 #include "libbdm-internal.h"
 
 void bdm_disconnect() {
-    if (libbdm_cal_fd < 0) return;
+    if (libbdm_cal_handle == NULL) return;
 
-    cal_client.shutdown();
+    cal_client.shutdown(libbdm_cal_handle);
 
-    libbdm_cal_fd = -1;
+    libbdm_cal_handle = NULL;
     bdm_fd = -1;
 
 }

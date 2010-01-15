@@ -71,7 +71,7 @@ int bionet_unsubscribe_stream_by_habtype_habid_nodeid_streamid(const char *hab_t
         }
 
         // send the subscription request to the HAB
-        r = cal_client.unsubscribe(publisher, topic);
+        r = cal_client.unsubscribe(libbionet_cal_handle, publisher, topic);
         if (!r) return -1;
 
         return 0;

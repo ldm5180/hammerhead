@@ -18,7 +18,7 @@ extern bdm_hab_list_t * _libbdm_query_response;
 
 int bdm_send_asn(const void *buffer, size_t size, void *unused);
 
-void libbdm_cal_callback(const cal_event_t *event);
+void libbdm_cal_callback(void * cal_handle, const cal_event_t *event);
 void bdm_handle_query_response(const cal_event_t *event,
         ResourceDatapointsReply_t *rdr);
 
@@ -44,7 +44,7 @@ extern void (*libbdm_callback_stream)(bionet_stream_t *stream, void *buffer, int
 extern void * libbdm_callback_stream_usr_data;
 
 
-extern int libbdm_cal_fd;
+extern void * libbdm_cal_handle;
 
 int bdm_subscribe_datapoints_by_bdmid_habtype_habid_nodeid_resourceid(
         const char *peer_id,

@@ -180,7 +180,7 @@ static int libbdm_cal_peer_matches(const char *peer_name, const char *pattern) {
 int bdm_start(void) {
 
     // if the connection is already open we just return it's fd
-    if (libbdm_cal_fd > -1) return libbdm_cal_fd;
+    if (libbdm_cal_handle != NULL) return cal_client.get_fd(libbdm_cal_handle);
 
 
     //
@@ -190,13 +190,13 @@ int bdm_start(void) {
     libbdm_all_peers = g_hash_table_new_full(g_str_hash, g_str_equal, free, NULL);
 
 
-    libbdm_cal_fd = cal_client.init("bionet-db", libbdm_cal_callback, libbdm_cal_peer_matches);
-    if (libbdm_cal_fd == -1) {
+    libbdm_cal_handle = cal_client.init("bionet-db", libbdm_cal_callback, libbdm_cal_peer_matches);
+    if (libbdm_cal_handle == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect(): error initializing CAL");
         return -1;
     }
 
-    return libbdm_cal_fd;
+    return cal_client.get_fd(libbdm_cal_handle);
 }
 
 
