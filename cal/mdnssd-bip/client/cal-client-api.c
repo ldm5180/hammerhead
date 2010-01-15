@@ -77,7 +77,7 @@ void * cal_client_mdnssd_bip_init(
 
 
     // record the user's callback function
-    cal_client.callback = callback;
+    client_thread_data->callback = callback;
 
     // Create and start the client thread
     client_thread_data->client_thread = g_thread_create(cal_client_mdnssd_bip_function,
@@ -97,7 +97,7 @@ void * cal_client_mdnssd_bip_init(
 
 fail4:
     client_thread_data->client_thread = NULL;
-    cal_client.callback = NULL;
+    client_thread_data->callback = NULL;
 
     bip_msg_queue_close(&client_thread_data->msg_queue, BIP_MSG_QUEUE_FROM_USER);
 
@@ -135,7 +135,7 @@ void cal_client_mdnssd_bip_shutdown(void * cal) {
 
     g_thread_join(this->client_thread);
 
-    cal_client.callback = NULL;
+    this->callback = NULL;
 
     if (this->ssl_ctx_client) {
 	SSL_CTX_free(this->ssl_ctx_client);
@@ -301,8 +301,8 @@ int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
         return 0;
     }
 
-    if (cal_client.callback != NULL) {
-        cal_client.callback(this, event);
+    if (this->callback != NULL) {
+        this->callback(this, event);
     }
 
     // manage memory
@@ -531,8 +531,6 @@ int cal_client_mdnssd_bip_get_fd(void * cal_handle) {
 
 
 cal_client_t cal_client = {
-    .callback = NULL,
-
     .init = cal_client_mdnssd_bip_init,
     .shutdown = cal_client_mdnssd_bip_shutdown,
 

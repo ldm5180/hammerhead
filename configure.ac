@@ -8,7 +8,7 @@
 
 # Prelude.
 AC_PREREQ([2.59])
-AC_INIT([Bionet], [2.3], [bionet@bioserve.colorado.edu])
+AC_INIT([Bionet], [2.5], [bionet@bioserve.colorado.edu])
 # unique source file --- primitive safety check 
 AC_CONFIG_SRCDIR([cal/cal-server.h])
 
@@ -586,6 +586,7 @@ AC_CONFIG_FILES([Makefile
 		 client/monitor/Makefile
 		 client/plot/Makefile
                  client/py-libbionet/Makefile
+                 client/realtime-watcher/Makefile
                  client/stream/Makefile
 		 client/stream-manager/Makefile
 		 client/twisted/Makefile
