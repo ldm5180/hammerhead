@@ -33,20 +33,19 @@ typedef struct {
 
     GPtrArray *subscriptions;
 
+    char *cal_client_mdnssd_bip_network_type;
 
+    void (*cal_client_mdnssd_bip_callback)(cal_event_t *event);
+
+    // pipes between CAL Client thread and user thread
+    int cal_client_mdnssd_bip_fds_to_user[2];
+    int cal_client_mdnssd_bip_fds_from_user[2];
+
+    GThread *client_thread;
+
+    SSL_CTX * ssl_ctx_client;
+    bip_sec_type_t client_require_security;
 } cal_client_mdnssd_bip_t;
-
-
-
-extern char *cal_client_mdnssd_bip_network_type;
-
-extern void (*cal_client_mdnssd_bip_callback)(cal_event_t *event);
-
-// pipes between CAL Client thread and user thread
-extern int cal_client_mdnssd_bip_fds_to_user[2];
-extern int cal_client_mdnssd_bip_fds_from_user[2];
-
-
 
 
 // the Client thread

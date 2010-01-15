@@ -40,7 +40,7 @@ typedef struct {
     //!     read-only.
     //!
 
-    void (*callback)(const cal_event_t *event);
+    void (*callback)(void * cal_handle, const cal_event_t *event);
 
 
     //!
@@ -68,23 +68,25 @@ typedef struct {
     //!     On failure, returns -1.
     //!
 
-    int (*init)(
+    void * (*init)(
         const char *network_type,
-        void (*callback)(const cal_event_t *event),
+        void (*callback)(void * cal_handle, const cal_event_t *event),
         int (*peer_matches)(const char *peer_name, const char *subscription)
     );
 
 
     //!
     //! \brief Leave the network.
+    //! \param[in] cal_handle Pointer to CAL context
     //!
 
-    void (*shutdown)(void);
+    void (*shutdown)(void * cal_handle);
 
 
     //!
     //! \brief Subscribe to a new topic from a server.
     //!
+    //! \param[in] cal_handle Pointer to CAL context
     //! \param peer_name The name of the server to subscribe from.
     //!
     //! \param topic The topic to subscribe to.  A NULL-terminated ASCII
@@ -93,12 +95,13 @@ typedef struct {
     //! \return True (non-zero) on success, False (zero) on failure.
     //!
 
-    int (*subscribe)(const char *peer_name, const char *topic);
+    int (*subscribe)(void * cal_handle, const char *peer_name, const char *topic);
 
 
     //!
     //! \brief Remove a subscription topic from a server.
     //!
+    //! \param[in] cal_handle Pointer to CAL context
     //! \param peer_name The name of the server to unsubscribe from.
     //!
     //! \param topic The topic to remove.  A NULL-terminated ASCII
@@ -107,7 +110,7 @@ typedef struct {
     //! \return True (non-zero) on success, False (zero) on failure.
     //!
 
-    int (*unsubscribe)(const char *peer_name, const char *topic);
+    int (*unsubscribe)(void * cal_handle, const char *peer_name, const char *topic);
 
 
     //!
@@ -124,7 +127,7 @@ typedef struct {
     //!     .init() to get a new fd.
     //!
 
-    int (*read)(struct timeval *timeout);
+    int (*read)(void * cal_handle, struct timeval *timeout);
 
 
     //!
@@ -132,6 +135,7 @@ typedef struct {
     //!
     //! This function sends a message (just an array of bytes) to a server.
     //!
+    //! \param[in] cal_handle Pointer to CAL context
     //! \param peer The name of the server to send the message to.
     //!
     //! \param msg The buffer to send.  The msg buffer must be dynamically
@@ -144,12 +148,13 @@ typedef struct {
     //! \returns True (non-zero) on success.  False (zero) on failure.
     //!
 
-    int (*sendto)(const char *peer_name, void *msg, int size);
+    int (*sendto)(void * cal_handle, const char *peer_name, void *msg, int size);
 
 
     /**
      * @brief Initialize security parameters.
      *
+     * @param[in] cal_handle Pointer to CAL context
      * @param[in] dir Directory containing security certificates 
      * and configuration
      * @param[in] require 0 for optional security, 1 for required 
@@ -158,8 +163,18 @@ typedef struct {
      * @return 1 Succes
      * @return 0 Failure
      */
-    int (*init_security)(const char * dir, int require);
+    int (*init_security)(void * cal_handle, const char * dir, int require);
 
+
+    /**
+     * @brief Get file descriptor
+     *
+     * @param[in] cal_handle Pointer to CAL context
+     *
+     * @return >=0 File descriptor
+     * @return -1 Error
+     */
+    int (*get_fd)(void * cal_handle);
 } cal_client_t;
 
 

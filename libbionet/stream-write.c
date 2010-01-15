@@ -82,7 +82,7 @@ void bionet_stream_write(bionet_stream_t *stream, const void *buf, unsigned int 
 
     // send the command to the HAB
     // Note: cal_client.sendto steals the dynamically-allocated buffer
-    cal_client.sendto(bionet_hab_get_name(hab), asn_buf.buf, asn_buf.size);
+    cal_client.sendto(libbionet_cal_handle, bionet_hab_get_name(hab), asn_buf.buf, asn_buf.size);
 
     return;
 

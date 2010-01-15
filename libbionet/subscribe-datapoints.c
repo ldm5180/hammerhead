@@ -66,7 +66,7 @@ int bionet_subscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *h
     }
 
     // send the subscription request to the HAB
-    r = cal_client.subscribe(publisher, topic);
+    r = cal_client.subscribe(libbionet_cal_handle, publisher, topic);
     if (!r) return -1;
 
     return 0;

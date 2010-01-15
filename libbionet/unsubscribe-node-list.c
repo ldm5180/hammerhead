@@ -101,7 +101,7 @@ int bionet_unsubscribe_node_list_by_habtype_habid_nodeid(const char *hab_type,  
         }
 
         // send the node unsubscription request to to all matching nodes
-        r = cal_client.unsubscribe(publisher, topic);
+        r = cal_client.unsubscribe(libbionet_cal_handle, publisher, topic);
         if (!r) return -1;
 
         return 0;

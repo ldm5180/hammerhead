@@ -23,11 +23,11 @@
 
 
 extern cal_client_t cal_client;
+static int cal_shutdown = 0;
 
 
 
-
-void cal_callback(const cal_event_t *event) {
+void cal_callback(void * cal_handle, const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_JOIN: {
             char *msg;
@@ -47,7 +47,7 @@ void cal_callback(const cal_event_t *event) {
             printf("found a time-publisher, sending it a message\n");
 
             // the 'msg' buffer becomes the property of .sendto(), it's no longer ours to free or modify
-            cal_client.sendto(event->peer_name, msg, strlen(msg));
+            cal_client.sendto(cal_handle, event->peer_name, msg, strlen(msg));
 
             break;
         }
@@ -99,8 +99,8 @@ static void exit_signal_handler(int signal_number) {
 }
 
 
-static void exit_handler(void) {
-    cal_client.shutdown();
+static void exit_handler() {
+    cal_shutdown = 1;
 }
 
 
@@ -144,21 +144,26 @@ void make_shutdowns_clean(void) {
 
 
 int main(int argc, char *argv[]) {
+    void * cal_handle;
     int cal_fd;
-
 
     make_shutdowns_clean();
 
 
-    cal_fd = cal_client.init("time", cal_callback, NULL);
-    if (cal_fd < 0) exit(1);
+    cal_handle = cal_client.init("time", cal_callback, NULL);
+    if (cal_handle == NULL) exit(1);
 
-    cal_client.subscribe("time-publisher", "time");
+    cal_client.subscribe(cal_handle, "time-publisher", "time");
 
+    cal_fd = cal_client.get_fd(cal_handle);
 
     while (1) {
         int r;
         fd_set readers;
+
+	if (cal_shutdown) {
+	    cal_client.shutdown(cal_handle);
+	}
 
 	FD_ZERO(&readers);
 	FD_SET(cal_fd, &readers);
@@ -166,15 +171,15 @@ int main(int argc, char *argv[]) {
 	r = select(cal_fd + 1, &readers, NULL, NULL, NULL);
 	if (r == -1) {
 	    printf("select fails: %s\n", strerror(errno));
-            cal_client.shutdown();
+            cal_client.shutdown(cal_handle);
             cal_fd = -1;
 	    continue;
 	}
 
         if (FD_ISSET(cal_fd, &readers)) {
-            if (!cal_client.read(NULL)) {
+            if (!cal_client.read(cal_handle, NULL)) {
                 printf("error reading CAL event!\n");
-                cal_client.shutdown();
+                cal_client.shutdown(cal_handle);
                 exit(1);
             }
         }

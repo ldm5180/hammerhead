@@ -28,7 +28,7 @@ void (*libbdm_callback_stream)(bionet_stream_t *stream, void *buffer, int size, 
 void * libbdm_callback_stream_usr_data = NULL;
 
 
-int libbdm_cal_fd = -1;
+void * libbdm_cal_handle = NULL;
 
 // THIS IS NOT USED.
 // Old clients will assign the result of bdm_connect(host,port) to this.

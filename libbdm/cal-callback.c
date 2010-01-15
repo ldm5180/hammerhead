@@ -370,7 +370,7 @@ static void bdm_handle_server_subscribe(const cal_event_t *event) {
 
     // send the state to the BDM
     // NOTE: cal_client.sendto assumes controll of buf
-    r = cal_client.sendto(peer_name, buf.buf, buf.size);
+    r = cal_client.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size);
 
     return;
 
@@ -481,7 +481,7 @@ static void bdm_handle_server_message(const cal_event_t *event) {
 }
 
 
-void libbdm_cal_callback(const cal_event_t *event) {
+void libbdm_cal_callback(void * cal_handle, const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_JOIN: {
             libbdm_peer_t *bdm_peer;

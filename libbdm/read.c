@@ -25,9 +25,9 @@
 int bdm_read_with_timeout(struct timeval *timeout) {
     int r;
 
-    if (libbdm_cal_fd < 0) return -1;
+    if (libbdm_cal_handle == NULL) return -1;
 
-    r = cal_client.read(timeout);
+    r = cal_client.read(libbdm_cal_handle, timeout);
     if (r) return 0;
     return -1;
 }
@@ -39,6 +39,6 @@ int bdm_read(void) {
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
 
-    return cal_client.read(&timeout);
+    return cal_client.read(libbdm_cal_handle, &timeout);
 }
 

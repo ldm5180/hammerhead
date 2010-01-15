@@ -337,7 +337,7 @@ static void handle_server_message(const cal_event_t *event) {
 
 
 
-void libbionet_cal_callback(const cal_event_t *event) {
+void libbionet_cal_callback(void * cal_handle, const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_JOIN: {
             bionet_hab_t *hab;

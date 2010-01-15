@@ -31,7 +31,7 @@ int bionet_read_with_timeout(struct timeval *timeout) {
 
     if (!bionet_is_connected()) return -1;
 
-    r = cal_client.read(timeout);
+    r = cal_client.read(libbionet_cal_handle, timeout);
     if (r) return 0;
     return -1;
 }
@@ -43,6 +43,6 @@ int bionet_read(void) {
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
 
-    return cal_client.read(&timeout);
+    return cal_client.read(libbionet_cal_handle, &timeout);
 }
 

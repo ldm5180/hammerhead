@@ -59,7 +59,7 @@ int bdm_subscribe_node_list_by_name(const char *node_name) {
         goto fail1;
     }
 
-    if ( !cal_client.subscribe(peer_id, topic) ) return -1;
+    if ( !cal_client.subscribe(libbdm_cal_handle, peer_id, topic) ) return -1;
 
     return 0;
 
