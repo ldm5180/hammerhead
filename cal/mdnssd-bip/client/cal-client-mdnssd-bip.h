@@ -43,8 +43,7 @@ extern char *cal_client_mdnssd_bip_network_type;
 extern void (*cal_client_mdnssd_bip_callback)(cal_event_t *event);
 
 // pipes between CAL Client thread and user thread
-extern int cal_client_mdnssd_bip_fds_to_user[2];
-extern int cal_client_mdnssd_bip_fds_from_user[2];
+bip_msg_queue_t bip_client_msgq;
 
 
 

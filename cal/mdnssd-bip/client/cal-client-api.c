@@ -63,26 +63,11 @@ int cal_client_mdnssd_bip_init(
     }
 
     // create the pipe for passing events back to the user thread
-    r = pipe(cal_client_mdnssd_bip_fds_to_user);
+    r = bip_msg_queue_init(&bip_client_msgq);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error making to-user pipe: %s", strerror(errno));
-        goto fail2;
-    }
-
-    // create the pipe for getting subscription requests from the user
-    r = pipe(cal_client_mdnssd_bip_fds_from_user);
-    if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error making from-user pipe: %s", strerror(errno));
         goto fail3;
     }
 
-
-    // make the cal_fd non-blocking
-    r = fcntl(cal_client_mdnssd_bip_fds_to_user[0], F_SETFL, O_NONBLOCK);
-    if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot make cal_fd nonblocking: %s", strerror(errno));
-        goto fail3;
-    }
 
     // record the user's callback function
     cal_client.callback = callback;
@@ -102,21 +87,18 @@ int cal_client_mdnssd_bip_init(
     }
 
 
-    return cal_client_mdnssd_bip_fds_to_user[0];
+    return bip_msg_queue_get_handle(&bip_client_msgq, BIP_MSG_QUEUE_TO_USER);
 
 
 fail4:
     client_thread = NULL;
     cal_client.callback = NULL;
 
-    close(cal_client_mdnssd_bip_fds_from_user[0]);
-    close(cal_client_mdnssd_bip_fds_from_user[1]);
+    bip_msg_queue_close(&bip_client_msgq, BIP_MSG_QUEUE_FROM_USER);
 
 fail3:
-    close(cal_client_mdnssd_bip_fds_to_user[0]);
-    close(cal_client_mdnssd_bip_fds_to_user[1]);
+    bip_msg_queue_close(&bip_client_msgq, BIP_MSG_QUEUE_TO_USER);
 
-fail2:
     cal_client_mdnssd_bip_thread_destroy(client_thread_data);
 
 fail1:
@@ -130,9 +112,9 @@ fail0:
 
 
 static void _eat_messages_until_shutdown(void) {
-    char buf[1024];
+    cal_event_t * event;
 
-    while(read(cal_client_mdnssd_bip_fds_to_user[0], buf, sizeof(buf)) > 0 );
+    while(bip_msg_queue_pop(&bip_client_msgq, BIP_MSG_QUEUE_TO_USER, &event) == 0 );
 
 }
 
@@ -142,8 +124,7 @@ void cal_client_mdnssd_bip_shutdown(void) {
         return;
     }
 
-    close(cal_client_mdnssd_bip_fds_from_user[1]);
-    cal_client_mdnssd_bip_fds_from_user[1] = -1;
+    bip_msg_queue_close(&bip_client_msgq, BIP_MSG_QUEUE_FROM_USER);
 
     _eat_messages_until_shutdown();
 
@@ -155,10 +136,7 @@ void cal_client_mdnssd_bip_shutdown(void) {
     client_thread = NULL;
     client_thread_data = NULL;
 
-    close(cal_client_mdnssd_bip_fds_to_user[0]);
-    close(cal_client_mdnssd_bip_fds_to_user[1]);
-    close(cal_client_mdnssd_bip_fds_from_user[0]);
-    close(cal_client_mdnssd_bip_fds_from_user[1]);
+    bip_msg_queue_unref(&bip_client_msgq);
 
     cal_client.callback = NULL;
 
@@ -208,14 +186,8 @@ int cal_client_mdnssd_bip_subscribe(const char *peer_name, const char *topic) {
         return 0;
     }
 
-    r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    r = bip_msg_queue_push(&bip_client_msgq, BIP_MSG_QUEUE_FROM_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: error writing to client thread: %s", strerror(errno));
-        cal_event_free(event);
-        return 0;
-    }
-    if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: short write to client thread!!");
         cal_event_free(event);
         return 0;
     }
@@ -266,14 +238,8 @@ int cal_client_mdnssd_bip_unsubscribe(const char *peer_name, const char *topic) 
         return 0;
     }
 
-    r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    r = bip_msg_queue_push(&bip_client_msgq, BIP_MSG_QUEUE_FROM_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: error writing to client thread: %s", strerror(errno));
-        cal_event_free(event);
-        return 0;
-    }
-    if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: short write to client thread!!");
         cal_event_free(event);
         return 0;
     }
@@ -296,13 +262,18 @@ int cal_client_mdnssd_bip_read(struct timeval * timeout) {
         return 0;
     }
 
-    if ((timeout == NULL) || ((timeout) && ((timeout->tv_sec > 0) || timeout->tv_usec > 0))) {
+    {
 	fd_set readers;
 	int ret;
 
+        int q_fd = bip_msg_queue_get_handle(&bip_client_msgq, BIP_MSG_QUEUE_TO_USER);
+        if(q_fd < 0 ) {
+            return 0;
+        }
+
 	FD_ZERO(&readers);
-	FD_SET(cal_client_mdnssd_bip_fds_to_user[0], &readers);
-	ret = select(cal_client_mdnssd_bip_fds_to_user[0] + 1, &readers, NULL, NULL, timeout);
+	FD_SET(q_fd, &readers);
+	ret = select(q_fd + 1, &readers, NULL, NULL, timeout);
 	if (0 > ret) {
 	    if ((EAGAIN != errno)
 		&& (EINTR != errno)) {
@@ -316,16 +287,8 @@ int cal_client_mdnssd_bip_read(struct timeval * timeout) {
 	}
     }
 
-    r = read(cal_client_mdnssd_bip_fds_to_user[0], &event, sizeof(event));
-    if (r < 0) {
-        if (errno == EAGAIN) return 1;
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: error: %s", strerror(errno));
-        return 0;
-    } else if (r != sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: short read from client thread");
-        return 0;
-    } else if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: ignoring NULL event from CAL Client thread!");
+    r = bip_msg_queue_pop(&bip_client_msgq, BIP_MSG_QUEUE_TO_USER, &event);
+    if (r != 0) {
         return 0;
     }
 
@@ -409,14 +372,8 @@ int cal_client_mdnssd_bip_sendto(const char *peer_name, void *msg, int size) {
     event->msg.buffer = msg;
     event->msg.size = size;
 
-    r = write(cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    r = bip_msg_queue_push(&bip_client_msgq, BIP_MSG_QUEUE_FROM_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: error writing to client thread: %s", strerror(errno));
-        cal_event_free(event);
-        return 0;
-    }
-    if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: short write to client thread!!");
         cal_event_free(event);
         return 0;
     }

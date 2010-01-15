@@ -94,14 +94,8 @@ static int read_from_user(cal_server_mdnssd_bip_t * this) {
     int r;
     int ret_val = 0;
 
-    r = read(cal_server_mdnssd_bip_fds_from_user[0], &event, sizeof(event));
+    r = bip_msg_queue_pop(&bip_server_msgq, BIP_MSG_QUEUE_FROM_USER, &event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: error reading from user: %s", strerror(errno));
-        return -1;
-    } else if (r != sizeof(event)) {
-        if ( r > 0 ) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: short read from user");
-        }
         this->running = 0;
         return -1;
     }
@@ -378,14 +372,8 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
     }
 
 
-    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
+    r = bip_msg_queue_push(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            ID "accept_connection(): error writing Connect event: %s", strerror(errno));
-        goto fail_handshake2;
-    } else if (r != sizeof(cal_event_t*)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            ID "accept_connection(): short write of Connect event!");
         goto fail_handshake2;
     }
 
@@ -530,12 +518,8 @@ static void handle_client_disconnect(cal_server_mdnssd_bip_t * this, const char 
                 return;
             }
 
-            r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
+            r = bip_msg_queue_push(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
             if (r < 0) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: error writing Unsubscribe event: %s", strerror(errno));
-                cal_event_free(event);
-            } else if (r != sizeof(cal_event_t*)) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: short write of Unsubscribe event!");
                 cal_event_free(event);
             }
         }
@@ -555,13 +539,8 @@ static void handle_client_disconnect(cal_server_mdnssd_bip_t * this, const char 
         return;
     }
 
-    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
+    r = bip_msg_queue_push(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: error writing Disconnect event: %s", strerror(errno));
-        cal_event_free(event);
-        return;
-    } else if (r != sizeof(cal_event_t*)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: short write of Disconnect event!");
         cal_event_free(event);
         return;
     }
@@ -702,13 +681,8 @@ static int read_from_client(cal_server_mdnssd_bip_t *this, const char *peer_name
         return -1;
     }
 
-    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
+    r = bip_msg_queue_push(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: error writing to user thread!!");
-        cal_event_free(event);
-        return -1;
-    } else if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: short write to user thread!!");
         cal_event_free(event);
         return -1;
     }
@@ -893,12 +867,8 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
         return (void*)1;
     }
 
-    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
+    r = bip_msg_queue_push(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: error writing INIT event to user thread!!");
-        return (void*)1;
-    } else if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: short write of INIT event to user thread!!");
         return (void*)1;
     }
 
@@ -920,9 +890,10 @@ SELECT_LOOP_CONTINUE:
         //
         // the user thread might want to say something
         //
+        int q_fd = bip_msg_queue_get_handle(&bip_server_msgq, BIP_MSG_QUEUE_FROM_USER);
 
-        FD_SET(cal_server_mdnssd_bip_fds_from_user[0], &readers);
-        max_fd = Max(max_fd, cal_server_mdnssd_bip_fds_from_user[0]);
+        FD_SET(q_fd, &readers);
+        max_fd = Max(max_fd, q_fd);
 
 
         // 
@@ -997,7 +968,7 @@ SELECT_LOOP_CONTINUE:
             }
         }
 
-        if (FD_ISSET(cal_server_mdnssd_bip_fds_from_user[0], &readers)) {
+        if (FD_ISSET(q_fd, &readers)) {
             if (read_from_user(this) < 0) {
                 goto shutdown_thread;
             }
@@ -1054,8 +1025,7 @@ shutdown_thread:
     // 
     // User asked we shutdown
     //
-    close(cal_server_mdnssd_bip_fds_to_user[1]);
-    cal_server_mdnssd_bip_fds_to_user[1] = -1;
+    bip_msg_queue_close(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER);
 
     return 0;
 }

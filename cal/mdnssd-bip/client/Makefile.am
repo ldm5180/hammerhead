@@ -30,6 +30,7 @@ LIBCAL_MDNSSD_BIP_SHARED_SOURCES =          \
     ../shared/bip-security.c 		    \
     ../shared/bip-shared-cfg.c              \
     ../shared/bip-peer-is-secure.c          \
+    ../shared/$(SYSAPI)/bip-itc.c           \
     ../shared/$(SYSAPI)/bip-socket.c
 
 lib_LTLIBRARIES = libcal-mdnssd-bip-client.la
