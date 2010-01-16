@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -26,7 +26,7 @@ GMainLoop *bdm_main_loop = NULL;
 
 char * database_file = DB_NAME;
 
-int libbdm_cal_fd = -1;
+void * libbdm_cal_handle = NULL;
 bionet_bdm_t * this_bdm = NULL;
 
 GSList * sync_config_list = NULL;
@@ -90,7 +90,7 @@ int cal_readable_handler(
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
 
-    return cal_server.read(&timeout);
+    return cal_server.read(libbdm_cal_handle, &timeout);
 }
 
 
@@ -377,14 +377,15 @@ int main(int argc, char *argv[]) {
     {
         GIOChannel *ch;
 
-        libbdm_cal_fd = 
+        libbdm_cal_handle = 
             cal_server.init("bionet-db", bionet_bdm_get_id(this_bdm), 
-                    libbdm_cal_callback, libbdm_cal_topic_matches);
-        if (libbdm_cal_fd == -1) {
+			    libbdm_cal_callback, libbdm_cal_topic_matches, NULL, 0);
+        if (libbdm_cal_handle == NULL) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error initializing CAL");
             return 1;
         }
 
+	int libbdm_cal_fd = cal_server.get_fd(libbdm_cal_handle);
         ch = g_io_channel_unix_new(libbdm_cal_fd);
         g_io_add_watch(ch, G_IO_IN, cal_readable_handler, NULL);
     }

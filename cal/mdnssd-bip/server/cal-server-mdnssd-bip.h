@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -25,6 +25,23 @@
 
 // describes "this" server
 typedef struct {
+    //!
+    //! \brief A callback function provided by the user, to be called by
+    //!     the CAL Client library whenever an event requires the user's
+    //!     attention.
+    //!
+    //! Set by .init(), called by .read()
+    //!
+    //! The events are documented in the cal_event_t enum, in the
+    //! cal-event.h file.
+    //!
+    //! \param event The event that requires the user's attention.  The
+    //!     event is const, so the callback function should treat it as
+    //!     read-only.
+    //!
+
+    void (*callback)(void * cal_handle, const cal_event_t *event);
+
     char *name;
     uint16_t port;
     int socket;
@@ -41,21 +58,22 @@ typedef struct {
 
     int running;
 
+    char *cal_server_mdnssd_bip_network_type;
+
+    SSL_CTX * ssl_ctx_server;
+    int server_require_security;
+
+    GThread* server_thread;
+
+    bip_msg_queue_t bip_server_msgq;
 } cal_server_mdnssd_bip_t;
 
 
-extern char *cal_server_mdnssd_bip_network_type;
-
-extern void (*cal_server_mdnssd_bip_callback)(cal_event_t *event);
-
 void* cal_server_mdnssd_bip_function(void *this_as_voidp);
 
-// Pipes to/from user.
-// TODO: Move into cal_Server_mdnssd_bip_t
-extern bip_msg_queue_t bip_server_msgq;
 
-void cal_server_mdnssd_bip_shutdown(void);
-int cal_server_mdnssd_bip_read(struct timeval *timeout);
+void cal_server_mdnssd_bip_shutdown(void * cal_handle);
+int cal_server_mdnssd_bip_read(void * cal_handle, struct timeval *timeout);
 
 
 void cal_server_mdnssd_bip_destroy(cal_server_mdnssd_bip_t * data);

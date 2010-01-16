@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -21,28 +21,7 @@
 #include "cal-util.h"
 
 
-
-
 typedef struct {
-
-    //!
-    //! \brief A callback function provided by the user, to be called by
-    //!     the CAL Server library whenever an event requires the user's
-    //!     attention.
-    //!
-    //! Set by .init(), called by .read()
-    //!
-    //! The events are documented in the cal_event_t enum, in the
-    //! cal-event.h file.
-    //!
-    //! \param event The event that requires the user's attention.  The
-    //!     event is const, so the callback function should treat it as
-    //!     read-only.
-    //!
-
-    void (*callback)(const cal_event_t *event);
-
-
     //!
     //! \brief Make this peer available for connections.
     //!
@@ -70,11 +49,13 @@ typedef struct {
     //!     file descriptor directly.  On failure, returns -1.
     //!
 
-    int (*init)(
+    void * (*init)(
         const char *network_name,
         const char *name,
-        void (*callback)(const cal_event_t *event),
-        int (*topic_matches)(const char *topic, const char *subscription)
+        void (*callback)(void * cal_handle, const cal_event_t *event),
+        int (*topic_matches)(const char *topic, const char *subscription),
+	void * ssl_ctx,
+	int require_security
     );
 
 
@@ -89,7 +70,7 @@ typedef struct {
     //! function returns.
     //!
 
-    void (*shutdown)(void);
+    void (*shutdown)(void * cal_handle);
 
 
     //!
@@ -106,7 +87,7 @@ typedef struct {
     //!     followed by .init() to get a new fd.
     //!
 
-    int (*read)(struct timeval *timeout);
+    int (*read)(void * cal_handle, struct timeval *timeout);
 
 
     //!
@@ -122,7 +103,7 @@ typedef struct {
     //! \returns True (non-zero) on success.  False (zero) on failure.
     //!
 
-    int (*subscribe)(const char *peer_name, const char *topic);
+    int (*subscribe)(void * cal_handle, const char *peer_name, const char *topic);
 
 
     //!
@@ -147,7 +128,7 @@ typedef struct {
     //! \returns True (non-zero) on success.  False (zero) on failure.
     //!
 
-    int (*sendto)(const char *peer_name, void *msg, int size);
+    int (*sendto)(void * cal_handle, const char *peer_name, void *msg, int size);
 
 
     //!
@@ -164,7 +145,7 @@ typedef struct {
     //! \param size The size of msg, in bytes.
     //!
 
-    void (*publish)(const char *topic, const void *msg, int size);
+    void (*publish)(void * cal_handle, const char *topic, const void *msg, int size);
 
 
     //!
@@ -186,7 +167,11 @@ typedef struct {
     //! \param size The size of msg, in bytes.
     //!
 
-    void (*publishto)(const char *peer_name, const char *topic, const void *msg, int size);
+    void (*publishto)(void * cal_handle, 
+		      const char *peer_name, 
+		      const char *topic, 
+		      const void *msg, 
+		      int size);
 
 
     /**
@@ -200,15 +185,21 @@ typedef struct {
      * @return 1 Success
      * @return 0 Failure
      */
-    int (*init_security)(const char * dir, int require);
+    void * (*init_security)(const char * dir, int require);
 
+
+    /**
+     * @brief Get file descriptor
+     *
+     * @param[in] cal_handle Pointer to CAL context
+     *
+     * @return >=0 File descriptor
+     * @return -1 Error
+     */
+    int (*get_fd)(void * cal_handle);
 } cal_server_t;
 
-
-//! the CAL Server module provides this
 extern cal_server_t cal_server;
-
-
 
 
 #endif //  __CAL_SERVER_H

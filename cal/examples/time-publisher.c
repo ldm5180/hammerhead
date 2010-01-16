@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -14,8 +14,14 @@
 
 #include "cal-server.h"
 
+extern cal_server_t cal_server;
+static int cal_shutdown = 0;
 
-void cal_callback(const cal_event_t *event) {
+void cal_callback(void * cal_handle, const cal_event_t *event) {
+    if (cal_handle == NULL) {
+	printf("CAL is not yet initialized.\n");
+    }
+
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
             printf("got a Connect event from %s\n", event->peer_name);
@@ -39,14 +45,14 @@ void cal_callback(const cal_event_t *event) {
             }
             if ((i % 8) != 7) printf("\n");
 
-            cal_server.sendto(event->peer_name, msg, strlen(msg));
+            cal_server.sendto(cal_handle, event->peer_name, msg, strlen(msg));
 
             break;
         }
 
         case CAL_EVENT_SUBSCRIBE: {
             printf("Client %s wants to subscribe to '%s'\n", event->peer_name, event->topic);
-            cal_server.subscribe(event->peer_name, event->topic);
+            cal_server.subscribe(cal_handle, event->peer_name, event->topic);
             break;
         }
 
@@ -66,7 +72,7 @@ static void exit_signal_handler(int signal_number) {
 
 
 static void exit_handler(void) {
-    cal_server.shutdown();
+    cal_shutdown = 1;
 }
 
 
@@ -110,23 +116,28 @@ void make_shutdowns_clean(void) {
 
 
 int main(int argc, char *argv[]) {
-    int cal_fd;
+    void * cal_handle;
     int r;
-
+    int cal_fd;
 
     make_shutdowns_clean();
 
 
-    cal_fd = cal_server.init("time", "time-publisher", cal_callback, NULL);
-    if (cal_fd < 0) {
+    cal_handle = cal_server.init("time", "time-publisher", cal_callback, NULL, NULL, 0);
+    if (cal_handle == NULL) {
         printf("failed to init server\n");
         exit(1);
     }
 
+    cal_fd = cal_server.get_fd(cal_handle);
 
     while (1) {
         fd_set readers;
         struct timeval timeout;
+
+	if (cal_shutdown) {
+	    cal_server.shutdown(cal_handle);
+	}
 
         timeout.tv_sec = 1;
         timeout.tv_usec = 0;
@@ -144,11 +155,11 @@ int main(int argc, char *argv[]) {
             time_t t = time(NULL);
             char *s = ctime(&t);
             s[strlen(s)-1] = (char)0;
-            cal_server.publish("time", s, strlen(s)+1);
+            cal_server.publish(cal_handle, "time", s, strlen(s)+1);
         }
 
         if (FD_ISSET(cal_fd, &readers)) {
-            if (!cal_server.read(NULL)) {
+            if (!cal_server.read(cal_handle, NULL)) {
                 printf("error reading cal event!\n");
                 // FIXME
                 exit(1);

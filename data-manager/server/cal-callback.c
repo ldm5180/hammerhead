@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -88,7 +88,7 @@ static void bdm_sendto_each_resource(
                     // "send" the message to the newly connected subscriber
                     // Can't use publishto, becuase the topic string it would
                     // use to weed out duplicates does the wrong thing
-                    cal_server.sendto(peer_name, buf.buf, buf.size);
+                    cal_server.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size);
 		} //for each resource
 	    } //for each node
 	} //for each hab
@@ -132,7 +132,7 @@ static void bdm_send_state(
 
     // send the state to the BDM
     // NOTE: cal_client.sendto assumes control of buf
-    r = cal_server.sendto(peer_name, buf.buf, buf.size);
+    r = cal_server.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size);
 
 }
 
@@ -243,7 +243,7 @@ static void libbdm_process_datapoint_subscription_request(
     bdm_send_state(this_seq, peer_name, topic);
 
     // Tell CAL we'll accept this subscription
-    cal_server.subscribe(peer_name, topic);
+    cal_server.subscribe(libbdm_cal_handle, peer_name, topic);
 }
 
 static void libbdm_handle_sent_state(
@@ -509,7 +509,7 @@ static void libbdm_stream_data(const char *peer_name, StreamData_t *sd) {
 
 
 
-void libbdm_cal_callback(const cal_event_t *event) {
+void libbdm_cal_callback(void * cal_handle, const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
             // we don't do anything with this

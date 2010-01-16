@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -27,10 +27,6 @@
 #include "cal-server.h"
 #include "cal-mdnssd-bip.h"
 #include "cal-server-mdnssd-bip.h"
-
-
-extern SSL_CTX * ssl_ctx_server;
-extern int server_require_security;
 
 // key is a bip peer name "bip://$HOST:$PORT"
 // value is a bip_peer_t*
@@ -94,7 +90,7 @@ static int read_from_user(cal_server_mdnssd_bip_t * this) {
     int r;
     int ret_val = 0;
 
-    r = bip_msg_queue_pop(&bip_server_msgq, BIP_MSG_QUEUE_FROM_USER, &event);
+    r = bip_msg_queue_pop(&this->bip_server_msgq, BIP_MSG_QUEUE_FROM_USER, &event);
     if (r < 0) {
         this->running = 0;
         return -1;
@@ -302,7 +298,7 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
     bip_peer_t * client = NULL;
     cal_event_t * event = NULL;
 
-    if(ssl_ctx_server) {
+    if(this->ssl_ctx_server) {
         if (1 != (r = BIO_do_handshake(bio))) {
             if ( BIO_should_retry(bio)) {
                 return 0;
@@ -311,7 +307,7 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Failed to complete SSL handshake on accept: %s [%m]",
                 ERR_error_string(SSL_get_error(ssl, r), NULL));
 
-            if (server_require_security) {
+            if (this->server_require_security) {
                 goto fail_handshake;
             } else {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
@@ -372,7 +368,7 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
     }
 
 
-    r = bip_msg_queue_push(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
+    r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
         goto fail_handshake2;
     }
@@ -438,12 +434,12 @@ static int accept_connection(cal_server_mdnssd_bip_t *this) {
 
     net->pending_bio = BIO_new_socket(net->socket, BIO_CLOSE);
     
-    if (ssl_ctx_server) {
+    if (this->ssl_ctx_server) {
         BIO * bio_ssl;
-	bio_ssl = BIO_new_ssl(ssl_ctx_server, 0);
+	bio_ssl = BIO_new_ssl(this->ssl_ctx_server, 0);
 	if (!bio_ssl) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to create an SSL.");
-	    if (server_require_security) {
+	    if (this->server_require_security) {
 		goto fail2;
 	    } else {
 		goto skip_security;
@@ -518,7 +514,7 @@ static void handle_client_disconnect(cal_server_mdnssd_bip_t * this, const char 
                 return;
             }
 
-            r = bip_msg_queue_push(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
+            r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
             if (r < 0) {
                 cal_event_free(event);
             }
@@ -539,7 +535,7 @@ static void handle_client_disconnect(cal_server_mdnssd_bip_t * this, const char 
         return;
     }
 
-    r = bip_msg_queue_push(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
+    r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
         cal_event_free(event);
         return;
@@ -681,7 +677,7 @@ static int read_from_client(cal_server_mdnssd_bip_t *this, const char *peer_name
         return -1;
     }
 
-    r = bip_msg_queue_push(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
+    r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
         cal_event_free(event);
         return -1;
@@ -762,9 +758,12 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
     this->clients = g_hash_table_new_full(g_str_hash, g_str_equal, free, free_peer);
 
-    r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", cal_server_mdnssd_bip_network_type);
+    r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), 
+		 "_%s._tcp", this->cal_server_mdnssd_bip_network_type);
     if (r >= sizeof(mdnssd_service_name)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: network type '%s' is too long!", cal_server_mdnssd_bip_network_type);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID 
+	      "server thread: network type '%s' is too long!", 
+	      this->cal_server_mdnssd_bip_network_type);
         return (void*)1;
     }
 
@@ -804,7 +803,7 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
     }
 #endif
 
-    if ( ssl_ctx_server ) {
+    if ( this->ssl_ctx_server ) {
 	bip_txtvers_t value = BIP_TXTVERS;
 
         error = TXTRecordSetValue ( 
@@ -871,7 +870,7 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
         return (void*)1;
     }
 
-    r = bip_msg_queue_push(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
+    r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
         return (void*)1;
     }
@@ -894,7 +893,7 @@ SELECT_LOOP_CONTINUE:
         //
         // the user thread might want to say something
         //
-        int q_fd = bip_msg_queue_get_handle(&bip_server_msgq, BIP_MSG_QUEUE_FROM_USER);
+        int q_fd = bip_msg_queue_get_handle(&this->bip_server_msgq, BIP_MSG_QUEUE_FROM_USER);
 
         FD_SET(q_fd, &readers);
         max_fd = Max(max_fd, q_fd);
@@ -1029,7 +1028,7 @@ shutdown_thread:
     // 
     // User asked we shutdown
     //
-    bip_msg_queue_close(&bip_server_msgq, BIP_MSG_QUEUE_TO_USER);
+    bip_msg_queue_close(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER);
 
     return 0;
 }

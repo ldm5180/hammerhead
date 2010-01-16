@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -117,6 +117,11 @@ fail0:
 static void _eat_messages_until_shutdown(void * cal_handle) {
     cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
     cal_event_t * event;
+
+    if (this->client_thread == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: called before init()!");
+        return;
+    }
 
     while(bip_msg_queue_pop(&this->msg_queue, BIP_MSG_QUEUE_TO_USER, &event) == 0 );
 

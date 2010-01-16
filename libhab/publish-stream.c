@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -82,7 +82,7 @@ int hab_publish_stream(const bionet_stream_t *stream, const void *buf, size_t co
 
 
     // publish
-    cal_server.publish(topic, asnbuf.buf, asnbuf.size);
+    cal_server.publish(libhab_cal_handle, topic, asnbuf.buf, asnbuf.size);
 
     // FIXME: cal should take buf
     free(asnbuf.buf);

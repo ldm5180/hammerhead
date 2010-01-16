@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -180,7 +180,7 @@ void libbdm_handle_resourceDatapointsQuery(
     if ( r < 0 ) goto cleanup;
 
     // send to the peer that requested the result
-    if(!cal_server.sendto(peer_name, buf.buf, buf.size)) {
+    if(!cal_server.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size)) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                 "bdm_get_resource_datapoints(): error sending to peer");
         goto cleanup;
