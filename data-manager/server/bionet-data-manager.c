@@ -54,7 +54,7 @@ void usage(void) {
 	"usage: bionet-data-manager [OPTIONS]\n"
 	"\n"
 	" -?,--help                                      Show this help\n"
-	" -b,--bdm-stats <SEC>                           Publish BDM statistics to Bionet every SEC seconds. (300)\n"
+	" -b,--bdm-stats <SEC>                           Publish BDM statistics to Bionet every SEC seconds.\n"
 	" -c,--sync-sender-config <FILE>                 File for configuring a BDM sync sender\n"
 #if ENABLE_ION
 	" -d,--dtn-sync-receiver                         Enable BDM syncronization over DTN (ION)\n"
