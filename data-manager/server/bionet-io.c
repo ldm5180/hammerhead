@@ -34,9 +34,11 @@ sqlite3 * main_db = NULL;
 // bionet callbacks
 //
 
+extern uint32_t num_bionet_datapoints;
 
 static void cb_datapoint(bionet_datapoint_t *datapoint) {
     (void) db_add_datapoint(main_db, datapoint);
+    num_bionet_datapoints++;
 }
 
 
