@@ -41,6 +41,8 @@
 		74912E0B0F86BB2700261D63 /* libintl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0A0F86BB2700261D63 /* libintl.a */; };
 		74912E0E0F86BB7000261D63 /* libiconv.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0D0F86BB7000261D63 /* libiconv.2.dylib */; };
 		74E85C430FCCEC5C0015C37B /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 74E85C420FCCEC5C0015C37B /* Entitlements.plist */; };
+		74ECBDEF11075C830078B083 /* BionetAppIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 74ECBDEE11075C830078B083 /* BionetAppIcon.png */; };
+		74ECBDFF11076D0E0078B083 /* iTunesArtwork in Resources */ = {isa = PBXBuildFile; fileRef = 74ECBDFE11076D0E0078B083 /* iTunesArtwork */; };
 		74F1AC170FAF58EE00CA2664 /* GraphView.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC160FAF58EE00CA2664 /* GraphView.m */; };
 		74F1AC1F0FAF597F00CA2664 /* GraphViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 74F1AC1E0FAF597F00CA2664 /* GraphViewController.xib */; };
 		74F1AC270FAF5BC900CA2664 /* GraphViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 74F1AC260FAF5BC900CA2664 /* GraphViewController.m */; };
@@ -97,6 +99,8 @@
 		74CA85760F71674F00FEE5E2 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
 		74CA857C0F7167F700FEE5E2 /* libintl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libintl.a; path = "/opt/local/i686-apple-darwin/lib/libintl.a"; sourceTree = "<absolute>"; };
 		74E85C420FCCEC5C0015C37B /* Entitlements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Entitlements.plist; sourceTree = "<group>"; };
+		74ECBDEE11075C830078B083 /* BionetAppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BionetAppIcon.png; sourceTree = "<group>"; };
+		74ECBDFE11076D0E0078B083 /* iTunesArtwork */ = {isa = PBXFileReference; lastKnownFileType = file; path = iTunesArtwork; sourceTree = "<group>"; };
 		74F1AC160FAF58EE00CA2664 /* GraphView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GraphView.m; sourceTree = "<group>"; };
 		74F1AC180FAF58F900CA2664 /* GraphView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphView.h; sourceTree = "<group>"; };
 		74F1AC1E0FAF597F00CA2664 /* GraphViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GraphViewController.xib; sourceTree = "<group>"; };
@@ -177,6 +181,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				74ECBDFE11076D0E0078B083 /* iTunesArtwork */,
+				74ECBDEE11075C830078B083 /* BionetAppIcon.png */,
 				7436ADDB0FBB3B9300D805A4 /* lock.png */,
 				7436ADDC0FBB3B9300D805A4 /* unlock.png */,
 				747451090FA909BE0033B682 /* bionet_inverse.png */,
@@ -312,6 +318,8 @@
 				7436ADDD0FBB3B9300D805A4 /* lock.png in Resources */,
 				7436ADDE0FBB3B9300D805A4 /* unlock.png in Resources */,
 				74E85C430FCCEC5C0015C37B /* Entitlements.plist in Resources */,
+				74ECBDEF11075C830078B083 /* BionetAppIcon.png in Resources */,
+				74ECBDFF11076D0E0078B083 /* iTunesArtwork in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
