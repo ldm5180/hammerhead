@@ -38,8 +38,8 @@ typedef struct {
     void (*cal_client_mdnssd_bip_callback)(cal_event_t *event);
 
     // pipes between CAL Client thread and user thread
-    int cal_client_mdnssd_bip_fds_to_user[2];
-    int cal_client_mdnssd_bip_fds_from_user[2];
+    bip_msg_queue_t msg_queue;
+
 
     GThread *client_thread;
 

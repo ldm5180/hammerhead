@@ -48,13 +48,11 @@ extern char *cal_server_mdnssd_bip_network_type;
 
 extern void (*cal_server_mdnssd_bip_callback)(cal_event_t *event);
 
-// pipes between CAL Server thread and user thread
-extern int cal_server_mdnssd_bip_fds_to_user[2];
-extern int cal_server_mdnssd_bip_fds_from_user[2];
-
-
 void* cal_server_mdnssd_bip_function(void *this_as_voidp);
 
+// Pipes to/from user.
+// TODO: Move into cal_Server_mdnssd_bip_t
+extern bip_msg_queue_t bip_server_msgq;
 
 void cal_server_mdnssd_bip_shutdown(void);
 int cal_server_mdnssd_bip_read(struct timeval *timeout);
