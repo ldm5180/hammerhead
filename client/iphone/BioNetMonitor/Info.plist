@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFile</key>
-	<string>bionet_inverse.png</string>
+	<string>BionetAppIcon.png</string>
 	<key>CFBundleIdentifier</key>
 	<string>edu.colorado.bioserve.${PRODUCT_NAME:identifier}</string>
 	<key>CFBundleInfoDictionaryVersion</key>

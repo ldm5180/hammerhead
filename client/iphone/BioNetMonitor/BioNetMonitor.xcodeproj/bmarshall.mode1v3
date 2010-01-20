@@ -228,6 +228,8 @@
 			<key>Layout</key>
 			<array>
 				<dict>
+					<key>BecomeActive</key>
+					<true/>
 					<key>ContentConfiguration</key>
 					<dict>
 						<key>PBXBottomSmartGroupGIDs</key>
@@ -266,24 +268,22 @@
 								<string>29B97314FDCFA39411CA2CEA</string>
 								<string>74F1AC2E0FAF5C5000CA2664</string>
 								<string>74724FBF0F7855D60061BF62</string>
+								<string>29B97317FDCFA39411CA2CEA</string>
 								<string>29B97323FDCFA39411CA2CEA</string>
 								<string>19C28FACFE9D520D11CA2CBB</string>
 								<string>1C37FBAC04509CD000000102</string>
 								<string>1C37FAAC04509CD000000102</string>
-								<string>1C08E77C0454961000C914BD</string>
 								<string>1C37FABC05509CD000000102</string>
-								<string>1CC0EA4004350EF90041110B</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>16</integer>
-									<integer>14</integer>
+									<integer>30</integer>
 									<integer>0</integer>
 								</array>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateVisibleRectKey</key>
-							<string>{{0, 0}, {289, 694}}</string>
+							<string>{{0, 316}, {289, 694}}</string>
 						</dict>
 						<key>PBXTopSmartGroupGIDs</key>
 						<array/>
@@ -302,7 +302,7 @@
 							<real>289</real>
 						</array>
 						<key>RubberWindowFrame</key>
-						<string>31 345 1162 753 0 0 1920 1178 </string>
+						<string>23 337 1162 753 0 0 1920 1178 </string>
 					</dict>
 					<key>Module</key>
 					<string>PBXSmartGroupTreeModule</string>
@@ -313,14 +313,12 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>BionetManager.m</string>
+								<string>Info.plist</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -328,11 +326,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>BionetManager.m</string>
+										<string>Info.plist</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>74688EFE101111AE000452FF</string>
+										<string>74ECBE01110772C80078B083</string>
 										<key>history</key>
 										<array>
 											<string>7435E3F30F61E5A300A615B8</string>
@@ -343,9 +341,7 @@
 											<string>747250020F7857830061BF62</string>
 											<string>747250040F7857830061BF62</string>
 											<string>747450C30FA8E9FA0033B682</string>
-											<string>7474510C0FA90C250033B682</string>
 											<string>74F1ACB20FAF85EA00CA2664</string>
-											<string>7446D1A80FBA13C0006952A5</string>
 											<string>7436ADED0FBB40CE00D805A4</string>
 											<string>7436ADEE0FBB40CE00D805A4</string>
 											<string>7436AE1D0FBB564700D805A4</string>
@@ -362,7 +358,6 @@
 											<string>74E85C4B0FCCF1600015C37B</string>
 											<string>749E828D0FCD7EF400061B32</string>
 											<string>749E828E0FCD7EF400061B32</string>
-											<string>749E82FF0FCD9A5800061B32</string>
 											<string>749908700FCEDA9E00007324</string>
 											<string>7466CFFF0FD8331B007081DC</string>
 											<string>7466D0010FD8331B007081DC</string>
@@ -375,6 +370,10 @@
 											<string>74503CCE1010E7DF0053E78C</string>
 											<string>74503CCF1010E7DF0053E78C</string>
 											<string>74503CD51010E7DF0053E78C</string>
+											<string>74ECBDF011075E470078B083</string>
+											<string>74ECBDF111075E470078B083</string>
+											<string>74ECBDF211075E470078B083</string>
+											<string>7474510C0FA90C250033B682</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -416,12 +415,14 @@
 											<string>744F274B0FC60CD900DA3200</string>
 											<string>744F274D0FC60CD900DA3200</string>
 											<string>749E82900FCD7EF400061B32</string>
-											<string>749E830B0FCD9A5800061B32</string>
 											<string>749908740FCEDA9E00007324</string>
 											<string>7466D0080FD8331B007081DC</string>
 											<string>74503C971010DC0D0053E78C</string>
 											<string>74503C981010DC0D0053E78C</string>
 											<string>74503CD11010E7DF0053E78C</string>
+											<string>74ECBDF311075E470078B083</string>
+											<string>74ECBDF411075E470078B083</string>
+											<string>74ECBDF511075E470078B083</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -435,7 +436,7 @@
 								<key>Frame</key>
 								<string>{{0, 0}, {851, 612}}</string>
 								<key>RubberWindowFrame</key>
-								<string>31 345 1162 753 0 0 1920 1178 </string>
+								<string>23 337 1162 753 0 0 1920 1178 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
@@ -455,7 +456,7 @@
 								<key>Frame</key>
 								<string>{{0, 617}, {851, 95}}</string>
 								<key>RubberWindowFrame</key>
-								<string>31 345 1162 753 0 0 1920 1178 </string>
+								<string>23 337 1162 753 0 0 1920 1178 </string>
 							</dict>
 							<key>Module</key>
 							<string>XCDetailModule</string>
@@ -479,9 +480,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>74688EFF101111AE000452FF</string>
+				<string>74ECBDF711075E470078B083</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>74688F00101111AE000452FF</string>
+				<string>74ECBDF811075E470078B083</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -615,11 +616,11 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>1CD10A99069EF8BA00B06720</string>
-		<string>/Users/bmarshall/src/bionet2/iphone/client/iphone/BioNetMonitor/BioNetMonitor.xcodeproj</string>
+		<string>7435E2DF0F61CAD100A615B8</string>
+		<string>/Users/bmarshall/src/bionet2/bionet-2.5.0/client/iphone/BioNetMonitor/BioNetMonitor.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
-	<string>31 345 1162 753 0 0 1920 1178 </string>
+	<string>23 337 1162 753 0 0 1920 1178 </string>
 	<key>WindowToolsV3</key>
 	<array>
 		<dict>
@@ -657,8 +658,6 @@
 							<string>369pt</string>
 						</dict>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXBuildLogShowsTranscriptDefaultKey</key>
@@ -700,7 +699,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>7435E2DF0F61CAD100A615B8</string>
-				<string>74503C781010CAF80053E78C</string>
+				<string>74ECBDFD11075E970078B083</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
