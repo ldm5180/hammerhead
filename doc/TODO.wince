@@ -116,4 +116,12 @@ Major Porting Issues:
 
         
 
+    8. RFID Hab:  Create the RFID Reader HAB that links with libhab and the
+       ACC System's SDK. 
+
+       Est: 40h
+       Risk: 30h-80h
+
+
+
 vim: sw=4 sta expandtab tw=77 si
