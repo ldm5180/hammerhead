@@ -51,11 +51,15 @@ in the release branch:
      - Build supporting libs with './configure-make-install-iphone.sh'
      - Open the BioNetMonitor.xcodeproj
      - Select "AdHoc" for the active configuration
-     - Select iPhoneDevice 2.2.1 for the active SDK
-     - Build
+     - Select iPhoneDevice 3.0 for the active SDK
+     - Build (Cmd-B)
      - Right Click on BioNetMonitor->Products->BioNetMonitor.app and "Reveal in Finder"
      - Zip that up and copy it someplace secret along with the latest "Bionet Demo" AdHoc distribution 
-       profile downloaded from the apple developer portal
+     - Create an ipa:
+         - Remove old version of BionetMonitor from iTunes, if present
+         - Install into iTunes (Drag the .app) onto iTunes Library
+         - In the applications section, find bionet, right click and select "Show in Finder"
+         - Copy BioNetMonitor.ipa to release location
 
     send out an announcement email with links to the tarball and the
     API docs, and the top of the changelog
