@@ -159,11 +159,17 @@ PKG_CHECK_MODULES(OPENSSL, [ openssl >= 0.9.8 ])
 AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
 
-if test "x$HAVE_LINUX" = "xyes"; then
-    PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
-    AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
-    AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)
+if test "$cross_compiling" != yes; then
+    if test "x$HAVE_LINUX" = "xyes"; then
+        PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
+    else if test "x$SYSAPI" != "xposix"; then
+        # Look for bonjour library elsewhere
+        echo ""
+    fi
+    fi
 fi
+AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
+AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)
 
 AM_CONDITIONAL(ENABLE_DARWIN, test "x$HAVE_DARWIN" = "xyes")
 AM_CONDITIONAL(ENABLE_LINUX, test "x$HAVE_LINUX" = "xyes")

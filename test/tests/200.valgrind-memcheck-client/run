@@ -16,9 +16,12 @@ if [ -z "$TEST_DURATION" ]; then
 fi
 
 . $ROOT/test/config.sh
+. $ROOT/test/testlib.sh
+skip_if_no_valgrind
 
 UNIQUE=$$
 RETVAL=0
+
 
 VGLEAK=
 if [ -z "$ENABLE_DARWIN" ]; then

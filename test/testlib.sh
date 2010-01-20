@@ -39,3 +39,10 @@ file_size() {
     fi
 }
 
+skip_if_no_valgrind() {
+    valgrind --version > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Can't seem to find valgrind. Skipping test"
+        exit $SKIP_CODE;
+    fi
+}

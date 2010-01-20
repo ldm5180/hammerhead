@@ -24,6 +24,7 @@
 #include <openssl/bio.h>
 
 #include "cal-util.h"
+#include "shared/bip-itc.h"
 
 #define BIP_MAX_WRITE_BUF_SIZE (1024 * 256)
 
