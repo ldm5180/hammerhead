@@ -24,7 +24,7 @@ void usage(void) {
 	    " -l,--scan-idle <N>      Terminate scan early after N milliseconds without no\n"
 	    "                         new tag (3000)\n"
 	    " -t,--scan-timeout <N>   Stop scanning after N milliseconds (5000)\n"
-	    " -c,--periodic-trigger   Enables periodic trigger. Defaults to on.\n"
+	    " -c,--immediate-trigger  Enables immediate trigger. Defaults to on.\n"
 	    " -u,--null-trigger       Enables null trigger, so it starts when we tell it to.\n"
 	    " -g,--gpi-trigger        Enables GPI trigger, so it starts when we push a button.\n"      
 	    " -m,--show-messages      Printing all messages between the HAB and the Speedway device\n"

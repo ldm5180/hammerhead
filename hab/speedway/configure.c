@@ -38,8 +38,8 @@ int speedway_configure() {
         return -1;
     }
 
-    if (periodic_trigger == 1) {
-	r = addROSpec_Periodic();
+    if (immediate_trigger == 1) {
+	r = addROSpec_Immediate();
     } else if (null_trigger == 1) {
 	r = addROSpec_Null();
     } else if (gpi_trigger == 1) {
