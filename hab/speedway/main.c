@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 	    {"scan-timeout", 1, 0, 't'},
 	    {"show-messages", 0, 0, 'm'},
 	    {"security-dir", 1, 0, 's'},
-	    {"periodic-trigger", 0, 0, 'c'},
+	    {"immediate-trigger", 0, 0, 'c'},
 	    {"null-trigger", 0, 0, 'u'},
 	    {"gpi-trigger", 0, 0, 'g'},
 	    {0, 0, 0, 0} //this must be last in the list
@@ -145,16 +145,16 @@ int main(int argc, char *argv[]) {
 	    exit(0);
 
 	case 'c':
-	    periodic_trigger = 1;
+	    immediate_trigger = 1;
 	    break;
 
 	case 'u':
-	    periodic_trigger = 0;
+	    immediate_trigger = 0;
 	    null_trigger = 1;
 	    break;
 
 	case 'g':
-	    periodic_trigger = 0;
+	    immediate_trigger = 0;
 	    gpi_trigger = 1;
 	    break;
 

@@ -14,7 +14,7 @@
 #include "speedway.h"
 
 
-int addROSpec_Periodic(void) {
+int addROSpec_Immediate(void) {
 
     // 
     // The RO start & stop specs
