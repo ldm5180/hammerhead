@@ -65,6 +65,8 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, 
                         dpcache['new'] = 0
                         results[name] = []
                         results[name] = dpcache['list']
+                        s['last rendered'] = time.time()
+                        s['new'] = 0
     return (updated, results)
 
 if __name__ == "__main__":
