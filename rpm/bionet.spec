@@ -53,6 +53,7 @@ rm -rf $RPM_BUILD_ROOT
    /usr/local/lib/python2.6/site-packages/*.py
    /usr/local/lib/python2.6/site-packages/_bionet*
    /usr/local/lib/python2.6/site-packages/_hab.*
+   /usr/local/lib/python2.6/site-packages/_bdm_client.*
    /usr/local/lib/libbdm*
    /usr/local/etc/mon-hab.d/*
    /usr/local/share/bionet2/schema
