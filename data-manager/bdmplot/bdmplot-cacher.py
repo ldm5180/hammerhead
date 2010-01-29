@@ -60,6 +60,9 @@ class Datapoints(resource.Resource):
             retval = process_new_session_or_subscription(request)
             for sub in subscriptions:
                 if (sub['filter'] == request.args['resource'][0]) and (sub['timespan'] == request.args['timespan']):
+                    if (time.time() - sub['last rendered'] >= 120):
+                        sub['new'] += 1
+                    sub['last requested'] = time.time()
                     found = sub
                     break
         
