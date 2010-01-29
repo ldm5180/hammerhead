@@ -176,6 +176,18 @@ AM_CONDITIONAL(ENABLE_LINUX, test "x$HAVE_LINUX" = "xyes")
 AM_CONDITIONAL(ENABLE_WIN32, test "x$HAVE_WIN32" = "xyes")
 
 
+AC_ARG_ENABLE(gcov,
+	      AS_HELP_STRING([--enable-gcov],
+                             [enable test coverage with gcov @<:@default=no@:>@]),
+              [case "${enableval}" in
+                 yes) gcov=true ;;
+                 no)  gcov=false ;;
+                 *)   AC_MSG_ERROR([bad value ${enableval} for --enable-gcov]) ;;
+               esac],
+              [gcov=false])
+
+AM_CONDITIONAL(GCOV, test x"$gcov" = "xtrue")
+
 ###
 #
 # see if the user wants ALSA stuff, and if so if it's available, only on Linux
