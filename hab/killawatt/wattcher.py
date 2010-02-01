@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import serial, time, datetime, sys
 from xbee import xbee
-import twitter
 import sensorhistory
 
 # use App Engine? or log file? comment out next line if appengine
@@ -34,26 +33,22 @@ vrefcalibration = [492,  # Calibration for sensor #0
 CURRENTNORM = 15.5  # conversion to amperes from ADC
 NUMWATTDATASAMPLES = 1800 # how many samples to watch in the plot window, 1 hr @ 2s samples
 
-# Twitter username & password
-twitterusername = "username"
-twitterpassword = "password"
-
-def TwitterIt(u, p, message):
-    api = twitter.Api(username=u, password=p)
-    print u, p
-    try:
-        status = api.PostUpdate(message)
-        print "%s just posted: %s" % (status.user.name, status.text)
-    except UnicodeDecodeError:
-        print "Your message could not be encoded.  Perhaps it contains non-ASCII characters? "
-        print "Try explicitly specifying the encoding with the  it with the --encoding flag"
-    except:
-        print "Couldn't connect, check network, username and password!"
-
 
 # open up the FTDI serial port to get data transmitted to xbee
 ser = serial.Serial(SERIALPORT, BAUDRATE)
 ser.open()
+
+from hab import *
+
+import pdb
+
+#connect to bionet
+hab = bionet_hab_new("Kill-A-Watt", None)
+bionet_fd = hab_connect(hab)
+if (0 > bionet_fd):
+    logger.warning("problem connection to Bionet, exiting\n")
+    exit(1)
+
 
 # open our datalogging file
 logfile = None
@@ -103,17 +98,15 @@ if GRAPHIT:
     # and a legend for both of them
     #legend((voltagewatchline, ampwatchline), ('volts', 'amps'))
 
-
-# a simple timer for twitter, makes sure we don't twitter more than once a day
-twittertimer = 0
-
 sensorhistories = sensorhistory.SensorHistories(logfile)
 print sensorhistories
 
 # the 'main loop' runs once a second or so
 def update_graph(idleevent):
-    global avgwattdataidx, sensorhistories, twittertimer, DEBUG
-     
+    global avgwattdataidx, sensorhistories, DEBUG
+    
+    hab_read()
+
     # grab one packet from the xbee, or timeout
     packet = xbee.find_packet(ser)
     if not packet:
@@ -122,8 +115,72 @@ def update_graph(idleevent):
     xb = xbee(packet)             # parse the packet
     #print xb.address_16
     if DEBUG:       # for debugging sometimes we only want one
-        print xb
-        
+        print xb.address_16
+    
+    #check if there is a new node    
+#    pdb.set_trace()
+    node = bionet_hab_get_node_by_id(hab, str(xb.address_16))
+    if (node == None):
+        #create and report node
+        node = bionet_node_new(hab, str(xb.address_16))
+        if (node == None):
+            print "Error getting new node"
+            sys.exit(1)
+        if (bionet_hab_add_node(hab, node)):
+            print "Error adding node to hab"
+            sys.exit(1)
+        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Volts")
+        if (resource == None):
+#            logger.warning("Error creating Resource")
+            print "Error getting resource"
+            sys.exit(1)
+        if (bionet_node_add_resource(node, resource)):
+            print "Error adding resource to node"
+            sys.exit(1)
+        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Amps")
+        if (resource == None):
+#            logger.warning("Error creating Resource")
+            print "Error getting resource"
+            sys.exit(1)
+        if (bionet_node_add_resource(node, resource)):
+            print "Error adding resource to node"
+            sys.exit(1)
+        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Watts")
+        if (resource == None):
+#            logger.warning("Error creating Resource")
+            print "Error getting resource"
+            sys.exit(1)
+        if (bionet_node_add_resource(node, resource)):
+            print "Error adding resource to node"
+            sys.exit(1)
+
+        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Hertz")
+        if (resource == None):
+#            logger.warning("Error creating Resource")
+            print "Error getting resource"
+            sys.exit(1)
+        if (bionet_node_add_resource(node, resource)):
+            print "Error adding resource to node"
+            sys.exit(1)
+        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "KwHour")
+        if (resource == None):
+#            logger.warning("Error creating Resource")
+            print "Error getting resource"
+            sys.exit(1)
+        if (bionet_node_add_resource(node, resource)):
+            print "Error adding resource to node"
+            sys.exit(1)
+
+
+
+        if (hab_report_new_node(node)):
+            print "Error reporting node"
+
+    else:
+        #update node
+        None
+
+    
     # we'll only store n-1 samples since the first one is usually messed up
     voltagedata = [-1] * (len(xb.analog_samples) - 1)
     ampdata = [-1] * (len(xb.analog_samples ) -1)
@@ -197,6 +254,12 @@ def update_graph(idleevent):
     # Print out our most recent measurements
     print str(xb.address_16)+"\tCurrent draw, in amperes: "+str(avgamp)
     print "\tWatt draw, in VA: "+str(avgwatt)
+    resource = bionet_node_get_resource_by_id(node, "Amps")
+    if (resource == None):
+        print "Error no such resource - Amps"
+    else:
+        bionet_resource_set_float(resource, avgamp, None)
+
 
     if (avgamp > 13):
         return            # hmm, bad data
@@ -256,25 +319,6 @@ def update_graph(idleevent):
     # We're going to twitter at midnight, 8am and 4pm
     # Determine the hour of the day (ie 6:42 -> '6')
     currhour = datetime.datetime.now().hour
-    # twitter every 8 hours
-    if (((time.time() - twittertimer) >= 3660.0) and (currhour % 8 == 0)):
-        print "twittertime!"
-        twittertimer = time.time();
-        if not LOGFILENAME:
-            message = appengineauth.gettweetreport()
-        else:
-            # sum up all the sensors' data
-            wattsused = 0
-            whused = 0
-            for history in sensorhistories.sensorhistories:
-                wattsused += history.avgwattover5min()
-                whused += history.dayswatthr
-                
-            message = "Currently using "+str(int(wattsused))+" Watts, "+str(int(whused))+" Wh today so far #tweetawatt"
-            # write something ourselves
-        if message:
-            print message
-            TwitterIt(twitterusername, twitterpassword, message)
 
     if GRAPHIT:
         # Redraw our pretty picture
@@ -290,6 +334,8 @@ def update_graph(idleevent):
         mainsampwatcher.set_ylim(maxamp * -1.2, maxamp * 1.2)
         wattusage.set_ylim(0, max(avgwattdata) * 1.2)
 
+    hab_report_datapoints (node)
+
 if GRAPHIT:
     timer = wx.Timer(wx.GetApp(), -1)
     timer.Start(500)        # run an in every 'n' milli-seconds
@@ -298,4 +344,5 @@ if GRAPHIT:
 else:
     while True:
         update_graph(None)
+	
 
