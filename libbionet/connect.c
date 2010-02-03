@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -264,7 +264,11 @@ int bionet_connect(void) {
     //
 
 
-    libbionet_cal_handle = cal_client.init("bionet", libbionet_cal_callback, libbionet_cal_peer_matches);
+    libbionet_cal_handle = cal_client.init("bionet", 
+					   libbionet_cal_callback, 
+					   libbionet_cal_peer_matches, 
+					   libbionet_ssl_ctx, 
+					   libbionet_require_security);
     if (libbionet_cal_handle == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_connect(): error initializing CAL");
         return -1;

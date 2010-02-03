@@ -10,6 +10,8 @@
 
 #include "bionet-data-manager.h"
 
+extern uint32_t num_sync_datapoints;
+
 void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Message_t *message) {
     int sri;
 
@@ -143,6 +145,8 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		if (db_add_datapoint_sync(main_db, resource_key, &bdmdp)) {
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			  "Failed adding datapoint to DB.");
+		} else {
+		    num_sync_datapoints++;
 		}
 	    }
 	}

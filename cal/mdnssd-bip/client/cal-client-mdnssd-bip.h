@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -22,6 +22,23 @@
 
 
 typedef struct {
+    //!
+    //! \brief A callback function provided by the user, to be called by
+    //!     the CAL Client library whenever an event requires the user's
+    //!     attention.
+    //!
+    //! Set by .init(), called by .read()
+    //!
+    //! The events are documented in the cal_event_t enum, in the
+    //! cal-event.h file.
+    //!
+    //! \param event The event that requires the user's attention.  The
+    //!     event is const, so the callback function should treat it as
+    //!     read-only.
+    //!
+
+    void (*callback)(void * cal_handle, const cal_event_t *event);
+
     int (*peer_matches)(const char *peer_name, const char *subscription);
     int running;
     GSList *service_list;
@@ -38,8 +55,8 @@ typedef struct {
     void (*cal_client_mdnssd_bip_callback)(cal_event_t *event);
 
     // pipes between CAL Client thread and user thread
-    int cal_client_mdnssd_bip_fds_to_user[2];
-    int cal_client_mdnssd_bip_fds_from_user[2];
+    bip_msg_queue_t msg_queue;
+
 
     GThread *client_thread;
 

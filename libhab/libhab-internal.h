@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -18,16 +18,18 @@
 
 
 
-extern int libhab_cal_fd;
+extern void * libhab_cal_handle;
 
 extern bionet_hab_t *libhab_this;
 
+extern void * libhab_ssl_ctx;
+extern int libhab_require_security;
 
 
 
 int libhab_cal_topic_matches(const char *topic, const char *subscription);
 
-void libhab_cal_callback(const cal_event_t *event);
+void libhab_cal_callback(void * cal_handle, const cal_event_t *event);
 
 
 extern void (*libhab_callback_set_resource)(bionet_resource_t *resource, bionet_value_t *value);

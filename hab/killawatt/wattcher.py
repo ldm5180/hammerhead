@@ -162,7 +162,7 @@ def update_graph(idleevent):
         if (bionet_node_add_resource(node, resource)):
             print "Error adding resource to node"
             sys.exit(1)
-        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "KwHour")
+        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "WHour")
         if (resource == None):
 #            logger.warning("Error creating Resource")
             print "Error getting resource"
@@ -259,7 +259,18 @@ def update_graph(idleevent):
         print "Error no such resource - Amps"
     else:
         bionet_resource_set_float(resource, avgamp, None)
+    
+#    resource = bionet_node_get_resource_by_id(node, "Volts")
+#    if (resource == None):
+#        print "Error no such resource - Volts"
+#    else:
+#        bionet_resource_set_float(resource, voltagedata, None)
 
+    resource = bionet_node_get_resource_by_id(node, "Watts")
+    if (resource == None):
+        print "Error no such resource - Watts"
+    else:
+        bionet_resource_set_float(resource, avgwatt, None)
 
     if (avgamp > 13):
         return            # hmm, bad data
@@ -289,6 +300,12 @@ def update_graph(idleevent):
     print "\t\tWh used in last ",elapsedseconds," seconds: ",dwatthr
     sensorhistory.addwatthr(dwatthr)
     
+    bionet_node_get_resource_by_id(node, "WHour")
+    if (resource == None):
+        print "Error - no such resource - WHour"
+    else:
+        bionet_resource_set_float(resource, dwatthr, None)
+
     # Determine the minute of the hour (ie 6:42 -> '42')
     currminute = (int(time.time())/60) % 10
     # Figure out if its been five minutes since our last save

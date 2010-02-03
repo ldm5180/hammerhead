@@ -23,17 +23,20 @@ check_data_manager_CFLAGS = $(CHECK_CFLAGS) \
     $(CFLAGS_BIONET_CAL_SERVER) \
     $(CFLAGS_BIONET_CAL_UTIL) \
     $(CFLAGS_BIONET_CLIENT) \
+    $(CFLAGS_BDM) \
     $(CFLAGS_BIONET_ASN1) \
     $(CFLAGS_BIONET_UTIL) \
     $(GLIB_CFLAGS)
 
 check_data_manager_LDFLAGS = $(CHECK_LIBS) \
     $(LDFLAGS_BIONET_CLIENT) \
+    $(LDFLAGS_BDM) \
     $(LDFLAGS_BIONET_ASN1) \
     $(GLIB_LIBS)
 
 check_data_manager_LDADD = \
     $(LIBS_BIONET_CLIENT) \
+    $(LIBS_BDM) \
     $(LIBS_BIONET_UTIL) \
     $(top_srcdir)/data-manager/server/libbionet-data-manager.la
 

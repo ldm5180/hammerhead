@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -24,24 +24,6 @@
 
 
 typedef struct {
-
-    //!
-    //! \brief A callback function provided by the user, to be called by
-    //!     the CAL Client library whenever an event requires the user's
-    //!     attention.
-    //!
-    //! Set by .init(), called by .read()
-    //!
-    //! The events are documented in the cal_event_t enum, in the
-    //! cal-event.h file.
-    //!
-    //! \param event The event that requires the user's attention.  The
-    //!     event is const, so the callback function should treat it as
-    //!     read-only.
-    //!
-
-    void (*callback)(void * cal_handle, const cal_event_t *event);
-
 
     //!
     //! \brief Join the network and start looking for servers.
@@ -71,7 +53,9 @@ typedef struct {
     void * (*init)(
         const char *network_type,
         void (*callback)(void * cal_handle, const cal_event_t *event),
-        int (*peer_matches)(const char *peer_name, const char *subscription)
+        int (*peer_matches)(const char *peer_name, const char *subscription),
+	void * ssl_ctx,
+	int require_security
     );
 
 
@@ -160,10 +144,10 @@ typedef struct {
      * @param[in] require 0 for optional security, 1 for required 
      * security. (default: 0)
      *
-     * @return 1 Succes
-     * @return 0 Failure
+     * @return NULL Failure
+     * @return Otherwise Success
      */
-    int (*init_security)(void * cal_handle, const char * dir, int require);
+    void * (*init_security)(const char * dir, int require);
 
 
     /**

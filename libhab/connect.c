@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -54,7 +54,7 @@ int hab_connect(bionet_hab_t *hab) {
     // it we're already connected to Bionet, we're done
     //
 
-    if (libhab_cal_fd != -1) return libhab_cal_fd;
+    if (libhab_cal_handle != NULL) return cal_server.get_fd(libhab_cal_handle);
 
 
     //
@@ -71,8 +71,8 @@ int hab_connect(bionet_hab_t *hab) {
         return -1;
     }
 
-    libhab_cal_fd = cal_server.init("bionet", cal_name, libhab_cal_callback, libhab_cal_topic_matches);
-    if (libhab_cal_fd == -1) {
+    libhab_cal_handle = cal_server.init("bionet", cal_name, libhab_cal_callback, libhab_cal_topic_matches, libhab_ssl_ctx, libhab_require_security);
+    if (libhab_cal_handle == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_connect(): error initializing CAL");
         libhab_this = NULL;
         return -1;
@@ -254,7 +254,7 @@ int hab_connect(bionet_hab_t *hab) {
 #endif
 
 
-    return libhab_cal_fd;
+    return cal_server.get_fd(libhab_cal_handle);
 }
 
 

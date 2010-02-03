@@ -14,14 +14,12 @@ LIBCAL_UTIL_SOURCES=                 \
 
 LIBCAL_MDNSSD_BIP_SHARED_SOURCES =          \
     ../shared/bip-net-clear.c               \
-    ../shared/bip-net-connect.c             \
     ../shared/bip-net-destroy.c             \
     ../shared/bip-net-disconnect.c          \
     ../shared/bip-net-free.c                \
     ../shared/bip-net-is-connected.c        \
     ../shared/bip-net-new.c                 \
     ../shared/bip-peer-free.c               \
-    ../shared/bip-peer-connect.c            \
     ../shared/bip-peer-disconnect.c         \
     ../shared/bip-peer-get-connected-net.c  \
     ../shared/bip-peer-new.c                \
@@ -30,6 +28,7 @@ LIBCAL_MDNSSD_BIP_SHARED_SOURCES =          \
     ../shared/bip-security.c 		    \
     ../shared/bip-shared-cfg.c              \
     ../shared/bip-peer-is-secure.c          \
+    ../shared/$(SYSAPI)/bip-itc.c           \
     ../shared/$(SYSAPI)/bip-socket.c
 
 lib_LTLIBRARIES = libcal-mdnssd-bip-client.la
@@ -47,6 +46,8 @@ libcal_mdnssd_bip_client_la_CFLAGS = \
 
 libcal_mdnssd_bip_client_la_SOURCES = \
 	cal-client-api.c \
+	bip-net-connect.c                  \
+	bip-peer-connect.c                  \
 	global.c \
 	thread-functions.c \
 	$(LIBCAL_MDNSSD_BIP_SHARED_SOURCES) \

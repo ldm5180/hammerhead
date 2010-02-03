@@ -8,7 +8,7 @@
 
 # Prelude.
 AC_PREREQ([2.59])
-AC_INIT([Bionet], [2.3], [bionet@bioserve.colorado.edu])
+AC_INIT([Bionet], [2.5], [bionet@bioserve.colorado.edu])
 # unique source file --- primitive safety check 
 AC_CONFIG_SRCDIR([cal/cal-server.h])
 
@@ -159,16 +159,34 @@ PKG_CHECK_MODULES(OPENSSL, [ openssl >= 0.9.8 ])
 AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
 
-if test "x$HAVE_LINUX" = "xyes"; then
-    PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
-    AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
-    AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)
+if test "$cross_compiling" != yes; then
+    if test "x$HAVE_LINUX" = "xyes"; then
+        PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
+    else if test "x$SYSAPI" != "xposix"; then
+        # Look for bonjour library elsewhere
+        echo ""
+    fi
+    fi
 fi
+AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
+AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)
 
 AM_CONDITIONAL(ENABLE_DARWIN, test "x$HAVE_DARWIN" = "xyes")
 AM_CONDITIONAL(ENABLE_LINUX, test "x$HAVE_LINUX" = "xyes")
 AM_CONDITIONAL(ENABLE_WIN32, test "x$HAVE_WIN32" = "xyes")
 
+
+AC_ARG_ENABLE(gcov,
+	      AS_HELP_STRING([--enable-gcov],
+                             [enable test coverage with gcov @<:@default=no@:>@]),
+              [case "${enableval}" in
+                 yes) gcov=true ;;
+                 no)  gcov=false ;;
+                 *)   AC_MSG_ERROR([bad value ${enableval} for --enable-gcov]) ;;
+               esac],
+              [gcov=false])
+
+AM_CONDITIONAL(GCOV, test x"$gcov" = "xtrue")
 
 ###
 #
@@ -580,6 +598,7 @@ AC_CONFIG_FILES([Makefile
 		 client/monitor/Makefile
 		 client/plot/Makefile
                  client/py-libbionet/Makefile
+                 client/realtime-watcher/Makefile
                  client/stream/Makefile
 		 client/stream-manager/Makefile
 		 client/twisted/Makefile

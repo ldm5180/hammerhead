@@ -190,7 +190,8 @@ int bdm_start(void) {
     libbdm_all_peers = g_hash_table_new_full(g_str_hash, g_str_equal, free, NULL);
 
 
-    libbdm_cal_handle = cal_client.init("bionet-db", libbdm_cal_callback, libbdm_cal_peer_matches);
+    libbdm_cal_handle = cal_client.init("bionet-db", libbdm_cal_callback, libbdm_cal_peer_matches,
+					NULL, 0); //TODO implement security for BDM
     if (libbdm_cal_handle == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_connect(): error initializing CAL");
         return -1;

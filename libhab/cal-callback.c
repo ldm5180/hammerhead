@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -185,7 +185,7 @@ static void libhab_handle_datapoint_subscription_request(const char *peer_name, 
 
             // "publish" the message to the newly connected subscriber (via publishto)
             // if the datapoint topic does not match any previous topics
-            cal_server.publishto(peer_name, datapoint_topic, buf.buf, buf.size);
+            cal_server.publishto(libhab_cal_handle, peer_name, datapoint_topic, buf.buf, buf.size);
 
             // FIXME: cal_server.publish should take the buf
             free(buf.buf);
@@ -202,14 +202,14 @@ static void libhab_handle_datapoint_subscription_request(const char *peer_name, 
 
             // "publish" the message to the newly connected subscriber (via publishto)
             // if the datapoint topic does not match any previous topics
-            cal_server.publishto(peer_name, datapoint_topic, buf.buf, buf.size);
+            cal_server.publishto(libhab_cal_handle, peer_name, datapoint_topic, buf.buf, buf.size);
             
             // FIXME: cal_server.publish should take the buf
             free(buf.buf);
         }
     }
 
-    cal_server.subscribe(peer_name, topic);
+    cal_server.subscribe(libhab_cal_handle, peer_name, topic);
 }
 
 
@@ -270,7 +270,7 @@ static void libhab_handle_stream_subscription_request(const char *peer_name, con
         libhab_callback_stream_subscription(peer_name, stream);
     }
 
-    cal_server.subscribe(peer_name, topic);
+    cal_server.subscribe(libhab_cal_handle, peer_name, topic);
 }
 
 
@@ -302,13 +302,13 @@ static void libhab_handle_node_list_subscription_request(const char *peer_name, 
         snprintf(node_topic, sizeof(node_topic), "N %s", bionet_node_get_id(node));
 
         // "publish" the message to the newly connected subscriber (via publishto)
-        cal_server.publishto(peer_name, node_topic, buf.buf, buf.size);
+        cal_server.publishto(libhab_cal_handle, peer_name, node_topic, buf.buf, buf.size);
 
         // FIXME: cal_server.publish should take the buf
         free(buf.buf);
     }
 
-    cal_server.subscribe(peer_name, topic);
+    cal_server.subscribe(libhab_cal_handle, peer_name, topic);
 }
 
 
@@ -429,7 +429,7 @@ static void libhab_stream_data(const char *peer_name, StreamData_t *sd) {
 
 
 
-void libhab_cal_callback(const cal_event_t *event) {
+void libhab_cal_callback(void * cal_handle, const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
             // we don't do anything with this

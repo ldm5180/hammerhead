@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -27,10 +27,6 @@
 #include "cal-server.h"
 #include "cal-mdnssd-bip.h"
 #include "cal-server-mdnssd-bip.h"
-
-
-extern SSL_CTX * ssl_ctx_server;
-extern int server_require_security;
 
 // key is a bip peer name "bip://$HOST:$PORT"
 // value is a bip_peer_t*
@@ -94,14 +90,8 @@ static int read_from_user(cal_server_mdnssd_bip_t * this) {
     int r;
     int ret_val = 0;
 
-    r = read(cal_server_mdnssd_bip_fds_from_user[0], &event, sizeof(event));
+    r = bip_msg_queue_pop(&this->bip_server_msgq, BIP_MSG_QUEUE_FROM_USER, &event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: error reading from user: %s", strerror(errno));
-        return -1;
-    } else if (r != sizeof(event)) {
-        if ( r > 0 ) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_user: short read from user");
-        }
         this->running = 0;
         return -1;
     }
@@ -308,19 +298,19 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
     bip_peer_t * client = NULL;
     cal_event_t * event = NULL;
 
-    if(ssl_ctx_server) {
+    if(this->ssl_ctx_server) {
         if (1 != (r = BIO_do_handshake(bio))) {
             if ( BIO_should_retry(bio)) {
                 return 0;
             } 
 
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to complete SSL handshake on accept: %s [%m]",
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Failed to complete SSL handshake on accept: %s [%m]",
                 ERR_error_string(SSL_get_error(ssl, r), NULL));
 
-            if (server_require_security) {
+            if (this->server_require_security) {
                 goto fail_handshake;
             } else {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
                     "Failed to complete SSL handshake on accept. Trying unencrypted");
                 BIO_free_all(bio);
                 bio = BIO_new_socket(net->socket, BIO_CLOSE);
@@ -378,14 +368,8 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
     }
 
 
-    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
+    r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            ID "accept_connection(): error writing Connect event: %s", strerror(errno));
-        goto fail_handshake2;
-    } else if (r != sizeof(cal_event_t*)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            ID "accept_connection(): short write of Connect event!");
         goto fail_handshake2;
     }
 
@@ -450,12 +434,12 @@ static int accept_connection(cal_server_mdnssd_bip_t *this) {
 
     net->pending_bio = BIO_new_socket(net->socket, BIO_CLOSE);
     
-    if (ssl_ctx_server) {
+    if (this->ssl_ctx_server) {
         BIO * bio_ssl;
-	bio_ssl = BIO_new_ssl(ssl_ctx_server, 0);
+	bio_ssl = BIO_new_ssl(this->ssl_ctx_server, 0);
 	if (!bio_ssl) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to create an SSL.");
-	    if (server_require_security) {
+	    if (this->server_require_security) {
 		goto fail2;
 	    } else {
 		goto skip_security;
@@ -530,12 +514,8 @@ static void handle_client_disconnect(cal_server_mdnssd_bip_t * this, const char 
                 return;
             }
 
-            r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
+            r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
             if (r < 0) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: error writing Unsubscribe event: %s", strerror(errno));
-                cal_event_free(event);
-            } else if (r != sizeof(cal_event_t*)) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: short write of Unsubscribe event!");
                 cal_event_free(event);
             }
         }
@@ -555,13 +535,8 @@ static void handle_client_disconnect(cal_server_mdnssd_bip_t * this, const char 
         return;
     }
 
-    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(cal_event_t*));
+    r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: error writing Disconnect event: %s", strerror(errno));
-        cal_event_free(event);
-        return;
-    } else if (r != sizeof(cal_event_t*)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: short write of Disconnect event!");
         cal_event_free(event);
         return;
     }
@@ -702,13 +677,8 @@ static int read_from_client(cal_server_mdnssd_bip_t *this, const char *peer_name
         return -1;
     }
 
-    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
+    r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: error writing to user thread!!");
-        cal_event_free(event);
-        return -1;
-    } else if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: short write to user thread!!");
         cal_event_free(event);
         return -1;
     }
@@ -788,9 +758,12 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
     this->clients = g_hash_table_new_full(g_str_hash, g_str_equal, free, free_peer);
 
-    r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), "_%s._tcp", cal_server_mdnssd_bip_network_type);
+    r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), 
+		 "_%s._tcp", this->cal_server_mdnssd_bip_network_type);
     if (r >= sizeof(mdnssd_service_name)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: network type '%s' is too long!", cal_server_mdnssd_bip_network_type);
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID 
+	      "server thread: network type '%s' is too long!", 
+	      this->cal_server_mdnssd_bip_network_type);
         return (void*)1;
     }
 
@@ -830,7 +803,7 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
     }
 #endif
 
-    if ( ssl_ctx_server ) {
+    if ( this->ssl_ctx_server ) {
 	bip_txtvers_t value = BIP_TXTVERS;
 
         error = TXTRecordSetValue ( 
@@ -897,14 +870,8 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
         return (void*)1;
     }
 
-    r = write(cal_server_mdnssd_bip_fds_to_user[1], &event, sizeof(event));
+    r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: error writing INIT event to user thread!!");
-	cal_event_free(event);
-        return (void*)1;
-    } else if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: short write of INIT event to user thread!!");
-	cal_event_free(event);
         return (void*)1;
     }
 
@@ -926,9 +893,10 @@ SELECT_LOOP_CONTINUE:
         //
         // the user thread might want to say something
         //
+        int q_fd = bip_msg_queue_get_handle(&this->bip_server_msgq, BIP_MSG_QUEUE_FROM_USER);
 
-        FD_SET(cal_server_mdnssd_bip_fds_from_user[0], &readers);
-        max_fd = Max(max_fd, cal_server_mdnssd_bip_fds_from_user[0]);
+        FD_SET(q_fd, &readers);
+        max_fd = Max(max_fd, q_fd);
 
 
         // 
@@ -1003,7 +971,7 @@ SELECT_LOOP_CONTINUE:
             }
         }
 
-        if (FD_ISSET(cal_server_mdnssd_bip_fds_from_user[0], &readers)) {
+        if (FD_ISSET(q_fd, &readers)) {
             if (read_from_user(this) < 0) {
                 goto shutdown_thread;
             }
@@ -1060,8 +1028,7 @@ shutdown_thread:
     // 
     // User asked we shutdown
     //
-    close(cal_server_mdnssd_bip_fds_to_user[1]);
-    cal_server_mdnssd_bip_fds_to_user[1] = -1;
+    bip_msg_queue_close(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER);
 
     return 0;
 }

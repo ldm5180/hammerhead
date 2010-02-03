@@ -1,10 +1,13 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
+#define _XOPEN_SOURCE
+#define _BSD_SOURCE
 
 #include <errno.h>
+#include <math.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,15 +24,14 @@
 #include <glib.h>
 
 #include "bionet.h"
+#include "bdm-client.h"
 #include "bionet-util.h"
+#include "watcher-callbacks.h"
 
-typedef enum {
-    OM_NORMAL,
-    OM_TEST_PATTERN
-} om_t;
+#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 
 om_t output_mode = OM_NORMAL;
-
+static int bdm_only = 0;
 
 enum subscription_update_t {
     ADD,
@@ -98,218 +100,65 @@ void signal_handler(int signo) {
 
 #endif /* defined(LINUX) || defined(MACOSX) */
 
+static void str_to_timeval(const char *str, struct timeval *tv) {
+    struct tm tm;
+    char *p;
+    char *old_tz;
 
-static const char *current_timestamp_string(void)
-{
-    static char time_str[200];
-
-    char usec_str[10];
-    struct tm *tm;
-    int r;
-
-    // 
-    // sanity tests
-    //
-    struct timeval timestamp;
-    r = gettimeofday(&timestamp, NULL);
-    if (r != 0) {
-        g_message("gettimeofday() error: %s", strerror(errno));
+    memset(&tm, 0, sizeof(tm));
+    p = strptime(str, "%Y-%m-%d %T", &tm);
+    if (p == NULL) {
+        printf("error parsing time string '%s': %s\n", str, strerror(errno));
         exit(1);
     }
 
+    if (*p == '\0') {
+        tv->tv_usec = 0;
+    } else {
+        int r;
+        unsigned int val;
+        int consumed;
 
-    tm = gmtime(&timestamp.tv_sec);
-    if (tm == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_datapoint_timestamp_to_string_human_readable(): error with gmtime: %s", 
-	      strerror(errno));
-        return "invalid time";
-    }
-
-    r = strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", tm);
-    if (r <= 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_datapoint_timestamp_to_string_human_readable(): error with strftime: %s", 
-	      strerror(errno));
-        return "invalid time";
-    }
-
-    r = snprintf(usec_str, sizeof(usec_str), ".%06ld", (long)timestamp.tv_usec);
-    if (r >= sizeof(usec_str)) {
-        // this should never happen, but it keeps Coverity happy
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_datapoint_timestamp_to_string_human_readable(): usec_str too small?!");
-        return "invalid time";
-    }
-
-    // sanity check destination memory size available
-    if ((strlen(usec_str) + 1 + strlen(time_str)) > sizeof(time_str)) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_datapoint_timestamp_to_string_human_readable(): time_str too small?!");
-        return "invalid time";
-    }
-    strncat(time_str, usec_str, strlen(usec_str));
-
-    return time_str;
-}
-
-
-void cb_datapoint(bionet_datapoint_t *datapoint) {
-    bionet_value_t * value = bionet_datapoint_get_value(datapoint);
-    if (NULL == value) {
-	g_log("", G_LOG_LEVEL_WARNING, "Failed to get value from datapoint.");
-	return;
-    }
-
-    bionet_resource_t * resource = bionet_value_get_resource(value);
-    if (NULL == resource) {
-	g_log("", G_LOG_LEVEL_WARNING, "Failed to get resource from value.");
-	return;
-    }
-
-    char * value_str = bionet_value_to_str(value);
-
-    if (output_mode == OM_NORMAL) {
-        g_message(
-            "%s = %s %s %s @ %s",
-            bionet_resource_get_name(resource),
-            bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-            bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-            value_str,
-            bionet_datapoint_timestamp_to_string(datapoint)
-        );
-    } else if (output_mode == OM_TEST_PATTERN) {
-        g_message(
-            "%s %s %s '%s'",
-            bionet_datapoint_timestamp_to_string(datapoint),
-            bionet_node_get_id(bionet_resource_get_node(resource)),
-            bionet_resource_get_id(resource),
-            value_str
-        );
-    }
-
-    free(value_str);
-}
-
-
-void cb_lost_node(bionet_node_t *node) {
-    if (output_mode == OM_NORMAL) {
-        g_message("lost node: %s", bionet_node_get_name(node));
-    } else if (output_mode == OM_TEST_PATTERN) {
-        g_message("%s - %s", 
-            current_timestamp_string(),
-            bionet_node_get_id(node));
-    }
-}
-
-
-void cb_new_node(bionet_node_t *node) {
-    int i;
-
-    if (output_mode == OM_NORMAL) {
-        g_message("new node: %s", bionet_node_get_name(node));
-    } else if (output_mode == OM_TEST_PATTERN) {
-        g_message("%s + %s", 
-            current_timestamp_string(),
-            bionet_node_get_id(node));
-    }
-
-    if (bionet_node_get_num_resources(node)) {
-        if (output_mode == OM_NORMAL)
-            g_message("    Resources:");
-
-        for (i = 0; i < bionet_node_get_num_resources(node); i++) {
-            bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
-	    if (NULL == resource) {
-		g_log("", G_LOG_LEVEL_WARNING, "Failed to get resource at index %d from node", i);
-		continue;
-	    }
-            bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
-
-            if (datapoint == NULL) {
-                if (output_mode == OM_NORMAL) {
-                    g_message(
-                        "        %s %s %s (no known value)", 
-                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                        bionet_resource_get_id(resource)
-                    );
-                } else if (output_mode == OM_TEST_PATTERN) {
-                    g_message(
-                        "    %s %s %s ?",
-                        bionet_resource_get_id(resource),
-                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
-                    );
-                }
-            } else {
-                char * value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
-
-                if (output_mode == OM_NORMAL) {
-                    g_message(
-                        "        %s %s %s = %s @ %s", 
-                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                        bionet_resource_get_id(resource),
-                        value_str,
-                        bionet_datapoint_timestamp_to_string(datapoint)
-                    );
-                } else if (output_mode == OM_TEST_PATTERN) {
-                    g_message(
-                        "    %s %s %s '%s'",
-                        bionet_resource_get_id(resource),
-                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                        value_str
-                    );
-                }
-
-		free(value_str);
-            }
-
+        if (*p != '.') {
+            printf("error parsing fractional seconds from time string '%s': expected decimal point after seconds\n", str);
+            exit(1);
         }
-    }
+        p ++;
 
-    if (bionet_node_get_num_streams(node)) {
-        if (output_mode == OM_NORMAL)
-            g_message("    Streams:");
-
-        for (i = 0; i < bionet_node_get_num_streams(node); i++) {
-            bionet_stream_t *stream = bionet_node_get_stream_by_index(node, i);
-            if (NULL == stream) {
-                g_log("", G_LOG_LEVEL_WARNING, "Failed to get stream at index %d from node", i);
-            }
-
-            if (output_mode == OM_NORMAL) {
-                g_message(
-                    "        %s %s %s", 
-                    bionet_stream_get_id(stream),
-                    bionet_stream_get_type(stream),
-                    bionet_stream_direction_to_string(bionet_stream_get_direction(stream))
-                );
-            }
+        if ((*p < '0') || (*p > '9')) {
+            printf("error parsing fractional seconds from time string '%s': expected number after decimal point\n", str);
+            exit(1);
         }
-    }
-}
 
-
-void cb_lost_hab(bionet_hab_t *hab) {
-    if (output_mode == OM_NORMAL) {
-        g_message("lost hab: %s", bionet_hab_get_name(hab));
-    }
-}
-
-
-void cb_new_hab(bionet_hab_t *hab) {
-    if (output_mode == OM_NORMAL) {
-        g_message("new hab: %s", bionet_hab_get_name(hab));
-        if (bionet_hab_is_secure(hab)) {
-            g_message("    %s: security enabled", bionet_hab_get_name(hab));
+        r = sscanf(p, "%6u%n", &val, &consumed);
+        // the effect of %n on the returned conversion count is ambiguous
+        if ((r != 1) && (r != 2)) {
+            printf("error parsing fractional seconds from time string '%s': didn't find \"%%u\"\n", str);
+            exit(1);
         }
+        if (consumed != strlen(p)) {
+            printf("error parsing fractional seconds from time string '%s': garbage at end\n", str);
+            exit(1);
+        }
+        if (consumed > 6) {
+            printf("error parsing fractional seconds from time string '%s': number too long\n", str);
+            exit(1);
+        }
+
+        tv->tv_usec = val * pow(10, 6-consumed);
+    }
+
+    old_tz = getenv("TZ");
+    setenv("TZ", "UTC", 1);
+    tv->tv_sec = mktime(&tm);
+    if (old_tz) {
+	char sanitized[128];
+	snprintf(sanitized, 128, "%s", old_tz);
+	setenv("TZ", sanitized, 1);
+    } else {
+	unsetenv("TZ");
     }
 }
-
-
 
 
 void usage(void) {
@@ -345,7 +194,8 @@ void usage(void) {
 
 
 int main(int argc, char *argv[]) {
-    int bionet_fd;
+    int bionet_fd = 0;
+    int bdm_fd = 0;
     char * security_dir = NULL;
     int require_security = 0;
     GSList * hab_list = NULL;
@@ -356,6 +206,9 @@ int main(int argc, char *argv[]) {
     int urandom_fd = 0, subscribed_to_something = 0;
     g_log_set_default_handler(bionet_glib_log_handler, NULL);
     struct timeval *diff, old;
+    struct timeval datapointStart, datapointEnd;
+    struct timeval * pDatapointStart = NULL;
+    struct timeval * pDatapointEnd = NULL;
 
     //
     // parse command-line arguments
@@ -378,10 +231,13 @@ int main(int argc, char *argv[]) {
 	    {"remove-subscriptions", 1, 0, 'm'},
 	    {"randomize-subscriptions", 1, 0, 'd'},
 	    {"output-mode", 1, 0, 'o'},
+	    {"datapoint-start", 1, 0, 'T'},
+	    {"datapoint-end", 1, 0, 't'},
+	    {"bdm-only", 0, 0, 'b'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?veh:n:r:s:a:m:d:o:", long_options, &i);
+	c = getopt_long(argc, argv, "?vbeh:n:r:s:a:m:d:o:T:t:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -391,6 +247,28 @@ int main(int argc, char *argv[]) {
 	case '?':
 	    usage();
 	    return 0;
+
+	case 'a':
+	    subscription_update = ADD;
+        rate = atoi(optarg);
+        if (rate < 1) {
+            g_message("can't add subscriptions every %d seconds", rate);
+            return -1;
+        }
+	    break;
+
+	case 'b':
+	    bdm_only = 1;
+	    break;
+
+	case 'd':
+	    subscription_update = RANDOM;
+        rate = atoi(optarg);
+        if (rate < 1) {
+            g_message("can't randomize subscriptions every %d seconds", rate);
+            return -1;
+        }
+	    break;
 
 	case 'e':
 	    if (security_dir) {
@@ -406,25 +284,6 @@ int main(int argc, char *argv[]) {
 	    subscribed_to_something = 1;
 	    break;
 
-	case 'n':
-	    node_list = g_slist_append(node_list, optarg);
-	    subscribed_to_something = 1;
-	    break;
-
-	case 'r':
-	    dp_list = g_slist_append(dp_list, optarg);
-	    subscribed_to_something = 1;
-	    break;
-
-	case 'a':
-	    subscription_update = ADD;
-        rate = atoi(optarg);
-        if (rate < 1) {
-            g_message("can't add subscriptions every %d seconds", rate);
-            return -1;
-        }
-	    break;
-
 	case 'm':
 	    subscription_update = REMOVE;
         rate = atoi(optarg);
@@ -434,38 +293,61 @@ int main(int argc, char *argv[]) {
         }
 	    break;
 
-	case 'd':
-	    subscription_update = RANDOM;
-        rate = atoi(optarg);
-        if (rate < 1) {
-            g_message("can't randomize subscriptions every %d seconds", rate);
-            return -1;
-        }
+	case 'n':
+	    node_list = g_slist_append(node_list, optarg);
+	    subscribed_to_something = 1;
+	    break;
+
+	case 'o':
+	    if (strcmp(optarg, "normal") == 0) output_mode = OM_NORMAL;
+	    else if (strcmp(optarg, "test-pattern") == 0) output_mode = OM_TEST_PATTERN;
+	    else {
+		fprintf(stderr, "unknown output mode %s\n", optarg);
+		usage();
+		return 1;
+	    }
+	    break;
+	    
+	case 'r':
+	    dp_list = g_slist_append(dp_list, optarg);
+	    subscribed_to_something = 1;
 	    break;
 
 	case 's':
 	    security_dir = optarg;
 	    break;
+
+	case 'T':
+	    str_to_timeval(optarg, &datapointStart);
+	    pDatapointStart = &datapointStart;
+	    break;
+
+	case 't':
+	    str_to_timeval(optarg, &datapointEnd);
+	    pDatapointEnd = &datapointEnd;
+	    break;    
 	    
 	case 'v':
 	    print_bionet_version(stdout);
 	    return 0;
-
-    case 'o':
-        if (strcmp(optarg, "normal") == 0) output_mode = OM_NORMAL;
-        else if (strcmp(optarg, "test-pattern") == 0) output_mode = OM_TEST_PATTERN;
-        else {
-            fprintf(stderr, "unknown output mode %s\n", optarg);
-            usage();
-            return 1;
-        }
-        break;
 
 	default:
 	    break;
 	}
        
     } //while(1)
+
+    if ((bdm_only > 0) && (pDatapointStart == NULL) && (pDatapointEnd == NULL)) {
+	g_log("", G_LOG_LEVEL_ERROR, 
+	      "A Datapoint Start and/or End time needs to be specified in BDM-Only mode.");
+	exit(1);    
+    }
+
+    if ((pDatapointStart || pDatapointEnd) && (subscription_update != NONE)) {
+	g_log("", G_LOG_LEVEL_ERROR,
+	      "Subscription updates are not available for BDMs, yet...");
+	exit(1);
+    }
 
     if (security_dir) {
 	if (bionet_init_security(security_dir, require_security)) {
@@ -474,38 +356,74 @@ int main(int argc, char *argv[]) {
     }
 
     // this must happen before anything else
-    bionet_fd = bionet_connect();
-    if (bionet_fd < 0) {
-        fprintf(stderr, "error connecting to Bionet");
-        exit(1);
+    if (0 == bdm_only) {
+	bionet_fd = bionet_connect();
+	if (bionet_fd < 0) {
+	    fprintf(stderr, "error connecting to Bionet");
+	    exit(1);
+	}
+
+	bionet_register_callback_new_hab(cb_new_hab);
+	bionet_register_callback_lost_hab(cb_lost_hab);
+	
+	bionet_register_callback_new_node(cb_new_node);
+	bionet_register_callback_lost_node(cb_lost_node);
+	
+	bionet_register_callback_datapoint(cb_datapoint);
+	
+	if (subscribed_to_something) {
+	    int i;
+	    while (g_slist_length(hab_list) > 0) {
+		char *hab_sub = g_slist_nth_data(hab_list, 0);
+		bionet_subscribe_hab_list_by_name(hab_sub);
+		hab_list = g_slist_remove(hab_list, hab_sub);
+	    }
+	    for (i = 0; i < g_slist_length(node_list); i++) {
+		bionet_subscribe_node_list_by_name(g_slist_nth_data(node_list, i));
+	    }
+	    for (i = 0; i < g_slist_length(dp_list); i++) {
+		bionet_subscribe_datapoints_by_name(g_slist_nth_data(dp_list, i));
+	    }
+	} else {
+	    bionet_subscribe_hab_list_by_name("*.*");
+	    bionet_subscribe_node_list_by_name("*.*.*");
+	    bionet_subscribe_datapoints_by_name("*.*.*:*");
+	}
     }
 
-
-    bionet_register_callback_new_hab(cb_new_hab);
-    bionet_register_callback_lost_hab(cb_lost_hab);
-
-    bionet_register_callback_new_node(cb_new_node);
-    bionet_register_callback_lost_node(cb_lost_node);
-
-    bionet_register_callback_datapoint(cb_datapoint);
-
-    if (subscribed_to_something) {
-	int i;
-	while (g_slist_length(hab_list) > 0) {
-            char *hab_sub = g_slist_nth_data(hab_list, 0);
-            bionet_subscribe_hab_list_by_name(hab_sub);
-            hab_list = g_slist_remove(hab_list, hab_sub);
+    if (pDatapointStart || pDatapointEnd) {
+	bdm_fd = bdm_start();
+	if (bdm_fd < 0) {
+	    fprintf(stderr, "error connecting to BDM");
+	    exit(1);
 	}
-	for (i = 0; i < g_slist_length(node_list); i++) {
-	    bionet_subscribe_node_list_by_name(g_slist_nth_data(node_list, i));
+
+	bdm_register_callback_new_hab(cb_bdm_new_hab, NULL);
+	bdm_register_callback_lost_hab(cb_bdm_lost_hab, NULL);
+	
+	bdm_register_callback_new_node(cb_bdm_new_node, NULL);
+	bdm_register_callback_lost_node(cb_bdm_lost_node, NULL);
+	
+	bdm_register_callback_datapoint(cb_bdm_datapoint, NULL);
+
+	if (subscribed_to_something) {
+	    int i;
+	    while (g_slist_length(hab_list) > 0) {
+		char *hab_sub = g_slist_nth_data(hab_list, 0);
+		bdm_subscribe_hab_list_by_name(hab_sub);
+		hab_list = g_slist_remove(hab_list, hab_sub);
+	    }
+	    for (i = 0; i < g_slist_length(node_list); i++) {
+		bdm_subscribe_node_list_by_name(g_slist_nth_data(node_list, i));
+	    }
+	    for (i = 0; i < g_slist_length(dp_list); i++) {
+		bdm_subscribe_datapoints_by_name(g_slist_nth_data(dp_list, i), pDatapointStart, pDatapointEnd);
+	    }
+	} else {
+	    bdm_subscribe_hab_list_by_name("*.*");
+	    bdm_subscribe_node_list_by_name("*.*.*");
+	    bdm_subscribe_datapoints_by_name("*.*.*:*", pDatapointStart, pDatapointEnd);
 	}
-	for (i = 0; i < g_slist_length(dp_list); i++) {
-	    bionet_subscribe_datapoints_by_name(g_slist_nth_data(dp_list, i));
-	}
-    } else {
-	bionet_subscribe_hab_list_by_name("*.*");
-	bionet_subscribe_node_list_by_name("*.*.*");
-	bionet_subscribe_datapoints_by_name("*.*.*:*");
     }
 
     signal(SIGUSR1, signal_handler);
@@ -554,6 +472,7 @@ int main(int argc, char *argv[]) {
         diff = NULL;
     }
 
+    int max_fd = MAX(bionet_fd, bdm_fd);
     while (1) {
 
         while (1) {
@@ -561,9 +480,13 @@ int main(int argc, char *argv[]) {
             fd_set readers;
 
             FD_ZERO(&readers);
-            FD_SET(bionet_fd, &readers);
-
-            r = select(bionet_fd + 1, &readers, NULL, NULL, diff);
+	    if (bionet_fd) {
+		FD_SET(bionet_fd, &readers);
+	    }
+	    if (bdm_fd) {
+		FD_SET(bdm_fd, &readers);
+	    }
+            r = select(max_fd + 1, &readers, NULL, NULL, diff);
 
             if ((r < 0) && (errno != EINTR)) {
                 fprintf(stderr, "error from select: %s", strerror(errno));
@@ -571,7 +494,13 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
-            bionet_read();
+	    if (FD_ISSET(bionet_fd, &readers)) {
+		bionet_read();
+	    }
+
+	    if (FD_ISSET(bdm_fd, &readers)) {
+		bdm_read();
+	    }
 
             if (subscription_update != NONE) {
                 struct timeval now;

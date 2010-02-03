@@ -29,7 +29,10 @@ tar --exclude .bzr --exclude how-to-release --exclude debian --exclude rpm -czf 
 rm -rf bionet-$VERSION
 cd $OLD_PWD
 
-ln -s ~/rpmbuild $ROOT/.
+ln -sf ~/rpmbuild $ROOT/.
 
-mv $ROOT/../bionet-$VERSION.tar.gz $RPM_BUILD_ROOT/SOURCES/.
-mv $ROOT/rpm/bionet.spec $RPM_BUILD_ROOT/SPECS/.
+mkdir $RPM_BUILD_ROOT/SOURCES
+mkdir $RPM_BUILD_ROOT/SPECS
+
+cp $ROOT/../bionet-$VERSION.tar.gz $RPM_BUILD_ROOT/SOURCES/.
+cp $ROOT/rpm/bionet.spec $RPM_BUILD_ROOT/SPECS/.

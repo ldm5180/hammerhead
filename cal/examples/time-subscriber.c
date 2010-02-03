@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
     make_shutdowns_clean();
 
 
-    cal_handle = cal_client.init("time", cal_callback, NULL);
+    cal_handle = cal_client.init("time", cal_callback, NULL, NULL, 0);
     if (cal_handle == NULL) exit(1);
 
     cal_client.subscribe(cal_handle, "time-publisher", "time");

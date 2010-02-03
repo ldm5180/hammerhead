@@ -30,6 +30,7 @@ def process_new_session_or_subscription(request):
     subscriptions.append( { 'filter' : request.args['resource'][0],
                             'timespan' : request.args['timespan'],
                             'last requested' : time.time(),
+                            'last rendered' : time.time() - time.time(),
                             'regexp' : regex,
                             'new' : 0 } )
 
@@ -49,6 +50,8 @@ class Datapoints(resource.Resource):
         # existing session
         for sub in subscriptions:
             if (sub['filter'] == request.args['resource'][0]) and (sub['timespan'] == request.args['timespan']):
+                if (time.time() - sub['last rendered'] >= 120):
+                    sub['new'] += 1
                 sub['last requested'] = time.time()
                 found = sub
                 break
@@ -57,6 +60,9 @@ class Datapoints(resource.Resource):
             retval = process_new_session_or_subscription(request)
             for sub in subscriptions:
                 if (sub['filter'] == request.args['resource'][0]) and (sub['timespan'] == request.args['timespan']):
+                    if (time.time() - sub['last rendered'] >= 120):
+                        sub['new'] += 1
+                    sub['last requested'] = time.time()
                     found = sub
                     break
         

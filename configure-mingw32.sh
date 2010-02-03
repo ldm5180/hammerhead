@@ -9,6 +9,10 @@ export PKG_CONFIG_LIBDIR=/home/bmarshall/src/glib2/lib/pkgconfig
 export OPENSSL_LIBS=-L/home/bmarshall/src/openssl/OpenSSL/lib
 export OPENSSL_CFLAGS=-I/home/bmarshall/src/openssl/OpenSSL/include
 
+export AVAHI_COMPAT_LIBDNS_SD_LIBS=-L/home/bmarshall/src/bonjour/mDNSResponder-107.6/mDNSShared
+export AVAHI_COMPAT_LIBDNS_SD_CFLAGS=-I/home/bmarshall/src/bonjour/mDNSResponder-107.6/mDNSShared
+
+
 ./configure \
     --host=i586-mingw32msvc \
     --disable-habs \

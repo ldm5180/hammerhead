@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -22,7 +22,9 @@
 void * cal_client_mdnssd_bip_init(
     const char *network_type,
     void (*callback)(void * cal_handle, const cal_event_t *event),
-    int (*peer_matches)(const char *peer_name, const char *subscription)
+    int (*peer_matches)(const char *peer_name, const char *subscription),
+    void * ssl_ctx,
+    int require_security
 ) {
     int r;
     GError *err = NULL;
@@ -33,6 +35,14 @@ void * cal_client_mdnssd_bip_init(
     if (client_thread_data == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: out of memory!");
         goto fail0;
+    }
+
+    /* init the security stuff for the thread context */
+    client_thread_data->ssl_ctx_client = (SSL_CTX *)ssl_ctx;
+    if(require_security) {
+	client_thread_data->client_require_security = BIP_SEC_REQ;
+    } else {
+	client_thread_data->client_require_security = BIP_SEC_OPT;
     }
 
     bip_shared_config_init();
@@ -60,29 +70,14 @@ void * cal_client_mdnssd_bip_init(
     }
 
     // create the pipe for passing events back to the user thread
-    r = pipe(client_thread_data->cal_client_mdnssd_bip_fds_to_user);
+    r = bip_msg_queue_init(&client_thread_data->msg_queue);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error making to-user pipe: %s", strerror(errno));
-        goto fail2;
-    }
-
-    // create the pipe for getting subscription requests from the user
-    r = pipe(client_thread_data->cal_client_mdnssd_bip_fds_from_user);
-    if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: error making from-user pipe: %s", strerror(errno));
         goto fail3;
     }
 
-
-    // make the cal_fd non-blocking
-    r = fcntl(client_thread_data->cal_client_mdnssd_bip_fds_to_user[0], F_SETFL, O_NONBLOCK);
-    if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot make cal_fd nonblocking: %s", strerror(errno));
-        goto fail3;
-    }
 
     // record the user's callback function
-    cal_client.callback = callback;
+    client_thread_data->callback = callback;
 
     // Create and start the client thread
     client_thread_data->client_thread = g_thread_create(cal_client_mdnssd_bip_function,
@@ -102,20 +97,18 @@ void * cal_client_mdnssd_bip_init(
 
 fail4:
     client_thread_data->client_thread = NULL;
-    cal_client.callback = NULL;
+    client_thread_data->callback = NULL;
 
-    close(client_thread_data->cal_client_mdnssd_bip_fds_from_user[0]);
-    close(client_thread_data->cal_client_mdnssd_bip_fds_from_user[1]);
+    bip_msg_queue_close(&client_thread_data->msg_queue, BIP_MSG_QUEUE_FROM_USER);
 
 fail3:
-    close(client_thread_data->cal_client_mdnssd_bip_fds_to_user[0]);
-    close(client_thread_data->cal_client_mdnssd_bip_fds_to_user[1]);
+    bip_msg_queue_close(&client_thread_data->msg_queue, BIP_MSG_QUEUE_TO_USER);
 
-fail2:
     free(client_thread_data->cal_client_mdnssd_bip_network_type);
     cal_client_mdnssd_bip_thread_destroy(client_thread_data);
 
 fail0:
+    free(client_thread_data);
     return NULL;
 }
 
@@ -123,9 +116,14 @@ fail0:
 
 static void _eat_messages_until_shutdown(void * cal_handle) {
     cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
-    char buf[1024];
+    cal_event_t * event;
 
-    while(read(this->cal_client_mdnssd_bip_fds_to_user[0], buf, sizeof(buf)) > 0 );
+    if (this->client_thread == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "shutdown: called before init()!");
+        return;
+    }
+
+    while(bip_msg_queue_pop(&this->msg_queue, BIP_MSG_QUEUE_TO_USER, &event) == 0 );
 
 }
 
@@ -136,19 +134,13 @@ void cal_client_mdnssd_bip_shutdown(void * cal) {
         return;
     }
 
-    close(this->cal_client_mdnssd_bip_fds_from_user[1]);
-    this->cal_client_mdnssd_bip_fds_from_user[1] = -1;
+    bip_msg_queue_close(&this->msg_queue, BIP_MSG_QUEUE_FROM_USER);
 
     _eat_messages_until_shutdown(this);
 
     g_thread_join(this->client_thread);
 
-    close(this->cal_client_mdnssd_bip_fds_to_user[0]);
-    close(this->cal_client_mdnssd_bip_fds_to_user[1]);
-    close(this->cal_client_mdnssd_bip_fds_from_user[0]);
-    close(this->cal_client_mdnssd_bip_fds_from_user[1]);
-
-    cal_client.callback = NULL;
+    this->callback = NULL;
 
     if (this->ssl_ctx_client) {
 	SSL_CTX_free(this->ssl_ctx_client);
@@ -156,6 +148,9 @@ void cal_client_mdnssd_bip_shutdown(void * cal) {
 
     // Thread has exited, clean up its state
     cal_client_mdnssd_bip_thread_destroy(this);
+
+    bip_msg_queue_unref(&this->msg_queue);
+
 }
 
 
@@ -201,14 +196,8 @@ int cal_client_mdnssd_bip_subscribe(void * cal_handle,
         return 0;
     }
 
-    r = write(this->cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    r = bip_msg_queue_push(&this->msg_queue, BIP_MSG_QUEUE_FROM_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: error writing to client thread: %s", strerror(errno));
-        cal_event_free(event);
-        return 0;
-    }
-    if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: short write to client thread!!");
         cal_event_free(event);
         return 0;
     }
@@ -262,14 +251,8 @@ int cal_client_mdnssd_bip_unsubscribe(void * cal_handle,
         return 0;
     }
 
-    r = write(this->cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    r = bip_msg_queue_push(&this->msg_queue, BIP_MSG_QUEUE_FROM_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: error writing to client thread: %s", strerror(errno));
-        cal_event_free(event);
-        return 0;
-    }
-    if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "unsubscribe: short write to client thread!!");
         cal_event_free(event);
         return 0;
     }
@@ -293,13 +276,18 @@ int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
         return 0;
     }
 
-    if ((timeout == NULL) || ((timeout) && ((timeout->tv_sec > 0) || timeout->tv_usec > 0))) {
+    {
 	fd_set readers;
 	int ret;
 
+        int q_fd = bip_msg_queue_get_handle(&this->msg_queue, BIP_MSG_QUEUE_TO_USER);
+        if(q_fd < 0 ) {
+            return 0;
+        }
+
 	FD_ZERO(&readers);
-	FD_SET(this->cal_client_mdnssd_bip_fds_to_user[0], &readers);
-	ret = select(this->cal_client_mdnssd_bip_fds_to_user[0] + 1, &readers, NULL, NULL, timeout);
+	FD_SET(q_fd, &readers);
+	ret = select(q_fd + 1, &readers, NULL, NULL, timeout);
 	if (0 > ret) {
 	    if ((EAGAIN != errno)
 		&& (EINTR != errno)) {
@@ -313,21 +301,13 @@ int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
 	}
     }
 
-    r = read(this->cal_client_mdnssd_bip_fds_to_user[0], &event, sizeof(event));
-    if (r < 0) {
-        if (errno == EAGAIN) return 1;
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: error: %s", strerror(errno));
-        return 0;
-    } else if (r != sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: short read from client thread");
-        return 0;
-    } else if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: ignoring NULL event from CAL Client thread!");
+    r = bip_msg_queue_pop(&this->msg_queue, BIP_MSG_QUEUE_TO_USER, &event);
+    if (r != 0) {
         return 0;
     }
 
-    if (cal_client.callback != NULL) {
-        cal_client.callback(this, event);
+    if (this->callback != NULL) {
+        this->callback(this, event);
     }
 
     // manage memory
@@ -410,14 +390,8 @@ int cal_client_mdnssd_bip_sendto(void * cal_handle,
     event->msg.buffer = msg;
     event->msg.size = size;
 
-    r = write(this->cal_client_mdnssd_bip_fds_from_user[1], &event, sizeof(event));
+    r = bip_msg_queue_push(&this->msg_queue, BIP_MSG_QUEUE_FROM_USER, event);
     if (r < 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: error writing to client thread: %s", strerror(errno));
-        cal_event_free(event);
-        return 0;
-    }
-    if (r < sizeof(event)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "sendto: short write to client thread!!");
         cal_event_free(event);
         return 0;
     }
@@ -429,8 +403,7 @@ int cal_client_mdnssd_bip_sendto(void * cal_handle,
 }
 
 
-int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int require) {
-    cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
+void * cal_client_mdnssd_bip_init_security(const char * dir, int require) {
     char cadir[1024];
     char pubcert[1024];
     char prvkey[1024];
@@ -439,7 +412,7 @@ int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int
     if (NULL == dir) {
 	g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "cal_server_mdnssd_bip_init_security(): NULL dir passed in.");
-	return 0;
+	return NULL;
     }
 
     r = snprintf(cadir, 1024, "%s/%s", dir, BIP_CA_DIR);
@@ -447,11 +420,11 @@ int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Failed to make CA Dir variable.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to make CA Dir variable.");
-	    return 1;
+	    return NULL;
 	}
     }
 
@@ -460,11 +433,11 @@ int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Failed to make CA Cert variable.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to make CA Cert variable.");
-	    return 1;
+	    return NULL;
 	}
     }
 
@@ -473,11 +446,11 @@ int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Failed to make Private Key variable.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to make Private Key variable.");
-	    return 1;
+	    return NULL;
 	}
     }
 
@@ -488,71 +461,66 @@ int cal_client_mdnssd_bip_init_security(void * cal_handle, const char * dir, int
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to init PRNG.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to init PRNG - continuing without security.");
-	    return 1;
+	    return NULL;
 	}
     }
 
     
     SSLeay_add_ssl_algorithms();
-    this->ssl_ctx_client = SSL_CTX_new(SSLv23_client_method());
+    SSL_CTX * ssl_ctx_client = SSL_CTX_new(SSLv23_client_method());
 
     //verify the SSL dir
-    if (1 != SSL_CTX_load_verify_locations(this->ssl_ctx_client, BIP_CA_FILE, cadir)) {
+    if (1 != SSL_CTX_load_verify_locations(ssl_ctx_client, BIP_CA_FILE, cadir)) {
 	ERR_print_errors_fp(stderr);
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to load CA directory.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to load CA directory - continuing without security.");
-	    return 1;
+	    return NULL;
 	}
     }
 
     //load the trusted CA list
-    if (1 != SSL_CTX_use_certificate_chain_file(this->ssl_ctx_client, pubcert)) {
+    if (1 != SSL_CTX_use_certificate_chain_file(ssl_ctx_client, pubcert)) {
 	ERR_print_errors_fp(stderr);
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to load certificate.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to load certificate - continuing without security.");
-	    return 1;
+	    return NULL;
 	}
     }
 
     //load the private key
-    if (1 != SSL_CTX_use_PrivateKey_file(this->ssl_ctx_client, prvkey, SSL_FILETYPE_PEM)) {
+    if (1 != SSL_CTX_use_PrivateKey_file(ssl_ctx_client, prvkey, SSL_FILETYPE_PEM)) {
 	ERR_print_errors_fp(stderr);
 	if (require) {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to load private key.");
-	    return 0;
+	    return NULL;
 	} else {
 	    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "Failed to load private key - continuing without security.");
-	    return 1;
+	    return NULL;
 	}
     }
 
-    SSL_CTX_set_verify(this->ssl_ctx_client, 
+    SSL_CTX_set_verify(ssl_ctx_client, 
 		       SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, 
 		       bip_ssl_verify_callback);
-    SSL_CTX_set_verify_depth(this->ssl_ctx_client, 9); //arbitrary right now
+    SSL_CTX_set_verify_depth(ssl_ctx_client, 9); //arbitrary right now
 
-    if(require) {
-	this->client_require_security = BIP_SEC_REQ;
-    } else {
-	this->client_require_security = BIP_SEC_OPT;
-    }
-    return 1;
+    return (void *)ssl_ctx_client;
 } /* cal_client_mdnssd_bip_init_security() */
 
 
@@ -563,13 +531,11 @@ int cal_client_mdnssd_bip_get_fd(void * cal_handle) {
 	return -1;
     }
     
-    return this->cal_client_mdnssd_bip_fds_to_user[0];
+    return bip_msg_queue_get_handle(&this->msg_queue, BIP_MSG_QUEUE_TO_USER);
 } /* cal_client_mdnssd_bip_get_fd() */
 
 
 cal_client_t cal_client = {
-    .callback = NULL,
-
     .init = cal_client_mdnssd_bip_init,
     .shutdown = cal_client_mdnssd_bip_shutdown,
 

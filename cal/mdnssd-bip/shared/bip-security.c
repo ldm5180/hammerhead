@@ -5,7 +5,6 @@
 
 #include "cal-mdnssd-bip.h"
 
-SSL_CTX * ssl_ctx_client = NULL;
 SSL_CTX * ssl_ctx_server = NULL;
 bip_sec_type_t client_require_security = BIP_SEC_NONE;
 

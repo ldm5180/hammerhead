@@ -27,7 +27,7 @@ extern int gpi_polarity;
 extern int num_scans;
 extern int scan_idle;
 extern int scan_timeout;
-extern int periodic_trigger;
+extern int immediate_trigger;
 extern int null_trigger;
 extern int gpi_trigger;
 
@@ -64,7 +64,7 @@ int poll_reader();
 
 void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData);
 
-int addROSpec_Periodic();
+int addROSpec_Immediate();
 int addROSpec_Null();
 int addROSpec_GPI();
 int startROSpec();

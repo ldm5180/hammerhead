@@ -18,6 +18,8 @@ if [ -z "$TEST_DURATION" ]; then
 fi
 
 . $ROOT/test/config.sh
+. $ROOT/test/testlib.sh
+skip_if_no_valgrind
 
 RETVAL=0
 

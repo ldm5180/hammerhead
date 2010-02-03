@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -45,7 +45,7 @@
 #define BDM_SYNC_PORT (11003)
 
 
-
+extern void * libbdm_cal_handle;
 extern bionet_bdm_t * this_bdm;
 extern char *bdm_pidfile;
 extern GMainLoop *bdm_main_loop;
@@ -58,7 +58,7 @@ extern int bdm_shutdown_now;
 
 // Global CAL vars
 extern int libbdm_cal_fd;
-extern void libbdm_cal_callback(const cal_event_t *event);
+extern void libbdm_cal_callback(void * cal_handle, const cal_event_t *event);
 extern int libbdm_cal_topic_matches(const char * topic, const char *subscription);
 
 // Call from threads instead of sleep.

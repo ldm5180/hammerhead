@@ -26,6 +26,12 @@ else
 AM_CFLAGS=-Wall -Werror -g -DBIONET_VERSION=\"$(BIONET_RELEASE_VERSION)\"
 endif
 
+if GCOV
+AM_CFLAGS += -O0 -fprofile-arcs -ftest-coverage
+AM_LDFLAGS = -fprofile-arcs -ftest-coverage -lgcov
+endif
+
+
 if ENABLE_DARWIN
     AM_CFLAGS += -DMACOSX
 endif
@@ -60,7 +66,7 @@ LDFLAGS_BIONET_CAL_SERVER = -L$(top_srcdir)/cal
 LIBS_BIONET_CAL_SERVER = $(top_srcdir)/cal/mdnssd-bip/server/libcal-mdnssd-bip-server.la $(OPENSSL_LIBS)
 
 INCLUDES_BIONET_CAL_CLIENT = $(top_srcdir)/cal/cal-client.h
-CFLAGS_BIONET_CAL_CLIENT = -I$(top_srcdir)/cal $(OPENSSL_CFLAGS)
+CFLAGS_BIONET_CAL_CLIENT = -I$(top_srcdir)/cal -I$(top_srcdir)/cal/mdnssd-bip/shared $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_CAL_CLIENT = -L$(top_srcdir)/cal
 LIBS_BIONET_CAL_CLIENT = $(top_srcdir)/cal/mdnssd-bip/client/libcal-mdnssd-bip-client.la $(OPENSSL_LIBS)
 

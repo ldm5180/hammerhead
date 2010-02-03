@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -65,7 +65,7 @@ int hab_report_new_node(const bionet_node_t *node) {
     snprintf(topic, sizeof(topic), "N %s", bionet_node_get_id(node));
 
     // publish the message to any connected subscribers
-    cal_server.publish(topic, buf.buf, buf.size);
+    cal_server.publish(libhab_cal_handle, topic, buf.buf, buf.size);
     // FIXME: cal_server.publish should take the buf
     free(buf.buf);
 
@@ -91,7 +91,7 @@ int hab_report_new_node(const bionet_node_t *node) {
                 "D %s", bionet_resource_get_local_name(resource));
 
             // publish the message to any connected subscribers
-            cal_server.publish(topic, buf.buf, buf.size);
+            cal_server.publish(libhab_cal_handle, topic, buf.buf, buf.size);
 
             // FIXME: cal_server.publish should take the buf
             free(buf.buf);
@@ -103,7 +103,7 @@ int hab_report_new_node(const bionet_node_t *node) {
             bionet_resource_make_clean(resource);
 
             // publish the message to any connected subscribers
-            cal_server.publish(topic, buf.buf, buf.size);
+            cal_server.publish(libhab_cal_handle, topic, buf.buf, buf.size);
 
             // FIXME: cal_server.publish should take the buf
             free(buf.buf);

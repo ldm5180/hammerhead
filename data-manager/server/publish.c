@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -55,7 +55,7 @@ int bdm_report_new_hab(
     }
 
     // publish the message to any connected subscribers
-    cal_server.publish(topic, buf.buf, buf.size);
+    cal_server.publish(libbdm_cal_handle, topic, buf.buf, buf.size);
     // FIXME: cal_server.publish should take the buf
     free(buf.buf);
 
@@ -84,7 +84,7 @@ int bdm_report_new_node(
     }
 
     // publish the message to any connected subscribers
-    cal_server.publish(topic, buf.buf, buf.size);
+    cal_server.publish(libbdm_cal_handle, topic, buf.buf, buf.size);
     // FIXME: cal_server.publish should take the buf
     free(buf.buf);
 
@@ -108,7 +108,7 @@ int bdm_report_new_node(
                 bionet_resource_get_local_name(resource));
 
             // publish the message to any connected subscribers
-            cal_server.publish(topic, buf.buf, buf.size);
+            cal_server.publish(libbdm_cal_handle, topic, buf.buf, buf.size);
 
             // FIXME: cal_server.publish should take the buf
             free(buf.buf);
@@ -120,7 +120,7 @@ int bdm_report_new_node(
                 if (r != 0) continue;
 
                 // publish the message to any connected subscribers
-                cal_server.publish(topic, buf.buf, buf.size);
+                cal_server.publish(libbdm_cal_handle, topic, buf.buf, buf.size);
 
                 // FIXME: cal_server.publish should take the buf
                 free(buf.buf);
@@ -148,7 +148,7 @@ int bdm_report_datapoint(
 
 
         // publish the message to any connected subscribers
-        cal_server.publish(datapoint_topic, buf.buf, buf.size);
+        cal_server.publish(libbdm_cal_handle, datapoint_topic, buf.buf, buf.size);
 
         // FIXME: cal_server.publish should take the buf
         free(buf.buf);
