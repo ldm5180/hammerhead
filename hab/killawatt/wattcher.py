@@ -2,6 +2,7 @@
 import serial, time, datetime, sys
 from xbee import xbee
 import sensorhistory
+import pdb
 
 # use App Engine? or log file? comment out next line if appengine
 LOGFILENAME = "powerdatalog.csv"   # where we will store our flatfile data
@@ -101,6 +102,8 @@ if GRAPHIT:
 sensorhistories = sensorhistory.SensorHistories(logfile)
 print sensorhistories
 
+TotalWattHour=0
+print TotalWattHour
 # the 'main loop' runs once a second or so
 def update_graph(idleevent):
     global avgwattdataidx, sensorhistories, DEBUG
@@ -129,14 +132,6 @@ def update_graph(idleevent):
         if (bionet_hab_add_node(hab, node)):
             print "Error adding node to hab"
             sys.exit(1)
-        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Volts")
-        if (resource == None):
-#            logger.warning("Error creating Resource")
-            print "Error getting resource"
-            sys.exit(1)
-        if (bionet_node_add_resource(node, resource)):
-            print "Error adding resource to node"
-            sys.exit(1)
         resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Amps")
         if (resource == None):
 #            logger.warning("Error creating Resource")
@@ -154,7 +149,7 @@ def update_graph(idleevent):
             print "Error adding resource to node"
             sys.exit(1)
 
-        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Hertz")
+        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "TotalWHour")
         if (resource == None):
 #            logger.warning("Error creating Resource")
             print "Error getting resource"
@@ -170,9 +165,6 @@ def update_graph(idleevent):
         if (bionet_node_add_resource(node, resource)):
             print "Error adding resource to node"
             sys.exit(1)
-
-
-
         if (hab_report_new_node(node)):
             print "Error reporting node"
 
@@ -214,11 +206,11 @@ def update_graph(idleevent):
         # We know that the mains voltage is 120Vrms = +-170Vpp
         voltagedata[i] = (voltagedata[i] * MAINSVPP) / vpp
 
+
     # normalize current readings to amperes
     for i in range(len(ampdata)):
         # VREF is the hardcoded 'DC bias' value, its
-        # about 492 but would be nice if we could somehow
-        # get this data once in a while maybe using xbeeAPI
+        # about 492 but would be nice if we could somehow get this data once in a while maybe using xbeeAPI
         if vrefcalibration[xb.address_16]:
             ampdata[i] -= vrefcalibration[xb.address_16]
         else:
@@ -260,18 +252,12 @@ def update_graph(idleevent):
     else:
         bionet_resource_set_float(resource, avgamp, None)
     
-#    resource = bionet_node_get_resource_by_id(node, "Volts")
-#    if (resource == None):
-#        print "Error no such resource - Volts"
-#    else:
-#        bionet_resource_set_float(resource, voltagedata, None)
-
     resource = bionet_node_get_resource_by_id(node, "Watts")
     if (resource == None):
         print "Error no such resource - Watts"
     else:
         bionet_resource_set_float(resource, avgwatt, None)
-
+ 
     if (avgamp > 13):
         return            # hmm, bad data
 
@@ -300,11 +286,20 @@ def update_graph(idleevent):
     print "\t\tWh used in last ",elapsedseconds," seconds: ",dwatthr
     sensorhistory.addwatthr(dwatthr)
     
-    bionet_node_get_resource_by_id(node, "WHour")
+    resource = bionet_node_get_resource_by_id(node, "WHour")
     if (resource == None):
         print "Error - no such resource - WHour"
     else:
         bionet_resource_set_float(resource, dwatthr, None)
+    
+    global TotalWattHour
+    TotalWattHour += dwatthr
+
+    resource = bionet_node_get_resource_by_id(node, "TotalWHour")
+    if (resource == None):
+        print "Error - no such resource - TotalWHour"
+    else:
+        bionet_resource_set_float(resource, TotalWattHour, None)
 
     # Determine the minute of the hour (ie 6:42 -> '42')
     currminute = (int(time.time())/60) % 10
