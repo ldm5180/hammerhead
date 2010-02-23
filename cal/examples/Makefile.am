@@ -15,7 +15,8 @@ time_publisher_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CFL
 
 time_publisher_LDFLAGS = $(AM_LDFLAGS) -L../mdnssd-bip/server
 
-time_publisher_LDADD = $(AM_LDADD) -lcal-mdnssd-bip-server -lpthread $(OPENSSL_LIBS) $(GLIB_LIBS) $(DBUS_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS)
+time_publisher_LDADD = $(AM_LDADD) -lcal-mdnssd-bip-server $(OPENSSL_LIBS) $(GLIB_LIBS) $(DBUS_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS)
+
 
 
 
@@ -25,6 +26,6 @@ time_subscriber_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(AVAHI_COMPAT_LIBDNS_SD_CF
 
 time_subscriber_LDFLAGS =  $(AM_LDFLAGS) -L../mdnssd-bip/client
 
-time_subscriber_LDADD = $(AM_LDADD)  -lcal-mdnssd-bip-client -lpthread $(OPENSSL_LIBS) $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS)
+time_subscriber_LDADD = $(AM_LDADD)  -lcal-mdnssd-bip-client $(OPENSSL_LIBS) $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS)
 
 
