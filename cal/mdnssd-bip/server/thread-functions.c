@@ -3,6 +3,7 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
+#include "config.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -14,11 +15,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <arpa/inet.h>
-
-#include <netinet/in.h>
-
-#include <sys/socket.h>
+#include "shared/bip-socket-api.h"
 
 #include <glib.h>
 #include <dns_sd.h>
@@ -31,7 +28,7 @@
 // key is a bip peer name "bip://$HOST:$PORT"
 // value is a bip_peer_t*
 
-static void register_callback(
+static void DNSSD_API register_callback(
     DNSServiceRef sdRef, 
     DNSServiceFlags flags, 
     DNSServiceErrorType errorCode, 
@@ -417,19 +414,9 @@ static int accept_connection(cal_server_mdnssd_bip_t *this) {
     }
 
     // Make accepted socket non-blocking
-    {
-        int flags = fcntl(net->socket, F_GETFL, 0);
-        if (flags < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-                ID "%s: error getting socket flags: %s", 
-                    __FUNCTION__, strerror(errno));
-            flags = 0;
-        }
-        if (fcntl(net->socket, F_SETFL, flags | O_NONBLOCK) < 0) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-                ID "%s: error setting socket flags: %s", 
-                    __FUNCTION__, strerror(errno));
-        }
+    if (bip_socket_set_blocking(net->socket, 0) < 0 ) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+            ID "%s: error setting socket non-blocking", __FUNCTION__);
     }
 
     net->pending_bio = BIO_new_socket(net->socket, BIO_CLOSE);

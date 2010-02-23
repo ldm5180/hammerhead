@@ -8,7 +8,6 @@
 #define __CAL_SERVER_MDNSSD_BIP_H
 
 
-#include <sys/select.h>
 #include <dns_sd.h>
 #include <glib.h>
 

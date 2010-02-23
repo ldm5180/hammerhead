@@ -13,17 +13,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <arpa/inet.h>
-
-#include <netinet/in.h>
-
-#include <sys/socket.h>
-
 #include <glib.h>
 
 #include "cal-server.h"
 #include "cal-mdnssd-bip.h"
 #include "cal-server-mdnssd-bip.h"
+#include "shared/bip-socket-api.h"
 
 void * cal_server_mdnssd_bip_init(const char *network_type,
 				  const char *name,
