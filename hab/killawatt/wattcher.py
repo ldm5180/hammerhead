@@ -2,24 +2,10 @@
 import serial, time, datetime, sys
 from xbee import xbee
 import sensorhistory
-import pdb
 
 # use App Engine? or log file? comment out next line if appengine
 LOGFILENAME = "powerdatalog.csv"   # where we will store our flatfile data
-
-if not LOGFILENAME:
-    import appengineauth
     
-# for graphing stuff
-GRAPHIT = False         # whether we will graph data
-if GRAPHIT:
-    import wx
-    import numpy as np
-    import matplotlib
-    matplotlib.use('WXAgg') # do this before importing pylab
-    from pylab import *
-
-
 SERIALPORT = "/dev/ttyUSB0"    # the com/serial port the XBee is connected to
 BAUDRATE = 9600      # the baud rate we talk to the xbee
 CURRENTSENSE = 4       # which XBee ADC has current draw data
@@ -41,15 +27,12 @@ ser.open()
 
 from hab import *
 
-import pdb
-
 #connect to bionet
 hab = bionet_hab_new("Kill-A-Watt", None)
 bionet_fd = hab_connect(hab)
 if (0 > bionet_fd):
     logger.warning("problem connection to Bionet, exiting\n")
     exit(1)
-
 
 # open our datalogging file
 logfile = None
@@ -66,44 +49,11 @@ if (sys.argv and len(sys.argv) > 1):
     if sys.argv[1] == "-d":
         DEBUG = True
 #print DEBUG
-
-if GRAPHIT: 
-    # Create an animated graph
-    fig = plt.figure()
-    # with three subplots: line voltage/current, watts and watthr
-    wattusage = fig.add_subplot(211)
-    mainswatch = fig.add_subplot(212)
-    
-    # data that we keep track of, the average watt usage as sent in
-    avgwattdata = [0] * NUMWATTDATASAMPLES # zero out all the data to start
-    avgwattdataidx = 0 # which point in the array we're entering new data
-    
-    # The watt subplot
-    watt_t = np.arange(0, len(avgwattdata), 1)
-    wattusageline, = wattusage.plot(watt_t, avgwattdata)
-    wattusage.set_ylabel('Watts')
-    wattusage.set_ylim(0, 500)
-    
-    # the mains voltage and current level subplot
-    mains_t = np.arange(0, 18, 1)
-    voltagewatchline, = mainswatch.plot(mains_t, [0] * 18, color='blue')
-    mainswatch.set_ylabel('Volts (blue)')
-    mainswatch.set_xlabel('Sample #')
-    mainswatch.set_ylim(-200, 200)
-    # make a second axies for amp data
-    mainsampwatcher = mainswatch.twinx()
-    ampwatchline, = mainsampwatcher.plot(mains_t, [0] * 18, color='green')
-    mainsampwatcher.set_ylabel('Amps (green)')
-    mainsampwatcher.set_ylim(-15, 15)
-    
-    # and a legend for both of them
-    #legend((voltagewatchline, ampwatchline), ('volts', 'amps'))
-
+            
 sensorhistories = sensorhistory.SensorHistories(logfile)
 print sensorhistories
 
 TotalWattHour=0
-print TotalWattHour
 # the 'main loop' runs once a second or so
 def update_graph(idleevent):
     global avgwattdataidx, sensorhistories, DEBUG
@@ -121,7 +71,6 @@ def update_graph(idleevent):
         print xb.address_16
     
     #check if there is a new node    
-#    pdb.set_trace()
     node = bionet_hab_get_node_by_id(hab, str(xb.address_16))
     if (node == None):
         #create and report node
@@ -219,9 +168,6 @@ def update_graph(idleevent):
         # that converts the ADC reading to Amperes
         ampdata[i] /= CURRENTNORM
 
-    #print "Voltage, in volts: ", voltagedata
-    #print "Current, in amps:  ", ampdata
-
     # calculate instant. watts, by multiplying V*I for each sample point
     wattdata = [0] * len(voltagedata)
     for i in range(len(wattdata)):
@@ -261,19 +207,6 @@ def update_graph(idleevent):
     if (avgamp > 13):
         return            # hmm, bad data
 
-    if GRAPHIT:
-        # Add the current watt usage to our graph history
-        avgwattdata[avgwattdataidx] = avgwatt
-        avgwattdataidx += 1
-        if (avgwattdataidx >= len(avgwattdata)):
-            # If we're running out of space, shift the first 10% out
-            tenpercent = int(len(avgwattdata)*0.1)
-            for i in range(len(avgwattdata) - tenpercent):
-                avgwattdata[i] = avgwattdata[i+tenpercent]
-            for i in range(len(avgwattdata) - tenpercent, len(avgwattdata)):
-                avgwattdata[i] = 0
-            avgwattdataidx = len(avgwattdata) - tenpercent
-
     # retreive the history for this sensor
     sensorhistory = sensorhistories.find(xb.address_16)
     #print sensorhistory
@@ -300,16 +233,6 @@ def update_graph(idleevent):
         print "Error - no such resource - TotalWHour"
     else:
         bionet_resource_set_float(resource, TotalWattHour, None)
-
-    # Determine the minute of the hour (ie 6:42 -> '42')
-    currminute = (int(time.time())/60) % 10
-    # Figure out if its been five minutes since our last save
-    if (((time.time() - sensorhistory.fiveminutetimer) >= 60.0)
-        and (currminute % 5 == 0)
-        ):
-        # Print out debug data, Wh used in last 5 minutes
-        avgwattsused = sensorhistory.avgwattover5min()
-        print time.strftime("%Y %m %d, %H:%M")+", "+str(sensorhistory.sensornum)+", "+str(sensorhistory.avgwattover5min())+"\n"
                
         # Lets log it! Seek to the end of our log file
         if logfile:
@@ -318,43 +241,13 @@ def update_graph(idleevent):
                           str(sensorhistory.sensornum)+", "+
                           str(sensorhistory.avgwattover5min())+"\n")
             logfile.flush()
-            
-        # Or, send it to the app engine
-        if not LOGFILENAME:
-            appengineauth.sendreport(xb.address_16, avgwattsused)
-        
-        
+             
         # Reset our 5 minute timer
         sensorhistory.reset5mintimer()
         
-
-    # We're going to twitter at midnight, 8am and 4pm
-    # Determine the hour of the day (ie 6:42 -> '6')
-    currhour = datetime.datetime.now().hour
-
-    if GRAPHIT:
-        # Redraw our pretty picture
-        fig.canvas.draw_idle()
-        # Update with latest data
-        wattusageline.set_ydata(avgwattdata)
-        voltagewatchline.set_ydata(voltagedata)
-        ampwatchline.set_ydata(ampdata)
-        # Update our graphing range so that we always see all the data
-        maxamp = max(ampdata)
-        minamp = min(ampdata)
-        maxamp = max(maxamp, -minamp)
-        mainsampwatcher.set_ylim(maxamp * -1.2, maxamp * 1.2)
-        wattusage.set_ylim(0, max(avgwattdata) * 1.2)
-
     hab_report_datapoints (node)
 
-if GRAPHIT:
-    timer = wx.Timer(wx.GetApp(), -1)
-    timer.Start(500)        # run an in every 'n' milli-seconds
-    wx.GetApp().Bind(wx.EVT_TIMER, update_graph)
-    plt.show()
-else:
-    while True:
-        update_graph(None)
+while True:
+    update_graph(None)
 	
 
