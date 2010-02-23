@@ -154,9 +154,9 @@ libbionet_asn_la_SOURCES=$(SRC) $(ASN_MODULE_HEADS)
 
 libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_UTIL) -fno-strict-aliasing
 
-libbionet_asn_la_LIBADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) -lm
+libbionet_asn_la_LIBADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) $(GLIB_LIBS) -lm 
 
-libbionet_asn_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION) $(LDFLAGS_BIONET_UTIL) 
+libbionet_asn_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(BIONET_INTERFACE_VERSION) $(LDFLAGS_BIONET_UTIL) 
 
 
 bin_PROGRAMS = test-asn-h2c test-asn-c2h test-asn-bdm-c2s test-asn-bdm-s2c

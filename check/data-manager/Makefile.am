@@ -28,7 +28,7 @@ check_data_manager_CFLAGS = $(CHECK_CFLAGS) \
     $(CFLAGS_BIONET_UTIL) \
     $(GLIB_CFLAGS)
 
-check_data_manager_LDFLAGS = $(CHECK_LIBS) \
+check_data_manager_LDFLAGS = $(AM_LDFLAGS) $(CHECK_LIBS) \
     $(LDFLAGS_BIONET_CLIENT) \
     $(LDFLAGS_BDM) \
     $(LDFLAGS_BIONET_ASN1) \

@@ -107,4 +107,4 @@ libbionet_util_la_SOURCES =    \
     version.c
 
 
-libbionet_util_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION)
+libbionet_util_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(BIONET_INTERFACE_VERSION)

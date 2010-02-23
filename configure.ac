@@ -40,7 +40,6 @@ USERCXXFLAGS="$CFLAGS"
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
-AC_PROG_LIBTOOL
 AC_PROG_YACC
 AM_PROG_LEX
 
@@ -52,6 +51,8 @@ CFLAGS="$USERCFLAGS"
 CPPFLAGS="$USERCPPFLAGS"
 CXXFLAGS="$USERCXXFLAGS"
 
+AC_LIBTOOL_WIN32_DLL
+AC_PROG_LIBTOOL
 
 AC_CHECK_TOOL([STRIP],[strip])
 
@@ -112,7 +113,7 @@ case "$host_os" in
          HAVE_WIN32=yes
          ALSA_ABLE=no
 	 SYSAPI=wince
-	 AC_DEFINE([_WIN32_WINNT], 0x0501, [Define to '0x0501' for Windows 2000 APIs.])
+	 #AC_DEFINE([_WIN32_WINNT], 0x0501, [Define to '0x0501' for Windows 2000 APIs.])
      ;;
 
      mingw32*)
@@ -122,7 +123,8 @@ case "$host_os" in
          HAVE_WIN32=yes
          ALSA_ABLE=no
 	 SYSAPI=win32
-	 AC_DEFINE([_WIN32_WINNT], 0x0501, [Define to '0x0501' for Windows 2000 APIs.])
+	 AC_SUBST([_WIN32_WINNT], 0x0501, [Define to '0x0501' for Windows 2000 APIs.])
+	 CPPFLAGS+="-D_WIN32_WINNT=0x0501"
      ;;
      *)
          AC_MSG_FAILURE(["System architecture '$host_os' is not supported"])
@@ -162,6 +164,7 @@ AC_SUBST(OPENSSL_LIBS)
 if test "$cross_compiling" != yes; then
     if test "x$HAVE_LINUX" = "xyes"; then
         PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
+	AC_DEFINE([HAVE_AVAHI], [1], [Define if AVAHI is being used])
     else if test "x$SYSAPI" != "xposix"; then
         # Look for bonjour library elsewhere
         echo ""
@@ -213,6 +216,12 @@ fi
 
 AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
 
+# disable all executables
+AC_ARG_ENABLE(exe, AC_HELP_STRING([--disable-exe],
+      [disable building of executables]),
+      [ENABLE_EXE=$enableval],
+      [ENABLE_EXE=yes])
+AM_CONDITIONAL(ENABLE_EXE, test "x$ENABLE_EXE" = "xyes")
 
 # disable HABs
 AC_ARG_ENABLE(

@@ -21,7 +21,7 @@ nodist_check_libutil_SOURCES = \
 
 check_libutil_CFLAGS = $(CHECK_CFLAGS) -I.. $(CFLAGS_BIONET_UTIL) $(GLIB_CFLAGS)
 
-check_libutil_LDFLAGS = $(CHECK_LIBS) $(LDFLAGS_BIONET_UTIL) $(GLIB_LIBS)
+check_libutil_LDFLAGS = $(AM_LDFLAGS) $(CHECK_LIBS) $(LDFLAGS_BIONET_UTIL) $(GLIB_LIBS)
 
 check_libutil_LDADD = $(LIBS_BIONET_UTIL)
 
