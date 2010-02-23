@@ -11,5 +11,9 @@
 
 include $(top_srcdir)/common.am
 
-SUBDIRS = util mdnssd-bip examples
+SUBDIRS = util mdnssd-bip 
+
+if ENABLE_EXE
+SUBDIRS += examples
+endif
 
