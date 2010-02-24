@@ -10,7 +10,7 @@
 BionetIO *BionetIO::bn = NULL;
 
 
-BionetIO::BionetIO(QWidget* parent) : QObject(parent) {
+BionetIO::BionetIO(QObject* parent) : IO(parent) {
     //setNagHostname(nagName);
     bn = this;
 }
