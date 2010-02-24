@@ -31,7 +31,8 @@ class BionetIO : public IO {
     Q_OBJECT
 
     public:
-        BionetIO(QObject *parent=0);
+        BionetIO(IO *parent=0);
+        ~BionetIO();
         
         // These functions map callbacks into signals & slots
         static void cbNewHab(bionet_hab_t *hab) { emit bn->newHab(hab, NULL);}

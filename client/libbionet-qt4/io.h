@@ -1,3 +1,6 @@
+#ifndef IO_H
+#define IO_H
+
 #include <QObject>
 
 extern "C" {
@@ -11,8 +14,9 @@ class IO : public QObject {
     Q_OBJECT
 
     public:
-        IO(QObject *parent=0) : QObject(parent) { ; }
-        void setup() { ; }
+        IO(QObject *parent=0);
+        ~IO();
+        void setup() { return; }
 
     signals:        
         // These signals correspond to bionet/bdm callbacks
@@ -23,3 +27,5 @@ class IO : public QObject {
         void newDatapoint(bionet_datapoint_t* datapoint, void *user_data);
         void streamRW(bionet_stream_t* stream, void* buffer, int size);
 };
+
+#endif

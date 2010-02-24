@@ -10,9 +10,15 @@
 BionetIO *BionetIO::bn = NULL;
 
 
-BionetIO::BionetIO(QObject* parent) : IO(parent) {
+BionetIO::BionetIO(IO* parent) : IO(parent) {
     //setNagHostname(nagName);
     bn = this;
+}
+
+
+BionetIO::~BionetIO() {
+    // don't do anything
+    return;
 }
 
 
