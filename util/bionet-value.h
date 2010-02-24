@@ -18,6 +18,7 @@
 
 #include <glib.h>
 
+#include "libbionet-util-decl.h"
 
 /**
  * @brief Get the value's associated resource
@@ -27,6 +28,7 @@
  * @return Pointer to a resource
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_resource_t * bionet_value_get_resource(bionet_value_t * value);
 
 
@@ -44,6 +46,7 @@ bionet_resource_t * bionet_value_get_resource(bionet_value_t * value);
  * bionet_resource_get_node(bionet_value_get_resource(value))
  * @endcode
  */
+BIONET_UTIL_API_DECL
 bionet_node_t * bionet_value_get_node(const bionet_value_t * value);
 
 
@@ -61,6 +64,7 @@ bionet_node_t * bionet_value_get_node(const bionet_value_t * value);
  * bionet_node_get_hab(bionet_resource_get_node(bionet_value_get_resource(value)))
  * @endcode
  */
+BIONET_UTIL_API_DECL
 bionet_hab_t * bionet_value_get_hab(const bionet_value_t * value);
 
 
@@ -78,6 +82,7 @@ bionet_hab_t * bionet_value_get_hab(const bionet_value_t * value);
  * bionet_resource_get_get_datapoint_by_index(bionet_value_get_resource(value), 0)
  * @endcode
  */
+BIONET_UTIL_API_DECL
 bionet_datapoint_t * bionet_value_get_datapoint(const bionet_value_t * value);
 
 
@@ -92,6 +97,7 @@ bionet_datapoint_t * bionet_value_get_datapoint(const bionet_value_t * value);
  * @return The new Value
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_binary(bionet_resource_t *resource,
 					int content);
 
@@ -107,6 +113,7 @@ bionet_value_t *bionet_value_new_binary(bionet_resource_t *resource,
  * @return The new Value
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_uint8(bionet_resource_t *resource,
 				       uint8_t content);
 
@@ -122,6 +129,7 @@ bionet_value_t *bionet_value_new_uint8(bionet_resource_t *resource,
  * @return The new Value
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_int8(bionet_resource_t *resource,
 				      int8_t content);
 
@@ -137,6 +145,7 @@ bionet_value_t *bionet_value_new_int8(bionet_resource_t *resource,
  * @return The new Value
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_uint16(bionet_resource_t *resource,
 					uint16_t content);
 
@@ -152,6 +161,7 @@ bionet_value_t *bionet_value_new_uint16(bionet_resource_t *resource,
  * @return The new Value
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_int16(bionet_resource_t *resource,
 				       int16_t content);
 
@@ -167,6 +177,7 @@ bionet_value_t *bionet_value_new_int16(bionet_resource_t *resource,
  * @return The new Value
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_uint32(bionet_resource_t *resource,
 					uint32_t content);
 
@@ -183,6 +194,7 @@ bionet_value_t *bionet_value_new_uint32(bionet_resource_t *resource,
  * @return The new Value
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_int32(bionet_resource_t *resource,
 				       int32_t content);
 
@@ -198,6 +210,7 @@ bionet_value_t *bionet_value_new_int32(bionet_resource_t *resource,
  * @return The new Value
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_float(bionet_resource_t *resource,
 				       float content);
 
@@ -213,6 +226,7 @@ bionet_value_t *bionet_value_new_float(bionet_resource_t *resource,
  * @return The new Value
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_double(bionet_resource_t *resource,
 					double content);
 
@@ -228,6 +242,7 @@ bionet_value_t *bionet_value_new_double(bionet_resource_t *resource,
  * @return The new Value
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_str(bionet_resource_t *resource,
 				     const char * content);
 
@@ -244,6 +259,7 @@ bionet_value_t *bionet_value_new_str(bionet_resource_t *resource,
  *
  * @param[in] value The Value to free.
  */
+BIONET_UTIL_API_DECL
 void bionet_value_free(bionet_value_t *value);
 
 
@@ -260,6 +276,7 @@ void bionet_value_free(bionet_value_t *value);
  *       the caller.  The caller must free the returned string or leak
  *       memory.
  */
+BIONET_UTIL_API_DECL
 char *bionet_value_to_str(const bionet_value_t *value);
 
 
@@ -274,6 +291,7 @@ char *bionet_value_to_str(const bionet_value_t *value);
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_UTIL_API_DECL
 int bionet_value_set_binary(bionet_value_t *value,
 			    int content);
 
@@ -289,6 +307,7 @@ int bionet_value_set_binary(bionet_value_t *value,
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_UTIL_API_DECL
 int bionet_value_set_uint8(bionet_value_t *value,
 			   uint8_t content);
 
@@ -304,6 +323,7 @@ int bionet_value_set_uint8(bionet_value_t *value,
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_UTIL_API_DECL
 int bionet_value_set_int8(bionet_value_t *value,
 			  int8_t content);
 
@@ -319,6 +339,7 @@ int bionet_value_set_int8(bionet_value_t *value,
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_UTIL_API_DECL
 int bionet_value_set_uint16(bionet_value_t *value,
 			    uint16_t content);
 
@@ -334,6 +355,7 @@ int bionet_value_set_uint16(bionet_value_t *value,
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_UTIL_API_DECL
 int bionet_value_set_int16(bionet_value_t *value,
 			   int16_t content);
 
@@ -349,6 +371,7 @@ int bionet_value_set_int16(bionet_value_t *value,
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_UTIL_API_DECL
 int bionet_value_set_uint32(bionet_value_t *value,
 			    uint32_t content);
 
@@ -364,6 +387,7 @@ int bionet_value_set_uint32(bionet_value_t *value,
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_UTIL_API_DECL
 int bionet_value_set_int32(bionet_value_t *value,
 			   int32_t content);
 
@@ -379,6 +403,7 @@ int bionet_value_set_int32(bionet_value_t *value,
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_UTIL_API_DECL
 int bionet_value_set_float(bionet_value_t *value,
 			   float content);
 
@@ -394,6 +419,7 @@ int bionet_value_set_float(bionet_value_t *value,
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_UTIL_API_DECL
 int bionet_value_set_double(bionet_value_t *value,
 			    double content);
 
@@ -413,6 +439,7 @@ int bionet_value_set_double(bionet_value_t *value,
  *       caller.  The caller is free to overwrite or free the
  *       strings on return from this function.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_set_str(bionet_value_t *value,
 			 const char * content);
 
@@ -428,6 +455,7 @@ int bionet_value_set_str(bionet_value_t *value,
  * 
  * @note content is undefined if a failure occurred.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_get_binary(bionet_value_t *value,
 			    int * content);
 
@@ -443,6 +471,7 @@ int bionet_value_get_binary(bionet_value_t *value,
  * 
  * @note content is undefined if a failure occurred.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_get_uint8(bionet_value_t *value,
 			   uint8_t * content);
 
@@ -458,6 +487,7 @@ int bionet_value_get_uint8(bionet_value_t *value,
  * 
  * @note content is undefined if a failure occurred.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_get_int8(bionet_value_t *value,
 			  int8_t * content);
 
@@ -473,6 +503,7 @@ int bionet_value_get_int8(bionet_value_t *value,
  * 
  * @note content is undefined if a failure occurred.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_get_uint16(bionet_value_t *value,
 			    uint16_t * content);
 
@@ -488,6 +519,7 @@ int bionet_value_get_uint16(bionet_value_t *value,
  * 
  * @note content is undefined if a failure occurred.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_get_int16(bionet_value_t *value,
 			   int16_t * content);
 
@@ -503,6 +535,7 @@ int bionet_value_get_int16(bionet_value_t *value,
  * 
  * @note content is undefined if a failure occurred.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_get_uint32(bionet_value_t *value,
 			    uint32_t * content);
 
@@ -518,6 +551,7 @@ int bionet_value_get_uint32(bionet_value_t *value,
  * 
  * @note content is undefined if a failure occurred.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_get_int32(bionet_value_t *value,
 			   int32_t * content);
 
@@ -533,6 +567,7 @@ int bionet_value_get_int32(bionet_value_t *value,
  * 
  * @note content is undefined if a failure occurred.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_get_float(bionet_value_t *value,
 			   float * content);
 
@@ -548,6 +583,7 @@ int bionet_value_get_float(bionet_value_t *value,
  * 
  * @note content is undefined if a failure occurred.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_get_double(bionet_value_t *value,
 			    double * content);
 
@@ -563,6 +599,7 @@ int bionet_value_get_double(bionet_value_t *value,
  * 
  * @note content is undefined if a failure occurred.
  */
+BIONET_UTIL_API_DECL
 int bionet_value_get_str(bionet_value_t *value,
 			 char ** content);
 
@@ -578,6 +615,7 @@ int bionet_value_get_str(bionet_value_t *value,
  *
  * @note The returned value is owned and must be free'd by the caller
  */
+BIONET_UTIL_API_DECL
 bionet_value_t * bionet_value_dup(bionet_resource_t *resource, bionet_value_t *value);
 
 

@@ -15,6 +15,7 @@
 
 #include <glib.h>
 
+#include "libbionet-util-decl.h"
 
 /**
  * @file bionet-bdm.h 
@@ -33,6 +34,7 @@
  * @return Valid pointer on success
  * @return NULL on failure
  */
+BIONET_UTIL_API_DECL
 bionet_bdm_t *bionet_bdm_new(const char *id);
 
 /**
@@ -45,6 +47,7 @@ bionet_bdm_t *bionet_bdm_new(const char *id);
  *
  * @note Do not free the returned pointer
  */
+BIONET_UTIL_API_DECL
 const char * bionet_bdm_get_id(const bionet_bdm_t *bdm);
 
 
@@ -57,6 +60,7 @@ const char * bionet_bdm_get_id(const bionet_bdm_t *bdm);
  * @retval Valid hab pointer on success
  * @retval NULL if hab with that ID does not exist
  */
+BIONET_UTIL_API_DECL
 bionet_hab_t *bionet_bdm_get_hab_by_name(bionet_bdm_t *bdm, 
 					 const char *hab_name);
 
@@ -71,6 +75,7 @@ bionet_hab_t *bionet_bdm_get_hab_by_name(bionet_bdm_t *bdm,
  * @retval Valid hab pointer on success
  * @retval NULL if hab with that ID does not exist
  */
+BIONET_UTIL_API_DECL
 bionet_hab_t *bionet_bdm_get_hab_by_type_id(
         bionet_bdm_t *bdm, const char *hab_type, const char *hab_id);
 
@@ -83,6 +88,7 @@ bionet_hab_t *bionet_bdm_get_hab_by_type_id(
  * @retval -1 Invalid BDM pointer
  * @retval Number of habs in the BDM on success
  */
+BIONET_UTIL_API_DECL
 int bionet_bdm_get_num_habs(const bionet_bdm_t *bdm);
 
 
@@ -97,6 +103,7 @@ int bionet_bdm_get_num_habs(const bionet_bdm_t *bdm);
  * @retval NULL Invalid BDM pointer or index is greater than number of habs
  * @retval Valid hab pointer on success
  */
+BIONET_UTIL_API_DECL
 bionet_hab_t *bionet_bdm_get_hab_by_index(bionet_bdm_t *bdm, 
 					    unsigned int index);
 
@@ -110,6 +117,7 @@ bionet_hab_t *bionet_bdm_get_hab_by_index(bionet_bdm_t *bdm,
  * @retval 0 Success
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bionet_bdm_add_hab(bionet_bdm_t *bdm, const bionet_hab_t *hab);
 
 
@@ -125,6 +133,7 @@ int bionet_bdm_add_hab(bionet_bdm_t *bdm, const bionet_hab_t *hab);
  *
  * @note Hab's memory is still owned by the cache
  */
+BIONET_UTIL_API_DECL
 bionet_hab_t * bionet_bdm_remove_hab_by_type_id(bionet_bdm_t *bdm, const char * hab_type, const char *hab_id);
 
 
@@ -138,6 +147,7 @@ bionet_hab_t * bionet_bdm_remove_hab_by_type_id(bionet_bdm_t *bdm, const char * 
  *
  * @note All habs are still owned by the cache
  */
+BIONET_UTIL_API_DECL
 int bionet_bdm_remove_all_habs(bionet_bdm_t *bdm);
 
 
@@ -148,6 +158,7 @@ int bionet_bdm_remove_all_habs(bionet_bdm_t *bdm);
  *
  * @note All habs still exist in the cache
  */
+BIONET_UTIL_API_DECL
 void bionet_bdm_free(bionet_bdm_t *bdm);
 
 
@@ -162,6 +173,7 @@ void bionet_bdm_free(bionet_bdm_t *bdm);
  *
  * @note The wildcard "*" matches any string.
  */
+BIONET_UTIL_API_DECL
 int bionet_bdm_matches_id(const bionet_bdm_t *bdm, 
 				   const char *id);
 
@@ -176,6 +188,7 @@ int bionet_bdm_matches_id(const bionet_bdm_t *bdm,
  *       responsible for freeing the it and setting it to 
  *       NULL before the bdm is free'd.
  */
+BIONET_UTIL_API_DECL
 void bionet_bdm_set_user_data(bionet_bdm_t *bdm, const void *user_data);
 
 
@@ -186,6 +199,7 @@ void bionet_bdm_set_user_data(bionet_bdm_t *bdm, const void *user_data);
  *
  * @return The user_data pointer, or NULL if none has been set.
  */
+BIONET_UTIL_API_DECL
 void *bionet_bdm_get_user_data(const bionet_bdm_t *bdm);
 
 
@@ -199,6 +213,7 @@ void *bionet_bdm_get_user_data(const bionet_bdm_t *bdm);
  *
  * @note This function does not make sense for BDMs, only Bionet Clients.
  */
+BIONET_UTIL_API_DECL
 int bionet_bdm_is_secure(const bionet_bdm_t *bdm);
 
 
@@ -210,6 +225,7 @@ int bionet_bdm_is_secure(const bionet_bdm_t *bdm);
  * 
  * @note This function is used exclusively by the Bionet Client library.
  */
+BIONET_UTIL_API_DECL
 void bionet_bdm_set_secure(bionet_bdm_t *bdm, int is_secure);
 
 

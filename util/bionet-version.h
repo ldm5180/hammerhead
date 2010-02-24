@@ -9,8 +9,12 @@
 
 #include <stdio.h>
 
+#include "libbionet-util-decl.h"
+
+BIONET_UTIL_API_DECL
 void print_bionet_version(FILE *stream);
 
+BIONET_UTIL_API_DECL
 void bionet_version_get(char ** version);
 
 #endif /* BIONET_VERSION_H */

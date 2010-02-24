@@ -27,6 +27,8 @@ typedef struct bionet_resource_opaque_t  bionet_resource_t;
 typedef struct bionet_datapoint_opaque_t bionet_datapoint_t;
 typedef struct bionet_value_opaque_t     bionet_value_t;
 
+#include "libbionet-util-decl.h"
+
 #include "bionet-bdm.h"
 #include "bionet-hab.h"
 #include "bionet-node.h"
@@ -56,6 +58,7 @@ typedef struct bionet_value_opaque_t     bionet_value_t;
  *
  * @return OS-specific error number
  */
+BIONET_UTIL_API_DECL
 int bionet_get_network_error(void);
 
 
@@ -66,6 +69,7 @@ int bionet_get_network_error(void);
  *
  * @return OS-specific error string
  */
+BIONET_UTIL_API_DECL
 const char *bionet_get_network_error_string(void);
 
 
@@ -81,6 +85,7 @@ const char *bionet_get_network_error_string(void);
  * @retval 0 Invalid
  * @retval 1 Valid
  */
+BIONET_UTIL_API_DECL
 int bionet_is_valid_name_component_or_wildcard(const char *str);
 
 
@@ -95,6 +100,7 @@ int bionet_is_valid_name_component_or_wildcard(const char *str);
  * @note Wildcards are not allow in this function. Use 
  * bionet_is_valid_name_component_or_wildcard()
  */
+BIONET_UTIL_API_DECL
 int bionet_is_valid_name_component(const char *str);
 
 
@@ -109,6 +115,7 @@ int bionet_is_valid_name_component(const char *str);
  *
  * @note pattern may be the wildcard "*", which matches all name components
  */
+BIONET_UTIL_API_DECL
 int bionet_name_component_matches(const char *name_component, const char *pattern);
 
 
@@ -123,6 +130,7 @@ int bionet_name_component_matches(const char *name_component, const char *patter
  *
  * @note pattern may be the wildcard "*", which matches all name components
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_name_matches(const char *resource_name, const char *pattern);
 
 
@@ -150,6 +158,7 @@ typedef struct {
  * @param[in] message Message to log
  * @param[in] log_context Other logging context or NULL
  */
+BIONET_UTIL_API_DECL
 void bionet_glib_log_handler(
     const gchar *log_domain,
     GLogLevelFlags log_level,
@@ -183,6 +192,7 @@ void bionet_glib_log_handler(
  * @retval 0 Success
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bionet_split_resource_name(
     const char *resource_name,
     char **hab_type,
@@ -209,6 +219,7 @@ int bionet_split_resource_name(
  * @retval N The offest of the Topic Query Parameters, or 0 if none
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bionet_split_resource_name_r(
     const char *resource_name,
     char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
@@ -237,6 +248,7 @@ int bionet_split_resource_name_r(
  * @retval N The offest of the Topic Query Parameters, or 0 if none
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bdm_split_hab_name_r(
         const char * topic,
         char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
@@ -266,6 +278,7 @@ int bdm_split_hab_name_r(
  * @retval N The offest of the Topic Query Parameters, or 0 if none
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bdm_split_node_name_r(
         const char * topic,
         char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
@@ -296,6 +309,7 @@ int bdm_split_node_name_r(
  * @retval N The offest of the Topic Query Parameters, or 0 if none
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bdm_split_resource_name_r(
         const char * topic,
         char peer_id[BIONET_NAME_COMPONENT_MAX_LEN],
@@ -327,6 +341,7 @@ int bdm_split_resource_name_r(
  * @retval 0 Success
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bionet_split_node_name(
     const char *node_name,
     char **hab_type,
@@ -351,6 +366,7 @@ int bionet_split_node_name(
  * @retval 0 Success
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bionet_split_node_name_r(
     const char *node_name,
     char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
@@ -379,6 +395,7 @@ int bionet_split_node_name_r(
  * @retval 0 Success
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bionet_split_hab_name(
     const char *hab_name,
     char **hab_type,
@@ -401,6 +418,7 @@ int bionet_split_hab_name(
  *
  * @note This function is re-entrant.
  */
+BIONET_UTIL_API_DECL
 int bionet_split_hab_name_r(
     const char *hab_name,
     char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
@@ -424,6 +442,7 @@ int bionet_split_hab_name_r(
  *
  * @note This function is re-entrant.
  */
+BIONET_UTIL_API_DECL
 int bionet_split_nodeid_resourceid_r(
     const char *node_and_resource,
     char node_id[BIONET_NAME_COMPONENT_MAX_LEN],

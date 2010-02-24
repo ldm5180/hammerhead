@@ -13,7 +13,7 @@
 #ifndef __HARDWARE_ABSTRACTOR_H
 #define __HARDWARE_ABSTRACTOR_H
 
-
+#include "libhab-decl.h"
 #include "bionet-util.h"
 
 
@@ -43,6 +43,7 @@
  * hab_read() whenever the file descriptor is readable, or if it wants to
  * poll it.
  */
+LIBHAB_API_DECL 
 int hab_connect(bionet_hab_t *hab);
 
 
@@ -58,6 +59,7 @@ int hab_connect(bionet_hab_t *hab);
  * ensures that already-published information is actually sent to the
  * subscribers.
  */
+LIBHAB_API_DECL 
 void hab_disconnect(void);
 
 
@@ -73,6 +75,7 @@ void hab_disconnect(void);
  * function. The Node must remain part of the HAB until the user is ready to
  * call hab_report_lost_node()
  */
+LIBHAB_API_DECL 
 int hab_report_new_node(const bionet_node_t *node);
 
 
@@ -86,6 +89,7 @@ int hab_report_new_node(const bionet_node_t *node);
  * @retval 0 Success
  * @retval -1 Failure
  */
+LIBHAB_API_DECL 
 int hab_report_datapoints(const bionet_node_t *node);
 
 
@@ -101,6 +105,7 @@ int hab_report_datapoints(const bionet_node_t *node);
  * @retval 0 Success
  * @retval -1 Failure
  */
+LIBHAB_API_DECL 
 int hab_report_lost_node(const char *node_id);
 
 
@@ -114,6 +119,7 @@ int hab_report_lost_node(const char *node_id);
  * @retval 0 Success
  * @retval -1 Failure
  */
+LIBHAB_API_DECL 
 int hab_publish_stream(const bionet_stream_t *stream, const void *buffer, size_t count);
 
 
@@ -125,6 +131,7 @@ int hab_publish_stream(const bionet_stream_t *stream, const void *buffer, size_t
  *
  * @see hab_register_callback_set_resource().
  */
+LIBHAB_API_DECL 
 void hab_read(void);
 
 
@@ -142,6 +149,7 @@ void hab_read(void);
  *
  * @see hab_register_callback_set_resource()
  */
+LIBHAB_API_DECL 
 int hab_read_with_timeout(struct timeval *timeout);
 
 
@@ -168,6 +176,7 @@ int hab_read_with_timeout(struct timeval *timeout);
  * appropriate data type for the Resource.  It will be freed by the HAB
  * library when the callback returns.
  */
+LIBHAB_API_DECL 
 void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_t *resource, bionet_value_t *value));
 
 
@@ -182,6 +191,7 @@ void hab_register_callback_set_resource(void (*cb_set_resource)(bionet_resource_
  * The callback function gets four arguments: the Client that's sending the
  * data, the Stream that's being written to, and the data being written.
  */
+LIBHAB_API_DECL 
 void hab_register_callback_stream_data(void (*cb_set_resource)(const char *client_id, bionet_stream_t *stream, const void *buf, unsigned int size));
 
 
@@ -196,6 +206,7 @@ void hab_register_callback_stream_data(void (*cb_set_resource)(const char *clien
  * The callback function gets a single argument: the unique "id" of the
  * disconnecting Client.
  */
+LIBHAB_API_DECL 
 void hab_register_callback_lost_client(void (*cb_lost_client)(const char *client_id));
 
 
@@ -210,6 +221,7 @@ void hab_register_callback_lost_client(void (*cb_lost_client)(const char *client
  * The callback function gets two arguments, the Client's unique "id", and
  * the Stream being subscribed to.
  */
+LIBHAB_API_DECL 
 void hab_register_callback_stream_subscription(void (*cb_stream_subscription)(const char *client_id, const bionet_stream_t *stream));
 
 
@@ -224,6 +236,7 @@ void hab_register_callback_stream_subscription(void (*cb_stream_subscription)(co
  * The callback function gets two arguments, the Client's unique "id", and
  * the Stream being unsubscribed from.
  */
+LIBHAB_API_DECL 
 void hab_register_callback_stream_unsubscription(void (*cb_stream_unsubscription)(const char *client_id, const bionet_stream_t *stream));
 
 
@@ -239,6 +252,7 @@ void hab_register_callback_stream_unsubscription(void (*cb_stream_unsubscription
  *
  * @note Security must be initialized prior to call hab_connect()
  */
+LIBHAB_API_DECL 
 int hab_init_security(const char * dir, int require);
 
 
@@ -251,6 +265,7 @@ int hab_init_security(const char * dir, int require);
  *
  */
 #define BIONET_INFO_VERSION_FLAG 0x00000001
+LIBHAB_API_DECL 
 int hab_publish_info(bionet_hab_t * hab, const uint32_t flags);
 
 

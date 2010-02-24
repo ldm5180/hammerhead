@@ -14,6 +14,8 @@
 
 #include "bionet-util.h"
 
+#include "libbionet-decl.h"
+
 /**
  * @file bionet.h
  * Describes the Bionet Client API
@@ -35,6 +37,7 @@
  * @retval 0 success
  * @retval -1 failure.
  */
+BIONET_API_DECL
 int bionet_set_id(const char *new_id);
 
 
@@ -52,6 +55,7 @@ int bionet_set_id(const char *new_id);
  *
  * @param[in] cb_new_hab The "new hab" callback function.
  */
+BIONET_API_DECL
 void bionet_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab));
 
 
@@ -73,6 +77,7 @@ void bionet_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab));
  *
  * @param[in] cb_lost_hab The "lost hab" callback function.
  */
+BIONET_API_DECL
 void bionet_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab));
 
 
@@ -95,6 +100,7 @@ void bionet_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab));
  *
  * @param[in] cb_new_node The "new node" callback function.
  */
+BIONET_API_DECL
 void bionet_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node));
 
 
@@ -117,6 +123,7 @@ void bionet_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node))
  *
  * @param[in] cb_lost_node The "lost node" callback function.
  */
+BIONET_API_DECL
 void bionet_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node));
 
 
@@ -136,6 +143,7 @@ void bionet_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node
  *
  * @param[in] cb_datapoint The "datapoint" callback function.
  */
+BIONET_API_DECL
 void bionet_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint));
 
 
@@ -148,6 +156,7 @@ void bionet_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t 
  *
  * @param[in] cb_stream The new callback function.
  */
+BIONET_API_DECL
 void bionet_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, void *buffer, int size));
 
 
@@ -170,6 +179,7 @@ void bionet_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, 
  * bionet_read() in a polling way, though this is less efficient than using
  * select() or poll() on the fd.
  */
+BIONET_API_DECL
 int bionet_connect(void);
 
 
@@ -179,6 +189,7 @@ int bionet_connect(void);
  * @retval TRUE (non-zero) - the library IS connected to Bionet 
  * @retval FALSE (0) - if the library is NOT connected to Bionet.
  */
+BIONET_API_DECL
 int bionet_is_connected(void);
 
 
@@ -203,6 +214,7 @@ int bionet_is_connected(void);
  *
  * @note This function has different return values than bionet_read()
  */
+BIONET_API_DECL
 int bionet_read_with_timeout(struct timeval *timeout);
 
 
@@ -221,6 +233,7 @@ int bionet_read_with_timeout(struct timeval *timeout);
  * @note In Bionet 2.1 this function will be replaced by
  * bionet_read_with_timeout()
  */
+BIONET_API_DECL
 int bionet_read(void);
 
 
@@ -229,6 +242,7 @@ int bionet_read(void);
  * 
  * @return Number of available HABs
  */
+BIONET_API_DECL
 unsigned int bionet_cache_get_num_habs(void);
 
 
@@ -241,6 +255,7 @@ unsigned int bionet_cache_get_num_habs(void);
  *
  * @return Pointer to the HAB requested or NULL if no HAB exists at index
  */
+BIONET_API_DECL
 bionet_hab_t *bionet_cache_get_hab_by_index(unsigned int index);
 
 
@@ -253,6 +268,7 @@ bionet_hab_t *bionet_cache_get_hab_by_index(unsigned int index);
  * @return Pointer to the HAB if found
  * @retval NULL Not found
  */
+BIONET_API_DECL
 bionet_hab_t *bionet_cache_lookup_hab(const char *hab_type, const char *hab_id);
 
 
@@ -266,6 +282,7 @@ bionet_hab_t *bionet_cache_lookup_hab(const char *hab_type, const char *hab_id);
  * @return Pointer to the Node if found
  * @retval NULL Not found
  */
+BIONET_API_DECL
 bionet_node_t *bionet_cache_lookup_node(const char *hab_type, const char *hab_id, const char *node_id);
 
 
@@ -280,6 +297,7 @@ bionet_node_t *bionet_cache_lookup_node(const char *hab_type, const char *hab_id
  * @return Pointer to the Resource if found
  * @retval NULL Not found
  */
+BIONET_API_DECL
 bionet_resource_t *bionet_cache_lookup_resource(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
 
 
@@ -294,6 +312,7 @@ bionet_resource_t *bionet_cache_lookup_resource(const char *hab_type, const char
  * @return Pointer to the stream if found
  * @retval NULL Not found
  */
+BIONET_API_DECL
 bionet_stream_t *bionet_cache_lookup_stream(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
 
 
@@ -310,6 +329,7 @@ bionet_stream_t *bionet_cache_lookup_stream(const char *hab_type, const char *ha
  * @retval 0 Success
  * @retval -1 Failure
  */
+BIONET_API_DECL
 int bionet_subscribe_hab_list_by_name(const char *hab_name);
 
 
@@ -326,6 +346,7 @@ int bionet_subscribe_hab_list_by_name(const char *hab_name);
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_API_DECL
 int bionet_subscribe_node_list_by_name(const char *node_name);
 
 
@@ -343,6 +364,7 @@ int bionet_subscribe_node_list_by_name(const char *node_name);
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_API_DECL
 int bionet_subscribe_datapoints_by_name(const char *resource_name);
 
 
@@ -360,6 +382,7 @@ int bionet_subscribe_datapoints_by_name(const char *resource_name);
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_API_DECL
 int bionet_subscribe_stream_by_name(const char *stream_name);
 
 
@@ -380,6 +403,7 @@ int bionet_subscribe_stream_by_name(const char *stream_name);
  * @retval 0 Success
  * @retval -1 Failure
  */
+BIONET_API_DECL
 int bionet_unsubscribe_hab_list_by_name(const char *hab_name);
 
 
@@ -401,6 +425,7 @@ int bionet_unsubscribe_hab_list_by_name(const char *hab_name);
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_API_DECL
 int bionet_unsubscribe_node_list_by_name(const char *node_name);
 
 
@@ -423,6 +448,7 @@ int bionet_unsubscribe_node_list_by_name(const char *node_name);
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_API_DECL
 int bionet_unsubscribe_datapoints_by_name(const char *resource_name);
 
 
@@ -446,6 +472,7 @@ int bionet_unsubscribe_datapoints_by_name(const char *resource_name);
  * @retval 0 Success
  * @retval -1 Error
  */
+BIONET_API_DECL
 int bionet_unsubscribe_stream_by_name(const char *stream_name);
 
 
@@ -456,6 +483,7 @@ int bionet_unsubscribe_stream_by_name(const char *stream_name);
  * @param[in] buf Data to write
  * @param[in] size Number of bytes in buf
  */
+BIONET_API_DECL
 void bionet_stream_write(bionet_stream_t *stream, const void *buf, unsigned int size);
 
 
@@ -472,6 +500,7 @@ void bionet_stream_write(bionet_stream_t *stream, const void *buf, unsigned int 
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that the HAB accepted the request.
  */
+BIONET_API_DECL
 int bionet_set_resource(bionet_resource_t *resource, const char *value);
 
 
@@ -490,6 +519,7 @@ int bionet_set_resource(bionet_resource_t *resource, const char *value);
  * @note A return value of 0 does NOT mean that the Resource was actually
  * updated on the Node, just that the HAB accepted the request.
  */
+BIONET_API_DECL
 int bionet_set_resource_by_name(const char *resource_name, const char *value);
 
 
@@ -505,6 +535,7 @@ int bionet_set_resource_by_name(const char *resource_name, const char *value);
  *
  * @note Security must be initialized prior to call bionet_connect()
  */
+BIONET_API_DECL
 int bionet_init_security(const char * dir, int require);
 
 

@@ -20,6 +20,20 @@
 
 #include "cal-util.h"
 
+#ifdef __WIN32
+#  if defined(BIONET_VERSION)
+#    ifdef DLL_EXPORT
+#      define API_DECL __declspec(dllexport)
+#    else
+#      define API_DECL
+#    endif
+#  else
+#    define API_DECL __declspec(dllimport)
+#  endif
+#else
+#  define API_DECL extern
+#endif
+
 
 typedef struct {
     //!
@@ -199,7 +213,7 @@ typedef struct {
     int (*get_fd)(void * cal_handle);
 } cal_server_t;
 
-extern cal_server_t cal_server;
+API_DECL cal_server_t cal_server;
 
 
 #endif //  __CAL_SERVER_H

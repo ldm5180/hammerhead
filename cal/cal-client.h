@@ -20,6 +20,19 @@
 
 #include "cal-event.h"
 
+#ifdef __WIN32
+#  if defined(BIONET_VERSION)
+#    ifdef DLL_EXPORT
+#      define API_DECL __declspec(dllexport)
+#    else
+#      define API_DECL
+#    endif
+#  else
+#    define API_DECL __declspec(dllimport)
+#  endif
+#else
+#  define API_DECL extern
+#endif
 
 
 
@@ -163,7 +176,7 @@ typedef struct {
 
 
 //!< the CAL Client module provides this
-extern cal_client_t cal_client;
+API_DECL cal_client_t cal_client;
 
 
 

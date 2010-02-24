@@ -18,6 +18,8 @@
 
 #include <glib.h>
 
+#include "libbionet-util-decl.h"
+
 
 /**
  * @typedef bionet_resource_flavor_t
@@ -71,6 +73,7 @@ typedef enum {
  *       is free to overwrite or free the strings on return from
  *       this function.
  */
+BIONET_UTIL_API_DECL
 bionet_resource_t *bionet_resource_new(
     bionet_node_t *node,
     bionet_resource_data_type_t data_type,
@@ -84,6 +87,7 @@ bionet_resource_t *bionet_resource_new(
  *
  * @param[in] resource The Resource to free.
  */
+BIONET_UTIL_API_DECL
 void bionet_resource_free(bionet_resource_t *resource);
 
 
@@ -107,6 +111,7 @@ void bionet_resource_free(bionet_resource_t *resource);
  *         bionet_resource_get_id(resource));
  * @endcode
  */
+BIONET_UTIL_API_DECL
 const char *bionet_resource_get_name(const bionet_resource_t * resource);
 
 
@@ -128,6 +133,7 @@ const char *bionet_resource_get_name(const bionet_resource_t * resource);
  *         bionet_resource_get_id(resource));
  * @endcode
  */
+BIONET_UTIL_API_DECL
 const char *bionet_resource_get_local_name(const bionet_resource_t * resource);
 
 
@@ -139,6 +145,7 @@ const char *bionet_resource_get_local_name(const bionet_resource_t * resource);
  * @return ID of the resource
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 const char *bionet_resource_get_id(bionet_resource_t *resource);
 
 
@@ -150,6 +157,7 @@ const char *bionet_resource_get_id(bionet_resource_t *resource);
  * @return Pointer to Node
  * @return NULL Error
  */
+BIONET_UTIL_API_DECL
 bionet_node_t * bionet_resource_get_node(const bionet_resource_t *resource);
 
 
@@ -167,6 +175,7 @@ bionet_node_t * bionet_resource_get_node(const bionet_resource_t *resource);
  * bionet_node_get_hab(bionet_resource_get_node(resource));
  * @endcode
  */
+BIONET_UTIL_API_DECL
 bionet_hab_t * bionet_resource_get_hab(const bionet_resource_t *resource);
 
 
@@ -177,6 +186,7 @@ bionet_hab_t * bionet_resource_get_hab(const bionet_resource_t *resource);
  *
  * @return Type of resource
  */
+BIONET_UTIL_API_DECL
 bionet_resource_data_type_t bionet_resource_get_data_type(const bionet_resource_t *resource);
 
 
@@ -187,6 +197,7 @@ bionet_resource_data_type_t bionet_resource_get_data_type(const bionet_resource_
  *
  * @return Flavor of resource
  */
+BIONET_UTIL_API_DECL
 bionet_resource_flavor_t bionet_resource_get_flavor(const bionet_resource_t *resource);
 
 
@@ -200,6 +211,7 @@ bionet_resource_flavor_t bionet_resource_get_flavor(const bionet_resource_t *res
  * @return A pointer to the statically allocated string on success
  * @retval NULL Error
  */
+BIONET_UTIL_API_DECL
 const char *bionet_resource_flavor_to_string(bionet_resource_flavor_t flavor);
 
 
@@ -215,6 +227,7 @@ const char *bionet_resource_flavor_to_string(bionet_resource_flavor_t flavor);
  *
  * @note flavor_string is case-insensitive
  */
+BIONET_UTIL_API_DECL
 bionet_resource_flavor_t bionet_resource_flavor_from_string(const char *flavor_string);
 
 
@@ -228,6 +241,7 @@ bionet_resource_flavor_t bionet_resource_flavor_from_string(const char *flavor_s
  * @return A pointer to the statically allocated string on success,
  * @retval NULL Error
  */
+BIONET_UTIL_API_DECL
 const char *bionet_resource_data_type_to_string(bionet_resource_data_type_t data_type);
 
 
@@ -243,6 +257,7 @@ const char *bionet_resource_data_type_to_string(bionet_resource_data_type_t data
  *
  * @note data_type_string is case-insensitive
  */
+BIONET_UTIL_API_DECL
 bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *data_type_string);
 
 
@@ -268,6 +283,7 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
  * bionet_resource_add_datapoint(resource, dp);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_set_binary(bionet_resource_t *resource, 
 			       int content, 
 			       const struct timeval *timestamp);
@@ -295,6 +311,7 @@ int bionet_resource_set_binary(bionet_resource_t *resource,
  * bionet_resource_add_datapoint(resource, dp);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_set_uint8(bionet_resource_t *resource, 
 			      uint8_t content, 
 			      const struct timeval *timestamp);
@@ -322,6 +339,7 @@ int bionet_resource_set_uint8(bionet_resource_t *resource,
  * bionet_resource_add_datapoint(resource, dp);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_set_int8(bionet_resource_t *resource, 
 			     int8_t content, 
 			     const struct timeval *timestamp);
@@ -349,6 +367,7 @@ int bionet_resource_set_int8(bionet_resource_t *resource,
  * bionet_resource_add_datapoint(resource, dp);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_set_uint16(bionet_resource_t *resource, 
 			       uint16_t content, 
 			       const struct timeval *timestamp);
@@ -376,6 +395,7 @@ int bionet_resource_set_uint16(bionet_resource_t *resource,
  * bionet_resource_add_datapoint(resource, dp);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_set_int16(bionet_resource_t *resource, 
 			      int16_t content, 
 			      const struct timeval *timestamp);
@@ -403,6 +423,7 @@ int bionet_resource_set_int16(bionet_resource_t *resource,
  * bionet_resource_add_datapoint(resource, dp);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_set_uint32(bionet_resource_t *resource, 
 			       uint32_t content, 
 			       const struct timeval *timestamp);
@@ -430,6 +451,7 @@ int bionet_resource_set_uint32(bionet_resource_t *resource,
  * bionet_resource_add_datapoint(resource, dp);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_set_int32(bionet_resource_t *resource, 
 			      int32_t content, 
 			      const struct timeval *timestamp);
@@ -457,6 +479,7 @@ int bionet_resource_set_int32(bionet_resource_t *resource,
  * bionet_resource_add_datapoint(resource, dp);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_set_float(bionet_resource_t *resource, 
 			      float content, 
 			      const struct timeval *timestamp);
@@ -484,6 +507,7 @@ int bionet_resource_set_float(bionet_resource_t *resource,
  * bionet_resource_add_datapoint(resource, dp);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_set_double(bionet_resource_t *resource, 
 			       double content, 
 			       const struct timeval *timestamp);
@@ -511,6 +535,7 @@ int bionet_resource_set_double(bionet_resource_t *resource,
  * bionet_resource_add_datapoint(resource, dp);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_set_str(bionet_resource_t *resource, 
 			    const char * content, 
 			    const struct timeval *timestamp);
@@ -536,6 +561,7 @@ int bionet_resource_set_str(bionet_resource_t *resource,
  * bionet_value_get_binary(value, &content);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_binary(bionet_resource_t *resource, 
 			       int *content, 
 			       struct timeval *timestamp);
@@ -561,6 +587,7 @@ int bionet_resource_get_binary(bionet_resource_t *resource,
  * bionet_value_get_uint8(value, &content);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_uint8(bionet_resource_t *resource, 
 			      uint8_t *content, 
 			      struct timeval *timestamp);
@@ -586,6 +613,7 @@ int bionet_resource_get_uint8(bionet_resource_t *resource,
  * bionet_value_get_int8(value, &content);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_int8(bionet_resource_t *resource, 
 			     int8_t *content, 
 			     struct timeval *timestamp);
@@ -611,6 +639,7 @@ int bionet_resource_get_int8(bionet_resource_t *resource,
  * bionet_value_get_uint16(value, &content);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_uint16(bionet_resource_t *resource, 
 			       uint16_t *content, 
 			       struct timeval *timestamp);
@@ -636,6 +665,7 @@ int bionet_resource_get_uint16(bionet_resource_t *resource,
  * bionet_value_get_int16(value, &content);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_int16(bionet_resource_t *resource, 
 			      int16_t *content, 
 			      struct timeval *timestamp);
@@ -661,6 +691,7 @@ int bionet_resource_get_int16(bionet_resource_t *resource,
  * bionet_value_get_uint32(value, &content);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_uint32(bionet_resource_t *resource, 
 			       uint32_t *content, 
 			       struct timeval *timestamp);
@@ -686,6 +717,7 @@ int bionet_resource_get_uint32(bionet_resource_t *resource,
  * bionet_value_get_int32(value, &content);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_int32(bionet_resource_t *resource, 
 			      int32_t *content, 
 			      struct timeval *timestamp);
@@ -711,6 +743,7 @@ int bionet_resource_get_int32(bionet_resource_t *resource,
  * bionet_value_get_float(value, &content);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_float(bionet_resource_t *resource, 
 			      float *content, 
 			      struct timeval *timestamp);
@@ -736,6 +769,7 @@ int bionet_resource_get_float(bionet_resource_t *resource,
  * bionet_value_get_double(value, &content);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_double(bionet_resource_t *resource, 
 			       double *content, 
 			       struct timeval *timestamp);
@@ -763,6 +797,7 @@ int bionet_resource_get_double(bionet_resource_t *resource,
  * bionet_value_get_str(value, &content);
  * @endcode
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_str(bionet_resource_t *resource, 
 			    char * *content, 
 			    struct timeval *timestamp);
@@ -774,6 +809,7 @@ int bionet_resource_get_str(bionet_resource_t *resource,
  * @param[in] resource The resource to which the datapoint is added
  * @param[in] new_datapoint The datapoint to add
  */
+BIONET_UTIL_API_DECL
 void bionet_resource_add_datapoint(bionet_resource_t *resource, 
 					    bionet_datapoint_t *new_datapoint);
 
@@ -786,6 +822,7 @@ void bionet_resource_add_datapoint(bionet_resource_t *resource,
  * @return The number of datapoints in a resource
  * @retval -1 Invalid resource
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_get_num_datapoints(const bionet_resource_t *resource);
 
 
@@ -805,6 +842,7 @@ int bionet_resource_get_num_datapoints(const bionet_resource_t *resource);
  * BIONET_RESOURCE_GET_DATAPOINT(resource). Resources from the Bionet Data Manager may have more 
  * than 1 datapoint.
  */
+BIONET_UTIL_API_DECL
 bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource_t *resource, unsigned int index);
 
 
@@ -825,6 +863,7 @@ bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource
  * @param[in] index Index of the datapoint to remove
  *
  */
+BIONET_UTIL_API_DECL
 void bionet_resource_remove_datapoint_by_index(bionet_resource_t *resource, unsigned int index);
 
 
@@ -841,6 +880,7 @@ void bionet_resource_remove_datapoint_by_index(bionet_resource_t *resource, unsi
  * @retval 0 FALSE - The Resource does not match the ID
  * @retval 1 TRUE - The Resource does match the ID
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_matches_id(const bionet_resource_t *resource, 
 			       const char *id);
 
@@ -861,6 +901,7 @@ int bionet_resource_matches_id(const bionet_resource_t *resource,
  * @retval 0 FALSE - The Resource does not match the ID
  * @retval 1 TRUE - The Resource does match the ID
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_matches_habtype_habid_nodeid_resourceid(
     const bionet_resource_t *resource,
     const char *hab_type,
@@ -881,6 +922,7 @@ int bionet_resource_matches_habtype_habid_nodeid_resourceid(
  * @retval True (non-zero) - Dirty
  * @retval False (zero) - Not dirty
  */
+BIONET_UTIL_API_DECL
 int bionet_resource_is_dirty(const bionet_resource_t *resource);
 
 
@@ -889,6 +931,7 @@ int bionet_resource_is_dirty(const bionet_resource_t *resource);
  *
  * @param[in] resource The Resource to clean.
  */
+BIONET_UTIL_API_DECL
 void bionet_resource_make_clean(bionet_resource_t *resource);
 
 /**
@@ -901,6 +944,7 @@ void bionet_resource_make_clean(bionet_resource_t *resource);
  *       responsible for freeing the it and setting it to 
  *       NULL before the hab is free'd.
  */
+BIONET_UTIL_API_DECL
 void bionet_resource_set_user_data(bionet_resource_t *resource, const void *user_data);
 
 
@@ -911,6 +955,7 @@ void bionet_resource_set_user_data(bionet_resource_t *resource, const void *user
  *
  * @return The user_data pointer, or NULL if none has been set.
  */
+BIONET_UTIL_API_DECL
 void *bionet_resource_get_user_data(const bionet_resource_t *resource);
 
 

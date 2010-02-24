@@ -18,6 +18,8 @@
 
 #include <glib.h>
 
+#include "libbionet-util-decl.h"
+
 
 /**
  * @brief Allocates and initializes a new datapoint.  
@@ -35,6 +37,7 @@
  *       caller.  The caller is free to overwrite or free the
  *       strings on return from this function.
  */
+BIONET_UTIL_API_DECL
 bionet_datapoint_t *bionet_datapoint_new(bionet_resource_t *resource,
 					 bionet_value_t *value,
 					 const struct timeval *timestamp);
@@ -45,6 +48,7 @@ bionet_datapoint_t *bionet_datapoint_new(bionet_resource_t *resource,
  *
  * @param[in] datapoint The Datapoint to free.
  */
+BIONET_UTIL_API_DECL
 void bionet_datapoint_free(bionet_datapoint_t *datapoint);
 
 
@@ -58,6 +62,7 @@ void bionet_datapoint_free(bionet_datapoint_t *datapoint);
  * @param[in] datapoint Datapoint to set
  * @param[in] value Value to set in the datapoint
  */
+BIONET_UTIL_API_DECL
 void bionet_datapoint_set_value(bionet_datapoint_t *datapoint, bionet_value_t *value);
 
 
@@ -69,6 +74,7 @@ void bionet_datapoint_set_value(bionet_datapoint_t *datapoint, bionet_value_t *v
  * @retval Pointer to Value
  * @retval NULL on failure
  */
+BIONET_UTIL_API_DECL
 bionet_value_t * bionet_datapoint_get_value(bionet_datapoint_t *datapoint);
 
 
@@ -86,6 +92,7 @@ bionet_value_t * bionet_datapoint_get_value(bionet_datapoint_t *datapoint);
  * bionet_value_get_resource(bionet_datapoint_get_value(datapoint))
  * @endcode
  */
+BIONET_UTIL_API_DECL
 bionet_resource_t * bionet_datapoint_get_resource(const bionet_datapoint_t * datapoint);
 
 
@@ -103,6 +110,7 @@ bionet_resource_t * bionet_datapoint_get_resource(const bionet_datapoint_t * dat
  * bionet_resource_get_node(bionet_value_get_resource(bionet_datapoint_get_value(datapoint)))
  * @endcode
  */
+BIONET_UTIL_API_DECL
 bionet_node_t * bionet_datapoint_get_node(const bionet_datapoint_t * datapoint);
 
 
@@ -121,6 +129,7 @@ bionet_node_t * bionet_datapoint_get_node(const bionet_datapoint_t * datapoint);
  * bionet_node_get_hab(bionet_resource_get_node(bionet_value_get_resource(bionet_datapoint_get_value(datapoint))))
  * @endcode
  */
+BIONET_UTIL_API_DECL
 bionet_hab_t * bionet_datapoint_get_hab(const bionet_datapoint_t * datapoint);
 
 
@@ -133,6 +142,7 @@ bionet_hab_t * bionet_datapoint_get_hab(const bionet_datapoint_t * datapoint);
  * @return A pointer to the statically allocated string on success
  * @retval NULL Failure
  */
+BIONET_UTIL_API_DECL
 const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datapoint);
 
 
@@ -147,6 +157,7 @@ const char *bionet_datapoint_timestamp_to_string(const bionet_datapoint_t *datap
  * @param[in] datapoint The Datapoint to set the Timestamp of
  * @param[in] new_timestamp Timestamp to set it to (NULL means "now").
  */
+BIONET_UTIL_API_DECL
 void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint, 
 				    const struct timeval *new_timestamp);
 
@@ -159,6 +170,7 @@ void bionet_datapoint_set_timestamp(bionet_datapoint_t *datapoint,
  * @return Pointer to timestamp (do not modify or free).
  * @return NULL on failure
  */
+BIONET_UTIL_API_DECL
 struct timeval * bionet_datapoint_get_timestamp(bionet_datapoint_t *datapoint);
 
 
@@ -172,6 +184,7 @@ struct timeval * bionet_datapoint_get_timestamp(bionet_datapoint_t *datapoint);
  * @retval TRUE (non-zero) - Datapoint is dirty
  * @retval FALSE (zero) - Datapoint is not dirty
  */
+BIONET_UTIL_API_DECL
 int bionet_datapoint_is_dirty(const bionet_datapoint_t *datapoint);
 
 
@@ -180,6 +193,7 @@ int bionet_datapoint_is_dirty(const bionet_datapoint_t *datapoint);
  *
  * @param datapoint The Datapoint to make clean.
  */
+BIONET_UTIL_API_DECL
 void bionet_datapoint_make_clean(bionet_datapoint_t *datapoint);
 
 /**
@@ -188,6 +202,7 @@ void bionet_datapoint_make_clean(bionet_datapoint_t *datapoint);
  * @return 0 if datapoint timestamp and value are identical
  * @return 1 otherwise
  */
+BIONET_UTIL_API_DECL
 int bionet_datapoint_iseq(const bionet_datapoint_t *dp1, const bionet_datapoint_t *dp2);
 
 
@@ -198,6 +213,7 @@ int bionet_datapoint_iseq(const bionet_datapoint_t *dp1, const bionet_datapoint_
  * @return 0 if tva == tvb
  * @return >0 if tva > tvb
  */
+BIONET_UTIL_API_DECL
 int bionet_timeval_compare(const struct timeval * tva, const struct timeval * tvb);
 
 #endif /* __BIONET_DATAPOINT_H */

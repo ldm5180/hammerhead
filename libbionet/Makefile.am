@@ -8,7 +8,7 @@ include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libbionet.la
 
-include_HEADERS = bionet.h
+include_HEADERS = bionet.h libbionet-decl.h
 
 libbionet_la_SOURCES =        \
     set-id.c                  \
@@ -36,6 +36,7 @@ libbionet_la_SOURCES =        \
     global.c \
     security.c
 
+libbionet_la_CPPFLAGS = $(AM_CPPFLAGS) -DBUILDING_LIBBIONET
 libbionet_la_CFLAGS = \
 	$(AM_CFLAGS) \
 	$(GLIB_CFLAGS) \
