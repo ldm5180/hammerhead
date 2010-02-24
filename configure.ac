@@ -131,7 +131,24 @@ case "$host_os" in
      ;;
 esac
 
+
+
 AC_SUBST([SYSAPI])
+
+
+case "$SYSAPI" in
+  win32)
+    AC_CHECK_HEADER([winsock2.h], [], [AC_MSG_FAILURE(["Must have winsock2.h for windows"])])
+    AC_CHECK_LIB([ws2_32], [main], [], [AC_MSG_FAILURE(["Must have ws2_32 for windows"])])
+    ;;
+
+
+  wince)
+    AC_CHECK_HEADER([winsock2.h], [], [AC_MSG_FAILURE(["Must have winsock2.h for windows"])])
+    AC_CHECK_LIB([ws2], [WSAGetLastError], [], [AC_MSG_FAILURE(["Must have ws2 lib for windows"])])
+    ;;
+esac
+
 
 # User Selected features template
 #AC_ARG_ENABLE([featureX],

@@ -9,7 +9,7 @@
 #include <string.h>
 
 
-#ifdef WINDOWS
+#ifdef _WIN32
     #include <winsock.h>
 #endif
 
@@ -22,7 +22,7 @@ int bionet_get_network_error(void) {
     return errno;
 #endif
 
-#ifdef WINDOWS
+#ifdef _WIN32
     int error = WSAGetLastError();
 
     if (error == WSAEWOULDBLOCK)
@@ -42,7 +42,7 @@ const char *bionet_get_network_error_string(void) {
     return strerror(errno);
 #endif
 
-#ifdef WINDOWS
+#ifdef _WIN32
     static char error_message[256];
 
     sprintf(error_message, "error %d", WSAGetLastError());

@@ -6,17 +6,11 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <arpa/inet.h>
-
-#include <netinet/in.h>
-
-#include <sys/socket.h>
 #include <sys/types.h>
 
 #include <glib.h>
@@ -30,6 +24,12 @@
 #include "cal-mdnssd-bip.h"
 #include "cal-client-mdnssd-bip.h"
 
+#include "bip-socket-api.h"
+
+#ifdef _WIN32
+#include <winbase.h>
+#define sleep(x) Sleep(1000 * x)
+#endif
 
 
 
@@ -505,7 +505,7 @@ static void read_from_publisher(cal_client_mdnssd_bip_t * this, const char *peer
 //
 // Called when mDNS resolves an address for a host name.
 // May be called multiple times per published service (multi-home)
-static void resolve_callback(
+static void DNSSD_API resolve_callback(
     DNSServiceRef service_ref,
     DNSServiceFlags flags,
     uint32_t interfaceIndex,
@@ -597,7 +597,7 @@ static void resolve_callback(
 // this function gets called whenever a service of our type, for example "_bionet._tcp", comes or goes
 //
 
-static void browse_callback(
+static void DNSSD_API browse_callback(
     DNSServiceRef service,
     DNSServiceFlags flags,
     uint32_t interfaceIndex,
