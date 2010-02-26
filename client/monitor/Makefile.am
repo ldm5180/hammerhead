@@ -15,6 +15,7 @@ bionet_monitor_DEPENDENCIES = $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_UTIL) 
 
 bionet_monitor_SOURCES =        \
     mainwindow.cxx              \
+    monitortab.cxx              \
     scaleinfo.cxx               \
     plotpreferences.cxx         \
     plotwindow.cxx              \
@@ -26,6 +27,7 @@ bionet_monitor_SOURCES =        \
     archive.cxx                 \
     main.cxx                    \
     mainwindow.moc.cpp          \
+    monitortab.moc.cpp          \
     scaleinfo.moc.cpp           \
     plotwindow.moc.cpp          \
     plotpreferences.moc.cpp     \
@@ -38,6 +40,7 @@ bionet_monitor_SOURCES =        \
 
 BUILT_SOURCES =                 \
     mainwindow.moc.cpp          \
+    monitortab.moc.cpp          \
     scaleinfo.moc.cpp           \
     plotwindow.moc.cpp          \
     plotpreferences.moc.cpp     \

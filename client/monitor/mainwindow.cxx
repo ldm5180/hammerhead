@@ -11,7 +11,6 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     int sampleSize = -1;
     int require_security = 0;
     QString security_dir, title("Bionet Monitor");
-    bionetMode = true; // should we connect to the bdm or bionet?
 
     setAttribute(Qt::WA_DeleteOnClose);
     setAttribute(Qt::WA_QuitOnClose);
@@ -33,10 +32,6 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
             security_dir = QString(*argv);
         } else if ((strcmp(*argv, "-e") == 0) || (strcmp(*argv, "--require-security") == 0)) {
             require_security = 1;
-        } else if ((strcmp(*argv, "-b") == 0) || (strcmp(*argv, "--bionet") == 0)) {
-            bionetMode = true;
-        } else if ((strcmp(*argv, "-d") == 0) || (strcmp(*argv, "--bdm") == 0)) {
-            bionetMode = false;
         } else {
             usage();
             exit(1);
@@ -56,34 +51,21 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     if (sampleSize < 0)
         sampleSize = 10000;
     
-
-    setupResourceView();
-    setupArchive(); 
-    menuBar = new QMenuBar(this);
+    // set this QWidget's layout to include this menu
+    menuBar = new QMenuBar;
     createActions();
     createMenus();
+
+    layout = new QGridLayout(this);
+    //layout = this->layout();
+    layout->setMenuBar(menuBar);
+
+    // create the tabs
+    liveTab = new MonitorTab(this);
+    bdmTab = new MonitorTab(this);
+
+    setupWindow();
     
-    // this smells really bad, i have to make this check in a couple
-    // of functions. for now, i think it makes sense because the bdm
-    // and bionet will play nicely together in the awesome future,
-    // and both bdm/bdm will need to exist. 
-    if ( bionetMode ) {
-        bionet = new BionetIO(this);
-        setupTreeView();
-        setupBionetModel();
-
-        bionet->setup();
-        subscribe();
-
-        setupWindow();
-        resizeView(view);
-    } else {
-        setupBDM();
-        bdmio->setup();
-
-        setupWindow();
-        resizeView(bdmView);
-    }
 
     scaleInfoTemplate = new ScaleInfo;
 }
@@ -91,324 +73,69 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
 
 MainWindow::~MainWindow() {
     //qDebug() << "bionet cache size is:" << bionet_cache_get_num_habs();
-
     delete quitAction; 
     delete plotAction; 
     delete aboutAction; 
     delete shortcuts;
     delete preferencesAction; 
 
-    if ( !bionetMode ) {
-        delete updateSubscriptionsAction;
-        delete bdmio;
-    }
+    delete updateSubscriptionsAction;
 
     delete scaleInfoTemplate;
 }
 
 
-void MainWindow::setupBionetModel() {
+/*
+void MainWindow::setupBionet() {
+    // creating bionet specific objects
     liveModel = new BionetModel(this);
+    liveView = new Tree;
+    liveIO = new BionetIO;
+    liveArchive = new Archive(this);
+    liveRV = new ResourceView();
 
-    liveModel->setColumnCount(5);
-    liveModel->setRowCount(0);
+    // configuring them correctly
+    setupModel(liveModel);
+    setupTreeView(liveView);
 
-    liveModel->setHeaderData(0, Qt::Horizontal, QString("Habs.Nodes.Resources"));
-    liveModel->setHeaderData(1, Qt::Horizontal, QString("Flavor"));
-    liveModel->setHeaderData(2, Qt::Horizontal, QString("Type"));
-    liveModel->setHeaderData(3, Qt::Horizontal, QString("Timestamp"));
-    liveModel->setHeaderData(4, Qt::Horizontal, QString("Value"));
+    // Connect everything
+    connectObjects(liveIO, liveModel, liveView, liveArchive, liveRV);
 
-    // Connects from Bionet to the liveModel
-    connect(bionet, SIGNAL(newHab(bionet_hab_t*)), 
-        liveModel, SLOT(newHab(bionet_hab_t*)));
-    connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), 
-        liveModel, SLOT(lostHab(bionet_hab_t*)));
-    connect(bionet, SIGNAL(newNode(bionet_node_t*)), 
-        liveModel, SLOT(newNode(bionet_node_t*)));
-    connect(bionet, SIGNAL(lostNode(bionet_node_t*)), 
-        liveModel, SLOT(lostNode(bionet_node_t*)));
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        liveModel, SLOT(newDatapoint(bionet_datapoint_t*)));
-
-    connect(liveModel, SIGNAL(lostResource(QString)), 
-        this, SLOT(lostPlot(QString)));
-    
-    /* connect to the bionet model */
-    connect(liveModel, SIGNAL(layoutChanged()), 
-        view, SLOT(repaint()));
-    view->setModel(liveModel);
-
-    // (for losing habs & updating the pane)
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
-    connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), 
-        resourceView, SLOT(lostHab(bionet_hab_t*)));
-    connect(bionet, SIGNAL(lostNode(bionet_node_t*)), 
-        resourceView, SLOT(lostNode(bionet_node_t*)));
-
-    // Connecting everything to the sample archive
-    connect(liveModel, SIGNAL(newResource(QString)), 
-        archive, SLOT(addResource(QString)));
-    connect(liveModel, SIGNAL(lostResource(QString)), 
-        archive, SLOT(removeResource(QString)));
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        archive, SLOT(recordSample(bionet_datapoint_t*)));
-
-    // connect the view to the model
-    connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
-        liveModel, SLOT(lineActivated(QModelIndex)));
-    connect(liveModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
-        resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
-    connect(liveModel, SIGNAL(habSelected(bionet_hab_t*)), 
-        resourceView, SLOT(clearView()));
-    connect(liveModel, SIGNAL(nodeSelected(bionet_node_t*)), 
-        resourceView, SLOT(clearView()));
-    connect(liveModel, SIGNAL(streamSelected(bionet_stream_t*)), 
-        resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
-
-    connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        this, SLOT(updatePlot(bionet_datapoint_t*)));
-
-    return;
+    liveIO->setup();
 }
 
 
 void MainWindow::setupBDM() {
+    // creating up the bdm-specific objects
     bdmModel = new BDMModel(this);
-    bdmModel->setColumnCount(5);
-    bdmModel->setRowCount(0);
-
-    bdmModel->setHeaderData(0, Qt::Horizontal, QString("Habs.Nodes.Resources"));
-    bdmModel->setHeaderData(1, Qt::Horizontal, QString("Flavor"));
-    bdmModel->setHeaderData(2, Qt::Horizontal, QString("Type"));
-    bdmModel->setHeaderData(3, Qt::Horizontal, QString("Timestamp"));
-    bdmModel->setHeaderData(4, Qt::Horizontal, QString("Value"));
-
     bdmView = new Tree;
+    bdmIO = new BDMIO();
+    bdmArchive = new Archive(this);
+    bdmRV = new ResourceView();
 
-    bdmView->setAlternatingRowColors(TRUE);
-    bdmView->setDragEnabled(FALSE);
-    bdmView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    // setting up bdm-specific objects
+    setupModel(bdmModel);
+    setupTreeView(bdmView);
 
-    connect(bdmModel, SIGNAL(layoutChanged()), 
-        bdmView, SLOT(repaint()));
+    // connect everything
+    connectObjects(bdmIO, bdmModel, bdmView, bdmArchive, bdmRV);
 
-    bdmView->setModel(bdmModel);
-    //bdmView->selectAll();
-
-    // Edit the size of the bdmView frame
-    bdmView->setMinimumHeight(100);
-    bdmView->setMinimumWidth(100);
-
-    // create the bdmio
-    bdmio = new BDMIO();
-
-    // connect bdm interface with the model
-    connect(bdmio, SIGNAL(newHab(bionet_hab_t*)), 
-        bdmModel, SLOT(newHab(bionet_hab_t*)));
-    connect(bdmio, SIGNAL(lostHab(bionet_hab_t*)), 
-        bdmModel, SLOT(lostHab(bionet_hab_t*)));
-    connect(bdmio, SIGNAL(newNode(bionet_node_t*)), 
-        bdmModel, SLOT(newNode(bionet_node_t*)));
-    connect(bdmio, SIGNAL(lostNode(bionet_node_t*)), 
-        bdmModel, SLOT(lostNode(bionet_node_t*)));
-    connect(bdmio, SIGNAL(newResource(bionet_resource_t*)),
-        bdmModel, SLOT(addResource(bionet_resource_t*)));
-    connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        bdmModel, SLOT(newDatapoint(bionet_datapoint_t*)));
-
-    // when we lose nodes, we lose all thier resources too
-    connect(bdmModel, SIGNAL(lostResource(QString)), 
-        this, SLOT(lostPlot(QString)));
-
-    /*
-    connect(bdmio, SIGNAL(enableTab(bool)),
-        this, SLOT(enableTab(bool)));
-    */
-    
-    /* connect the view to the bdmModel */
-    connect(bdmModel, SIGNAL(layoutChanged()), bdmView, SLOT(repaint()));
-        bdmView->setModel(bdmModel);
-
-
-    // (for losing habs & updating the pane)
-    connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
-    connect(bdmio, SIGNAL(lostHab(bionet_hab_t*)), 
-        resourceView, SLOT(lostHab(bionet_hab_t*)));
-    connect(bdmio, SIGNAL(lostNode(bionet_node_t*)), 
-        resourceView, SLOT(lostNode(bionet_node_t*)));
-
-    // Connecting everything to the sample archive
-    connect(bdmModel, SIGNAL(newResource(QString)), 
-        archive, SLOT(addResource(QString)));
-    connect(bdmModel, SIGNAL(lostResource(QString)), 
-        archive, SLOT(removeResource(QString)));
-    connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        archive, SLOT(recordSample(bionet_datapoint_t*)));
-
-    // connect the view to the model
-    connect(bdmView->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
-        bdmModel, SLOT(lineActivated(QModelIndex)));
-    connect(bdmModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
-        resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
-    connect(bdmModel, SIGNAL(habSelected(bionet_hab_t*)), 
-        resourceView, SLOT(clearView()));
-    connect(bdmModel, SIGNAL(nodeSelected(bionet_node_t*)), 
-        resourceView, SLOT(clearView()));
-    connect(bdmModel, SIGNAL(streamSelected(bionet_stream_t*)), 
-        resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
-
-    connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-        this, SLOT(updatePlot(bionet_datapoint_t*)));
-        
-    // connect the update subsciptions action to bdmio
-    connect(updateSubscriptionsAction, SIGNAL(triggered()), 
-        bdmio, SLOT(editSubscriptions()));
+    // any bdm specific commands?
+    bdmIO->setup();
 }
 
 
-void MainWindow::setupTreeView() {
-    view = new Tree(this);
+void MainWindow::setupModel(BionetModel *model) {
+    model->setColumnCount(5);
+    model->setRowCount(0);
 
-    view->setAlternatingRowColors(TRUE);
-    view->setDragEnabled(FALSE);
-    view->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    
-    //view->selectAll();
-    
-    // Edit the size of the view frame
-    view->setMinimumHeight(100);
-    view->setMinimumWidth(100);
+    model->setHeaderData(0, Qt::Horizontal, QString("Habs.Nodes.Resources"));
+    model->setHeaderData(1, Qt::Horizontal, QString("Flavor"));
+    model->setHeaderData(2, Qt::Horizontal, QString("Type"));
+    model->setHeaderData(3, Qt::Horizontal, QString("Timestamp"));
+    model->setHeaderData(4, Qt::Horizontal, QString("Value"));
 
-    view->show();
-    return;
 }
-
-
-void MainWindow::resizeView(Tree *vw) {
-    // Edit/adjust the header
-    QHeaderView* header;
-    header = vw->header();
-    header->setMovable(FALSE);
-    header->resizeSection(0,200); // resizing the columns
-    header->resizeSection(1,75); 
-    header->resizeSection(2,50); 
-    vw->setHeader(header);
-}
-
-
-/*
-void MainWindow::switchViews(int index) {
-    // When switching between views, We don't want to:
-    //  * disconnect from bionet, since when we switch back we still want to be updated
-    //  * disconnect recording the datapoint signals
-    //  * Don't disconnect updating plots
-    // But we do want to:
-    //  * Switch the resource view to the active model
-
-    if (index == 0) { // bionet live
-        resourceView->clearView();
-
-        // disconnect selecting habs/nodes/resources/streams to the resourceview
-        disconnect(bdmModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
-            resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
-        disconnect(bdmModel, SIGNAL(habSelected(bionet_hab_t*)), 
-            resourceView, SLOT(clearView()));
-        disconnect(bdmModel, SIGNAL(nodeSelected(bionet_node_t*)), 
-            resourceView, SLOT(clearView()));
-        disconnect(bdmModel, SIGNAL(streamSelected(bionet_stream_t*)), 
-            resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
-        disconnect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)),
-            resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
-        
-        // disconnect the row highlighting action
-        disconnect(bdmView->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
-            bdmModel, SLOT(lineActivated(QModelIndex)));
-
-        // connecting the hab/node/datapoint updates
-        connect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-            resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
-        connect(bionet, SIGNAL(lostHab(bionet_hab_t*)), 
-            resourceView, SLOT(lostHab(bionet_hab_t*)));
-        connect(bionet, SIGNAL(lostNode(bionet_node_t*)), 
-            resourceView, SLOT(lostNode(bionet_node_t*)));
-
-        // reconnect the row highlighting action
-        connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
-            liveModel, SLOT(lineActivated(QModelIndex)));
-
-        // disconnect the plot button from make bdm plot to make plot
-        disconnect(resourceView, SIGNAL(plotResource(QString)), 
-            this, SLOT(makeBDMPlot(QString)));
-        connect(resourceView, SIGNAL(plotResource(QString)), 
-            this, SLOT(makePlot(QString)));
-
-    } else if (index == 1) { // bdm
-        resourceView->clearView();
-
-        // Disconnecting the hab/node/datapoint updates
-        disconnect(bionet, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
-            resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
-        disconnect(bionet, SIGNAL(lostHab(bionet_hab_t*)), 
-            resourceView, SLOT(lostHab(bionet_hab_t*)));
-        disconnect(bionet, SIGNAL(lostNode(bionet_node_t*)), 
-            resourceView, SLOT(lostNode(bionet_node_t*)));
-
-        // disconnect the row highlighting action
-        disconnect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
-            liveModel, SLOT(lineActivated(QModelIndex)));
-
-        // connect selecting habs/nodes/resources/streams to the resourceview
-        connect(bdmModel, SIGNAL(resourceSelected(bionet_resource_t*)), 
-            resourceView, SLOT(newResourceSelected(bionet_resource_t*)));
-        connect(bdmModel, SIGNAL(habSelected(bionet_hab_t*)), 
-            resourceView, SLOT(clearView()));
-        connect(bdmModel, SIGNAL(nodeSelected(bionet_node_t*)), 
-            resourceView, SLOT(clearView()));
-        connect(bdmModel, SIGNAL(streamSelected(bionet_stream_t*)), 
-            resourceView, SLOT(newStreamSelected(bionet_stream_t*)));
-        connect(bdmio, SIGNAL(newDatapoint(bionet_datapoint_t*)),
-            resourceView, SLOT(resourceValueChanged(bionet_datapoint_t*)));
-
-        // connect the row highlighting action
-        connect(bdmView->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), 
-            bdmModel, SLOT(lineActivated(QModelIndex)));
-
-        // disconnect the plot button from make plot to make bdm plot
-        disconnect(resourceView, SIGNAL(plotResource(QString)), 
-            this, SLOT(makePlot(QString)));
-        connect(resourceView, SIGNAL(plotResource(QString)), 
-            this, SLOT(makeBDMPlot(QString)));
-    }
-}
-*/
-
-
-/*
-void MainWindow::enableTab(bool enable) {
-    tabs->setTabEnabled(1, enable);
-}
-*/
-
-
-void MainWindow::setupResourceView() {
-    resourceView = new ResourceView();
-
-    // connecting the plot button
-    connect(resourceView, SIGNAL(plotResource(QString)), 
-        this, SLOT(makePlot(QString)));
-
-    return;
-}
-
-
-void MainWindow::setupArchive() {
-    archive = new Archive(this);
-    return;
-}
-
 
 void MainWindow::subscribe() {
     bionet_subscribe_hab_list_by_name("*.*");
@@ -422,70 +149,53 @@ void MainWindow::unsubscribe() {
     bionet_unsubscribe_node_list_by_name("*.*.*");
     bionet_unsubscribe_hab_list_by_name("*.*");
 }
+*/
 
-
+// FIXME: need to create a widget for each view/splitter/resource view
 void MainWindow::setupWindow() {
-    
-    /*
-     * disable tabs since we can't run bdm & bionet at the same time
-    tabs = new QTabWidget(this);
-    tabs->addTab(view, "Live");
-    tabs->addTab(bdmView, "History");
-    connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(switchViews(int)));
-    */
+    // FIXME: tabs are broken right now
+    tabs = new QTabWidget;
+    tabs->addTab(liveTab, "Live");
+    tabs->addTab(bdmTab, "History");
 
-    //view->setParent(views);
-
-    resViewHolder = new QWidget(this);
-    resViewHolder->setLayout(resourceView);
-
-    splitter = new QSplitter(this);
-    //splitter->addWidget(tabs);
-    if (bionetMode)
-        splitter->addWidget(view);
-    else
-        splitter->addWidget(bdmView);
-    splitter->addWidget(resViewHolder);
-
-
-    layout = new QHBoxLayout(this);
-    layout->setMenuBar(menuBar);
-    layout->addWidget(splitter);
+    layout->addWidget(tabs);
 }
 
 
 void MainWindow::closeEvent(QCloseEvent* /*event*/) {
-    unsubscribe();
+    //unsubscribe();
 
-    archive->disconnect();
-    resourceView->disconnect();
+    // disconnect bionet
+    //liveModel->disconnect();
+    //liveView->disconnect();
+    //liveArchive->disconnect();
+    //liveRV->disconnect();
+    //liveIO->disconnect();
 
-    if ( bionetMode ) {
-        liveModel->disconnect();
-        bionet->disconnect();
-        view->disconnect();
-    } else {
-        bdmModel->disconnect();
-        bdmio->disconnect();
-        bdmView->disconnect();
-    }
+    // disconnect bdm
+    //bdmModel->disconnect();
+    //bdmView->disconnect();
+    //bdmArchive->disconnect();
+    //bdmRV->disconnect();
+    //bdmIO->disconnect();
 
-    foreach(PlotWindow* p, livePlots) {
-        delete p;
-    }
+    // cleanup the plots
+    //foreach(PlotWindow* p, livePlots) {
+        //delete p;
+    //}
 
-    /*
-    foreach(PlotWindow* p, bdmPlots) {
-        delete p;
-    }
-    */
-    
-    delete archive;
+    //foreach(PlotWindow *p, bdmPlots) {
+        //delete p;
+    //}
+
+    //delete liveArchive;
+    //delete bdmArchive;
     
     //qDebug() << "bionet cache size is:" << bionet_cache_get_num_habs();
 }
 
 
+/*
 void MainWindow::changeHostname() {
     bool ok;
     
@@ -493,9 +203,10 @@ void MainWindow::changeHostname() {
             "Input new NAG Hostname:", QLineEdit::Normal, 
             QString(), &ok);
     if ( ok && !name.isEmpty() ) {
-        bionet->setup();
+        //liveIO->setup();
     }
 }
+*/
 
 
 void MainWindow::createActions() {
@@ -505,11 +216,9 @@ void MainWindow::createActions() {
 
     plotAction = new QAction(tr("&Plot"), this);
     plotAction->setShortcut(tr("Ctrl+P"));
-    connect(plotAction, SIGNAL(triggered()), resourceView, SLOT(plotClicked()));
+    //connect(plotAction, SIGNAL(triggered()), resourceView, SLOT(plotClicked()));
+    //FIXME: need to connect correctly
     
-    //hostnameAction = new QAction(tr("Change Nag Hostname"), this);
-    //connect(hostnameAction, SIGNAL(triggered()), this, SLOT(changeHostname()));
-
     /*
     filterAction = new QAction(tr("Filter"), this);
     filterAction->setShortcut(tr("Ctrl+F"));
@@ -522,36 +231,34 @@ void MainWindow::createActions() {
     shortcuts = new QAction(tr("&Shortcuts"), this);
     connect(shortcuts, SIGNAL(triggered()), this, SLOT(cuts()));
 
-    preferencesAction = new QAction(tr("&All/Default Plot Preferences"), this);
-    connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openDefaultPlotPreferences()));
+    //FIXME: should be ok
+    //preferencesAction = new QAction(tr("&All/Default Plot Preferences"), this);
+    //connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openDefaultPlotPreferences()));
 
-    if ( !bionetMode ) {
-        updateSubscriptionsAction = new QAction(tr("&Change Subscriptions"), this);
-        updateSubscriptionsAction->setShortcut(tr("Ctrl+C"));
-        
-        /*
-        pollingFrequencyAction = new QAction(tr("BDM Polling &Frequency"), this);
-        pollingFrequencyAction->setShortcut(tr("Ctrl+F"));
-        connect(pollingFrequencyAction, SIGNAL(triggered()), bdmio, SLOT(changeFrequency()));
+    updateSubscriptionsAction = new QAction(tr("&Change Subscriptions"), this);
+    updateSubscriptionsAction->setShortcut(tr("Ctrl+C"));
 
-        connectToBDMAction = new QAction(tr("Connect to &BDM"), this);
-        connectToBDMAction->setShortcut(tr("Ctrl+B"));
-        connect(connectToBDMAction, SIGNAL(triggered()), bdmio, SLOT(promptForConnection()));
+    /*
+    pollingFrequencyAction = new QAction(tr("BDM Polling &Frequency"), this);
+    pollingFrequencyAction->setShortcut(tr("Ctrl+F"));
+    connect(pollingFrequencyAction, SIGNAL(triggered()), bdmIO, SLOT(changeFrequency()));
 
-        disconnectFromBDMAction = new QAction(tr("&Disconnect from BDM"), this);
-        disconnectFromBDMAction->setShortcut(tr("Ctrl+D"));
-        connect(disconnectFromBDMAction, SIGNAL(triggered()), bdmio, SLOT(disconnectFromBDM()));
-        connect(disconnectFromBDMAction, SIGNAL(triggered()), this, SLOT(clearBDMPlots()));
-        */
-    }
+    connectToBDMAction = new QAction(tr("Connect to &BDM"), this);
+    connectToBDMAction->setShortcut(tr("Ctrl+B"));
+    connect(connectToBDMAction, SIGNAL(triggered()), bdmIO, SLOT(promptForConnection()));
+
+    disconnectFromBDMAction = new QAction(tr("&Disconnect from BDM"), this);
+    disconnectFromBDMAction->setShortcut(tr("Ctrl+D"));
+    connect(disconnectFromBDMAction, SIGNAL(triggered()), bdmIO, SLOT(disconnectFromBDM()));
+    connect(disconnectFromBDMAction, SIGNAL(triggered()), this, SLOT(clearBDMPlots()));
+    */
 }
 
 
 
 void MainWindow::createMenus() {
     fileMenu = menuBar->addMenu(tr("&File"));
-    if ( !bionetMode )
-        fileMenu->addAction(updateSubscriptionsAction);
+    fileMenu->addAction(updateSubscriptionsAction);
     fileMenu->addAction(quitAction);
 
     plotMenu = menuBar->addMenu(tr("&Plotting"));
@@ -567,7 +274,8 @@ void MainWindow::createMenus() {
 
 
 void MainWindow::updatePlotMenu() {
-    plotAction->setEnabled(resourceView->isPlottable());
+    // FIXME: need to update correctly!
+    //plotAction->setEnabled(resourceView->isPlottable());
 }
 
 
@@ -632,24 +340,26 @@ Ctrl-Q\t Quit"
 
 
 // keygen ok here
-void MainWindow::makePlot(QString key) {
+/*
+void MainWindow::makeLivePlot(QString key) {
     
-    if (( !archive->contains(key) ) || ( archive->history(key)->size() == 0 ))
+    if (( !liveArchive->contains(key) ) || ( liveArchive->history(key)->size() == 0 ))
         return;
 
     if ( !livePlots.contains(key) ) {
-        PlotWindow* p = new PlotWindow(key, archive->history(key), 
+        PlotWindow* p = new PlotWindow(key, liveArchive->history(key), 
                 scaleInfoTemplate, 
                 this);
         connect(p, SIGNAL(newPreferences(PlotWindow*, ScaleInfo*)), this, SLOT(openPrefs(PlotWindow*, ScaleInfo*)));
         livePlots.insert(key, p);
-        connect(p, SIGNAL(destroyed(QObject*)), this, SLOT(destroyPlot(QObject*)));
+        connect(p, SIGNAL(destroyed(QObject*)), this, SLOT(destroyLivePlot(QObject*)));
 
-        /* if default preferences exists, add the plot to the plots it updates */
+        // if default preferences exists, add the plot to the plots it updates
         if (defaultPreferencesIsOpen)
             defaultPreferences->addPlot(p);
     }
 }
+*/
 
 
 // keygen ok here
@@ -659,7 +369,7 @@ void MainWindow::makeBDMPlot(QString key) {
     PlotWindow *p;
 
     // Get the info from the BDM
-    history = bdmio->createHistory(key);
+    history = bdmIO->createHistory(key);
 
     if ( history->isEmpty() ) {
         qDebug() << "empty history for resource" << qPrintable(key) << "?";
@@ -678,8 +388,8 @@ void MainWindow::makeBDMPlot(QString key) {
 }
 */
 
-
-void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
+/*
+void MainWindow::updateLivePlot(bionet_datapoint_t* datapoint) {
     bionet_resource_t* resource;
     const char *resource_name;
 
@@ -690,7 +400,7 @@ void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
 
     resource_name = bionet_resource_get_name(resource);
     if (resource_name == NULL) {
-        qWarning() << "updatePlot(): unable to get resource name" << endl;
+        qWarning() << "updateLivePlot(): unable to get resource name" << endl;
         return;
     }
 
@@ -701,6 +411,7 @@ void MainWindow::updatePlot(bionet_datapoint_t* datapoint) {
         p->updatePlot();
     }
 }
+*/
 
 
 /*
@@ -729,14 +440,15 @@ void MainWindow::updateBDMPlot(bionet_datapoint_t* datapoint) {
 }
 */
 
-
-void MainWindow::lostPlot(QString key) {
+/*
+void MainWindow::lostLivePlot(QString key) {
     PlotWindow* p = livePlots.take(key);
 
     if ( p != NULL ) {
         delete p;
     }
 }
+*/
 
 
 /*
@@ -745,24 +457,24 @@ void MainWindow::lostBDMPlot(QString key) {
 
     if ( p != NULL ) {
         delete p;
-        bdmio->removeHistory(key);
+        bdmIO->removeHistory(key);
     }
 }
 */
 
-
-// not sure what to do here
-void MainWindow::destroyPlot(QObject* obj) {
+/*
+void MainWindow::destroyLivePlot(QObject* obj) {
     QString key = obj->objectName();
     livePlots.take(key); // its already going to be deleted so dont worry about it
 }
+*/
 
 
 /*
 void MainWindow::destroyBDMPlot(QObject* obj) {
     QString key = obj->objectName();
     bdmPlots.take(key); // its already going to be deleted so dont worry about it
-    bdmio->removeHistory(key);
+    bdmIO->removeHistory(key);
 }
 */
 
@@ -774,7 +486,7 @@ void MainWindow::clearBDMPlots() {
 }
 */
 
-
+/*
 void MainWindow::openDefaultPlotPreferences() {
     if (!defaultPreferencesIsOpen) {
         defaultPreferencesIsOpen = true;
@@ -786,10 +498,11 @@ void MainWindow::openDefaultPlotPreferences() {
 
         defaultPreferences->show();
     } else {
-        /* Don't open twice! raise it instead */
+        // Don't open twice! raise it instead
         defaultPreferences->raise();
     }
 }
+*/
 
 
 void MainWindow::closedDefaultPlotPreferences() {
@@ -815,7 +528,7 @@ void MainWindow::openPrefs(PlotWindow *pw, ScaleInfo *current) {
         return;
     }
 
-    keys = livePlots.keys(pw);
+    //keys = livePlots.keys(pw);
     //if (keys.isEmpty())
         //keys = bdmPlots.keys(pw);
 
@@ -852,58 +565,3 @@ void MainWindow::closedPreferences(QObject* obj) {
     // the hash manually
 }
 
-
-Tree::Tree(QWidget *parent) : QTreeView(parent) {
-    connect(this, SIGNAL(expanded(const QModelIndex &)),
-            this, SLOT(expand(const QModelIndex &)));
-    connect(this, SIGNAL(collapsed(const QModelIndex &)),
-            this, SLOT(collapse(const QModelIndex &)));
-};
-
-
-void Tree::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Return) {
-        QModelIndex current = selectionModel()->currentIndex();
-        setExpanded(current, !isExpanded(current));
-    }
-
-    QTreeView::keyPressEvent(event);
-}
-
-
-/*
-void Tree::collapse(const QModelIndex &index) {
-    QRegExp nodeRX(".*\\..*\\..*");     // matches *.*.*
-    BionetModel *bm = (BionetModel*)model();
-
-    // is it a hab?
-    if (index.parent() == QModelIndex()) {
-        QString unsub = bm->name(index) + ".*";
-        bionet_unsubscribe_node_list_by_name(qPrintable(unsub));
-    }
-
-    // match nodes, not resources/streams
-    if ( nodeRX.exactMatch(bm->name(index)) && !bm->name(index).contains(':') ) {
-        QString unsub = bm->name(index) + ":*";
-        bionet_unsubscribe_datapoints_by_name(qPrintable(unsub));
-    }
-}
-
-
-void Tree::expand(const QModelIndex &index) {
-    QRegExp nodeRX(".*\\..*\\..*");     // matches *.*.*
-    BionetModel *bm = (BionetModel*)model();
-
-    // hab?
-    if (index.parent() == QModelIndex()) {
-        QString sub = bm->name(index) + QString(".*");
-        bionet_subscribe_node_list_by_name(qPrintable(sub));
-    }
-
-    // match only nodes, not resources/streams
-    if ( nodeRX.exactMatch(bm->name(index)) && !bm->name(index).contains(':') ) {
-        QString unsub = bm->name(index) + ":*";
-        bionet_subscribe_datapoints_by_name(qPrintable(unsub));
-    }
-}
-*/

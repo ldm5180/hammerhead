@@ -132,7 +132,7 @@ void BDMModel::newDatapoint(bionet_datapoint_t* dp) {
 
 
 
-BDMIO::BDMIO(QWidget *parent) {
+BDMIO::BDMIO(IO *parent) : IO(parent) {
     QStringList horizontalHeaderLabels;
     io = this;
 
@@ -153,7 +153,7 @@ BDMIO::BDMIO(QWidget *parent) {
     //subscriptions->setRowCount(6);
     subscriptions->setHorizontalHeaderLabels(horizontalHeaderLabels);
 
-    controller = new SubscriptionController(subscriptions, parent);
+    controller = new SubscriptionController(subscriptions);
     //connect(controller, SIGNAL(removePattern(QString)), this, SLOT(removeSubscription(QString)));
 
     bdm_register_callback_new_hab(new_hab_cb, NULL);

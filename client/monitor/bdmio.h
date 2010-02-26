@@ -1,4 +1,7 @@
 
+#ifndef BDMIO_H
+#define BDMIO_H
+
 #include <QDebug>
 #include <QInputDialog>
 #include <QList>
@@ -10,6 +13,7 @@
 #include <QTimer>
 #include <QWidget>
 
+#include "io.h"
 #include "bdmconnectiondialog.h"
 #include "bionetmodel.h"
 #include "history.h"
@@ -33,11 +37,11 @@ public slots:
 };
 
 
-class BDMIO : public QWidget {
+class BDMIO : public IO {
     Q_OBJECT
 
     public:
-        BDMIO(QWidget *parent=0);
+        BDMIO(IO *parent=0);
         ~BDMIO();
         
         History* createHistory(QString key);
@@ -59,20 +63,11 @@ class BDMIO : public QWidget {
         //void disconnectFromBDM();
 
         // map callbacks into signals/slots
-        static void new_hab_cb(bionet_hab_t *hab, void * /*usr_data*/) { emit io->newHab(hab); }
-        static void lost_hab_cb(bionet_hab_t *hab, void * /*usr_data*/) { emit io->lostHab(hab); }
-        static void new_node_cb(bionet_node_t *node, void * /*usr_data*/) { emit io->newNode(node); }
-        static void lost_node_cb(bionet_node_t *node, void * /*usr_data*/) { emit io->lostNode(node); }
-        static void datapoint_cb(bionet_datapoint_t *dp, void * /*usr_data*/) { emit io->newDatapoint(dp); }
-
-    signals:
-        void newHab(bionet_hab_t* hab);
-        void lostHab(bionet_hab_t* hab);
-        void newNode(bionet_node_t* node);
-        void lostNode(bionet_node_t* node);
-        void newResource(bionet_resource_t* resource);
-        void newDatapoint(bionet_datapoint_t* dp);
-        //void enableTab(bool enable);
+        static void new_hab_cb(bionet_hab_t *hab, void *user_data) { emit io->newHab(hab, user_data); }
+        static void lost_hab_cb(bionet_hab_t *hab, void *user_data) { emit io->lostHab(hab, user_data); }
+        static void new_node_cb(bionet_node_t *node, void *user_data) { emit io->newNode(node, user_data); }
+        static void lost_node_cb(bionet_node_t *node, void *user_data) { emit io->lostNode(node, user_data); }
+        static void datapoint_cb(bionet_datapoint_t *dp, void *user_data) { emit io->newDatapoint(dp, user_data); }
 
     private:
         SubscriptionController *controller;
@@ -98,3 +93,4 @@ class BDMIO : public QWidget {
         static BDMIO *io;
 };
 
+#endif
