@@ -1,4 +1,4 @@
-#include "monitortab.h"
+#include "monitorpage.h"
 
 
 Tree::Tree(QWidget *parent) : QTreeView(parent) {
@@ -55,7 +55,7 @@ void Tree::expand(const QModelIndex &index) {
 */
 
 
-MonitorTab::MonitorTab(IO* io, BionetModel* model, QWidget *parent) : QWidget(parent) {
+MonitorPage::MonitorPage(IO* io, BionetModel* model, QWidget *parent) : QWidget(parent) {
     view = new Tree;
     rv = new ResourceView;
     archive = new Archive(this);
@@ -116,7 +116,7 @@ MonitorTab::MonitorTab(IO* io, BionetModel* model, QWidget *parent) : QWidget(pa
 }
 
 
-void MonitorTab::connectObjects() {
+void MonitorPage::connectObjects() {
     // Connects from Bionet to the model
     connect(io, SIGNAL(newHab(bionet_hab_t*, void*)), 
         model, SLOT(newHab(bionet_hab_t*)));
@@ -176,13 +176,13 @@ void MonitorTab::connectObjects() {
 }
 
 
-void MonitorTab::makePlot() {
+void MonitorPage::makePlot() {
     qDebug() << "making plot:" << rv->current();
     makePlot(rv->current());
 }
 
 
-void MonitorTab::makePlot(QString key) {
+void MonitorPage::makePlot(QString key) {
     
     if (( !archive->contains(key) ) || ( archive->history(key)->size() == 0 ))
         return;
@@ -204,7 +204,7 @@ void MonitorTab::makePlot(QString key) {
 }
 
 
-void MonitorTab::updatePlot(bionet_datapoint_t* datapoint) {
+void MonitorPage::updatePlot(bionet_datapoint_t* datapoint) {
     bionet_resource_t* resource;
     const char *resource_name;
 
@@ -228,7 +228,7 @@ void MonitorTab::updatePlot(bionet_datapoint_t* datapoint) {
 }
 
 
-void MonitorTab::lostPlot(QString key) {
+void MonitorPage::lostPlot(QString key) {
     PlotWindow* plot = plots.take(key);
 
     if ( plot != NULL ) {
@@ -236,17 +236,17 @@ void MonitorTab::lostPlot(QString key) {
     }
 }
 
-void MonitorTab::destroyPlot(QObject* obj) {
+void MonitorPage::destroyPlot(QObject* obj) {
     QString key = obj->objectName();
     plots.take(key); // its already going to be deleted so dont worry about it
 }
 
 
-void MonitorTab::clearPlots() {
+void MonitorPage::clearPlots() {
     foreach(QString key, plots.keys())
         lostPlot(key);
 }
 
-void MonitorTab::updateScaleInfo(ScaleInfo * newScale) {
+void MonitorPage::updateScaleInfo(ScaleInfo * newScale) {
     defaultScale = newScale;
 }

@@ -21,7 +21,7 @@
 #include "io.h"
 #include "bdmio.h"
 #include "bionetio.h"
-#include "monitortab.h"
+#include "monitorpage.h"
 #include "plotpreferences.h"
 #include "scaleinfo.h"
 
@@ -59,7 +59,7 @@ class MainWindow : public QWidget {
         QMenu* fileMenu, *plotMenu, *helpMenu;
 
         QTabWidget *tabs;
-        MonitorTab *liveTab, *bdmTab;
+        MonitorPage *liveTab, *bdmTab;
 
         PlotPreferences *defaultPreferences;
         ScaleInfo *scaleInfoTemplate;

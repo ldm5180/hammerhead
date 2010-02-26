@@ -3,8 +3,8 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
-#ifndef BM_MONITOR_TAB_H
-#define BM_MONITOR_TAB_H
+#ifndef BM_MONITOR_PAGE_H
+#define BM_MONITOR_PAGE_H
 
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -43,11 +43,11 @@ class Tree : public QTreeView {
 };
 
 
-class MonitorTab : public QWidget {
+class MonitorPage : public QWidget {
     Q_OBJECT
 
     public:
-        MonitorTab(IO* io=0, BionetModel *model=0, QWidget *parent=0);
+        MonitorPage(IO* io=0, BionetModel *model=0, QWidget *parent=0);
 
     public slots:
         void makePlot(QString key);

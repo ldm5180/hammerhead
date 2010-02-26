@@ -66,8 +66,8 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     liveIO->setup();
     
     // create the tabs
-    liveTab = new MonitorTab(liveIO, liveModel, this);
-    //bdmTab = new MonitorTab(NULL, NULL, this);
+    liveTab = new MonitorPage(liveIO, liveModel, this);
+    //bdmTab = new MonitorPage(NULL, NULL, this);
 
     setupWindow();
 
@@ -222,6 +222,6 @@ void MainWindow::closedDefaultPlotPreferences() {
 
 
 void MainWindow::plot() {
-    MonitorTab *tab = (MonitorTab*)tabs->currentWidget();
+    MonitorPage *tab = (MonitorPage*)tabs->currentWidget();
     tab->makePlot();
 }
