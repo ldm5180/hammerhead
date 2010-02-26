@@ -157,5 +157,22 @@ QString PlotWindow::createXLabel() {
 }
 
 void PlotWindow::openOptions() {
-    emit(newPreferences(this, scale));
+    // if preferences doesn't exist, create it
+    if (preferences == NULL) {
+        preferences = new PlotPreferences(scale, objectName(), this);
+
+        // FIXME: not properly titled should be updateScale, not apply changes
+        connect(preferences, SIGNAL(applyChanges(ScaleInfo*)),
+            this, SLOT(setScaleInfo(ScaleInfo*)));
+    }
+
+    // if preferences exists but isn't shown, show it
+    if ( !preferences->isVisible() )
+        preferences->show();
+
+    // if preferences exists but is buried under other windows, raise it
+    if ( !preferences->isActiveWindow() ) {
+        preferences->raise();
+        //preferences->activeWindow(); // FIXME?
+    }
 }

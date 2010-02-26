@@ -47,7 +47,17 @@ class MonitorTab : public QWidget {
     Q_OBJECT
 
     public:
-        MonitorTab(QWidget *parent=0);
+        MonitorTab(IO* io=0, BionetModel *model=0, QWidget *parent=0);
+
+    public slots:
+        void makePlot(QString key);
+        void makePlot();
+        void updatePlot(bionet_datapoint_t* datapoint);
+        void lostPlot(QString key);
+        void destroyPlot(QObject *obj);
+        void clearPlots();
+
+        void updateScaleInfo(ScaleInfo * newScale);
 
     protected:
         BionetModel *model;
@@ -65,6 +75,8 @@ class MonitorTab : public QWidget {
 
         QHash<QString, PlotWindow*> plots;
         QHash<QString, PlotPreferences*> preferences;
+
+        ScaleInfo *defaultScale;
 };
 
 #endif

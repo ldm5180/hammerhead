@@ -98,6 +98,12 @@ ResourceView::~ResourceView() {
 }
 
 
+QString ResourceView::current() {
+    QString name = QString("%1.%2.%3:%4").arg(habType->text()).arg(habId->text()).arg(nodeId->text()).arg(resourceId->text());
+    return name;
+}
+
+
 void ResourceView::updatePanel(bionet_resource_t* resource) {
     bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
 

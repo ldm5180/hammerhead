@@ -5,8 +5,7 @@ Tree::Tree(QWidget *parent) : QTreeView(parent) {
     connect(this, SIGNAL(expanded(const QModelIndex &)),
         this, SLOT(expand(const QModelIndex &)));
     connect(this, SIGNAL(collapsed(const QModelIndex &)),
-        this, SLOT(collapse(const QModelIndex &)));
-}
+        this, SLOT(collapse(const QModelIndex &))); }
 
 
 void Tree::keyPressEvent(QKeyEvent *event) {
@@ -56,9 +55,27 @@ void Tree::expand(const QModelIndex &index) {
 */
 
 
-MonitorTab::MonitorTab(QWidget *parent) : QWidget(parent) {
+MonitorTab::MonitorTab(IO* io, BionetModel* model, QWidget *parent) : QWidget(parent) {
     view = new Tree;
     rv = new ResourceView;
+    archive = new Archive(this);
+
+    this->io = NULL;
+    this->model = NULL;
+
+    if ( io == NULL ) {
+        this->io = new IO(this);
+    } else {
+        io->setParent(this);
+        this->io = io;
+    }
+
+    if ( model == NULL ) {
+        this->model = new BionetModel(this); 
+    } else {
+        this->model = model;
+        model->setParent(this);
+    }
 
     // setup the model view
     view->setAlternatingRowColors(TRUE);
@@ -78,6 +95,7 @@ MonitorTab::MonitorTab(QWidget *parent) : QWidget(parent) {
     view->setHeader(header);
 
     view->show();
+    view->setModel(this->model);
 
     // FIXME: resourceview should be a QWidget, not a layout
     rvHolder = new QWidget(this);
@@ -89,11 +107,17 @@ MonitorTab::MonitorTab(QWidget *parent) : QWidget(parent) {
 
     layout = new QHBoxLayout(this);
     layout->addWidget(splitter);
+
+    defaultScale = NULL;
+
+    connectObjects();
+
+    io->setup();
 }
 
 
 void MonitorTab::connectObjects() {
-    // Connects from Bionet to the liveModel
+    // Connects from Bionet to the model
     connect(io, SIGNAL(newHab(bionet_hab_t*, void*)), 
         model, SLOT(newHab(bionet_hab_t*)));
     connect(io, SIGNAL(lostHab(bionet_hab_t*, void*)), 
@@ -105,9 +129,8 @@ void MonitorTab::connectObjects() {
     connect(io, SIGNAL(newDatapoint(bionet_datapoint_t*, void*)), 
         model, SLOT(newDatapoint(bionet_datapoint_t*)));
 
-    // FIXME: need to somehow account for different plots here
-    //connect(model, SIGNAL(lostResource(QString)), 
-    //  this, SLOT(lostPlot(QString)));
+    connect(model, SIGNAL(lostResource(QString)), 
+        this, SLOT(lostPlot(QString)));
     
     /* connect to the bionet model */
     connect(model, SIGNAL(layoutChanged()), 
@@ -122,12 +145,12 @@ void MonitorTab::connectObjects() {
     connect(io, SIGNAL(lostNode(bionet_node_t*, void*)), 
         rv, SLOT(lostNode(bionet_node_t*)));
 
-    // Connecting everything to the live sample archive
+    // Connecting everything to the sample archive
     connect(model, SIGNAL(newResource(QString)), 
         archive, SLOT(addResource(QString)));
     connect(model, SIGNAL(lostResource(QString)), 
         archive, SLOT(removeResource(QString)));
-    connect(model, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
+    connect(io, SIGNAL(newDatapoint(bionet_datapoint_t*, void*)), 
         archive, SLOT(recordSample(bionet_datapoint_t*)));
 
     // connect the view to the model
@@ -144,12 +167,86 @@ void MonitorTab::connectObjects() {
 
     // FIXME: need to somehow account for plotting here
     connect(io, SIGNAL(newDatapoint(bionet_datapoint_t*, void*)), 
-        this, SLOT(updateLivePlot(bionet_datapoint_t*)));
+        this, SLOT(updatePlot(bionet_datapoint_t*)));
     
-    // FIXME: need to make plotting better here
     connect(rv, SIGNAL(plotResource(QString)), 
-        this, SLOT(makeLivePlot(QString)));
+        this, SLOT(makePlot(QString)));
 
     return;
 }
 
+
+void MonitorTab::makePlot() {
+    qDebug() << "making plot:" << rv->current();
+    makePlot(rv->current());
+}
+
+
+void MonitorTab::makePlot(QString key) {
+    
+    if (( !archive->contains(key) ) || ( archive->history(key)->size() == 0 ))
+        return;
+
+    // FIXME: need to have a better way of passing the 
+    // default plot preferences to newly created plots
+    if ( !plots.contains(key) ) {
+        PlotWindow* plot = new PlotWindow(key, archive->history(key), 
+                defaultScale, 
+                this);
+
+        plots.insert(key, plot);
+
+        connect(plot, SIGNAL(newPreferences(PlotWindow*, ScaleInfo*)), 
+            this, SLOT(openPrefs(PlotWindow*, ScaleInfo*)));
+        connect(plot, SIGNAL(destroyed(QObject*)), 
+            this, SLOT(destroyPlot(QObject*)));
+    }
+}
+
+
+void MonitorTab::updatePlot(bionet_datapoint_t* datapoint) {
+    bionet_resource_t* resource;
+    const char *resource_name;
+
+    if (datapoint == NULL)
+        return;
+
+    resource = bionet_datapoint_get_resource(datapoint);
+
+    resource_name = bionet_resource_get_name(resource);
+    if (resource_name == NULL) {
+        qWarning() << "updatePlot(): unable to get resource name" << endl;
+        return;
+    }
+
+    QString key = QString(resource_name);
+    PlotWindow* plot = plots.value(key);
+
+    if ( plot != NULL ) {
+        plot->updatePlot();
+    }
+}
+
+
+void MonitorTab::lostPlot(QString key) {
+    PlotWindow* plot = plots.take(key);
+
+    if ( plot != NULL ) {
+        delete plot;
+    }
+}
+
+void MonitorTab::destroyPlot(QObject* obj) {
+    QString key = obj->objectName();
+    plots.take(key); // its already going to be deleted so dont worry about it
+}
+
+
+void MonitorTab::clearPlots() {
+    foreach(QString key, plots.keys())
+        lostPlot(key);
+}
+
+void MonitorTab::updateScaleInfo(ScaleInfo * newScale) {
+    defaultScale = newScale;
+}

@@ -28,6 +28,8 @@ class ResourceView  : public QGridLayout {
         ResourceView (QWidget* parent=0);
         ~ResourceView();
 
+        QString current();
+
     public slots:
         //  If a resource is selected the update panel slot is entered;
         //      -if no resource was selected earlier, then the panel layout is selected
