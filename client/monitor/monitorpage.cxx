@@ -55,27 +55,10 @@ void Tree::expand(const QModelIndex &index) {
 */
 
 
-MonitorPage::MonitorPage(IO* io, BionetModel* model, QWidget *parent) : QWidget(parent) {
+MonitorPage::MonitorPage(QWidget *parent) : QWidget(parent) {
     view = new Tree;
     rv = new ResourceView;
     archive = new Archive(this);
-
-    this->io = NULL;
-    this->model = NULL;
-
-    if ( io == NULL ) {
-        this->io = new IO(this);
-    } else {
-        io->setParent(this);
-        this->io = io;
-    }
-
-    if ( model == NULL ) {
-        this->model = new BionetModel(this); 
-    } else {
-        this->model = model;
-        model->setParent(this);
-    }
 
     // setup the model view
     view->setAlternatingRowColors(TRUE);
@@ -95,7 +78,6 @@ MonitorPage::MonitorPage(IO* io, BionetModel* model, QWidget *parent) : QWidget(
     view->setHeader(header);
 
     view->show();
-    view->setModel(this->model);
 
     // FIXME: resourceview should be a QWidget, not a layout
     rvHolder = new QWidget(this);
@@ -109,15 +91,12 @@ MonitorPage::MonitorPage(IO* io, BionetModel* model, QWidget *parent) : QWidget(
     layout->addWidget(splitter);
 
     defaultScale = NULL;
-
-    connectObjects();
-
-    io->setup();
 }
 
 
 void MonitorPage::connectObjects() {
-    // Connects from Bionet to the model
+
+    // Connects the io to the model
     connect(io, SIGNAL(newHab(bionet_hab_t*, void*)), 
         model, SLOT(newHab(bionet_hab_t*)));
     connect(io, SIGNAL(lostHab(bionet_hab_t*, void*)), 
@@ -165,7 +144,6 @@ void MonitorPage::connectObjects() {
     connect(model, SIGNAL(streamSelected(bionet_stream_t*)), 
         rv, SLOT(newStreamSelected(bionet_stream_t*)));
 
-    // FIXME: need to somehow account for plotting here
     connect(io, SIGNAL(newDatapoint(bionet_datapoint_t*, void*)), 
         this, SLOT(updatePlot(bionet_datapoint_t*)));
     

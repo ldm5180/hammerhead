@@ -59,21 +59,10 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     layout = new QGridLayout(this);
     layout->setMenuBar(menuBar);
 
-    // create the live bionet tab (which also has model ownership
-    BionetIO *liveIO = new BionetIO();
-    BionetModel *liveModel = new BionetModel;
-
-    liveIO->setup();
-    
-    // create the tabs
-    liveTab = new MonitorPage(liveIO, liveModel, this);
+    liveTab = new BionetPage(this);
     //bdmTab = new MonitorPage(NULL, NULL, this);
 
     setupWindow();
-
-    bionet_subscribe_hab_list_by_name("*.*");
-    bionet_subscribe_node_list_by_name("*.*.*");
-    bionet_subscribe_datapoints_by_name("*.*.*:*");
 
     scaleInfoTemplate = new ScaleInfo;
 }

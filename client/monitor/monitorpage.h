@@ -47,7 +47,7 @@ class MonitorPage : public QWidget {
     Q_OBJECT
 
     public:
-        MonitorPage(IO* io=0, BionetModel *model=0, QWidget *parent=0);
+        MonitorPage(QWidget *parent=0);
 
     public slots:
         void makePlot(QString key);
