@@ -60,7 +60,7 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     layout->setMenuBar(menuBar);
 
     liveTab = new BionetPage(this);
-    //bdmTab = new MonitorPage(NULL, NULL, this);
+    bdmTab = new MonitorPage(this);
 
     setupWindow();
 
@@ -85,7 +85,7 @@ MainWindow::~MainWindow() {
 void MainWindow::setupWindow() {
     tabs = new QTabWidget;
     tabs->addTab(liveTab, "Live");
-    //tabs->addTab(bdmTab, "History");
+    tabs->addTab(bdmTab, "History");
 
     layout->addWidget(tabs);
 }
