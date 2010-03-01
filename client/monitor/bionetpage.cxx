@@ -18,3 +18,10 @@ BionetPage::BionetPage(QWidget *parent) : MonitorPage(parent) {
 
     connectObjects();
 }
+
+
+BionetPage::~BionetPage() {
+    delete liveIO;
+    delete model;
+}
+

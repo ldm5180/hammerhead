@@ -68,15 +68,6 @@ MonitorPage::MonitorPage(QWidget *parent) : QWidget(parent) {
     view->setMinimumHeight(100);
     view->setMinimumWidth(100);
 
-    // setup the model view's header
-    QHeaderView* header;
-    header = view->header();
-    header->setMovable(FALSE);
-    header->resizeSection(0,200); // resizing the columns
-    header->resizeSection(1,75); 
-    header->resizeSection(2,50); 
-    view->setHeader(header);
-
     view->show();
 
     // FIXME: resourceview should be a QWidget, not a layout
@@ -95,6 +86,37 @@ MonitorPage::MonitorPage(QWidget *parent) : QWidget(parent) {
 
 
 void MonitorPage::connectObjects() {
+    if (model == NULL) {
+        qWarning() << "model is NULL, can't connect objects";
+        return;
+    }
+    if (io == NULL) {
+        qWarning() << "io is NULL, can't connect objects";
+        return;
+    }
+
+    view->setModel(model);
+
+    // setup the model
+    model->setColumnCount(5);
+    model->setRowCount(0);
+
+    model->setHeaderData(0, Qt::Horizontal, QString("Habs.Nodes.Resources"));
+    model->setHeaderData(1, Qt::Horizontal, QString("Flavor"));
+    model->setHeaderData(2, Qt::Horizontal, QString("Type"));
+    model->setHeaderData(3, Qt::Horizontal, QString("Timestamp"));
+    model->setHeaderData(4, Qt::Horizontal, QString("Value"));
+
+    // setup the model view's header
+    QHeaderView* header;
+    header = view->header();
+    header->setMovable(FALSE);
+    header->resizeSection(0,200); // resizing the columns
+    header->resizeSection(1,75); 
+    header->resizeSection(2,50); 
+    view->setHeader(header);
+
+    view->show();
 
     // Connects the io to the model
     connect(io, SIGNAL(newHab(bionet_hab_t*, void*)), 
@@ -114,7 +136,6 @@ void MonitorPage::connectObjects() {
     /* connect to the bionet model */
     connect(model, SIGNAL(layoutChanged()), 
         view, SLOT(repaint()));
-    view->setModel(model);
 
     // (for losing habs & updating the pane)
     connect(io, SIGNAL(newDatapoint(bionet_datapoint_t*, void*)), 
@@ -155,7 +176,6 @@ void MonitorPage::connectObjects() {
 
 
 void MonitorPage::makePlot() {
-    qDebug() << "making plot:" << rv->current();
     makePlot(rv->current());
 }
 
@@ -174,8 +194,6 @@ void MonitorPage::makePlot(QString key) {
 
         plots.insert(key, plot);
 
-        connect(plot, SIGNAL(newPreferences(PlotWindow*, ScaleInfo*)), 
-            this, SLOT(openPrefs(PlotWindow*, ScaleInfo*)));
         connect(plot, SIGNAL(destroyed(QObject*)), 
             this, SLOT(destroyPlot(QObject*)));
     }

@@ -14,7 +14,7 @@ class BionetPage : public MonitorPage {
 
     public:
         BionetPage(QWidget *parent=0);
-        //~BionetPage();
+        ~BionetPage();
 
     private:
         BionetIO *liveIO;
