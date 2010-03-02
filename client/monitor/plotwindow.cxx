@@ -177,6 +177,5 @@ void PlotWindow::openOptions() {
     // if preferences exists but is buried under other windows, raise it
     if ( !preferences->isActiveWindow() ) {
         preferences->raise();
-        //preferences->activeWindow(); // FIXME?
     }
 }
