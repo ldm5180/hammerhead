@@ -196,8 +196,10 @@ void MainWindow::openDefaultPlotPreferences() {
 
         defaultPreferences->show();
     } 
+
+    if ( !defaultPreferences->isVisible() )
+        defaultPreferences->show();
     
-    // defaultPreferences != NULL anymore...
     if ( !defaultPreferences->isActiveWindow() )
         defaultPreferences->raise();
 }
