@@ -9,7 +9,7 @@ PlotPreferences::PlotPreferences(ScaleInfo *defaultValues,
         QString key, 
         QWidget *parent) : QWidget(parent) {
     setWindowFlags(Qt::Window);
-    setAttribute(Qt::WA_DeleteOnClose);
+    //setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(QString(tr("Plot Preferences: ")) + key);
 
     scaleInfo = defaultValues->copy();

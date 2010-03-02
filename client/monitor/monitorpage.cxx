@@ -232,6 +232,7 @@ void MonitorPage::lostPlot(QString key) {
     }
 }
 
+
 void MonitorPage::destroyPlot(QObject* obj) {
     QString key = obj->objectName();
     plots.take(key); // its already going to be deleted so dont worry about it
@@ -245,4 +246,6 @@ void MonitorPage::clearPlots() {
 
 void MonitorPage::updateScaleInfo(ScaleInfo * newScale) {
     defaultScale = newScale;
+    foreach(PlotWindow *plot, plots.values())
+        plot->setScaleInfo(defaultScale);
 }

@@ -14,10 +14,6 @@ BDMPage::BDMPage(QWidget *parent) :
     
     connectObjects();
 
-    // stuff that isn't included in connect objects
-    connect(bdmIO, SIGNAL(newResource(bionet_resource_t*)),
-        bdmModel, SLOT(addResource(bionet_resource_t*)));
-
     bdmIO->setup();
 }
 

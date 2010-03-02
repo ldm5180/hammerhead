@@ -49,7 +49,6 @@ class MainWindow : public QWidget {
         void plot(); // so you can click the plot button from the top
 
         void openDefaultPlotPreferences();
-        void closedDefaultPlotPreferences();
 
     private:
         QAction *quitAction, *plotAction, *aboutAction, 
@@ -65,7 +64,6 @@ class MainWindow : public QWidget {
 
         PlotPreferences *defaultPreferences;
         ScaleInfo *scaleInfoTemplate;
-        bool defaultPreferencesIsOpen;
 
         void createActions();
         void createMenus();

@@ -19,6 +19,7 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
     setWindowTitle(title);
     setAttribute(Qt::WA_DeleteOnClose);
 
+    preferences = NULL;
     this->history = history;
 
     /* Creating & Setting up the Plot & PlotCurve */
@@ -77,9 +78,13 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
 
 
 PlotWindow::~PlotWindow() {
-    delete closeAction;
     if (scale != NULL)
         delete scale;
+
+    if (preferences != NULL)
+        delete preferences;
+
+    delete closeAction;
     delete curve;
     delete plot;
 }

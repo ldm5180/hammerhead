@@ -17,8 +17,6 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     argv ++;
     setWindowTitle(title);
 
-    defaultPreferencesIsOpen = false;
-
     // 
     // Parsing the Command Line Args
     //
@@ -50,6 +48,7 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     
     if (sampleSize < 0)
         sampleSize = 10000;
+    defaultPreferences = NULL;
     
     liveTab = new BionetPage(this);
     bdmTab = new BDMPage(this);
@@ -186,29 +185,21 @@ Ctrl-Q\t Quit"
 }
 
 
-// FIXME: create the plot preferences only once & then show & hide
 void MainWindow::openDefaultPlotPreferences() {
-    if (!defaultPreferencesIsOpen) {
-        defaultPreferencesIsOpen = true;
-
+    if ( defaultPreferences == NULL ) {
         defaultPreferences = new PlotPreferences(scaleInfoTemplate, QString("All"), this);
 
         connect(defaultPreferences, SIGNAL(applyChanges(ScaleInfo*)), 
             bdmTab, SLOT(updateScaleInfo(ScaleInfo*)));
         connect(defaultPreferences, SIGNAL(applyChanges(ScaleInfo*)), 
             liveTab, SLOT(updateScaleInfo(ScaleInfo*)));
-        connect(defaultPreferences, SIGNAL(destroyed(QObject*)), this, SLOT(closedDefaultPlotPreferences()));
 
         defaultPreferences->show();
-    } else {
-        // Don't open twice! raise it instead
+    } 
+    
+    // defaultPreferences != NULL anymore...
+    if ( !defaultPreferences->isActiveWindow() )
         defaultPreferences->raise();
-    }
-}
-
-
-void MainWindow::closedDefaultPlotPreferences() {
-    defaultPreferencesIsOpen = false;
 }
 
 
