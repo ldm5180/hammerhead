@@ -42,25 +42,13 @@ class BDMIO : public IO {
 
     public:
         BDMIO(IO *parent=0);
-        ~BDMIO();
         
-        History* createHistory(QString key);
-        //void setPollingFrequency(double freq);
-        //double getPollingFrequency();
-        void removeHistory(QString key);
         struct timeval *toTimeval(QStandardItem *entry);
 
     public slots:
         void setup();
-        //void pollBDM();
-        void subscribe(int row);
-        void editSubscriptions();
+        void subscribe(QString pattern, struct timeval *start, struct timeval *stop);
         void messageReceived();
-        //void changeFrequency();
-        //void removeSubscription(QString pattern);
-        //void promptForConnection();
-        //void setHostnameAndPort(QString name, int num);
-        //void disconnectFromBDM();
 
         // map callbacks into signals/slots
         static void new_hab_cb(bionet_hab_t *hab, void *user_data) { emit io->newHab(hab, user_data); }
@@ -70,25 +58,8 @@ class BDMIO : public IO {
         static void datapoint_cb(bionet_datapoint_t *dp, void *user_data) { emit io->newDatapoint(dp, user_data); }
 
     private:
-        SubscriptionController *controller;
-        QStandardItemModel *subscriptions;
         int bdmFD;
-        QHash<QString, History*> histories;
         QSocketNotifier *bdm;
-
-        /*
-        bionet_hab_t* cacheFindHab(bionet_hab_t *hab);
-        bionet_node_t* cacheFindNode(bionet_hab_t *cached_hab, bionet_node_t *node);
-        bionet_resource_t* cacheFindResource(bionet_node_t *cached_node, bionet_resource_t *resource);
-
-        bionet_hab_t* copyHab(bionet_hab_t *hab);
-        bionet_node_t* copyNode(bionet_hab_t *cached_hab, bionet_node_t *node);
-        bionet_resource_t* copyResource(bionet_node_t *cached_node, bionet_resource_t *resource);
-        void copyDatapoint(bionet_resource_t* cached_resource, bionet_datapoint_t *dp);
-
-        void clearBDMCache();
-        GSList *hab_cache;
-        */
 
         static BDMIO *io;
 };

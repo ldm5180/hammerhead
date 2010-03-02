@@ -17,6 +17,7 @@ bionet_monitor_SOURCES =        \
     mainwindow.cxx              \
     monitorpage.cxx             \
     bionetpage.cxx              \
+    bdmpage.cxx                 \
     scaleinfo.cxx               \
     plotpreferences.cxx         \
     plotwindow.cxx              \
@@ -30,6 +31,7 @@ bionet_monitor_SOURCES =        \
     mainwindow.moc.cpp          \
     monitorpage.moc.cpp         \
     bionetpage.moc.cpp          \
+    bdmpage.moc.cpp             \
     scaleinfo.moc.cpp           \
     plotwindow.moc.cpp          \
     plotpreferences.moc.cpp     \
@@ -44,6 +46,7 @@ BUILT_SOURCES =                 \
     mainwindow.moc.cpp          \
     monitorpage.moc.cpp         \
     bionetpage.moc.cpp          \
+    bdmpage.moc.cpp             \
     scaleinfo.moc.cpp           \
     plotwindow.moc.cpp          \
     plotpreferences.moc.cpp     \

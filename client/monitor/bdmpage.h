@@ -5,6 +5,7 @@
 
 
 #include "bionetio.h"
+#include "bdmio.h"
 #include "bionetmodel.h"
 #include "monitorpage.h"
 
@@ -16,9 +17,13 @@ class BDMPage : public MonitorPage {
         BDMPage(QWidget *parent=0);
         ~BDMPage();
 
+    public slots:
+        void updateSubscriptions();
+
     private:
         BDMIO *bdmIO;
         BDMModel *bdmModel;
+        SubscriptionController *controller;
 };
 
 

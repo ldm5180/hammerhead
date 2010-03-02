@@ -23,6 +23,7 @@
 #include "bionetio.h"
 #include "monitorpage.h"
 #include "bionetpage.h"
+#include "bdmpage.h"
 #include "plotpreferences.h"
 #include "scaleinfo.h"
 

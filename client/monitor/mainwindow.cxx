@@ -51,6 +51,9 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     if (sampleSize < 0)
         sampleSize = 10000;
     
+    liveTab = new BionetPage(this);
+    bdmTab = new BDMPage(this);
+
     // set this QWidget's layout to include this menu
     menuBar = new QMenuBar;
     createActions();
@@ -58,9 +61,6 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
 
     layout = new QGridLayout(this);
     layout->setMenuBar(menuBar);
-
-    liveTab = new BionetPage(this);
-    bdmTab = new MonitorPage(this);
 
     setupWindow();
 
@@ -109,8 +109,10 @@ void MainWindow::createActions() {
     preferencesAction = new QAction(tr("&All/Default Plot Preferences"), this);
     connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openDefaultPlotPreferences()));
 
-    updateSubscriptionsAction = new QAction(tr("&Change Subscriptions"), this);
-    updateSubscriptionsAction->setShortcut(tr("Ctrl+C"));
+    updateSubscriptionsAction = new QAction(tr("&Add BDM Subscriptions"), this);
+    updateSubscriptionsAction->setShortcut(tr("Ctrl+A"));
+    connect(updateSubscriptionsAction, SIGNAL(triggered()), 
+        bdmTab, SLOT(updateSubscriptions()));
 }
 
 
