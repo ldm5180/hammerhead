@@ -7,6 +7,8 @@
 
 #include <asn_application.h>
 
+#include "libbionet-asn-decl.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,6 +40,7 @@ asn_enc_rval_t xer_encode(struct asn_TYPE_descriptor_s *type_descriptor,
  * 	-1: Problem printing the structure.
  * WARNING: No sensible errno value is returned.
  */
+BIONET_ASN_API_DECL
 int xer_fprint(FILE *stream, struct asn_TYPE_descriptor_s *td, void *sptr);
 
 /*
