@@ -85,8 +85,8 @@ MainWindow::~MainWindow() {
 
 void MainWindow::setupWindow() {
     tabs = new QTabWidget;
-    tabs->addTab(liveTab, "Live");
-    tabs->addTab(bdmTab, "History");
+    tabs->addTab(liveTab, "&Live");
+    tabs->addTab(bdmTab, "&History");
 
     layout->addWidget(tabs);
 }
@@ -101,16 +101,16 @@ void MainWindow::createActions() {
     plotAction->setShortcut(tr("Ctrl+P"));
     connect(plotAction, SIGNAL(triggered()), this, SLOT(plot()));
     
-    aboutAction = new QAction(tr("&How-To"), this);
+    aboutAction = new QAction(tr("H&ow-To"), this);
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
 
     shortcuts = new QAction(tr("&Shortcuts"), this);
     connect(shortcuts, SIGNAL(triggered()), this, SLOT(cuts()));
 
-    preferencesAction = new QAction(tr("&All/Default Plot Preferences"), this);
+    preferencesAction = new QAction(tr("&Default Plot Preferences..."), this);
     connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openDefaultPlotPreferences()));
 
-    updateSubscriptionsAction = new QAction(tr("&Add BDM Subscriptions"), this);
+    updateSubscriptionsAction = new QAction(tr("&Add BDM Subscriptions..."), this);
     updateSubscriptionsAction->setShortcut(tr("Ctrl+A"));
     connect(updateSubscriptionsAction, SIGNAL(triggered()), 
         bdmTab, SLOT(updateSubscriptions()));
