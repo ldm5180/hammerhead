@@ -181,8 +181,6 @@ void MonitorPage::makePlot(QString key) {
     if (( !archive->contains(key) ) || ( archive->history(key)->size() == 0 ))
         return;
 
-    // FIXME: need to have a better way of passing the 
-    // default plot preferences to newly created plots
     if ( !plots.contains(key) ) {
         PlotWindow* plot = new PlotWindow(key, archive->history(key), 
                 defaultScale, 
