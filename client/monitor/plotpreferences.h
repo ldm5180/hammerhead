@@ -66,7 +66,7 @@ class PlotPreferences : public QWidget {
         void apply();
 
     signals:
-        void applyChanges(ScaleInfo *si);
+        void newScaleInfo(ScaleInfo *si);
 
     private:
         QGroupBox *yAxis, *xAxis;

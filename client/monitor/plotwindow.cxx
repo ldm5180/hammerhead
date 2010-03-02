@@ -166,8 +166,7 @@ void PlotWindow::openOptions() {
     if (preferences == NULL) {
         preferences = new PlotPreferences(scale, objectName(), this);
 
-        // FIXME: not properly titled should be updateScale, not apply changes
-        connect(preferences, SIGNAL(applyChanges(ScaleInfo*)),
+        connect(preferences, SIGNAL(newScaleInfo(ScaleInfo*)),
             this, SLOT(setScaleInfo(ScaleInfo*)));
     }
 

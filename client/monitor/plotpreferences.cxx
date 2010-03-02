@@ -303,7 +303,7 @@ void PlotPreferences::adjustXSWDatapoints() {
 }
 
 void PlotPreferences::apply() {
-    emit applyChanges(scaleInfo);
+    emit newScaleInfo(scaleInfo);
 }
 
 void PlotPreferences::applyOk() {
