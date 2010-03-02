@@ -64,6 +64,8 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     setupWindow();
 
     scaleInfoTemplate = new ScaleInfo;
+
+    liveTab->setFocus(Qt::OtherFocusReason);
 }
 
 

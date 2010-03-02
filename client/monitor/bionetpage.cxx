@@ -17,6 +17,8 @@ BionetPage::BionetPage(QWidget *parent) : MonitorPage(parent) {
     bionet_subscribe_datapoints_by_name("*.*.*:*");
 
     connectObjects();
+
+    setFocusProxy(view);
 }
 
 
