@@ -69,7 +69,6 @@ class MonitorPage : public QWidget {
         void connectObjects();
 
     private:
-        QWidget *rvHolder;
         QHBoxLayout *layout;
         QSplitter *splitter;
 

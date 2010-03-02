@@ -18,6 +18,7 @@ BionetPage::BionetPage(QWidget *parent) : MonitorPage(parent) {
 
     connectObjects();
 
+    setTabOrder(view, rv);
     setFocusProxy(view);
 }
 

@@ -70,13 +70,9 @@ MonitorPage::MonitorPage(QWidget *parent) : QWidget(parent) {
 
     view->show();
 
-    // FIXME: resourceview should be a QWidget, not a layout
-    rvHolder = new QWidget(this);
-    rvHolder->setLayout(rv);
-
     splitter = new QSplitter(this);
     splitter->addWidget(view);
-    splitter->addWidget(rvHolder);
+    splitter->addWidget(rv);
 
     layout = new QHBoxLayout(this);
     layout->addWidget(splitter);

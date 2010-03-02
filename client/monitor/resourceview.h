@@ -21,7 +21,7 @@ extern "C" {
 #include "bionet-util.h"
 };
 
-class ResourceView  : public QGridLayout {
+class ResourceView  : public QWidget {
     Q_OBJECT
 
     public:
@@ -55,6 +55,8 @@ class ResourceView  : public QGridLayout {
         bool habInPanel(const char* habTypeComparison, const char* habIdComparison);
         bool nodeInPanel(const char* habTypeComparison, const char* habIdComparison, const char* nodeIdComparison);
         void removeSubmitableRows();
+
+        QGridLayout *layout;
         
         // For the panel, the stuff on the left (these never change)
         QLabel *habTypeTitle;
