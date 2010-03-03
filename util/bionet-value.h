@@ -20,6 +20,9 @@
 
 #include "libbionet-util-decl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /**
  * @brief Get the value's associated resource
  *
@@ -618,6 +621,9 @@ int bionet_value_get_str(bionet_value_t *value,
 BIONET_UTIL_API_DECL
 bionet_value_t * bionet_value_dup(bionet_resource_t *resource, bionet_value_t *value);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __BIONET_VALUE_H */
 
