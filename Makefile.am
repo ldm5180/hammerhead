@@ -36,8 +36,22 @@ doxygen/html/index.html: $(DOXYGEN_INPUT)
 clean-local:
 	rm -rf doxygen
 
+if ENABLE_WIN32
+# Make a MS Visual C package....
+install-exec-hook:
+	cd $(DESTDIR)$(libdir) && \
+	  for f in *.dll.a; do \
+	    mv -f $$f `echo $$f | sed -e 's/.dll.a$$/.lib/'`; \
+	  done && \
+	  for f in *.a; do \
+	    mv -f $$f `echo $$f | sed -e 's/.a$$/_static.lib/'`; \
+	  done;
+
+else
 install-exec-hook:
 	-$(LDCONFIG_EXE)
+endif
+
 
 .PHONY: test
 test:
