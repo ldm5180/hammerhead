@@ -140,6 +140,9 @@ BDMIO::BDMIO(IO *parent) : IO(parent) {
     bdm_register_callback_new_node(new_node_cb, NULL);
     bdm_register_callback_lost_node(lost_node_cb, NULL);
     bdm_register_callback_datapoint(datapoint_cb, NULL);
+
+    bdm = NULL;
+    bdmFD = -1;
 }
 
 
@@ -157,6 +160,9 @@ void BDMIO::setup() {
 
 
 void BDMIO::messageReceived() {
+    if (bdm == NULL)
+        return;
+    
     bdm->setEnabled(false);
     bdm_read();
     bdm->setEnabled(true);
