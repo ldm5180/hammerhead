@@ -23,6 +23,7 @@ typedef INT64 int64_t;
 #endif
 
 #else
+#include <sys/time.h>
 #include <stdint.h>
 #endif /* __WIN32 */
 
