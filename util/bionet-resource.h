@@ -17,6 +17,9 @@
 
 #include "libbionet-util-decl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @typedef bionet_resource_flavor_t
@@ -956,6 +959,9 @@ BIONET_UTIL_API_DECL
 void *bionet_resource_get_user_data(const bionet_resource_t *resource);
 
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __BIONET_RESOURCE_H
 

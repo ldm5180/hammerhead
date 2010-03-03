@@ -45,6 +45,9 @@ typedef struct bionet_value_opaque_t     bionet_value_t;
  */
 #define BIONET_NAME_COMPONENT_MAX_LEN (100)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief Get the latest system error
@@ -444,6 +447,9 @@ int bionet_split_nodeid_resourceid_r(
     char resource_id[BIONET_NAME_COMPONENT_MAX_LEN]
 ); 
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif //  BIONET_UTIL_H
 
