@@ -52,7 +52,7 @@ typedef struct H2C_Message {
 
 /* Implementation */
 BIONET_ASN_API_DECL
-extern asn_TYPE_descriptor_t asn_DEF_H2C_Message;
+asn_TYPE_descriptor_t asn_DEF_H2C_Message;
 
 #ifdef __cplusplus
 }
