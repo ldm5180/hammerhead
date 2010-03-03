@@ -43,7 +43,7 @@ typedef struct C2H_Message {
 
 /* Implementation */
 BIONET_ASN_API_DECL
-extern asn_TYPE_descriptor_t asn_DEF_C2H_Message;
+asn_TYPE_descriptor_t asn_DEF_C2H_Message;
 
 #ifdef __cplusplus
 }
