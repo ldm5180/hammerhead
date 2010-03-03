@@ -21,6 +21,8 @@ typedef struct timeval
     long int tv_usec;
 };
 
+%include "libhab-decl.h"
+%include "libbionet-util-decl.h"
 %include "hardware-abstractor.h"
 %include "bionet-util.h"
 %include "bionet-hab.h"

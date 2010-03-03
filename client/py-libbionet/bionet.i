@@ -16,6 +16,8 @@
 #include "bionet-value.h"
 %}
 
+%include "libbionet-decl.h"
+%include "libbionet-util-decl.h"
 %include "bionet.h"
 %include "bionet-util.h"
 %include "bionet-hab.h"
