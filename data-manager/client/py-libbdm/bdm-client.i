@@ -24,6 +24,8 @@ typedef struct timeval
 	long int tv_usec;
 };
 
+%include "libbionet-asn-decl.h"
+%include "libbionet-util-decl.h"
 %include "bdm-client.h"
 %include "bdm-client-interface.h"
 %include "bionet-asn.h"

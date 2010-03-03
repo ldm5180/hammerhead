@@ -12,7 +12,7 @@
 #    ifdef DLL_EXPORT
 #      define BIONET_ASN_API_DECL __declspec(dllexport)
 #    else
-#      define BIONET_ASN_API_DECL
+#      define BIONET_ASN_API_DECL extern 
 #    endif
 #  else
 #    define BIONET_ASN_API_DECL __declspec(dllimport)
