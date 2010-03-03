@@ -13,11 +13,6 @@
  */
 
 
-#include <stdint.h>
-#include <sys/time.h>
-
-#include <glib.h>
-
 #include "libbionet-util-decl.h"
 
 

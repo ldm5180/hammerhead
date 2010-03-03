@@ -15,8 +15,6 @@
 #define __BIONET_STREAM_H
 
 
-#include <stdint.h>
-
 #include "libbionet-util-decl.h"
 
 

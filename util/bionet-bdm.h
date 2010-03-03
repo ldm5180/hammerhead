@@ -8,13 +8,6 @@
 #define BIONET_BDM_H
 
 
-#include <stdint.h>
-#include <time.h>
-
-#include <sys/time.h>
-
-#include <glib.h>
-
 #include "libbionet-util-decl.h"
 
 /**
