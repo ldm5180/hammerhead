@@ -19,6 +19,10 @@
 
 #include "libbionet-util-decl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 typedef enum {
     BIONET_STREAM_DIRECTION_INVALID = -1,
@@ -235,6 +239,9 @@ BIONET_UTIL_API_DECL
 void *bionet_stream_get_user_data(const bionet_stream_t *stream);
 
 
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // __BIONET_STREAM_H
