@@ -21,6 +21,9 @@
  * Functions for dealing with Bionet Hardware-Abstractor (HABs).
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief Obtain a pointer to a new HAB
@@ -332,6 +335,10 @@ const char * bionet_hab_get_recording_bdm(bionet_hab_t *hab);
  * @return Pointer to string that is valid until the hab is free'd
  */ 
 void bionet_hab_set_recording_bdm(bionet_hab_t *hab, const char * bdm_id);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //  BIONET_HAB_H
 

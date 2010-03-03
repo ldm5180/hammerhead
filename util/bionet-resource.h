@@ -18,6 +18,9 @@
 
 #include <glib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @typedef bionet_resource_flavor_t
@@ -914,6 +917,9 @@ void bionet_resource_set_user_data(bionet_resource_t *resource, const void *user
 void *bionet_resource_get_user_data(const bionet_resource_t *resource);
 
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __BIONET_RESOURCE_H
 

@@ -17,6 +17,10 @@
 #include "bionet-util.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Connects to Bionet.  
  *
@@ -253,6 +257,9 @@ int hab_init_security(const char * dir, int require);
 #define BIONET_INFO_VERSION_FLAG 0x00000001
 int hab_publish_info(bionet_hab_t * hab, const uint32_t flags);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __HARDWARE_ABSTRACTOR_H
 

@@ -17,6 +17,9 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 typedef enum {
@@ -221,6 +224,9 @@ void bionet_stream_set_user_data(bionet_stream_t *stream, const void *user_data)
 void *bionet_stream_get_user_data(const bionet_stream_t *stream);
 
 
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // __BIONET_STREAM_H
