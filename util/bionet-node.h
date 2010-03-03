@@ -15,6 +15,11 @@
 
 #include "libbionet-util-decl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /**
  * @brief Create a new node
  *
@@ -259,6 +264,9 @@ void bionet_node_set_user_data(bionet_node_t *node, const void *user_data);
 BIONET_UTIL_API_DECL
 void *bionet_node_get_user_data(const bionet_node_t *node);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif //  BIONET_NODE_H
 
