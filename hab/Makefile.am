@@ -12,6 +12,8 @@ if ENABLE_PYTHON
 SUBDIRS += py-libhab mon
 endif
 
+SUBDIRS += info
+
 if ENABLE_HABS
 SUBDIRS += random csa-cp syshealth pal-650 streamy
 
