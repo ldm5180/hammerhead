@@ -10,14 +10,18 @@
 #include <string.h>
 #include <time.h>
 #include <fcntl.h>
+
+#ifdef __WIN32
+#include <winsock2.h>
 #include <windows.h>
+#endif
 
 
 #include "hardware-abstractor.h"
 
 #include "glib.h"
 
-#include "infohab.h"
+#include "info-hab.h"
 #include "bionet-util.h"
 
 
@@ -64,13 +68,23 @@ int main(int argc, char * argv[])
 {
 
     int bionet_fd;
-    //int i;
 
     int max_delay = 5;
     int min_nodes = 5;
 
     char *hab_type = HAB_TYPE;
     char *hab_id = NULL;
+
+
+#ifdef __WIN32
+    int ret;
+    WSADATA wsaData;
+    ret = WSAStartup(0x0202, &wsaData);
+    if ( ret ) {
+        printf("WSAStartup() failed with error %d\n", ret); 
+        return 1;
+    }
+#endif
 
     print_bionet_version(stdout);
     //  

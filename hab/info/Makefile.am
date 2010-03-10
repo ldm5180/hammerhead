@@ -10,7 +10,7 @@ bin_PROGRAMS = info-hab
 
 
 info_hab_SOURCES =               \
-    infohab.c                     
+    info-hab.c                     
 
 info_hab_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) 
 
