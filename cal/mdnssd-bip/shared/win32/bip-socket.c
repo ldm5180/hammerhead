@@ -83,6 +83,36 @@ int bip_socket_connect(
     return 0;
 }
 
+int bip_socket_listen(
+        int s, 
+        int backlog)
+{
+    int r;
+
+    struct sockaddr_in  addr;
+    int addr_len = sizeof(addr);
+
+    memset(&addr, 0, addr_len);
+    addr.sin_family = AF_INET;
+    addr.sin_port = 0;
+    addr.sin_addr.S_un.S_addr = INADDR_ANY;
+
+    r = bind(s, (struct sockaddr*)&addr, addr_len);
+    if ( r != 0 ) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: error binding socket ephemeral port: %d", 
+            __FUNCTION__, WSAGetLastError());
+        return -1;
+    }
+
+    r = listen(s, backlog);
+    if ( r != 0 ) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: error listening on socket: %d", 
+            __FUNCTION__, WSAGetLastError());
+        return -1;
+    }
+    return 0;
+}
+
 int bip_socket_tcp(void) {
     int s;
     s = socket(AF_INET, SOCK_STREAM, 0);
