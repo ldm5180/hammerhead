@@ -35,8 +35,8 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.9.2])
 # but we do want to allow the user to specify custom flags.
 # Save the user's settings, and override the default set by AC_PROG_*
 USERCFLAGS="$CFLAGS"
-USERCPPFLAGS="$CFLAGS"
-USERCXXFLAGS="$CFLAGS"
+USERCPPFLAGS="$CPPFLAGS"
+USERCXXFLAGS="$CXXFLAGS"
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
