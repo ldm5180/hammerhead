@@ -91,9 +91,8 @@ void * cal_server_mdnssd_bip_init(const char *network_type,
     // create the listening socket
     //
 
-    server_thread_data->socket = socket(PF_INET, SOCK_STREAM, 0);
+    server_thread_data->socket = bip_socket_tcp();
     if (server_thread_data->socket == -1) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot create TCP socket: %s", strerror(errno));
         goto fail1;
     }
 
@@ -122,9 +121,8 @@ void * cal_server_mdnssd_bip_init(const char *network_type,
 
     // ok! listen for connections
     // we dont need to bind since listen on an unbound socket defaults to INADDR_ANY and a random port, which is what we want
-    r = listen(server_thread_data->socket, 20);
+    r = bip_socket_listen(server_thread_data->socket, 20);
     if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot listen on port: %s", strerror(errno));
         goto fail2;
     }
 
