@@ -755,8 +755,10 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
     }
 
 
+#if HAVE_AVAHI
     // Shutup annoying nag message on Linux.
     setenv("AVAHI_COMPAT_NOWARN", "1", 1);
+#endif
 
 
 
