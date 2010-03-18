@@ -870,8 +870,10 @@ void *cal_client_mdnssd_bip_function(void *arg) {
 
     this->subscriptions = g_ptr_array_new();
 
+#if HAVE_AVAHI
     // Shutup annoying nag message on Linux.
     setenv("AVAHI_COMPAT_NOWARN", "1", 1);
+#endif
 
     // Initialize SSL library
     //SSL_load_error_strings();
