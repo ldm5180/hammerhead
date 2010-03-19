@@ -1,18 +1,23 @@
 #include "subscontroller.h"
 
 
-SubscriptionController::SubscriptionController(QStandardItemModel *subscriptions, 
-    QWidget* parent, 
+SubscriptionController::SubscriptionController(QWidget* parent, 
     Qt::WindowFlags /*flags*/) :
     QWidget(parent)
 {
+    QStringList horizontalHeaderLabels;
 
-    subs = subscriptions;
+    horizontalHeaderLabels << "Resource Name Pattern" << "Start Time" << "Stop Time";
+
+    subscriptions = new QStandardItemModel(this);
+    subscriptions->setColumnCount(3);
+    subscriptions->setHorizontalHeaderLabels(horizontalHeaderLabels);
+
     setAttribute(Qt::WA_QuitOnClose);
     setWindowTitle(tr("Bionet Monitor: Manage Subscriptions"));
 
     view = new QTableView(this);
-    view->setModel(subs);
+    view->setModel(subscriptions);
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     view->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
@@ -62,7 +67,7 @@ void SubscriptionController::addSubscription() {
 
     row << pattern << start << stop;
 
-    subs->appendRow(row);
+    subscriptions->appendRow(row);
 }
 
 
@@ -79,7 +84,7 @@ void SubscriptionController::removeSubscription() {
         index = selected.takeLast();
         pattern = index.data(Qt::DisplayRole).toString();
 
-        if ( !subs->removeRow(index.row(), QModelIndex()) ) {
+        if ( !subscriptions->removeRow(index.row(), QModelIndex()) ) {
             qWarning() << "unable to remove subscription" << qPrintable(pattern);
             continue;
         }
@@ -97,18 +102,61 @@ void SubscriptionController::resizeEvent(QResizeEvent *event) {
 void SubscriptionController::submitSubscription() {
     int row;
     QModelIndexList rows;
+    struct timeval *tvStart = NULL, *tvStop = NULL;
+    QString pattern;
 
     rows = view->selectionModel()->selectedRows();
 
-    /* no row was selected */
+    // no row was selected
     if (rows.isEmpty())
         return;
 
     row = rows.first().row();
 
-    /* this should never happen, but just in case */
+    // this should never happen, but just in case
     if (row < 0)
         return;
 
-    emit addedSubscription(row);
+    // extract the pattern & timestamps
+    pattern = subscriptions->item(row, NAME_PATTERN_COL)->data(Qt::DisplayRole).toString();
+    tvStart = toTimeval(subscriptions->item(row, DP_START_COL));
+    tvStop = toTimeval(subscriptions->item(row, DP_STOP_COL));
+    
+    emit newSubscription(pattern, tvStart, tvStop);
+
+    // disable each item in the row so it can't be modified anymore
+    for (int i = 0; i < subscriptions->columnCount(); i++) {
+        QStandardItem *ii;
+        ii = subscriptions->item(row, i);
+        ii->setEnabled(false);
+    }
+
+    if (tvStart != NULL)
+        delete tvStart;
+    if (tvStop != NULL)
+        delete tvStop;
+}
+
+
+struct timeval* SubscriptionController::toTimeval(QStandardItem *entry) {
+    struct timeval *tv;
+
+    if (entry == NULL) {
+        return NULL;
+    }
+
+    QString pattern = entry->data(Qt::DisplayRole).toString();
+    QDateTime qtDate = QDateTime::fromString(pattern, Q_DATE_TIME_FORMAT);
+
+    if ( qtDate.isNull() || !qtDate.isValid() ) {
+        //qWarning() << "warning (is it in" << Q_DATE_TIME_FORMAT << "format?)";
+        return NULL;
+    }
+
+    tv = new struct timeval;
+
+    tv->tv_sec = qtDate.toTime_t();
+    tv->tv_usec = 0;
+
+    return tv;
 }
