@@ -71,6 +71,21 @@ int bip_socket_connect(
     return 0;
 }
 
+int bip_socket_listen(
+        int s, 
+        int backlog)
+{
+    int r;
+
+    r = listen(s, backlog);
+    if ( r != 0 ) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: error listening on socket: %s", 
+            __FUNCTION__, strerror(errno));
+        return -1;
+    }
+    return 0;
+}
+
 int bip_socket_tcp(void) {
     int s;
     s = socket(AF_INET, SOCK_STREAM, 0);
