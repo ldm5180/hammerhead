@@ -2,6 +2,8 @@
 // Copyright (c) 2008-2009, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
+#ifndef BIP_ITC_H
+#define BIP_ITC_H
 
 
 #include "config.h"
@@ -77,3 +79,4 @@ int bip_msg_queue_pop(
         cal_event_t ** event);
 
 
+#endif // ifndef BIP_ITC_H

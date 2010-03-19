@@ -118,7 +118,7 @@ int bip_socket_tcp(void) {
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s: error making socket: %d", 
-            __FUNCTION__, WSAGetLAstError());
+            __FUNCTION__, WSAGetLastError());
         return -1;
     }
 

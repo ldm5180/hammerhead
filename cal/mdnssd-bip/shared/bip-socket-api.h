@@ -3,6 +3,8 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
+#ifndef BIP_SOCKET_API_H
+#define BIP_SOCKET_API_H
 
 /*
  * This is the socket api used by bip for any plaform
@@ -78,3 +80,5 @@ int bip_socket_listen(int s, int backlog);
  * @retval -1 An error occurred, and a mesage was logged
  */
 int bip_socket_tcp(void);
+
+#endif // BIP_SOCKET_API_H
