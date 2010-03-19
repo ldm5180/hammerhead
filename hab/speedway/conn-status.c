@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Gary Grobe and the Regents of the University of
+// Copyright (c) 2008-2010, Gary Grobe and the Regents of the University of
 // Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
@@ -54,7 +54,7 @@ int checkConnectionStatus(void)
      * recvMessage() returns NULL if something went wrong.
      */
     if(pMessage == NULL) {
-        goto fail;
+        goto fail2;
     }
 
     /*
@@ -63,7 +63,7 @@ int checkConnectionStatus(void)
      * the type descriptor for READER_EVENT_NOTIFICATION.
      */
     if(&LLRP_tdREADER_EVENT_NOTIFICATION != pMessage->elementHdr.pType) {
-        goto fail;
+        goto fail2;
     }
 
     /*
@@ -74,7 +74,7 @@ int checkConnectionStatus(void)
     pNtfData = pNtf->pReaderEventNotificationData;
 
     if(pNtfData == NULL) {
-        goto fail;
+        goto fail2;
     }
 
     /*
@@ -83,7 +83,7 @@ int checkConnectionStatus(void)
     pEvent = pNtfData->pConnectionAttemptEvent;
 
     if(pEvent == NULL) {
-        goto fail;
+        goto fail2;
     }
 
     /*
@@ -130,6 +130,7 @@ fail:
 	    break;
     }
 
+fail2:
     freeMessage(pMessage);
 
     return -1;

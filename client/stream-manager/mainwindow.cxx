@@ -129,7 +129,7 @@ void MainWindow::createMenus () {
 }
 
 void MainWindow::setupBionet() {
-    bionet = new BionetIO(this);
+    bionet = new BionetIO;
 }
 
 void MainWindow::setupModel() {

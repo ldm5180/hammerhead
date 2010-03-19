@@ -18,7 +18,9 @@
 
 using namespace std;
 
-ResourceView :: ResourceView (QWidget* parent) : QGridLayout(parent) {
+ResourceView :: ResourceView (QWidget* parent) : QWidget(parent) {
+    layout = new QGridLayout;
+
     habTypeTitle = new QLabel("HAB Type");
     habIdTitle = new QLabel("HAB ID");
     nodeIdTitle = new QLabel("Node ID");
@@ -41,35 +43,37 @@ ResourceView :: ResourceView (QWidget* parent) : QGridLayout(parent) {
     timestamp = new QLabel();
     value = new QLabel();
     
-    addWidget(habTypeTitle, 0, 0, Qt::AlignCenter);
-    addWidget(habIdTitle, 1, 0, Qt::AlignCenter);
-    addWidget(nodeIdTitle, 2, 0, Qt::AlignCenter);
-    addWidget(resourceIdTitle, 3, 0, Qt::AlignCenter);
-    addWidget(flavorTitle, 4, 0, Qt::AlignCenter);
-    addWidget(dataTypeTitle, 5, 0, Qt::AlignCenter);
-    addWidget(timestampTitle, 6, 0, Qt::AlignCenter);
-    addWidget(valueTitle, 7, 0, Qt::AlignCenter);
+    layout->addWidget(habTypeTitle, 0, 0, Qt::AlignCenter);
+    layout->addWidget(habIdTitle, 1, 0, Qt::AlignCenter);
+    layout->addWidget(nodeIdTitle, 2, 0, Qt::AlignCenter);
+    layout->addWidget(resourceIdTitle, 3, 0, Qt::AlignCenter);
+    layout->addWidget(flavorTitle, 4, 0, Qt::AlignCenter);
+    layout->addWidget(dataTypeTitle, 5, 0, Qt::AlignCenter);
+    layout->addWidget(timestampTitle, 6, 0, Qt::AlignCenter);
+    layout->addWidget(valueTitle, 7, 0, Qt::AlignCenter);
 
-    addWidget(habType, 0, 1, Qt::AlignCenter);
-    addWidget(habId, 1, 1, Qt::AlignCenter);
-    addWidget(nodeId, 2, 1, Qt::AlignCenter);
-    addWidget(resourceId, 3, 1, Qt::AlignCenter);
-    addWidget(flavor, 4, 1, Qt::AlignCenter);
-    addWidget(dataType, 5, 1, Qt::AlignCenter);
-    addWidget(timestamp, 6, 1, Qt::AlignCenter);
-    addWidget(value, 7, 1, Qt::AlignCenter);
-    addWidget(plotButton, 8, 0, 1, 2, Qt::AlignCenter); // for plotting
+    layout->addWidget(habType, 0, 1, Qt::AlignCenter);
+    layout->addWidget(habId, 1, 1, Qt::AlignCenter);
+    layout->addWidget(nodeId, 2, 1, Qt::AlignCenter);
+    layout->addWidget(resourceId, 3, 1, Qt::AlignCenter);
+    layout->addWidget(flavor, 4, 1, Qt::AlignCenter);
+    layout->addWidget(dataType, 5, 1, Qt::AlignCenter);
+    layout->addWidget(timestamp, 6, 1, Qt::AlignCenter);
+    layout->addWidget(value, 7, 1, Qt::AlignCenter);
+    layout->addWidget(plotButton, 8, 0, 1, 2, Qt::AlignCenter); // for plotting
     
     plotButton->setDisabled(true);
 
-    setColumnMinimumWidth(0, 50);
-    setColumnStretch(0, 0);
-    setColumnMinimumWidth(1, 50);
-    setColumnStretch(1, 0);
+    layout->setColumnMinimumWidth(0, 50);
+    layout->setColumnStretch(0, 0);
+    layout->setColumnMinimumWidth(1, 50);
+    layout->setColumnStretch(1, 0);
 
     connect(valueEditor, SIGNAL(returnPressed()), this, SLOT(textEntered()));
     connect(submitResourceValue, SIGNAL(pressed()), this, SLOT(textEntered()));
     connect(plotButton, SIGNAL(clicked()), this, SLOT(plotClicked()));
+
+    setLayout(layout);
 }
 
 
@@ -95,6 +99,12 @@ ResourceView::~ResourceView() {
     delete dataType;
     delete timestamp;
     delete value;
+}
+
+
+QString ResourceView::current() {
+    QString name = QString("%1.%2.%3:%4").arg(habType->text()).arg(habId->text()).arg(nodeId->text()).arg(resourceId->text());
+    return name;
 }
 
 
@@ -132,12 +142,12 @@ void ResourceView::updatePanel(bionet_resource_t* resource) {
     
     if ((bionet_resource_get_flavor(resource) == BIONET_RESOURCE_FLAVOR_PARAMETER) ||
         (bionet_resource_get_flavor(resource) == BIONET_RESOURCE_FLAVOR_ACTUATOR)) {
-        removeWidget(plotButton);
-        addWidget(submitResourceValue, 8, 0);
-        addWidget(valueEditor, 8, 1);
+        layout->removeWidget(plotButton);
+        layout->addWidget(submitResourceValue, 8, 0);
+        layout->addWidget(valueEditor, 8, 1);
         submitResourceValue->show();
         valueEditor->show();
-        addWidget(plotButton, 9, 0, 1, 2, Qt::AlignCenter);
+        layout->addWidget(plotButton, 9, 0, 1, 2, Qt::AlignCenter);
 
         plotButton->setFocusPolicy(Qt::NoFocus);
         submitResourceValue->setFocusPolicy(Qt::ClickFocus);
@@ -145,7 +155,7 @@ void ResourceView::updatePanel(bionet_resource_t* resource) {
 
         submitResourceValue->setEnabled(true);
         valueEditor->setEnabled(true);
-    } else if (rowCount() == 10) {
+    } else if (layout->rowCount() == 10) {
         removeSubmitableRows();
         plotButton->setFocusPolicy(Qt::StrongFocus);
     }
@@ -160,7 +170,7 @@ void ResourceView::updatePanel(bionet_resource_t* resource) {
 
 void ResourceView::clearView() {
     
-    if (rowCount() == 10) {
+    if (layout->rowCount() == 10) {
         // if there was send update button there would be 10 rows
         removeSubmitableRows();
     }
@@ -224,7 +234,7 @@ void ResourceView::newStreamSelected(bionet_stream_t* stream) {
     node = bionet_stream_get_node(stream);
     hab = bionet_node_get_hab(node);
 
-    if (rowCount() == 10) {
+    if (layout->rowCount() == 10) {
         removeSubmitableRows();
         plotButton->setDisabled(true);
     }
@@ -310,11 +320,11 @@ bool ResourceView::resourceInPanel(bionet_resource_t* resource) {
 
 void ResourceView::removeSubmitableRows() {
     //removeWidget(plotButton);
-    removeWidget(submitResourceValue);
+    layout->removeWidget(submitResourceValue);
     submitResourceValue->hide();
-    removeWidget(valueEditor);
+    layout->removeWidget(valueEditor);
     valueEditor->hide();
-    addWidget(plotButton, 8, 0, 1, 2, Qt::AlignCenter);
+    layout->addWidget(plotButton, 8, 0, 1, 2, Qt::AlignCenter);
 }
 
 void ResourceView::plotClicked() {
