@@ -62,7 +62,7 @@ def bdmplot(kwargs, bionet_resources):
     
     # Get the results
     from datapoints_to_dict import datapoints_to_dict
-    (updated, results) = datapoints_to_dict(timespan_vals, args["filter"], args["regexp"], bionet_resources)
+    (updated, results) = datapoints_to_dict(timespan_vals, args["filter"], args['timespan'], args["regexp"], bionet_resources)
 
     # if it hasn't been updated then just use the cached image
     if (updated == False):

@@ -7,7 +7,7 @@ from timespan import timeval_to_float
 from bdmplot_callback_cacher import *
 
 
-def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, resources = None,
+def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", timespan = "last 6h", regexp = None, resources = None,
     bdm_hostname = "localhost", bdm_port = 11002, bdm_fd = None):
     """
     Gets a bunch of datapoints from the Bionet Data Manager (BDM) and converts
@@ -59,7 +59,7 @@ def datapoints_to_dict(timespan_vals, filter_string = "*.*.*:*", regexp = None, 
                 continue
         if (bionet_resource_name_matches(name, filter_string)):
             for s in subscriptions:
-                if (bionet_resource_name_matches(name, s['filter'])):
+                if ((bionet_resource_name_matches(name, s['filter'])) and (timespan == s['timespan'])):
                     if (s['new'] > 0):
                         updated = True
                         dpcache['new'] = 0
