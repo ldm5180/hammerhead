@@ -31,11 +31,23 @@ Architecture: any
 Depends: ${shlibs:Depends}, python, python-gobject
 Suggests: bionet2-www
 Description: A network-transparent pub/sub system for information exchange
- Bionet2 HABs, Clients, and shared libraries, and BDM
+ Bionet2 HABs and Clients, and BDM
 
-Package: bionet2-dev
+Package: libbionet2
 Section: devel
 Architecture: any
-Depends: ${shlibs:Depends}, bionet2, libavahi-compat-libdnssd-dev, libglib2.0-dev, libssl-dev, python, python-gobject
+Depends: ${shlibs:Depends}
+Description: A network-transparent pub/sub system for information exchange (libraries)
+ This package provides the Bionet2 libraries (including BDM client
+ libraries).  You generally don't need to install this package by hand,
+ it'll get installed automatically if you install any other package
+ that depends on it.
+
+Package: libbionet2-dev
+Section: devel
+Architecture: any
+Depends: ${shlibs:Depends}, libbionet2, libavahi-compat-libdnssd-dev, libglib2.0-dev, libssl-dev, python, python-gobject
 Description: A network-transparent pub/sub system for information exchange (devel files)
- Bionet2 headers and static libraries
+ Bionet2 headers and static libraries.  Install this package if you want
+ to compile your own Bionet HABs and Clients.
+
