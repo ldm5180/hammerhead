@@ -32,7 +32,6 @@
 #include <qwt_scale_div.h>
 #include <qwt_double_interval.h>
 
-#include "plotwindow.h"
 #include "scaleinfo.h"
 
 // Assuming 2's complement, 32 bit integer
@@ -46,11 +45,9 @@ class PlotPreferences : public QWidget {
     Q_OBJECT
 
     public:
-        PlotPreferences(QList<PlotWindow*> pws, 
-                ScaleInfo *defaultValues, 
+        PlotPreferences(ScaleInfo *defaultValues, 
                 QString key, 
                 QWidget *parent = 0);
-        void addPlot(PlotWindow *plot);
 
     public slots:
         void changeYAutoscale(bool checked);
@@ -64,16 +61,12 @@ class PlotPreferences : public QWidget {
         void adjustXInterval();
         void adjustXSWTime();
         void adjustXSWDatapoints();
-
-        bool lostPW(PlotWindow *pw);
         
         void applyOk();
         void apply();
 
-        void plotClosed(QObject *obj);
-
     signals:
-        void applyChanges(ScaleInfo *si);
+        void newScaleInfo(ScaleInfo *si);
 
     private:
         QGroupBox *yAxis, *xAxis;
@@ -91,7 +84,6 @@ class PlotPreferences : public QWidget {
 
         QPushButton *okButton, *applyButton, *cancelButton;
 
-        QList<PlotWindow*> pws;
         ScaleInfo *scaleInfo;
 };
 

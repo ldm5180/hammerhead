@@ -104,21 +104,24 @@ int bip_msg_queue_init(bip_msg_queue_t *q) {
     }
 
     accept_sock = accept(server_sock, NULL, NULL);
-    if ( r != 0 ) {
+    if ( accept_sock < 0 ) {
         int sock_err = WSAGetLastError();
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                "%s: Error getting bound port on inter-thread pipe: %d", 
+                "%s: Error accepting connection on inter-thread pipe: %d", 
                 __FUNCTION__,
                 sock_err);
         goto fail2;
     }
 
 
-    fd_set readers;
-    FD_ZERO(&readers);
-    FD_SET(client_sock, &readers);
+    fd_set errors, writers;
+    FD_ZERO(&errors);
+    FD_ZERO(&writers);
+    FD_SET(client_sock, &errors);
+    FD_SET(client_sock, &writers);
 
-    r = select(client_sock+1, &readers, NULL, NULL, NULL); 
+
+    r = select(client_sock+1, NULL, &writers, &errors, NULL); 
     if(r != 1) {
         int sock_err = WSAGetLastError();
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -126,44 +129,6 @@ int bip_msg_queue_init(bip_msg_queue_t *q) {
                 __FUNCTION__,
                 sock_err);
         goto fail2;
-    }
-
-    while(connect(client_sock, (struct sockaddr*)&address, addr_len) < 0 ) {
-        int sock_err = WSAGetLastError();
-        switch (sock_err) {
-            case WSAEWOULDBLOCK:
-            case WSAEALREADY:
-            case WSAEISCONN:
-            case WSAEINVAL: // This is returned if linked w/ winsock.dll or wsock32.dll
-            {
-                // Use select to find out when done
-                fd_set readers;
-                FD_ZERO(&readers);
-                FD_SET(client_sock, &readers);
-
-                r = select(client_sock+1, &readers, NULL, NULL, NULL); 
-                if(r != 1) {
-                    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                            "%s: Error selecting connect socket on inter-thread pipe: %d", 
-                            __FUNCTION__,
-                            WSAGetLastError());
-                    goto fail2;
-                }
-                break;
-            }
-
-            case WSAEINPROGRESS:
-                // EINTR.. Keep trying
-                break;
-
-            default:
-            {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                    "%s: error connecting to inter-thread pipe: %d",
-                    __FUNCTION__, sock_err);
-                goto fail2;
-            }
-        }
     }
 
     r = bip_socket_set_blocking(client_sock, 1);
@@ -238,7 +203,7 @@ int bip_msg_queue_push(bip_msg_queue_t *q, bip_msg_queue_direction_t dir, cal_ev
         fd = q->user;
     }
 
-    r = write(fd, &event, sizeof(cal_event_t*));
+    r = send(fd, (char*)&event, sizeof(cal_event_t*), 0);
     if ( r < 0 ) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "%s: error writing to pipe: %d", __FUNCTION__, WSAGetLastError());
@@ -259,17 +224,22 @@ int bip_msg_queue_pop(bip_msg_queue_t *q, bip_msg_queue_direction_t dir, cal_eve
 
     int fd;
     if(dir == BIP_MSG_QUEUE_TO_USER){
-        fd = q->thread;
-    } else {
         fd = q->user;
+    } else {
+        fd = q->thread;
     }
 
-    r = read(fd, event, sizeof(cal_event_t*));
+    r = recv(fd, (char*)event, sizeof(cal_event_t*), 0);
 
     if (r == sizeof(cal_event_t*) ) {
         return 0;
     } 
     
+    if (r == 0 ) {
+        *event = NULL;
+        return 1;
+    }
+
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                 "%s: error reading from pipe: %d", 

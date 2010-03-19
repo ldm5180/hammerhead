@@ -47,6 +47,8 @@ uint32_t num_sync_datapoints = 0;
 uint32_t num_bionet_datapoints = 0;
 uint32_t num_this_created = 3;
 
+extern int no_resources;
+
 void usage(void) {
     printf(
 	"'bionet-data-manager' records Bionet traffic to a database.\n"
@@ -79,6 +81,10 @@ void usage(void) {
 	"                                                certificates\n"
 	" -t,--tcp-sync-receiver [<port>]                Enable BDM synchonization over TCP. \n"
         "                                                Optionally specify the tcp port. Default: %d\n"
+#if ENABLE_ION
+	" -u,--no-resources                              Do not subscribe to any resources. Useful\n"
+	"                                                with --dtn-sync-receiver\n"
+#endif
 	" -v,--version                                   Show the version number\n"
 	"\n"
 	"Security can only be required when a security directory has been specified.\n"
@@ -209,6 +215,7 @@ int main(int argc, char *argv[]) {
 	    {"dtn-sync-receiver",  0, 0, 'd'},
 	    {"dtn-endpoint-id",    1, 0, 'o'},
 	    {"bdm-stats",          1, 0, 'b'},
+	    {"no-resources",       0, 0, 'u'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
@@ -225,7 +232,7 @@ int main(int argc, char *argv[]) {
 
 	case 'b':
 	    start_hab = 1;
-	    bdm_stats = strtoul(optarg, NULL, 10);;
+	    bdm_stats = strtoul(optarg, NULL, 10);
 	    break;
 
 	case 'c':
@@ -388,6 +395,12 @@ int main(int argc, char *argv[]) {
             }
 	    break;
         }
+
+	case 'u':
+#if ENABLE_ION
+	    no_resources = 1;
+#endif
+	    break;
 
 	case 'v':
 	    print_bionet_version(stdout);

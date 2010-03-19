@@ -208,7 +208,7 @@ parser.add_option(
     "-f", "--config-file",
     dest="config_file",
     metavar="CONFIG",
-    default="/etc/mon-hab/config",
+    default="/etc/mon-hab.d/config",
     help="Read CONFIG as the config file (defaults to %default if omitted)."
 )
 
