@@ -86,6 +86,7 @@ gpointer dtn_receive_thread(gpointer config) {
             zco_start_receiving(client->ion.sdr, dlv.adu, &client->ion.reader);
 
             client->index = 0;
+            client->message.sync_message = NULL;
 
             do {
 
@@ -138,7 +139,7 @@ gpointer dtn_receive_thread(gpointer config) {
                     case RC_WMORE:
                         // ber_decode is waiting for more data, suck more data
                         // from zco
-                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                             "ber_decode: bundle too small");
                         break;
 

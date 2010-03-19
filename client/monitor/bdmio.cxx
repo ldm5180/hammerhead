@@ -132,29 +132,8 @@ void BDMModel::newDatapoint(bionet_datapoint_t* dp) {
 
 
 
-BDMIO::BDMIO(QWidget *parent) {
-    QStringList horizontalHeaderLabels;
+BDMIO::BDMIO(IO *parent) : IO(parent) {
     io = this;
-
-    /*
-    timer = new QTimer(this);
-    timer->setInterval(2000);
-    timer->setSingleShot(false);
-    connect(timer, SIGNAL(timeout()), this, SLOT(pollBDM()));
-    */
-
-    horizontalHeaderLabels << 
-        "Resource Name Pattern" << 
-        "Start Time" << 
-        "Stop Time";
-
-    subscriptions = new QStandardItemModel(this);
-    subscriptions->setColumnCount(3);
-    //subscriptions->setRowCount(6);
-    subscriptions->setHorizontalHeaderLabels(horizontalHeaderLabels);
-
-    controller = new SubscriptionController(subscriptions, parent);
-    //connect(controller, SIGNAL(removePattern(QString)), this, SLOT(removeSubscription(QString)));
 
     bdm_register_callback_new_hab(new_hab_cb, NULL);
     bdm_register_callback_lost_hab(lost_hab_cb, NULL);
@@ -162,73 +141,8 @@ BDMIO::BDMIO(QWidget *parent) {
     bdm_register_callback_lost_node(lost_node_cb, NULL);
     bdm_register_callback_datapoint(datapoint_cb, NULL);
 
-    connect(controller, SIGNAL(addedSubscription(int)),
-        this, SLOT(subscribe(int)));
-
-    //hab_cache = NULL;
-}
-
-
-BDMIO::~BDMIO() {
-    //delete timer;
-    delete controller;
-    //clearBDMCache();
-}
-
-
-History* BDMIO::createHistory(QString key) {
-    bdm_hab_list_t *hab_list;
-    History *history;
-
-    // returns a list of datapoints with the hab/node/res/dp tree form
-    hab_list = bdm_get_resource_datapoints(
-        qPrintable(key),
-        NULL, // tv start
-        NULL, // tv stop
-        -1, // dp start
-        -1 // dp stop
-    );
-
-    if (hab_list == NULL)
-        return NULL;
-
-    history = new History(parent());
-
-    // populate the history with all the datapoints
-    for (int hi = 0; hi < bdm_get_hab_list_len(hab_list); hi ++) {
-        bionet_hab_t *hab = bdm_get_hab_by_index(hab_list, hi);
-
-        for (int ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
-            bionet_node_t *node = bionet_hab_get_node_by_index(hab, ni);
-
-            for (int ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
-                bionet_resource_t *resource = bionet_node_get_resource_by_index(node, ri);
-
-                for (int di = 0; di < bionet_resource_get_num_datapoints(resource); di ++) {
-                    bionet_datapoint_t *dp = bionet_resource_get_datapoint_by_index(resource, di);
-                    history->append(dp);
-
-                }
-            }
-        }
-        bionet_hab_free(hab);
-    }
-
-    bdm_hab_list_free(hab_list);
-
-    histories.insert(key, history);
-
-    return history;
-}
-
-
-void BDMIO::removeHistory(QString key) {
-    History *history = histories.take(key);
-
-    if (history == NULL)
-        return;
-
-    delete history;
+    bdm = NULL;
+    bdmFD = -1;
 }
 
 
@@ -246,88 +160,19 @@ void BDMIO::setup() {
 
 
 void BDMIO::messageReceived() {
+    if (bdm == NULL)
+        return;
+    
     bdm->setEnabled(false);
     bdm_read();
     bdm->setEnabled(true);
 }
 
 
-void BDMIO::subscribe(int row) {
-    struct timeval *tvStart = NULL, *tvStop = NULL;
-    QString pattern, bdmName, bionetName, habName, nodeName;
-    int r;
+void BDMIO::subscribe(QString pattern, struct timeval *start, struct timeval *stop) {
 
-    // if there is no data in the table, skip it
-    if ( subscriptions->item(row,0) == NULL )
-        return;
+    if (bdm_subscribe_datapoints_by_name(qPrintable(pattern), start, stop) < 0)
+        qWarning() << "error subscribing to" << qPrintable(pattern);
 
-    pattern = subscriptions->item(row, NAME_PATTERN_COL)->data(Qt::DisplayRole).toString();
-
-    bdmName = pattern.section('/', 0, 0);
-    bionetName = pattern.section('/', 1, 1);
-
-    /* case: no bdm name given */
-    if (bionetName.length() <= 0) {
-        bionetName = bdmName;
-        bdmName = QString("*,*");
-    }
-
-    habName = pattern.section('.', 0, 1);
-    nodeName = pattern.section(':', 0, 0);
-
-    tvStart = toTimeval(subscriptions->item(row, DP_START_COL));
-    tvStop = toTimeval(subscriptions->item(row, DP_STOP_COL));
-
-    //bdm_subscribe_bdm_list_by_name(qPrintable(bdmName));
-    //bdm_subscribe_hab_list_by_name(qPrintable(habName));
-    //bdm_subscribe_node_list_by_name(qPrintable(nodeName));
-    r = bdm_subscribe_datapoints_by_name(qPrintable(pattern), tvStart, tvStop);
-
-    if (r < 0) {
-        qWarning() << "error subscribing!";
-    }
-
-    /* disable the row so it can't be edited any more */
-    for (int i = 0; i < subscriptions->columnCount(); i++) {
-        QStandardItem *ii;
-        ii = subscriptions->item(row, i);
-        ii->setEnabled(false);
-    }
-
-    if (tvStart != NULL)
-        delete tvStart;
-    if (tvStop != NULL)
-        delete tvStop;
 }
 
-
-void BDMIO::editSubscriptions() {
-    if ( controller->isActiveWindow() ) {
-        return;
-    }
-
-    controller->show();
-}
-
-struct timeval* BDMIO::toTimeval(QStandardItem *entry) {
-    struct timeval *tv;
-
-    if (entry == NULL) {
-        return NULL;
-    }
-
-    QString pattern = entry->data(Qt::DisplayRole).toString();
-    QDateTime qtDate = QDateTime::fromString(pattern, Q_DATE_TIME_FORMAT);
-
-    if ( qtDate.isNull() || !qtDate.isValid() ) {
-        //qWarning() << "warning (is it in" << Q_DATE_TIME_FORMAT << "format?)";
-        return NULL;
-    }
-
-    tv = new struct timeval;
-
-    tv->tv_sec = qtDate.toTime_t();
-    tv->tv_usec = 0;
-
-    return tv;
-}
