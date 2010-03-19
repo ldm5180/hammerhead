@@ -17,6 +17,8 @@
 
 #include <iostream>
 
+#include "io.h"
+
 extern "C" {
 #include "bionet.h"
 #include "bionet-util.h"
@@ -25,29 +27,24 @@ extern "C" {
 
 using namespace std;
 
-class BionetIO : public QObject {
+class BionetIO : public IO {
     Q_OBJECT
 
     public:
-        BionetIO(QWidget *parent=0);
+        BionetIO(IO *parent=0);
+        ~BionetIO();
         
         // These functions map callbacks into signals & slots
-        static void cbNewHab(bionet_hab_t *hab) { emit bn->newHab(hab);}
-        static void cbLostHab(bionet_hab_t *hab) { emit bn->lostHab(hab); }
-        static void cbNewNode(bionet_node_t *node) { emit bn->newNode(node); }
-        static void cbLostNode(bionet_node_t *node) { emit bn->lostNode(node); }
-        static void cbDatapoint(bionet_datapoint_t *datapoint) { emit bn->newDatapoint(datapoint); }
+        static void cbNewHab(bionet_hab_t *hab) { emit bn->newHab(hab, NULL);}
+        static void cbLostHab(bionet_hab_t *hab) { emit bn->lostHab(hab, NULL); }
+        static void cbNewNode(bionet_node_t *node) { emit bn->newNode(node, NULL); }
+        static void cbLostNode(bionet_node_t *node) { emit bn->lostNode(node, NULL); }
+        static void cbDatapoint(bionet_datapoint_t *datapoint) { emit bn->newDatapoint(datapoint, NULL); }
         static void cbStream(bionet_stream_t *stream, void *buffer, int size) { emit bn->streamRW(stream, buffer, size); }
         
         void setup();
         
     signals:
-        void newHab(bionet_hab_t* hab);
-        void lostHab(bionet_hab_t* hab);
-        void newNode(bionet_node_t* node);
-        void lostNode(bionet_node_t* node);
-        void newDatapoint(bionet_datapoint_t* datapoint);
-        void streamRW(bionet_stream_t* stream, void* buffer, int size);
         void lostConnection();
 
      private slots:

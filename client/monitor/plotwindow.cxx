@@ -19,6 +19,7 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
     setWindowTitle(title);
     setAttribute(Qt::WA_DeleteOnClose);
 
+    preferences = NULL;
     this->history = history;
 
     /* Creating & Setting up the Plot & PlotCurve */
@@ -77,9 +78,13 @@ PlotWindow::PlotWindow(QString key, History *history, ScaleInfo *scale, QWidget*
 
 
 PlotWindow::~PlotWindow() {
-    delete closeAction;
     if (scale != NULL)
         delete scale;
+
+    if (preferences != NULL)
+        delete preferences;
+
+    delete closeAction;
     delete curve;
     delete plot;
 }
@@ -157,5 +162,20 @@ QString PlotWindow::createXLabel() {
 }
 
 void PlotWindow::openOptions() {
-    emit(newPreferences(this, scale));
+    // if preferences doesn't exist, create it
+    if (preferences == NULL) {
+        preferences = new PlotPreferences(scale, objectName(), this);
+
+        connect(preferences, SIGNAL(newScaleInfo(ScaleInfo*)),
+            this, SLOT(setScaleInfo(ScaleInfo*)));
+    }
+
+    // if preferences exists but isn't shown, show it
+    if ( !preferences->isVisible() )
+        preferences->show();
+
+    // if preferences exists but is buried under other windows, raise it
+    if ( !preferences->isActiveWindow() ) {
+        preferences->raise();
+    }
 }
