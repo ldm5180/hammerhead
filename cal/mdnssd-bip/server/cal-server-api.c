@@ -20,6 +20,8 @@
 #include "cal-server-mdnssd-bip.h"
 #include "shared/bip-socket-api.h"
 
+#include "bip-socket-api.h"
+
 void * cal_server_mdnssd_bip_init(const char *network_type,
 				  const char *name,
 				  void (*callback)(void * cal_handle, const cal_event_t *event),

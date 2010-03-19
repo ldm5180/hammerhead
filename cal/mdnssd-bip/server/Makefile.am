@@ -16,7 +16,7 @@ libcal_mdnssd_bip_server_la_CFLAGS = \
 	$(GTHREAD_CFLAGS) \
 	$(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) \
 	$(DBUS_CFLAGS) \
-	-I.. -I../.. -I../../util
+	-I.. -I../.. -I../../util -I../shared
 
 libcal_mdnssd_bip_server_la_SOURCES = \
 	cal-server-api.c \
