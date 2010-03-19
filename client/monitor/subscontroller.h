@@ -29,8 +29,10 @@ class SubscriptionController : public QWidget {
     Q_OBJECT;
 
 public:
-    SubscriptionController(QStandardItemModel *subscriptions, QWidget *parent=0, Qt::WindowFlags flags = 0);
+    SubscriptionController(QWidget *parent=0, Qt::WindowFlags flags = 0);
     ~SubscriptionController();
+
+    struct timeval *toTimeval(QStandardItem *entry);
 
 public slots:
     void addSubscription();
@@ -39,12 +41,12 @@ public slots:
 
 signals:
     void removePattern(QString pattern);
-    void addedSubscription(int row);
+    void newSubscription(QString pattern, struct timeval *start, struct timeval *stop);
 
 private:
     QVBoxLayout *layout;
     QHBoxLayout *buttons;
-    QStandardItemModel *subs;
+    QStandardItemModel *subscriptions;
     QTableView *view;
     QPushButton *add, *submit, *cancel;
     QWidget *adder;

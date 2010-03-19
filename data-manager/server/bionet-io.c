@@ -30,6 +30,8 @@ int require_security = 0;
 
 sqlite3 * main_db = NULL;
 
+int no_resources = 0;
+
 // 
 // bionet callbacks
 //
@@ -135,7 +137,8 @@ int try_to_connect_to_bionet(void *unused) {
     if (
         (hab_list_index == 0) &&
         (node_list_index == 0) &&
-        (resource_index == 0)
+        (resource_index == 0) && 
+	(no_resources == 0)
     ) {
         bionet_subscribe_hab_list_by_name("*.*");
         bionet_subscribe_node_list_by_name("*.*.*");

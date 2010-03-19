@@ -33,6 +33,7 @@
 
 #include "history.h"
 #include "scaleinfo.h"
+#include "plotpreferences.h"
 
 class PlotWindow : public QWidget {
     Q_OBJECT
@@ -49,12 +50,12 @@ class PlotWindow : public QWidget {
         ~PlotWindow();
 
         QString createXLabel();
-        void setScaleInfo(ScaleInfo *newScale);
 
     signals:
         void newPreferences(PlotWindow *pw, ScaleInfo *current);
 
     public slots:
+        void setScaleInfo(ScaleInfo *newScale);
         void updatePlot();
         void openOptions();
 
@@ -66,6 +67,8 @@ class PlotWindow : public QWidget {
         QVBoxLayout *layout;
         QHBoxLayout *bottom;
         struct timeval *start;
+
+        PlotPreferences *preferences;
 
         History *history;
         ScaleInfo *scale;
