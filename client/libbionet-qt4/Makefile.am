@@ -12,9 +12,9 @@ lib_LTLIBRARIES = libbionet-qt4.la
 
 libbionet_qt4_la_DEPENDENCIES = $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_ASN1) $(INCLUDES_BIONET_CAL_CLIENT)
 
-libbionet_qt4_la_SOURCES = bionetio.cxx bionetmodel.cxx bionetio.moc.cpp bionetmodel.moc.cpp icons.qrc.cpp
+libbionet_qt4_la_SOURCES = io.cxx bionetio.cxx bionetmodel.cxx io.moc.cpp bionetio.moc.cpp bionetmodel.moc.cpp icons.qrc.cpp
 
-BUILT_SOURCES = bionetmodel.moc.cpp bionetio.moc.cpp icons.qrc.cpp
+BUILT_SOURCES = io.moc.cpp bionetmodel.moc.cpp bionetio.moc.cpp icons.qrc.cpp
 
 libbionet_qt4_la_CXXFLAGS = $(QT_CXXFLAGS) $(AM_CXXFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL)
 

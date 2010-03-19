@@ -5,14 +5,12 @@
 
 #include "plotpreferences.h"
 
-PlotPreferences::PlotPreferences(QList<PlotWindow*> pws, 
-        ScaleInfo *defaultValues,
+PlotPreferences::PlotPreferences(ScaleInfo *defaultValues,
         QString key, 
         QWidget *parent) : QWidget(parent) {
     setWindowFlags(Qt::Window);
-    setAttribute(Qt::WA_DeleteOnClose);
+    //setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(QString(tr("Plot Preferences: ")) + key);
-    this->pws = pws;
 
     scaleInfo = defaultValues->copy();
     scaleInfo->setParent(this);
@@ -217,19 +215,11 @@ PlotPreferences::PlotPreferences(QList<PlotWindow*> pws,
     layout->addWidget(xAxis);
     layout->addLayout(buttonLayout);
     setLayout(layout);
-        
-    foreach (PlotWindow *p, pws)
-        connect(p, SIGNAL(destroyed(QObject*)), this, SLOT(plotClosed(QObject*)));
 
     //resize(400, 375);
     show();
 }
 
-
-void PlotPreferences::addPlot(PlotWindow *plot) {
-    pws.append(plot);
-    connect(plot, SIGNAL(destroyed(QObject*)), this, SLOT(plotClosed(QObject*)));
-}
 
 void PlotPreferences::changeYAutoscale(bool checked) {
     if ( checked )
@@ -312,37 +302,11 @@ void PlotPreferences::adjustXSWDatapoints() {
     scaleInfo->setXDatapoints(xDataPoints->value());
 }
 
-
-bool PlotPreferences::lostPW(PlotWindow *pw) {
-    int i;
-    i = pws.indexOf(pw);
-    if (i > 0)
-        pws.takeAt(i);
-    if (pws.isEmpty())
-        return true;
-    return false;
-}
-
-
 void PlotPreferences::apply() {
-    emit applyChanges(scaleInfo);
-    foreach (PlotWindow *pw, pws)
-        pw->setScaleInfo(scaleInfo);
+    emit newScaleInfo(scaleInfo);
 }
 
 void PlotPreferences::applyOk() {
     apply();
     close();
-}
-
-
-void PlotPreferences::plotClosed(QObject *obj) {
-    QString name = obj->objectName();
-
-    foreach (PlotWindow *plot, pws) {
-        if (plot->objectName() == name) {
-            pws.removeAll(plot);
-            break;
-        }
-    }
 }
