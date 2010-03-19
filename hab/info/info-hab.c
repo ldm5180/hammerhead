@@ -35,8 +35,6 @@ bionet_hab_t *hab;
 
 static void show_stuff_going_away(void);
 static void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value);
-static void destroy_node(bionet_hab_t* random_hab);
-static bionet_node_t *pick_random_node(bionet_hab_t *random_hab);
 
 void show_stuff_going_away(void) {
     int i;
@@ -63,6 +61,48 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value) {
     free(value_str);
 }
 
+void add_info_node(bionet_hab_t *hab) {
+    bionet_resource_t *resource;
+    bionet_node_t *node;
+    bionet_value_t *value;
+    bionet_datapoint_t *datapoint;
+    int r;
+
+    // Add a new node
+    node  = bionet_node_new(hab, "info");
+    g_message("new node...\n");
+
+    resource = bionet_resource_new(
+        node, 
+        BIONET_RESOURCE_DATA_TYPE_STRING,
+        BIONET_RESOURCE_FLAVOR_SENSOR,
+        "version");
+    if (resource == NULL) {
+        fprintf(stderr, "Error creating Resource\n");
+        return;
+    }
+
+    r = bionet_node_add_resource(node, resource);
+    if (r != 0) {
+        fprintf(stderr, "Error adding Resource\n");
+    }
+
+    char * string = NULL;
+    bionet_version_get(&string);
+    value = bionet_value_new_str(resource, string);
+    if (NULL == value) {
+        fprintf(stderr, "*** out of memory!\n");
+        return;
+    }
+
+    datapoint = bionet_datapoint_new(resource, value, NULL);
+    bionet_resource_add_datapoint(resource, datapoint);
+
+    bionet_hab_add_node(hab, node);
+
+    hab_report_new_node(node);
+}
+
 
 int main(int argc, char * argv[])
 {
@@ -70,7 +110,6 @@ int main(int argc, char * argv[])
     int bionet_fd;
 
     int max_delay = 5;
-    int min_nodes = 5;
 
     char *hab_type = HAB_TYPE;
     char *hab_id = NULL;
@@ -148,8 +187,9 @@ int main(int argc, char * argv[])
 
 
 
-	   srand( (unsigned)time( NULL ) );
+    srand( (unsigned)time( NULL ) );
 
+    add_info_node(hab);
 
 
     // 
@@ -158,7 +198,6 @@ int main(int argc, char * argv[])
     while (1) {
         fd_set readers;
         struct timeval timeout;
-        int rnd;
         uint32_t ms_delay;
         int r;
 
@@ -170,32 +209,18 @@ int main(int argc, char * argv[])
 
 	hab_read();
 
-        while (bionet_hab_get_num_nodes(hab) < min_nodes) {
-            //add_node(hab);
-        }
 
-        while (bionet_hab_get_num_nodes(hab) > (2 * min_nodes)) {
-            destroy_node(hab);
-        }
 
-	    rnd = rand() % 100;
 
-		
-		if (rnd < 10) {
-            //destroy_node(hab);
-        } else if (rnd < 20) {
-            //add_node(hab);
-        } else {
-            //update_node(hab);
-        }
+
 
         FD_ZERO(&readers);
         FD_SET(bionet_fd, &readers);
 
-		ms_delay = rand();
-	    ms_delay = abs(ms_delay) % (max_delay * 1000);
+        ms_delay = rand();
+        ms_delay = abs(ms_delay) % (max_delay * 1000);
 
-		timeout.tv_sec = ms_delay / 1000;
+        timeout.tv_sec = ms_delay / 1000;
         timeout.tv_usec = (ms_delay % 1000) * 1000;
 
         r = select(bionet_fd + 1, &readers, NULL, NULL, &timeout);
@@ -216,35 +241,5 @@ int main(int argc, char * argv[])
     }
 
     return 0;
-}
-
-
-
-
-static void destroy_node(bionet_hab_t* random_hab) {
-    bionet_node_t *node;
-
-    node = pick_random_node(random_hab);
-    if (node == NULL) return;
-	printf("lost node: %s\n", bionet_node_get_name(node));
-
-    bionet_hab_remove_node_by_id(random_hab, bionet_node_get_id(node));
-    hab_report_lost_node(bionet_node_get_id(node));
-    bionet_node_free(node);
-}
-
-bionet_node_t *pick_random_node(bionet_hab_t *random_hab) {
-    int num_nodes;
-    int node_index;
-    int rnd;
-
-    num_nodes = bionet_hab_get_num_nodes(random_hab);
-    if (num_nodes <= 0) return NULL;
-
-
-	rnd = rand();
-	node_index = abs(rnd) % num_nodes;
-
-    return bionet_hab_get_node_by_index(random_hab, node_index);
 }
 
