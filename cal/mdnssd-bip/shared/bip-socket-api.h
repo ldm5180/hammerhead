@@ -64,6 +64,14 @@ int bip_socket_connect(
         const bip_peer_network_info_t * net);
 
 /**
+ * @brief Listen on a socket
+ *
+ * @retval >= 0 The socket that was created
+ * @retval -1 An error occurred, and a mesage was logged
+ */
+int bip_socket_listen(int s, int backlog);
+
+/**
  * @brief Create a tcp socket
  *
  * @retval >= 0 The socket that was created
