@@ -6,7 +6,10 @@
 
 include $(top_srcdir)/common.am
 
+if ENABLE_EXE
+
 bin_PROGRAMS = ca-serve
 
 ca_serve_SOURCES = ca-serve.c
 
+endif

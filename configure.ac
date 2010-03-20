@@ -216,6 +216,13 @@ fi
 
 AM_CONDITIONAL(ENABLE_ALSA, test "x$ENABLE_ALSA" = "xyes")
 
+# disable all executables
+AC_ARG_ENABLE(exe, AC_HELP_STRING([--disable-exe],
+      [disable building of executables]),
+      [ENABLE_EXE=$enableval],
+      [ENABLE_EXE=yes])
+AM_CONDITIONAL(ENABLE_EXE, test "x$ENABLE_EXE" = "xyes")
+
 # disable HABs
 AC_ARG_ENABLE(
     habs,
