@@ -54,11 +54,11 @@ libbionet_la_LIBADD = \
 	$(OPENSSL_LIBS) \
 	$(LIBS_BIONET_CAL_UTIL) \
 	$(LIBS_BIONET_CAL_CLIENT) \
-	$(LIBS_BIONET_ASN1) 
+	$(LIBS_BIONET_ASN1)  \
 	$(LIBS_BIONET_UTIL)
 
 libbionet_la_LDFLAGS = \
-	-version-info \
+	$(AM_LDFLAGS) -version-info \
 	$(BIONET_INTERFACE_VERSION) \
 	$(LDFLAGS_BIONET_CAL_UTIL) \
 	$(LDFLAGS_BIONET_CAL_CLIENT) \

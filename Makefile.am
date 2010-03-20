@@ -7,7 +7,12 @@ include $(top_srcdir)/common.am
 
 ACLOCAL_AMFLAGS = -I build-aux/m4
 
-SUBDIRS = cal util asn.1 libhab libbionet libbdm data-manager hab client security apps check test
+SUBDIRS = cal util asn.1 libhab libbionet  
+
+if ENABLE_BDM
+SUBDIRS += libbdm data-manager
+endif
+SUBDIRS += hab client security apps check test
 
 if ENABLE_LINUX
 LDCONFIG_EXE = /sbin/ldconfig

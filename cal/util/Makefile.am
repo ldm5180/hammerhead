@@ -12,5 +12,5 @@ libevent_la_SOURCES = event-free.c event-new.c peer-name-is-valid.c topic-is-val
 libevent_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(OPENSSL_CFLAGS)
 libevent_la_LIBADD = $(GLIB_LIBS) $(OPENSSL_LIBS)
 
-libevent_la_LDFLAGS = -version-info $(BIONET_INTERFACE_VERSION) 
+libevent_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(BIONET_INTERFACE_VERSION) 
 

@@ -6,31 +6,6 @@
 
 include $(top_srcdir)/common.am
 
-LIBCAL_UTIL_SOURCES=                 \
-    ../../util/peer-name-is-valid.c  \
-    ../../util/topic-is-valid.c      \
-    ../../util/event-free.c          \
-    ../../util/event-new.c
-
-LIBCAL_MDNSSD_BIP_SHARED_SOURCES =          \
-    ../shared/bip-net-clear.c               \
-    ../shared/bip-net-destroy.c             \
-    ../shared/bip-net-disconnect.c          \
-    ../shared/bip-net-free.c                \
-    ../shared/bip-net-is-connected.c        \
-    ../shared/bip-net-new.c                 \
-    ../shared/bip-peer-free.c               \
-    ../shared/bip-peer-disconnect.c         \
-    ../shared/bip-peer-get-connected-net.c  \
-    ../shared/bip-peer-new.c                \
-    ../shared/bip-read-from-peer.c          \
-    ../shared/bip-send-message.c            \
-    ../shared/bip-security.c 		    \
-    ../shared/bip-shared-cfg.c              \
-    ../shared/bip-peer-is-secure.c          \
-    ../shared/$(SYSAPI)/bip-itc.c           \
-    ../shared/$(SYSAPI)/bip-socket.c
-
 lib_LTLIBRARIES = libcal-mdnssd-bip-client.la
 
 libcal_mdnssd_bip_client_la_CFLAGS = \
@@ -49,17 +24,18 @@ libcal_mdnssd_bip_client_la_SOURCES = \
 	bip-net-connect.c                  \
 	bip-peer-connect.c                  \
 	global.c \
-	thread-functions.c \
-	$(LIBCAL_MDNSSD_BIP_SHARED_SOURCES) \
-	$(LIBCAL_UTIL_SOURCES)
+	thread-functions.c
+
 
 libcal_mdnssd_bip_client_la_LIBADD = \
 	$(AM_LDADD) \
+	$(LIBS_CAL_MDNSSD_BIP_SHARED) \
+	$(LIBS_CAL_UTIL) \
 	$(AVAHI_COMPAT_LIBDNS_SD_LIBS) \
 	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(OPENSSL_LIBS)
 
-libcal_mdnssd_bip_client_la_LDFLAGS = \
+libcal_mdnssd_bip_client_la_LDFLAGS = $(AM_LDFLAGS) \
 	-version-info \
 	$(BIONET_INTERFACE_VERSION) 
