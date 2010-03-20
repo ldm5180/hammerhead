@@ -13,6 +13,7 @@ endif
 lib_LTLIBRARIES = libbionet-util.la
 
 include_HEADERS = \
+    libbionet-util-decl.h \
     bionet-bdm.h \
     bionet-util.h \
     bionet-node.h \
@@ -24,6 +25,7 @@ include_HEADERS = \
     bionet-version.h
 
 
+libbionet_util_la_CPPFLAGS = $(AM_CPPFLAGS) -DBUILDING_LIBBIONET_UTIL
 libbionet_util_la_CFLAGS = \
 	$(AM_CFLAGS) \
 	$(GLIB_CFLAGS) \

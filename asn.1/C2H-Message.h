@@ -16,6 +16,8 @@
 #include "StreamData.h"
 #include <constr_CHOICE.h>
 
+#include "libbionet-asn-decl.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,7 +42,8 @@ typedef struct C2H_Message {
 } C2H_Message_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_C2H_Message;
+BIONET_ASN_API_DECL
+asn_TYPE_descriptor_t asn_DEF_C2H_Message;
 
 #ifdef __cplusplus
 }

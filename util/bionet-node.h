@@ -19,6 +19,7 @@
 
 #include <glib.h>
 
+#include "libbionet-util-decl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,6 +35,7 @@ extern "C" {
  * @return Pointer to the new node
  * @retval NULL Failure
  */
+BIONET_UTIL_API_DECL
 bionet_node_t* bionet_node_new(bionet_hab_t *hab, const char* node_id);
 
 
@@ -56,6 +58,7 @@ bionet_node_t* bionet_node_new(bionet_hab_t *hab, const char* node_id);
  *         bionet_node_get_id(node));
  * @endcode
  */
+BIONET_UTIL_API_DECL
 const char *bionet_node_get_name(const bionet_node_t * node);
 
 
@@ -69,6 +72,7 @@ const char *bionet_node_get_name(const bionet_node_t * node);
  *
  * @note Do not free the returned pointer
  */
+BIONET_UTIL_API_DECL
 const char * bionet_node_get_id(const bionet_node_t *node);
 
 
@@ -80,6 +84,7 @@ const char * bionet_node_get_id(const bionet_node_t *node);
  * @return Pointer to a HAB
  * @return NULL on failure
  */
+BIONET_UTIL_API_DECL
 bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node);
 
 
@@ -92,6 +97,7 @@ bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node);
  * @retval 0 Success
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bionet_node_add_resource(bionet_node_t *node, bionet_resource_t *resource);
 
 
@@ -103,6 +109,7 @@ int bionet_node_add_resource(bionet_node_t *node, bionet_resource_t *resource);
  * @retval -1 Failure
  * @retval >=0 Number of nodes
  */
+BIONET_UTIL_API_DECL
 int bionet_node_get_num_resources(const bionet_node_t *node);
 
 
@@ -117,6 +124,7 @@ int bionet_node_get_num_resources(const bionet_node_t *node);
  * @return Pointer to a resource
  * @retval NULL Failure
  */
+BIONET_UTIL_API_DECL
 bionet_resource_t *bionet_node_get_resource_by_index(const bionet_node_t *node,
 						     unsigned int index);
 
@@ -130,6 +138,7 @@ bionet_resource_t *bionet_node_get_resource_by_index(const bionet_node_t *node,
  * @return Pointer to a resource
  * @retval NULL resource does not exist or Failure
  */
+BIONET_UTIL_API_DECL
 bionet_resource_t *bionet_node_get_resource_by_id(const bionet_node_t *node,
 						  const char *resource_id);
 
@@ -143,6 +152,7 @@ bionet_resource_t *bionet_node_get_resource_by_id(const bionet_node_t *node,
  * @retval 0 Success
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bionet_node_add_stream(bionet_node_t *node, bionet_stream_t *stream);
 
 
@@ -154,6 +164,7 @@ int bionet_node_add_stream(bionet_node_t *node, bionet_stream_t *stream);
  * @retval -1 Failure
  * @retval >=0 Number of streams
  */
+BIONET_UTIL_API_DECL
 int bionet_node_get_num_streams(const bionet_node_t *node);
 
 
@@ -168,6 +179,7 @@ int bionet_node_get_num_streams(const bionet_node_t *node);
  * @return Pointer to a stream
  * @retval NULL Failure
  */
+BIONET_UTIL_API_DECL
 bionet_stream_t *bionet_node_get_stream_by_index(const bionet_node_t *node, unsigned int index);
 
 
@@ -180,6 +192,7 @@ bionet_stream_t *bionet_node_get_stream_by_index(const bionet_node_t *node, unsi
  * @return Pointer to a stream
  * @retval NULL stream does not exist or Failure
  */
+BIONET_UTIL_API_DECL
 bionet_stream_t *bionet_node_get_stream_by_id(const bionet_node_t *node, const char *stream_id);
 
 
@@ -190,6 +203,7 @@ bionet_stream_t *bionet_node_get_stream_by_id(const bionet_node_t *node, const c
  *
  * @param[in] node Node to free
  */
+BIONET_UTIL_API_DECL
 void bionet_node_free(bionet_node_t *node);
 
 
@@ -206,6 +220,7 @@ void bionet_node_free(bionet_node_t *node);
  *
  * @note Any string may be replaced by the wildcard "*" to match all
  */
+BIONET_UTIL_API_DECL
 int bionet_node_matches_id(const bionet_node_t *node, const char *id);
 
 
@@ -224,6 +239,7 @@ int bionet_node_matches_id(const bionet_node_t *node, const char *id);
  *
  * @note Any string may be replaced by the wildcard "*" to match all
  */
+BIONET_UTIL_API_DECL
 int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node, 
 					     const char *hab_type, 
 					     const char *hab_id, 
@@ -240,6 +256,7 @@ int bionet_node_matches_habtype_habid_nodeid(const bionet_node_t *node,
  *       responsible for freeing the it and setting it to 
  *       NULL before the hab is free'd.
  */
+BIONET_UTIL_API_DECL
 void bionet_node_set_user_data(bionet_node_t *node, const void *user_data);
 
 
@@ -250,6 +267,7 @@ void bionet_node_set_user_data(bionet_node_t *node, const void *user_data);
  *
  * @return The user_data pointer, or NULL if none has been set.
  */
+BIONET_UTIL_API_DECL
 void *bionet_node_get_user_data(const bionet_node_t *node);
 
 #ifdef __cplusplus

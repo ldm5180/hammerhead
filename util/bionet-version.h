@@ -9,13 +9,17 @@
 
 #include <stdio.h>
 
+#include "libbionet-util-decl.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
+BIONET_UTIL_API_DECL
 void print_bionet_version(FILE *stream);
 
+BIONET_UTIL_API_DECL
 void bionet_version_get(char ** version);
 
 #ifdef __cplusplus

@@ -15,6 +15,7 @@
 
 #include <glib.h>
 
+#include "libbionet-util-decl.h"
 
 /**
  * @file bionet-hab.h 
@@ -35,6 +36,7 @@ extern "C" {
  * @return Valid pointer on success
  * @return NULL on failure
  */
+BIONET_UTIL_API_DECL
 bionet_hab_t *bionet_hab_new(const char *type, const char *id);
 
 
@@ -56,6 +58,7 @@ bionet_hab_t *bionet_hab_new(const char *type, const char *id);
  * sprintf(str, "%s.%s", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
  * @endcode
  */
+BIONET_UTIL_API_DECL
 const char *bionet_hab_get_name(const bionet_hab_t * hab);
 
 
@@ -69,6 +72,7 @@ const char *bionet_hab_get_name(const bionet_hab_t * hab);
  *
  * @note Do not free the returned pointer
  */
+BIONET_UTIL_API_DECL
 const char * bionet_hab_get_type(const bionet_hab_t *hab);
 
 
@@ -82,6 +86,7 @@ const char * bionet_hab_get_type(const bionet_hab_t *hab);
  *
  * @note Do not free the returned pointer
  */
+BIONET_UTIL_API_DECL
 const char * bionet_hab_get_id(const bionet_hab_t *hab);
 
 
@@ -94,6 +99,7 @@ const char * bionet_hab_get_id(const bionet_hab_t *hab);
  * @retval Valid node pointer on success
  * @retval NULL if node with that ID does not exist
  */
+BIONET_UTIL_API_DECL
 bionet_node_t *bionet_hab_get_node_by_id(bionet_hab_t *hab, 
 					 const char *node_id);
 
@@ -106,6 +112,7 @@ bionet_node_t *bionet_hab_get_node_by_id(bionet_hab_t *hab,
  * @retval -1 Invalid HAB pointer
  * @retval Number of nodes in the HAB on success
  */
+BIONET_UTIL_API_DECL
 int bionet_hab_get_num_nodes(const bionet_hab_t *hab);
 
 
@@ -120,6 +127,7 @@ int bionet_hab_get_num_nodes(const bionet_hab_t *hab);
  * @retval NULL Invalid HAB pointer or index is greater than number of nodes
  * @retval Valid node pointer on success
  */
+BIONET_UTIL_API_DECL
 bionet_node_t *bionet_hab_get_node_by_index(const bionet_hab_t *hab, 
 					    unsigned int index);
 
@@ -133,6 +141,7 @@ bionet_node_t *bionet_hab_get_node_by_index(const bionet_hab_t *hab,
  * @retval 0 Success
  * @retval -1 Failure
  */
+BIONET_UTIL_API_DECL
 int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node);
 
 
@@ -147,6 +156,7 @@ int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node);
  *
  * @note Node is not free'd. The caller needs to free.
  */
+BIONET_UTIL_API_DECL
 bionet_node_t * bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node_id);
 
 
@@ -160,6 +170,7 @@ bionet_node_t * bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node
  *
  * @note As a side-effect all nodes are free'd
  */
+BIONET_UTIL_API_DECL
 int bionet_hab_remove_all_nodes(bionet_hab_t *hab);
 
 
@@ -170,6 +181,7 @@ int bionet_hab_remove_all_nodes(bionet_hab_t *hab);
  *
  * @note As a side-effect all associated nodes are removed and free'd
  */
+BIONET_UTIL_API_DECL
 void bionet_hab_free(bionet_hab_t *hab);
 
 
@@ -185,6 +197,7 @@ void bionet_hab_free(bionet_hab_t *hab);
  *
  * @note The wildcard "*" matches any string.
  */
+BIONET_UTIL_API_DECL
 int bionet_hab_matches_type_and_id(const bionet_hab_t *hab, 
 				   const char *type, 
 				   const char *id);
@@ -200,6 +213,7 @@ int bionet_hab_matches_type_and_id(const bionet_hab_t *hab,
  *       responsible for freeing the it and setting it to 
  *       NULL before the hab is free'd.
  */
+BIONET_UTIL_API_DECL
 void bionet_hab_set_user_data(bionet_hab_t *hab, const void *user_data);
 
 
@@ -210,6 +224,7 @@ void bionet_hab_set_user_data(bionet_hab_t *hab, const void *user_data);
  *
  * @return The user_data pointer, or NULL if none has been set.
  */
+BIONET_UTIL_API_DECL
 void *bionet_hab_get_user_data(const bionet_hab_t *hab);
 
 
@@ -223,6 +238,7 @@ void *bionet_hab_get_user_data(const bionet_hab_t *hab);
  *
  * @note This function does not make sense for HABs, only Bionet Clients.
  */
+BIONET_UTIL_API_DECL
 int bionet_hab_is_secure(const bionet_hab_t *hab);
 
 
@@ -234,6 +250,7 @@ int bionet_hab_is_secure(const bionet_hab_t *hab);
  * 
  * @note This function is used exclusively by the Bionet Client library.
  */
+BIONET_UTIL_API_DECL
 void bionet_hab_set_secure(bionet_hab_t *hab, int is_secure);
 
 /**
@@ -245,6 +262,7 @@ void bionet_hab_set_secure(bionet_hab_t *hab, int is_secure);
  * @retval Valid bdm pointer on success
  * @retval NULL if bdm with that ID does not exist
  */
+BIONET_UTIL_API_DECL
 bionet_bdm_t *bionet_hab_get_bdm_by_id(bionet_hab_t *hab, 
 					 const char *bdm_id);
 
@@ -257,6 +275,7 @@ bionet_bdm_t *bionet_hab_get_bdm_by_id(bionet_hab_t *hab,
  * @retval -1 Invalid HAB pointer
  * @retval Number of bdms in the HAB on success
  */
+BIONET_UTIL_API_DECL
 int bionet_hab_get_num_bdms(const bionet_hab_t *hab);
 
 
@@ -271,6 +290,7 @@ int bionet_hab_get_num_bdms(const bionet_hab_t *hab);
  * @retval NULL Invalid HAB pointer or index is greater than number of bdms
  * @retval Valid bdm pointer on success
  */
+BIONET_UTIL_API_DECL
 bionet_bdm_t *bionet_hab_get_bdm_by_index(bionet_hab_t *hab, 
 					    unsigned int index);
 
@@ -287,6 +307,7 @@ bionet_bdm_t *bionet_hab_get_bdm_by_index(bionet_hab_t *hab,
  * @note The BDM memory is not managed by the hab. The hab only tracks BDMs
  * for cross-linking purposes
  */
+BIONET_UTIL_API_DECL
 int bionet_hab_add_bdm(bionet_hab_t *hab, const bionet_bdm_t *bdm);
 
 
@@ -301,6 +322,7 @@ int bionet_hab_add_bdm(bionet_hab_t *hab, const bionet_bdm_t *bdm);
  *
  * @note BDM is not free'd. The memory is mananged in the cache
  */
+BIONET_UTIL_API_DECL
 bionet_bdm_t * bionet_hab_remove_bdm_by_id(bionet_hab_t *hab, const char *bdm_id);
 
 
@@ -314,6 +336,7 @@ bionet_bdm_t * bionet_hab_remove_bdm_by_id(bionet_hab_t *hab, const char *bdm_id
  *
  * @note The BDMs are not freed. The memory is still owed by the cache
  */
+BIONET_UTIL_API_DECL
 int bionet_hab_remove_all_bdms(bionet_hab_t *hab);
 
 
@@ -324,6 +347,7 @@ int bionet_hab_remove_all_bdms(bionet_hab_t *hab);
  *
  * @return Pointer to string that is valid until the hab is free'd
  */ 
+BIONET_UTIL_API_DECL
 const char * bionet_hab_get_recording_bdm(bionet_hab_t *hab);
 
 /**
@@ -334,6 +358,7 @@ const char * bionet_hab_get_recording_bdm(bionet_hab_t *hab);
  *
  * @return Pointer to string that is valid until the hab is free'd
  */ 
+BIONET_UTIL_API_DECL
 void bionet_hab_set_recording_bdm(bionet_hab_t *hab, const char * bdm_id);
 
 #ifdef __cplusplus

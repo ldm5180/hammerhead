@@ -17,6 +17,8 @@
 
 #include <stdint.h>
 
+#include "libbionet-util-decl.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,6 +49,7 @@ typedef enum {
  * @retval NULL Error
  * @retval >0 Success
  */
+BIONET_UTIL_API_DECL
 bionet_stream_t *bionet_stream_new(
     const bionet_node_t *node,
     const char *id,
@@ -65,6 +68,7 @@ bionet_stream_t *bionet_stream_new(
  *
  * @note Do not free the returned pointer
  */
+BIONET_UTIL_API_DECL
 const char * bionet_stream_get_id(const bionet_stream_t *stream);
 
 
@@ -79,6 +83,7 @@ const char * bionet_stream_get_id(const bionet_stream_t *stream);
  * @note Do not free the returned pointer
  * @todo implement me
  */
+BIONET_UTIL_API_DECL
 const char * bionet_stream_get_type(const bionet_stream_t *stream);
 
 
@@ -96,6 +101,7 @@ const char * bionet_stream_get_type(const bionet_stream_t *stream);
  * bionet_node_get_hab(bionet_stream_get_node(resource));
  * @endcode
  */
+BIONET_UTIL_API_DECL
 bionet_hab_t * bionet_stream_get_hab(const bionet_stream_t *stream);
 
 
@@ -107,6 +113,7 @@ bionet_hab_t * bionet_stream_get_hab(const bionet_stream_t *stream);
  * @return Pointer to the Stream's Node
  * @return NULL on failure
  */
+BIONET_UTIL_API_DECL
 bionet_node_t * bionet_stream_get_node(const bionet_stream_t *stream);
 
 
@@ -119,6 +126,7 @@ bionet_node_t * bionet_stream_get_node(const bionet_stream_t *stream);
  *
  * @param[in] stream The Stream to free.
  */
+BIONET_UTIL_API_DECL
 void bionet_stream_free(bionet_stream_t *stream);
 
 
@@ -131,6 +139,7 @@ void bionet_stream_free(bionet_stream_t *stream);
  * @retval #BIONET_STREAM_DIRECTION_PRODUCER Producer
  * @retval #BIONET_STREAM_DIRECTION_CONSUMER Consumer
  */
+BIONET_UTIL_API_DECL
 bionet_stream_direction_t bionet_stream_get_direction(const bionet_stream_t * stream);
 
 
@@ -142,6 +151,7 @@ bionet_stream_direction_t bionet_stream_get_direction(const bionet_stream_t * st
  *
  * @return The bionet_stream_direction_t.
  */
+BIONET_UTIL_API_DECL
 bionet_stream_direction_t bionet_stream_direction_from_string(const char *direction_string);
 
 
@@ -154,6 +164,7 @@ bionet_stream_direction_t bionet_stream_direction_from_string(const char *direct
  * @retval >0 Success
  * @retval NULL Failure
  */
+BIONET_UTIL_API_DECL
 const char *bionet_stream_direction_to_string(bionet_stream_direction_t direction);
 
 
@@ -177,6 +188,7 @@ const char *bionet_stream_direction_to_string(bionet_stream_direction_t directio
  *         bionet_stream_get_id(stream));
  * @endcode
  */
+BIONET_UTIL_API_DECL
 const char *bionet_stream_get_name(const bionet_stream_t *stream);
 
 
@@ -198,6 +210,7 @@ const char *bionet_stream_get_name(const bionet_stream_t *stream);
  *         bionet_stream_get_id(stream));
  * @endcode
  */
+BIONET_UTIL_API_DECL
 const char *bionet_stream_get_local_name(const bionet_stream_t *stream);
 
 
@@ -211,6 +224,7 @@ const char *bionet_stream_get_local_name(const bionet_stream_t *stream);
  *       responsible for freeing the it and setting it to 
  *       NULL before the hab is free'd.
  */
+BIONET_UTIL_API_DECL
 void bionet_stream_set_user_data(bionet_stream_t *stream, const void *user_data);
 
 
@@ -221,6 +235,7 @@ void bionet_stream_set_user_data(bionet_stream_t *stream, const void *user_data)
  *
  * @return The user_data pointer, or NULL if none has been set.
  */
+BIONET_UTIL_API_DECL
 void *bionet_stream_get_user_data(const bionet_stream_t *stream);
 
 
