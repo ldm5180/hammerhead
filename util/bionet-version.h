@@ -9,8 +9,18 @@
 
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 void print_bionet_version(FILE *stream);
 
 void bionet_version_get(char ** version);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* BIONET_VERSION_H */
