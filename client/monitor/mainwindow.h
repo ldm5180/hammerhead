@@ -51,6 +51,7 @@ class MainWindow : public QWidget {
         void openDefaultPlotPreferences();
 
     private:
+        bool bionetEnabled, bdmEnabled;
         QAction *quitAction, *plotAction, *aboutAction, 
             *shortcuts, *preferencesAction, *updateSubscriptionsAction;
 

@@ -11,6 +11,8 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
     int sampleSize = -1;
     int require_security = 0;
     QString security_dir, title("Bionet Monitor");
+    bdmEnabled = false; 
+    bionetEnabled = true;
 
     setAttribute(Qt::WA_DeleteOnClose);
     setAttribute(Qt::WA_QuitOnClose);
@@ -30,6 +32,11 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
             security_dir = QString(*argv);
         } else if ((strcmp(*argv, "-e") == 0) || (strcmp(*argv, "--require-security") == 0)) {
             require_security = 1;
+        } else if ((strcmp(*argv, "-o") == 0) || (strcmp(*argv, "--only-bdm")== 0)) {
+            bdmEnabled = true;
+            bionetEnabled = false;
+        } else if ((strcmp(*argv, "-b") == 0) || (strcmp(*argv, "--bdm")== 0)) {
+            bdmEnabled = true;
         } else {
             usage();
             exit(1);
@@ -50,8 +57,10 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
         sampleSize = 10000;
     defaultPreferences = NULL;
     
-    liveTab = new BionetPage(this);
-    bdmTab = new BDMPage(this);
+    if (bionetEnabled)
+        liveTab = new BionetPage(this);
+    if (bdmEnabled)
+        bdmTab = new BDMPage(this);
 
     // set this QWidget's layout to include this menu
     menuBar = new QMenuBar;
@@ -65,7 +74,10 @@ MainWindow::MainWindow(char* argv[], QWidget *parent) : QWidget(parent) {
 
     scaleInfoTemplate = new ScaleInfo;
 
-    liveTab->setFocus(Qt::OtherFocusReason);
+    if (bionetEnabled)
+        liveTab->setFocus(Qt::OtherFocusReason);
+    else
+        bdmTab->setFocus(Qt::OtherFocusReason);
 }
 
 
@@ -77,7 +89,8 @@ MainWindow::~MainWindow() {
     delete shortcuts;
     delete preferencesAction; 
 
-    delete updateSubscriptionsAction;
+    if (bdmEnabled)
+        delete updateSubscriptionsAction;
 
     delete scaleInfoTemplate;
 }
@@ -85,8 +98,10 @@ MainWindow::~MainWindow() {
 
 void MainWindow::setupWindow() {
     tabs = new QTabWidget;
-    tabs->addTab(liveTab, "&Live");
-    tabs->addTab(bdmTab, "&History");
+    if (bionetEnabled)
+        tabs->addTab(liveTab, "&Live");
+    if (bdmEnabled)
+        tabs->addTab(bdmTab, "&History");
 
     layout->addWidget(tabs);
 }
@@ -110,17 +125,20 @@ void MainWindow::createActions() {
     preferencesAction = new QAction(tr("&Default Plot Preferences..."), this);
     connect(preferencesAction, SIGNAL(triggered()), this, SLOT(openDefaultPlotPreferences()));
 
-    updateSubscriptionsAction = new QAction(tr("&Add BDM Subscriptions..."), this);
-    updateSubscriptionsAction->setShortcut(tr("Ctrl+A"));
-    connect(updateSubscriptionsAction, SIGNAL(triggered()), 
-        bdmTab, SLOT(updateSubscriptions()));
+    if (bdmEnabled) {
+        updateSubscriptionsAction = new QAction(tr("&Add BDM Subscriptions..."), this);
+        updateSubscriptionsAction->setShortcut(tr("Ctrl+A"));
+        connect(updateSubscriptionsAction, SIGNAL(triggered()), 
+            bdmTab, SLOT(updateSubscriptions()));
+    }
 }
 
 
 
 void MainWindow::createMenus() {
     fileMenu = menuBar->addMenu(tr("&File"));
-    fileMenu->addAction(updateSubscriptionsAction);
+    if (bdmEnabled)
+        fileMenu->addAction(updateSubscriptionsAction);
     fileMenu->addAction(quitAction);
 
     plotMenu = menuBar->addMenu(tr("&Plotting"));
@@ -137,6 +155,12 @@ void MainWindow::usage(void) {
     cout << "usage: bionet-monitor OPTIONS...\n\
 \n\
 OPTIONS:\n\
+\n\
+    -o, --only-bdm\n\
+        Only use BDMs\n\
+\n\
+    -b, --bdm\n\
+        Connect to live bionet and the bdms\n\
 \n\
     -e, --require-security\n\
         Require security\n\
