@@ -13,9 +13,15 @@
 #include <errno.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <wchar.h>
 
 #include "internal.h"
 #include "bionet-util.h"
+
+#ifdef _WIN32
+#include <winsock2.h> // needed for gethostname
+#include <winbase.h> // needed for GetModuleFileName
+#endif
 
 static char *hab_get_program_name(void);
 static int bionet_hab_set_type(bionet_hab_t *hab, const char *type);
@@ -182,8 +188,8 @@ bionet_hab_t* bionet_hab_new(const char* type, const char* id) {
 }
 
 static char *hab_get_program_name(void) {
-#if defined(LINUX) || defined(MACOSX)
     static char program_name[500];
+#if defined(LINUX) || defined(MACOSX)
 
     int r;
     int fd;
@@ -228,13 +234,33 @@ static char *hab_get_program_name(void) {
         }
     }
 
-    return program_name;
 #endif
 
-#ifdef WINDOWS
-    // FIXME
-    return "a-windows-program";
+#ifdef _WIN32
+    wchar_t * tmp;
+    static const size_t nchars = 500;
+    wchar_t wstr[nchars*2];
+    
+    GetModuleFileNameW(NULL, wstr, nchars);
+
+    while ((tmp = wmemchr(wstr, L'\\', wcslen(wstr))) != NULL) {
+        int new_len = wcslen(tmp+1);
+        memmove(wstr, tmp+1, new_len);
+        wstr[new_len] = L'\0';
+    }
+
+    for (tmp = wstr; *tmp != L'\0'; tmp ++) {
+        if (!iswalnum(*tmp) && *tmp != '-') {
+            *tmp = L'-';
+        }
+    }
+
+    if(wcstombs(program_name, wstr, sizeof(program_name)) < 0 ) {
+        strcpy(program_name, "unknown");
+    }
+
 #endif
+    return program_name;
 }
 
 // Emacs cruft

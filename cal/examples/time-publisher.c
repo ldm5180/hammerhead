@@ -4,13 +4,19 @@
 // NNC07CB47C.
 
 
-#include <errno.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#include <errno.h>
+#endif
+
+#include <signal.h>
 
 #include "cal-server.h"
 
@@ -77,9 +83,10 @@ static void exit_handler(void) {
 
 
 void make_shutdowns_clean(void) {
+    atexit(exit_handler);
+#ifndef _WIN32
     struct sigaction sa;
 
-    atexit(exit_handler);
 
     // handle exit signals
     sa.sa_handler = exit_signal_handler;
@@ -110,6 +117,10 @@ void make_shutdowns_clean(void) {
         fprintf(stderr, "error setting SIGPIPE sigaction to SIG_IGN: %s", strerror(errno));
         exit(1);
     }
+#else
+    signal (SIGINT, exit_signal_handler);
+    signal (SIGTERM, exit_signal_handler);
+#endif
 }
 
 

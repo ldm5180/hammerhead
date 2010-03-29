@@ -17,6 +17,10 @@
 #include "internal.h"
 #include "bionet-util.h"
 
+#ifdef _WIN32
+#include <winsock2.h> // needed for gethostname
+#endif
+
 static int bionet_bdm_set_id(bionet_bdm_t *bdm, const char *id);
 
 

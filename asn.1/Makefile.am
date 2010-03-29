@@ -158,6 +158,10 @@ libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_UTIL) -fno
 
 libbionet_asn_la_LIBADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) $(GLIB_LIBS) -lm 
 
+if ENABLE_WIN32
+libbionet_asn_la_LIBADD += -lmsvcrt
+endif
+
 libbionet_asn_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(BIONET_INTERFACE_VERSION) $(LDFLAGS_BIONET_UTIL) 
 
 

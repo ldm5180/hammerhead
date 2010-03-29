@@ -154,7 +154,7 @@ int bip_net_connect_check(void * cal_handle, const char * peer_name, bip_peer_ne
     if(net->pending_bio == NULL) {
         int sol_error;
         socklen_t sol_len = sizeof(sol_error);
-        getsockopt(net->socket, SOL_SOCKET, SO_ERROR, &sol_error, &sol_len);
+        getsockopt(net->socket, SOL_SOCKET, SO_ERROR, (void*)&sol_error, &sol_len);
 
         if(sol_error != 0 ) {
 #if 0
