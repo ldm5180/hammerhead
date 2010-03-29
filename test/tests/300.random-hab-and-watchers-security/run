@@ -42,18 +42,21 @@ kill %2
 kill %3
 wait
 
+# watcher may generated CAL errors in test environments
+grep -v '^CAL:' out.watcher.0 > out.watcher.0.nocal
+grep -v '^CAL:' out.watcher.1 > out.watcher.1.nocal
 
-if ! diff -q out.watcher.0 out.watcher.1; then
+if ! diff -q out.watcher.0.nocal out.watcher.1.nocal; then
     echo "ERROR: watcher outputs differ:"
-    diff -u out.watcher.0 out.watcher.1
+    diff -u out.watcher.0.nocal out.watcher.1.nocal
     RETVAL=1
 else
     echo "watcher outputs are identical, yay"
 fi
 
-if ! diff -q out.watcher.0 out.random-hab; then
+if ! diff -q out.watcher.0.nocal out.random-hab; then
     echo "ERROR: watcher output differs from random-hab output:"
-    diff -u out.random-hab out.watcher.0
+    diff -u out.random-hab out.watcher.0.nocal
     RETVAL=1
 else
     echo "watcher outputs are identical to random-hab output, yay"
