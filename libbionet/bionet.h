@@ -10,8 +10,6 @@
 // put this before any deprecated functions
 #define BIONET_DEPRECATED __attribute((__deprecated__))
 
-#include <glib.h>
-
 #include "bionet-util.h"
 
 #include "libbionet-decl.h"

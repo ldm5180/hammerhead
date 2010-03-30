@@ -13,6 +13,18 @@
 #include "bionet-asn.h"
 #include "bionet-util.h"
 
+#ifdef __WIN32
+static struct tm * gmtime_r(const time_t *timep, struct tm* _tm) {
+    struct tm * ret = gmtime(timep);
+    if(ret){
+        memcpy(_tm, ret, sizeof(struct tm));
+        return _tm;
+    } else {
+        return NULL;
+    }
+    
+}
+#endif
 
 
 

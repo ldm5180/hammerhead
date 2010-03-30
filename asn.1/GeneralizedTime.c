@@ -19,6 +19,7 @@
 #endif	/* __CYGWIN__ */
 
 #if	defined(WIN32)
+/* 
 #pragma message( "PLEASE STOP AND READ!")
 #pragma message( "  localtime_r is implemented via localtime(), which may be not thread-safe.")
 #pragma message( "  gmtime_r is implemented via gmtime(), which may be not thread-safe.")
@@ -26,6 +27,21 @@
 #pragma message( "  You must fix the code by inserting appropriate locking")
 #pragma message( "  if you want to use asn_GT2time() or asn_UT2time().")
 #pragma message( "PLEASE STOP AND READ!")
+*/
+
+#include <windows.h>
+static int setenv(const char * name, const char * value, int overwrite){
+    if (SetEnvironmentVariable(name, value)) {
+        return 0;
+    }
+    return -1;
+}
+static int unsetenv(const char * name){
+    if (SetEnvironmentVariable(name, NULL) ) {
+        return 0;
+    }
+    return -1;
+}
 
 static struct tm *localtime_r(const time_t *tloc, struct tm *result) {
 	struct tm *tm;
@@ -72,12 +88,14 @@ static struct tm *gmtime_r(const time_t *tloc, struct tm *result) {
 #endif	/* HAVE_TM_GMTOFF */
 
 #if	(defined(_EMULATE_TIMEGM) || !defined(HAVE_TM_GMTOFF))
+/*
 #warning "PLEASE STOP AND READ!"
 #warning "  timegm() is implemented via getenv(\"TZ\")/setenv(\"TZ\"), which may be not thread-safe."
 #warning "  "
 #warning "  You must fix the code by inserting appropriate locking"
 #warning "  if you want to use asn_GT2time() or asn_UT2time()."
 #warning "PLEASE STOP AND READ!"
+*/
 #endif	/* _EMULATE_TIMEGM */
 
 /*

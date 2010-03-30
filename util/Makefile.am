@@ -22,6 +22,7 @@ include_HEADERS = \
     bionet-datapoint.h \
     bionet-value.h \
     bionet-hab.h \
+    bionet-platform.h \
     bionet-version.h
 
 

@@ -9,6 +9,8 @@
 
 #include "bionet-util.h"
 
+#include <stdint.h>
+
 
 
 struct bionet_bdm_opaque_t {
