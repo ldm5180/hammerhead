@@ -120,6 +120,10 @@ int bip_msg_queue_pop(bip_msg_queue_t *q, bip_msg_queue_direction_t dir, cal_eve
     if (r == sizeof(cal_event_t*) ) {
         return 0;
     } 
+    if (r == 0 ) {
+        *event = NULL;
+        return 1;
+    }
     
     if (r < 0) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
