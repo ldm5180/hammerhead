@@ -162,7 +162,7 @@ if ENABLE_WIN32
 libbionet_asn_la_LIBADD += -lmsvcrt
 endif
 
-libbionet_asn_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(BIONET_INTERFACE_VERSION) $(LDFLAGS_BIONET_UTIL) 
+libbionet_asn_la_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_BIONET_UTIL) 
 
 
 if ENABLE_EXE

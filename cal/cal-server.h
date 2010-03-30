@@ -20,15 +20,15 @@
 
 #include "cal-util.h"
 
-#ifdef __WIN32
+#if defined(__WIN32) 
 #  if defined(BIONET_VERSION)
 #    ifdef DLL_EXPORT
-#      define API_DECL __declspec(dllexport)
+#      define API_DECL extern __declspec(dllexport)
 #    else
-#      define API_DECL
+#      define API_DECL extern 
 #    endif
 #  else
-#    define API_DECL __declspec(dllimport)
+#    define API_DECL extern __declspec(dllimport)
 #  endif
 #else
 #  define API_DECL extern

@@ -7,7 +7,7 @@
 #ifndef _LIBBIONET_UTIL_DECL_H
 #define _LIBBIONET_UTIL_DECL_H
 
-#ifdef __WIN32
+#if defined(__WIN32)
 #  if defined(BUILDING_LIBBIONET_UTIL)
 #    ifdef DLL_EXPORT
 #      define BIONET_UTIL_API_DECL __declspec(dllexport)

@@ -20,7 +20,7 @@
 
 #include "cal-event.h"
 
-#ifdef __WIN32
+#if defined(__WIN32)
 #  if defined(BIONET_VERSION)
 #    ifdef DLL_EXPORT
 #      define API_DECL __declspec(dllexport)
