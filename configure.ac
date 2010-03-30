@@ -635,6 +635,7 @@ AC_CONFIG_FILES([Makefile
                  hab/csa-cp/Makefile
                  hab/cpod/Makefile
 		 hab/mmod/Makefile
+                 hab/info/Makefile
                  hab/random/Makefile
                  hab/test-pattern/Makefile
                  hab/alsa/Makefile
