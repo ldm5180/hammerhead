@@ -27,7 +27,6 @@ export AVAHI_COMPAT_LIBDNS_SD_CFLAGS=-I/home/bmarshall/src/bonjour/sdk/include
     --disable-clients \
     --disable-bdm \
     --disable-python \
-    --disable-check \
     --disable-qt4 \
     --disable-alsa \
     --disable-bluetooth \

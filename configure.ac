@@ -669,6 +669,7 @@ AC_CONFIG_FILES([Makefile
 		 check/libutil/Makefile
 		 check/data-manager/Makefile
 		 check/asn1/Makefile
+		 check/cal/Makefile
                  ])
 
 AC_OUTPUT
