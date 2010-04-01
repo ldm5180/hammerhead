@@ -1,3 +1,38 @@
 etc
-usr/bin
 usr/lib/python*
+
+# HABs
+usr/bin/syshealth-hab
+usr/bin/info-hab
+usr/bin/mmod-hab
+usr/bin/test-pattern-hab
+usr/bin/uwb-hab
+usr/bin/cpod-hab
+usr/bin/parsec-hab
+usr/bin/csa-cp-hab
+usr/bin/mon-hab
+usr/bin/random-hab
+usr/bin/pal-650
+usr/bin/speedway
+
+# clients
+usr/bin/bionet-realtime-watcher
+usr/bin/bionet-get
+usr/bin/bionet-commander
+usr/bin/bionet-watcher
+
+# bdm
+usr/bin/bionet-data-manager
+usr/bin/bdm-make-db
+usr/bin/bdm-watcher
+usr/bin/bdm-client
+usr/bin/ca-serve
+
+# little test programs that maybe shouldn't be installed at all
+usr/bin/test-asn-c2h
+usr/bin/test-asn-bdm-s2c
+usr/bin/test-asn-bdm-c2s
+usr/bin/test-asn-h2c
+usr/bin/time-publisher
+usr/bin/time-subscriber
+
