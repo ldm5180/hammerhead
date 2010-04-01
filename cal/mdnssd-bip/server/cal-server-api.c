@@ -166,7 +166,7 @@ void * cal_server_mdnssd_bip_init(const char *network_type,
         int r;
 
         r = bip_msg_queue_pop(&server_thread_data->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, &event);
-        if (r < 0) {
+        if (r != 0) {
             cal_server_mdnssd_bip_shutdown(server_thread_data);
             return NULL;
         } else if (event == NULL) {
@@ -319,7 +319,7 @@ int cal_server_mdnssd_bip_read(void * cal_handle, struct timeval *timeout) {
     }
 
     r = bip_msg_queue_pop(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, &event);
-    if (r < 0) {
+    if (r != 0) {
         return 0;
     } else if (event == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: ignoring NULL event from CAL Server thread!");

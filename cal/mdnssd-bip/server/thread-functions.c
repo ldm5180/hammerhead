@@ -88,7 +88,7 @@ static int read_from_user(cal_server_mdnssd_bip_t * this) {
     int ret_val = 0;
 
     r = bip_msg_queue_pop(&this->bip_server_msgq, BIP_MSG_QUEUE_FROM_USER, &event);
-    if (r < 0) {
+    if (r != 0) {
         this->running = 0;
         return -1;
     }

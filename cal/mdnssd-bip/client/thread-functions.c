@@ -223,7 +223,7 @@ static void read_from_user(cal_client_mdnssd_bip_t * this) {
     int r;
 
     r = bip_msg_queue_pop(&this->msg_queue, BIP_MSG_QUEUE_FROM_USER, &event);
-    if (r < 0) {
+    if (r != 0) {
         this->running = 0;
         return;
     }
