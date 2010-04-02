@@ -8,7 +8,9 @@ if [ $DIST = "hardy" ]; then
     echo "customizing source package for hardy:"
     echo "    do not build-depend on alsa"
     cp control.hardy control
+    cp bionet2-streams.install.hardy bionet2-streams.install
 else
     cp control.standard control
+    cp bionet2-streams.install.standard bionet2-streams.install
 fi
 

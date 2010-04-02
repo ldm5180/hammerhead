@@ -1,0 +1,10 @@
+# HABs
+usr/bin/stethoscope-hab
+usr/bin/streamy-hab
+
+# No ALSA HAB on Hardy
+#usr/bin/alsa-hab
+
+# Clients
+usr/bin/bionet-stream
+usr/bin/stream-manager
