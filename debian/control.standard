@@ -30,8 +30,23 @@ Section: net
 Architecture: any
 Depends: ${shlibs:Depends}, python, python-gobject
 Suggests: bionet2-www
+Recommends: bionet2-monitor, bionet2-streams
 Description: A network-transparent pub/sub system for information exchange
  Bionet2 HABs and Clients, and BDM
+
+Package: bionet2-monitor
+Section: net
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: A network-transparent pub/sub system for information exchange
+ This package contains the bionet-monitor client
+
+Package: bionet2-streams
+Section: net
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: A network-transparent pub/sub system for information exchange
+ This package contains some HABs and Clients that deal with "Streams".
 
 Package: libbionet2
 Section: devel
@@ -39,6 +54,16 @@ Architecture: any
 Depends: ${shlibs:Depends}
 Description: A network-transparent pub/sub system for information exchange (libraries)
  This package provides the Bionet2 libraries (including BDM client
+ libraries).  You generally don't need to install this package by hand,
+ it'll get installed automatically if you install any other package
+ that depends on it.
+
+Package: libbionet2-qt
+Section: devel
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: A network-transparent pub/sub system for information exchange (Qt libraries)
+ This package provides the Bionet2 libraries for Qt (including BDM client
  libraries).  You generally don't need to install this package by hand,
  it'll get installed automatically if you install any other package
  that depends on it.
