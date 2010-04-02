@@ -29,6 +29,7 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
     char node_id[8];
     struct timeval tv;
     uint32_t mv = 0;
+    uint32_t vcc = 0;
     bionet_resource_t * resource;
 
 #if DEBUG
@@ -81,7 +82,8 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    {
 		fprintf(stderr, "Failed to add resource: Voltage\n");
 	    }
-	    mv = mts310_cook_voltage(ENVGENMSG_volt_get(&t));
+	    vcc = ENVGENMSG_volt_get(&t);
+	    mv = mts310_cook_voltage(vcc);
 	    if (bionet_resource_set_uint32(resource, mv, &tv))
 	    {
 		fprintf(stderr, "Failed to set resource\n"); 

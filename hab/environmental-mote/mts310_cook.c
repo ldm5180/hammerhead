@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -38,5 +38,11 @@ float mts310_cook_temperature(uint16_t val)
 
 unsigned int mts310_cook_light(unsigned int mv, uint16_t val)
 {
-    return (val * mv / 1023);
+    unsigned int retval;
+    if (val > mv) {
+	retval = ((val - mv)*100)/(mv);
+    } else {
+	retval = ((mv - val)*100)/(mv);
+    }
+    return (retval);
 } /* mts310_cook_light() */
