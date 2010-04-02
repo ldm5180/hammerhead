@@ -1,0 +1,20 @@
+According to the datasheet (see doc directory) in order to read the temperature from an MTS310CB the PW0 pin has to be flipped, not Int2 as done for MTS310CA. If you are using an MTS310CB sensorboard, you need to change a line in tos/sensorboards/mts300/PhotoTempDeviceC.nc
+
+from:
+  TempControl.Power -> MicaBusC.Int2;
+to:
+  TempControl.Power -> MicaBusC.PW0;
+
+
+
+
+Compiling:
+	This hab requires that the TinyOS-2.x tools are installed because it uses mig (message interface generation) to create the message bindings for the TinyOS messages. This can be obtained from the TinyOS repository. 
+http://tinyos.net/
+
+Ubuntu:
+http://docs.tinyos.net/index.php/Installing_TinyOS_2.1#Two-step_install_on_your_host_OS_with_Debian_packages
+
+
+
+MIG: The Message Interface Generator is part of the TinyOS distribution. envgenmsg.* are created by MIG. If you need to modify these you will need the TinyOS toolchain installed.

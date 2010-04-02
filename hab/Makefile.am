@@ -25,6 +25,10 @@ if ENABLE_BLUETOOTH
 SUBDIRS += libamedevice stethoscope cpod
 endif
 
+if ENABLE_ENV
+SUBDIRS += environmental-mote
+endif
+
 if ENABLE_MMOD
 SUBDIRS += mmod
 endif

@@ -396,6 +396,16 @@ AC_ARG_ENABLE(
     )
 AM_CONDITIONAL(ENABLE_MMOD, test "x$ENABLE_MMOD" = "xyes")
 
+# optionally compile the env hab
+#
+AC_ARG_ENABLE(
+    env,
+    AC_HELP_STRING([--disable-env], [disable Environmental Mote HAB]),
+        [ENABLE_ENV=$enableval],
+        [ENABLE_ENV=yes]
+    )
+AM_CONDITIONAL(ENABLE_ENV, test "x$ENABLE_ENV" = "xyes")
+
 
 #
 # optionally compile the parsec hab
@@ -634,6 +644,7 @@ AC_CONFIG_FILES([Makefile
 		 hab/libamedevice/Makefile
                  hab/csa-cp/Makefile
                  hab/cpod/Makefile
+		 hab/environmental-mote/Makefile
 		 hab/mmod/Makefile
                  hab/info/Makefile
                  hab/random/Makefile
