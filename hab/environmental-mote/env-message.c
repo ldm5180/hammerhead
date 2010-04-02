@@ -109,6 +109,29 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	    }
 	}
 
+	/* create temperature resource */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_FLOAT,
+				       BIONET_RESOURCE_FLAVOR_SENSOR, 
+				       "Temperature-F");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get new resource: Temperature-F\n");
+	}
+	else
+	{
+	    if (bionet_node_add_resource(node, resource))
+	    {
+		fprintf(stderr, "Failed to add resource: Temperature-F\n");
+	    }
+	    float degrees = mts310_cook_temperature(ENVGENMSG_temp_get(&t));
+	    degrees = (degrees * (9.0/5.0))+32.0;
+	    if (bionet_resource_set_float(resource, degrees, &tv))
+	    {
+		fprintf(stderr, "Failed to set resource\n"); 
+	    }
+	}
+
 	/* create photo resource */
 	resource = bionet_resource_new(node, 
 				       BIONET_RESOURCE_DATA_TYPE_UINT16,
@@ -158,6 +181,18 @@ int msg_gen_process(uint8_t *msg, ssize_t len)
 	else
 	{
 	    bionet_resource_set_float(resource, mts310_cook_temperature(ENVGENMSG_temp_get(&t)), &tv);
+	}
+
+	resource = bionet_node_get_resource_by_id(node, "Temperature-F");
+	if (NULL == resource)
+	{
+	    fprintf(stderr, "Failed to get resource: Temperature-F\n");
+	}
+	else
+	{
+	    float degrees = mts310_cook_temperature(ENVGENMSG_temp_get(&t));
+	    degrees = (degrees * (9.0/5.0))+32.0;
+	    bionet_resource_set_float(resource, degrees, &tv);
 	}
 
 	resource = bionet_node_get_resource_by_id(node, "Photo");
