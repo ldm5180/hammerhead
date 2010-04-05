@@ -7,8 +7,8 @@
 #include "env_msg.h"
 
 
-#define DEFAULT_INTERVAL (1000 * 30)  /* milliseconds (ms) */
-#define INTERVALS_BEFORE_CHECK 2
+#define DEFAULT_INTERVAL (1000 * 30)      /* milliseconds (ms) */
+#define INTERVALS_BEFORE_CHECK (2 * 10)   /* 2xMinutes */
 module EnvNodeC
 {
     uses
