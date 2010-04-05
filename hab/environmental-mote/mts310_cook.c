@@ -38,11 +38,5 @@ float mts310_cook_temperature(uint16_t val)
 
 unsigned int mts310_cook_light(unsigned int mv, uint16_t val)
 {
-    unsigned int retval;
-    if (val > mv) {
-	retval = ((val - mv)*100)/(mv);
-    } else {
-	retval = ((mv - val)*100)/(mv);
-    }
-    return (retval);
+    return (val*100)/(mv);
 } /* mts310_cook_light() */

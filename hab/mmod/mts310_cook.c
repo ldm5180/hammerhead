@@ -30,7 +30,7 @@ float mts310_cook_temperature(uint16_t val)
 {
     float logRt;
 
-    logRt = log( (10000 * val) / (1023 - val) );
+    logRt = log( (10000 * (1023 - val) / val) );
     
     return ((1 / (A + B * logRt + C * pow(logRt, 3))) - DEG_KELVIN_DIFF);
 } /* mts310_cook_temperature() */
@@ -38,5 +38,5 @@ float mts310_cook_temperature(uint16_t val)
 
 unsigned int mts310_cook_light(unsigned int mv, uint16_t val)
 {
-    return (val * mv / 1023);
+    return (val*100)/(mv);
 } /* mts310_cook_light() */
