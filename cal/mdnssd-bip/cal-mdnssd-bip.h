@@ -123,6 +123,58 @@ void bip_shared_config_init(void);
 
 #define Max(a, b) ((a) > (b) ? (a) : (b))
 
+#define cal_pthread_mutex_lock(mutex) \
+while (1) \
+{ \
+    int                status; \
+    struct timespec    delay; \
+    struct timespec    remtime; \
+\
+    status = pthread_mutex_lock(mutex); \
+        if (0 != status) \
+    { \
+        if ((status == EINVAL) || (status == EDEADLK)) \
+        { \
+                        fprintf(stderr, "Invalid or deadlocked mutex!\n"); \
+            break; \
+        } \
+\
+        delay.tv_sec = 0; \
+        delay.tv_nsec = 100000; \
+        remtime.tv_sec = 0; \
+        remtime.tv_nsec = 0; \
+        (void) nanosleep (&delay, &remtime); \
+        continue; \
+    } \
+    break; \
+}
+
+#define cal_pthread_mutex_unlock(mutex) \
+while (1) \
+{ \
+    int                status; \
+    struct timespec    delay; \
+    struct timespec    remtime; \
+\
+    status = pthread_mutex_unlock(mutex); \
+        if (0 != status) \
+    { \
+        if ((status == EINVAL) || (status == EDEADLK)) \
+        { \
+                        fprintf(stderr, "Invalid or deadlocked mutex!\n"); \
+            break; \
+        } \
+\
+        delay.tv_sec = 0; \
+        delay.tv_nsec = 100000; \
+        remtime.tv_sec = 0; \
+        remtime.tv_nsec = 0; \
+        (void) nanosleep (&delay, &remtime); \
+\
+        continue; \
+    } \
+    break; \
+}
 
 
 

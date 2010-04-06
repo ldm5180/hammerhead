@@ -16,11 +16,12 @@
 #include "cal-mdnssd-bip.h"
 
 #include <openssl/bio.h>
-
+#include <pthread.h>
 
 
 #define ID "mDNS-SD/BIP Server "
 
+extern pthread_mutex_t avahi_mutex;
 
 // describes "this" server
 typedef struct {

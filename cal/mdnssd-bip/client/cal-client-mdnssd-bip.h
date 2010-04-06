@@ -10,6 +10,7 @@
 
 #include <dns_sd.h>
 #include <glib.h>
+#include <pthread.h>
 
 #include "cal-mdnssd-bip.h"
 
@@ -19,7 +20,7 @@
 #define ID "mDNS-SD/BIP Client "
 
 
-
+extern pthread_mutex_t avahi_mutex;
 
 typedef struct {
     //!

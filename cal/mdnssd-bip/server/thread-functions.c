@@ -681,7 +681,9 @@ static int read_from_client(cal_server_mdnssd_bip_t *this, const char *peer_name
 
 void cleanup_advertisedRef(cal_server_mdnssd_bip_t * this) {
     if (this->advertisedRef != NULL) {
+	cal_pthread_mutex_lock(&avahi_mutex);
         DNSServiceRefDeallocate(*this->advertisedRef);
+	cal_pthread_mutex_unlock(&avahi_mutex);
 	free(this->advertisedRef);
 	this->advertisedRef = NULL;
     }
@@ -826,6 +828,7 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
         }
     }
 
+    cal_pthread_mutex_lock(&avahi_mutex);
     error = DNSServiceRegister(
         this->advertisedRef,                        // DNSServiceRef *sdRef
         0,                                    // DNSServiceFlags flags
@@ -840,6 +843,7 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
         register_callback,                    // DNSServiceRegisterReply callBack
         NULL                                  // void *context
     );
+    cal_pthread_mutex_unlock(&avahi_mutex);
 
     if (error != kDNSServiceErr_NoError) {
         // the dns_sd api astonishingly lacks a strerror() function

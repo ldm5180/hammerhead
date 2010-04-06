@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -8,8 +8,10 @@
 
 #include <stdlib.h>
 #include <glib.h>
+#include <pthread.h>
 
 bip_shared_config_t bip_shared_cfg;
+pthread_mutex_t avahi_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void bip_shared_config_init(void) {
 

@@ -527,7 +527,9 @@ static void DNSSD_API resolve_callback(
 
 
     // remove this service_ref from the list
+    cal_pthread_mutex_lock(&avahi_mutex);
     DNSServiceRefDeallocate(sc->service_ref);
+    cal_pthread_mutex_unlock(&avahi_mutex);
     this->service_list = g_slist_remove(this->service_list, sc);
     free(sc);
 
@@ -626,6 +628,7 @@ static void DNSSD_API browse_callback(
 	sc->this = (cal_client_mdnssd_bip_t *)context;
 
         // Now create a resolve call to fill out the network info part of the bip_peer
+	cal_pthread_mutex_lock(&avahi_mutex);
         error = DNSServiceResolve(
             &sc->service_ref,
             0,
@@ -636,6 +639,7 @@ static void DNSSD_API browse_callback(
             resolve_callback,
             (void*)sc
         );
+	cal_pthread_mutex_unlock(&avahi_mutex);
         if (error != kDNSServiceErr_NoError) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "browse_callback: failed to start resolv service, dropping this joining peer");
             free(sc->peer_name);
@@ -675,7 +679,9 @@ static void cleanup_service_list(cal_client_mdnssd_bip_t * this) {
         GSList *next = ptr->next;
         struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
 
+	cal_pthread_mutex_lock(&avahi_mutex);
         DNSServiceRefDeallocate(sc->service_ref);
+	cal_pthread_mutex_unlock(&avahi_mutex);
         this->service_list = g_slist_remove(this->service_list, sc);
         free(sc->peer_name);
         free(sc);
@@ -886,6 +892,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
         return NULL;
     }
 
+    cal_pthread_mutex_lock(&avahi_mutex);
     error = DNSServiceBrowse(
         &browse->service_ref,
         0,
@@ -895,6 +902,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
         browse_callback,
         (void *)this
     );
+    cal_pthread_mutex_unlock(&avahi_mutex);
 
     if (error != kDNSServiceErr_NoError) {
         free(browse);
@@ -1023,6 +1031,7 @@ SELECT_LOOP_CONTINUE:
                 // change the service_list (and possibly known_peers and
                 // connected_publishers)
                 err = DNSServiceProcessResult(sc->service_ref);
+
                 if (err != kDNSServiceErr_NoError) {
                     g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "client thread: Error processing service reference result: %d.", err);
                     sleep(1);
