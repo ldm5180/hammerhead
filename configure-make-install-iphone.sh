@@ -13,7 +13,7 @@ if [[ "$0" =~  -iphone-sim.sh$ ]]; then
 
 	XCFLAGS="-arch $XARCH -pipe -std=c99 -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -Wreturn-type -Wunused-variable -fmessage-length=0 -miphoneos-version-min=2.0 -gdwarf-2 -mthumb -miphoneos-version-min=2.0 -I$XDIR/SDKs/$XSDK/usr/include -I$XPORTROOT/usr/include -isysroot /$XDIR/SDKs/$XSDK"
 		
-	XLDFLAGS="-arch $XARCH -pipe -std=c99 -gdwarf-2 -mthumb -L$XDIR/SDKs/$XSDK/usr/lib -L$XPORTROOT/usr/lib -isysroot /$XDIR/SDKs/$XSDK"
+	XLDFLAGS="-arch $XARCH -pipe -std=c99 -gdwarf-2 -mthumb -L$XDIR/SDKs/$XSDK/usr/lib -L$XPORTROOT/usr/lib -isysroot /$XDIR/SDKs/$XSDK -framework CoreFoundation"
 
 	XDESTDIR=$PWD/client/iphone/bionet_simulator_sdk
 else
@@ -28,7 +28,7 @@ else
 
 	XCFLAGS="-arch $XARCH -pipe -std=c99 -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -Wreturn-type -Wunused-variable -fmessage-length=0 -gdwarf-2 -mthumb -miphoneos-version-min=2.0 -I$XDIR/SDKs/$XSDK/usr/include -I$XPORTROOT/usr/include -isysroot /$XDIR/SDKs/$XSDK"
 		
-	XLDFLAGS="-arch $XARCH -pipe -std=c99 -gdwarf-2 -mthumb -L$XDIR/SDKs/$XSDK/usr/lib -L$XPORTROOT/usr/lib -isysroot /$XDIR/SDKs/$XSDK"
+	XLDFLAGS="-arch $XARCH -pipe -std=c99 -gdwarf-2 -mthumb -L$XDIR/SDKs/$XSDK/usr/lib -L$XPORTROOT/usr/lib -isysroot /$XDIR/SDKs/$XSDK -framework CoreFoundation"
 
 	XDESTDIR=$PWD/client/iphone/bionet_sdk
 	XCACHEFILE=--cache-file=arm-apple-darwin.cache
