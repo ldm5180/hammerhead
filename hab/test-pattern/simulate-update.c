@@ -19,6 +19,11 @@ extern int current_time;
 void new_node(struct new_node_event_t *event, struct timeval *tv) {
     bionet_node_t *node;
     GSList *cursor;
+    struct timeval * pubtv = tv;
+
+    if (current_time) {
+	pubtv = NULL;
+    }
 
     node = bionet_node_new(hab, event->id);
     bionet_hab_add_node(hab, node);
@@ -40,7 +45,7 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
             bionet_datapoint_t *dp;
 
             value = str_to_value(resource, res_info->data_type, (char*)res_info->value);
-            dp = bionet_datapoint_new(resource, value, tv);
+            dp = bionet_datapoint_new(resource, value, pubtv);
             bionet_resource_add_datapoint(resource, dp);
 
             if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY)) {

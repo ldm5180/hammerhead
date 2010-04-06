@@ -14,10 +14,6 @@
 bionet_value_t *str_to_value(bionet_resource_t *resource, bionet_resource_data_type_t data_type, char *str) {
     bionet_value_t *value;
 
-    /* the value string is enclosed in ', so we have to strip them */
-    str++;
-    str[strlen(str)-1] = '\0';
-
     switch (data_type) {
         case BIONET_RESOURCE_DATA_TYPE_BINARY:
             value = bionet_value_new_binary(resource, atoi(str));
@@ -65,9 +61,6 @@ bionet_value_t *str_to_value(bionet_resource_t *resource, bionet_resource_data_t
             value = NULL;
             break;
     }
-
-    str--;
-    str[strlen(str)-1] = '\'';
 
     return value;
 }

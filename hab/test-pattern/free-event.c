@@ -16,13 +16,12 @@ void free_new_node(struct new_node_event_t *node_event) {
 
     cursor = node_event->resources;
     while (cursor != NULL) {
-        struct resource_info_t *resource = (struct resource_info_t*)cursor->data;
-       
+	struct resource_info_t *resource = (struct resource_info_t*)cursor->data;
         if (resource->has_value)
             free((char*)resource->value);
-        free(resource);
-        resource = NULL;
+	free(resource);
 
+        resource = NULL;
         cursor = g_slist_delete_link(cursor, cursor);
     }
 

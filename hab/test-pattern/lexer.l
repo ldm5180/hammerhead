@@ -23,7 +23,7 @@ int line_num = 0;
 \+                                      { return ADD; }
 \-                                      { return REMOVE; }
 \?                                      { return NOVALUE; }
-'[^'\n]*'                               { yylval.string_v = strdup(yytext); return VALUE; }
+'[^'\n]*'                               { yylval.string_v = strndup(yytext+1, strlen(yytext)-2); return VALUE; }
 [Ss][Ee][Nn][Ss][Oo][Rr]                { yylval.flavor_v = BIONET_RESOURCE_FLAVOR_SENSOR; return FLAVOR; }
 [Pp][Aa][Rr][Aa][Mm][Ee][Tt][Ee][Rr]    { yylval.flavor_v = BIONET_RESOURCE_FLAVOR_PARAMETER; return FLAVOR; }
 [Aa][Cc][Tt][Uu][Aa][Tt][Oo][Rr]        { yylval.flavor_v = BIONET_RESOURCE_FLAVOR_ACTUATOR; return FLAVOR; }
