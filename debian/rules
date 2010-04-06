@@ -33,18 +33,14 @@ configure-stamp: debian/changelog
 	dh_testdir
 	[ -f ./configure ] || ./autogen.sh
 	./configure --prefix=/usr --sysconfdir=/etc $(DISABLE_ALSA)
-
 	touch configure-stamp
 
 
 build: build-stamp
 build-stamp: configure-stamp  
 	dh_testdir
-
-	# Add here commands to compile the package.
 	$(MAKE)
 	$(MAKE) check
-
 	touch $@
 
 
@@ -61,8 +57,6 @@ install: build
 	dh_testroot
 	dh_clean -k 
 	dh_installdirs
-
-	# Add here commands to install the package into debian/tmp
 	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
 
 
