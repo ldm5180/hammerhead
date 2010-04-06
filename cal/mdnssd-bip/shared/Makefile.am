@@ -24,6 +24,7 @@ libcal_mdnssd_bip_shared_la_SOURCES =   \
     bip-security.c			\
     bip-shared-cfg.c			\
     bip-peer-is-secure.c                \
+    bip-mutex.c                         \
     $(SYSAPI)/bip-itc.c                 \
     $(SYSAPI)/bip-socket.c
 

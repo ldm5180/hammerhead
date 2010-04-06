@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -122,60 +122,6 @@ void bip_shared_config_init(void);
 
 
 #define Max(a, b) ((a) > (b) ? (a) : (b))
-
-#define cal_pthread_mutex_lock(mutex) \
-while (1) \
-{ \
-    int                status; \
-    struct timespec    delay; \
-    struct timespec    remtime; \
-\
-    status = pthread_mutex_lock(mutex); \
-        if (0 != status) \
-    { \
-        if ((status == EINVAL) || (status == EDEADLK)) \
-        { \
-                        fprintf(stderr, "Invalid or deadlocked mutex!\n"); \
-            break; \
-        } \
-\
-        delay.tv_sec = 0; \
-        delay.tv_nsec = 100000; \
-        remtime.tv_sec = 0; \
-        remtime.tv_nsec = 0; \
-        (void) nanosleep (&delay, &remtime); \
-        continue; \
-    } \
-    break; \
-}
-
-#define cal_pthread_mutex_unlock(mutex) \
-while (1) \
-{ \
-    int                status; \
-    struct timespec    delay; \
-    struct timespec    remtime; \
-\
-    status = pthread_mutex_unlock(mutex); \
-        if (0 != status) \
-    { \
-        if ((status == EINVAL) || (status == EDEADLK)) \
-        { \
-                        fprintf(stderr, "Invalid or deadlocked mutex!\n"); \
-            break; \
-        } \
-\
-        delay.tv_sec = 0; \
-        delay.tv_nsec = 100000; \
-        remtime.tv_sec = 0; \
-        remtime.tv_nsec = 0; \
-        (void) nanosleep (&delay, &remtime); \
-\
-        continue; \
-    } \
-    break; \
-}
-
 
 
 // 
@@ -476,5 +422,23 @@ int bip_ssl_verify_callback(int ok, X509_STORE_CTX *store);
  * @return -1 There is an error sending data, and the peer should be reset by caller
  */
 int bip_drain_pending_msgs(bip_peer_network_info_t *net);
+
+/**
+ * @brief Lock a pthread mutex
+ *
+ * Wrapper around pthread_mutex_lock() to handle errors consistently.
+ *
+ * @param[in] mutex The mutex
+ */
+void cal_pthread_mutex_lock(pthread_mutex_t * mutex);
+
+/**
+ * @brief Lock a pthread mutex
+ *
+ * Wrapper around pthread_mutex_unlock() to handle errors consistently.
+ *
+ * @param[in] mutex The mutex
+ */
+void cal_pthread_mutex_unlock(pthread_mutex_t * mutex);
 
 #endif  // __CAL_MDNSSD_BIP_H
