@@ -38,6 +38,8 @@
 		7474509A0FA8E2220033B682 /* sec-dir in Resources */ = {isa = PBXBuildFile; fileRef = 747450920FA8E2220033B682 /* sec-dir */; };
 		747450E20FA8FA110033B682 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 747450E10FA8FA110033B682 /* Settings.bundle */; };
 		7474510A0FA909BE0033B682 /* bionet_inverse.png in Resources */ = {isa = PBXBuildFile; fileRef = 747451090FA909BE0033B682 /* bionet_inverse.png */; };
+		747B6A37116BCF2400730D76 /* libcal-mdnssd-bip-shared.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 747B6A36116BCF2400730D76 /* libcal-mdnssd-bip-shared.a */; };
+		747B6A3C116BCF5200730D76 /* libevent.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 747B6A3B116BCF5200730D76 /* libevent.a */; };
 		74912E0B0F86BB2700261D63 /* libintl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0A0F86BB2700261D63 /* libintl.a */; };
 		74912E0E0F86BB7000261D63 /* libiconv.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 74912E0D0F86BB7000261D63 /* libiconv.2.dylib */; };
 		74E85C430FCCEC5C0015C37B /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 74E85C420FCCEC5C0015C37B /* Entitlements.plist */; };
@@ -94,6 +96,8 @@
 		747450920FA8E2220033B682 /* sec-dir */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "sec-dir"; path = "../sec-dir"; sourceTree = SOURCE_ROOT; };
 		747450E10FA8FA110033B682 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		747451090FA909BE0033B682 /* bionet_inverse.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bionet_inverse.png; sourceTree = "<group>"; };
+		747B6A36116BCF2400730D76 /* libcal-mdnssd-bip-shared.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libcal-mdnssd-bip-shared.a"; path = "../bionet_simulator_sdk/usr/local/lib/libcal-mdnssd-bip-shared.a"; sourceTree = SOURCE_ROOT; };
+		747B6A3B116BCF5200730D76 /* libevent.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libevent.a; path = ../bionet_simulator_sdk/usr/local/lib/libevent.a; sourceTree = SOURCE_ROOT; };
 		74912E0A0F86BB2700261D63 /* libintl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libintl.a; path = "/opt/local/arm-apple-darwin/lib/libintl.a"; sourceTree = "<absolute>"; };
 		74912E0D0F86BB7000261D63 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
 		74CA85760F71674F00FEE5E2 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = usr/lib/libiconv.2.dylib; sourceTree = SDKROOT; };
@@ -139,6 +143,8 @@
 				7443CB840FC4A7D4007A17A0 /* libhab.a in Frameworks */,
 				744F268A0FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a in Frameworks */,
 				745C7E560FD72CB40021A47A /* IOKit.framework in Frameworks */,
+				747B6A37116BCF2400730D76 /* libcal-mdnssd-bip-shared.a in Frameworks */,
+				747B6A3C116BCF5200730D76 /* libevent.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -206,6 +212,8 @@
 				7443CB830FC4A7D4007A17A0 /* libhab.a */,
 				7406B0480F71566A007126DA /* libcal-mdnssd-bip-client.a */,
 				744F26890FC5BAFC00DA3200 /* libcal-mdnssd-bip-server.a */,
+				747B6A36116BCF2400730D76 /* libcal-mdnssd-bip-shared.a */,
+				747B6A3B116BCF5200730D76 /* libevent.a */,
 				7406B06E0F715A60007126DA /* libglib-2.0.a */,
 				7406B06D0F715A60007126DA /* libgio-2.0.a */,
 				7406B06F0F715A60007126DA /* libgmodule-2.0.a */,
@@ -362,6 +370,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../bionet_sdk/usr/local/lib\"",
+					"\"$(SRCROOT)/../bionet_simulator_sdk/usr/local/lib\"",
 				);
 				PRODUCT_NAME = BioNetMonitor;
 			};
@@ -375,6 +384,10 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = BioNetMonitor_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../bionet_simulator_sdk/usr/local/lib\"",
+				);
 				PRODUCT_NAME = BioNetMonitor;
 			};
 			name = Release;
@@ -423,6 +436,10 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = BioNetMonitor_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../bionet_simulator_sdk/usr/local/lib\"",
+				);
 				PRODUCT_NAME = BioNetMonitor;
 			};
 			name = AdHoc;
@@ -477,6 +494,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../bionet_sdk/usr/local/lib\"",
+					"\"$(SRCROOT)/../bionet_simulator_sdk/usr/local/lib\"",
 				);
 				PRODUCT_NAME = BioNetMonitor;
 			};
