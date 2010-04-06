@@ -1,5 +1,0 @@
-This little test tool will run the BDM server and Random HAB (python version) 
-and then extract the data from the BDM database to compare the output. The
-number of different lines shall be printed.
-
-Diff random.out and bdm.out to see the differences.
