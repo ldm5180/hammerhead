@@ -22,23 +22,41 @@
 #include "hardware-abstractor.h"
 #include "bionet-util.h"
 
+static int loops = -1; 
+int fast = 0;
+int current_time = 0;
+
+static char * security_dir = NULL;
+static int require_security = 0;
 
 om_t output_mode = OM_NORMAL;
 
 #define MAX_FILE_NAME_LENGTH (200)
 
-void usage(void) {
-    printf("usage: test-pattern-hab [-i ID] [-o OUTPUT_MODE] FILENAME\n");
-    printf("       test-pattern-hab --help\n");
-    printf("\n");
-    printf("    FILENAME is the name of the file containing the config info for the file\n");
-    printf("    ID is the desired HAB ID\n");
-    printf("    OUTPUT_MODE is either \"normal\" (default) or \"bionet-watcher\"\n");
-    printf("                or \"nodes-only\" or \"resources-only\"\n");
-    printf("\n");
-}
-
-
+void usage() {
+    fprintf(stderr, 
+	    "'test-pattern-hab' publishes a preset test pattern of Bionet traffic.\n"
+	    "\n"
+	    "Publishes data from an input file.\n"
+	    "\n"
+	    "usage:  test-pattern-hab [OPTIONS] INPUT-FILENAME\n"
+	    "\n"
+	    " -h,--help                     Show this usage information.\n"
+	    " -v,--version                  Show the version number\n"
+	    " -c,--current-time             Use the current time in the timestamp, file timestamps\n"
+	    "                               are used for interval only.\n"
+	    " -e,--require-security         Require security\n"
+	    " -f,--fast                     Publish as fast as possible, ignoring timestamp intervals.\n"
+	    " -i,--id <ID>                  Use ID as the HAB-ID (defaults to\n"
+	    "                               hostname if omitted).\n"
+	    " -l,--loops <NUM>              Number of times to publish the data consecutively.\n"
+	    " -o,--output-mode <mode>       Available modes are 'normal',\n"
+	    "                               'bionet-watcher', 'nodes-only', 'resources-only'\n"
+	    " -s,--security-dir <dir>       Directory containing security certificates\n"
+	    "\n"
+	    "Security can only be required when a security directory has been specified.\n"
+	    "  random-hab [--security-dir <dir> [--require-security]]\n");
+} /* usage() */
 
 
 int main(int argc, char *argv[]) {
@@ -57,42 +75,80 @@ int main(int argc, char *argv[]) {
     while (1) {
         int c;
         static struct option long_options[] = {
-            {"help", 0, 0, 'h'},
+            {"help", 0, 0, '?'},
+	    {"version", 0, 0, 'v'},
+	    {"current-time", 0, 0, 'c'},
+	    {"require-security", 0, 0, 'e'},
+	    {"fast", 0, 0, 'f'},
             {"id", 1, 0, 'i'},
+	    {"loops", 1, 0, 'l'},
             {"output-mode", 1, 0, 'o'},
-            {0, 0, 0, 0}
+	    {"security-dir", 1, 0, 's'},
+            {0, 0, 0, 0} //this must be last in the list
         };
 
-        c = getopt_long(argc, argv, "?hi:o:", long_options, &i);
+        c = getopt_long(argc, argv, "?vcefs:i:o:l:", long_options, &i);
         if (c == -1)
             break;
 
         switch (c) {
-            case 'i':
-                id = optarg;
-                break;
-            case 'o': {
-                if (strcmp(optarg, "normal") == 0) 
-                    output_mode = OM_NORMAL;
-                else if (strcmp(optarg, "bionet-watcher") == 0) 
-                    output_mode = OM_BIONET_WATCHER;
-                else if (strcmp(optarg, "nodes-only") == 0) 
-                    output_mode = OM_NODES_ONLY;
-                else if (strcmp(optarg, "resources-only") == 0) 
-                    output_mode = OM_RESOURCES_ONLY;
-                else {
-                    g_log("", G_LOG_LEVEL_WARNING, "unknown output mode %s", optarg);
-                    usage();
-                }
-                break;
-            }
-            case '?':
-            case 'h':
-                usage();
-                break;
-            default:
-                break;
+
+	case '?':
+	    usage();
+	    break;
+
+	case 'v':
+	    print_bionet_version(stdout);
+	    return 0;
+
+	case 'c':
+	    current_time++;
+	    break;
+
+	case 'e':
+	    require_security++;
+	    break;
+
+	case 'f':
+	    fast++;
+	    break;
+
+	case 'i':
+	    id = optarg;
+	    break;
+
+	case 'l':
+	    loops = atoi(optarg);
+	    break;
+
+	case 'o': {
+	    if (strcmp(optarg, "normal") == 0) 
+		output_mode = OM_NORMAL;
+	    else if (strcmp(optarg, "bionet-watcher") == 0) 
+		output_mode = OM_BIONET_WATCHER;
+	    else if (strcmp(optarg, "nodes-only") == 0) 
+		output_mode = OM_NODES_ONLY;
+	    else if (strcmp(optarg, "resources-only") == 0) 
+		output_mode = OM_RESOURCES_ONLY;
+	    else {
+		g_log("", G_LOG_LEVEL_WARNING, "unknown output mode %s", optarg);
+		usage();
+	    }
+	    break;
+	}
+
+	case 's':
+	    security_dir = optarg;
+	    break;
+
+	default:
+	    break;
         }
+    }
+
+    if ((require_security) && (security_dir == NULL)) {
+	usage();
+	exit(1);
     }
 
     if (optind == argc-1) {
@@ -170,9 +226,16 @@ int main(int argc, char *argv[]) {
     // dump for each node
     //
 
-    tv = NULL;
-    g_slist_foreach(events, simulate_updates, &tv);
+    int j = 0;
+    do {
+	tv = NULL;
+	g_slist_foreach(events, simulate_updates, &tv);
 
+	if (loops == 0) {
+	    j = 0; //loop forever
+	}
+    } while ((loops >= 0) && (++j < loops));
+    
     if (output_mode == OM_BIONET_WATCHER)
         g_message("lost hab: %s", bionet_hab_get_name(hab));
 

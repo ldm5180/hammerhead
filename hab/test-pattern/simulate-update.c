@@ -13,6 +13,8 @@
 #include "bionet-util.h"
 #include "hardware-abstractor.h"
 
+extern int fast;
+extern int current_time;
 
 void new_node(struct new_node_event_t *event, struct timeval *tv) {
     bionet_node_t *node;
@@ -102,6 +104,11 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
     bionet_resource_t *resource;
     bionet_value_t *value;
     bionet_datapoint_t *dp;
+    struct timeval *pubtv = tv;
+
+    if (current_time) {
+	pubtv = NULL;
+    }
 
     node = bionet_hab_get_node_by_id(hab, event->node_id);
     if (node == NULL) {
@@ -117,7 +124,7 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
 
     bionet_resource_remove_datapoint_by_index(resource, 0);
     value = str_to_value(resource, bionet_resource_get_data_type(resource), (char*)event->value);
-    dp = bionet_datapoint_new(resource, value, tv);
+    dp = bionet_datapoint_new(resource, value, pubtv);
     bionet_resource_add_datapoint(resource, dp);
 
     if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_RESOURCES_ONLY)) {
@@ -155,26 +162,28 @@ void simulate_updates(gpointer data, gpointer user_data) {
         last = *ptr;
     }
 
-    // determine the time to sleep
-    sec = next->tv_sec - last->tv_sec;
-
-    // milliseconds are a bit different ...
-    if (sec == 0) {
-        usec = next->tv_usec - last->tv_usec;
-    } else if (sec > 0) {
-        if (next->tv_usec >= last->tv_usec) {
-            usec = next->tv_usec - last->tv_usec;
-        } else {
-            usec = 1000000 - (last->tv_usec - next->tv_usec);
-            sec -= 1;
-        }
-    }
-
-    if(sec > 0 || (usec > 0 && sec == 0)) {
-        usleep(usec);
-        sleep(sec);
-        // set the timeval for the next step
-        *ptr = next;
+    if (0 == fast) {
+	// determine the time to sleep
+	sec = next->tv_sec - last->tv_sec;
+	
+	// milliseconds are a bit different ...
+	if (sec == 0) {
+	    usec = next->tv_usec - last->tv_usec;
+	} else if (sec > 0) {
+	    if (next->tv_usec >= last->tv_usec) {
+		usec = next->tv_usec - last->tv_usec;
+	    } else {
+		usec = 1000000 - (last->tv_usec - next->tv_usec);
+		sec -= 1;
+	    }
+	}
+	
+	if(sec > 0 || (usec > 0 && sec == 0)) {
+	    usleep(usec);
+	    sleep(sec);
+	    // set the timeval for the next step
+	    *ptr = next;
+	}
     }
 
     switch (event->type) {
