@@ -34,6 +34,13 @@ Recommends: bionet2-monitor, bionet2-streams
 Description: A network-transparent pub/sub system for information exchange
  Bionet2 HABs and Clients, and BDM
 
+Package: bionet2-cpod
+Section: net
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: A network-transparent pub/sub system for information exchange
+ This package contains the CPOD HAB
+
 Package: bionet2-monitor
 Section: net
 Architecture: any

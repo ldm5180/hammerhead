@@ -7,7 +7,6 @@ usr/bin/info-hab
 usr/bin/mmod-hab
 usr/bin/test-pattern-hab
 usr/bin/uwb-hab
-usr/bin/cpod-hab
 usr/bin/parsec-hab
 usr/bin/csa-cp-hab
 usr/bin/mon-hab
