@@ -22,9 +22,11 @@
 #include "hardware-abstractor.h"
 #include "bionet-util.h"
 
-static int loops = -1; 
+int loops = -1; 
+int simulate_loops = 0; 
 int fast = 0;
 int current_time = 0;
+int no_node_updates = 0;
 
 static char * security_dir = NULL;
 static int require_security = 0;
@@ -50,6 +52,7 @@ void usage() {
 	    " -i,--id <ID>                  Use ID as the HAB-ID (defaults to\n"
 	    "                               hostname if omitted).\n"
 	    " -l,--loops <NUM>              Number of times to publish the data consecutively.\n"
+	    " -n,--no-node-updates          Skip new/lost node messages when looping.\n"
 	    " -o,--output-mode <mode>       Available modes are 'normal',\n"
 	    "                               'bionet-watcher', 'nodes-only', 'resources-only'\n"
 	    " -s,--security-dir <dir>       Directory containing security certificates\n"
@@ -82,12 +85,13 @@ int main(int argc, char *argv[]) {
 	    {"fast", 0, 0, 'f'},
             {"id", 1, 0, 'i'},
 	    {"loops", 1, 0, 'l'},
+	    {"no-node-updates", 0, 0, 'n'},
             {"output-mode", 1, 0, 'o'},
 	    {"security-dir", 1, 0, 's'},
             {0, 0, 0, 0} //this must be last in the list
         };
 
-        c = getopt_long(argc, argv, "?vcefs:i:o:l:", long_options, &i);
+        c = getopt_long(argc, argv, "?vcefns:i:o:l:", long_options, &i);
         if (c == -1)
             break;
 
@@ -119,6 +123,10 @@ int main(int argc, char *argv[]) {
 
 	case 'l':
 	    loops = atoi(optarg);
+	    break;
+
+	case 'n':
+	    no_node_updates++;
 	    break;
 
 	case 'o': {
@@ -226,15 +234,15 @@ int main(int argc, char *argv[]) {
     // dump for each node
     //
 
-    int j = 0;
+    simulate_loops = 0;
     do {
 	tv = NULL;
 	g_slist_foreach(events, simulate_updates, &tv);
 
 	if (loops == 0) {
-	    j = 0; //loop forever
+	    simulate_loops = 0; //loop forever
 	}
-    } while ((loops >= 0) && (++j < loops));
+    } while ((loops >= 0) && (++simulate_loops < loops));
     
     if (output_mode == OM_BIONET_WATCHER)
         g_message("lost hab: %s", bionet_hab_get_name(hab));

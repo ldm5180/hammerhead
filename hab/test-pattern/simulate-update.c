@@ -13,8 +13,12 @@
 #include "bionet-util.h"
 #include "hardware-abstractor.h"
 
+extern int loops;
 extern int fast;
 extern int current_time;
+extern int no_node_updates;
+
+extern int simulate_loops;
 
 void new_node(struct new_node_event_t *event, struct timeval *tv) {
     bionet_node_t *node;
@@ -193,24 +197,27 @@ void simulate_updates(gpointer data, gpointer user_data) {
 
     switch (event->type) {
         case NEW_NODE: {
-            new_node((struct new_node_event_t*)event->event, next);
+	    if ((0 == no_node_updates) || (0 == simulate_loops)) {
+		new_node((struct new_node_event_t*)event->event, next);
+	    }
             break;
         }
         case LOST_NODE: {
-            struct lost_node_event_t* lost_event;
-            bionet_node_t *node;
-
-            lost_event = (struct lost_node_event_t*)event->event;
-
-            if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
-                g_message("lost node: %s", bionet_node_get_name(bionet_hab_get_node_by_id(hab, lost_event->id)));
-
-            node = bionet_hab_remove_node_by_id(hab, lost_event->id);
-            bionet_node_free(node);
-            
-            hab_read();
-            hab_report_lost_node(lost_event->id);
-
+	    if ((simulate_loops+1 == loops) || (0 == no_node_updates)) {
+		struct lost_node_event_t* lost_event;
+		bionet_node_t *node;
+		
+		lost_event = (struct lost_node_event_t*)event->event;
+		
+		if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
+		    g_message("lost node: %s", bionet_node_get_name(bionet_hab_get_node_by_id(hab, lost_event->id)));
+		
+		node = bionet_hab_remove_node_by_id(hab, lost_event->id);
+		bionet_node_free(node);
+		
+		hab_read();
+		hab_report_lost_node(lost_event->id);
+	    }
             break;
         }
         case DATAPOINT_UPDATE: {
