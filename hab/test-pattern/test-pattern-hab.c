@@ -260,9 +260,10 @@ int main(int argc, char *argv[]) {
     do {	
 	tv = NULL;
 	g_slist_foreach(events, simulate_updates, &tv);
+        simulate_loops ++;
     } while (
         (loops == 0)
-        || ((loops > 0) && (++simulate_loops < loops))
+        || ((loops > 0) && (simulate_loops < loops))
     );
     
     if (output_mode == OM_BIONET_WATCHER)
