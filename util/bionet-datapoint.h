@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -210,6 +210,21 @@ int bionet_datapoint_iseq(const bionet_datapoint_t *dp1, const bionet_datapoint_
  */
 BIONET_UTIL_API_DECL
 int bionet_timeval_compare(const struct timeval * tva, const struct timeval * tvb);
+
+
+/**
+ * @brief Subtract timevals
+ *
+ * @param[in] tva Minuend
+ * @param[in] tvb Subtrahend
+ *
+ * @return Difference
+ *
+ * @note return = tva - tvb
+ */
+BIONET_UTIL_API_DECL
+struct timeval bionet_timeval_subtract(struct timeval * tva, struct timeval *tvb);
+
 
 #endif /* __BIONET_DATAPOINT_H */
 

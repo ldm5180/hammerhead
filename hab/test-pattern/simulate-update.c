@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
+#include <sys/types.h> 
+#include <sys/socket.h>
 
 #include "test-pattern-hab.h"
 #include "bionet-util.h"
@@ -19,6 +21,10 @@ extern int current_time;
 extern int no_node_updates;
 
 extern int simulate_loops;
+extern int max_per_sec;
+extern struct timeval tv_wait;
+
+extern int s;
 
 void new_node(struct new_node_event_t *event, struct timeval *tv) {
     bionet_node_t *node;
@@ -115,6 +121,23 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
     bionet_datapoint_t *dp;
     struct timeval *pubtv = tv;
 
+    struct timeval tv_cur;
+    struct timeval tv_diff;
+    static struct timeval tv_now;
+    fd_set dummy;
+    
+    if (s == -1) {
+	s = socket(AF_INET, SOCK_STREAM, 0);
+    }
+    FD_ZERO(&dummy);
+    FD_SET(s, &dummy);
+
+    if (max_per_sec) {
+	if (gettimeofday(&tv_now, NULL)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "Failed to get time of day.");
+	}
+    }
+
     if (current_time) {
 	pubtv = NULL;
     }
@@ -149,6 +172,19 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
 
     hab_read();
     hab_report_datapoints(node);
+
+    if (max_per_sec) {
+	if (gettimeofday(&tv_cur, NULL)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "Failed to get time of day.");
+	}
+	tv_diff = bionet_timeval_subtract(&tv_cur, &tv_now);
+	if(bionet_timeval_compare(&tv_wait, &tv_diff)) {
+	    struct timeval tv_sleep;
+	    tv_sleep = bionet_timeval_subtract(&tv_wait, &tv_diff);
+	    select(0, 0, 0, &dummy, &tv_sleep);
+	}
+    }
+    tv_now = tv_cur;
 }
 
 

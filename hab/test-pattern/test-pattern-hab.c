@@ -27,6 +27,9 @@ int simulate_loops = 0;
 int fast = 0;
 int current_time = 0;
 int no_node_updates = 0;
+int max_per_sec = 0;
+int s = -1;
+struct timeval tv_wait = { 0, 0 };
 
 static char * security_dir = NULL;
 static int require_security = 0;
@@ -43,7 +46,7 @@ void usage() {
 	    "\n"
 	    "usage:  test-pattern-hab [OPTIONS] INPUT-FILENAME\n"
 	    "\n"
-	    " -h,--help                     Show this usage information.\n"
+	    " -?,--help                     Show this usage information.\n"
 	    " -v,--version                  Show the version number\n"
 	    " -c,--current-time             Use the current time in the timestamp, file timestamps\n"
 	    "                               are used for interval only.\n"
@@ -52,13 +55,16 @@ void usage() {
 	    " -i,--id <ID>                  Use ID as the HAB-ID (defaults to\n"
 	    "                               hostname if omitted).\n"
 	    " -l,--loops <NUM>              Number of times to publish the data consecutively.\n"
+	    " -m,--max-rate <NUM>           Max number of datapoints to publish\n"
+	    "                               per second. Only applies to 'fast'\n"     
+	    "                               mode.\n"
 	    " -n,--no-node-updates          Skip new/lost node messages when looping.\n"
 	    " -o,--output-mode <mode>       Available modes are 'normal',\n"
 	    "                               'bionet-watcher', 'nodes-only', 'resources-only'\n"
 	    " -s,--security-dir <dir>       Directory containing security certificates\n"
 	    "\n"
 	    "Security can only be required when a security directory has been specified.\n"
-	    "  random-hab [--security-dir <dir> [--require-security]]\n");
+	    "  test-pattern-hab [--security-dir <dir> [--require-security]]\n");
 } /* usage() */
 
 
@@ -85,13 +91,14 @@ int main(int argc, char *argv[]) {
 	    {"fast", 0, 0, 'f'},
             {"id", 1, 0, 'i'},
 	    {"loops", 1, 0, 'l'},
+	    {"max-rate", 1, 0, 'm'},
 	    {"no-node-updates", 0, 0, 'n'},
             {"output-mode", 1, 0, 'o'},
 	    {"security-dir", 1, 0, 's'},
             {0, 0, 0, 0} //this must be last in the list
         };
 
-        c = getopt_long(argc, argv, "?vcefns:i:o:l:", long_options, &i);
+        c = getopt_long(argc, argv, "?vcefns:i:o:l:m:", long_options, &i);
         if (c == -1)
             break;
 
@@ -99,11 +106,11 @@ int main(int argc, char *argv[]) {
 
 	case '?':
 	    usage();
-	    break;
+	    exit(0);
 
 	case 'v':
 	    print_bionet_version(stdout);
-	    return 0;
+	    exit(0);
 
 	case 'c':
 	    current_time++;
@@ -123,6 +130,10 @@ int main(int argc, char *argv[]) {
 
 	case 'l':
 	    loops = atoi(optarg);
+	    break;
+
+	case 'm':
+	    max_per_sec = atoi(optarg);
 	    break;
 
 	case 'n':
@@ -155,8 +166,18 @@ int main(int argc, char *argv[]) {
     }
 
     if ((require_security) && (security_dir == NULL)) {
+	g_log("", G_LOG_LEVEL_ERROR, "Security directory is required when security is required.");
 	usage();
 	exit(1);
+    }
+
+    if (max_per_sec && (0 == fast)) {
+	g_log("", G_LOG_LEVEL_ERROR, "--max-per-sec only applies to 'fast' mode.");
+	usage();
+	exit(1);
+    } else if (max_per_sec) {
+	tv_wait.tv_sec = 0;
+	tv_wait.tv_usec = 1000000L/max_per_sec;
     }
 
     if (optind == argc-1) {
@@ -235,13 +256,14 @@ int main(int argc, char *argv[]) {
     //
 
     simulate_loops = 0;
-    do {
+    do {	
 	tv = NULL;
 	g_slist_foreach(events, simulate_updates, &tv);
 
 	if (loops == 0) {
 	    simulate_loops = 0; //loop forever
 	}
+
     } while ((loops >= 0) && (++simulate_loops < loops));
     
     if (output_mode == OM_BIONET_WATCHER)
