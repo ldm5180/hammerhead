@@ -140,7 +140,7 @@ static void _peer_add_pending_msg(
 {
     bip_msg_t * msg = malloc(sizeof(bip_msg_t));
     if(NULL == msg) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_send_message: Out of memory");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "_peer_add_pending_msg: Out of memory");
         free(msg);
         return;
     }
