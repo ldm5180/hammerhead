@@ -9,8 +9,8 @@
  *
  * @section intro Intro
  *
- * There are two parts to the Bionet API, the Client API (libbionet) and the
- * Hardware Abstractor (HAB) API (libhab).
+ * There are three parts to the Bionet API, the Client API (libbionet),the
+ * Hardware Abstractor (HAB) API (libhab), and the Bionet Data Manager API (libbdm).
  *
  * Each of these APIs makes use of the Utility API (libutil) in their dealings 
  * with common datatypes.
@@ -22,8 +22,10 @@
  *     C [ label="libbionet" URL="\ref client"];
  *     H [ label="libhab" URL="\ref hab"];
  *     U [ label="libutil" URL="\ref util"];
+ *     B [ label="libbdm" URL="ref bdm"];
  *     U -> C [ arrowhead="open" ];
  *     U -> H [ arrowhead="open" ];
+ *     U -> B [ arrowhead="open" ];
  *  }
  * @enddot
  * @endif
@@ -46,6 +48,20 @@
  * Full documentation:@n 
  * @li hardware-abstractor.h
  *
+ * @note Python bindings available in hab/py-libhab. Contains the entire
+ * Utility API within the module.
+ *
+ * @section bdm Bionet Data Manager API (libbdm)
+ *
+ * Used by Bionet Data Manager Client applications to subscribe to data recorded by the 
+ * Bionet Data Manager and originally from Hardware Abstractors. 
+ *
+ * Full documentation:@n
+ * @li bdm-client.h
+ *
+ * @note Python bindings available in data-mananger/client/py-libbdm. Contains the entire
+ * Bionet Utility API within the module.
+
  * @section util Utility API (libutil)
  *
  * Used by Client applications and HAB application to create, read, or modify 
