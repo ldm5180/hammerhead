@@ -104,5 +104,5 @@ while(1):
         if (fd == bionet_fd):
             bionet_read()
     if ((time.time() - started) >= float(options.time_to_run)):
-        print highest
+        print "Bionet Data Manager max speed:", highest, "datapoints/sec"
         exit(0)
