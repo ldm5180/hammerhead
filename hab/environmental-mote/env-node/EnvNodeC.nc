@@ -8,7 +8,7 @@
 
 
 #define DEFAULT_INTERVAL (1000 * 30)      /* milliseconds (ms) */
-#define INTERVALS_BEFORE_CHECK (2 * 10)   /* 2xMinutes */
+#define INTERVALS_BEFORE_CHECK (2 * 5)   /* 2xMinutes */
 module EnvNodeC
 {
     uses
@@ -95,7 +95,7 @@ implementation
 	env_general_msg_t* general_msg;
 	
 	intervals++;
-        if (intervals >= 2) {
+        if (intervals >= INTERVALS_BEFORE_CHECK) {
 	    intervals = 0;
 	} else {
 	    return;

@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 	int ret;
 	int num_read;
 
-	timeout.tv_sec = 150;
+	timeout.tv_sec = 1860; //31 minutes
 	timeout.tv_usec = 0;
 
 	FD_ZERO(&readers);
