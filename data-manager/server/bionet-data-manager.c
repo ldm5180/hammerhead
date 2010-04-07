@@ -119,6 +119,14 @@ int cal_readable_handler(
 
 gboolean update_hab(gpointer usr_data) {
     uint32_t num_real = num_bionet_datapoints - num_this_created;
+    uint32_t local_last = 0;
+    uint32_t dtn_last = 0;
+    struct timeval tv;
+
+    if (gettimeofday(&tv, NULL)) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to get time of day.");
+    }
+
 
     bionet_hab_t * hab = (bionet_hab_t *)usr_data;
     if (NULL == hab) {
@@ -143,8 +151,9 @@ gboolean update_hab(gpointer usr_data) {
 	uint32_t cur;
 	struct timeval tv;
 	bionet_resource_get_uint32(dtn, &cur, &tv);
+	dtn_last = cur;
 	if (cur != num_sync_datapoints) {
-	    bionet_resource_set_uint32(dtn, num_sync_datapoints, NULL);
+	    bionet_resource_set_uint32(dtn, num_sync_datapoints, &tv);
 	    num_this_created++;
 	}
     }
@@ -158,12 +167,47 @@ gboolean update_hab(gpointer usr_data) {
 	uint32_t cur;
 	struct timeval tv;
 	bionet_resource_get_uint32(local, &cur, &tv);
+	local_last = cur;
 	if (cur != num_real) {
-	    bionet_resource_set_uint32(local, num_real, NULL);
+	    bionet_resource_set_uint32(local, num_real, &tv);
 	    num_this_created++;
 	}
     }
     
+    bionet_resource_t * dtn_rate = bionet_node_get_resource_by_id(node, "DTN-Datapoints-Per-Second");
+    if (NULL == dtn_rate) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "DTN Datapoints Per Second resource not found");
+	return 1;
+    } else {
+	uint32_t cur;
+	if (0 == bdm_stats) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "BDM stats interval is 0. Invalid!");
+	    return 1;
+	}
+	cur = (float)(num_sync_datapoints - dtn_last)/(float)bdm_stats;
+	bionet_resource_set_float(dtn_rate, cur, &tv);
+	num_this_created++;
+    }
+
+    bionet_resource_t * local_rate = bionet_node_get_resource_by_id(node, "Local-Datapoints-Per-Second");
+    if (NULL == local_rate) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "Local Datapoints Per Second resource not found");
+	return 1;
+    } else {
+	uint32_t cur;
+	if (0 == bdm_stats) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "BDM stats interval is 0. Invalid!");
+	    return 1;
+	}
+	cur = (float)(num_real - local_last)/(float)bdm_stats;
+	bionet_resource_set_float(local_rate, cur, &tv);
+	num_this_created++;
+    }
+
     hab_report_datapoints(node);
 
 ret:
@@ -534,14 +578,65 @@ int main(int argc, char *argv[]) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Num Local Datapoints resource value");
 	}
 
+	/* DTN Datapoints Rate */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_FLOAT,
+				       BIONET_RESOURCE_FLAVOR_SENSOR,
+				       "DTN-Datapoints-Per-Second");
+	if (NULL == resource) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize DTN Datapoints Per Second resource.");
+	    exit(1);
+	}
+
+	if (bionet_node_add_resource(node, resource)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "Failed to add DTN Datapoints Per Second resource to Statistics node");
+	    exit(1);
+	}
+
+	if (0 == bdm_stats) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "BDM stats interval is 0. Invalid!");
+	    exit(1);
+	}
+	if (bionet_resource_set_float(resource, (float)num_sync_datapoints/(float)bdm_stats, &tv)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set DTN Datapoints Per Second resource value");
+	}
+
+	/* Bionet Datapoints Rate */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_FLOAT,
+				       BIONET_RESOURCE_FLAVOR_SENSOR,
+				       "Local-Datapoints-Per-Second");
+	if (NULL == resource) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize Local Datapoints Per Second resource.");
+	    exit(1);
+	}
+
+	if (bionet_node_add_resource(node, resource)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "Failed to add Local Datapoints Per Second resource to Statistics node");
+	    exit(1);
+	}
+
+	if (0 == bdm_stats) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "BDM stats interval is 0. Invalid!");
+	    exit(1);
+	}
+	if (bionet_resource_set_float(resource, (float)num_bionet_datapoints/(float)bdm_stats, &tv)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Local Datapoints Per Second resource value");
+	}
 
 
+	/* Add node */
 	if (bionet_hab_add_node(hab, node)) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
 		  "Failed to add Statistics node to BDM HAB");
 	    exit(1);
 	}
 
+	/* Report node and datapoints */
 	hab_report_new_node(node);
 	hab_report_datapoints(node);
 
