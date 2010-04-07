@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+# Copyright (c) 2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+# Test Theory:
+#
+# Start a data-manager, then a test-pattern-hab in fast mode, then a highest-perf hab to 
+# record the highest performance.
+#
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+FILE=$ROOT/hab/test-pattern/patterns/uint32-counter-10
+if [ $# -ge 1 ]; then
+    FILE=$1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=60
+fi
+
+. $ROOT/test/testlib.sh
+
+UNIQUE=$$
+RETVAL=0
+
+ORIG_DIR=$PWD
+
+rm -f bdm.db
+sqlite3 bdm.db < $ROOT/data-manager/server/schema
+
+./highest-perf.py -r "Bionet-Data-Manager.$HOSTNAME.Statistics:Local-Datapoints-Per-Second" &
+HIGHPID=$!
+
+$ROOT/data-manager/server/bionet-data-manager -f bdm.db --bdm-stats 10 &
+BDMPID=$!
+
+$ROOT/hab/test-pattern/test-pattern-hab -c -f -m 1000 -l 1000 $FILE &
+TPHPID=$!
+
+sleep 55
+
+kill $BDMPID
+if [ -s /proc/$TPHPID ]; then
+   kill $TPHPID
+fi
+wait $TPHPID
+wait $BDMPID
+
+wait $HIGHPID
+
+
+exit 0
