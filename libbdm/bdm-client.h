@@ -1,5 +1,5 @@
 
-// Copyright (c) 2008-2009, Regents of the University of Colorado.
+// Copyright (c) 2008-2010, Regents of the University of Colorado.
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
@@ -418,9 +418,19 @@ int bdm_subscribe_node_list_by_name(const char * node_name);
  * @param[in] stop_time Only report datapoints with a timestamp before this value. May be NULL
  * for no stop filter
  *
- *
  * @retval 0 Success
  * @retval -1 Failure
+ *
+ * @note Subscribing without specifying a start_time or a time range which is very large is 
+ * potentially dangerous. It will cause all matching datapoints from the beginning of time in the 
+ * bionet-data-manager database to be published. This could take a very long time, be taxing on the 
+ * performance of the bionet-data-manager, and create unnecessary network traffic.
+ * Use gettimeofday() to populate start/stop time if you want the current time.
+ * @code
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    bdm_subscribe_datapoints_by_name(res_name, &tv, NULL) //subscribe all datapoints from now on
+ * @endcode
  */ 
 int bdm_subscribe_datapoints_by_name(const char * resource_name, 
         struct timeval *start_time, struct timeval *stop_time);
