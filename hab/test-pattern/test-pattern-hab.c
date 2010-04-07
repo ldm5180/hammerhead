@@ -55,6 +55,7 @@ void usage() {
 	    " -i,--id <ID>                  Use ID as the HAB-ID (defaults to\n"
 	    "                               hostname if omitted).\n"
 	    " -l,--loops <NUM>              Number of times to publish the data consecutively.\n"
+            "                               0 means loop forever.\n"
 	    " -m,--max-rate <NUM>           Max number of datapoints to publish\n"
 	    "                               per second. Only applies to 'fast'\n"     
 	    "                               mode.\n"
@@ -259,12 +260,10 @@ int main(int argc, char *argv[]) {
     do {	
 	tv = NULL;
 	g_slist_foreach(events, simulate_updates, &tv);
-
-	if (loops == 0) {
-	    simulate_loops = 0; //loop forever
-	}
-
-    } while ((loops >= 0) && (++simulate_loops < loops));
+    } while (
+        (loops == 0)
+        || ((loops > 0) && (++simulate_loops < loops))
+    );
     
     if (output_mode == OM_BIONET_WATCHER)
         g_message("lost hab: %s", bionet_hab_get_name(hab));
