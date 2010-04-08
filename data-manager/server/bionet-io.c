@@ -32,14 +32,48 @@ sqlite3 * main_db = NULL;
 
 int no_resources = 0;
 
+extern bionet_hab_t * bdm_hab;
+extern int start_hab;
+
 // 
 // bionet callbacks
 //
 
 extern uint32_t num_bionet_datapoints;
+extern int ignore_self;
+
+struct timeval dp_ts_accum = { 0, 0 };
 
 static void cb_datapoint(bionet_datapoint_t *datapoint) {
     (void) db_add_datapoint(main_db, datapoint);
+
+    /* do not normally keep stats on yourself, so return */
+    if (ignore_self) {
+	const char * bdm_hab_name = bionet_hab_get_name(bdm_hab);
+	const char * datapoint_hab_name = bionet_hab_get_name(bionet_datapoint_get_hab(datapoint));
+	if (0 == strcmp(bdm_hab_name, datapoint_hab_name)) {
+	    return;
+	}
+    }
+
+    /* record latency */
+    if (start_hab) {
+	/* calculate latency since the HAB published. */
+	struct timeval * dp_ts;
+	struct timeval cur_ts;
+	struct timeval dp_latency;
+
+	dp_ts = bionet_datapoint_get_timestamp(datapoint);
+	gettimeofday(&cur_ts, NULL);
+	dp_latency = bionet_timeval_subtract(&cur_ts, dp_ts);
+	dp_ts_accum.tv_sec += dp_latency.tv_sec;
+	dp_ts_accum.tv_usec += dp_latency.tv_usec;
+	if (dp_ts_accum.tv_usec > 1000000) {
+	    dp_ts_accum.tv_sec += 1;
+	    dp_ts_accum.tv_usec -= 1000000;
+	}
+    }
+    
     num_bionet_datapoints++;
 }
 
