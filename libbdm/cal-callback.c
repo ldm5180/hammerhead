@@ -89,6 +89,8 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMReso
         bdm_state->curr_seq = rm->entrySeq;
     }
 
+    fprintf(stderr, "Handle Metadata: %s/%s.%s.%s:%s\n",
+            bdm_id, hab_type, hab_id, node_id, resource_id);
 
     bdm = bdm_cache_lookup_bdm(bdm_id);
     if (bdm == NULL) {

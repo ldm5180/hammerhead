@@ -81,9 +81,10 @@ void usage(void) {
 	"                                                certificates\n"
 	" -t,--tcp-sync-receiver [<port>]                Enable BDM synchonization over TCP. \n"
         "                                                Optionally specify the tcp port. Default: %d\n"
-#if ENABLE_ION
 	" -u,--no-resources                              Do not subscribe to any resources. Useful\n"
-	"                                                with --dtn-sync-receiver\n"
+	"                                                with --tcp-sync-receiver\n"
+#if ENABLE_ION
+	"                                                and  --dtn-sync-receiver\n"
 #endif
 	" -v,--version                                   Show the version number\n"
 	"\n"
@@ -271,8 +272,9 @@ int main(int argc, char *argv[]) {
 	switch (c) {
 
 	case '?':
+	case ':':
 	    usage();
-	    return 0;
+	    return 1;
 
 	case 'b':
 	    start_hab = 1;
@@ -284,9 +286,9 @@ int main(int argc, char *argv[]) {
 	    sync_sender_config_t * sync_config = NULL;
 	    sync_config = read_config_file(optarg);
 	    if (NULL == sync_config) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		      "Failed to parse config file %s", optarg);
-		continue;
+                return 1;
 	    }
 	    sync_config->last_entry_end_seq = -1;
 	    sync_config->last_entry_end_seq_metadata = -1;
@@ -294,9 +296,9 @@ int main(int argc, char *argv[]) {
 #if ENABLE_ION
                 if (bp_attach() < 0)
                 {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                        "Can't attach to BP.");
-                    continue;
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                        "Can't attach to BP, but DTN syncing requested");
+                    return 1
                 }
                 bp_attached++;
 #else
@@ -390,6 +392,7 @@ int main(int argc, char *argv[]) {
 	    break;
 
 	case 'r':
+            printf("processing --resource %s\n", optarg);
 	    if (resource_index < MAX_SUBSCRIPTIONS) {
 		resource_name_patterns[resource_index] = optarg;
 		resource_index++;
@@ -441,9 +444,7 @@ int main(int argc, char *argv[]) {
         }
 
 	case 'u':
-#if ENABLE_ION
 	    no_resources = 1;
-#endif
 	    break;
 
 	case 'v':
@@ -451,9 +452,18 @@ int main(int argc, char *argv[]) {
 	    return 0;
 	    
 	default:
+            printf("Unknown option\n");
+	    usage();
+            return 1;
 	    break;
 	}
     } //while(1)
+
+    if(optind < argc){
+        printf("Extra options\n");
+        usage();
+        return 1;
+    }
 
 
     this_bdm = bionet_bdm_new(bdm_id);

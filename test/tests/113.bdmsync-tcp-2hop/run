@@ -1,0 +1,151 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2009, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
+
+UNIQUE=$$
+SYNCUNIQUE=${HOSTNAME//\./-}
+RETVAL=0
+
+DOHOP2=true
+
+YEAR=`date +%Y`
+PREV_YEAR=$(($YEAR-1))
+NEXT_YEAR=$(($YEAR+1))
+
+#Cleanup from previous run
+./clean
+
+#Generate core files on error
+ulimit -Sc unlimited
+
+echo "making DB file"
+rm -f bdm0.db bdm1.db bdm2.db
+sqlite3 bdm0.db < $ROOT/data-manager/server/schema
+cp bdm0.db bdm1.db
+cp bdm0.db bdm2.db
+
+echo "starting BDM 1 (TCP Sync sender)"
+$ROOT/data-manager/server/bionet-data-manager --file bdm0.db --id bdm0-$SYNCUNIQUE --habs "random-hab.$UNIQUE" --nodes "random-hab.A-$UNIQUE.*" --resources "random-hab.A-$UNIQUE.*:*" --sync-sender-config bdm0.cfg --port 11111 &
+BDM0PID=$!
+echo " ->  bionet-data-manager bdm0-$SYNCUNIQUE $BDM0PID"
+
+echo "starting BDM 2 (TCP Sync sender/receiver)"
+$ROOT/data-manager/server/bionet-data-manager --file bdm1.db --id bdm1-$SYNCUNIQUE --habs "random-hab.B-$UNIQUE" --nodes "random-hab.B-$UNIQUE.*" --resources "random-hab.B-$UNIQUE.*:*" --sync-sender-config bdm1.cfg --port 22222 --tcp-sync-receiver=22220 &
+BDM1PID=$!
+echo " ->  bionet-data-manager bdm1-$SYNCUNIQUE $BDM1PID"
+
+if $DOHOP2; then
+echo "starting BDM 3 (TCP Sync sender)"
+$ROOT/data-manager/server/bionet-data-manager --file bdm2.db --id bdm2-$SYNCUNIQUE --no-resources --tcp-sync-receiver=33330 --port 33333 &
+BDM2PID=$!
+echo " ->  bionet-data-manager bdm2-$SYNCUNIQUE $BDM2PID"
+fi
+
+
+sleep 6 # let the bdms come up before starting the other stuff
+START_TIME=`date '+%Y-%m-%d %H:%M:%S'`
+
+
+WATCHID=0
+WATCHERPIDS=""
+WATCHID=0
+start_watcher() {
+    BDM=bdm$1-$SYNCUNIQUE
+    BDM_SRC=bdm$2-$SYNCUNIQUE
+    HABNAME=random-hab.$3-$UNIQUE
+
+    WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$START_TIME' -r '$BDM,$BDM_SRC/$HABNAME.*:*'"
+
+    echo "Starting bdm-watcher: $WATCHCMD"
+    eval "$WATCHCMD >| out.bdm-watcher.$WATCHID.$2-to-$1-$3 &"
+    PID=$!
+    echo " ->  bdm-watcher $PID"
+
+    eval WPID$WATCHID=$PID
+    WATCHERPIDS="$WATCHERPIDS $PID"
+
+    WATCHID=`expr $WATCHID + 1`
+}
+
+echo "no datapoints generated, starting bdm-watcher for bdm 0 -> 1"
+start_watcher 1 0 A
+
+if $DOHOP2; then
+echo "no datapoints generated, starting bdm-watcher for bdm 1 -> 2"
+start_watcher 2 1 B
+fi
+
+echo starting random-hab A
+$ROOT/hab/random/random-hab --id A-$UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab-A &
+HABPIDA=$!
+
+echo starting random-hab B
+$ROOT/hab/random/random-hab --id B-$UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab-B &
+HABPIDB=$!
+
+sleep `expr $TEST_DURATION / 2`
+
+echo "some datapoints generated, starting bdm-watcher for bdm 1 -> 0"
+start_watcher 1 0 A
+
+if $DOHOP2; then
+echo "some datapoints generated, starting bdm-watcher for bdm 2 -> 1"
+start_watcher 2 1 B
+fi
+
+sleep `expr $TEST_DURATION / 2`
+
+echo "all datapoints generated. Killing random-habs"
+kill $HABPIDA
+wait $HABPIDA
+kill $HABPIDB
+wait $HABPIDB
+
+# Let the BDM commit the last info to disk
+sleep 30
+
+echo "all datapoints generated. Killing all bdm-watchers"
+for pid in $WATCHERPIDS; do
+    kill $pid
+    wait $pid
+done
+
+echo "killing BDMs"
+kill $BDM0PID $BDM1PID $BDM2PID
+wait $BDM0PID
+wait $BDM1PID
+wait $BDM2PID
+
+for h in A B; do 
+    sort out.random-hab-$h > out.random-hab-$h.sorted
+    for i in out.bdm-watcher.*-to-*-$h; do
+        sort $i > $i.sorted
+        if ! diff -q out.random-hab-$h.sorted $i.sorted; then
+            #echo "ERROR: $i output differs from random-hab output:"
+            #diff -u out.random-hab.sorted $i.sorted
+            RETVAL=1
+        fi
+    done
+done
+
+if [ $RETVAL -eq 0 ] ; then
+    echo "All outputs checkout. Yeah!"
+    ./clean
+fi
+
+exit $RETVAL
+

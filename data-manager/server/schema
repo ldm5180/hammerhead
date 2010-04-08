@@ -98,7 +98,7 @@ CREATE TABLE Sync_Datapoints_Bundle_Outstanding (
 
 CREATE TABLE Sync_Metadata_Bundle_Outstanding (
     BDM_Key            INTEGER NOT NULL,
-    Sent_Timestamp     FLOAT   NOT NULL, --Part of bundle ID, and used for retranmit timers
+    Sent_Timestamp     FLOAT   NOT NULL, --Part of bundle ID, and used for retransmit timers
     Sent_Timestamp_Seq FLOAT   NOT NULL, --Part of bundle ID
     Start_Seq          INTEGER NOT NULL, --First seq in bundle, inclusive
     End_Seq            INTEGER NOT NULL --Last seq in bundle, inclusive

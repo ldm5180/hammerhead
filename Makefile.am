@@ -57,6 +57,11 @@ endif
 test:
 	(cd test; ./do-test)
 
+clean-local:
+	(cd test; ./clean-test)
+
+
+
 release: all-local version.h
 
 delversion:
