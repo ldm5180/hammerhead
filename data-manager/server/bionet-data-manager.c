@@ -49,6 +49,7 @@ uint32_t num_bionet_datapoints = 0;
 extern int no_resources;
 
 extern struct timeval dp_ts_accum;
+extern struct timeval db_accum;
 
 bionet_hab_t * bdm_hab = NULL;
 int ignore_self = 1;
@@ -218,11 +219,26 @@ gboolean update_hab(gpointer usr_data) {
     } else {
 	if (local_last > 0) {
 	    uint32_t latency = (dp_ts_accum.tv_sec * 1000) + (dp_ts_accum.tv_usec/1000);
-	    latency /= local_last;
+	    latency /= (num_real/local_last);
 	    bionet_resource_set_uint32(dp_latency, latency, &tv);
 	}
 	dp_ts_accum.tv_sec = 0;
 	dp_ts_accum.tv_usec = 0;
+    }
+
+    bionet_resource_t * db_latency = bionet_node_get_resource_by_id(node, "DB-Write-Latency-ms");
+    if (NULL == local_rate) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "DB Write Latency resource not found");
+	return 1;
+    } else {
+	if (local_last > 0) {
+	    uint32_t latency = (db_accum.tv_sec * 1000) + (db_accum.tv_usec/1000);
+	    latency /= (num_real/local_last);
+	    bionet_resource_set_uint32(db_latency, latency, &tv);
+	}
+	db_accum.tv_sec = 0;
+	db_accum.tv_usec = 0;
     }
 
     hab_report_datapoints(node);
@@ -633,9 +649,7 @@ int main(int argc, char *argv[]) {
 		  "BDM stats interval is 0. Invalid!");
 	    exit(1);
 	}
-	if (bionet_resource_set_float(resource, (float)num_sync_datapoints/(float)bdm_stats, &tv)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set DTN Datapoints Per Second resource value");
-	}
+
 
 	/* Bionet Datapoints Rate */
 	resource = bionet_resource_new(node, 
@@ -658,9 +672,7 @@ int main(int argc, char *argv[]) {
 		  "BDM stats interval is 0. Invalid!");
 	    exit(1);
 	}
-	if (bionet_resource_set_float(resource, (float)num_bionet_datapoints/(float)bdm_stats, &tv)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Local Datapoints Per Second resource value");
-	}
+
 
 	/* Bionet Datapoints Rate */
 	resource = bionet_resource_new(node, 
@@ -678,10 +690,22 @@ int main(int argc, char *argv[]) {
 	    exit(1);
 	}
 
-	if (bionet_resource_set_uint32(resource, 0, &tv)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Datapoint Latency resource value");
+
+	/* Bionet Datapoints Rate */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT32,
+				       BIONET_RESOURCE_FLAVOR_SENSOR,
+				       "DB-Write-Latency-ms");
+	if (NULL == resource) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize DB Write Latency resource.");
+	    exit(1);
 	}
 
+	if (bionet_node_add_resource(node, resource)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "Failed to add DB Write Latency resource to Statistics node");
+	    exit(1);
+	}
 
 	/* Add node */
 	if (bionet_hab_add_node(bdm_hab, node)) {

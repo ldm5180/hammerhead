@@ -43,8 +43,14 @@ extern uint32_t num_bionet_datapoints;
 extern int ignore_self;
 
 struct timeval dp_ts_accum = { 0, 0 };
+struct timeval db_accum = { 0, 0 };
 
 static void cb_datapoint(bionet_datapoint_t *datapoint) {
+    struct timeval tv_before_write;
+    if (start_hab) {
+	gettimeofday(&tv_before_write, NULL);
+    }
+
     (void) db_add_datapoint(main_db, datapoint);
 
     /* do not normally keep stats on yourself, so return */
@@ -62,6 +68,7 @@ static void cb_datapoint(bionet_datapoint_t *datapoint) {
 	struct timeval * dp_ts;
 	struct timeval cur_ts;
 	struct timeval dp_latency;
+	struct timeval db_latency;
 
 	dp_ts = bionet_datapoint_get_timestamp(datapoint);
 	gettimeofday(&cur_ts, NULL);
@@ -71,6 +78,14 @@ static void cb_datapoint(bionet_datapoint_t *datapoint) {
 	if (dp_ts_accum.tv_usec > 1000000) {
 	    dp_ts_accum.tv_sec += 1;
 	    dp_ts_accum.tv_usec -= 1000000;
+	}
+
+	db_latency = bionet_timeval_subtract(&cur_ts, &tv_before_write);
+	db_accum.tv_sec += db_latency.tv_sec;
+	db_accum.tv_usec += db_latency.tv_usec;
+	if (db_accum.tv_usec > 1000000) {
+	    db_accum.tv_sec += 1;
+	    db_accum.tv_usec -= 1000000;
 	}
     }
     
