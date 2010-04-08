@@ -23,7 +23,7 @@ test_pattern_hab_SOURCES =      \
     str-to-value.c              \
     test-pattern-hab.c
 
-test_pattern_hab_CFLAGS = -D_GNU_SOURCE $(AM_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_HAB)  $(CFLAGS_BIONET_UTIL)
+test_pattern_hab_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_HAB)  $(CFLAGS_BIONET_UTIL)
 
 test_pattern_hab_LDFLAGS = $(AM_LDFLAGS) $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_CAL_SERVER) $(LDFLAGS_BOUNET_ASN1)
 
