@@ -331,7 +331,7 @@ int main(int argc, char *argv[]) {
                 {
                     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
                         "Can't attach to BP, but DTN syncing requested");
-                    return 1
+                    return 1;
                 }
                 bp_attached++;
 #else
