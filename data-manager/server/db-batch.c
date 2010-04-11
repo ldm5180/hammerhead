@@ -465,7 +465,6 @@ static void _publish_foreach_hab(GQuark key_id, void* data, void* user_data) {
 int dbb_flush_to_db(bdm_db_batch * dbb) {
     dbb_foreach_t flush_dat = {0};
     flush_dat.ret = -1;
-    int r;
     int seq = -1;
 
     if ( dbb->bdm_list || dbb->hab_list ) {
@@ -481,11 +480,13 @@ int dbb_flush_to_db(bdm_db_batch * dbb) {
                 g_datalist_foreach(&dbb->hab_list, _flush_foreach_hab, &flush_dat);
             }
             if ( flush_dat.ret == 0 ) {
+                int r;
                 r = db_commit(main_db);
-            }
-            if ( r == 0 ) {
-                // Insert completed. Yeah!
-                break;
+
+                if ( r == 0 ) {
+                    // Insert completed. Yeah!
+                    break;
+                }
             }
 
             // Try again. We had a conflict with another thread
