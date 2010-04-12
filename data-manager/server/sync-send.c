@@ -327,7 +327,11 @@ gpointer sync_thread(gpointer config_list) {
     }
 #endif // ENABLE_ION
 
-    sync_sender_main_loop = g_main_loop_new(NULL, TRUE);
+    GMainContext * this_loop_context = 
+        g_main_context_new();
+
+    g_main_context_push_thread_default(this_loop_context);
+    sync_sender_main_loop = g_main_loop_new(this_loop_context, TRUE);
     
     for (i = 0; i < g_slist_length(cfg_list); i++) {
 	cfg = g_slist_nth_data(cfg_list, i);
