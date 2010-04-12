@@ -118,9 +118,7 @@ static void get_partition_list(void) {
 
             } else {
                 char *p;
-
-                start ++;
-
+		
                 for (p = start; *p != '\0'; p ++) {
                     if (*p == '/') {
                         *p = '-';
