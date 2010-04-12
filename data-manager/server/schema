@@ -90,7 +90,7 @@ CREATE INDEX BDM_ID_Index ON BDMs(BDM_ID);
 -- last transmitted. 
 CREATE TABLE Sync_Datapoints_Bundle_Outstanding (
     BDM_Key            INTEGER NOT NULL,
-    Sent_Timestamp     FLOAT   NOT NULL, --Part of bundle ID, and used for retranmit timers
+    Sent_Timestamp     FLOAT   NOT NULL, --Part of bundle ID, and used for retransmit timers
     Sent_Timestamp_Seq FLOAT   NOT NULL, --Part of bundle ID
     Start_Seq          INTEGER NOT NULL, --First seq in bundle, inclusive
     End_Seq            INTEGER NOT NULL  --Last seq in bundle, inclusive
@@ -129,7 +129,7 @@ CREATE INDEX Resource_Entry_Num ON Resources(Entry_Num);
 CREATE TABLE Datapoints (
     Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
     Resource_Key INTEGER NOT NULL,                   -- the row index in the Resources table of the Resource that this Datapoint belongs to
-    BDM_Key INTEGER NOT NULL,                        -- the rom index in the BDMs table of the BDM that this Datapoint was first recorded
+    BDM_Key INTEGER NOT NULL,                        -- the row index in the BDMs table of the BDM that this Datapoint was first recorded
     Value INTEGER NOT NULL,                          -- taking advantage of sqlite's manifest typing
     Timestamp_Sec  INTEGER NOT NULL,
     Timestamp_Usec INTEGER NOT NULL,

@@ -1872,7 +1872,7 @@ void db_set_last_sync_seq_metadata(sqlite3 *db, char * bdm_id, int last_sync) {
 
 	if (r != SQLITE_OK) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "get-last-sync SQL error: %s\n", sqlite3_errmsg(db));
+                "set-last-sync SQL error: %s\n", sqlite3_errmsg(db));
 	    return;
 	}
 
@@ -1892,7 +1892,7 @@ void db_set_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id, int last_sync) 
 
 	if (r != SQLITE_OK) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "get-last-sync SQL error: %s\n", sqlite3_errmsg(db));
+                "set-last-sync SQL error: %s\n", sqlite3_errmsg(db));
 	    return;
 	}
 
