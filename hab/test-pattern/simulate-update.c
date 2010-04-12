@@ -84,7 +84,7 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
 	}
     }
     
-    if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_RESOURCES_ONLY)) {
+    if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_RESOURCES_ONLY) || (output_mode == OM_BDM_CLIENT)) {
         for (cursor = event->resources; cursor != NULL; cursor = cursor->next) {
             struct resource_info_t* res_info;
             bionet_resource_t *resource;
@@ -95,14 +95,23 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
             dp = bionet_resource_get_datapoint_by_index(resource, 0);
 
             if (dp != NULL) {
-                g_message(
-                    "%s = %s %s %s @ %s",
-                    bionet_resource_get_name(resource),
-                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                    bionet_value_to_str(bionet_datapoint_get_value(dp)),
-                    bionet_datapoint_timestamp_to_string(dp)
-                );
+                if (output_mode == OM_BDM_CLIENT) {
+                    g_message(
+                        "%s,%s,%s",
+                        bionet_datapoint_timestamp_to_string(dp),
+                        bionet_resource_get_name(resource),
+                        bionet_value_to_str(bionet_datapoint_get_value(dp))
+                    );
+                } else {
+                    g_message(
+                        "%s = %s %s %s @ %s",
+                        bionet_resource_get_name(resource),
+                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                        bionet_value_to_str(bionet_datapoint_get_value(dp)),
+                        bionet_datapoint_timestamp_to_string(dp)
+                    );
+                }
             }
         }         
     }
@@ -167,6 +176,13 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
             bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
             bionet_value_to_str(value),
             bionet_datapoint_timestamp_to_string(dp)
+        );
+    } else if (output_mode == OM_BDM_CLIENT) {
+        g_message(
+            "%s,%s,%s",
+            bionet_datapoint_timestamp_to_string(dp),
+            bionet_resource_get_name(resource),
+            bionet_value_to_str(bionet_datapoint_get_value(dp))
         );
     }
 

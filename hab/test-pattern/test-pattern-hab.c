@@ -146,6 +146,8 @@ int main(int argc, char *argv[]) {
 		output_mode = OM_NORMAL;
 	    else if (strcmp(optarg, "bionet-watcher") == 0) 
 		output_mode = OM_BIONET_WATCHER;
+	    else if (strcmp(optarg, "bdm-client") == 0) 
+		output_mode = OM_BDM_CLIENT;
 	    else if (strcmp(optarg, "nodes-only") == 0) 
 		output_mode = OM_NODES_ONLY;
 	    else if (strcmp(optarg, "resources-only") == 0) 
