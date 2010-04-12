@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "bionet-util.h"
 
@@ -19,6 +21,11 @@ int raid_init(bionet_node_t *node) {
     char mdname[BIONET_NAME_COMPONENT_MAX_LEN];
     bionet_resource_t * resource;
     int ret;
+
+    if (geteuid() != 0) {
+        g_log("", G_LOG_LEVEL_WARNING, "not running as root, disabling Syshealth SMART harddisk temperature module");
+        return -1;
+    }
 
     if (system("grep -e \"^md[0-9+]\" /proc/mdstat | cut -d\" \" -f1 > /tmp/syshealth-hab.mdlist")) {
 	g_log("", G_LOG_LEVEL_WARNING, "Failed to grep /proc/mdstat: %m");
@@ -33,6 +40,8 @@ int raid_init(bionet_node_t *node) {
     while (fgets(mdname, BIONET_NAME_COMPONENT_MAX_LEN, fp)) {
 	char command[512];
 	char resname[BIONET_NAME_COMPONENT_MAX_LEN];
+
+	mdname[strlen(mdname)-1] = '\0';
 
 	if (BIONET_NAME_COMPONENT_MAX_LEN <= snprintf(resname, BIONET_NAME_COMPONENT_MAX_LEN, "dev-%s", mdname)) {
 	    g_log("", G_LOG_LEVEL_WARNING, "%s is too long", mdname);
@@ -50,7 +59,8 @@ int raid_init(bionet_node_t *node) {
 	    continue;
 	}
 
-	snprintf(command, sizeof(command), "cat /proc/mdstat | grep %s | grep \"sd[ab][12\\[[01]\\] sd[ab][12\\[[01]\\]$\"", mdname);
+	snprintf(command, sizeof(command), "mdadm --detail --test /dev/%s > /dev/null", mdname);
+
 	ret = system(command);
 	if (WEXITSTATUS(ret)) {
 	    g_log("", G_LOG_LEVEL_WARNING, "/dev/%s is degraded or failed", mdname);
@@ -59,6 +69,7 @@ int raid_init(bionet_node_t *node) {
 	    bionet_resource_set_str(resource, "Normal", NULL);
 	}
 	
+	bionet_node_add_resource(node, resource);
     } /* while(fgets...) */
 
     return 0;
@@ -84,7 +95,7 @@ void raid_update(bionet_node_t *node) {
 	    continue;
 	}
 
-	snprintf(command, sizeof(command), "cat /proc/mdstat | grep %s | grep \"sd[ab][12\\[[01]\\] sd[ab][12\\[[01]\\]$\"", mdname);
+	snprintf(command, sizeof(command), "mdadm --detail --test /dev/%s > /dev/null", mdname);
 	ret = system(command);
 	if (WEXITSTATUS(ret)) {
 	    g_log("", G_LOG_LEVEL_WARNING, "/dev/%s is degraded or failed", mdname);
