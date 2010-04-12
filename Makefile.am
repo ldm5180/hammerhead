@@ -35,6 +35,7 @@ doxygen/html/index.html: $(DOXYGEN_INPUT)
 
 clean-local:
 	rm -rf doxygen
+	(cd test; ./clean-test)
 
 if ENABLE_WIN32
 # Make a MS Visual C package....
@@ -57,8 +58,6 @@ endif
 test:
 	(cd test; ./do-test)
 
-clean-local:
-	(cd test; ./clean-test)
 
 
 
