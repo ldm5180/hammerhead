@@ -34,7 +34,7 @@ int raid_init(bionet_node_t *node) {
 	char command[512];
 	char resname[BIONET_NAME_COMPONENT_MAX_LEN];
 
-	if (BIONET_NAME_COMPONENT_MAX_LEN >= snprintf(resname, BIONET_NAME_COMPONENT_MAX_LEN, "dev-%s", mdname)) {
+	if (BIONET_NAME_COMPONENT_MAX_LEN <= snprintf(resname, BIONET_NAME_COMPONENT_MAX_LEN, "dev-%s", mdname)) {
 	    g_log("", G_LOG_LEVEL_WARNING, "%s is too long", mdname);
 	    continue;
 	}
