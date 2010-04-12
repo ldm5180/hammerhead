@@ -108,8 +108,6 @@ int sync_receive_connecting_handler(GIOChannel *listening_ch, GIOCondition condi
     g_io_add_watch(new_client->ch, (G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL), (GIOFunc)sync_receive_readable_handler, new_client);
 
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "accepted connection from %s:%hu", inet_ntoa(addr.sin_addr), g_htons(addr.sin_port));
-
     return TRUE;
 }
 

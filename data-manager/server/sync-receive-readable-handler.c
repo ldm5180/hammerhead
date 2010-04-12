@@ -65,7 +65,6 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
 	    return FALSE;
 	}
 	if (bytes_read == 0) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "eof from sync sender");
 	    disconnect_sync_sender(client);
 	    return FALSE;
 	}

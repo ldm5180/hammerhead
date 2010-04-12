@@ -31,8 +31,6 @@ void disconnect_client(client_t *client) {
 }
 
 void disconnect_sync_sender(client_t *client) {
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "disconnecting sync-sender");
-
     if (client->ch != NULL) {
         g_io_channel_shutdown(client->ch, FALSE, NULL);
         g_io_channel_unref(client->ch);
