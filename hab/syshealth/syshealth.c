@@ -49,6 +49,7 @@ input_module_t input[] = {
     { .name = "load-average",        .enabled = 1,  .init = load_average_init,        .update = load_average_update       },
     { .name = "sensors",             .enabled = 1,  .init = sensors_init,             .update = sensors_update            },
     { .name = "scheduling-latency",  .enabled = 1,  .init = scheduling_latency_init,  .update = scheduling_latency_update },
+    { .name = "RAID",                .enabled = 1,  .init = raid_init,                .update = raid_update },
     { .name = NULL,                  .enabled = 1,  .init = NULL,                     .update = NULL                      }
 };
 

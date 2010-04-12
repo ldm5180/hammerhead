@@ -15,6 +15,7 @@ syshealth_hab_SOURCES =      \
     mem-free.c               \
     uptime.c                 \
     load-average.c           \
+    raid.c                   \
     smart.c                  \
     sensors.c                \
     scheduling-latency.c

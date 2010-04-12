@@ -34,6 +34,9 @@ void sensors_update(bionet_node_t *node);
 int scheduling_latency_init(bionet_node_t *node);
 void scheduling_latency_update(bionet_node_t *node);
 
+int raid_init(bionet_node_t *node);
+void raid_update(bionet_node_t *node);
+
 
 #endif
 
