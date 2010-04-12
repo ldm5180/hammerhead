@@ -26,6 +26,11 @@ if [ -z "$TESTS" ]; then
 fi
 
 for TEST in $TESTS; do
+
+    if [ -d "tests/$TEST".* ]; then
+        TEST=`echo tests/$TEST.*`
+	echo "$TEST"
+    fi
     [ ! -d "$TEST" ] && continue
 
     echo
