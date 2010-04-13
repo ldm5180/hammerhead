@@ -54,7 +54,7 @@ static void cb_datapoint(bionet_datapoint_t *datapoint) {
     (void) db_add_datapoint(main_db, datapoint);
 
     /* do not normally keep stats on yourself, so return */
-    if (ignore_self) {
+    if ((ignore_self) && (start_hab)) {
 	const char * bdm_hab_name = bionet_hab_get_name(bdm_hab);
 	const char * datapoint_hab_name = bionet_hab_get_name(bionet_datapoint_get_hab(datapoint));
 	if (0 == strcmp(bdm_hab_name, datapoint_hab_name)) {
