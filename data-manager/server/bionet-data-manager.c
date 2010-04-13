@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
 
     bionet_log_context_t lc = {
         destination: BIONET_LOG_TO_STDOUT,
-        log_limit: G_LOG_LEVEL_INFO
+        log_limit: G_LOG_LEVEL_DEBUG
     };
 
     g_log_set_default_handler(bionet_glib_log_handler, &lc);
@@ -804,7 +804,6 @@ int main(int argc, char *argv[]) {
 
     //create a thread for each sync sender configuration
     for (i = 0; i < g_slist_length(sync_config_list); i++) {
-	GThread * thread;
 	sync_sender_config_t * sync_config = NULL;
 
 	//init the latest entry end time for the config
@@ -822,17 +821,18 @@ int main(int argc, char *argv[]) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Config number %d is not in the list.", i);
 	}
+    }
 
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	      "Starting sync thread");
-	thread = g_thread_create(sync_thread, g_slist_nth_data(sync_config_list, i), TRUE, NULL);
-	
-	if (thread) {
-	    sync_thread_list = g_slist_append(sync_thread_list, thread);
-	} else {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "Failed to create a thread for config %d", i);
-	}
+    GThread * thread;
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	  "Starting sync thread");
+    thread = g_thread_create(sync_thread, sync_config_list, TRUE, NULL);
+
+    if (thread) {
+	sync_thread_list = g_slist_append(sync_thread_list, thread);
+    } else {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "Failed to create a thread for config %d", i);
     }
 
 

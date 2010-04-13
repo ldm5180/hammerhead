@@ -61,9 +61,9 @@ extern int libbdm_cal_fd;
 extern void libbdm_cal_callback(void * cal_handle, const cal_event_t *event);
 extern int libbdm_cal_topic_matches(const char * topic, const char *subscription);
 
-// Call from threads instead of sleep.
-// Returns early with non-zero status if thread should exit
-int bdm_thread_sleep(long usec);
+// Call from threads instead of sleep after starting a g_main_loop.
+// Returns if thread should exit
+int bdm_thread_sleep();
 
 typedef enum {
     DB_INT = 0,
@@ -102,16 +102,6 @@ typedef struct {
     unsigned int frequency;
     char * sync_recipient;
     int remote_port;
-#if ENABLE_ION
-    // Group ion configs for clarity
-    struct {
-        int basekey; // ION base key, to allow multiple instance on a machine
-        Sdr	sdr; // The SDR of the open transaction. NULL when not in transaction
-        BpSAP   sap;      // Sender endpoint ID
-        Object	bundleZco; // The ZCO that is being appended to.
-        size_t  bundle_size; // Running total of all extents appended to bundle
-    } ion;
-#endif
 
     //State vars
     sqlite3 *db;
@@ -322,7 +312,7 @@ void make_shutdowns_clean(int withThreads);
 
 
 // BDM sync'ing
-gpointer sync_thread(gpointer config);
+gpointer sync_thread(gpointer config_list);
 gpointer dtn_receive_thread(gpointer config);
 
 extern GSList * sync_config_list;

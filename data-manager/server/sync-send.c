@@ -29,13 +29,27 @@
 
 #if ENABLE_ION
 char * dtn_endpoint_id = NULL;
+
+// Group ion configs for clarity
+typedef struct {
+    int basekey; // ION base key, to allow multiple instance on a machine
+    Sdr	sdr; // The SDR of the open transaction. NULL when not in transaction
+    BpSAP   sap;      // Sender endpoint ID
+    Object	bundleZco; // The ZCO that is being appended to.
+    size_t  bundle_size; // Running total of all extents appended to bundle
+} ion_config_t;
+
+ion_config_t ion;
 #endif
+
+GMainLoop * sync_sender_main_loop = NULL;
 
 static int sync_init_connection(sync_sender_config_t * config);
 static void sync_cancel_connection(sync_sender_config_t * config);
 static int sync_finish_connection(sync_sender_config_t * config);
 static int write_data_to_message(const void *buffer, size_t size, void * config_void);
 static int write_data_to_socket(const void *buffer, size_t size, void * config_void);
+static gboolean sync_check(gpointer data);
 
 #if ENABLE_ION
 static int write_data_to_ion(const void *buffer, size_t size, void * config_void);
@@ -224,11 +238,9 @@ static int write_data_to_socket(const void *buffer, size_t size, void * config_v
 
 #if ENABLE_ION
 static int write_data_to_ion(const void *buffer, size_t size, void * config_void) {
-    sync_sender_config_t * config = (sync_sender_config_t *)config_void;
-
     Object	extent;
-    Sdr sdr = config->ion.sdr;
-    Object bundleZco = config->ion.bundleZco;
+    Sdr sdr = ion.sdr;
+    Object bundleZco = ion.bundleZco;
 
     if(sdr == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -247,103 +259,126 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "No space for ZCO extent.");
 
-        config->ion.sdr = NULL;
+        ion.sdr = NULL;
         return -1;
     }
 
     sdr_write(sdr, extent, (void*)buffer, size);
     zco_append_extent(sdr, bundleZco, ZcoSdrSource, extent, 0, size);
-    config->ion.bundle_size += size;
+    ion.bundle_size += size;
 
     return size;
 }
 #endif
 
 
-gpointer sync_thread(gpointer config) {
-    int curr_seq = 0;
-    sync_sender_config_t * cfg = (sync_sender_config_t *)config;
+gpointer sync_thread(gpointer config_list) {
+    int i;
+    sync_sender_config_t * cfg;
+    GSList * cfg_list = (GSList *)config_list;
 
-    if (NULL == cfg) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	      "sync_thread(): NULL config"); 
-	return NULL;
+
+#ifdef ENABLE_ION
+    int need_bp = 0;
+#endif
+
+    for (i = 0; i < g_slist_length(cfg_list); i++) {
+	cfg = g_slist_nth_data(cfg_list, i);
+	
+       	if (NULL == cfg) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "sync_thread() found NULL config: %d", i); 
+	    return NULL;
+	}
+
+	cfg->last_entry_end_seq_metadata = 
+	    db_get_last_sync_seq_metadata(cfg->db, cfg->sync_recipient);
+	cfg->last_entry_end_seq = 
+	    db_get_last_sync_seq_datapoints(cfg->db, cfg->sync_recipient);
+    
+	// One-time setup
+#if ENABLE_ION
+	if( cfg->method == BDM_SYNC_METHOD_ION ) {
+	    if(NULL == dtn_endpoint_id) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		      "sync-send: No source EID defined. Cannot continue");
+		return NULL;
+	    }
+	    need_bp++;
+	}
+#endif
     }
 
-    cfg->last_entry_end_seq_metadata = 
-        db_get_last_sync_seq_metadata(cfg->db, cfg->sync_recipient);
-    cfg->last_entry_end_seq = 
-        db_get_last_sync_seq_datapoints(cfg->db, cfg->sync_recipient);
-
-    // One-time setup
-#if ENABLE_ION
-
-    if( cfg->method == BDM_SYNC_METHOD_ION ) {
-        if(NULL == dtn_endpoint_id) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "sync-send: No source EID defined. Cannot continue");
-            return NULL;
-        }   
-
-        if (bp_open(dtn_endpoint_id, &cfg->ion.sap) < 0)
-        {
+#ifdef ENABLE_ION
+    if ((need_bp) && (bp_open(dtn_endpoint_id, &ion.sap) < 0))
+    {
 #ifdef HAVE_BP_ADD_ENDPOINT
-            if(bp_add_endpoint(dtn_endpoint_id, NULL) != 1) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "Can't create own endpoint ('%s')", dtn_endpoint_id);
-                return NULL;
-            } else if(bp_open(dtn_endpoint_id, &cfg->ion.sap) < 0)
+	if(bp_add_endpoint(dtn_endpoint_id, NULL) != 1) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "Can't create own endpoint ('%s')", dtn_endpoint_id);
+	    return NULL;
+	} else if(bp_open(dtn_endpoint_id, &ion.sap) < 0)
 #endif // HAVE_BP_ADD_ENDPOINT
-            {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "Can't open own endpoint ('%s')", dtn_endpoint_id);
-                return NULL;
-            }
-        }
+	{
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "Can't open own endpoint ('%s')", dtn_endpoint_id);
+	    return NULL;
+	}
     }
 #endif // ENABLE_ION
 
-
-    while (!bdm_shutdown_now) {
-	curr_seq = db_get_latest_entry_seq(cfg->db);
-
-	if (curr_seq > cfg->last_entry_end_seq_metadata) {
-	    sync_send_metadata(cfg, cfg->last_entry_end_seq_metadata+1, curr_seq);
-	} else {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-		  "No metadata to sync.");
-	}
-	if (curr_seq > cfg->last_entry_end_seq) {
-
-	    sync_send_datapoints(cfg, cfg->last_entry_end_seq+1, curr_seq);
-	} else {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-		  "No data to sync. Sleeping %u seconds...", cfg->frequency);
-	}
-
-	bdm_thread_sleep(cfg->frequency * G_USEC_PER_SEC);
+    sync_sender_main_loop = g_main_loop_new(NULL, TRUE);
+    
+    for (i = 0; i < g_slist_length(cfg_list); i++) {
+	cfg = g_slist_nth_data(cfg_list, i);
+	g_timeout_add_seconds(cfg->frequency, sync_check, cfg);
     }
+
+    g_main_loop_run(sync_sender_main_loop);
 
     sync_sender_config_destroy(cfg);
 
     return NULL;
 } /* sync_thread() */
 
+static gboolean sync_check(gpointer data) {
+    sync_sender_config_t * cfg = (sync_sender_config_t *)data;
+    int curr_seq = 0;
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Syncing to %s", cfg->sync_recipient);
+
+    curr_seq = db_get_latest_entry_seq(cfg->db);
+    
+    if (curr_seq > cfg->last_entry_end_seq_metadata) {
+	sync_send_metadata(cfg, cfg->last_entry_end_seq_metadata+1, curr_seq);
+    } else {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	      "    No metadata to sync.");
+    }
+    if (curr_seq > cfg->last_entry_end_seq) {
+	
+	sync_send_datapoints(cfg, cfg->last_entry_end_seq+1, curr_seq);
+    } else {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	      "    No data to sync. Sleeping %u seconds...", cfg->frequency);
+    }
+
+    return TRUE;
+} /* sync_check() */
 
 #if ENABLE_ION
 static int sync_init_connection_ion(sync_sender_config_t * config) {
+    ion.sdr = bp_get_sdr();
+	
+    sdr_begin_xn(ion.sdr);
 
-    config->ion.sdr = bp_get_sdr();
-
-    sdr_begin_xn(config->ion.sdr);
-
-    config->ion.bundleZco = zco_create(config->ion.sdr, ZcoSdrSource, 0,
-                    0, 0);
-    config->ion.bundle_size = 0;
+    ion.bundleZco = zco_create(ion.sdr, ZcoSdrSource, 0,
+			       0, 0);
+    ion.bundle_size = 0;
 
     writeErrmsgMemos();
-    return 0;
 
+    return 0;
 }
 #endif
 
@@ -356,8 +391,8 @@ static void sync_cancel_connection(sync_sender_config_t *config) {
 
 #if ENABLE_ION
         case BDM_SYNC_METHOD_ION:
-            sdr_cancel_xn(config->ion.sdr);
-            config->ion.sdr = NULL;
+            sdr_cancel_xn(ion.sdr);
+            ion.sdr = NULL;
             break;
 #endif
         
@@ -484,25 +519,25 @@ static int sync_finish_connection_tcp(sync_sender_config_t * config) {
 #if ENABLE_ION
 static int sync_finish_connection_ion(sync_sender_config_t * config) {
 
-    if (sdr_end_xn(config->ion.sdr) < 0 || config->ion.bundleZco == 0)
+    if (sdr_end_xn(ion.sdr) < 0 || ion.bundleZco == 0)
     {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
                 "Can't end sdr transaction");
-            sdr_cancel_xn(config->ion.sdr);
-            config->ion.sdr = NULL;
+            sdr_cancel_xn(ion.sdr);
+            ion.sdr = NULL;
             return -1;
     }
 
-    if ( config->ion.bundle_size ) {
+    if ( ion.bundle_size ) {
         int r;
         Object unused_new_bundle;
 
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "Sending bundle with payload of %lu bytes",
-            (unsigned long)config->ion.bundle_size);
+            (unsigned long)ion.bundle_size);
 
         r = bp_send(
-            config->ion.sap,
+            ion.sap,
             BP_BLOCKING,
             config->sync_recipient, 
             NULL,                     // report-to EID
@@ -512,7 +547,7 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
             0,                        // reporting flags - all disabled
             0,                        // app-level ack requested - what's this doing in BP?!
             NULL,                     // extended CoS - not used when CoS is STD_PRIORITY as above
-            config->ion.bundleZco,
+            ion.bundleZco,
             &unused_new_bundle        // handle to the bundle in the BA, we dont need it (wish we could pass in NULL here)
         );
 
@@ -523,7 +558,7 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
     } else {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "no bundle to send!");
         // FIXME: what's the right way to delete the bundle?
-        // zco_destroy_reference(config->ion.sdr, config->ion.bundleZco);
+        // zco_destroy_reference(ion.sdr, ion.bundleZco);
     }
 
 

@@ -17,6 +17,7 @@
 
 static GMutex * bdm_shutdown_mux = NULL;
 static GCond * bdm_shutdown_cond = NULL;
+extern GMainLoop * sync_sender_main_loop;
 
 static void exit_signal_handler(int signal_number) {
     //g_message("caught signal %d (%s), exiting\n", signal_number, strsignal(signal_number));
@@ -32,7 +33,12 @@ static void exit_signal_handler(int signal_number) {
 #if ENABLE_ION
     bp_interrupt(dtn_thread_data.ion.sap);
 #endif
+    if (sync_sender_main_loop) {
+	g_main_loop_quit(sync_sender_main_loop);
+    }
+
     g_main_loop_quit(bdm_main_loop);
+
 }
 
 
@@ -86,14 +92,10 @@ void make_shutdowns_clean(int withThreads) {
 }
 
 // Like sleep, but returns as soon as the bdm wants to shutdown
-int bdm_thread_sleep(long usec) {
+int bdm_thread_sleep() {
     g_mutex_lock (bdm_shutdown_mux);
     if(!bdm_shutdown_now){
-        GTimeVal sleep_time;
-        g_get_current_time(&sleep_time);
-        g_time_val_add(&sleep_time, usec);
-
-        g_cond_timed_wait(bdm_shutdown_cond, bdm_shutdown_mux, &sleep_time);
+        g_cond_wait(bdm_shutdown_cond, bdm_shutdown_mux);
     }
     g_mutex_unlock (bdm_shutdown_mux);
 
