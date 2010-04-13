@@ -336,7 +336,12 @@ gpointer sync_thread(gpointer config_list) {
 
     g_main_loop_run(sync_sender_main_loop);
 
-    sync_sender_config_destroy(cfg);
+    for (i = 0; i < g_slist_length(cfg_list); i++) {
+	cfg = g_slist_nth_data(cfg_list, i);
+	if (cfg) {
+	    sync_sender_config_destroy(cfg);
+	}
+    }
 
     return NULL;
 } /* sync_thread() */
