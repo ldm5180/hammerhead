@@ -27,6 +27,7 @@ resource_name_pattern  { return SET_RES; }
 frequency              { return SET_FREQ; }
 sync_recipient         { return SET_RECPT; }
 sync_port              { return SET_PORT; }
+bundle_lifetime        { return SET_BUNDLE_LIFETIME; }
 tcp                    { return METH_TCP; }
 ion                    { return METH_ION; }
 

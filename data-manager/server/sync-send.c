@@ -546,7 +546,7 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
             BP_BLOCKING,
             config->sync_recipient, 
             NULL,                     // report-to EID
-            300,                      // TTL in seconds
+            config->bundle_lifetime,  // Lifetime in seconds
             BP_STD_PRIORITY,          // class of service
             SourceCustodyRequired,
             0,                        // reporting flags - all disabled

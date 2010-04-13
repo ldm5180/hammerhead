@@ -44,6 +44,9 @@
 #define BDM_PORT      (11002)
 #define BDM_SYNC_PORT (11003)
 
+// Default bundle lifetime in seconds.
+#define BDM_BUNDLE_LIFETIME (300)
+
 
 extern void * libbdm_cal_handle;
 extern bionet_bdm_t * this_bdm;
@@ -102,6 +105,7 @@ typedef struct {
     unsigned int frequency;
     char * sync_recipient;
     int remote_port;
+    int bundle_lifetime; // Sync bundles have this rfc5050 lifetime (seconds)
 
     //State vars
     sqlite3 *db;
