@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
 
     bionet_log_context_t lc = {
         destination: BIONET_LOG_TO_STDOUT,
-        log_limit: G_LOG_LEVEL_DEBUG
+        log_limit: G_LOG_LEVEL_INFO
     };
 
     g_log_set_default_handler(bionet_glib_log_handler, &lc);
