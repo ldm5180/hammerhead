@@ -1,0 +1,230 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+BUNDLE_LIFETIME=`sed -n -e "s/^bundle_lifetime\s*=\s*\([0-9]*\)/\1/p" sync-send.cfg`
+if [ -z "$BUNDLE_LIFETIME" ]; then
+    echo "bundle_lifetime not defined in sync-send.cfg, assuming 30"
+    BUNDLE_LIFETIME=30
+fi
+GENERATE_TIME=`expr $BUNDLE_LIFETIME / 4`
+echo "BUNDLE_LIFETIME=$BUNDLE_LIFETIME"
+echo "GENERATE_TIME=$GENERATE_TIME"
+
+. $ROOT/test/config.sh
+
+if [ -z "$ENABLE_ION" ]; then
+    echo "Bionet not configured with ION. Skipping test"
+    exit 3
+fi
+
+UNIQUE=$$
+SYNCUNIQUE=${HOSTNAME//\./-}
+RETVAL=0
+
+# We REALLY need to cleanup if we can
+on_die()
+{
+    kill %1
+    kill %3
+    kill %4
+    kill %5
+    killm
+    exit 2
+}
+trap 'on_die' TERM INT
+
+YEAR=`date +%Y`
+PREV_YEAR=$(($YEAR-1))
+NEXT_YEAR=$(($YEAR+1))
+
+
+rm -f ion.log
+
+echo "making DB file"
+rm -f orig-bdm.db
+sqlite3 orig-bdm.db < $ROOT/data-manager/server/schema
+cp orig-bdm.db sync-bdm.db
+
+echo starting ION Loopback interface
+CONFIGDIR="./ionconfig"
+ionstart                           \
+    -i ${CONFIGDIR}/loopback.ionrc \
+    -b ${CONFIGDIR}/loopback.bprc  \
+    -p ${CONFIGDIR}/loopback.ipnrc
+
+###
+### STAGE 1: Test that we can:
+###  - Shut down the outduct
+###  - Queue a bunch of sync bundles in ION
+###  - **wait for a time less than the expiration time**
+###  - Restart the outduct
+###  - Sync properly
+### This verifies that bundles are not destroyed *before* their lifetime expires (and that
+###  we're properly parsing the lifetime, setting it via the ION API, ...)
+###
+echo "STAGE 1: Testing that we can sync bundles before they expire"
+
+
+# When ionstart returns, ION is not necessarily finished starting, and if it
+# isn't finished, then bpadmin will hang...sigh
+sleep 1
+echo "Stopping UDP outduct to test bundle expiration."
+bpadmin <<EOF
+x outduct udp '*'
+q
+EOF
+
+# receive the message and store it in a file via test bundle sink
+echo "Starting ION sync receiver BDM"
+$ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --habs "X.X" --nodes "X.X.X" --resources "X.X.X:X" --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver & SYNCRECEIVERPID=$!
+
+echo starting ION sync sender BDM
+$ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send-$SYNCUNIQUE --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  sync-send.cfg --port 11111 & SYNCSENDERPID=$!
+sleep 12 # let the bdm come up before starting the HAB
+
+echo starting random-hab
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab & HABPID=$!
+
+logger "Sync receiver PID: $SYNCRECEIVERPID, sender PID: $SYNCSENDERPID, random hab pid: $HABPID"
+
+echo "Generating data for  while..."
+sleep `expr $GENERATE_TIME / 4`
+
+echo "test run complete, killing random-hab"
+kill %3
+wait %3
+
+echo "Waiting for all data to be stuffed into sync bundles"
+sleep 2
+echo "killing the ION sync sender BDM"
+kill %2
+wait %2
+
+echo "waiting for less than sync bundles expiration"
+sleep `expr $BUNDLE_LIFETIME / 4`
+echo "re-enabling UDP outduct to test whether the bundles have been expired"
+bpadmin <<EOF
+s outduct udp '*'
+q
+EOF
+sleep 5  # If ION has any bundles to send, this will let it send them.
+
+
+echo "getting data from TCP sync receiver BDM"
+
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-client.py
+
+#sleep 3
+
+echo "killing ION Sync Receive BDM"
+logger "killing ION Sync Receive BDM"
+jobs -l
+kill %1
+wait
+
+if ! diff -q out.random-hab out.bdm-client.py; then
+    echo "ERROR: bdm-client.py output differs from random-hab output when not expired:"
+    diff -u out.random-hab out.bdm-client.py
+    RETVAL=1
+else
+    echo "bdm-client.py output is identical to random-hab output, yay"
+fi
+
+# see what we got
+bpstats
+
+###
+### STAGE 2: Test that we can:
+###  - Shut down the outduct
+###  - Queue a bunch of sync bundles in ION,
+###  - **wait for a time greater than the expiration time**
+###  - Restart the outduct
+###  - Not get the syncs properly
+### This verifies that bundles *are* destroyed after their lifetime expires (and that
+###  we're properly parsing the lifetime, setting it via the ION API, ...)
+###
+echo "STAGE 2: Testing that we can't sync bundles after they expire"
+
+echo "Stopping UDP outduct to test bundle expiration."
+bpadmin <<EOF
+x outduct udp '*'
+q
+EOF
+
+# receive the message and store it in a file via test bundle sink
+echo "Starting ION sync receiver BDM"
+$ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --habs "X.X" --nodes "X.X.X" --resources "X.X.X:X" --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver & SYNCRECEIVERPID=$!
+
+echo starting ION sync sender BDM
+$ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send-$SYNCUNIQUE --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  sync-send.cfg --port 11111 & SYNCSENDERPID=$!
+sleep 12 # let the bdm come up before starting the HAB
+
+echo starting random-hab
+$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab & HABPID=$!
+
+logger "Sync receiver PID: $SYNCRECEIVERPID, sender PID: $SYNCSENDERPID, random hab pid: $HABPID"
+
+echo "Generating data for  while..."
+sleep `expr $GENERATE_TIME`
+
+echo "test run complete, killing random-hab"
+jobs -l
+kill %3
+wait %3
+
+echo "Waiting for all data to be stuffed into sync bundles"
+sleep 2
+echo "killing the ION sync sender BDM"
+kill %2
+wait %2
+
+echo "waiting for more than sync bundles expiration"
+sleep `expr $BUNDLE_LIFETIME + 2`
+echo "re-enabling UDP outduct to test whether the bundles have been expired"
+bpadmin <<EOF
+s outduct udp '*'
+q
+EOF
+sleep 5  # If ION has any bundles to send, this will let it send them.
+
+
+echo "getting data from TCP sync receiver BDM"
+
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-client.py
+
+#sleep 3
+
+echo "killing ION Sync Receive BDM"
+logger "killing ION Sync Receive BDM"
+jobs -l
+kill %1
+wait
+
+if ! diff -q out.random-hab out.bdm-client.py; then
+    echo "bdm-client.py output is different than random-hab output, yay"
+    diff -u out.random-hab out.bdm-client.py
+else
+    echo "ERROR: bdm-client.py output matches random-hab output when expired:"
+    RETVAL=1
+fi
+
+# see what we got
+bpstats
+
+# shut down ion processes
+echo "Stopping ion..."
+killm
+killm
+
+exit $RETVAL
+

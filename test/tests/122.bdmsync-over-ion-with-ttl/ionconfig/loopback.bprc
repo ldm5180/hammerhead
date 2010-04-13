@@ -1,0 +1,34 @@
+# Initialization command (command 1).
+#	Use ipn:1.0 as the custodian endpoint of this node.
+#	That is, scheme IPN with element_number 1 and service number 0
+#	(ipn requires custodian service is zero).
+#	Note that this EID must be understood by the node itself, so be sure
+#	to add the scheme below.
+1
+
+# Add an EID scheme.
+#	The scheme's name is ipn.
+#	The scheme's number is 1.  Note that this number is defined for
+#	Compressed Bundle Header Encoding (CBHE) schemes ONLY.  All other
+#	schemes (dtn for example) should use number -1.
+#	This scheme's forwarding engine is handled by the program 'ipnfw.'
+#	This scheme's administration program (acting as the custodian
+#	daemon) is 'ipnadminep.'
+a scheme ipn 'ipnfw' 'ipnadminep'
+
+# Make some persistent endpoints for testing - change to suit
+a endpoint ipn:1.0 q
+a endpoint ipn:1.1 q
+a endpoint ipn:1.2 q
+
+# Add a protocol. 
+a protocol udp 1400 100
+
+# Add an induct. (listen)
+a induct udp 127.0.0.1:4556 udpcli
+
+# Add an outduct. (send to yourself)
+a outduct udp * udpclo
+
+# Start BP engine
+s
