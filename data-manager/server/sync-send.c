@@ -343,6 +343,8 @@ gpointer sync_thread(gpointer config_list) {
 	}
     }
 
+    sync_sender_main_loop = NULL;
+
     return NULL;
 } /* sync_thread() */
 

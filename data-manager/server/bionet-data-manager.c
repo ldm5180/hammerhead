@@ -802,7 +802,7 @@ int main(int argc, char *argv[]) {
         make_shutdowns_clean(0);
     }
 
-    //create a thread for each sync sender configuration
+    //create a config for each sync sender configuration
     for (i = 0; i < g_slist_length(sync_config_list); i++) {
 	sync_sender_config_t * sync_config = NULL;
 
@@ -823,18 +823,19 @@ int main(int argc, char *argv[]) {
 	}
     }
 
-    GThread * thread;
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	  "Starting sync thread");
-    thread = g_thread_create(sync_thread, sync_config_list, TRUE, NULL);
+    GThread * thread = NULL;
+    if (g_slist_length(sync_config_list)) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	      "Starting sync thread");
+	thread = g_thread_create(sync_thread, sync_config_list, TRUE, NULL);
 
-    if (thread) {
-	sync_thread_list = g_slist_append(sync_thread_list, thread);
-    } else {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "Failed to create a thread for config %d", i);
+	if (thread) {
+	    sync_thread_list = g_slist_append(sync_thread_list, thread);
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to create a thread for config %d", i);
+	}
     }
-
 
 #if ENABLE_ION
     //start the DTN receiver thread
