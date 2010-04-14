@@ -1,0 +1,12 @@
+2009-08-05 00:00:00.000000 + AAAA
+    str1 String Sensor 'Initial Value'
+2009-08-05 00:00:01.000000 AAAA str1 'Update 1'
+2009-08-05 00:00:02.000000 AAAA str1 'Update 2'
+2009-08-05 00:00:03.000000 AAAA str1 'Update 3'
+2009-08-05 00:00:04.000000 AAAA str1 'Update 4'
+2009-08-05 00:00:05.000000 + BBBB
+    str1 String Sensor 'Initial Value B'
+2009-08-05 00:00:06.000000 BBBB str1 'Update 1b'
+2009-08-05 00:00:07.000000 BBBB str1 'Update 2b'
+2009-08-05 00:00:08.000000 BBBB str1 'Update 3b'
+2009-08-05 00:00:09.000000 BBBB str1 'Update 4b'
