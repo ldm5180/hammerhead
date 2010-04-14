@@ -247,6 +247,7 @@ int main(int argc, char *argv[]) {
     yyin = fopen(file_name, "r");
     if (yyin == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "unable to open file '%s': %s", file_name, strerror(errno));
+	exit(1);
     }
     yyrestart(yyin);
     yyparse();
