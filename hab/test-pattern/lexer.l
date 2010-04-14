@@ -24,7 +24,7 @@ int line_num = 0;
 \-                                      { return REMOVE; }
 \?                                      { return NOVALUE; }
 '[^'\n]*'                               { yylval.string_v = strdup(yytext+1); 
-                                          yylval.string_v[strlen(yylval.string_v)] = '\0'; 
+                                          yylval.string_v[strlen(yylval.string_v)-1] = '\0'; 
                                           return VALUE; 
                                         }
 [Ss][Ee][Nn][Ss][Oo][Rr]                { yylval.flavor_v = BIONET_RESOURCE_FLAVOR_SENSOR; return FLAVOR; }
