@@ -16,6 +16,13 @@ if [ -z "$ROOT" ]; then
     exit 1
 fi
 
+PYPATHADD=$ROOT/test/src/bonjour-py:$ROOT/test/src/bonjour-py/.libs:$ROOT/test/pylib:$ROOT/test/pylib
+if [ -z "$PYTHONPATH" ]; then
+    export PYTHONPATH=$PYPATHADD
+else
+    export PYTHONPATH=$PYPATHADD:$PYTHONPATH
+fi
+
 FILE=$ROOT/hab/test-pattern/patterns/uint32-counter-10
 if [ $# -ge 1 ]; then
     FILE=$1
