@@ -118,7 +118,7 @@ AC_DEFUN([AC_FIND_QWT],
     AC_LANG_CONFTEST([AC_LANG_CALL([], [_ZN7QwtPlot8initPlotERK7QwtText])])
     for ac_lib in '' $3; do
       if test -n "${dir}"; then
-        LDFLAGS="-L${dir} $ac_func_qwt_save_LDFLAGS"
+        QTLDFLAGS="-L${dir} $ac_func_qwt_save_LDFLAGS"
       fi
       if test -z "$ac_lib"; then
         tmpqwtlib=""

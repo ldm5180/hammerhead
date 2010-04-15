@@ -468,7 +468,7 @@ if test "x$ENABLE_QT4" = "xyes" ; then
 
     qt_ok=yes
     AC_PATH_PROGS([QMAKE], 
-        [qmake-qt4 qmake-4.4 qmake qmake-mac],
+        [qmake-qt4 qmake-4.4 qmake-mac qmake],
         [not-found])
     if test "x$QMAKE" = "xnot-found" ; then
         AC_MSG_WARN([could not find qmake for QT4 ])
