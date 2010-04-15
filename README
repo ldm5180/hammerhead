@@ -6,6 +6,16 @@ Bionet 2 uses mDNS-SD (multicast DNS with Service Discovery) to find
 the peers on the network.  In order for this to work, you need to be
 running the avahi-daemon on each host that will run HABs or Clients.
 
+EXPORT COMPLIANCE ASSURANCE: The Receiving Party acknowledges that all
+products, software, and technology (herein referred to as "Products") obtained
+from the Disclosing Party are subject to the United States (U.S.) government
+export control and economic sanctions laws.  The Receiving Party agrees that
+neither it nor its subsidiaries or affiliates will directly or indirectly
+export, re-export, transfer, or release, (herein referred to as "export"), any
+such Products or any direct product thereof to any destination, person, entity,
+or end-use prohibited or restricted under such laws without prior U.S.
+government authorization as applicable, either in writing or as permitted by
+applicable regulation.
 
 To compile:
 
