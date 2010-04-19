@@ -32,6 +32,11 @@ AM_CFLAGS += -O0 -fprofile-arcs -ftest-coverage
 AM_LDFLAGS += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
+if GPROF
+AM_CFLAGS += -pg
+AM_LDFLAGS += -pg
+endif
+
 
 if ENABLE_DARWIN
     AM_CFLAGS += -DMACOSX

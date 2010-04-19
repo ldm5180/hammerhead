@@ -10,6 +10,7 @@
 #include "bionet-util.h"
 
 
+extern uint32_t num_bionet_datapoints;
 
 
 // 
@@ -29,6 +30,7 @@ char * security_dir = NULL;
 int require_security = 0;
 
 sqlite3 * main_db = NULL;
+bdm_db_batch * dbb = NULL;
 
 int no_resources = 0;
 
@@ -39,7 +41,6 @@ extern int start_hab;
 // bionet callbacks
 //
 
-extern uint32_t num_bionet_datapoints;
 extern int ignore_self;
 
 struct timeval dp_ts_accum = { 0, 0 };
@@ -51,10 +52,10 @@ static void cb_datapoint(bionet_datapoint_t *datapoint) {
 	gettimeofday(&tv_before_write, NULL);
     }
 
-    (void) db_add_datapoint(main_db, datapoint);
+    (void) dbb_add_datapoint(dbb, datapoint, bionet_bdm_get_id(this_bdm));
 
     /* do not normally keep stats on yourself, so return */
-    if (ignore_self) {
+    if (ignore_self && start_hab) {
 	const char * bdm_hab_name = bionet_hab_get_name(bdm_hab);
 	const char * datapoint_hab_name = bionet_hab_get_name(bionet_datapoint_get_hab(datapoint));
 	if (0 == strcmp(bdm_hab_name, datapoint_hab_name)) {
@@ -106,7 +107,7 @@ static void cb_new_node(bionet_node_t *node) {
 	  bionet_hab_get_type(bionet_node_get_hab(node)), 
 	  bionet_hab_get_id(bionet_node_get_hab(node)), 
 	  bionet_node_get_id(node));
-    (void) db_add_node(main_db, node);
+    (void) dbb_add_node(dbb, node);
 }
 
 
@@ -122,7 +123,7 @@ static void cb_new_hab(bionet_hab_t *hab) {
 	  bionet_hab_get_type(hab), 
 	  bionet_hab_get_id(hab));
     bionet_hab_set_recording_bdm(hab, bionet_bdm_get_id(this_bdm));
-    (void) db_add_hab(main_db, hab);
+    (void) dbb_add_hab(dbb, hab);
 }
 
 
@@ -131,6 +132,7 @@ static void cb_new_hab(bionet_hab_t *hab) {
 static int bionet_readable_handler(GIOChannel *unused, GIOCondition unused2, void *unused3) {
     if (bionet_is_connected()) {
         bionet_read();
+        dbb_flush_to_db(dbb);
         return TRUE;
     }
 
@@ -156,6 +158,11 @@ int try_to_connect_to_bionet(void *unused) {
     // these functions are idempotent, so it doesnt hurt to re-call them
     // each time we try to connect to the nag
     //
+
+    if (dbb == NULL) {
+        dbb = calloc(1, sizeof(bdm_db_batch));
+
+    }
 
     bionet_register_callback_new_hab(cb_new_hab);
     bionet_register_callback_lost_hab(cb_lost_hab);

@@ -20,6 +20,7 @@ bionet_data_manager_SOURCES =         \
 libbionet_data_manager_la_SOURCES =      \
     bionet-io.c                       \
     db.c                              \
+    db-batch.c                        \
     bdm-asn.c                         \
     cal-callback.c                    \
     cal-topic-matches.c               \

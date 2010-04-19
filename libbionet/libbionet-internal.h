@@ -26,6 +26,8 @@ extern void (*libbionet_callback_datapoint)(bionet_datapoint_t *datapoint);
 
 extern void (*libbionet_callback_stream)(bionet_stream_t *stream, void *buffer, int size);
 
+extern void (*libbionet_callback_idle)(void);
+
 
 extern void * libbionet_cal_handle;
 

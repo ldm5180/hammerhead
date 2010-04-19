@@ -27,6 +27,8 @@ fi
 
 . $ROOT/test/testlib.sh
 
+NUMWATCHERS=10
+
 UNIQUE=$$
 RETVAL=0
 
@@ -35,25 +37,47 @@ ORIG_DIR=$PWD
 rm -f bdm.db
 sqlite3 bdm.db < $ROOT/data-manager/server/schema
 
-./highest-perf.py -r "Bionet-Data-Manager.$HOSTNAME.Statistics:Local-Datapoints-Per-Second" &
+BDMID=${HOSTNAME//[.]/-}
+#BDMID=$UNIQUE
+
+./highest-perf.py -r "Bionet-Data-Manager.$BDMID.Statistics:Local-Datapoints-Per-Second" &
 HIGHPID=$!
 
-$ROOT/data-manager/server/bionet-data-manager -f bdm.db --bdm-stats 10 &
+WATCHID=0
+WATCHERPIDS=""
+echo "Starting $NUMWATCHERS bdm-watchers to simulate load"
+for i in `jot $NUMWATCHERS`; do
+    #$ROOT/data-manager/client/bdm-watcher/bdm-watcher --resources="$BDMID,*/test-pattern-hab.$UNIQUE.*:*" > /dev/null 2>&1 &
+    $ROOT/data-manager/client/bdm-watcher/bdm-watcher --resources="$BDMID,*/test-pattern-hab.$UNIQUE.*:*"  &
+    PID=$!
+    echo " [$PID] ->  bdm-watcher"
+
+    eval WPID$WATCHID=$PID
+    WATCHERPIDS="$WATCHERPIDS $PID"
+    WATCHID=`expr $WATCHID + 1`
+done;
+
+echo "Starting bionet-data-manager"
+$ROOT/data-manager/server/bionet-data-manager -i $BDMID -f bdm.db --bdm-stats 10 --resources="test-pattern-hab.$UNIQUE.*:*" &
 BDMPID=$!
 
-$ROOT/hab/test-pattern/test-pattern-hab -c -f -m 1000 -l 1000 $FILE &
+echo "Starting test-pattern-hab"
+BIP_WRITE_BUFSIZE=1048576 $ROOT/hab/test-pattern/test-pattern-hab -i $UNIQUE --no-node-updates -c -f -m 1000 -l 0 $FILE &
 TPHPID=$!
 
+echo "Sleepng..." 
 sleep 55
 
+echo "Killing everything"
 kill $BDMPID
-if [ -s /proc/$TPHPID ]; then
-   kill $TPHPID
-fi
+kill $WATCHERPIDS
+kill $TPHPID
 wait $TPHPID
 wait $BDMPID
-
 wait $HIGHPID
+for pid in $WATCHERPIDS; do
+    wait $pid
+done
 
 
 exit 0

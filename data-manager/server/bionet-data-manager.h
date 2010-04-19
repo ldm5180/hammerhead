@@ -122,6 +122,12 @@ typedef struct {
     int bytes_sent;
 } sync_sender_config_t;
 
+typedef struct {
+    GData *bdm_list; 
+    GData *hab_list; 
+} bdm_db_batch;
+
+
 // 
 // interface to the database backend
 //
@@ -145,6 +151,9 @@ sqlite3 * db_init(void);
 //
 
 void db_shutdown(sqlite3 *db);
+int db_begin_transaction(sqlite3 *db);
+int db_commit(sqlite3 *db);
+void db_rollback(sqlite3 *db);
 
 //
 // Make a resource key
@@ -166,10 +175,45 @@ int db_make_resource_key(
 //
 
 int db_add_datapoint(sqlite3 *db, bionet_datapoint_t *datapoint);
-int db_add_resource(sqlite3 *db, bionet_resource_t *resource);
 int db_add_node(sqlite3 *db, bionet_node_t *node);
 int db_add_hab(sqlite3 *db, bionet_hab_t *hab);
 int db_add_bdm(sqlite3 *db, const char * bdm_id);
+
+// Basic insert wrapper. No consistancy checking or transactions...
+int db_insert_hab(sqlite3* db, const char * hab_type, const char * hab_id);
+int db_insert_node(
+        sqlite3* db,
+        const char * node_id,
+        const char * hab_type,
+        const char * hab_id);
+int db_insert_resource(
+        sqlite3* db,
+        const char * hab_type,
+        const char * hab_id,
+        const char * node_id,
+        const char * resource_id,
+        bionet_resource_flavor_t flavor,
+        bionet_resource_data_type_t data_type);
+int db_insert_datapoint(sqlite3* db, 
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
+    bdm_datapoint_t *dp);
+
+int datapoint_bionet_to_bdm(
+    bionet_datapoint_t * datapoint,
+    bdm_datapoint_t *dp,
+    const char * bdm_id) ;
+
+typedef struct dbb_bdm dbb_bdm_t;
+typedef struct dbb_hab dbb_hab_t;
+typedef struct dbb_node dbb_node_t;
+typedef struct dbb_resource dbb_resource_t;
+
+bdm_datapoint_t * dbb_add_datapoint(bdm_db_batch *dbb, bionet_datapoint_t *datapoint, const char * bdm_id);
+dbb_resource_t * dbb_add_resource(bdm_db_batch *dbb, bionet_resource_t *resource);
+dbb_node_t * dbb_add_node(bdm_db_batch *dbb, bionet_node_t *node);
+dbb_hab_t *  dbb_add_hab(bdm_db_batch *dbb, bionet_hab_t *hab);
+dbb_bdm_t *  dbb_add_bdm(bdm_db_batch *dbb, const char * bdm_id);
+int dbb_flush_to_db(bdm_db_batch * dbb); // no-op when batch empty
 
 
 //
@@ -219,6 +263,7 @@ GPtrArray *db_get_metadata(
 //
 void bdm_list_free(GPtrArray *bdm_list);
 
+int db_get_next_entry_seq(sqlite3 *db);
 int db_get_latest_entry_seq(sqlite3 *db);
 int db_get_last_sync_seq_metadata(sqlite3 *db, char * bdm_id);
 void db_set_last_sync_seq_metadata(sqlite3 *db, char * bdm_id, int seq);
@@ -297,6 +342,7 @@ typedef struct {
     unsigned char buffer[(10 * 1024)];  // FIXME: use cal
     int index;
 } client_t;
+
 
 #ifdef ENABLE_ION
 extern client_t dtn_thread_data;

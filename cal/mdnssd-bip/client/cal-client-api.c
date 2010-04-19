@@ -276,14 +276,15 @@ int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
         return 0;
     }
 
-    {
+    int q_fd = bip_msg_queue_get_handle(&this->msg_queue, BIP_MSG_QUEUE_TO_USER);
+    if(q_fd < 0 ) {
+        return 0;
+    }
+
+    do {
 	fd_set readers;
 	int ret;
 
-        int q_fd = bip_msg_queue_get_handle(&this->msg_queue, BIP_MSG_QUEUE_TO_USER);
-        if(q_fd < 0 ) {
-            return 0;
-        }
 
 	FD_ZERO(&readers);
 	FD_SET(q_fd, &readers);
@@ -293,52 +294,54 @@ int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
 		&& (EINTR != errno)) {
 		return 0;
 	    }
-	    return 1;
+            return 1;
 	}
 	else if (0 == ret)
 	{
-	    return 1;
+            // Nothing to read at end of timeout. Return success
+            return 1;
 	}
-    }
 
-    r = bip_msg_queue_pop(&this->msg_queue, BIP_MSG_QUEUE_TO_USER, &event);
-    if (r != 0) {
-        return 0;
-    }
 
-    if (this->callback != NULL) {
-        this->callback(this, event);
-    }
-
-    // manage memory
-    switch (event->type) {
-        case CAL_EVENT_JOIN: {
-            break;
+        r = bip_msg_queue_pop(&this->msg_queue, BIP_MSG_QUEUE_TO_USER, &event);
+        if (r != 0) {
+            return 0;
         }
 
-        case CAL_EVENT_LEAVE: {
-            break;
+        if (this->callback != NULL) {
+            this->callback(this, event);
         }
 
-        case CAL_EVENT_MESSAGE: {
-            break;
+        // manage memory
+        switch (event->type) {
+            case CAL_EVENT_JOIN: {
+                break;
+            }
+
+            case CAL_EVENT_LEAVE: {
+                break;
+            }
+
+            case CAL_EVENT_MESSAGE: {
+                break;
+            }
+
+            case CAL_EVENT_PUBLISH: {
+                break;
+            }
+
+            case CAL_EVENT_SUBSCRIBE: {
+                break;
+            }
+
+            default: {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got unhandled event type %d", event->type);
+                return 1;  // dont free events we dont understand
+            }
         }
 
-        case CAL_EVENT_PUBLISH: {
-            break;
-        }
-
-        case CAL_EVENT_SUBSCRIBE: {
-            break;
-        }
-
-        default: {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got unhandled event type %d", event->type);
-            return 1;  // dont free events we dont understand
-        }
-    }
-
-    cal_event_free(event);
+        cal_event_free(event);
+    } while(1);
 
     return 1;
 }
