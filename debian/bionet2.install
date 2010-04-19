@@ -21,6 +21,7 @@ usr/bin/bionet-commander
 usr/bin/bionet-watcher
 
 # bdm
+usr/share/bionet2/schema
 usr/bin/bionet-data-manager
 usr/bin/bdm-make-db
 usr/bin/bdm-watcher
