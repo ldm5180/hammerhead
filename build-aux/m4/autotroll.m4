@@ -156,7 +156,7 @@ dnl Memo: AC_ARG_WITH(package, help-string, [if-given], [if-not-given])
 
   # Find qmake.
   AC_ARG_VAR([QMAKE], [Qt Makefile generator command])
-  AC_PATH_PROGS([QMAKE], [qmake-qt4 qmake], [missing],
+  AC_PATH_PROGS([QMAKE], [qmake-qt4 qmake-mac qmake], [missing],
                 [$QT_DIR:$QT_PATH:$PATH:$tmp_qt_paths])
   if test x"$QMAKE" = xmissing; then
     AX_INSTEAD_IF([$4], [Cannot find qmake in your PATH. Try using --with-qt.])
