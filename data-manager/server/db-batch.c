@@ -280,6 +280,7 @@ static void _flush_foreach_resource(GQuark key_id, void* data, void* user_data) 
     }
 
     GSList * dplist = g_slist_reverse(resource->datapoint_list);
+    resource->datapoint_list = dplist;
     while(dplist) {
         bdm_datapoint_t * dp = (bdm_datapoint_t*)dplist->data;
 
@@ -289,7 +290,7 @@ static void _flush_foreach_resource(GQuark key_id, void* data, void* user_data) 
             return;
         }
 
-        dplist = g_slist_next(g_slist_next(dplist));
+        dplist = g_slist_next(dplist);
     }
 
 }
