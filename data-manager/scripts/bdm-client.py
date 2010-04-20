@@ -56,7 +56,6 @@ logger.addHandler(ch)
 if (options.output == "chrono"):
     li = []
 
-import gobject
 import time
 from bdm_client import *
 import calendar
