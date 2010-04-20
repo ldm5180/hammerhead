@@ -28,7 +28,7 @@ Homepage: http://bioserve.colorado.edu/bionet
 Package: bionet2
 Section: net
 Architecture: any
-Depends: ${shlibs:Depends}, python, python-gobject
+Depends: ${shlibs:Depends}, libnss-mdns, python, python-gobject
 Suggests: bionet2-www
 Recommends: bionet2-monitor, bionet2-streams
 Description: A network-transparent pub/sub system for information exchange
