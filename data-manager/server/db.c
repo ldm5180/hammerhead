@@ -131,7 +131,7 @@ int datapoint_bionet_to_bdm(
             if ( r == 0 ) {
                 dp->value.str = strdup(str);
             } else {
-                dp->value.str = str;
+                dp->value.str = NULL;
             }
             dp->type = DB_STRING;
             break;
@@ -901,7 +901,6 @@ int db_add_datapoint_sync(
 
     // Single insert, so no transaction needed
     r = db_insert_datapoint(db, resource_key, dp);
-    if ( dp->type == DB_STRING) free(dp->value.str);
     if ( 0 == r ){
         _db_publish_synced_datapoint(db, resource_key, dp, entry_seq);
     }
