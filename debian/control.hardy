@@ -38,6 +38,13 @@ Depends: ${shlibs:Depends}
 Description: A network-transparent pub/sub system for information exchange
  This package contains the CPOD HAB
 
+Package: bionet2-stethoscope
+Section: net
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: A network-transparent pub/sub system for information exchange
+ This package contains the Bluetooth Stethoscope HAB
+
 Package: bionet2-monitor
 Section: net
 Architecture: any
@@ -49,6 +56,7 @@ Package: bionet2-streams
 Section: net
 Architecture: any
 Depends: ${shlibs:Depends}
+Recommends: bionet2-stethoscope
 Description: A network-transparent pub/sub system for information exchange
  This package contains some HABs and Clients that deal with "Streams".
 
