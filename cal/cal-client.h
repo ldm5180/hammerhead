@@ -117,6 +117,9 @@ typedef struct {
     //! returned from .init() is readable, or whenever the caller wants to
     //! poll the file descriptor.  This function will service the file
     //! descriptor and may call the callback with an appropriate event.
+    //! 
+    //! \param max_events 
+    //!   At most how many events to read before returning
     //!
     //! \return True (non-zero) on success.  False (zero) on failure,
     //!     indicating that the file descriptor returned from .init() is
@@ -124,7 +127,7 @@ typedef struct {
     //!     .init() to get a new fd.
     //!
 
-    int (*read)(void * cal_handle, struct timeval *timeout);
+    int (*read)(void * cal_handle, struct timeval *timeout, unsigned int max_events);
 
 
     //!

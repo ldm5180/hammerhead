@@ -121,7 +121,7 @@ int cal_readable_handler(
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
 
-    return cal_server.read(libbdm_cal_handle, &timeout);
+    return cal_server.read(libbdm_cal_handle, &timeout, 0);
 }
 
 

@@ -22,12 +22,22 @@
 
 #include "libbdm-internal.h"
 
+int bdm_read_many(struct timeval *timeout, unsigned int num) {
+    int r;
+
+    if (libbdm_cal_handle == NULL) return -1;
+
+    r = cal_client.read(libbdm_cal_handle, timeout, num);
+    if (r) return 0;
+    return -1;
+}
+
 int bdm_read_with_timeout(struct timeval *timeout) {
     int r;
 
     if (libbdm_cal_handle == NULL) return -1;
 
-    r = cal_client.read(libbdm_cal_handle, timeout);
+    r = cal_client.read(libbdm_cal_handle, timeout, 1);
     if (r) return 0;
     return -1;
 }
@@ -39,6 +49,6 @@ int bdm_read(void) {
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
 
-    return cal_client.read(libbdm_cal_handle, &timeout);
+    return cal_client.read(libbdm_cal_handle, &timeout, 1);
 }
 

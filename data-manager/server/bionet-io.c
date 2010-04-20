@@ -131,7 +131,8 @@ static void cb_new_hab(bionet_hab_t *hab) {
 
 static int bionet_readable_handler(GIOChannel *unused, GIOCondition unused2, void *unused3) {
     if (bionet_is_connected()) {
-        bionet_read();
+        struct timeval tv = {0};
+        bionet_read_many(&tv, 0);
         dbb_flush_to_db(dbb);
         return TRUE;
     }

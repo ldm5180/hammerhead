@@ -266,9 +266,14 @@ int cal_client_mdnssd_bip_unsubscribe(void * cal_handle,
 
 
 
-int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
+int cal_client_mdnssd_bip_read(
+        void * cal_handle,
+        struct timeval * timeout,
+        unsigned int max_num) 
+{
     cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
     cal_event_t *event;
+    struct timeval tv;
     int r;
 
     if (this->client_thread == NULL) {
@@ -280,6 +285,13 @@ int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
     if(q_fd < 0 ) {
         return 0;
     }
+
+    if(timeout) {
+        tv.tv_sec = timeout->tv_sec;
+        tv.tv_usec = timeout->tv_usec;
+        timeout = &tv;
+    }
+    unsigned int event_count = 0;
 
     do {
 	fd_set readers;
@@ -307,6 +319,12 @@ int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
         if (r != 0) {
             return 0;
         }
+        event_count++;
+
+        // Something happened. Use 0 for timeout from now on
+        tv.tv_sec = 0;
+        tv.tv_usec = 0;
+
 
         if (this->callback != NULL) {
             this->callback(this, event);
@@ -341,7 +359,7 @@ int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
         }
 
         cal_event_free(event);
-    } while(1);
+    } while(max_num == 0 || max_num > event_count);
 
     return 1;
 }

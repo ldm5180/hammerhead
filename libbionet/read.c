@@ -25,13 +25,24 @@
 
 
 
+int bionet_read_many(struct timeval *timeout, unsigned int num) {
+    int r;
+
+    if (!bionet_is_connected()) return -1;
+
+    r = cal_client.read(libbionet_cal_handle, timeout, num);
+    if (r) return 0;
+    return -1;
+}
+
+
 
 int bionet_read_with_timeout(struct timeval *timeout) {
     int r;
 
     if (!bionet_is_connected()) return -1;
 
-    r = cal_client.read(libbionet_cal_handle, timeout);
+    r = cal_client.read(libbionet_cal_handle, timeout, 1);
     if (r) return 0;
     return -1;
 }
@@ -43,6 +54,6 @@ int bionet_read(void) {
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
 
-    return cal_client.read(libbionet_cal_handle, &timeout);
+    return cal_client.read(libbionet_cal_handle, &timeout, 1);
 }
 
