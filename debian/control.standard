@@ -19,7 +19,6 @@ Build-Depends: debhelper (>= 6),
  check,
  bison,
  flex,
- libsqlite3-0,
  python-gobject
 Standards-Version: 3.8.0
 Section: net
