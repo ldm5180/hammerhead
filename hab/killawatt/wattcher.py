@@ -4,17 +4,14 @@ from xbee import xbee
 import sensorhistory
 import logging
 import optparse
+from hab import *
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--interval", dest="interval", default="30",help="Choose the number of seconds desired between data collections (defaults to 30 seconds)", metavar = "INT")
+parser.add_option("-d", "--debug", dest="debug", default=None,help="-d will read out all debug messages", metavar = "DEBUG")
+parser.add_option("-s", "--ser_port", dest="ser_port", default = "/dev/ttyUSB0", help="Choose the serial port (default /dev/ttyUSB0)", metavar = "SER")
 
 (options, args) = parser.parse_args()
-
-LEVELS = {'debug':logging.DEBUG,
-            'info':logging.INFO,
-            'warning':logging.WARNING,
-            'error':logging.ERROR,
-            'critical':logging.CRITICAL}
 
 logger = logging.getLogger("Bionet Kill-A-Watt HAB")
 logger.setLevel(logging.WARNING)
@@ -24,10 +21,6 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# use App Engine? or log file? comment out next line if appengine
-LOGFILENAME = "powerdatalog.csv"   # where we will store our flatfile data
-
-SERIALPORT = "/dev/ttyUSB0"    # the com/serial port the XBee is connected to
 BAUDRATE = 9600      # the baud rate we talk to the xbee
 CURRENTSENSE = 4       # which XBee ADC has current draw data
 VOLTSENSE = 0          # which XBee ADC has mains voltage data
@@ -37,16 +30,15 @@ vrefcalibration = [492,  # Calibration for sensor #0
                    489,  # Calibration for sensor #2
                    492,  # Calibration for sensor #3
                    501,  # Calibration for sensor #4
-                   493]  # etc... approx ((2.4v * (10Ko/14.7Ko)) / 3
+                   493,
+                   487]  # etc... approx ((2.4v * (10Ko/14.7Ko)) / 3
 CURRENTNORM = 15.5  # conversion to amperes from ADC
 NUMWATTDATASAMPLES = 1800 # how many samples to watch in the plot window, 1 hr @ 2s samples
 
 
 # open up the FTDI serial port to get data transmitted to xbee
-ser = serial.Serial(SERIALPORT, BAUDRATE)
+ser = serial.Serial(options.ser_port, BAUDRATE)
 ser.open()
-
-from hab import *
 
 #connect to bionet
 hab = bionet_hab_new("Kill-A-Watt", None)
@@ -54,57 +46,22 @@ bionet_fd = hab_connect(hab)
 if (0 > bionet_fd):
     logger.critical("Problem connection to Bionet, exiting\n")
     exit(1)
-
-# open our datalogging file
-logfile = None
-try:
-    logfile = open(LOGFILENAME, 'r+')
-except IOError:
-    # didn't exist yet
-    logfile = open(LOGFILENAME, 'w+')
-    logfile.write("#Date, time, sensornum, avgWatts\n");
-    logfile.flush()
             
-DEBUG = False
-if (sys.argv and len(sys.argv) > 1):
-    if sys.argv[1] == "-d":
-        DEBUG = True
-            
-sensorhistories = sensorhistory.SensorHistories(logfile)
+sensorhistories = sensorhistory.SensorHistories()
 print sensorhistories
 
-interval = 0
+intervals = {}
 newamps = 0
 newwatts = 0
 TotalWattHour=0
-# the 'main loop' runs once a second or so
-def update_graph(idleevent):
-    global avgwattdataidx, sensorhistories, DEBUG, interval, newamps, newwatts
-    packet = xbee.find_packet(ser)
-    if not packet:
-        return
-    xb = xbee(packet)
-    sensorhistory = sensorhistories.find(xb.address_16)
-    interval += time.time() - sensorhistory.lasttime
-    sensorhistory.lasttime = time.time() 
 
-    hab_read()
 
-    # grab one packet from the xbee, or timeout
-    #packet = xbee.find_packet(ser)
-    #if not packet:
-    #    return        # we timedout
-
-    #xb = xbee(packet)             # parse the packet
-    #print xb.address_16
-    if DEBUG:       # for debugging sometimes we only want one
-        print xb.address_16
-
+def add_node(hab, xb_address_16):
     #check if there is a new node    
-    node = bionet_hab_get_node_by_id(hab, str(xb.address_16))
+    node = bionet_hab_get_node_by_id(hab, str(xb_address_16))
     if (node == None):
         #create and report node
-        node = bionet_node_new(hab, str(xb.address_16))
+        node = bionet_node_new(hab, str(xb_address_16))
         if (node == None):
             logger.critical("Critical - Error getting new node")
             sys.exit(1)
@@ -118,54 +75,41 @@ def update_graph(idleevent):
         if (bionet_node_add_resource(node, resource)):
             logger.critical("Error adding resource to node")
             sys.exit(1)
-        if (hab_report_new_node(node)):
-            logger.error("Critical - Error reporting node")
         resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Watts")
         if (resource == None):
             logger.critical("Critical - Error creating Resource - WATTS")
             sys.exit(1)
         if (bionet_node_add_resource(node, resource)):
-            logger.critical("Critical - Error adding resource - Watts - to node")
+            logger.critical("Error adding resource to node")
             sys.exit(1)
-        if (hab_report_new_node(node)):
-            logger.error("Critical - Error reporting node")
+        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "WHour")
+        if (resource == None):
+            logger.critical("Critical - Error creating Resource - WHOUR")
+            sys.exit(1)
+        if (bionet_node_add_resource(node, resource)):
+            logger.critical("Error adding resource to node")
+            sys.exit(1)
         resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "TotalWHour")
         if (resource == None):
             logger.critical("Critical - Error creating Resource - TOTALWHOUR")
             sys.exit(1)
         if (bionet_node_add_resource(node, resource)):
-            logger.critical("Critical - Error adding resource - TotalWHour - to node")
+            logger.critical("Error adding resource to node")
             sys.exit(1)
         if (hab_report_new_node(node)):
-            logger.error("Critical - Error reporting node")
-        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "WHour")
-        if (resource == None):
-            logfile.write("Critical - Error creating Resource - WHOUR")
-            sys.exit(1)
-        if (bionet_node_add_resource(node, resource)):
-            logger.critical("Critical - Error adding resource - WHour - to node")
-            sys.exit(1)
-        if (hab_report_new_node(node)):
-            logger.error("Critical - Error reporting node")
-    else:
-        None
+            logger.critical("Critical - Error reporting node")
+    return node
 
-    # we'll only store n-1 samples since the first one is usually messed up
-    voltagedata = [-1] * (len(xb.analog_samples) - 1)
-    ampdata = [-1] * (len(xb.analog_samples ) -1)
-    # grab 1 thru n of the ADC readings, referencing the ADC constants
-    # and store them in nice little arrays
+
+def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorhistory):
+    global newamps, newwatts
     for i in range(len(voltagedata)):
-        voltagedata[i] = xb.analog_samples[i+1][VOLTSENSE]
-        ampdata[i] = xb.analog_samples[i+1][CURRENTSENSE]
-
-    if DEBUG:
-        print "ampdata: "+str(ampdata)
-        logfile.write("Debug - ampdata: "+str(ampdata))
-        print "voltdata: "+str(voltagedata)
-        logfile.write("Debug - voltdata: "+str(voltagedata))
-    logger.debug("Debug - ampdata: "+str(ampdata))
-    logger.debug("Debug - voltdata: "+str(voltagedata))
+        voltagedata[i] = xb_analog_samples[i+1][VOLTSENSE]
+        ampdata[i] = xb_analog_samples[i+1][CURRENTSENSE]
+        
+    if (options.debug != None):
+        logger.debug("Debug - ampdata: "+str(ampdata))
+        logger.debug("Debug - voltdata: "+str(voltagedata))
 
     # get max and min voltage and normalize the curve to '0'
     # to make the graph 'AC coupled' / signed
@@ -183,25 +127,24 @@ def update_graph(idleevent):
     vpp =  max_v-min_v
 
     for i in range(len(voltagedata)):
-        #remove 'dc bias', which we call the average read
+    #remove 'dc bias', which we call the average read
         voltagedata[i] -= avgv
         # We know that the mains voltage is 120Vrms = +-170Vpp
         voltagedata[i] = (voltagedata[i] * MAINSVPP) / vpp
 
-
     # normalize current readings to amperes
     for i in range(len(ampdata)):
-        # VREF is the hardcoded 'DC bias' value, its
-        # about 492 but would be nice if we could somehow get this data once in a while maybe using xbeeAPI
-        if vrefcalibration[xb.address_16]:
-            ampdata[i] -= vrefcalibration[xb.address_16]
+    # VREF is the hardcoded 'DC bias' value, its
+    # about 492 but would be nice if we could somehow get this data once in a while maybe using xbeeAPI
+        if vrefcalibration[xb_address_16]:
+            ampdata[i] -= vrefcalibration[xb_address_16]
         else:
             ampdata[i] -= vrefcalibration[0]
         # the CURRENTNORM is our normalizing constant
         # that converts the ADC reading to Amperes
         ampdata[i] /= CURRENTNORM
 
-    # calculate instant. watts, by multiplying V*I for each sample point
+    #calculate instant watts by multiplying V*I for each sample
     wattdata = [0] * len(voltagedata)
     for i in range(len(wattdata)):
         wattdata[i] = voltagedata[i] * ampdata[i]
@@ -209,31 +152,21 @@ def update_graph(idleevent):
     # sum up the current drawn over one 1/60hz cycle
     avgamp = 0
     # 16.6 samples per second, one cycle = ~17 samples
-    # close enough for govt work :(
-    for i in range(17):
+    num_samples = 17
+    for i in range(num_samples):
         avgamp += abs(ampdata[i])
-    avgamp /= 17.0
+        avgamp /= num_samples
 
     # sum up power drawn over one 1/60hz cycle
     avgwatt = 0
-    # 16.6 samples per second, one cycle = ~17 samples
-    for i in range(17):         
+    for i in range(num_samples):
         avgwatt += abs(wattdata[i])
-    avgwatt /= 17.0
-
-
+        avgwatt /= num_samples
     # Print out our most recent measurements
-    logger.info(str(xb.address_16)+"Current draw, in amperes: "+str(avgamp))
-
-
+    logger.info(str(xb_address_16)+"Current draw, in amperes: "+str(avgamp))
     logger.info("Watt draw, in VA: "+str(avgwatt))
-
     if (avgamp > 13):
         return            # hmm, bad data
-
-    # retreive the history for this sensor
-    #sensorhistory = sensorhistories.find(xb.address_16)
-    #print sensorhistory
 
     # add up the delta-watthr used since last reading
     # Figure out how many watt hours were used since last reading
@@ -242,29 +175,56 @@ def update_graph(idleevent):
     sensorhistory.lasttime = time.time()
     logger.info("Wh used in last "+str(elapsedseconds)+" seconds: "+str(dwatthr))
     sensorhistory.addwatthr(dwatthr)
-
+    
     global TotalWattHour
     TotalWattHour += dwatthr
-           
-    # Lets log it! Seek to the end of our log file
-    if logfile:
-        logfile.seek(0, 2) # 2 == SEEK_END. ie, go to the end of the file
-        logfile.write(time.strftime("%Y %m %d, %H:%M")+", "+
-                          str(sensorhistory.sensornum)+", "+
-                          str(sensorhistory.avgwattover5min())+"\n")
-        logfile.flush()
-         
-        # Reset our 5 minute timer
-        sensorhistory.reset5mintimer()
-    
-    hab_report_datapoints (node)
+
     newamps += avgamp
     newwatts += avgwatt
 
-    if (int(options.interval) < interval):
+    measurements = {}
+    measurements["Amps"] = newamps
+    measurements["Watts"] = newwatts
+    measurements["WattHr"] = dwatthr
+    measurements["TotalWattHr"] = TotalWattHour
+    return measurements
+
+
+# the 'main loop' runs once a second or so
+def update_graph(idleevent):
+    global avgwattdataidx, sensorhistories, DEBUG, intervals, newamps, newwatts
+    packet = xbee.find_packet(ser)
+    if not packet:
+        return
+    xb = xbee(packet)
+    sensorhistory = sensorhistories.find(xb.address_16)
+
+    # Update the interval or assign it 0 if it doesn't exist, yet
+    try:
+        intervals[xb.address_16] += time.time() - sensorhistory.lasttime
+    except KeyError:
+        intervals[xb.address_16] = 0
+    sensorhistory.lasttime = time.time() 
+
+
+    hab_read()
+
+    if (options.debug != None):       # for debugging sometimes we only want one
+        print xb.address_16
+
+    node = add_node(hab, xb.address_16)
+
+    # we'll only store n-1 samples since the first one is usually messed up
+    voltagedata = [-1] * (len(xb.analog_samples) - 1)
+    ampdata = [-1] * (len(xb.analog_samples ) -1)
+    # grab 1 thru n of the ADC readings, referencing the ADC constants
+
+    measurements = calculations(voltagedata, ampdata, xb.analog_samples, xb.address_16, sensorhistory)
+
+    if (int(options.interval) < intervals[xb.address_16]):
         
-        newamps = newamps/interval
-        newwatts = newwatts/interval
+        newamps = measurements["Amps"]/intervals[xb.address_16]
+        newwatts = measurements["Watts"]/intervals[xb.address_16]
 
         resource = bionet_node_get_resource_by_id(node, "Amps")
         if (resource == None):
@@ -282,16 +242,17 @@ def update_graph(idleevent):
         if (resource == None):
             logger.error("Error no such resource - WHour")
         else:
-            bionet_resource_set_float(resource, dwatthr, None)
+            bionet_resource_set_float(resource, measurements["WattHr"], None)
+
         resource = bionet_node_get_resource_by_id(node, "TotalWHour")
         if (resource == None):
             logger.error("Error no such resource - TotalWHour")
         else:
-            bionet_resource_set_float(resource, TotalWattHour, None)
-
+            bionet_resource_set_float(resource, measurements["TotalWattHr"], None)
+        hab_report_datapoints (node)
         newwatts = 0
         newamps = 0
-        interval = 0
+        intervals[xb.address_16] = 0
 
 while True:
     update_graph(None)

@@ -19,9 +19,9 @@ class SensorHistories:
     def __init__(self):
         self.sensorhistories = []
 
-    def __init__(self, f):
-        if f:
-            self.readfromfile(f)
+#    def __init__(self, f):
+#        if f:
+#            self.readfromfile(f)
             
     def find(self, sensornum):
         for history in self.sensorhistories:
