@@ -281,9 +281,8 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray *bdm_list);
 BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray *bdm_list);
 
 
-int bdm_report_datapoint(
+int bdm_report_datapoints(
         bionet_resource_t * resource,
-        bionet_datapoint_t * datapoint,
         int entry_seq) ;
 
 int bdm_report_new_node(

@@ -862,7 +862,7 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     r = db_commit(db);
     if (r != 0) goto fail;
 
-    bdm_report_datapoint(resource, datapoint, entry_seq);
+    bdm_report_datapoints(resource, entry_seq);
 
 
     return 0;
@@ -2103,7 +2103,7 @@ static int _db_publish_synced_datapoint(sqlite3* db,
                         continue;
 		    }
 
-                    bdm_report_datapoint(resource, bionet_resource_get_datapoint_by_index(resource, 0), entry_seq);
+                    bdm_report_datapoints(resource, entry_seq);
 
 		} //for each resource
 	    } //for each node

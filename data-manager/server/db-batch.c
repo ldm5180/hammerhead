@@ -23,6 +23,7 @@ struct dbb_bdm {
 struct dbb_hab {
     char * hab_id;
     char * hab_type;
+    dbb_bdm_t * recording_bdm;
     GData * node_list;
 };
 
@@ -42,6 +43,11 @@ struct dbb_resource {
     GSList *datapoint_list;
 };
 
+
+typedef struct {
+    int entry_seq;
+    int ret;
+} publish_foreach_t;
 
 void dbb_datapoint_delete(void * data) {
     bdm_datapoint_t * dp = (bdm_datapoint_t*)data;
@@ -68,6 +74,8 @@ bdm_datapoint_t * dbb_add_datapoint(bdm_db_batch *dbb, bionet_datapoint_t *bione
 
     dbb_hab_t * hab = dbb_add_hab(dbb, bionet_hab);
     if (hab == NULL ) return NULL;
+
+    hab->recording_bdm = bdm;
 
     dbb_node_t * node = dbb_add_node(dbb, bionet_node);
     if (node == NULL ) return NULL;
@@ -215,6 +223,15 @@ dbb_hab_t * dbb_add_hab(bdm_db_batch *dbb, bionet_hab_t *bionet_hab) {
         g_datalist_id_set_data_full(&dbb->hab_list, k, hab, dbb_hab_delete);
     }
 
+    const char * bdm_id = bionet_hab_get_recording_bdm(bionet_hab);
+    if ( bdm_id ) {
+        dbb_bdm_t * bdm = dbb_add_bdm(dbb, bdm_id);
+        if (bdm == NULL ) return NULL;
+
+        hab->recording_bdm = bdm;
+    }
+
+
     return hab;
 }
 
@@ -279,8 +296,11 @@ static void _flush_foreach_resource(GQuark key_id, void* data, void* user_data) 
         return;
     }
 
+    // For performance, the list is prepended with new datapoints. 
+    // Reverse it once here, so that we can efficiently travers in the correct order
     GSList * dplist = g_slist_reverse(resource->datapoint_list);
     resource->datapoint_list = dplist;
+
     while(dplist) {
         bdm_datapoint_t * dp = (bdm_datapoint_t*)dplist->data;
 
@@ -292,6 +312,21 @@ static void _flush_foreach_resource(GQuark key_id, void* data, void* user_data) 
 
         dplist = g_slist_next(dplist);
     }
+
+}
+
+static void _publish_foreach_add_resource(GQuark key_id, void* data, void* user_data) {
+    bionet_node_t * bionet_node = (bionet_node_t*)user_data;
+    dbb_resource_t * resource = (dbb_resource_t*)data;
+
+    bionet_resource_t * bionet_resource;
+
+    bionet_resource = bionet_resource_new(bionet_node, 
+            resource->data_type,
+            resource->flavor,
+            resource->resource_id);
+
+    bionet_node_add_resource(bionet_node, bionet_resource);
 
 }
 
@@ -312,6 +347,47 @@ static void _flush_foreach_node(GQuark key_id, void* data, void* user_data) {
 
 }
 
+static void _publish_foreach_node(GQuark key_id, void* data, void* user_data) {
+    publish_foreach_t * dat = (publish_foreach_t*)user_data;
+    dbb_node_t * node = (dbb_node_t*)data;
+    dbb_hab_t * hab = node->hab;
+
+    bionet_hab_t * bionet_hab = bionet_hab_new(hab->hab_type, hab->hab_id);
+    bionet_node_t * bionet_node = bionet_node_new(bionet_hab, node->node_id);
+    if ( hab->recording_bdm ) {
+        bionet_hab_set_recording_bdm(bionet_hab, hab->recording_bdm->bdm_id);
+    }
+
+    // Add the resources to the bionet_node
+    g_datalist_foreach(&node->resource_list, _publish_foreach_add_resource, (void*)bionet_node);
+
+    // publish this node and its resources
+    bdm_report_new_node(bionet_node, dat->entry_seq);
+
+    // Publish the resource datapoints
+    // walk list of bionet resources
+    int ri;
+    for (ri = 0; ri < bionet_node_get_num_resources(bionet_node); ri++) {
+        bionet_resource_t * bionet_resource;
+       
+        bionet_resource = bionet_node_get_resource_by_index(bionet_node, ri);
+        if (NULL == bionet_resource) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                  "Failed to get resource %d from Node %s",
+                  ri, bionet_node_get_name(bionet_node));
+            continue;
+        }
+
+        bdm_report_datapoints(bionet_resource, dat->entry_seq);
+
+    } //for each resource
+
+    bionet_node_free(bionet_node);
+    bionet_hab_free(bionet_hab);
+
+
+}
+
 static void _flush_foreach_hab(GQuark key_id, void* data, void* user_data) {
     dbb_hab_t * hab = (dbb_hab_t*)data;
 
@@ -329,31 +405,59 @@ static void _flush_foreach_hab(GQuark key_id, void* data, void* user_data) {
 
 }
 
+static void _publish_foreach_hab(GQuark key_id, void* data, void* user_data) {
+    publish_foreach_t * dat = (publish_foreach_t*)user_data;
+    dbb_hab_t * hab = (dbb_hab_t*)data;
+
+
+    bionet_hab_t * bionet_hab = bionet_hab_new(hab->hab_type, hab->hab_id);
+    if ( hab->recording_bdm ) {
+        bionet_hab_set_recording_bdm(bionet_hab, hab->recording_bdm->bdm_id);
+    }
+
+    bdm_report_new_hab(bionet_hab, dat->entry_seq);
+
+    bionet_hab_free(bionet_hab);
+
+    g_datalist_foreach(&hab->node_list, _publish_foreach_node, user_data);
+
+}
+
 
 int dbb_flush_to_db(bdm_db_batch * dbb) {
     int r = -1;
 
     if ( dbb->bdm_list || dbb->hab_list ) {
-        db_get_next_entry_seq(main_db);
+        int seq = db_get_next_entry_seq(main_db);
 
         // Start transaction
         r = db_begin_transaction(main_db);
 
 
         g_datalist_foreach(&dbb->bdm_list, _flush_foreach_bdm, &r);
+        if ( r < 0 ) goto rollback;
 
         g_datalist_foreach(&dbb->hab_list, _flush_foreach_hab, &r);
+        if ( r < 0 ) goto rollback;
 
-        if ( r < 0 ) {
-            db_rollback(main_db);
-        } else {
-            r = db_commit(main_db);
-        }
+        r = db_commit(main_db);
+        if ( r < 0 ) goto rollback;
 
+        publish_foreach_t dat = {0};
+        dat.entry_seq = seq;
+
+        g_datalist_foreach(&dbb->hab_list, _publish_foreach_hab, &dat);
 
         g_datalist_clear(&dbb->bdm_list);
         g_datalist_clear(&dbb->hab_list);
     }
+
+    return r;
+
+rollback:
+    db_rollback(main_db);
+    g_datalist_clear(&dbb->bdm_list);
+    g_datalist_clear(&dbb->hab_list);
 
     return r;
 }

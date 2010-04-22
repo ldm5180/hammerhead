@@ -91,7 +91,7 @@ int bdm_read_with_timeout(struct timeval *timeout);
  * @retval 0 on success.
  * @retval -1 on failure.
  */
-int bdm_read_with_timeout(struct timeval *timeout);
+int bdm_read_many(struct timeval *timeout, unsigned int num);
 
 
 /**
