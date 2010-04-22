@@ -1,0 +1,13 @@
+Author: Ilana Bellowe
+
+Abstract: Kill-A-Watts are devices that display energy data from an appliance. They display voltage, amperes, watts, hertz, and kilawatt hours. With the implementation of an xbee radio device, they can be used to send this data to a receiver that is plugged into a computer. The energy output can then be displayed and analyzed. The main goal of these devices is to conserve energy and understand which devices in a home or company are wasting energy.
+
+Implementation: In order to construct the Kill-A-Watt system, first you must purchase the Kill-A-Watts and xbee radio devices (on Adafruit they are called Tweet-A-Watt). There are detailed assembly instructions online at http://www.ladyada.net/make/tweetawatt/. After assembly, the xbees must be configured* or the devices will not transmit data effectively. At this same website, there are pre-made scripts which I used as a basis for the Kill-A-Watt system. This basic script made it easy to check that the hardware was functioning properly. First, I manipulated the script to interface with BioNet. Then I changed the calculations so that the data I desired for display would be calculated. I also created parsing options which allow the user to change settings manually. Additionally, I added BioNet's logger for debugging purposes.
+
+Future possibilities:
+    - *The configuration software is only accessible with a Windows OS. The virtual machine on this computer needs to be fixed and the software should be installed so that future Kill-A-Watt configuration can be completed.
+
+    - Currently the array for storing calibration is very ineffective. An improved system should be to create an array that automatically finds the calibration constant for each xbee individually. On the website, there is a description of how to calculate the calibration constant. Use this to automatically average the data to create the appropriate constant. This is important because as is, the array must be manually changed whenever a new Kill-A-Watt device is added.
+
+    - Another idea that has arisen for the future of this technology is to use it to automatically send notifications. For example, if a Kill-A-Watt is plugged into a coffee pot, when it reaches a certain energy level, a warning will occur that the coffee pot is hot.
+
