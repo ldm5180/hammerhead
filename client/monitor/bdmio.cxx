@@ -71,8 +71,7 @@ void BDMModel::addResource(bionet_resource_t *resource) {
 }
 
 
-void BDMModel::newDatapoint(bionet_datapoint_t* dp) {
-    QModelIndex resourceIndex;
+void BDMModel::gotDatapoint(bionet_datapoint_t* dp) {
     bionet_resource_t *resource;
     const char *resource_name;
 
@@ -127,7 +126,7 @@ void BDMModel::newDatapoint(bionet_datapoint_t* dp) {
     }
 
     /* ok, the resource exists */
-    BionetModel::newDatapoint(dp);
+    BionetModel::gotDatapoint(dp);
 }
 
 

@@ -123,8 +123,8 @@ void MonitorPage::connectObjects() {
         model, SLOT(newNode(bionet_node_t*)));
     connect(io, SIGNAL(lostNode(bionet_node_t*, void*)), 
         model, SLOT(lostNode(bionet_node_t*)));
-    connect(io, SIGNAL(newDatapoint(bionet_datapoint_t*, void*)), 
-        model, SLOT(newDatapoint(bionet_datapoint_t*)));
+    connect(io, SIGNAL(datapointUpdate(bionet_datapoint_t*, void*)), 
+        model, SLOT(gotDatapoint(bionet_datapoint_t*)));
 
     connect(model, SIGNAL(lostResource(QString)), 
         this, SLOT(lostPlot(QString)));
@@ -134,7 +134,7 @@ void MonitorPage::connectObjects() {
         view, SLOT(repaint()));
 
     // (for losing habs & updating the pane)
-    connect(io, SIGNAL(newDatapoint(bionet_datapoint_t*, void*)), 
+    connect(model, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
         rv, SLOT(resourceValueChanged(bionet_datapoint_t*)));
     connect(io, SIGNAL(lostHab(bionet_hab_t*, void*)), 
         rv, SLOT(lostHab(bionet_hab_t*)));
@@ -146,7 +146,7 @@ void MonitorPage::connectObjects() {
         archive, SLOT(addResource(QString)));
     connect(model, SIGNAL(lostResource(QString)), 
         archive, SLOT(removeResource(QString)));
-    connect(io, SIGNAL(newDatapoint(bionet_datapoint_t*, void*)), 
+    connect(io, SIGNAL(datapointUpdate(bionet_datapoint_t*, void*)), 
         archive, SLOT(recordSample(bionet_datapoint_t*)));
 
     // connect the view to the model
@@ -161,7 +161,7 @@ void MonitorPage::connectObjects() {
     connect(model, SIGNAL(streamSelected(bionet_stream_t*)), 
         rv, SLOT(newStreamSelected(bionet_stream_t*)));
 
-    connect(io, SIGNAL(newDatapoint(bionet_datapoint_t*, void*)), 
+    connect(io, SIGNAL(datapointUpdate(bionet_datapoint_t*, void*)), 
         this, SLOT(updatePlot(bionet_datapoint_t*)));
     
     connect(rv, SIGNAL(plotResource(QString)), 

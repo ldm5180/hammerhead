@@ -24,6 +24,10 @@
 #define NODENAMELENGTH          (3*BIONET_NAME_COMPONENT_MAX_LEN)
 #define RESOURCENAMELENGTH      (4*BIONET_NAME_COMPONENT_MAX_LEN)
 
+// For the columns
+#define TIMESTAMP_COL           (3)
+#define VALUE_COL               (4)
+
 extern "C" {
 #include "bionet.h"
 #include "bionet-util.h"
@@ -47,7 +51,7 @@ class BionetModel : public QStandardItemModel {
         void lostHab(bionet_hab_t* hab);
         void newNode(bionet_node_t* node);
         void lostNode(bionet_node_t* node);
-        void newDatapoint(bionet_datapoint_t* datapoint);
+        void gotDatapoint(bionet_datapoint_t* datapoint);
         void lineActivated(QModelIndex current);
 
     signals:
@@ -60,6 +64,9 @@ class BionetModel : public QStandardItemModel {
         void lostResource(QString res);
         void newStream(QString stream);
         void lostStream(QString stream);
+
+        // emits new Datapoint when a newer datapoint arrives
+        void newDatapoint(bionet_datapoint_t *datapoint);
 
     private:
 };

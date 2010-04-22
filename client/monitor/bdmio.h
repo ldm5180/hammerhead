@@ -33,7 +33,7 @@ public:
 
 public slots:
     void addResource(bionet_resource_t *resource);
-    void newDatapoint(bionet_datapoint_t *dp);
+    void gotDatapoint(bionet_datapoint_t *dp);
 };
 
 
@@ -55,7 +55,7 @@ class BDMIO : public IO {
         static void lost_hab_cb(bionet_hab_t *hab, void *user_data) { emit io->lostHab(hab, user_data); }
         static void new_node_cb(bionet_node_t *node, void *user_data) { emit io->newNode(node, user_data); }
         static void lost_node_cb(bionet_node_t *node, void *user_data) { emit io->lostNode(node, user_data); }
-        static void datapoint_cb(bionet_datapoint_t *dp, void *user_data) { emit io->newDatapoint(dp, user_data); }
+        static void datapoint_cb(bionet_datapoint_t *dp, void *user_data) { emit io->datapointUpdate(dp, user_data); }
 
     private:
         int bdmFD;

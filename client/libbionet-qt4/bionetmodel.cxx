@@ -278,15 +278,15 @@ void BionetModel::lostNode(bionet_node_t* node) {
 }
 
 
-void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
+void BionetModel::gotDatapoint(bionet_datapoint_t* datapoint) {
     QModelIndex res;
     bionet_resource_t *resource;
     bionet_value_t *value;
     const char *resource_name;
-    char *value_str;
+    QString oldTimestamp;
     
     if (datapoint == NULL) {
-        qWarning() << "newDatapoint(): received NULL datapoint!?!" << endl;
+        qWarning() << "gotDatapoint(): received NULL datapoint!?!" << endl;
         return;
     }
 
@@ -294,7 +294,7 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
 
     resource_name = bionet_resource_get_name(resource);
     if (resource_name == NULL) {
-        qWarning() << "newDatapoint(): unable to get resource name string";
+        qWarning() << "gotDatapoint(): unable to get resource name string";
         return;
     }
 
@@ -313,16 +313,26 @@ void BionetModel::newDatapoint(bionet_datapoint_t* datapoint) {
     
     value = bionet_datapoint_get_value(datapoint);
     if (value == NULL) {
-        qWarning() << "newDatapoint(): recieved good datapoint with NULL value?!?!" << endl;
+        qWarning() << "gotDatapoint(): recieved good datapoint with NULL value?!?!" << endl;
         return;
     }
 
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+    oldTimestamp = index(res.row(), TIMESTAMP_COL, res.parent()).data(Qt::DisplayRole).toString();
 
-    setData(index(res.row(), 3, res.parent()), bionet_datapoint_timestamp_to_string(datapoint));
-    setData(index(res.row(), 4, res.parent()), QString(value_str));
+    // only update the model the datapoint IF we recieved something newer
+    if (( bionet_datapoint_timestamp_to_string(datapoint) >= oldTimestamp ) ||
+        ( oldTimestamp == "N/A" )) {
+        char *value_str;
 
-    free(value_str);
+        value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+
+        setData(index(res.row(), TIMESTAMP_COL, res.parent()), bionet_datapoint_timestamp_to_string(datapoint));
+        setData(index(res.row(), VALUE_COL, res.parent()), QString(value_str));
+
+        free(value_str);
+
+        emit newDatapoint(datapoint);
+    }
 }
 
 
