@@ -71,6 +71,7 @@
  * @li bionet-hab.h
  * @li bionet-node.h
  * @li bionet-resource.h
+ * @li bionet-datapoint.h
  * @li bionet-stream.h
  * @li bionet-util.h
  */
