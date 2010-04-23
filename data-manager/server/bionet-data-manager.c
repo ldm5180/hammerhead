@@ -502,6 +502,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    g_thread_init(NULL);
 
     this_bdm = bionet_bdm_new(bdm_id);
     if (NULL == this_bdm ) {
