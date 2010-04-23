@@ -28,7 +28,7 @@ void usage() {
 	    "\n"
 	    "usage:  random-hab [OPTIONS]\n"
 	    "\n"
-	    " -h,--help                     Show this usage information.\n"
+	    " -?,--help                     Show this usage information.\n"
 	    " -v,--version                  Show the version number\n"
 	    " -e,--require-security         Require security\n"
 	    " -i,--id <ID>                  Use ID as the HAB-ID (defaults to\n"
