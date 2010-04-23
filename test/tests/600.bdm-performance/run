@@ -16,7 +16,7 @@ if [ -z "$ROOT" ]; then
     exit 1
 fi
 
-PYPATHADD=$ROOT/hab/py-libhab:$ROOT/client/py-libbionet:$ROOT/data-manager/client/py-libbdm
+PYPATHADD=$ROOT/hab/py-libhab:$ROOT/client/py-libbionet:$ROOT/data-manager/client/py-libbdm:$ROOT/hab/py-libhab/.libs:$ROOT/client/py-libbionet/.libs:$ROOT/data-manager/client/py-libbdm/.libs
 if [ -z "$PYTHONPATH" ]; then
     export PYTHONPATH=$PYPATHADD
 else
