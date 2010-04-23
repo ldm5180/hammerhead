@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
+UNIQUE=$$
+RETVAL=0
+
+PYPATHADD=$ROOT/hab/py-libhab:$ROOT/client/py-libbionet:$ROOT/data-manager/client/py-libbdm
+if [ -z "$PYTHONPATH" ]; then
+    export PYTHONPATH=$PYPATHADD
+else
+    export PYTHONPATH=$PYPATHADD:$PYTHONPATH
+fi
+
+echo starting test-hab
+./test-hab.py --id $UNIQUE &
+
+echo starting test-client
+./test-client.py --id $UNIQUE
+echo $?
