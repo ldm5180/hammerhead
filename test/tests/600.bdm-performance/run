@@ -16,7 +16,7 @@ if [ -z "$ROOT" ]; then
     exit 1
 fi
 
-PYPATHADD=$ROOT/test/src/bonjour-py:$ROOT/test/src/bonjour-py/.libs:$ROOT/test/pylib:$ROOT/test/pylib
+PYPATHADD=$ROOT/test/src/bonjour-py:$ROOT/test/src/bonjour-py/.libs:$ROOT/test/pylib:$ROOT/test/pylib:$ROOT/hab/py-libhab:$ROOT/client/py-libbionet:$ROOT/data-manager/client/py-libbdm
 if [ -z "$PYTHONPATH" ]; then
     export PYTHONPATH=$PYPATHADD
 else
