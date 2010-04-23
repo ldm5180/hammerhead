@@ -5,6 +5,8 @@
 # NNC07CB47C.
 #
 
+set -x
+
 
 if [ -z "$ROOT" ]; then
     echo "ROOT environment variable is undefined"
