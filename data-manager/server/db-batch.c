@@ -39,6 +39,7 @@ struct dbb_resource {
     bionet_resource_data_type_t data_type;
     bionet_resource_flavor_t flavor;
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
+    bionet_resource_t * bionet_resource;
 
     GSList *datapoint_list;
 };
@@ -297,7 +298,7 @@ static void _flush_foreach_resource(GQuark key_id, void* data, void* user_data) 
     }
 
     // For performance, the list is prepended with new datapoints. 
-    // Reverse it once here, so that we can efficiently travers in the correct order
+    // Reverse it once here, so that we can efficiently traverse in the correct order
     GSList * dplist = g_slist_reverse(resource->datapoint_list);
     resource->datapoint_list = dplist;
 
@@ -327,7 +328,23 @@ static void _publish_foreach_add_resource(GQuark key_id, void* data, void* user_
             resource->resource_id);
 
     bionet_node_add_resource(bionet_node, bionet_resource);
+    resource->bionet_resource = bionet_resource;
 
+}
+
+static void _publish_foreach_add_datapoints(GQuark key_id, void* data, void* user_data) {
+    dbb_resource_t * resource = (dbb_resource_t*)data;
+
+    bionet_resource_t * bionet_resource = resource->bionet_resource;
+
+    GSList * dplist = resource->datapoint_list;
+    for(; dplist; dplist = g_slist_next(dplist)) {
+        bdm_datapoint_t * dp = (bdm_datapoint_t*)dplist->data;
+
+        bionet_resource_add_datapoint(
+                bionet_resource, 
+                datapoint_bdm_to_bionet(dp, bionet_resource));
+    }
 }
 
 static void _flush_foreach_node(GQuark key_id, void* data, void* user_data) {
@@ -363,6 +380,8 @@ static void _publish_foreach_node(GQuark key_id, void* data, void* user_data) {
 
     // publish this node and its resources
     bdm_report_new_node(bionet_node, dat->entry_seq);
+
+    g_datalist_foreach(&node->resource_list, _publish_foreach_add_datapoints, (void*)bionet_node);
 
     // Publish the resource datapoints
     // walk list of bionet resources

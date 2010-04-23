@@ -146,6 +146,86 @@ int datapoint_bionet_to_bdm(
     return r;
 }
 
+bionet_datapoint_t * datapoint_bdm_to_bionet(
+    bdm_datapoint_t *dp,
+    bionet_resource_t * resource)
+{
+    bionet_resource_data_type_t type;
+    bionet_value_t *value = NULL;
+    bionet_datapoint_t *bionet_datapoint = NULL;
+
+    type = bionet_resource_get_data_type(resource);
+
+    struct timeval *ts = &dp->timestamp;
+
+    // Set type and value
+    switch (type) {
+        case BIONET_RESOURCE_DATA_TYPE_BINARY:
+            value = bionet_value_new_binary(resource, 
+                dp->value.i);
+            break; 
+
+        case BIONET_RESOURCE_DATA_TYPE_UINT8:
+            value = bionet_value_new_uint8(resource, 
+                dp->value.i);
+            break; 
+
+        case BIONET_RESOURCE_DATA_TYPE_INT8:   
+            value = bionet_value_new_int8(resource, 
+                dp->value.i);
+            break; 
+
+        case BIONET_RESOURCE_DATA_TYPE_UINT16: 
+            value = bionet_value_new_uint16(resource, 
+                dp->value.i);
+            break; 
+            
+        case BIONET_RESOURCE_DATA_TYPE_INT16:  
+            value = bionet_value_new_int16(resource, 
+                dp->value.i);
+            break; 
+
+        case BIONET_RESOURCE_DATA_TYPE_UINT32: 
+            value = bionet_value_new_uint32(resource, 
+                dp->value.i);
+            break; 
+
+        case BIONET_RESOURCE_DATA_TYPE_INT32:  
+            value = bionet_value_new_int32(resource, 
+                dp->value.i);
+            break; 
+
+        case BIONET_RESOURCE_DATA_TYPE_FLOAT:  
+            value = bionet_value_new_float(resource, 
+                dp->value.d);
+            break; 
+
+        case BIONET_RESOURCE_DATA_TYPE_DOUBLE: 
+            value = bionet_value_new_double(resource, 
+                dp->value.d);
+            break; 
+
+        case BIONET_RESOURCE_DATA_TYPE_STRING:
+            value = bionet_value_new_str(resource, 
+                dp->value.str);
+            break; 
+
+        case BIONET_RESOURCE_DATA_TYPE_INVALID:
+        default:
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                  "%s(): invalid data_type %d for :%s\n", __FUNCTION__,
+                  bionet_resource_get_data_type(resource),
+                  bionet_resource_get_id(resource));
+            break; 
+    }
+
+    if(value) {
+        bionet_datapoint = bionet_datapoint_new(resource, value, ts);
+    }
+
+    return bionet_datapoint;
+}
+
 typedef struct sql_return {
     GPtrArray *bdm_list;
 } sql_return_t;

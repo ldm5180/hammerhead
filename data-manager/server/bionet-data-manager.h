@@ -203,6 +203,11 @@ int datapoint_bionet_to_bdm(
     bdm_datapoint_t *dp,
     const char * bdm_id) ;
 
+bionet_datapoint_t * datapoint_bdm_to_bionet(
+    bdm_datapoint_t *dp,
+    bionet_resource_t * resource);
+
+
 typedef struct dbb_bdm dbb_bdm_t;
 typedef struct dbb_hab dbb_hab_t;
 typedef struct dbb_node dbb_node_t;
