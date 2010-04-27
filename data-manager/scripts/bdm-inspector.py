@@ -1,4 +1,9 @@
-# A minimal SQLite shell for experiments
+#!/usr/bin/python
+#
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
 
 import sqlite3
 import optparse
@@ -73,6 +78,14 @@ instance
             default=0)
 
 
+        parser.add_option("--dump-debug", 
+	    dest="dump_debug", 
+            action="store_true",
+            help="Dump debug output",
+            default=0)
+
+
+
         (options, args) = parser.parse_args()
 
         if len(args) > 0:
@@ -136,6 +149,20 @@ instance
                 row[7])
         return str
         
+
+    def debug_output_formatter(self, cursor, row):
+        str = "[%04d] %s.%06d,%s/%s.%s.%s:%s,%s" % ( \
+		row[8],
+                strftime("%Y-%m-%d %H:%M:%S", gmtime(int(row[0]))),
+                row[1], 
+                row[2], #BDM-id
+                row[3],
+                row[4],
+                row[5],
+                row[6],
+                row[7])
+        return str
+
     def print_query(self,sql,formatter):
 
         try:
@@ -155,7 +182,7 @@ instance
 
         sql = '''
         SELECT d.Timestamp_Sec, d.Timestamp_Usec, b.BDM_ID, 
-                  h.HAB_Type, h.HAB_ID, n.Node_ID, r.Resource_ID, d.value
+                  h.HAB_Type, h.HAB_ID, n.Node_ID, r.Resource_ID, d.value, d.Entry_NUm
         FROM BDMs b, Datapoints d, Resources r , Nodes n, Hardware_Abstractors h, 
              Resource_Data_types t, Resource_Flavors f
         WHERE d.Resource_key = r.Key
@@ -230,6 +257,9 @@ def main():
 
     if inspector.options.sync_info:
         inspector.sync_info()
+
+    if inspector.options.dump_debug:
+        inspector.simulate_client_output(inspector.debug_output_formatter)
 
 
 

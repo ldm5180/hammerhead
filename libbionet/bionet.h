@@ -208,12 +208,37 @@ int bionet_is_connected(void);
  * @retval 0 on success.
  * @retval -1 on failure.
  *
- * @note This function will be renamed to bionet_read() in Bionet 2.1.
- *
  * @note This function has different return values than bionet_read()
  */
 BIONET_API_DECL
 int bionet_read_with_timeout(struct timeval *timeout);
+
+
+/**
+ * @brief Reads the bionet file descriptor returned from bionet_connect()
+ *
+ * This function should be called whenever the Client application wants to
+ * read from Bionet.  The function will read any pending messages from
+ * Bionet and if appropriate call the callback functions.
+ *
+ * @param[in] timeout This is like the timeout argument to select(2).
+ * If NULL, the function will block indefinitely until something is read.
+ * If not NULL but the value is zero (0 seconds and 0 microseconds), then
+ * the function will return immediately, whether or not anything was read.
+ * If the timeout is greater than zero, then the function will block until
+ * something is read from the fd, but not longer than the timeout.
+ *
+ * @param[in] num This is the maximum number of events to process. Most events
+ * will cause a callback to be invoked, but maybe more, maybe less. The 
+ * special case value of 0 will process all available events
+ *
+ * @retval 0 on success.
+ * @retval -1 on failure.
+ *
+ * @note This function has different return values than bionet_read()
+ */
+BIONET_API_DECL
+int bionet_read_many(struct timeval *timeout, unsigned int num);
 
 
 /**

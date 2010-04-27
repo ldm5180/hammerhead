@@ -85,6 +85,7 @@ typedef struct {
     struct timeval timestamp;
     db_type_t type;
     db_value_t value;
+    int seq_index;
 } bdm_datapoint_t;
 
 typedef struct {
@@ -116,6 +117,13 @@ typedef struct {
     int bytes_sent;
 } sync_sender_config_t;
 
+typedef struct {
+    GData *bdm_list; 
+    GData *hab_list; 
+    unsigned int num_seq_needed;
+} bdm_db_batch;
+
+
 // 
 // interface to the database backend
 //
@@ -139,6 +147,9 @@ sqlite3 * db_init(void);
 //
 
 void db_shutdown(sqlite3 *db);
+int db_begin_transaction(sqlite3 *db);
+int db_commit(sqlite3 *db);
+void db_rollback(sqlite3 *db);
 
 //
 // Make a resource key
@@ -160,10 +171,55 @@ int db_make_resource_key(
 //
 
 int db_add_datapoint(sqlite3 *db, bionet_datapoint_t *datapoint);
-int db_add_resource(sqlite3 *db, bionet_resource_t *resource);
 int db_add_node(sqlite3 *db, bionet_node_t *node);
 int db_add_hab(sqlite3 *db, bionet_hab_t *hab);
 int db_add_bdm(sqlite3 *db, const char * bdm_id);
+
+// Basic insert wrapper. No consistancy checking or transactions...
+int db_insert_hab(sqlite3* db, const char * hab_type, const char * hab_id, int entry_seq);
+int db_insert_node(
+        sqlite3* db,
+        const char * node_id,
+        const char * hab_type,
+        const char * hab_id,
+        int entry_seq);
+
+int db_insert_resource(
+        sqlite3* db,
+        const char * hab_type,
+        const char * hab_id,
+        const char * node_id,
+        const char * resource_id,
+        bionet_resource_flavor_t flavor,
+        bionet_resource_data_type_t data_type,
+        int entry_seq);
+
+int db_insert_datapoint(sqlite3* db, 
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
+    bdm_datapoint_t *dp,
+    int entry_seq);
+
+int datapoint_bionet_to_bdm(
+    bionet_datapoint_t * datapoint,
+    bdm_datapoint_t *dp,
+    const char * bdm_id);
+
+bionet_datapoint_t * datapoint_bdm_to_bionet(
+    bdm_datapoint_t *dp,
+    bionet_resource_t * resource);
+
+
+typedef struct dbb_bdm dbb_bdm_t;
+typedef struct dbb_hab dbb_hab_t;
+typedef struct dbb_node dbb_node_t;
+typedef struct dbb_resource dbb_resource_t;
+
+bdm_datapoint_t * dbb_add_datapoint(bdm_db_batch *dbb, bionet_datapoint_t *datapoint, const char * bdm_id);
+dbb_resource_t * dbb_add_resource(bdm_db_batch *dbb, bionet_resource_t *resource);
+dbb_node_t * dbb_add_node(bdm_db_batch *dbb, bionet_node_t *node);
+dbb_hab_t *  dbb_add_hab(bdm_db_batch *dbb, bionet_hab_t *hab);
+dbb_bdm_t *  dbb_add_bdm(bdm_db_batch *dbb, const char * bdm_id);
+int dbb_flush_to_db(bdm_db_batch * dbb); // no-op when batch empty
 
 
 //
@@ -213,6 +269,16 @@ GPtrArray *db_get_metadata(
 //
 void bdm_list_free(GPtrArray *bdm_list);
 
+//
+// Request 'num' new entry numbers to use.
+//
+// On success, the first new number is returned. The set of numbers are sequential,
+// and the full requested amount will be available. 
+// ex: if db_get_next_entry_seq(db, 3) returns 12, the caller should use 12, 13, 14 for entry 
+// sequences.
+//
+// On error, -1 is returned
+int db_get_next_entry_seq_new_transaction(sqlite3 *db, unsigned int num);
 int db_get_latest_entry_seq(sqlite3 *db);
 int db_get_last_sync_seq_metadata(sqlite3 *db, char * bdm_id);
 void db_set_last_sync_seq_metadata(sqlite3 *db, char * bdm_id, int seq);
@@ -230,9 +296,8 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray *bdm_list);
 BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray *bdm_list);
 
 
-int bdm_report_datapoint(
+int bdm_report_datapoints(
         bionet_resource_t * resource,
-        bionet_datapoint_t * datapoint,
         int entry_seq) ;
 
 int bdm_report_new_node(
@@ -291,6 +356,7 @@ typedef struct {
     unsigned char buffer[(10 * 1024)];  // FIXME: use cal
     int index;
 } client_t;
+
 
 #ifdef ENABLE_ION
 extern client_t dtn_thread_data;

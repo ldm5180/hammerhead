@@ -70,6 +70,29 @@ int bdm_connect(char *hostname, uint16_t port);
  */
 int bdm_read_with_timeout(struct timeval *timeout);
 
+/**
+ * @brief Reads the bdm file descriptor returned from bdm_start()
+ *
+ * This function should be called whenever the Client application wants to
+ * read from Bionet.  The function will read any pending messages from
+ * Bionet and if appropriate call the callback functions.
+ *
+ * @param[in] timeout This is like the timeout argument to select(2).
+ * If NULL, the function will block indefinitely until something is read.
+ * If not NULL but the value is zero (0 seconds and 0 microseconds), then
+ * the function will return immediately, whether or not anything was read.
+ * If the timeout is greater than zero, then the function will block until
+ * something is read from the fd, but not longer than the timeout.
+
+ * @param[in] num The maximum number of events to process. Each event usually
+ * will invoke a single callback, but not necessarily. The special case value
+ * of 0 will process all available events.
+ *
+ * @retval 0 on success.
+ * @retval -1 on failure.
+ */
+int bdm_read_many(struct timeval *timeout, unsigned int num);
+
 
 /**
  * @brief Reads the bionet file descriptor returned from bdm_start()

@@ -34,3 +34,6 @@ void bionet_register_callback_stream(void (*cb_stream)(bionet_stream_t *stream, 
     libbionet_callback_stream = cb_stream;
 }
 
+void bionet_register_callback_idle(void (*cb_idle)(void)) {
+    libbionet_callback_idle = cb_idle;
+}

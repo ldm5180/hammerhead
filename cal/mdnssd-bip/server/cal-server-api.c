@@ -283,7 +283,7 @@ void cal_server_mdnssd_bip_shutdown(void * cal_handle) {
 
 
 
-int cal_server_mdnssd_bip_read(void * cal_handle, struct timeval *timeout) {
+int cal_server_mdnssd_bip_read(void * cal_handle, struct timeval *timeout, unsigned int max_events) {
     int r;
     cal_event_t *event;
 

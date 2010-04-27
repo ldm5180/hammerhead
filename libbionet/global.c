@@ -26,6 +26,8 @@ void (*libbionet_callback_datapoint)(bionet_datapoint_t *datapoint) = NULL;
 
 void (*libbionet_callback_stream)(bionet_stream_t *stream, void *buffer, int size) = NULL;
 
+void (*libbionet_callback_idle)(void) = NULL;
+
 
 void * libbionet_cal_handle = NULL;
 

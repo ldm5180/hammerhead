@@ -132,9 +132,8 @@ int bdm_report_new_node(
     return 0;
 }
 
-int bdm_report_datapoint(
+int bdm_report_datapoints(
         bionet_resource_t * resource,
-        bionet_datapoint_t * datapoint,
         int entry_seq) 
 {
     bionet_asn_buffer_t buf;

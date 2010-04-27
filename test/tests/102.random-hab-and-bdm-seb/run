@@ -24,6 +24,8 @@ YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
 
+ulimit -Sc unlimited
+
 echo "making DB file"
 rm -f bdm.db
 pushd $ROOT/data-manager/server > /dev/null

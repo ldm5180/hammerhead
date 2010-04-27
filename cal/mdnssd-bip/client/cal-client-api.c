@@ -266,9 +266,14 @@ int cal_client_mdnssd_bip_unsubscribe(void * cal_handle,
 
 
 
-int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
+int cal_client_mdnssd_bip_read(
+        void * cal_handle,
+        struct timeval * timeout,
+        unsigned int max_num) 
+{
     cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
     cal_event_t *event;
+    struct timeval tv;
     int r;
 
     if (this->client_thread == NULL) {
@@ -276,14 +281,22 @@ int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
         return 0;
     }
 
-    {
+    int q_fd = bip_msg_queue_get_handle(&this->msg_queue, BIP_MSG_QUEUE_TO_USER);
+    if(q_fd < 0 ) {
+        return 0;
+    }
+
+    if(timeout) {
+        tv.tv_sec = timeout->tv_sec;
+        tv.tv_usec = timeout->tv_usec;
+        timeout = &tv;
+    }
+    unsigned int event_count = 0;
+
+    do {
 	fd_set readers;
 	int ret;
 
-        int q_fd = bip_msg_queue_get_handle(&this->msg_queue, BIP_MSG_QUEUE_TO_USER);
-        if(q_fd < 0 ) {
-            return 0;
-        }
 
 	FD_ZERO(&readers);
 	FD_SET(q_fd, &readers);
@@ -293,52 +306,60 @@ int cal_client_mdnssd_bip_read(void * cal_handle, struct timeval * timeout) {
 		&& (EINTR != errno)) {
 		return 0;
 	    }
-	    return 1;
+            return 1;
 	}
 	else if (0 == ret)
 	{
-	    return 1;
+            // Nothing to read at end of timeout. Return success
+            return 1;
 	}
-    }
 
-    r = bip_msg_queue_pop(&this->msg_queue, BIP_MSG_QUEUE_TO_USER, &event);
-    if (r != 0) {
-        return 0;
-    }
 
-    if (this->callback != NULL) {
-        this->callback(this, event);
-    }
+        r = bip_msg_queue_pop(&this->msg_queue, BIP_MSG_QUEUE_TO_USER, &event);
+        if (r != 0) {
+            return 0;
+        }
+        event_count++;
 
-    // manage memory
-    switch (event->type) {
-        case CAL_EVENT_JOIN: {
-            break;
+        // Something happened. Use 0 for timeout from now on
+        tv.tv_sec = 0;
+        tv.tv_usec = 0;
+
+
+        if (this->callback != NULL) {
+            this->callback(this, event);
         }
 
-        case CAL_EVENT_LEAVE: {
-            break;
+        // manage memory
+        switch (event->type) {
+            case CAL_EVENT_JOIN: {
+                break;
+            }
+
+            case CAL_EVENT_LEAVE: {
+                break;
+            }
+
+            case CAL_EVENT_MESSAGE: {
+                break;
+            }
+
+            case CAL_EVENT_PUBLISH: {
+                break;
+            }
+
+            case CAL_EVENT_SUBSCRIBE: {
+                break;
+            }
+
+            default: {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got unhandled event type %d", event->type);
+                return 1;  // dont free events we dont understand
+            }
         }
 
-        case CAL_EVENT_MESSAGE: {
-            break;
-        }
-
-        case CAL_EVENT_PUBLISH: {
-            break;
-        }
-
-        case CAL_EVENT_SUBSCRIBE: {
-            break;
-        }
-
-        default: {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got unhandled event type %d", event->type);
-            return 1;  // dont free events we dont understand
-        }
-    }
-
-    cal_event_free(event);
+        cal_event_free(event);
+    } while(max_num == 0 || max_num > event_count);
 
     return 1;
 }

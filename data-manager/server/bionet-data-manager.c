@@ -45,6 +45,7 @@ client_t dtn_thread_data = {0};
 
 uint32_t num_sync_datapoints = 0;
 uint32_t num_bionet_datapoints = 0;
+uint32_t num_db_commits = 0;
 
 extern int no_resources;
 
@@ -120,7 +121,7 @@ int cal_readable_handler(
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
 
-    return cal_server.read(libbdm_cal_handle, &timeout);
+    return cal_server.read(libbdm_cal_handle, &timeout, 0);
 }
 
 
@@ -178,7 +179,7 @@ gboolean update_hab(gpointer usr_data) {
 	    bionet_resource_set_uint32(local, num_real, &tv);
 	}
     }
-    
+
     bionet_resource_t * dtn_rate = bionet_node_get_resource_by_id(node, "DTN-Datapoints-Per-Second");
     if (NULL == dtn_rate) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -240,6 +241,22 @@ gboolean update_hab(gpointer usr_data) {
 	db_accum.tv_sec = 0;
 	db_accum.tv_usec = 0;
     }
+
+    /* DB Commits */
+    bionet_resource_t * commit = bionet_node_get_resource_by_id(node, "Number-of-DB-Commits");
+    if (NULL == commit) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "Num DB Commits resource not found");
+	return 1;
+    } else {
+	uint32_t cur;
+	struct timeval tvtmp;
+	bionet_resource_get_uint32(commit, &cur, &tvtmp);
+	if (cur != num_db_commits) {
+	    bionet_resource_set_uint32(commit, num_db_commits, &tv);
+	}
+    }
+    
 
     hab_report_datapoints(node);
 
@@ -429,7 +446,6 @@ int main(int argc, char *argv[]) {
 	    break;
 
 	case 'r':
-            printf("processing --resource %s\n", optarg);
 	    if (resource_index < MAX_SUBSCRIPTIONS) {
 		resource_name_patterns[resource_index] = optarg;
 		resource_index++;
@@ -707,6 +723,27 @@ int main(int argc, char *argv[]) {
 		  "Failed to add DB Write Latency resource to Statistics node");
 	    exit(1);
 	}
+
+        /* DB Commit */
+	resource = bionet_resource_new(node, 
+				       BIONET_RESOURCE_DATA_TYPE_UINT32,
+				       BIONET_RESOURCE_FLAVOR_SENSOR,
+				       "Number-of-DB-Commits");
+	if (NULL == resource) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize Num DB Commits resource.");
+	    exit(1);
+	}
+
+	if (bionet_node_add_resource(node, resource)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+		  "Failed to add Num Local Datapoints resource to Statistics node");
+	    exit(1);
+	}
+
+	if (bionet_resource_set_uint32(resource, num_bionet_datapoints, &tv)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Num DB Commits resource value");
+	}
+
 
 	/* Add node */
 	if (bionet_hab_add_node(bdm_hab, node)) {

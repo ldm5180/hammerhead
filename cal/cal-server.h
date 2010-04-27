@@ -95,13 +95,17 @@ typedef struct {
     //! poll the file descriptor.  It will service the file descriptor and
     //! may call the callback with an appropriate event.
     //!
+    //! \param max_events 
+    //!   At most how many events to read before returning
+    //!
+    //!
     //! \return True (non-zero) on success.  False (zero) on failure,
     //!     indicating that the file descriptor returned from
     //!     .init() is invalid and the caller needs to call .shutdown()
     //!     followed by .init() to get a new fd.
     //!
 
-    int (*read)(void * cal_handle, struct timeval *timeout);
+    int (*read)(void * cal_handle, struct timeval *timeout, unsigned int max_events);
 
 
     //!

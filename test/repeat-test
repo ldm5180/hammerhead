@@ -25,6 +25,10 @@ fi
 LOOP=0
 while : ; do
     for TEST in $TESTS; do
+	if [ -d "tests/$TEST".* ]; then
+	    TEST=`echo tests/$TEST.*`
+	    echo "$TEST"
+	fi
         [ ! -d "$TEST" ] && continue
 
         echo

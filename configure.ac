@@ -208,6 +208,13 @@ AC_ARG_ENABLE(gcov,
 
 AM_CONDITIONAL(GCOV, test x"$gcov" = "xtrue")
 
+AC_ARG_ENABLE(gprof,
+	      AS_HELP_STRING([--enable-gprof],
+                             [enable profiling with gprof @<:@default=no@:>@]),
+	      [gprof=$enableval],
+	      [gprof=no])
+AM_CONDITIONAL(GPROF, test x"$gprof" = "xyes")
+
 ###
 #
 # see if the user wants ALSA stuff, and if so if it's available, only on Linux
