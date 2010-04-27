@@ -82,6 +82,7 @@ typedef struct {
     struct timeval timestamp;
     db_type_t type;
     db_value_t value;
+    int seq_index;
 } bdm_datapoint_t;
 
 typedef struct {
@@ -125,6 +126,7 @@ typedef struct {
 typedef struct {
     GData *bdm_list; 
     GData *hab_list; 
+    unsigned int num_seq_needed;
 } bdm_db_batch;
 
 
@@ -180,12 +182,14 @@ int db_add_hab(sqlite3 *db, bionet_hab_t *hab);
 int db_add_bdm(sqlite3 *db, const char * bdm_id);
 
 // Basic insert wrapper. No consistancy checking or transactions...
-int db_insert_hab(sqlite3* db, const char * hab_type, const char * hab_id);
+int db_insert_hab(sqlite3* db, const char * hab_type, const char * hab_id, int entry_seq);
 int db_insert_node(
         sqlite3* db,
         const char * node_id,
         const char * hab_type,
-        const char * hab_id);
+        const char * hab_id,
+        int entry_seq);
+
 int db_insert_resource(
         sqlite3* db,
         const char * hab_type,
@@ -193,15 +197,18 @@ int db_insert_resource(
         const char * node_id,
         const char * resource_id,
         bionet_resource_flavor_t flavor,
-        bionet_resource_data_type_t data_type);
+        bionet_resource_data_type_t data_type,
+        int entry_seq);
+
 int db_insert_datapoint(sqlite3* db, 
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
-    bdm_datapoint_t *dp);
+    bdm_datapoint_t *dp,
+    int entry_seq);
 
 int datapoint_bionet_to_bdm(
     bionet_datapoint_t * datapoint,
     bdm_datapoint_t *dp,
-    const char * bdm_id) ;
+    const char * bdm_id);
 
 bionet_datapoint_t * datapoint_bdm_to_bionet(
     bdm_datapoint_t *dp,
@@ -268,7 +275,16 @@ GPtrArray *db_get_metadata(
 //
 void bdm_list_free(GPtrArray *bdm_list);
 
-int db_get_next_entry_seq(sqlite3 *db);
+//
+// Request 'num' new entry numbers to use.
+//
+// On success, the first new number is returned. The set of numbers are sequential,
+// and the full requested amount will be available. 
+// ex: if db_get_next_entry_seq(db, 3) returns 12, the caller should use 12, 13, 14 for entry 
+// sequences.
+//
+// On error, -1 is returned
+int db_get_next_entry_seq_new_transaction(sqlite3 *db, unsigned int num);
 int db_get_latest_entry_seq(sqlite3 *db);
 int db_get_last_sync_seq_metadata(sqlite3 *db, char * bdm_id);
 void db_set_last_sync_seq_metadata(sqlite3 *db, char * bdm_id, int seq);

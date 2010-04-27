@@ -47,8 +47,8 @@ WATCHID=0
 WATCHERPIDS=""
 echo "Starting $NUMWATCHERS bdm-watchers to simulate load"
 for i in `jot $NUMWATCHERS`; do
-    #$ROOT/data-manager/client/bdm-watcher/bdm-watcher --resources="$BDMID,*/test-pattern-hab.$UNIQUE.*:*" > /dev/null 2>&1 &
-    $ROOT/data-manager/client/bdm-watcher/bdm-watcher --resources="$BDMID,*/test-pattern-hab.$UNIQUE.*:*"  &
+    $ROOT/data-manager/client/bdm-watcher/bdm-watcher --resources="$BDMID,*/test-pattern-hab.$UNIQUE.*:*" > /dev/null 2>&1 &
+    #$ROOT/data-manager/client/bdm-watcher/bdm-watcher --resources="$BDMID,*/test-pattern-hab.$UNIQUE.*:*"  &
     PID=$!
     echo " [$PID] ->  bdm-watcher"
 

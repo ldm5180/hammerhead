@@ -28,8 +28,6 @@ static int _db_publish_synced_datapoint(sqlite3* db,
     bdm_datapoint_t * dp,
     int entry_seq);
 
-static int entry_seq = -1; // Always set before calling add_*_to_db
-
 static sqlite3_stmt * insert_hab_stmt = NULL;
 static sqlite3_stmt * insert_node_stmt = NULL;
 static sqlite3_stmt * insert_resource_stmt = NULL;
@@ -39,6 +37,7 @@ static sqlite3_stmt * get_last_sync_bdm_stmt_metadata = NULL;
 static sqlite3_stmt * get_last_sync_bdm_stmt_datapoints = NULL;
 static sqlite3_stmt * set_last_sync_bdm_stmt_metadata = NULL;
 static sqlite3_stmt * set_last_sync_bdm_stmt_datapoints = NULL;
+static sqlite3_stmt * set_next_entry_seq_stmt = NULL;
 
 extern char * database_file;
 
@@ -295,6 +294,10 @@ void db_shutdown(sqlite3 *db) {
 	sqlite3_finalize(set_last_sync_bdm_stmt_metadata);
 	set_last_sync_bdm_stmt_metadata = NULL;
     }
+    if(set_next_entry_seq_stmt){
+	sqlite3_finalize(set_next_entry_seq_stmt);
+	set_next_entry_seq_stmt = NULL;
+    }
 
     sqlite3_close(db);
 }
@@ -309,7 +312,9 @@ int db_commit(sqlite3 *db) {
 
     num_db_commits++;
 
-    do {
+    int attempts = 10;
+
+    while((--attempts) > 0 ) {
         r = sqlite3_exec(
             db,
             "COMMIT;",
@@ -325,7 +330,7 @@ int db_commit(sqlite3 *db) {
         }
 
         if (r == SQLITE_BUSY) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "COMMIT failed because the database is busy (\"%s\"), retrying", zErrMsg);
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "COMMIT failed because the database is busy (\"%s\"), retrying %d more times", zErrMsg, attempts);
             sqlite3_free(zErrMsg);
             g_usleep(20 * 1000);
             continue;
@@ -334,7 +339,10 @@ int db_commit(sqlite3 *db) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "COMMIT SQL error: %s", zErrMsg);
         sqlite3_free(zErrMsg);
         return -1;
-    } while (1);
+    } 
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "COMMIT failed because the database is busy (\"%s\")", zErrMsg);
+    return -1;
 
 }
 
@@ -385,11 +393,18 @@ int db_begin_transaction(sqlite3 *db) {
 // Returns 0 on success, -1 on failure.
 //
 
-static int add_hab_to_db(sqlite3* db, const bionet_hab_t *hab) {
-    return db_insert_hab(db, bionet_hab_get_type(hab), bionet_hab_get_id(hab));
+static int add_hab_to_db(sqlite3* db, const bionet_hab_t *hab, int entry_seq) {
+    return db_insert_hab(db, 
+            bionet_hab_get_type(hab),
+            bionet_hab_get_id(hab), entry_seq);
 }
 
-int db_insert_hab(sqlite3* db, const char * hab_type, const char * hab_id) {
+int db_insert_hab(
+        sqlite3* db,
+        const char * hab_type,
+        const char * hab_id,
+        int entry_seq) 
+{
     int r;
 
     if(insert_hab_stmt == NULL) {
@@ -442,11 +457,12 @@ int db_insert_hab(sqlite3* db, const char * hab_type, const char * hab_id) {
 
 
 
-static int add_node_to_db(sqlite3* db, const bionet_node_t *node) {
+static int add_node_to_db(sqlite3* db, const bionet_node_t *node, int entry_seq) {
     return db_insert_node(db, 
             bionet_node_get_id(node),
             bionet_hab_get_type(bionet_node_get_hab(node)),
-            bionet_hab_get_id(bionet_node_get_hab(node))
+            bionet_hab_get_id(bionet_node_get_hab(node)),
+            entry_seq
             );
 }
 
@@ -454,7 +470,8 @@ int db_insert_node(
         sqlite3* db,
         const char * node_id,
         const char * hab_type,
-        const char * hab_id)
+        const char * hab_id,
+        int entry_seq)
 {
     int r;
 
@@ -594,7 +611,7 @@ int db_make_resource_key(
 
 }
 
-static int add_resource_to_db(sqlite3* db, bionet_resource_t *resource) {
+static int add_resource_to_db(sqlite3* db, bionet_resource_t *resource, int entry_seq) {
     const char * hab_type;
     const char * hab_id;
     const char * node_id;
@@ -610,7 +627,9 @@ static int add_resource_to_db(sqlite3* db, bionet_resource_t *resource) {
     flavor = bionet_resource_get_flavor(resource);
 
 
-    return db_insert_resource(db, hab_type, hab_id, node_id, resource_id, flavor, data_type);
+    return db_insert_resource(db, hab_type, hab_id, 
+            node_id, resource_id, flavor, data_type,
+            entry_seq);
 }
 
 int db_insert_resource(
@@ -620,12 +639,12 @@ int db_insert_resource(
         const char * node_id,
         const char * resource_id,
         bionet_resource_flavor_t flavor,
-        bionet_resource_data_type_t data_type)
+        bionet_resource_data_type_t data_type,
+        int entry_seq)
 {
     int r;
 
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
-
 
     r = db_make_resource_key(hab_type, hab_id, node_id, 
         resource_id, data_type, flavor, resource_key);
@@ -767,7 +786,8 @@ int db_add_bdm(sqlite3* db, const char *bdm_id) {
  */
 int db_insert_datapoint(sqlite3* db, 
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
-    bdm_datapoint_t *dp)
+    bdm_datapoint_t *dp,
+    int entry_seq)
 {
     int r;
 
@@ -891,17 +911,12 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
     bdm_datapoint_t dp;
 
-    entry_seq = db_get_next_entry_seq(db);
+    int entry_seq = db_get_next_entry_seq_new_transaction(db, 1);
     if(entry_seq < 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "Error getting sequence number\n");
         return -1;
     }
-
-    // start transaction
-    r = db_begin_transaction(db);
-    if (r != 0) return -1;
-
 
     // add parent objects as needed
     value = bionet_datapoint_get_value(datapoint);
@@ -911,13 +926,13 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
 
     bionet_hab_set_recording_bdm(hab, bionet_bdm_get_id(this_bdm));
 
-    r = add_hab_to_db(db, hab);
+    r = add_hab_to_db(db, hab, entry_seq);
     if (r != 0) goto fail;
 
-    r = add_node_to_db(db, node);
+    r = add_node_to_db(db, node, entry_seq);
     if (r != 0) goto fail;
 
-    r = add_resource_to_db(db, resource);
+    r = add_resource_to_db(db, resource, entry_seq);
     if (r != 0) goto fail;
 
     // now finally add the data point itself
@@ -933,7 +948,7 @@ int db_add_datapoint(sqlite3* db, bionet_datapoint_t *datapoint) {
     r = datapoint_bionet_to_bdm(datapoint, &dp, bionet_bdm_get_id(this_bdm));
     if (r != 0) goto fail;
 
-    r = db_insert_datapoint(db, resource_key, &dp); 
+    r = db_insert_datapoint(db, resource_key, &dp, entry_seq); 
     if ( dp.type == DB_STRING) free(dp.value.str);
     if (r != 0) goto fail;
 
@@ -972,18 +987,24 @@ int db_add_datapoint_sync(
         return r;
     }
 
-    entry_seq = db_get_next_entry_seq(db);
+    int entry_seq = db_get_next_entry_seq_new_transaction(db, 1);
     if(entry_seq < 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "Error getting sequence number\n");
         return -1;
     }
 
-    // Single insert, so no transaction needed
-    r = db_insert_datapoint(db, resource_key, dp);
+    r = db_insert_datapoint(db, resource_key, dp, entry_seq);
+    if (r != 0) goto fail;
+
+    r = db_commit(db);
     if ( 0 == r ){
         _db_publish_synced_datapoint(db, resource_key, dp, entry_seq);
     }
+    return r;
+
+fail:
+    db_rollback(db);
     return r;
 }
 
@@ -997,26 +1018,20 @@ int db_add_node(sqlite3* db, bionet_node_t *node) {
 
     hab = bionet_node_get_hab(node);
 
-    entry_seq = db_get_next_entry_seq(db);
+    int entry_seq = db_get_next_entry_seq_new_transaction(db, 1);
     if(entry_seq < 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "Error getting sequence number\n");
         return -1;
     }
 
-
-    // start transaction
-    r = db_begin_transaction(db);
-    if (r != 0) return -1;
-
-
     // add parent hab
-    r = add_hab_to_db(db, hab);
+    r = add_hab_to_db(db, hab, entry_seq);
     if (r != 0) goto fail;
 
 
     // add this node
-    r = add_node_to_db(db, node);
+    r = add_node_to_db(db, node, entry_seq);
     if (r != 0) goto fail;
 
 
@@ -1025,7 +1040,7 @@ int db_add_node(sqlite3* db, bionet_node_t *node) {
         bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
         bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(resource, 0);
 
-        r = add_resource_to_db(db, resource);
+        r = add_resource_to_db(db, resource, entry_seq);
         if (r != 0) goto fail;
 
         // add the resource's data point, if any
@@ -1045,7 +1060,7 @@ int db_add_node(sqlite3* db, bionet_node_t *node) {
             r = datapoint_bionet_to_bdm(d, &dp, bionet_bdm_get_id(this_bdm));
             if (r != 0) goto fail;
 
-            r = db_insert_datapoint(db, resource_key, &dp);
+            r = db_insert_datapoint(db, resource_key, &dp, entry_seq);
             if ( dp.type == DB_STRING) free(dp.value.str);
             if (r != 0) goto fail;
         }
@@ -1072,22 +1087,27 @@ fail:
 int db_add_hab(sqlite3* db, bionet_hab_t *hab) {
     int r;
 
-    entry_seq = db_get_next_entry_seq(db);
+    int entry_seq = db_get_next_entry_seq_new_transaction(db, 1);
     if(entry_seq < 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "Error getting sequence number\n");
         return -1;
     }
 
-    // this doesnt need a transaction because it's just a single INSERT
-    r = add_hab_to_db(db, hab);
-    if (r != 0) {
-        return -1;
-    }
+    r = add_hab_to_db(db, hab, entry_seq);
+    if (r != 0) goto fail;
+
+    r = db_commit(db);
+    if (r != 0) goto fail;
+
 
     bdm_report_new_hab(hab, entry_seq);
 
     return 0;
+
+fail:
+    db_rollback(db);
+    return -1;
 }
 
 
@@ -1812,55 +1832,82 @@ static int db_set_int_callback(
     return -1;
 }
 
-int db_get_next_entry_seq(sqlite3* db) {
+int db_get_next_entry_seq_new_transaction(sqlite3* db, unsigned int num) {
     int r;
     char *zErrMsg = NULL;
-    int latest_seq = -1;
+    int current_seq = -1;
 
-    // start transaction
-    r = db_begin_transaction(db);
-    if (r != 0) return -1;
+    if(num <= 0 ) return -1;
 
-    // Delete last seq
-    r = sqlite3_exec(
-        db,
-        "DELETE FROM Entry_Sequence",
-        NULL,
-        0,
-        &zErrMsg
-    );
-    if (r != SQLITE_OK) goto fail;
+    if(set_next_entry_seq_stmt == NULL) {
+	r = sqlite3_prepare_v2(db, 
+            "INSERT INTO Entry_Sequence VALUES (?)",
+	    -1, &set_next_entry_seq_stmt, NULL);
 
-    // Create New Seq
-    r = sqlite3_exec(
-        db,
-        "INSERT INTO Entry_Sequence VALUES (NULL)",
-        NULL,
-        0,
-        &zErrMsg
-    );
-    if (r != SQLITE_OK) goto fail;
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "set-next-entry SQL error: %s\n", sqlite3_errmsg(db));
+	    return -1;
+	}
 
-    // Get the new value
-    r = sqlite3_exec(
-        db,
-        "SELECT max(Num) from Entry_Sequence",
-        db_set_int_callback,
-        &latest_seq,
-        &zErrMsg
-    );
-    if (r != SQLITE_OK) goto fail;
+    }
 
-    // commit transaction
-    r = db_commit(db);
-    if (r != SQLITE_OK) goto fail;
+    for(;;) {
+        // start transaction
+        r = db_begin_transaction(db);
+        if (r != 0) return -1;
 
-    entry_seq = latest_seq;
-    return latest_seq;
+        // Get the current value
+        r = sqlite3_exec(
+            db,
+            "SELECT max(Num) from Entry_Sequence",
+            db_set_int_callback,
+            &current_seq,
+            &zErrMsg
+        );
+        if (r != SQLITE_OK) goto tryagain;
+
+        // Delete last seq
+        r = sqlite3_exec(
+            db,
+            "DELETE FROM Entry_Sequence",
+            NULL,
+            0,
+            &zErrMsg
+        );
+        if (r != SQLITE_OK) goto tryagain;
+
+        // Create New Seq
+        r = sqlite3_bind_int(set_next_entry_seq_stmt, 1, current_seq + num);
+        if(r != SQLITE_OK){
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "set-next-entry SQL bind error");
+            goto fail;
+        }
+
+        r = sqlite3_step(set_next_entry_seq_stmt);
+        sqlite3_reset(set_next_entry_seq_stmt);
+        sqlite3_clear_bindings(set_next_entry_seq_stmt);
+
+        if (r != SQLITE_DONE) {
+            goto tryagain;
+        }
+
+        // Everything went ok. Return results, and leave transaction open
+        break;
+
+tryagain:
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error setting next enrty num: %s\n", 
+                sqlite3_errmsg(db));
+        db_rollback(db);
+
+    } 
+
+    return current_seq + 1;
 
 fail:
     if(zErrMsg){
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Get Latest entry SQL error: %s\n", zErrMsg);
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Get Next entry SQL error: %s\n", zErrMsg);
 	sqlite3_free(zErrMsg);
     }
     db_rollback(db);
