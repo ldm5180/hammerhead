@@ -3,6 +3,24 @@
 SECDIR=$2
 SIGN_SERVER=$1
 
+print_usage() {
+    me=`basename $0`
+    echo "$me creates a security dir for any bionet application"
+    echo ""
+    echo "usage: $me <signing-server> <dir-to-create> [ca-server-dir]"
+    echo ""
+    echo "    signing-server    the hostname/address of a server setup with"
+    echo "                      the ca-serve server and a certificate authority "
+    echo "		      certificate"
+    echo ""
+    echo "    dir-to-create     The directory to create"
+    echo ""
+    echo "    ca-server-dir     The directory on the signing-server to use."
+    echo "                      Default: /data/bionet-ca"
+    echo
+}
+
+
 if [[ "$0" =~ ^/ ]]; then
     MYLOC=`dirname $0`
 else
@@ -11,8 +29,14 @@ fi
 
 
 if [ -z "$SECDIR" ]; then
-	echo "Please specify a security directory to create"
-	exit 1
+    print_usage
+    echo "Please specify a security directory to create"
+    exit 1
+fi
+if [ -z "$SIGN_SERVER" ]; then
+    print_usage
+    echo "Please specify a signing server to use"
+    exit 1
 fi
 
 CASRVDIR=$3
