@@ -7,6 +7,7 @@
 
 char * database_file = "bdm.db";
 bionet_bdm_t * this_bdm = NULL;
+uint32_t num_db_commits = 0;
 
 // vim: ts=8 sw=4 sta
 // Emacs cruft
