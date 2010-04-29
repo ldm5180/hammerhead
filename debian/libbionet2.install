@@ -6,9 +6,3 @@ usr/lib/libbionet-util.so.*
 
 # BDM client library
 usr/lib/libbdm.so.*
-
-# CAL libraries
-usr/lib/libcal-mdnssd-bip-client.so.*
-usr/lib/libcal-mdnssd-bip-shared.so.*
-usr/lib/libcal-mdnssd-bip-server.so.*
-usr/lib/libevent.so.*
