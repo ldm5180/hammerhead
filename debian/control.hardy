@@ -89,6 +89,15 @@ Description: A network-transparent pub/sub system for information exchange (deve
  Bionet2 headers and static libraries.  Install this package if you want
  to compile your own Bionet HABs, Bionet Clients, or BDM Clients.
 
+Package: libbdm
+Section: devel
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Libraries for running BDM Clients
+ This package provides the BDM client library.  You generally don't need
+ to install this package by hand, it'll get installed automatically if
+ you install any other package that depends on it.
+
 Package: libcal-shared
 Section: devel
 Architecture: any

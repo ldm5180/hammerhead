@@ -82,6 +82,15 @@ Description: A network-transparent pub/sub system for information exchange (Qt l
  it'll get installed automatically if you install any other package
  that depends on it.
 
+Package: libbdm
+Section: devel
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Libraries for running BDM Clients
+ This package provides the BDM client library.  You generally don't need
+ to install this package by hand, it'll get installed automatically if
+ you install any other package that depends on it.
+
 Package: libbionet2-dev
 Section: devel
 Architecture: any
