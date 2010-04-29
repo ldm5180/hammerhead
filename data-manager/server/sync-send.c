@@ -330,12 +330,15 @@ gpointer sync_thread(gpointer config_list) {
     GMainContext * this_loop_context = 
         g_main_context_new();
 
-    g_main_context_push_thread_default(this_loop_context);
     sync_sender_main_loop = g_main_loop_new(this_loop_context, TRUE);
     
     for (i = 0; i < g_slist_length(cfg_list); i++) {
+        GSource * source;
 	cfg = g_slist_nth_data(cfg_list, i);
-	g_timeout_add_seconds(cfg->frequency, sync_check, cfg);
+
+	source = g_timeout_source_new_seconds(cfg->frequency);
+        g_source_set_callback(source, sync_check, cfg, NULL);
+        g_source_attach(source, this_loop_context);
     }
 
     g_main_loop_run(sync_sender_main_loop);
