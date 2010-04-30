@@ -72,7 +72,7 @@ echo "Starting test-pattern-hab"
 BIP_WRITE_BUFSIZE=1048576 $ROOT/hab/test-pattern/test-pattern-hab -i $UNIQUE --no-node-updates -c -f -m 1000 -l 0 $FILE &
 TPHPID=$!
 
-echo "Sleepng..." 
+echo "Sleeping..." 
 sleep 55
 
 echo "Killing everything"
