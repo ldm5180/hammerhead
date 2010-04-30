@@ -1,5 +1,6 @@
 etc
 usr/lib/python*
+usr/share/doc/bionet/index.html usr/share/doc/bionet2
 
 # HABs
 usr/bin/syshealth-hab
@@ -13,6 +14,7 @@ usr/bin/mon-hab
 usr/bin/random-hab
 usr/bin/pal-650
 usr/bin/speedway
+usr/bin/env-hab
 
 # clients
 usr/bin/bionet-realtime-watcher
