@@ -6,6 +6,11 @@
 #
 
 
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
 ORIG_DIR=$PWD
 
 #make the new database and start the BDM, but only listen to RANDOM HABs.
@@ -13,36 +18,44 @@ echo "Killing any running BDM servers..."
 killall bionet-data-manager lt-bionet-data-manager > /dev/null 2> /dev/null
 sleep 1
 rm -f $ORIG_DIR/bdm.db
-cd ../../../data-manager/server
+cd $ROOT/data-manager/server
 mv bdm.db bdm.db-old
 echo "Making DB file..."
-./make-db.sh > /dev/null
+./bdm-make-db > /dev/null
 mv bdm.db $ORIG_DIR/.
 mv bdm.db-old bdm.db
 cd $ORIG_DIR
+
 echo "Starting BDM server..."
-../../../data-manager/server/bionet-data-manager -f $ORIG_DIR/bdm.db &
-../../../client/watcher/bionet-watcher > watcher.out &
+$ROOT/data-manager/server/bionet-data-manager -f $ORIG_DIR/bdm.db &
+
+echo "Starting Bionet Watcher..."
+$ROOT/client/watcher/bionet-watcher > watcher.out &
 sleep 1
 
 #run a Random HAB and output the test data here
-cd ../../../hab/random
-echo "Running Random-HAB..."
+cd $ROOT/hab/random
+echo "Running Random HAB..."
 ./random-hab -i tester1 --output-mode bdm-client > $ORIG_DIR/random.out &
 sleep 35
-killall lt-random-hab 
+echo "Killing Random HAB..."
+kill %3
+wait %3
 cd $ORIG_DIR
 
 #grab data from the BDM
 YEAR=`date +%Y`
-cd ../../../data-manager/scripts
+cd $ROOT/data-manager/scripts
 echo "Running BDM-Client..."
 ./bdm-client.py -o chrono -s localhost -T "$YEAR-01-01 00:00:00" -t "$YEAR-12-31 12:59:59" -r "*.*.*:*" > $ORIG_DIR/bdm.out
 
 #stop the BDM
 echo "Killing BDM server..."
-killall lt-bionet-data-manager
-killall lt-bionet-watcher
+kill %1
+wait %1
+echo "Killing Bionet Watcher..."
+kill %2
+wait %2
 
 cd $ORIG_DIR
 
