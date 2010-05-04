@@ -1,4 +1,45 @@
-Bionet 2.5.0
+Bionet 2.5.1, 2010 May 5
+
+    * Bdmplot is now a server with true regular expression subscriptions strings.
+
+    * BDM overlapping subscriptions work.
+
+    * Switch from pthread to gThread.
+
+    * Add free inode count and RAID monitoring to syshealth-hab
+
+    * Add bionet-realtime-watcher which only subscribes to live Bionet data. Bionet-watcher now can subscribe to live Bionet data and/or historical BDM data.
+
+    * CAL modifications to allow multiple CAL instances per process. Enables subscribing to BDM and Bionet data in the same process.
+
+    * Add stats HAB to BDM.
+
+    * Add --no-resources option to BDM to subscribe to nothing.
+
+    * Add historical BDM subscription capability to Bionet Monitor
+
+    * Start porting libraries to Windows with C++ support. Not complete. Very experimental.
+
+    * Add environmental monitor HAB.
+
+    * Add looping, fast publishing, and current time options to the test-pattern-hab.
+
+    * Update doxygen to include BDM library documentation.
+
+    * Add BDM database query tool
+
+    * Add Kill-A-Watt HAB
+
+    * Fix ION usage to only be accessed from 1 thread. Fixes 3 node sync using ION as middle hop.
+
+    * Add batched inserts to Bionet Data Manager for speed improvements
+
+    * Debian packages are broken up into more sensible sub-packages.
+
+    * Lots of bug fixes all over
+
+
+Bionet 2.5.0, 2009 November 30
 
     * Add BDM Pub/Sub feature so that historical data can be subscribed to just like live Bionet data.
 
@@ -15,7 +56,7 @@ Bionet 2.4.1, 2009 September 21
 
     * Add bdm_get_last_entry_seq() and bdm_free_hab_list() to BDM client to enable Python bindings to use this feature.
 
-
+ 
 Bionet 2.4.0, 2009 August 18
 
     * Add BDM Sync feature over TCP and DTN. 

@@ -14,10 +14,10 @@
 # Interface is bumped on API breaking events
 # Revision is bumped on each change like a bug fix
 # Age is bumped on every addition to the API
-BIONET_INTERFACE_VERSION=2:1:0
+BIONET_INTERFACE_VERSION=2:2:1
 
 #Purely aesthetic marketing version number
-BIONET_RELEASE_VERSION=2.5.0
+BIONET_RELEASE_VERSION=2.5.1
 
 #
 # Should be a check for specific gcc versions
