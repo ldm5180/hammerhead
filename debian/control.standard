@@ -69,6 +69,7 @@ Package: libbionet2
 Section: devel
 Architecture: any
 Depends: ${shlibs:Depends}
+Conflicts: bionet2 (<< 2.5.0+bzr1481)
 Description: A network-transparent pub/sub system for information exchange (libraries)
  This package provides the Bionet2 libraries (including BDM client
  libraries).  You generally don't need to install this package by hand,
@@ -79,7 +80,7 @@ Package: libbionet2-qt
 Section: devel
 Architecture: any
 Depends: ${shlibs:Depends}
-Conflicts: libbionet2 (<= 2.5.0+bzr1602)
+Conflicts: libbionet2 (<= 2.5.0+bzr1602), bionet2 (<< 2.5.0+bzr1481)
 Description: A network-transparent pub/sub system for information exchange (Qt libraries)
  This package provides the Bionet2 libraries for Qt (including BDM client
  libraries).  You generally don't need to install this package by hand,
@@ -90,6 +91,7 @@ Package: libbionet2-dev
 Section: devel
 Architecture: any
 Depends: ${shlibs:Depends}, libbionet2 (= ${binary:Version}), libavahi-compat-libdnssd-dev, libglib2.0-dev, libssl-dev, python
+Conflicts: bionet2-dev
 Description: A network-transparent pub/sub system for information exchange (devel files)
  Bionet2 headers and static libraries.  Install this package if you want
  to compile your own Bionet HABs, Bionet Clients, or BDM Clients.
@@ -98,7 +100,7 @@ Package: libbdm
 Section: devel
 Architecture: any
 Depends: ${shlibs:Depends}
-Conflicts: libbionet2 (<= 2.5.0+bzr1602)
+Conflicts: libbionet2 (<= 2.5.0+bzr1602), bionet2 (<< 2.5.0+bzr1481)
 Description: Libraries for running BDM Clients
  This package provides the BDM client library.  You generally don't need
  to install this package by hand, it'll get installed automatically if
@@ -108,7 +110,7 @@ Package: libcal-shared
 Section: devel
 Architecture: any
 Depends: ${shlibs:Depends}
-Conflicts: libbionet2 (<= 2.5.0+bzr1602)
+Conflicts: libbionet2 (<= 2.5.0+bzr1602), bionet2 (<< 2.5.0+bzr1481)
 Description: Communication Abstraction Layer for Bionet and BDM
  This package contains libraries shared by the CAL Server and CAL Client
  libraries.  You usually do not need to explicitly install this package,
@@ -118,7 +120,7 @@ Package: libcal-server
 Section: devel
 Architecture: any
 Depends: ${shlibs:Depends}
-Conflicts: libbionet2 (<= 2.5.0+bzr1602)
+Conflicts: libbionet2 (<= 2.5.0+bzr1602), bionet2 (<< 2.5.0+bzr1481)
 Description: Communication Abstraction Layer for Bionet and BDM (server side)
  This package contains libraries to implement a CAL Server (such as a
  Bionet HAB, or a BDM Server).  You usually do not need to explicitly
@@ -128,7 +130,7 @@ Package: libcal-client
 Section: devel
 Architecture: any
 Depends: ${shlibs:Depends}
-Conflicts: libbionet2 (<= 2.5.0+bzr1602)
+Conflicts: libbionet2 (<= 2.5.0+bzr1602), bionet2 (<< 2.5.0+bzr1481)
 Description: Communication Abstraction Layer for Bionet and BDM (client side)
  This package contains libraries to implement a CAL Client (such as a
  Bionet Client or a BDM Client).  You usually do not need to explicitly
