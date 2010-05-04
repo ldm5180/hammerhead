@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 #
 # Copyright (c) 2008-2010, Regents of the University of Colorado.
 # This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
@@ -10,6 +10,15 @@ if [ -z "$ROOT" ]; then
     echo "ROOT environment variable is undefined"
     exit 1
 fi
+
+PYPATHADD=$ROOT/hab/py-libhab:$ROOT/client/py-libbionet:$ROOT/data-manager/client/py-libbdm:$ROOT/hab/py-libhab/.libs:$ROOT/client/py-libbionet/.libs:$ROOT/data-manager/client/py-libbdm/.libs
+if [ -z "$PYTHONPATH" ]; then
+    export PYTHONPATH=$PYPATHADD
+else
+    export PYTHONPATH=$PYPATHADD:$PYTHONPATH
+fi
+
+UNIQUE=$$
 
 ORIG_DIR=$PWD
 
@@ -27,16 +36,16 @@ mv bdm.db-old bdm.db
 cd $ORIG_DIR
 
 echo "Starting BDM server..."
-$ROOT/data-manager/server/bionet-data-manager -f $ORIG_DIR/bdm.db &
+$ROOT/data-manager/server/bionet-data-manager --resource "random-hab.$UNIQUE.*:*" -f $ORIG_DIR/bdm.db &
 
 echo "Starting Bionet Watcher..."
-$ROOT/client/watcher/bionet-watcher > watcher.out &
+$ROOT/client/watcher/bionet-watcher --hab "random-hab.$UNIQUE" --node "random-hab.$UNIQUE.*" --resource "random-hab.$UNIQUE.*:*" > watcher.out &
 sleep 1
 
 #run a Random HAB and output the test data here
 cd $ROOT/hab/random
 echo "Running Random HAB..."
-./random-hab -i tester1 --output-mode bdm-client > $ORIG_DIR/random.out &
+./random-hab -i $UNIQUE --output-mode bdm-client > $ORIG_DIR/random.out &
 sleep 35
 echo "Killing Random HAB..."
 kill %3
@@ -47,7 +56,7 @@ cd $ORIG_DIR
 YEAR=`date +%Y`
 cd $ROOT/data-manager/scripts
 echo "Running BDM-Client..."
-./bdm-client.py -o chrono -s localhost -T "$YEAR-01-01 00:00:00" -t "$YEAR-12-31 12:59:59" -r "*.*.*:*" > $ORIG_DIR/bdm.out
+./bdm-client.py -o chrono -s localhost -T "$YEAR-01-01 00:00:00" -t "$YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" > $ORIG_DIR/bdm.out
 
 #stop the BDM
 echo "Killing BDM server..."
