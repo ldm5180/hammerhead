@@ -67,6 +67,12 @@ in the release branch:
          - Install into iTunes (Drag the .app) onto iTunes Library
          - In the applications section, find bionet, right click and select "Show in Finder"
          - Copy BioNetMonitor.ipa to release location
+     - Create SDK tar files:
+         -  make clean; ./configure-make-install-iphone-sim.sh
+         -  cd client/iphone
+         -  tar czf bionet_sdk.tgz bionet_sdk 
+         -  tar czf bionet_simulator_sdk.tgz bionet_simulator_sdk
+         -  Copy those .tgz files to the release location (Also copy deps from last release)
 
     update /data/bionet-release/index.html to include correct links
 
