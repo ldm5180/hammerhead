@@ -45,7 +45,14 @@ in the release branch:
 
     building the release tarball also builds the docs, install them on our webserver: rsync -av doxygen/html/ bioserve.colorado.edu:/var/www/bionet/doc/2.1.2
 
-    upload the tarball to someplace secret
+    create symlink:
+    	   rm -f /var/www/bionet-api
+	   ln -s /var/www/bionet/doc/2.1.2 /var/www/bionet-api
+    
+    upload the tarball to bioserve.colorado.edu:/data/bionet-release
+
+    create symlink of htaccess file in doc dir
+    	   ln -s /data/bionet-release/.htaccess /var/www/bionet-api/.
 
     Build iPhone App for AdHoc distribution:
      - Build supporting libs with './configure-make-install-iphone.sh'
@@ -60,6 +67,8 @@ in the release branch:
          - Install into iTunes (Drag the .app) onto iTunes Library
          - In the applications section, find bionet, right click and select "Show in Finder"
          - Copy BioNetMonitor.ipa to release location
+
+    update /data/bionet-release/index.html to include correct links
 
     send out an announcement email with links to the tarball and the
     API docs, and the top of the changelog
