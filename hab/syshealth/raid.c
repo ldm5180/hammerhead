@@ -69,7 +69,10 @@ int raid_init(bionet_node_t *node) {
 	    bionet_resource_set_str(resource, "Normal", NULL);
 	}
 	
-	bionet_node_add_resource(node, resource);
+	if (bionet_node_add_resource(node, resource)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "Failed to add resource %s to node %s",
+		  bionet_resource_get_id(resource), bionet_node_get_name(node));
+	}
     } /* while(fgets...) */
 
     return 0;
