@@ -49,7 +49,9 @@ struct timeval db_accum = { 0, 0 };
 static void cb_datapoint(bionet_datapoint_t *datapoint) {
     struct timeval tv_before_write;
     if (start_hab) {
-	gettimeofday(&tv_before_write, NULL);
+	if (gettimeofday(&tv_before_write, NULL)) {
+	    g_warning("cb_datapoint: Failed to get time of day: %m");
+	}
     }
 
     (void) dbb_add_datapoint(dbb, datapoint, bionet_bdm_get_id(this_bdm));
@@ -72,7 +74,9 @@ static void cb_datapoint(bionet_datapoint_t *datapoint) {
 	struct timeval db_latency;
 
 	dp_ts = bionet_datapoint_get_timestamp(datapoint);
-	gettimeofday(&cur_ts, NULL);
+	if (gettimeofday(&cur_ts, NULL)) {
+	    g_warning("cb_datapoint: Failed to get time of day: %m");
+	}
 	dp_latency = bionet_timeval_subtract(&cur_ts, dp_ts);
 	dp_ts_accum.tv_sec += dp_latency.tv_sec;
 	dp_ts_accum.tv_usec += dp_latency.tv_usec;
