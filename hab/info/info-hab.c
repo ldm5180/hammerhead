@@ -91,6 +91,9 @@ void add_info_node(bionet_hab_t *hab) {
     bionet_version_get(&string);
     value = bionet_value_new_str(resource, string);
     if (NULL == value) {
+	if (string) {
+	    free(string);
+	}
         fprintf(stderr, "*** out of memory!\n");
         return;
     }

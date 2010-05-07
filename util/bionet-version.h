@@ -15,10 +15,23 @@
 extern "C" {
 #endif
 
-
+/**
+ * @brief Print the bionet version to a stream
+ *
+ * @param[in] stream The stream to print to.
+ */
 BIONET_UTIL_API_DECL
 void print_bionet_version(FILE *stream);
 
+
+/**
+ * @brief Get the Bionet version string
+ *
+ * @param[out] version Pointer to the pointer to store the version string in
+ *
+ * @note The the version pointer points to a NULL pointer then a memory
+ * is allocated for the string and ust be freed by the caller.
+ */
 BIONET_UTIL_API_DECL
 void bionet_version_get(char ** version);
 

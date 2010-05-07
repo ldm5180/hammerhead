@@ -241,6 +241,9 @@ bionet_value_t *bionet_value_new_double(bionet_resource_t *resource,
  *                  
  * @return The new Value
  * @return NULL Error
+ *
+ * @note The memory in the content pointer is copied, so the memory
+ * pointed to by content is still owned by the caller.
  */
 BIONET_UTIL_API_DECL
 bionet_value_t *bionet_value_new_str(bionet_resource_t *resource,
