@@ -467,13 +467,8 @@ int main(int argc, char *argv[]) {
 
         if (subscription_update == REMOVE) {
             for (i = 0; i < 10; i++) { // start by feeding a giant list of subscriptions
-                if (subscribed_to_something) {
-                    bionet_subscribe_node_list_by_name(g_slist_nth_data(node_list, 0));
-                    bionet_subscribe_datapoints_by_name(g_slist_nth_data(dp_list, 0));
-                } else {
-                    bionet_subscribe_node_list_by_name("*.*.*");
-                    bionet_subscribe_datapoints_by_name("*.*.*:*");
-                }
+		bionet_subscribe_node_list_by_name(g_slist_nth_data(node_list, 0));
+		bionet_subscribe_datapoints_by_name(g_slist_nth_data(dp_list, 0));
             }
             
             diff->tv_sec = 5;
