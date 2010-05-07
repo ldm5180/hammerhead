@@ -199,8 +199,8 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
 	    tv_sleep = bionet_timeval_subtract(&tv_wait, &tv_diff);
 	    select(0, 0, 0, &dummy, &tv_sleep);
 	}
+	tv_now = tv_cur;
     }
-    tv_now = tv_cur;
 }
 
 
