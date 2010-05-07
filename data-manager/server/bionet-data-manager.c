@@ -130,27 +130,36 @@ gboolean update_hab(gpointer usr_data) {
     uint32_t local_last = 0;
     uint32_t dtn_last = 0;
     struct timeval tv;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * dtn;
+    bionet_resource_t * local;
+    bionet_resource_t * dtn_rate;
+    bionet_resource_t * local_rate;
+    bionet_resource_t * dp_latency;
+    bionet_resource_t * db_latency;
+    bionet_resource_t * commit;
 
     if (gettimeofday(&tv, NULL)) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to get time of day.");
     }
 
 
-    bionet_hab_t * hab = (bionet_hab_t *)usr_data;
+    hab = (bionet_hab_t *)usr_data;
     if (NULL == hab) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "NULL HAB passed in.");
 	goto ret;
     }
 
-    bionet_node_t * node = bionet_hab_get_node_by_id(hab, "Statistics");
+    node = bionet_hab_get_node_by_id(hab, "Statistics");
     if (NULL == node) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "Statistics node not found.");
 	goto ret;
     }
 
-    bionet_resource_t * dtn = bionet_node_get_resource_by_id(node, "Number-of-Datapoints-over-DTN-Recorded");
+    dtn = bionet_node_get_resource_by_id(node, "Number-of-Datapoints-over-DTN-Recorded");
     if (NULL == dtn) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "Num DTN Datapoints resource not found");
@@ -165,7 +174,7 @@ gboolean update_hab(gpointer usr_data) {
 	}
     }
 
-    bionet_resource_t * local = bionet_node_get_resource_by_id(node, "Number-of-Local-Datapoints-Recorded");
+    local = bionet_node_get_resource_by_id(node, "Number-of-Local-Datapoints-Recorded");
     if (NULL == local) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "Num Local Datapoints resource not found");
@@ -180,7 +189,7 @@ gboolean update_hab(gpointer usr_data) {
 	}
     }
 
-    bionet_resource_t * dtn_rate = bionet_node_get_resource_by_id(node, "DTN-Datapoints-Per-Second");
+    dtn_rate = bionet_node_get_resource_by_id(node, "DTN-Datapoints-Per-Second");
     if (NULL == dtn_rate) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "DTN Datapoints Per Second resource not found");
@@ -196,7 +205,7 @@ gboolean update_hab(gpointer usr_data) {
 	bionet_resource_set_float(dtn_rate, cur, &tv);
     }
 
-    bionet_resource_t * local_rate = bionet_node_get_resource_by_id(node, "Local-Datapoints-Per-Second");
+    local_rate = bionet_node_get_resource_by_id(node, "Local-Datapoints-Per-Second");
     if (NULL == local_rate) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "Local Datapoints Per Second resource not found");
@@ -212,7 +221,7 @@ gboolean update_hab(gpointer usr_data) {
 	bionet_resource_set_float(local_rate, cur, &tv);
     }
 
-    bionet_resource_t * dp_latency = bionet_node_get_resource_by_id(node, "Datapoint-Latency-ms");
+    dp_latency = bionet_node_get_resource_by_id(node, "Datapoint-Latency-ms");
     if (NULL == local_rate) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "Datapoint Latency resource not found");
@@ -227,7 +236,7 @@ gboolean update_hab(gpointer usr_data) {
 	dp_ts_accum.tv_usec = 0;
     }
 
-    bionet_resource_t * db_latency = bionet_node_get_resource_by_id(node, "DB-Write-Latency-ms");
+    db_latency = bionet_node_get_resource_by_id(node, "DB-Write-Latency-ms");
     if (NULL == local_rate) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "DB Write Latency resource not found");
@@ -243,7 +252,7 @@ gboolean update_hab(gpointer usr_data) {
     }
 
     /* DB Commits */
-    bionet_resource_t * commit = bionet_node_get_resource_by_id(node, "Number-of-DB-Commits");
+    commit = bionet_node_get_resource_by_id(node, "Number-of-DB-Commits");
     if (NULL == commit) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "Num DB Commits resource not found");
