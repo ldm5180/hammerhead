@@ -345,7 +345,11 @@ static void _publish_foreach_add_resource(GQuark key_id, void* data, void* user_
             resource->flavor,
             resource->resource_id);
 
-    bionet_node_add_resource(bionet_node, bionet_resource);
+    if (bionet_node_add_resource(bionet_node, bionet_resource)) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "_publish_foreach_add_resource: Failed to add resource %s to node %s",
+	      bionet_resource_get_id(bionet_resource), bionet_node_get_name(bionet_node));
+    }
     resource->bionet_resource = bionet_resource;
     bionet_resource_set_user_data(bionet_resource,(void*)resource);
 
