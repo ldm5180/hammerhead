@@ -8,7 +8,7 @@ include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = libevent.la
 
-libevent_la_SOURCES = event-free.c event-new.c peer-name-is-valid.c topic-is-valid.c
+libevent_la_SOURCES = event-free.c event-new.c peer-name-is-valid.c topic-is-valid.c event-is-valid.c
 libevent_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(OPENSSL_CFLAGS)
 libevent_la_LIBADD = $(GLIB_LIBS) $(OPENSSL_LIBS)
 

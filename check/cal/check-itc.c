@@ -10,6 +10,8 @@
 
 #include <check.h>
 
+#include "cal-event.h"
+
 #include "check-common.h"
 #include "check-cal.h"
 #include "bip-itc.h"
@@ -35,7 +37,15 @@ START_TEST (test_itc_pipe) {
 
 #endif
 
-    cal_event_t * event = (void*)0xDEADBEEF;
+    cal_event_t a_real_event = {
+        .type = CAL_EVENT_JOIN,
+        .peer_name = "some random peer",
+        .topic = NULL,
+        .msg.buffer = NULL,
+        .msg.size = 0,
+    };
+
+    cal_event_t * event = &a_real_event;
     cal_event_t *event_recvd = NULL;
 
     r = bip_msg_queue_init(&q);

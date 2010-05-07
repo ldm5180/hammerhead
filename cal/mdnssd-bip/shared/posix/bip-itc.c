@@ -118,7 +118,9 @@ int bip_msg_queue_pop(bip_msg_queue_t *q, bip_msg_queue_direction_t dir, cal_eve
     r = read(fd, event, sizeof(cal_event_t*));
 
     if (r == sizeof(cal_event_t*) ) {
-        return 0;
+        if (cal_event_is_valid(*event)) return 0;
+        *event = NULL;
+        return 1;
     } 
     if (r == 0 ) {
         *event = NULL;

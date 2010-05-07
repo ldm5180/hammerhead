@@ -33,6 +33,18 @@
 
 
 /**
+ * @brief Validates a CAL event.
+ *
+ * @param[in] event The event to check.
+ *
+ * @retval 1 event is valid and may be used.
+ *
+ * @retval 0 event is invalid and should be discarded.
+ **/
+int cal_event_is_valid(const cal_event_t *event);
+
+
+/**
  * @brief Validates a CAL peer name.
  *
  * @param[in] peer_name The peer name to check.
