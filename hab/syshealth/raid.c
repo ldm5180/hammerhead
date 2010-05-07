@@ -75,6 +75,8 @@ int raid_init(bionet_node_t *node) {
 	}
     } /* while(fgets...) */
 
+    fclose(fp);
+
     return 0;
 } /* raid_init() */
 
