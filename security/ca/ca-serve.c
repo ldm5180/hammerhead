@@ -43,6 +43,9 @@ int main (int argc, char * argv[], char * envp[]){
     if(err<0){
         fprintf(stderr, "Couldn't find executable path: %m\n. exiting");
         exit(1);
+    } else {
+	/* terminate the string */
+	cadir[err] = '\0';
     }
 
     if(chdir(cadir) != 0){
