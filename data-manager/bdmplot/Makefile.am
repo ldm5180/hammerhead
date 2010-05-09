@@ -9,7 +9,5 @@ include $(top_srcdir)/common.am
 python_PYTHON = bdmplot.py \
 	bdmplot-cacher.py \
 	bdmplot_callback_cacher.py \
-	datapoints_to_dict.py \
-	prune_datapoints.py \
-	timechooser.py \
-	timespan.py
+	prune_datapoints.py
+
