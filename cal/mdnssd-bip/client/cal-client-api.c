@@ -330,34 +330,6 @@ int cal_client_mdnssd_bip_read(
             this->callback(this, event);
         }
 
-        // manage memory
-        switch (event->type) {
-            case CAL_EVENT_JOIN: {
-                break;
-            }
-
-            case CAL_EVENT_LEAVE: {
-                break;
-            }
-
-            case CAL_EVENT_MESSAGE: {
-                break;
-            }
-
-            case CAL_EVENT_PUBLISH: {
-                break;
-            }
-
-            case CAL_EVENT_SUBSCRIBE: {
-                break;
-            }
-
-            default: {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read: got unhandled event type %d", event->type);
-                return 1;  // dont free events we dont understand
-            }
-        }
-
         cal_event_free(event);
     } while(max_num == 0 || max_num > event_count);
 
