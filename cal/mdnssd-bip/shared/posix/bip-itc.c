@@ -79,6 +79,12 @@ int bip_msg_queue_close(bip_msg_queue_t *q, bip_msg_queue_direction_t dir) {
     return 0;
 }
 
+
+// this do-nothing function exists to tell Prevent that if we successfully
+// write an event to the fifo, that's the same as de-allocating it
+// coverity[+free : arg-0]
+static void bip_msg_queue_push_frees_event(const cal_event_t *event) { };
+
 int bip_msg_queue_push(bip_msg_queue_t *q, bip_msg_queue_direction_t dir, cal_event_t * event) {
     int r;
 
@@ -101,9 +107,15 @@ int bip_msg_queue_push(bip_msg_queue_t *q, bip_msg_queue_direction_t dir, cal_ev
         return -1;
     }
 
+    bip_msg_queue_push_frees_event(event);
     return 0;
 }
 
+
+// this do-nothing function exists to tell Prevent that if we successfully
+// read an event from the fifo, that's the same as allocating it
+// coverity[+alloc : arg-*0]
+static void bip_msg_queue_pop_allocs_event(const cal_event_t **event) { };
 
 int bip_msg_queue_pop(bip_msg_queue_t *q, bip_msg_queue_direction_t dir, cal_event_t ** event) {
     int r;
@@ -118,6 +130,7 @@ int bip_msg_queue_pop(bip_msg_queue_t *q, bip_msg_queue_direction_t dir, cal_eve
     r = read(fd, event, sizeof(cal_event_t*));
 
     if (r == sizeof(cal_event_t*) ) {
+        bip_msg_queue_pop_allocs_event((const cal_event_t **)event);
         if (cal_event_is_valid(*event)) return 0;
         *event = NULL;
         return 1;
