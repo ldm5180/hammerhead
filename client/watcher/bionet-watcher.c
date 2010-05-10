@@ -148,16 +148,7 @@ static void str_to_timeval(const char *str, struct timeval *tv) {
         tv->tv_usec = val * pow(10, 6-consumed);
     }
 
-    old_tz = getenv("TZ");
-    setenv("TZ", "UTC", 1);
-    tv->tv_sec = mktime(&tm);
-    if (old_tz) {
-	char sanitized[128];
-	snprintf(sanitized, 128, "%s", old_tz);
-	setenv("TZ", sanitized, 1);
-    } else {
-	unsetenv("TZ");
-    }
+    tv->tv_sec = timegm(&tm);
 }
 
 
