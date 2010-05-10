@@ -4,7 +4,6 @@
 // NNC07CB47C.
 
 
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,8 +12,12 @@
 #include "cal-util.h"
 
 
+//
+// Normally you'd just #include <ctype.h> to get the isprint() declaration,
+// but by doing it ourselves here we can annotate the function for Prevent:
+//
 // coverity[ -tainted_data_sink : arg-0 ]
-int isprint(int c);
+extern int isprint(int);
 
 
 // coverity[ -tainted_data_sink : arg-0 ]
