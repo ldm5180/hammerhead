@@ -14,8 +14,13 @@
 
 
 // coverity[ -tainted_data_sink : arg-0 ]
+int isprint(int c);
+
+
+// coverity[ -tainted_data_sink : arg-0 ]
 // coverity[ +tainted_string_sanitize_content : arg-0 ]
 static void cal_topic_untaint(const char *topic) { };
+
 
 // coverity[ -tainted_data_sink : arg-0 ]
 int cal_topic_is_valid(const char *topic) {
