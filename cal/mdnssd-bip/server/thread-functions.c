@@ -865,6 +865,7 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
     r = bip_msg_queue_push(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER, event);
     if (r < 0) {
+        cal_event_free(event);
         return (void*)1;
     }
 
