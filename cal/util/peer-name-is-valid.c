@@ -4,13 +4,25 @@
 // NNC07CB47C.
 
 
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <glib.h>
 
 #include "cal-util.h"
+
+
+//
+// Normally you'd just #include <ctype.h> to get the isprint() declaration,
+// but by doing it ourselves here we can annotate the function for Prevent:
+//
+// coverity[ -tainted_data_sink : arg-0 ]
+extern int isprint(int);
+
+
+// coverity[ -tainted_data_sink : arg-0 ]
+// coverity[ +tainted_string_sanitize_content : arg-0 ]
+static void cal_peer_name_untaint(const char *peer_name) { };
 
 
 // coverity[ -tainted_data_sink : arg-0 ]
@@ -38,6 +50,7 @@ int cal_peer_name_is_valid(const char *peer_name) {
     }
 
     // it's ok
+    cal_peer_name_untaint(peer_name);
     return 1;
 }
 
