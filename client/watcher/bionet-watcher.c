@@ -103,7 +103,6 @@ void signal_handler(int signo) {
 static void str_to_timeval(const char *str, struct timeval *tv) {
     struct tm tm;
     char *p;
-    char *old_tz;
 
     memset(&tm, 0, sizeof(tm));
     p = strptime(str, "%Y-%m-%d %T", &tm);
