@@ -10,6 +10,7 @@
 #include "cal-client.h"
 #include "internal.h"
 #include "bionet-bdm.h"
+#include "bionet-asn.h"
 
 #define BDM_DEFAULT_HOST "localhost"
 

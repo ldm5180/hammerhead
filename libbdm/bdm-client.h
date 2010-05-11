@@ -13,7 +13,6 @@
 #include <glib.h>
 
 #include "bionet-util.h"
-#include "bionet-asn.h"
 #include "bionet-bdm.h"
 
 

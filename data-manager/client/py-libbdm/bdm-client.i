@@ -14,6 +14,7 @@
 #include "bionet-resource.h"
 #include "bionet-datapoint.h"
 #include "bionet-value.h"
+#include "bionet-asn.h"
 %}
 
 typedef unsigned short uint16_t;
