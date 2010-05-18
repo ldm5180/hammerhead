@@ -23,7 +23,8 @@ libhab_la_SOURCES =      \
     cal-topic-matches.c  \
     global.c             \
     security.c           \
-    info.c
+    info.c               \
+    persist.c            
 
 libhab_la_CPPFLAGS = $(AM_CPPFLAGS) -DBUILDING_LIBHAB
 libhab_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_CAL_SERVER) $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) -fno-strict-aliasing

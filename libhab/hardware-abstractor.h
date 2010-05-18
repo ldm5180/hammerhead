@@ -272,6 +272,49 @@ int hab_init_security(const char * dir, int require);
 LIBHAB_API_DECL 
 int hab_publish_info(bionet_hab_t * hab, const uint32_t flags);
 
+
+/**
+ * @brief Persist the value of any datapoint set to this resource
+ *
+ * Using local storage, make the value of the datapoint persistent. This allows
+ * the resource to have the same value next time the HAB is started.
+ *
+ * @param[in] resource The Resource
+ *
+ * @retval 0 Success. Resource's value will be persisted each time a datapoint
+ * is published for this resource.
+ * @retval 1 Failure. This resource's value will not be persisted.
+ *
+ * @note If the resource does not yet have a datapoint, after calling this function
+ * it will have a datapoint containing the current time and the last value persisted
+ * by this resource if it has ever been persisted before.
+ *
+ * @note This function does not do the persisting. It only marks the resource as a
+ * resource which requires persistence. Persisting is done as part of publishing using
+ * hab_report_datapoints() or hab_report_new_node()
+ *
+ * @note If a persistance directory other than the default is desired, 
+ * hab_set_persist_directory() must be called before this function.
+ */
+int hab_persist_resource(bionet_resource_t * resource);
+
+/**
+ * @brief Set the directory to which persistency data is written
+ *
+ * The default directory on POSIX systems is /var/lib/bionet
+ *
+ * @param[in] dir Directory to use
+ *
+ * @retval 0 Success.
+ * @retval 1 Failure.
+ *
+ * @note This needs to be called before any calls to hab_persist_resource()
+ * unless the default is going to be used.
+ */
+LIBHAB_API_DECL
+int hab_set_persist_directory(char * dir);
+
+
 #ifdef __cplusplus
 }
 #endif

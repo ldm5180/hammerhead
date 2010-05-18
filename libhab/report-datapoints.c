@@ -18,9 +18,9 @@
 
 #include "libhab-internal.h"
 #include "bionet-asn.h"
+#include "protected.h"
 
-
-
+extern char * persist_dir;
 
 int hab_report_datapoints(const bionet_node_t *node) {
     int ri;
@@ -37,6 +37,18 @@ int hab_report_datapoints(const bionet_node_t *node) {
         // send dirty datapoints only
         r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 1);
         if (r != 0) continue;
+	
+	if (bionet_resource_is_persisted(resource)) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		  "hab_report_datapoints: Persisting resource %s", 
+		  bionet_resource_get_name(resource));
+	    if (bionet_resource_write_persist(resource, persist_dir)) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		      "hab_report_datapoints: Failed to persist resource %s",
+		      bionet_resource_get_name(resource));
+	    }
+	}
+
 
         bionet_resource_make_clean(resource);
 
@@ -54,3 +66,9 @@ int hab_report_datapoints(const bionet_node_t *node) {
     return 0;
 }
 
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

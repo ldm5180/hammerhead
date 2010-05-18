@@ -7,6 +7,8 @@
 #ifndef __BIONET_RESOURCE_H
 #define __BIONET_RESOURCE_H
 
+#include "bionet-util.h"
+
 /**
  * @file bionet-resource.h
  * Functions for dealing with Bionet Resources.
@@ -910,29 +912,6 @@ int bionet_resource_matches_habtype_habid_nodeid_resourceid(
     const char *resource_id
 );
 
-
-/**
- * @brief Checks if a Resource has any dirty Datapoints.
- *
- * Dirty Datapoints are ones that have data which hasn't been reported to
- * Bionet yet.
- *
- * @param[in] resource The Resource to test for dirtiness.
- *
- * @retval True (non-zero) - Dirty
- * @retval False (zero) - Not dirty
- */
-BIONET_UTIL_API_DECL
-int bionet_resource_is_dirty(const bionet_resource_t *resource);
-
-
-/**
- * @brief Makes a Resource clean, by making all its Datapoints clean.
- *
- * @param[in] resource The Resource to clean.
- */
-BIONET_UTIL_API_DECL
-void bionet_resource_make_clean(bionet_resource_t *resource);
 
 /**
  * @brief Set the user-data annotation of a Resource

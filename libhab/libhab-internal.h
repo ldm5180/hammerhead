@@ -25,7 +25,7 @@ extern bionet_hab_t *libhab_this;
 extern void * libhab_ssl_ctx;
 extern int libhab_require_security;
 
-
+extern char * persist_dir;
 
 int libhab_cal_topic_matches(const char *topic, const char *subscription);
 

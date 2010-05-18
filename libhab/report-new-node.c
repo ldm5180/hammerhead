@@ -13,6 +13,9 @@
 
 #include "libhab-internal.h"
 #include "bionet-asn.h"
+#include "protected.h"
+
+extern char * persist_dir;
 
 
 int hab_report_new_node(const bionet_node_t *node) {
@@ -99,6 +102,17 @@ int hab_report_new_node(const bionet_node_t *node) {
             // send all datapoints
             r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 0);
             if (r != 0) continue;
+
+	    if (bionet_resource_is_persisted(resource)) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		      "hab_report_new_node: Persisting resource %s", 
+		      bionet_resource_get_name(resource));
+		if (bionet_resource_write_persist(resource, persist_dir)) {
+		    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+			  "hab_report_new_node: Failed to persist resource %s",
+			  bionet_resource_get_name(resource));
+		}
+	    }
 
             bionet_resource_make_clean(resource);
 

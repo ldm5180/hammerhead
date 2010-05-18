@@ -24,7 +24,7 @@ void (*libhab_callback_lost_client)(const char *client_id) = NULL;
 void (*libhab_callback_stream_subscription)(const char *client_id, const bionet_stream_t *stream) = NULL;
 void (*libhab_callback_stream_unsubscription)(const char *client_id, const bionet_stream_t *stream) = NULL;
 
-
+char * persist_dir = "/var/lib/bionet";
 
 
 #if 0
