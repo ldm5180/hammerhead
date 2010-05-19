@@ -29,6 +29,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
     int fd, r, i, so_far;
     FILE * fp;
     char * buf = NULL;
+    bionet_datapoint_t * dp;
 
     /* sanity check */
     if (NULL == resource) {
@@ -43,6 +44,13 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	return 1;
     }
 
+    dp = BIONET_RESOURCE_GET_DATAPOINT(resource);
+    if (dp) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	      "Resource %s already has a datapoint. Using that one instead of the persisted one.",
+	      bionet_resource_get_name(resource));
+	goto exit1;
+    }
 
     if (bionet_split_resource_name_r(bionet_resource_get_name(resource),
 				     hab_type, hab_id, node_id, resource_id)) {
