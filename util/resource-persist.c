@@ -30,6 +30,8 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
     FILE * fp;
     char * buf = NULL;
     bionet_datapoint_t * dp;
+    char timestamp_str[256];
+    struct timeval tv;
 
     /* sanity check */
     if (NULL == resource) {
@@ -95,7 +97,24 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	  "bionet_resource_persist: fdopened persist file %s for %s, reading.",
 	  path, bionet_resource_get_name(resource));
 
-    /* read the entire file into a big buffer, hopefully it isn't too big */
+    /* read the timestamp */
+    if (NULL == fgets(timestamp_str, sizeof(timestamp_str), fp)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	      "bionet_resource_persist: No valid timestamp string found in file %s: %m",
+	      path);
+	fclose(fp);
+	return 1;
+    }
+    
+    if (2 != sscanf(timestamp_str, "%lu.%lu", &tv.tv_sec, &tv.tv_usec)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	      "bionet_resource_persist: Unable to parse timestamp string to timeval %s: %m",
+	      timestamp_str);
+	fclose(fp);
+	return 1;
+    }
+
+    /* read the rest of file into a big buffer, hopefully it isn't too big */
     i = 0;
     so_far = 0;
     do {
@@ -139,7 +158,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	} else if ('\0' != *endptr) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Value in file is invalid.");
-	} else if (bionet_resource_set_binary(resource, (int)val, NULL)) {
+	} else if (bionet_resource_set_binary(resource, (int)val, &tv)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "bionet_resource_persist: Failed to set binary resource %s to %d",
 		      bionet_resource_get_name(resource), (int)val);
@@ -164,7 +183,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	} else if ('\0' != *endptr) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Value in file is invalid.");
-	} else if (bionet_resource_set_uint8(resource, (uint8_t)val, NULL)) {
+	} else if (bionet_resource_set_uint8(resource, (uint8_t)val, &tv)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "bionet_resource_persist: Failed to set uint8 resource %s to %u",
 		      bionet_resource_get_name(resource), (uint8_t)val);
@@ -189,7 +208,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	} else if ('\0' != *endptr) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Value in file is invalid.");
-	} else if (bionet_resource_set_int8(resource, (int8_t)val, NULL)) {
+	} else if (bionet_resource_set_int8(resource, (int8_t)val, &tv)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "bionet_resource_persist: Failed to set int8 resource %s to %d",
 		      bionet_resource_get_name(resource), (int8_t)val);
@@ -214,7 +233,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	} else if ('\0' != *endptr) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Value in file is invalid.");
-	} else if (bionet_resource_set_uint16(resource, (uint16_t)val, NULL)) {
+	} else if (bionet_resource_set_uint16(resource, (uint16_t)val, &tv)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "bionet_resource_persist: Failed to set uint16 resource %s to %u",
 		      bionet_resource_get_name(resource), (uint16_t)val);
@@ -239,7 +258,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	} else if ('\0' != *endptr) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Value in file is invalid.");
-	} else if (bionet_resource_set_int16(resource, (int16_t)val, NULL)) {
+	} else if (bionet_resource_set_int16(resource, (int16_t)val, &tv)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "bionet_resource_persist: Failed to set int16 resource %s to %d",
 		      bionet_resource_get_name(resource), (int16_t)val);
@@ -264,7 +283,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	} else if ('\0' != *endptr) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Value in file is invalid.");
-	} else if (bionet_resource_set_uint32(resource, (uint32_t)val, NULL)) {
+	} else if (bionet_resource_set_uint32(resource, (uint32_t)val, &tv)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "bionet_resource_persist: Failed to set uint32 resource %s to %u",
 		      bionet_resource_get_name(resource), (uint32_t)val);
@@ -289,7 +308,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	} else if ('\0' != *endptr) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Value in file is invalid.");
-	} else if (bionet_resource_set_int32(resource, (int32_t)val, NULL)) {
+	} else if (bionet_resource_set_int32(resource, (int32_t)val, &tv)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "bionet_resource_persist: Failed to set int32 resource %s to %d",
 		      bionet_resource_get_name(resource), (int32_t)val);
@@ -311,7 +330,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	} else if ('\0' != *endptr) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Value in file is invalid.");
-	} else if (bionet_resource_set_float(resource, val, NULL)) {
+	} else if (bionet_resource_set_float(resource, val, &tv)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "bionet_resource_persist: Failed to set float resource %s to %f",
 		      bionet_resource_get_name(resource), val);
@@ -333,7 +352,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	} else if ('\0' != *endptr) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Value in file is invalid.");
-	} else if (bionet_resource_set_double(resource, val, NULL)) {
+	} else if (bionet_resource_set_double(resource, val, &tv)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "bionet_resource_persist: Failed to set double resource %s to %f",
 		      bionet_resource_get_name(resource), val);
@@ -346,7 +365,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
     }
 
     case BIONET_RESOURCE_DATA_TYPE_STRING:
-	if (bionet_resource_set_str(resource, buf, NULL)) {
+	if (bionet_resource_set_str(resource, buf, &tv)) {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		      "bionet_resource_persist: Failed to set double resource %s to %s",
 		      bionet_resource_get_name(resource), buf);
@@ -423,6 +442,8 @@ static int mkpath_for_resource(bionet_resource_t * resource, char * persist_dir)
     FILE * fp;
     bionet_datapoint_t * dp;
     char * val;
+    char timestamp_str[256];
+    struct timeval * tv;
 
     if (bionet_split_resource_name_r(bionet_resource_get_name(resource),
 				   hab_type, hab_id, node_id, resource_id)) {
@@ -538,6 +559,22 @@ static int mkpath_for_resource(bionet_resource_t * resource, char * persist_dir)
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "mkpath_for_resource: resource %s has no datapoints",
 	      bionet_resource_get_name(resource));
+	goto exit2;
+    }
+
+    tv = bionet_datapoint_get_timestamp(dp);
+    if (sizeof(timestamp_str) <= snprintf(timestamp_str, sizeof(timestamp_str), 
+					  "%lu.%lu\n", tv->tv_sec, tv->tv_usec)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "mkpath_for_resource: timestamp string is too long for resource %s",
+	      bionet_resource_get_name(resource));
+	goto exit2;
+    }
+    if (1 != fwrite(timestamp_str, strlen(timestamp_str), 1, fp)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "mkpath_for_resource: Failed to write timestamp for resource %s data to file %s",
+	      bionet_resource_get_name(resource),
+	      timestamp_str);
 	goto exit2;
     }
     val = bionet_value_to_str(bionet_datapoint_get_value(dp));
