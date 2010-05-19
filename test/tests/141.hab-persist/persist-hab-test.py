@@ -4,6 +4,8 @@ from hab import *
 import logging
 import optparse
 import select
+import time
+import datetime
 
 #set up logging
 logger = logging.getLogger("Bionet Persist Test HAB")
@@ -127,35 +129,56 @@ hab_report_new_node(node)
 hab_report_datapoints(node)
 
 i = 0
-while(i <= 30):
+next_pub = 0
+while(i < 30):
     (rr, wr, er) = select.select([hab_fd], [], [], 1.0)
     if (rr):
         hab_read()
 
+    if (next_pub <= time.time()):
+        next_pub = time.time() + 1
+    else: 
+        continue
+
     i += 1
 
     resource = bionet_node_get_resource_by_id(node, "uint32-1")
-    bionet_resource_set_uint32(resource, i, None)
+    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+    newval = int(val) + 1;
+    bionet_resource_set_uint32(resource, newval, None)
+    logger.debug("uint32-1 = %d" % newval)
 
     resource = bionet_node_get_resource_by_id(node, "float-1")
-    bionet_resource_set_float(resource, float(i), None)
+    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+    newval = int(val) + 1;
+    bionet_resource_set_float(resource, float(newval), None)
+    logger.debug("float-1 = %d" % newval)
 
     resource = bionet_node_get_resource_by_id(node, "string-1")
-    bionet_resource_set_str(resource, str(i), None)
+    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+    newval = int(val) + 1;
+    bionet_resource_set_str(resource, str(newval), None)
+    logger.debug("string-1 = %d" % newval)
 
-    logger.debug("1 = %d" % i)
 
     if (0 == i % 5):
         resource = bionet_node_get_resource_by_id(node, "uint32-5")
-        bionet_resource_set_uint32(resource, i/5, None)
+        val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+        newval = int(val) + 1;
+        bionet_resource_set_uint32(resource, newval, None)
+        logger.debug("uint32-5 = %d" % newval)
         
         resource = bionet_node_get_resource_by_id(node, "float-5")
-        bionet_resource_set_float(resource, float(i/5), None)
+        val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+        newval = int(val) + 1;
+        bionet_resource_set_float(resource, float(newval), None)
+        logger.debug("float-5 = %d" % newval)
         
         resource = bionet_node_get_resource_by_id(node, "string-5")
-        bionet_resource_set_str(resource, str(i/5), None)
-
-    logger.debug("5 = %d" % int(i/5))
+        val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+        newval = int(val) + 1;
+        bionet_resource_set_str(resource, str(newval), None)
+        logger.debug("string-1 = %d" % newval)
 
     hab_report_datapoints(node)
 

@@ -17,7 +17,7 @@
 #include "internal.h"
 
 
-//static int mkpath_for_resource(bionet_resource_t * resource);
+static int mkpath_for_resource(bionet_resource_t * resource, char * persist_dir);
 
 
 int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
@@ -99,7 +99,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
     i = 0;
     so_far = 0;
     do {
-	buf = realloc(buf, so_far + (512 * ++i));
+	buf = realloc(buf, so_far + (512 * ++i) + 1);
 	if (NULL == buf) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Out of memory - %m");
@@ -107,7 +107,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	    return 1;
 	}
 
-	so_far += fread(&buf[so_far], 512, 1, fp);
+	so_far += fread(&buf[so_far], 1, 512, fp);
 	if (ferror(fp)) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: fread error - %m");
@@ -116,6 +116,8 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	    return 1;
 	}
     } while (0 == feof(fp));
+
+    buf[so_far] = '\0';
 
     fclose(fp);
     
@@ -397,50 +399,170 @@ int bionet_resource_write_persist(bionet_resource_t * resource, char * persist_d
 	return 1;
     }
 
-    //TODO
+    if (mkpath_for_resource(resource, persist_dir)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "bionet_resource_write_persist: Failed to create directory structure for resource %s",
+	      bionet_resource_get_name(resource));
+	return 1;	
+    }
+
     return 0;
 }
 
-#if 0
-static int mkpath_for_resource(bionet_resource_t * resource) {
-    char * hab_type;
-    char * hab_id;
-    char * node_id;
-    char * resource_id;
 
-    if (bionet_split_resource_name(bionet_resource_get_name(resource),
+static int mkpath_for_resource(bionet_resource_t * resource, char * persist_dir) {
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char dirpath[(BIONET_NAME_COMPONENT_MAX_LEN * 4) + 256];
+    char path[(BIONET_NAME_COMPONENT_MAX_LEN * 4) + 256];
+    char newpath[(BIONET_NAME_COMPONENT_MAX_LEN * 4) + 256];
+    int r;
+    //int fd;
+    FILE * fp;
+    bionet_datapoint_t * dp;
+    char * val;
+
+    if (bionet_split_resource_name_r(bionet_resource_get_name(resource),
 				   hab_type, hab_id, node_id, resource_id)) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "bionet_resource_persist: Unable to split resource name %s", 
+	      "mkpath_for_resource: Unable to split resource name %s", 
 	      bionet_resource_get_name(resource));
 	return 1;
     }
 
+    /* create the persist_dir */
+    r = mkdir(persist_dir, 0755);
+    if ((0 != r) && (EEXIST != errno)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "mkpath_for_resource: unable to dir %s : %m",
+	      persist_dir);
+	return 1;
+    }
+
+    /* create the persist_dir/hab-type */
+    r = snprintf(dirpath, sizeof(dirpath), "%s/%s",
+		 persist_dir, hab_type);
+    if ((r >= sizeof(dirpath)) || (r < 0)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "mkpath_for_resource: unable to create persist dir for resource %s and path %s for hab type",
+	      bionet_resource_get_name(resource), persist_dir);
+	return 1;
+    }
+    r = mkdir(dirpath, 0755);
+    if ((0 != r) && (EEXIST != errno)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "mkpath_for_resource: unable to dir %s : %m",
+	      dirpath);
+	return 1;
+    }
+
+    /* create the persist_dir/hab-type/hab-id */
+    r = snprintf(dirpath, sizeof(dirpath), "%s/%s/%s",
+		 persist_dir, hab_type, hab_id);
+    if ((r >= sizeof(dirpath)) || (r < 0)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "mkpath_for_resource: unable to create persist dir for resource %s and path %s for hab id",
+	      bionet_resource_get_name(resource), persist_dir);
+	return 1;
+    }
+    r = mkdir(dirpath, 0755);
+    if ((0 != r) && (EEXIST != errno)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "mkpath_for_resource: unable to dir %s : %m",
+	      dirpath);
+	return 1;
+    }
+
+    /* create the persist_dir/hab-type/hab-id/node-id */
+    r = snprintf(dirpath, sizeof(dirpath), "%s/%s/%s/%s",
+		 persist_dir, hab_type, hab_id, node_id);
+    if ((r >= sizeof(dirpath)) || (r < 0)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "mkpath_for_resource: unable to create persist dir for resource %s and path %s for node id",
+	      bionet_resource_get_name(resource), persist_dir);
+	return 1;
+    }
+    r = mkdir(dirpath, 0755);
+    if ((0 != r) && (EEXIST != errno)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "mkpath_for_resource: unable to dir %s : %m",
+	      dirpath);
+	return 1;
+    }
+
+    /* create the file name persist_dir/hab-type/hab-id/node-id/resource-id.TYPE-new */
     r = snprintf(newpath, sizeof(newpath), "%s/%s/%s/%s/%s.%s-new",
 		 persist_dir, hab_type, hab_id, node_id, resource_id, 
 		 bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)));
     if ((r >= sizeof(newpath)) || (r < 0)) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_resource_persist: unable to create persist path for resource %s and path %s",
+	      "mkpath_for_resource: unable to create persist new path for resource %s and path %s for resource",
 	      bionet_resource_get_name(resource), persist_dir);
 	return 1;
     }
 
+    /* create the file name persist_dir/hab-type/hab-id/node-id/resource-id.TYPE */
     r = snprintf(path, sizeof(path), "%s/%s/%s/%s/%s.%s",
 		 persist_dir, hab_type, hab_id, node_id, resource_id, 
 		 bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)));
     if ((r >= sizeof(path)) || (r < 0)) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_resource_persist: unable to create persist path for resource %s and path %s",
+	      "mkpath_for_resource: unable to create persist path for resource %s and path %s",
 	      bionet_resource_get_name(resource), persist_dir);
 	return 1;
     }
 
-    fd = open(path, O_SYNC | O_CREAT | O_TRUNC | O_WRONLY); 
+    
+#if 0
+    fd = open(newpath, O_SYNC | O_CREAT | O_TRUNC | O_WRONLY); 
+    if (-1 == fd) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "mkpath_for_resource: unable to create persist file for resource %s and path %s",
+	      bionet_resource_get_name(resource), newpath);
+	return 1;
+    }
+#endif
+
+    fp = fopen(newpath, "w");
+    if (NULL == fp) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+	      "mkpath_for_resource: unable to fdopen persist file %s for %s, moving on. %m",
+	      path, bionet_resource_get_name(resource));
+	return 1;
+    }
+
+    dp = BIONET_RESOURCE_GET_DATAPOINT(resource);
+    if (NULL == dp) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "mkpath_for_resource: resource %s has no datapoints",
+	      bionet_resource_get_name(resource));
+	goto exit2;
+    }
+    val = bionet_value_to_str(bionet_datapoint_get_value(dp));
+    if (1 != fwrite(val, strlen(val), 1, fp)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "mkpath_for_resource: Failed to write resource %s data to file %s",
+	      bionet_resource_get_name(resource),
+	      val);
+	goto exit3;
+    }
+
+exit3:
+    free(val);
+
+exit2:
+    fclose(fp);
+
+    if (rename(newpath, path)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+	      "mkpath_for_resource: Failed to rename file to %s", path);
+	return 0;
+    }
 
     return 0;
 } /* mkpath_for_resource() */
-#endif
 
 
 // Emacs cruft
