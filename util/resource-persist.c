@@ -107,7 +107,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	return 1;
     }
     
-    if (2 != sscanf(timestamp_str, "%lu.%lu", &tv.tv_sec, &tv.tv_usec)) {
+    if (2 != sscanf(timestamp_str, "%128lu.%128lu", &tv.tv_sec, &tv.tv_usec)) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "bionet_resource_persist: Unable to parse timestamp string to timeval %s: %m",
 	      timestamp_str);
