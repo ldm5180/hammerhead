@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 #
 # Copyright (c) 2010, Regents of the University of Colorado.
 # This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
@@ -9,6 +9,8 @@
 #
 # Start a HAB which persists data and validate the data is correct.
 #
+
+RETVAL=0
 
 if [ -z "$ROOT" ]; then
     echo "ROOT environment variable is undefined"
@@ -22,6 +24,38 @@ else
     export PYTHONPATH=$PYPATHADD:$PYTHONPATH
 fi
 
-./persist-hab-test.py
+UNIQUE=$$
 
-exit 0
+cp -R persist-test/canned persist-test/$UNIQUE
+
+$ROOT/client/watcher/bionet-watcher -r "persist-test.$UNIQUE.*:*" > out.watcher &
+./persist-hab-test.py -i $UNIQUE > out.persist-hab-test
+
+kill %1
+wait %1
+
+sleep 1
+
+if ! diff -q out.persist-hab-test out.watcher; then
+    echo "ERROR: bionet-watcher output differs from persist-hab-test output"
+    diff -u out.persist-hab-test out.watcher
+    RETVAL=1
+else
+    echo "bionet-watcher output is identical to persist-hab-test output, yay"
+fi
+
+sed "s/17710/$UNIQUE/g" header > should-be
+head -n 10 out.persist-hab-test > out-header
+if ! diff -q should-be out-header; then
+    echo "ERROR: read the wrong data from the persist files"
+    diff -u should-be out-header
+    RETVAL=1
+else
+    echo "Correct data from persist files, yay"
+fi
+
+
+#cleanup
+rm -rf persist-test/$UNIQUE
+
+exit $RETVAL

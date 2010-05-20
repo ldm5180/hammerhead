@@ -149,6 +149,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
     {
 	char * endptr;
 	long int val = strtol(buf, &endptr, 10);
+	val = val % 2;
 	if (ERANGE == errno && ((LONG_MIN == val) || (LONG_MAX == val))) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "bionet_resource_persist: Value in file is out of range.");
