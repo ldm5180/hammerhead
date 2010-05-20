@@ -130,17 +130,23 @@ hab_report_datapoints(node)
 
 i = 0
 next_pub = 0
+starttime = time.time()
 while(i < 30):
     (rr, wr, er) = select.select([hab_fd], [], [], 1.0)
     if (rr):
         hab_read()
+
+    i += 1
+
+    # for the first 5 seconds, do not publish new datapoints, wait for clients
+    if (5 > time.time() - starttime):
+        continue;
 
     if (next_pub <= time.time()):
         next_pub = time.time() + 1
     else: 
         continue
 
-    i += 1
 
     resource = bionet_node_get_resource_by_id(node, "uint32-1")
     val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
