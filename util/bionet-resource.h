@@ -7,8 +7,6 @@
 #ifndef __BIONET_RESOURCE_H
 #define __BIONET_RESOURCE_H
 
-#include "bionet-util.h"
-
 /**
  * @file bionet-resource.h
  * Functions for dealing with Bionet Resources.
