@@ -24,6 +24,7 @@ parser.add_option("-i", "--id", dest="id", default=None,
 
 (options,args) = parser.parse_args()
 
+bionet_log_use_default_handler(None);
 
 hab = bionet_hab_new("persist-test", options.id)
 if (None == hab):

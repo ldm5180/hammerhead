@@ -48,7 +48,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 
     dp = BIONET_RESOURCE_GET_DATAPOINT(resource);
     if (dp) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "Resource %s already has a datapoint. Using that one instead of the persisted one.",
 	      bionet_resource_get_name(resource));
 	goto exit1;
@@ -77,7 +77,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
     fd = open(path, O_RDONLY);
     if (-1 == fd) {
 	/* didn't open the file so let's get outta here without setting the value */
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 	      "bionet_resource_persist: unable to open persist file %s for %s, moving on. %m",
 	      path, bionet_resource_get_name(resource));
 	goto exit1;
@@ -86,20 +86,20 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
     /* must have opened the file, so switch it to a stream */
     fp = fdopen(fd, "r"); 
     if (NULL == fp) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 	      "bionet_resource_persist: unable to fdopen persist file %s for %s, moving on. %m",
 	      path, bionet_resource_get_name(resource));
 	close(fd);
 	goto exit1;
     }
 
-    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 	  "bionet_resource_persist: fdopened persist file %s for %s, reading.",
 	  path, bionet_resource_get_name(resource));
 
     /* read the timestamp */
     if (NULL == fgets(timestamp_str, sizeof(timestamp_str), fp)) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "bionet_resource_persist: No valid timestamp string found in file %s: %m",
 	      path);
 	fclose(fp);
@@ -107,7 +107,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
     }
     
     if (2 != sscanf(timestamp_str, "%lu.%lu", &tv.tv_sec, &tv.tv_usec)) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "bionet_resource_persist: Unable to parse timestamp string to timeval %s: %m",
 	      timestamp_str);
 	fclose(fp);
@@ -163,7 +163,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 		      "bionet_resource_persist: Failed to set binary resource %s to %d",
 		      bionet_resource_get_name(resource), (int)val);
 	} else {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "bionet_resource_persist: Successfully set resource %s to stored value %d",
 		  bionet_resource_get_name(resource), (int)val);
 	}
@@ -188,7 +188,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 		      "bionet_resource_persist: Failed to set uint8 resource %s to %u",
 		      bionet_resource_get_name(resource), (uint8_t)val);
 	} else {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "bionet_resource_persist: Successfully set resource %s to stored value %u",
 		  bionet_resource_get_name(resource), (uint8_t)val);
 	}
@@ -213,7 +213,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 		      "bionet_resource_persist: Failed to set int8 resource %s to %d",
 		      bionet_resource_get_name(resource), (int8_t)val);
 	} else {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "bionet_resource_persist: Successfully set resource %s to stored value %d",
 		  bionet_resource_get_name(resource), (int8_t)val);
 	}
@@ -238,7 +238,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 		      "bionet_resource_persist: Failed to set uint16 resource %s to %u",
 		      bionet_resource_get_name(resource), (uint16_t)val);
 	} else {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "bionet_resource_persist: Successfully set resource %s to stored value %u",
 		  bionet_resource_get_name(resource), (uint16_t)val);
 	}
@@ -263,7 +263,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 		      "bionet_resource_persist: Failed to set int16 resource %s to %d",
 		      bionet_resource_get_name(resource), (int16_t)val);
 	} else {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "bionet_resource_persist: Successfully set resource %s to stored value %d",
 		  bionet_resource_get_name(resource), (int16_t)val);
 	}
@@ -288,7 +288,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 		      "bionet_resource_persist: Failed to set uint32 resource %s to %u",
 		      bionet_resource_get_name(resource), (uint32_t)val);
 	} else {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "bionet_resource_persist: Successfully set resource %s to stored value %u",
 		  bionet_resource_get_name(resource), (uint32_t)val);
 	}
@@ -313,7 +313,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 		      "bionet_resource_persist: Failed to set int32 resource %s to %d",
 		      bionet_resource_get_name(resource), (int32_t)val);
 	} else {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "bionet_resource_persist: Successfully set resource %s to stored value %d",
 		  bionet_resource_get_name(resource), (int32_t)val);
 	}
@@ -335,7 +335,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 		      "bionet_resource_persist: Failed to set float resource %s to %f",
 		      bionet_resource_get_name(resource), val);
 	} else {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "bionet_resource_persist: Successfully set resource %s to stored value %f",
 		  bionet_resource_get_name(resource), val);
 	}
@@ -357,7 +357,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 		      "bionet_resource_persist: Failed to set double resource %s to %f",
 		      bionet_resource_get_name(resource), val);
 	} else {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "bionet_resource_persist: Successfully set resource %s to stored value %f",
 		  bionet_resource_get_name(resource), val);
 	}
@@ -370,7 +370,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 		      "bionet_resource_persist: Failed to set double resource %s to %s",
 		      bionet_resource_get_name(resource), buf);
 	} else {
-	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "bionet_resource_persist: Successfully set resource %s to stored value %s",
 		  bionet_resource_get_name(resource), buf);
 	}
@@ -548,7 +548,7 @@ static int mkpath_for_resource(bionet_resource_t * resource, char * persist_dir)
 
     fp = fopen(newpath, "w");
     if (NULL == fp) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 	      "mkpath_for_resource: unable to fdopen persist file %s for %s, moving on. %m",
 	      path, bionet_resource_get_name(resource));
 	return 1;
@@ -593,7 +593,7 @@ exit2:
     fclose(fp);
 
     if (rename(newpath, path)) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 	      "mkpath_for_resource: Failed to rename file to %s", path);
 	return 0;
     }

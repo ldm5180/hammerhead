@@ -31,12 +31,6 @@ char * persist_dir = "/var/local/bionet";
 
 GSList *libhab_queued_messages_from_nag = NULL;
 
-
-char *libhab_nag_hostname = NULL;
-unsigned short libhab_nag_port = 11001;
-
-int libhab_nag_timeout = 5;
-
 char *libhab_type = NULL;
 char *libhab_id = NULL;
 

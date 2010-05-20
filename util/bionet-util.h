@@ -147,7 +147,6 @@ typedef struct {
     GLogLevelFlags log_limit;
 } bionet_log_context_t;
 
-
 /**
  * @brief Glib log handler for Bionet
  *
@@ -165,6 +164,14 @@ void bionet_glib_log_handler(
 );
 
 
+/**
+ * @brief Set the Log Handler for Bionet
+ *
+ * @param[in] context Logging context to use
+ *
+ * @return Previous default log handler
+ */
+void bionet_log_use_default_handler(bionet_log_context_t * context);
 
 
 /**

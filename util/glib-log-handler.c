@@ -15,6 +15,10 @@
 #include "internal.h"
 #include "bionet-util.h"
 
+void bionet_log_use_default_handler(bionet_log_context_t * context) {
+    (void)g_log_set_default_handler(bionet_glib_log_handler, context);
+    return;
+} /* bionet_log_set_default_handler() */
 
 void bionet_glib_log_handler(
     const gchar *log_domain,

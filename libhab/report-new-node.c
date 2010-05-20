@@ -104,7 +104,7 @@ int hab_report_new_node(const bionet_node_t *node) {
             if (r != 0) continue;
 
 	    if (bionet_resource_is_persisted(resource)) {
-		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		      "hab_report_new_node: Persisting resource %s", 
 		      bionet_resource_get_name(resource));
 		if (bionet_resource_write_persist(resource, persist_dir)) {
