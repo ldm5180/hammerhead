@@ -131,7 +131,7 @@ hab_report_datapoints(node)
 i = 0
 next_pub = 0
 starttime = time.time()
-while(i < 30):
+while(time.time() - starttime < 30):
     (rr, wr, er) = select.select([hab_fd], [], [], 1.0)
     if (rr):
         hab_read()
