@@ -3,7 +3,7 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
-#define _BSD_SOURCE
+#define _GNU_SOURCE
 #include <string.h>
 
 #include "hardware-abstractor.h"
