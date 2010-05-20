@@ -3,6 +3,7 @@
 // This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 // NNC07CB47C.
 
+#define _XOPEN_SOURCE 600
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
