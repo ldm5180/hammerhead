@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     char *id = NULL;
     char * security_dir = NULL;
 
-    g_log_set_default_handler(bionet_glib_log_handler, NULL);
+    bionet_log_use_default_handler(NULL);
 
 
     // 

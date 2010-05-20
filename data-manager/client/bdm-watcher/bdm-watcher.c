@@ -241,8 +241,7 @@ int main(int argc, char *argv[]) {
     memset(&datapointStart, 0, sizeof(struct timeval));
     memset(&datapointEnd, 0, sizeof(struct timeval));
 
-
-    g_log_set_default_handler(bionet_glib_log_handler, NULL);
+    bionet_log_use_default_handler(NULL);
 
     int i;
     int c;

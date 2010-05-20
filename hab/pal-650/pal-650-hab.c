@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
         log_limit: G_LOG_LEVEL_INFO
     };
 
-    g_log_set_default_handler(bionet_glib_log_handler, &log_context);
+    bionet_log_use_default_handler(&log_context);
 
 
     // Parse command-line arguments

@@ -207,7 +207,7 @@ int main(int argc, char *argv[]) {
 
     int c;
 
-    g_log_set_default_handler(bionet_glib_log_handler, NULL);
+    bionet_log_use_default_handler(NULL);
 
     while(1) {
 	int i = 0;

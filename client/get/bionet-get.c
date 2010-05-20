@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
         {0, 0, 0, 0} //this must be last in the list
     };
 
-    g_log_set_default_handler(bionet_glib_log_handler, NULL);
+    bionet_log_use_default_handler(NULL);
 
     //
     // parse command-line arguments
