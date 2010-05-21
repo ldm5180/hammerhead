@@ -248,6 +248,7 @@ int cal_client_mdnssd_bip_unsubscribe(void * cal_handle,
     event->topic = strdup(topic);
     if (event->topic == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "unsubscribe: out of memory");
+        cal_event_free(event);
         return 0;
     }
 
@@ -265,8 +266,8 @@ int cal_client_mdnssd_bip_unsubscribe(void * cal_handle,
     }
 
     // 'event' passes out of scope here, but we don't leak its memory
-    // because we have successfully sent a pointer to it to the user thread
-    // coverity[leaked_storage]
+    // because we have successfully sent a pointer to it to the user
+    // thread, in the bip_msg_queue_push() function above
     return 1;
 }
 
