@@ -123,7 +123,13 @@ static void _eat_messages_until_shutdown(void * cal_handle) {
         return;
     }
 
-    while(bip_msg_queue_pop(&this->msg_queue, BIP_MSG_QUEUE_TO_USER, &event) == 0 );
+    while (bip_msg_queue_pop(&this->msg_queue, BIP_MSG_QUEUE_TO_USER, &event) == 0) {
+        if (this->callback != NULL) {
+            this->callback(this, event);
+        }
+
+        cal_event_free(event);
+    };
 
 }
 
