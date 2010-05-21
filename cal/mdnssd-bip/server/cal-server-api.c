@@ -489,12 +489,14 @@ void cal_server_mdnssd_bip_publish(void * cal_handle,
     event->topic = strdup(topic);
     if (event->topic == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "publish: out of memory");
+        cal_event_free(event);
         return;
     }
 
     event->msg.buffer = malloc(size);
     if (event->msg.buffer == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "publish: out of memory");
+        cal_event_free(event);
         return;
     }
     memcpy(event->msg.buffer, msg, size);
@@ -507,8 +509,8 @@ void cal_server_mdnssd_bip_publish(void * cal_handle,
     }
 
     // 'event' passes out of scope here, but we don't leak its memory
-    // because we have successfully sent a pointer to it to the user thread
-    // coverity[leaked_storage]
+    // because we have successfully sent a pointer to it to the user
+    // thread, in the bip_msg_queue_push() function above
     return;
 }
 
@@ -557,19 +559,21 @@ void cal_server_mdnssd_bip_publishto(void * cal_handle,
 
     event->peer_name = strdup(peer_name);
     if (event->peer_name == NULL) {
-        free(event);
+        cal_event_free(event);
         return;
     }
 
     event->topic = strdup(topic);
     if (event->topic == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "publish: out of memory");
+        cal_event_free(event);
         return;
     }
 
     event->msg.buffer = malloc(size);
     if (event->msg.buffer == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "publish: out of memory");
+        cal_event_free(event);
         return;
     }
     memcpy(event->msg.buffer, msg, size);
@@ -582,8 +586,8 @@ void cal_server_mdnssd_bip_publishto(void * cal_handle,
     }
 
     // 'event' passes out of scope here, but we don't leak its memory
-    // because we have successfully sent a pointer to it to the user thread
-    // coverity[leaked_storage]
+    // because we have successfully sent a pointer to it to the user
+    // thread, in the bip_msg_queue_push() function above
     return;
 }
 
