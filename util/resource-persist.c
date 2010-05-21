@@ -107,7 +107,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	return 1;
     }
     
-    if (2 != sscanf(timestamp_str, "%128lu.%128lu", &tv.tv_sec, &tv.tv_usec)) {
+    if (2 != sscanf(timestamp_str, "%128lu.%128lu", &tv.tv_sec, (unsigned long int *)&tv.tv_usec)) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	      "bionet_resource_persist: Unable to parse timestamp string to timeval %s: %m",
 	      timestamp_str);
@@ -566,7 +566,7 @@ static int mkpath_for_resource(bionet_resource_t * resource, char * persist_dir)
 
     tv = bionet_datapoint_get_timestamp(dp);
     if (sizeof(timestamp_str) <= snprintf(timestamp_str, sizeof(timestamp_str), 
-					  "%lu.%lu\n", tv->tv_sec, tv->tv_usec)) {
+					  "%lu.%lu\n", tv->tv_sec, (unsigned long int)tv->tv_usec)) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "mkpath_for_resource: timestamp string is too long for resource %s",
 	      bionet_resource_get_name(resource));
