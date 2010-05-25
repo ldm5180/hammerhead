@@ -262,7 +262,7 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
 
 
 /**
- * @brief Sets the value of a Resource.
+ * @brief Sets the value of a Binary Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
@@ -290,7 +290,7 @@ int bionet_resource_set_binary(bionet_resource_t *resource,
 
 
 /**
- * @brief Sets the value of a Resource.
+ * @brief Sets the value of a UInt8 Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
@@ -318,7 +318,7 @@ int bionet_resource_set_uint8(bionet_resource_t *resource,
 
 
 /**
- * @brief Sets the value of a Resource.
+ * @brief Sets the value of an Int8 Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
@@ -346,7 +346,7 @@ int bionet_resource_set_int8(bionet_resource_t *resource,
 
 
 /**
- * @brief Sets the value of a Resource.
+ * @brief Sets the value of a UInt16 Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
@@ -374,7 +374,7 @@ int bionet_resource_set_uint16(bionet_resource_t *resource,
 
 
 /**
- * @brief Sets the value of a Resource.
+ * @brief Sets the value of an Int16 Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
@@ -402,7 +402,7 @@ int bionet_resource_set_int16(bionet_resource_t *resource,
 
 
 /**
- * @brief Sets the value of a Resource.
+ * @brief Sets the value of a UInt32 Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
@@ -430,7 +430,7 @@ int bionet_resource_set_uint32(bionet_resource_t *resource,
 
 
 /**
- * @brief Sets the value of a Resource.
+ * @brief Sets the value of an Int32 Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
@@ -458,7 +458,7 @@ int bionet_resource_set_int32(bionet_resource_t *resource,
 
 
 /**
- * @brief Sets the value of a Resource.
+ * @brief Sets the value of a Float Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
@@ -486,7 +486,7 @@ int bionet_resource_set_float(bionet_resource_t *resource,
 
 
 /**
- * @brief Sets the value of a Resource.
+ * @brief Sets the value of a Double Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
@@ -514,7 +514,7 @@ int bionet_resource_set_double(bionet_resource_t *resource,
 
 
 /**
- * @brief Sets the value of a Resource.
+ * @brief Sets the value of a String Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the
  * passed-in value and timestamp are copied to the Resource's first
