@@ -13,13 +13,13 @@
 
 
 /* function declarations */
-static bionet_value_t * bionet_value_new_internal(bionet_resource_t *resource,
+static bionet_value_t * bionet_value_new_internal(const bionet_resource_t *resource,
 						  const void *content,
 						  bionet_resource_data_type_t datatype);
 
 
 /* function implementations */
-bionet_value_t *bionet_value_new_binary(bionet_resource_t *resource,
+bionet_value_t *bionet_value_new_binary(const bionet_resource_t *resource,
 					int content)
 {
     return bionet_value_new_internal(resource, 
@@ -28,7 +28,7 @@ bionet_value_t *bionet_value_new_binary(bionet_resource_t *resource,
 } /* bionet_value_new_binary() */
 
 
-bionet_value_t *bionet_value_new_uint8(bionet_resource_t *resource,
+bionet_value_t *bionet_value_new_uint8(const bionet_resource_t *resource,
 				       uint8_t content)
 {
     return bionet_value_new_internal(resource, 
@@ -37,7 +37,7 @@ bionet_value_t *bionet_value_new_uint8(bionet_resource_t *resource,
 } /* bionet_value_new_uint8() */
 
 
-bionet_value_t *bionet_value_new_int8(bionet_resource_t *resource,
+bionet_value_t *bionet_value_new_int8(const bionet_resource_t *resource,
 				      int8_t content)
 {
     return bionet_value_new_internal(resource, 
@@ -46,7 +46,7 @@ bionet_value_t *bionet_value_new_int8(bionet_resource_t *resource,
 } /* bionet_value_new_int8() */
 
 
-bionet_value_t *bionet_value_new_uint16(bionet_resource_t *resource,
+bionet_value_t *bionet_value_new_uint16(const bionet_resource_t *resource,
 					uint16_t content)
 {
     return bionet_value_new_internal(resource, 
@@ -55,7 +55,7 @@ bionet_value_t *bionet_value_new_uint16(bionet_resource_t *resource,
 } /* bionet_value_new_uint16() */
 
 
-bionet_value_t *bionet_value_new_int16(bionet_resource_t *resource,
+bionet_value_t *bionet_value_new_int16(const bionet_resource_t *resource,
 				       int16_t content)
 {
     return bionet_value_new_internal(resource, 
@@ -64,7 +64,7 @@ bionet_value_t *bionet_value_new_int16(bionet_resource_t *resource,
 } /* bionet_value_new_int16() */
 
 
-bionet_value_t *bionet_value_new_uint32(bionet_resource_t *resource,
+bionet_value_t *bionet_value_new_uint32(const bionet_resource_t *resource,
 					uint32_t content)
 {
     return bionet_value_new_internal(resource, 
@@ -73,7 +73,7 @@ bionet_value_t *bionet_value_new_uint32(bionet_resource_t *resource,
 } /* bionet_value_new_uint32() */
 
 
-bionet_value_t *bionet_value_new_int32(bionet_resource_t *resource,
+bionet_value_t *bionet_value_new_int32(const bionet_resource_t *resource,
 				       int32_t content)
 {
     return bionet_value_new_internal(resource, 
@@ -82,7 +82,7 @@ bionet_value_t *bionet_value_new_int32(bionet_resource_t *resource,
 } /* bionet_value_new_int32() */
 
 
-bionet_value_t *bionet_value_new_float(bionet_resource_t *resource,
+bionet_value_t *bionet_value_new_float(const bionet_resource_t *resource,
 				       float content)
 {
     return bionet_value_new_internal(resource, 
@@ -91,7 +91,7 @@ bionet_value_t *bionet_value_new_float(bionet_resource_t *resource,
 } /* bionet_value_new_float() */
 
 
-bionet_value_t *bionet_value_new_double(bionet_resource_t *resource,
+bionet_value_t *bionet_value_new_double(const bionet_resource_t *resource,
 				        double content)
 {
     return bionet_value_new_internal(resource, 
@@ -100,7 +100,7 @@ bionet_value_t *bionet_value_new_double(bionet_resource_t *resource,
 } /* bionet_value_new_double() */
 
 
-bionet_value_t *bionet_value_new_str(bionet_resource_t *resource,
+bionet_value_t *bionet_value_new_str(const bionet_resource_t *resource,
 				     const char * content)
 {
     return bionet_value_new_internal(resource, 
@@ -109,7 +109,7 @@ bionet_value_t *bionet_value_new_str(bionet_resource_t *resource,
 } /* bionet_value_new_string() */
 
 
-bionet_value_t * bionet_value_dup(bionet_resource_t *resource, bionet_value_t *value)
+bionet_value_t * bionet_value_dup(const bionet_resource_t *resource, const bionet_value_t *value)
 {
 
     switch (resource->data_type) {
@@ -155,7 +155,7 @@ bionet_value_t * bionet_value_dup(bionet_resource_t *resource, bionet_value_t *v
 } /* bionet_value_dup() */
 
 
-static bionet_value_t * bionet_value_new_internal(bionet_resource_t *resource,
+static bionet_value_t * bionet_value_new_internal(const bionet_resource_t *resource,
 						  const void *content,
 						  bionet_resource_data_type_t datatype)
 {
@@ -196,7 +196,7 @@ static bionet_value_t * bionet_value_new_internal(bionet_resource_t *resource,
     }
 
     /* set resource */
-    value->resource = resource;
+    value->resource = (bionet_resource_t *)resource;
     
     /* set content */
     switch (datatype)
