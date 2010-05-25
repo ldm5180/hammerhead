@@ -15,7 +15,7 @@ endif
 SUBDIRS += info
 
 if ENABLE_HABS
-SUBDIRS += random csa-cp syshealth pal-650 streamy
+SUBDIRS += random csa-cp syshealth pal-650 streamy commandable
 
 if ENABLE_ALSA
 SUBDIRS += alsa
