@@ -262,6 +262,34 @@ bionet_resource_data_type_t bionet_resource_data_type_from_string(const char *da
 
 
 /**
+ * @brief Sets the value of a Resource (of any data type).
+ *
+ * If the Resource has no Datapoint, one will be created.  Then the
+ * passed-in value and timestamp are copied to the Resource's first
+ * Datapoint, and the Datapoint is marked dirty.
+ *
+ * @param[in] resource The Resource to set.
+ * @param[in] content The new content.
+ * @param[in] timestamp The Timestamp, if NULL the current time will be used
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ *
+ * @note This is shorthand for the following code.
+ * @code
+ * bionet_resource_remove_datapoint_by_index(resource, 0);
+ * bionet_value_t *value = bionet_value_dup(resource, content);
+ * bionet_datapoint_t *dp = bionet_datapoint_new(resource, value, ts);
+ * bionet_resource_add_datapoint(resource, dp);
+ * @endcode
+ */
+BIONET_UTIL_API_DECL
+int bionet_resource_set(bionet_resource_t *resource, 
+			const bionet_value_t *content, 
+			const struct timeval *timestamp);
+
+
+/**
  * @brief Sets the value of a Binary Resource.
  *
  * If the Resource has no Datapoint, one will be created.  Then the

@@ -15,6 +15,46 @@
 
 
 
+
+int bionet_resource_set(
+    bionet_resource_t *resource, 
+    const bionet_value_t *content, 
+    const struct timeval *timestamp
+) {
+    bionet_value_t *value;
+    bionet_datapoint_t *dp;
+
+    if (resource == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_set(): NULL Resource passed in");
+        return -1;
+    }
+
+    if (content == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_set(): NULL content (value) passed in");
+        return -1;
+    }
+
+    value = bionet_value_dup(resource, content);
+    if (value == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_set(): error duplicating content");
+        return -1;
+    }
+
+    dp = bionet_datapoint_new(resource, value, timestamp);
+    if (dp == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_set(): error creating datapoint");
+        return -1;
+    }
+
+    bionet_resource_remove_datapoint_by_index(resource, 0);
+    bionet_resource_add_datapoint(resource, dp);
+
+    return 0;
+}
+
+
+
+
 int bionet_resource_set_binary(bionet_resource_t *resource, 
 			       int content, 
 			       const struct timeval *timestamp) 
