@@ -181,7 +181,7 @@ static bionet_value_t * bionet_value_new_internal(bionet_resource_t *resource,
     if (resource->data_type != datatype)
     {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "bionet_value_set_*(): resource/datatype mismatch");
+	      "bionet_value_new_*(): resource/datatype mismatch");
 	errno = EINVAL;
 	return NULL;
     }
