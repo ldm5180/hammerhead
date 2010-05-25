@@ -666,6 +666,7 @@ AC_CONFIG_FILES([Makefile
                  hab/streamy/Makefile
                  hab/bpstats2/Makefile
                  hab/mon/Makefile
+                 hab/commandable/Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
