@@ -127,6 +127,8 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	    return 1;
 	}
 
+	memset(&buf[so_far], 0, 512);
+
 	so_far += fread(&buf[so_far], 1, 512, fp);
 	if (ferror(fp)) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -138,6 +140,15 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
     } while (0 == feof(fp));
 
     buf[so_far] = '\0';
+
+    if (buf[strlen(buf)-1] == '\n') {
+	buf[strlen(buf)-1] = '\0';
+    } else {
+	if (strlen(buf)%512 == 0) {
+	    buf = realloc(buf, strlen(buf) + 1);
+	}
+	buf[strlen(buf)] = '\0';
+    }
 
     fclose(fp);
     
@@ -566,7 +577,7 @@ static int mkpath_for_resource(bionet_resource_t * resource, char * persist_dir)
 
     tv = bionet_datapoint_get_timestamp(dp);
     if (sizeof(timestamp_str) <= snprintf(timestamp_str, sizeof(timestamp_str), 
-					  "%lu.%lu\n", tv->tv_sec, (unsigned long int)tv->tv_usec)) {
+					  "%lu.%06lu\n", tv->tv_sec, (unsigned long int)tv->tv_usec)) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "mkpath_for_resource: timestamp string is too long for resource %s",
 	      bionet_resource_get_name(resource));
@@ -586,6 +597,13 @@ static int mkpath_for_resource(bionet_resource_t * resource, char * persist_dir)
 	      bionet_resource_get_name(resource),
 	      val);
 	goto exit3;
+    } else {
+	if (1 != fwrite("\n", 1, 1, fp)) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "mkpath_for_resource: Failed to write extra newline to resource %s data file",
+		  bionet_resource_get_name(resource));
+	    goto exit3;
+	}
     }
 
 exit3:
