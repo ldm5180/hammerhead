@@ -12,6 +12,10 @@ if ENABLE_CLIENTS
 SUBDIRS += bdm-client bdm-watcher 
 endif
 
+if ENABLE_ION
+SUBDIRS += bp-commander
+endif
+
 if ENABLE_PYTHON
 SUBDIRS += py-libbdm bdmplot2 twisted
 endif

@@ -553,5 +553,45 @@ bionet_resource_t *bdm_cache_lookup_resource(const char *hab_type, const char *h
 bionet_stream_t *bdm_cache_lookup_stream(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
 #endif
 
+
+
+
+//
+// The following functions are only available if libbdm was compiled with ION support
+//
+
+
+/**
+ * @brief Connects to the Bundle Agent and does other setup needed to pass bundles.
+ *
+ * @param[in] source_eid The Source Endpoint Identifier to send future bundles from.
+ *
+ * @retval 0 on success
+ * @retval -1 on failure
+ */
+int bionet_bp_start(char *source_eid);
+
+
+/**
+ * @brief Disconnects from the Bundle Agent and frees memory used for the Bundle Protocol.
+ */
+void bionet_bp_stop(void);
+
+
+/**
+ * @brief Sends a bundle to the specified proxy, asking that the named Resource be set to the specified value.
+ *
+ * @param[in] dest_eid The Endpoint Identifier of the Bionet BP Commanding Proxy.
+ * @param[in] resource_name The name of the Resource to command (may include wildcards).
+ * @param[in] value The value to set the Resource to.
+ *
+ * @retval 0 on success
+ * @retval -1 on failure
+ */
+int bionet_bp_set_resource_by_name(const char *dest_eid, int bundle_ttl, const char *resource_name, const char *value);
+
+
+
+
 #endif
 
