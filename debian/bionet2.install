@@ -15,6 +15,7 @@ usr/bin/random-hab
 usr/bin/pal-650
 usr/bin/speedway
 usr/bin/env-hab
+usr/bin/commandable-hab
 
 # clients
 usr/bin/bionet-realtime-watcher
