@@ -46,6 +46,10 @@ libbionet_data_manager_la_SOURCES =      \
 bin_SCRIPTS = bdm-make-db
 bionetdata_DATA = schema
 
+nobase_sysconf_DATA =           \
+    init.d/bionet-data-manager
+
+
 extra_cflags = $(OPENSSL_CFLAGS) $(GLIB_CFLAGS) $(OPENSSL_CFLAGS) $(CFLAGS_BIONET_CAL_SERVER) $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) $(ION_CFLAGS) $(CFLAGS_BIONET_HAB)
 
 bionet_data_manager_CFLAGS = $(AM_CFLAGS) $(extra_cflags)
