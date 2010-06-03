@@ -28,7 +28,7 @@ int hab_persist_resource(bionet_resource_t * resource) {
 
 
 int hab_set_persist_directory(char * dir) {
-    persist_dir = strndup(dir, strlen(dir));
+    persist_dir = strdup(dir);
     if (NULL == persist_dir) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "hab_set_persist_directory: Failed to allocate memory for persistence dir - %m");
