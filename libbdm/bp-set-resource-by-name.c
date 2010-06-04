@@ -24,8 +24,9 @@ typedef struct {
     BpSAP sap;
 } ion_config_t;
 
+#ifdef ENABLE_ION
 static ion_config_t ion_config;
-
+#endif /* ENABLE_ION */
 
 
 
