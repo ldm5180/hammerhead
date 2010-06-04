@@ -582,6 +582,7 @@ void bionet_bp_stop(void);
  * @brief Sends a bundle to the specified proxy, asking that the named Resource be set to the specified value.
  *
  * @param[in] dest_eid The Endpoint Identifier of the Bionet BP Commanding Proxy.
+ * @param[in] bundle_ttl Bundle lifetime
  * @param[in] resource_name The name of the Resource to command (may include wildcards).
  * @param[in] value The value to set the Resource to.
  *
