@@ -560,8 +560,6 @@ bionet_stream_t *bdm_cache_lookup_stream(const char *hab_type, const char *hab_i
 // The following functions are only available if libbdm was compiled with ION support
 //
 
-#ifdef ENABLE_ION
-
 
 /**
  * @brief Connects to the Bundle Agent and does other setup needed to pass bundles.
@@ -591,9 +589,6 @@ void bionet_bp_stop(void);
  * @retval -1 on failure
  */
 int bionet_bp_set_resource_by_name(const char *dest_eid, int bundle_ttl, const char *resource_name, const char *value);
-
-
-#endif // ENABLE_ION
 
 
 

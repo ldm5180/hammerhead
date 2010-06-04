@@ -30,6 +30,7 @@ static ion_config_t ion_config;
 
 
 int bionet_bp_start(char *source_eid) {
+#ifdef ENABLE_ION
     int r;
 
     r = bp_attach();
@@ -66,19 +67,26 @@ int bionet_bp_start(char *source_eid) {
 fail:
     bp_detach();
     return -1;
+#else // ENABLE_ION
+    errno = ENOSYS;
+    return -1;
+#endif // ENABLE_ION
 }
 
 
 
 
 void bionet_bp_stop(void) {
+#ifdef ENABLE_ION
     bp_detach();
+#endif // ENABLE_ION
 }
 
 
 
 
 int bionet_bp_set_resource_by_name(char *dest_eid, int bundle_lifetime_seconds, char *resource_name, char *value) {
+#ifdef ENABLE_ION
     int bundle_size;
     Sdr sdr;
     Object bundle_payload;
@@ -171,5 +179,9 @@ int bionet_bp_set_resource_by_name(char *dest_eid, int bundle_lifetime_seconds, 
 
     writeErrmsgMemos();
     return 0;
+#else // ENABLE_ION
+    errno = ENOSYS;
+    return -1;
+#endif // ENABLE_ION
 }
 
