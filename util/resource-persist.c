@@ -41,6 +41,12 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	return 1;
     }
 
+    if (0 >= bionet_resource_get_num_datapoints(resource)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+	      "bionet_resource_persist: Resource has no datapoints to persist.");
+	return 0;
+    }
+
     if (NULL == persist_dir) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "bionet_resource_persist: NULL persist_dir passed in.");
@@ -559,20 +565,20 @@ static int mkpath_for_resource(bionet_resource_t * resource, char * persist_dir)
     }
 #endif
 
+    dp = BIONET_RESOURCE_GET_DATAPOINT(resource);
+    if (NULL == dp) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "mkpath_for_resource: resource %s has no datapoints",
+	      bionet_resource_get_name(resource));
+	goto exit1;
+    }
+
     fp = fopen(newpath, "w");
     if (NULL == fp) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 	      "mkpath_for_resource: unable to fdopen persist file %s for %s, moving on. %m",
 	      path, bionet_resource_get_name(resource));
 	return 1;
-    }
-
-    dp = BIONET_RESOURCE_GET_DATAPOINT(resource);
-    if (NULL == dp) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "mkpath_for_resource: resource %s has no datapoints",
-	      bionet_resource_get_name(resource));
-	goto exit2;
     }
 
     tv = bionet_datapoint_get_timestamp(dp);
@@ -618,6 +624,7 @@ exit2:
 	return 0;
     }
 
+exit1:
     return 0;
 } /* mkpath_for_resource() */
 
