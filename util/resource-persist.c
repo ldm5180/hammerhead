@@ -106,7 +106,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 
     /* read the timestamp */
     if (NULL == fgets(timestamp_str, sizeof(timestamp_str), fp)) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "bionet_resource_persist: No valid timestamp string found in file %s: %m",
 	      path);
 	fclose(fp);
@@ -114,7 +114,7 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
     }
     
     if (2 != sscanf(timestamp_str, "%128lu.%128lu", &tv.tv_sec, (unsigned long int *)&tv.tv_usec)) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "bionet_resource_persist: Unable to parse timestamp string to timeval %s: %m",
 	      timestamp_str);
 	fclose(fp);
