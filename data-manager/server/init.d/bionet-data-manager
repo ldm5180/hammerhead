@@ -6,6 +6,11 @@
 #
 
 
+# don't try to start if the package has been removed
+# ("dpkg --remove" leaves behind config files such as init scripts)
+test -x /usr/bin/bionet-data-manager || exit 0
+
+
 case "$1" in
 
     start)
