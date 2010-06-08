@@ -41,12 +41,6 @@ int bionet_resource_persist(bionet_resource_t * resource, char * persist_dir) {
 	return 1;
     }
 
-    if (0 >= bionet_resource_get_num_datapoints(resource)) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
-	      "bionet_resource_persist: Resource has no datapoints to persist.");
-	return 0;
-    }
-
     if (NULL == persist_dir) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "bionet_resource_persist: NULL persist_dir passed in.");
