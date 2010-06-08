@@ -29,7 +29,8 @@ libbdm_la_SOURCES =             \
     subscribe-node-list.c       \
     subscribe-datapoints.c      \
     global.c                    \
-    register-callback.c 
+    register-callback.c         \
+    bp-set-resource-by-name.c
 
 libbdm_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -I$(top_srcdir)/data-manager/include $(CFLAGS_BIONET_CAL_CLIENT) $(CFLAGS_BIONET_CAL_UTIL) -fno-strict-aliasing
 
@@ -39,7 +40,6 @@ libbdm_la_LIBADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BI
 
 
 if ENABLE_ION
-    libbdm_la_SOURCES += bp-set-resource-by-name.c
     libbdm_la_CFLAGS += $(ION_CFLAGS)
     libbdm_la_LDFLAGS += $(ION_LDFLAGS)
     libbdm_la_LIBADD += $(LIBS_ION)

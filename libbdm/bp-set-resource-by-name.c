@@ -7,16 +7,15 @@
 #include <stdio.h>
 
 #include <glib.h>
+#include <errno.h>
 
+#include "config.h"
+
+
+#ifdef ENABLE_ION
 #include <zco.h>
 #include <sdr.h>
 #include <bp.h>
-
-
-#define LOG_DOMAIN ((char *)NULL)
-
-
-
 
 // Group ion configs for clarity
 typedef struct {
@@ -24,10 +23,10 @@ typedef struct {
     BpSAP sap;
 } ion_config_t;
 
-#ifdef ENABLE_ION
 static ion_config_t ion_config;
 #endif /* ENABLE_ION */
 
+#define LOG_DOMAIN ((char *)NULL)
 
 
 int bionet_bp_start(char *source_eid) {
