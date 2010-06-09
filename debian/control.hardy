@@ -27,9 +27,17 @@ Package: bionet2
 Section: net
 Architecture: any
 Depends: ${shlibs:Depends}, libnss-mdns, python
-Recommends: bionet2-cpod, bionet2-stethoscope, bionet2-monitor, bionet2-streams
+Recommends: bionet2-cpod, bionet2-stethoscope, bionet2-monitor, bionet2-streams, bionet2-data-manager
 Description: A network-transparent pub/sub system for information exchange
- Bionet2 HABs and Clients, and BDM
+ Bionet2 HABs and Clients, and BDM Clients
+
+Package: bionet2-data-manager
+Section: net
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: A network-transparent pub/sub system for information exchange
+ This package contains the Bionet Data Manager (BDM) server.
+ The BDM Clients are in the bionet2 package.
 
 Package: bionet2-cpod
 Section: net
