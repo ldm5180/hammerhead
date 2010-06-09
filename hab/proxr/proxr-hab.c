@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#include <getopt.h>
 
 #include "hardware-abstractor.h"
 #include "glib.h"
@@ -11,6 +12,11 @@
 #include "proxrport.h"
 
 #define HAB_TYPE "proxr-hab"
+
+void usage(void)
+{
+    printf("fill this in\n");
+}
 
 bionet_hab_t *hab;
 int should_exit = 0;
@@ -175,8 +181,47 @@ int main(int argc, char* argv[])
 {
     int bionet_fd;
     int proxr_fd;
+    int i;
+
     char *hab_type = HAB_TYPE;
     char *hab_id = NULL;
+
+    while(1)
+    {
+        int c;
+        static struct option long_options[] =
+        {
+            {"help", 0, 0, '?'},
+            {"version", 0, 0, 'v'},
+            {"id", 1, 0, 'i'},
+            {0, 0, 0, 0}
+        };
+
+        c = getopt_long(argc, argv, "?hvi:", long_options, &i);
+        if(c == -1)
+        {
+            break;
+        }
+
+        switch (c)
+        {
+            case '?':
+            case 'h':
+                usage();
+                return 0;
+
+            case 'i':
+                hab_id = optarg;
+                break;
+
+            case 'v':
+                print_bionet_version(stdout);
+                return 0;
+
+            default:
+                break;
+        }
+    }
 
     hab = bionet_hab_new(hab_type, hab_id);
 
