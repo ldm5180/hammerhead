@@ -10,30 +10,82 @@ set -e
 DB=bdm.db
 SCHEMA=/usr/share/bionet2/schema
 SCHEMABASE=$(basename "$SCHEMA")
+QUIET=no
 
-if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-    echo "bdm-make-db makes a Bionet Data Manager database file"
-    echo ""
-    echo "usage: bdm-make-db [DBFILE]"
-    echo ""
-    echo "The database will be created in the file [DBFILE], which defaults"
-    echo "to \"$DB\"."
-    echo "This script will attempt to use a file named \"$SCHEMABASE\" in the"
-    echo "working directory as the schema if found.  If one does not exist,"
-    echo "the site-wide \"$SCHEMA\" will be used instead."
-    exit 0
+
+
+
+function usage () {
+    cat <<-END
+bdm-make-db makes a Bionet Data Manager database file
+
+usage: bdm-make-db [OPTIONS] [DBFILE]
+
+The database will be created in the file [DBFILE], which defaults
+to "$DB".
+
+This script will attempt to use a file named "$SCHEMABASE" in the
+working directory as the schema if found.  If one does not exist,
+the site-wide "$SCHEMA" will be used instead.
+
+OPTIONS are:
+    -h, --help   Show this help
+    -q, --quiet  Do not show database schema & info after creating
+
+END
+    exit $1
+}
+
+
+
+
+# 
+# Parse command-line arguments
+#
+
+
+# Note that we use `"$@"' to let each command-line parameter expand to a
+# separate word. The quotes around `$@' are essential!
+# We need TEMP as the `eval set --' would nuke the return value of getopt.
+TEMP=$(getopt -o hq --long help,quiet -n "$0" -- "$@")
+if [ $? != 0 ] ; then
+    echo "Terminating..." >&2
+    exit 1
 fi
+
+# Note the quotes around `$TEMP': they are essential!
+eval set -- "$TEMP"
+
+while true ; do
+    case "$1" in
+        -q|--quiet) QUIET='yes'; shift 1 ;;
+        -h|--help) usage 0 ;;
+        --) shift ; break ;;
+        *) echo "Internal error!  got $1" ; exit 1 ;;
+    esac
+done
 
 # make the user-supplied database file, if they supplied one.
 if [ -n "$1" ]; then
     DB=$1
+    shift 1
 fi
+
+if [ ! -z "$*" ]; then
+    echo "error: extra arguments"
+    for arg do
+        echo '--> '"\`$arg'"
+    done
+    usage 1
+fi
+
 
 # make a fresh, empty database based on the current schema
 if [ -f "$DB" ]; then
     echo "DB $DB already exists, quitting"
     exit 1
 fi
+
 SQL="sqlite3 $DB"
 
 # if there's a local schema, prefer that to the installed one
@@ -44,14 +96,15 @@ fi
 $SQL < $SCHEMA
 
 
-# show the schema we ended up with
-$SQL .schema
+if [ "$QUIET" = "no" ]; then
+    # show the schema we ended up with
+    $SQL .schema
 
-# show the Resource Data Types and Flavors tables
-echo "Resource Data Types:"
-$SQL "SELECT * FROM Resource_Data_Types;"
+    # show the Resource Data Types and Flavors tables
+    echo "Resource Data Types:"
+    $SQL "SELECT * FROM Resource_Data_Types;"
 
-echo "Resource Flavors:"
-$SQL "SELECT * FROM Resource_Flavors;"
-
+    echo "Resource Flavors:"
+    $SQL "SELECT * FROM Resource_Flavors;"
+fi
 
