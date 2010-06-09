@@ -22,11 +22,7 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
     bionet_node_t *node;
 
     bionet_value_get_uint8(value, &content);
-    /*if(content < 0 || content > 255)
-    {
-        g_warning("Invalid value. Valid range 0-255.");
-        return;
-    }*/
+
     node = bionet_resource_get_node(resource);
     // get index of resource
     //FIXME: probably a better way to do this
