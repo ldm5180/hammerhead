@@ -1,4 +1,18 @@
-#!/bin/sh
+#!/bin/bash
+#
+### BEGIN INIT INFO
+# Provides:          bionet-data-manager
+# Required-Start:    $local_fs $network $syslog $time avahi-daemon
+# Required-Stop:     $local_fs $network $syslog $time avahi-daemon
+# Default-Start:     S
+# Default-Stop:      
+# Short-Description: Start or stop the Bionet Data Manager (BDM)
+# Description:       Starts or stops the Bionet Data Manager (BDM).  BDM records the data that
+#                    flows across a Bionet network.  It makes this historical data available to
+#                    BDM clients locally, and optionally syncs it to other BDM servers (over TCP
+#                    or BP).
+### END INIT INFO
+#
 #
 # Copyright (c) 2008-2010, Regents of the University of Colorado.
 # This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
@@ -6,27 +20,58 @@
 #
 
 
+EXE="/usr/bin/bionet-data-manager"
+BDM_DB_FILE="/var/lib/bionet-data-manager/bdm.db"
+PIDFILE="/var/run/bionet-data-manager.pid"
+
+
 # don't try to start if the package has been removed
 # ("dpkg --remove" leaves behind config files such as init scripts)
-test -x /usr/bin/bionet-data-manager || exit 0
+test -x $EXE || exit 0
+
+
+function bdm_start () {
+    start-stop-daemon --start --exec $EXE --background --make-pidfile --pidfile $PIDFILE -- --file $BDM_DB_FILE
+}
+
+function bdm_stop () {
+    start-stop-daemon --stop --oknodo --quiet --exec $EXE --pidfile $PIDFILE --retry 5
+}
+
+function bdm_restart () {
+    bdm_stop
+    bdm_start
+}
 
 
 case "$1" in
 
     start)
         echo -n "Starting Bionet Data Manager: "
-        bionet-data-manager
+        bdm_start
         echo ok
         ;;
 
     stop)
         echo -n "Stopping Bionet Data Manager: "
-        bionet-data-manager -k
+        bdm_stop
+        echo ok
+        ;;
+
+    restart)
+        echo -n "Restarting Bionet Data Manager: "
+        bdm_restart
+        echo ok
+        ;;
+
+    force-reload)
+        echo -n "Forced reloading Bionet Data Manager: "
+        bdm_restart
         echo ok
         ;;
 
     *)
-        echo "Usage: $0 {start|stop}"
+        echo "Usage: $0 {start|stop|restart|force-reload|status}"
         exit 1
 
 esac

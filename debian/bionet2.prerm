@@ -1,0 +1,10 @@
+#!/bin/bash
+
+BDM_DB_FILE=/var/lib/bionet-data-manager/bdm.db
+
+if [ "$1" = "remove" ]; then
+    /etc/init.d/bionet-data-manager stop
+    rm -f $BDM_DB_FILE
+fi
+
+

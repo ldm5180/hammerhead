@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ "$1" = "purge" ]; then
+    update-rc.d bionet-data-manager remove
+fi
+
+

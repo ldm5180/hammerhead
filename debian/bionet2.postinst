@@ -1,0 +1,18 @@
+#!/bin/bash
+
+BDM_DB_FILE=/var/lib/bionet-data-manager/bdm.db
+
+if [ "$1" = "configure" ]; then
+    # create the database if needed
+    if [ -f $BDM_DB_FILE ]; then
+        echo "found an existing BDM data file, not re-creating"
+    else
+        bdm-make-db --quiet $BDM_DB_FILE
+    fi
+
+    # 25 is hardy-speak for "after syslog and avahi and the mta, but before exproc"
+    update-rc.d bionet-data-manager start 25 S .
+
+    /etc/init.d/bionet-data-manager restart
+fi
+
