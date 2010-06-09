@@ -17,16 +17,16 @@ int should_exit = 0;
 
 void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
 {
-    uint32_t content;
+    uint8_t content;
     int id;
     bionet_node_t *node;
 
-    bionet_value_get_uint32(value, &content);
-    if(content < 0 || content > 255)
+    bionet_value_get_uint8(value, &content);
+    /*if(content < 0 || content > 255)
     {
         g_warning("Invalid value. Valid range 0-255.");
         return;
-    }
+    }*/
     node = bionet_resource_get_node(resource);
     // get index of resource
     //FIXME: probably a better way to do this
@@ -70,7 +70,7 @@ void add_pot_resource(bionet_node_t *node, int id)
 
     resource = bionet_resource_new(
         node,
-        BIONET_RESOURCE_DATA_TYPE_UINT32,
+        BIONET_RESOURCE_DATA_TYPE_UINT8,
         BIONET_RESOURCE_FLAVOR_PARAMETER,
         name);
     if(resource == NULL)
@@ -86,7 +86,7 @@ void add_pot_resource(bionet_node_t *node, int id)
         return;
     }
 
-    value = bionet_value_new_uint32(resource, 0);
+    value = bionet_value_new_uint8(resource, 0);
     if(value == NULL)
     {
         fprintf(stderr, "Error creating value for resource %d\n", id);
