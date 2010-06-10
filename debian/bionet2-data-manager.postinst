@@ -12,7 +12,5 @@ if [ "$1" = "configure" ]; then
 
     # 25 is hardy-speak for "after syslog and avahi and the mta, but before exproc"
     update-rc.d bionet-data-manager start 25 S .
-
-    /etc/init.d/bionet-data-manager restart
 fi
 
