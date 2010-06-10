@@ -88,9 +88,25 @@ void cgbaSim::bionetSetup()
     liveIO = new BionetIO;
     liveIO->setup();
 
-    bionet_subscribe_hab_list_by_name("proxr-hab.*");
-    bionet_subscribe_node_list_by_name("proxr-hab.*.*");
-    bionet_subscribe_datapoints_by_name("proxr-hab.*.*:*");
+    QString habId;
+
+    bool ok = false;
+    habId = QInputDialog::getText(this, tr("Input"), tr("HabID"),
+                                 QLineEdit::Normal, tr(""), &ok, Qt::Dialog);
+    if(ok == false)
+    {
+        exit(1);
+    }
+
+    //convert QString to char* for bionet_subscribe
+    QString habFull = "proxr-hab.";
+    habFull += habId;
+    QByteArray ba = habFull.toLatin1();
+    char *id = ba.data();
+
+    bionet_subscribe_hab_list_by_name(id);
+    bionet_subscribe_node_list_by_name(strcat(id, ".*"));
+    bionet_subscribe_datapoints_by_name(strcat(id, ":*"));
 
     connect(liveIO, SIGNAL(newNode(bionet_node_t*,void*)), this, SLOT(setNode(bionet_node_t*)));
 }

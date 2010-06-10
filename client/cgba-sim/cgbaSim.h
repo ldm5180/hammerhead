@@ -2,6 +2,7 @@
 #define CGBASIM_H
 
 #include <QMessageBox>
+#include <QInputDialog>
 #include "cgbaDial.h"
 #include "cgbaled.h"
 
