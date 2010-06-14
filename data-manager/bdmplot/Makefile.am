@@ -7,8 +7,9 @@
 include $(top_srcdir)/common.am
 
 python_PYTHON = bdmplot.py \
-	bdmplot-cacher.py \
 	bdmplot_callback_cacher.py \
 	prune_datapoints.py
+
+bin_SCRIPTS = bdmplot-cacher.py
 
 nobase_dist_sysconf_DATA = init.d/bdmplot

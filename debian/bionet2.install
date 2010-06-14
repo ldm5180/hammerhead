@@ -1,6 +1,5 @@
 etc/mon-hab.d
 etc/init.d/bdmplot
-usr/lib/python*
 usr/share/doc/bionet/index.html usr/share/doc/bionet2
 
 # HABs
@@ -27,6 +26,7 @@ usr/bin/bionet-watcher
 # bdm clients
 usr/bin/bdm-watcher
 usr/bin/bdm-client
+usr/bin/bdmplot-cacher.py
 
 # little test programs that maybe shouldn't be installed at all
 usr/bin/test-asn-c2h
