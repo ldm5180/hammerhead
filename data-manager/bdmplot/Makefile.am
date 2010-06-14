@@ -11,3 +11,4 @@ python_PYTHON = bdmplot.py \
 	bdmplot_callback_cacher.py \
 	prune_datapoints.py
 
+nobase_dist_sysconf_DATA = init.d/bdmplot
