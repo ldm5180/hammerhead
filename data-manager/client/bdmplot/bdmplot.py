@@ -14,7 +14,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.dates as mdates
 
-from timespan import timespan_to_timevals, timeval_to_float
+from bdmplot_timespan import timespan_to_timevals, timeval_to_float
 import timechooser
 
 def bdmplot(kwargs, bionet_resources):
@@ -39,7 +39,9 @@ def bdmplot(kwargs, bionet_resources):
              "width": 7,
              "height": 5,
              "dpi": 60,
-             "bionet-resources" : {} }
+             "bionet-resources" : {},
+             "resource name" : "syshealth.*.*:15-min-load-average",
+             }
 
     # Get args from the caller; these override the defaults but are 
     #         overriden by CGI.
@@ -47,7 +49,7 @@ def bdmplot(kwargs, bionet_resources):
         for k,v in kwargs.iteritems():
             args[k] = v
 
-    fname = "/tmp/" + args['filter'] + "." + args['timespan'][0]
+    fname = "/tmp/" + args['resource name'] + "." + args['timespan'][0]
     
     # Get values from CGI
     # CGI overrides any previous values.
@@ -61,8 +63,8 @@ def bdmplot(kwargs, bionet_resources):
     timespan_stamps_now = map(lambda x : timeval_to_float(x, evaluateNow = True), timespan_vals)
     
     # Get the results
-    from datapoints_to_dict import datapoints_to_dict
-    (updated, results) = datapoints_to_dict(timespan_vals, args["filter"], args['timespan'], args["regexp"], bionet_resources)
+    from bdmplot_datapoints_to_dict import datapoints_to_dict
+    (updated, results) = datapoints_to_dict(timespan_vals, args["resource name"], args['timespan'], args["regexp"], bionet_resources)
 
     # if it hasn't been updated then just use the cached image
     if (updated == False):

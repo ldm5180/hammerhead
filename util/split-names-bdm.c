@@ -237,7 +237,7 @@ static const char * _remove_bdm_prefix(
     //
 
     if (name == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name_r(): NULL Topic passed in");
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "_remove_bdm_prefix): NULL Topic passed in");
         return NULL;
     }
 
