@@ -58,6 +58,11 @@ struct datapoint_event_t {
     char *value;
 };
 
+struct simulate_updates_args_t {
+    struct timeval **tv_ptr;
+    int bionet_fd;
+};
+
 bionet_hab_t *hab;
 GSList *events;
 
