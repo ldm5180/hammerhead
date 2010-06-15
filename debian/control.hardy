@@ -97,7 +97,7 @@ Description: A network-transparent pub/sub system for information exchange (Qt l
 Package: libbionet2-dev
 Section: devel
 Architecture: any
-Depends: ${shlibs:Depends}, libbionet2 (= ${binary:Version}), libavahi-compat-libdnssd-dev, libglib2.0-dev, libssl-dev, python
+Depends: ${shlibs:Depends}, libbionet2 (= ${binary:Version}), libavahi-compat-libdnssd-dev, libglib2.0-dev, libssl-dev
 Conflicts: bionet2-dev
 Description: A network-transparent pub/sub system for information exchange (devel files)
  Bionet2 headers and static libraries.  Install this package if you want
