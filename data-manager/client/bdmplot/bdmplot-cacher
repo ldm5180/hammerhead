@@ -26,12 +26,15 @@ def process_new_session_or_subscription(request):
     if 'regexp' in request.args:
         regex = request.args['regexp'][0]
 
+    bionet_resname = request.args['resource'][0].split('/')
+
     #create the session
     subscriptions.append( { 'filter' : request.args['resource'][0],
                             'timespan' : request.args['timespan'],
                             'last requested' : time.time(),
                             'last rendered' : time.time() - time.time(),
                             'regexp' : regex,
+                            'resource name' : bionet_resname[len(bionet_resname) - 1],
                             'new' : 0 } )
 
     # Convert the timespan into timevals and timestamps
@@ -50,6 +53,7 @@ class Datapoints(resource.Resource):
         # existing session
         for sub in subscriptions:
             if (sub['filter'] == request.args['resource'][0]) and (sub['timespan'] == request.args['timespan']):
+                bionet_resname = request.args['resource'][0].split('/')    
                 if (time.time() - sub['last rendered'] >= 120):
                     sub['new'] += 1
                 sub['last requested'] = time.time()

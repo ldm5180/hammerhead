@@ -1,5 +1,5 @@
 from bdm_client import *
-from timespan import *
+from bdmplot_timespan import *
 from bdmplot_callback_cacher import *
 
 def prune_datapoints(subscriptions, bionet_resources):
@@ -9,7 +9,7 @@ def prune_datapoints(subscriptions, bionet_resources):
 
         # go through the subscriptions and get the subscription requesting the oldest datapoints for this resource
         for sub in subscriptions:
-            if (bionet_resource_name_matches(name, sub['filter'])):
+            if (bionet_resource_name_matches(name, sub['resource name'])):
                 timespan_vals = timespan_to_timevals(sub['timespan'][0])
                 tvfloat = timeval_to_float(timespan_vals[0])
                 if (oldest_timeval == None):
@@ -29,7 +29,7 @@ def prune_datapoints(subscriptions, bionet_resources):
                 dpcache['list'].remove(dp)
                 bionet_datapoint_free(dp)
                 for s in subscriptions:
-                    if (bionet_resource_name_matches(name, s['filter'])):
+                    if (bionet_resource_name_matches(name, s['resource name'])):
                         s['new'] += 1
 
                 #print "Removed dp: ", dp

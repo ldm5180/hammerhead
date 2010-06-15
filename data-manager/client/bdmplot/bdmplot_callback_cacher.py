@@ -1,5 +1,5 @@
 from bdm_client import *
-from timespan import *
+from bdmplot_timespan import *
 from prune_datapoints import *
 
 subscriptions = []
@@ -88,7 +88,7 @@ def cb_datapoint(datapoint):
     bionet_resources[resource_name]['list'].sort(compare_datapoint_timestamps)
 
     for s in subscriptions:
-        if (bionet_resource_name_matches(resource_name, s['filter'])):
+        if (bionet_resource_name_matches(resource_name, s['resource name'])):
             s['new'] += 1
 
     #TODO: add subscription pruning when bdm_unsubscribe() exists
