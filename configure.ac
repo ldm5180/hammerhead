@@ -677,7 +677,7 @@ AC_CONFIG_FILES([Makefile
                  data-manager/client/bdmplot2/Makefile
                  data-manager/client/bp-commander/Makefile
                  data-manager/client/twisted/Makefile
-                 data-manager/bdmplot/Makefile
+                 data-manager/client/bdmplot/Makefile
 		 security/Makefile
 		 security/ca/Makefile
 		 apps/Makefile

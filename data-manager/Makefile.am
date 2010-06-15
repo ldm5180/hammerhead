@@ -8,6 +8,3 @@ include $(top_srcdir)/common.am
 
 SUBDIRS = server client 
 
-if ENABLE_PYTHON
-SUBDIRS += bdmplot
-endif
