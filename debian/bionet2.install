@@ -1,7 +1,38 @@
 etc/mon-hab.d
 etc/init.d/bdmplot
-usr/lib/python*
 usr/share/doc/bionet/index.html usr/share/doc/bionet2
+
+
+# all the python stuff
+usr/lib/python*/*/_bdm_client.a
+usr/lib/python*/*/_bdm_client.la
+usr/lib/python*/*/bdm_client.py
+usr/lib/python*/*/_bdm_client.so
+usr/lib/python*/*/twisted_bdm_client.py
+usr/lib/python*/*/bdmplot2_callback.py
+usr/lib/python*/*/bdmplot2.py
+usr/lib/python*/*/bdmplot_callback_cacher.py
+usr/lib/python*/*/bdmplot.py
+
+usr/lib/python*/*/_bionet.a
+usr/lib/python*/*/_bionet.la
+usr/lib/python*/*/bionetplot_callback.py
+usr/lib/python*/*/bionetplot.py
+usr/lib/python*/*/bionet.py
+usr/lib/python*/*/_bionet.so
+usr/lib/python*/*/twisted_bionet_client.py
+usr/lib/python*/*/twisted_bionet.py
+
+usr/lib/python*/*/_hab.a
+usr/lib/python*/*/_hab.la
+usr/lib/python*/*/hab.py
+usr/lib/python*/*/_hab.so
+
+usr/lib/python*/*/datapoints_to_dict.py
+usr/lib/python*/*/prune_datapoints.py
+usr/lib/python*/*/timechooser.py
+usr/lib/python*/*/timespan.py
+
 
 # HABs
 usr/bin/syshealth-hab

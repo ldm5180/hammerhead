@@ -18,7 +18,7 @@ _bdm_client_la_LIBADD = $(LIBS_BDM) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(GL
 
 _bdm_client_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) $(SWIG_PYTHON_CPPFLAGS) -fno-strict-aliasing
 
-_bdm_client_la_LDFLAGS = -module $(LDFLAGS_BDM) $(LDFLAGS_BIONET_ASN1) -version-info $(BIONET_INTERFACE_VERSION) 
+_bdm_client_la_LDFLAGS = -module -avoid-version $(LDFLAGS_BDM) $(LDFLAGS_BIONET_ASN1)
 
 
 bdm-client_wrap.c: bdm-client.i bdm-client-interface.c $(INCLUDES_BIONET_UTIL) $(INCLUDES_BDM)

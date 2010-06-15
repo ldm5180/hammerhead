@@ -12,6 +12,7 @@ Build-Depends: debhelper (>= 6),
  libqt4-dev,
  libqwt5-qt4-dev,
  python-dev,
+ python-support,
  xsltproc,
  libasound2-dev (>= 1.0.16),
  libbluetooth-dev,
@@ -27,7 +28,7 @@ Homepage: http://bioserve.colorado.edu/bionet
 Package: bionet2
 Section: net
 Architecture: any
-Depends: ${shlibs:Depends}, libnss-mdns, python, python-matplotlib
+Depends: ${shlibs:Depends}, libnss-mdns, python, ${python:Depends}
 Recommends: bionet2-cpod, bionet2-stethoscope, bionet2-monitor, bionet2-streams, bionet2-data-manager
 Description: A network-transparent pub/sub system for information exchange
  Bionet2 HABs and Clients, and BDM Clients
