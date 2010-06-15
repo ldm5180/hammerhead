@@ -39,10 +39,12 @@ void * cal_client_mdnssd_bip_init(
 
     /* init the security stuff for the thread context */
     client_thread_data->ssl_ctx_client = (SSL_CTX *)ssl_ctx;
-    if(require_security) {
+    if (ssl_ctx && require_security) {
 	client_thread_data->client_require_security = BIP_SEC_REQ;
-    } else {
+    } else if (ssl_ctx) {
 	client_thread_data->client_require_security = BIP_SEC_OPT;
+    } else {
+	client_thread_data->client_require_security = BIP_SEC_NONE;
     }
 
     bip_shared_config_init();

@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
+
+UNIQUE=$$
+RETVAL=0
+
+echo starting bionet-watcher without security
+$ROOT/client/watcher/bionet-watcher --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.nosec &
+echo starting bionet-watcher with optional security
+$ROOT/client/watcher/bionet-watcher --security-dir "$PWD/watcher-sec" --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" >| out.watcher.secure &
+
+sleep 2 # let the watcher come up
+
+echo starting random-hab with security
+$ROOT/hab/random/random-hab --security-dir random-sec --id $UNIQUE --max-delay 1 --output-mode "bionet-watcher" >| out.random-hab &
+
+sleep $TEST_DURATION
+
+echo "test run complete, killing random-hab"
+kill %3
+wait %3
+
+sleep 1
+
+echo "killing watchers"
+kill %1
+kill %2
+wait
+
+if [[ -s out.watcher.nosec ]] ; then
+    echo "ERROR: non-secure watcher tried connecting to secure hab, first 10 lines of watcher output:"
+    head out.watcher.nosec
+    RETVAL=1
+elif ! diff -q out.watcher.secure out.random-hab; then
+    echo "ERROR: optional security watcher output differs from secure random-hab output:"
+    diff -u out.random-hab out.watcher.secure
+    RETVAL=1
+else
+    echo "unsecure bdm-watcher didn't connect to secure random-hab & watcher with optional security did, yay"
+fi
+
+exit $RETVAL
+
