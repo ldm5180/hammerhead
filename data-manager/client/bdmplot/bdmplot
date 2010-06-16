@@ -12,13 +12,20 @@ import time
 from twisted_bdm_client import *
 from bdm_client import *
 from bdmplot_callback_cacher import *
-import bdmplot
+import bdmplot_lib
 
 import optparse
 
 from prune_datapoints import *
 
+options = None
+res_filter = None
+bionet_resname = None
+
 def process_new_session_or_subscription(request):
+    global res_filter
+    global bionet_resname
+
     if ('resource' not in request.args) or ('timespan' not in request.args):
         return
 
@@ -26,15 +33,13 @@ def process_new_session_or_subscription(request):
     if 'regexp' in request.args:
         regex = request.args['regexp'][0]
 
-    bionet_resname = request.args['resource'][0].split('/')
-
     #create the session
-    subscriptions.append( { 'filter' : request.args['resource'][0],
+    subscriptions.append( { 'filter' : res_filter,
                             'timespan' : request.args['timespan'],
                             'last requested' : time.time(),
                             'last rendered' : time.time() - time.time(),
                             'regexp' : regex,
-                            'resource name' : bionet_resname[len(bionet_resname) - 1],
+                            'resource name' : bionet_resname,
                             'new' : 0 } )
 
     # Convert the timespan into timevals and timestamps
@@ -46,14 +51,32 @@ def process_new_session_or_subscription(request):
 
 
 class Datapoints(resource.Resource):
+
     isLeaf = True
 
     def render_GET(self, request):
+        global options
+        global res_filter
+        global bionet_resname
+
         found = None
+
+        (bdm_ids_hab_node, resource_id) = request.args['resource'][0].rsplit(":")
+        (bdm_ids_hab_type, hab_id, node_id) = bdm_ids_hab_node.rsplit(".", 3)
+        if (bdm_ids_hab_type.count("/")):
+            (bdm_ids, hab_type) = bdm_ids_hab_type.rsplit("/")
+            (peer_id, bdm_id) = bdm_ids.split(",")
+        else:
+            hab_type = bdm_ids_hab_type
+            peer_id = "*"
+            bdm_id = options.bdm_id
+
+        res_filter =  peer_id + "," + bdm_id + "/" + hab_type + "." + hab_id + "." + node_id + ":" + resource_id 
+        bionet_resname = hab_type + "." + hab_id + "." + node_id + ":" + resource_id 
+
         # existing session
         for sub in subscriptions:
-            if (sub['filter'] == request.args['resource'][0]) and (sub['timespan'] == request.args['timespan']):
-                bionet_resname = request.args['resource'][0].split('/')    
+            if (sub['filter'] == res_filter) and (sub['timespan'] == request.args['timespan']):
                 if (time.time() - sub['last rendered'] >= 120):
                     sub['new'] += 1
                 sub['last requested'] = time.time()
@@ -63,14 +86,14 @@ class Datapoints(resource.Resource):
         if (found == None): # new subscription!
             retval = process_new_session_or_subscription(request)
             for sub in subscriptions:
-                if (sub['filter'] == request.args['resource'][0]) and (sub['timespan'] == request.args['timespan']):
+                if (sub['filter'] == res_filter) and (sub['timespan'] == request.args['timespan']):
                     if (time.time() - sub['last rendered'] >= 120):
                         sub['new'] += 1
                     sub['last requested'] = time.time()
                     found = sub
                     break
         
-        (fname, format) = bdmplot.bdmplot(found, bionet_resources)
+        (fname, format) = bdmplot_lib.bdmplot(found, bionet_resources)
         request.setHeader('Content-Type', 'image/' + format)
         f = open(fname, 'rb')
         return f.read()
@@ -78,12 +101,18 @@ class Datapoints(resource.Resource):
         #return retval
 
 def main():
+    global options
+
     # parse options 
     parser = optparse.OptionParser()
     parser.add_option("-p", "--port", dest="port",
                       help="Webserver port.", 
                       metavar="<port>",
-                      default=8082)
+                      default="8082")
+    parser.add_option("-b", "--default-bdm-id", dest="bdm_id",
+                      help=optparse.SUPPRESS_HELP,
+                      metavar="<ID>",
+                      default="*")
     
     (options, args) = parser.parse_args()
 
@@ -103,7 +132,7 @@ def main():
     root.putChild('bdmplot', full)
     factory = Site(root)
     
-    reactor.listenTCP(options.port, factory)
+    reactor.listenTCP(int(options.port), factory)
     reactor.addReader(twisted_bdmclient)
     
     reactor.run()

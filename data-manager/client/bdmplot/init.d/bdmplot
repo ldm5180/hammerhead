@@ -4,7 +4,7 @@ case "$1" in
 
     start)
         echo -n "Starting bdmplot: "
-        bdmplot-cacher &
+        bdmplot --default-bdm-id $(hostname) &
         # sleep for a while here so that it can initialize and be ready to publish to any subscribers
         sleep 1
         echo ok
@@ -12,7 +12,7 @@ case "$1" in
 
     stop)
         echo -n "Stopping bdmplot: "
-        kill `pidof -x bdmplot-cacher`
+        kill `pidof -x bdmplot`
         echo ok
         ;;
 
