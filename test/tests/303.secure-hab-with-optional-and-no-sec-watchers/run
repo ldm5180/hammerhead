@@ -42,13 +42,15 @@ kill %1
 kill %2
 wait
 
+grep -v '^CAL:' out.watcher.secure > out.watcher.secure.nocal
+
 if [[ -s out.watcher.nosec ]] ; then
     echo "ERROR: non-secure watcher tried connecting to secure hab, first 10 lines of watcher output:"
     head out.watcher.nosec
     RETVAL=1
-elif ! diff -q out.watcher.secure out.random-hab; then
+elif ! diff -q out.watcher.secure.nocal out.random-hab; then
     echo "ERROR: optional security watcher output differs from secure random-hab output:"
-    diff -u out.random-hab out.watcher.secure
+    diff -u out.random-hab out.watcher.secure.nocal
     RETVAL=1
 else
     echo "unsecure bdm-watcher didn't connect to secure random-hab & watcher with optional security did, yay"
