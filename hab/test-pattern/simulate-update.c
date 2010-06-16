@@ -237,7 +237,7 @@ void simulate_updates(gpointer data, gpointer user_data) {
 	if(sleep_duration.tv_sec > 0 || (sleep_duration.tv_usec > 0 && sleep_duration.tv_sec == 0)) {
 	    sleep_until.tv_usec = (now.tv_usec + sleep_duration.tv_usec) % 1000000;
 	    sleep_until.tv_sec  = (now.tv_usec + sleep_duration.tv_usec) / 1000000;
-	    sleep_until.tv_sec  = (now.tv_sec  + sleep_duration.tv_sec);
+	    sleep_until.tv_sec += (now.tv_sec  + sleep_duration.tv_sec);
 	} else {
 	    sleep_until.tv_sec = now.tv_sec;
 	    sleep_until.tv_usec = now.tv_usec;
