@@ -25,13 +25,7 @@ BAUDRATE = 9600      # the baud rate we talk to the xbee
 CURRENTSENSE = 4       # which XBee ADC has current draw data
 VOLTSENSE = 0          # which XBee ADC has mains voltage data
 MAINSVPP = 170 * 2     # +-170V is what 120Vrms ends up being (= 120*2sqrt(2))
-vrefcalibration = [492,  # Calibration for sensor #0
-                   487,  # Calibration for sensor #1
-                   489,  # Calibration for sensor #2
-                   492,  # Calibration for sensor #3
-                   501,  # Calibration for sensor #4
-                   493,
-                   487]  # etc... approx ((2.4v * (10Ko/14.7Ko)) / 3
+vrefcalibration = [492]
 CURRENTNORM = 15.5  # conversion to amperes from ADC
 NUMWATTDATASAMPLES = 1800 # how many samples to watch in the plot window, 1 hr @ 2s samples
 
@@ -54,7 +48,7 @@ intervals = {}
 newamps = 0
 newwatts = 0
 TotalWattHour=0
-
+cal_ampdata = {}
 
 def add_node(hab, xb_address_16):
     #check if there is a new node    
@@ -102,11 +96,18 @@ def add_node(hab, xb_address_16):
 
 
 def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorhistory):
-    global newamps, newwatts
+    global newamps, newwatts, cal_ampdata
     for i in range(len(voltagedata)):
         voltagedata[i] = xb_analog_samples[i+1][VOLTSENSE]
         ampdata[i] = xb_analog_samples[i+1][CURRENTSENSE]
-        
+    
+    count_ampdata = 0
+    cal_ampdata[xb_address_16] = 0
+    for i in range(len(voltagedata)):
+        cal_ampdata[xb_address_16] += ampdata[i]
+        count_ampdata = count_ampdata + 1
+    cal_ampdata[xb_address_16] = cal_ampdata[xb_address_16]/count_ampdata
+
     if (options.debug != None):
         logger.debug("Debug - ampdata: "+str(ampdata))
         logger.debug("Debug - voltdata: "+str(voltagedata))
@@ -136,8 +137,8 @@ def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorh
     for i in range(len(ampdata)):
     # VREF is the hardcoded 'DC bias' value, its
     # about 492 but would be nice if we could somehow get this data once in a while maybe using xbeeAPI
-        if vrefcalibration[xb_address_16]:
-            ampdata[i] -= vrefcalibration[xb_address_16]
+        if cal_ampdata[xb_address_16]:
+            ampdata[i] -= cal_ampdata[xb_address_16]
         else:
             ampdata[i] -= vrefcalibration[0]
         # the CURRENTNORM is our normalizing constant
@@ -223,8 +224,8 @@ def update_graph(idleevent):
 
     if (int(options.interval) < intervals[xb.address_16]):
         
-        newamps = measurements["Amps"]/intervals[xb.address_16]
-        newwatts = measurements["Watts"]/intervals[xb.address_16]
+        newamps = 100 * measurements["Amps"]/intervals[xb.address_16]
+        newwatts = 100 * measurements["Watts"]/intervals[xb.address_16]
 
         resource = bionet_node_get_resource_by_id(node, "Amps")
         if (resource == None):

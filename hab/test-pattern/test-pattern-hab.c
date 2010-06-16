@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
     char *id = NULL;
     //GSList *events = NULL;
     struct timeval *tv;
+    struct simulate_updates_args_t simulate_updates_args; 
 
     bionet_log_context_t log_context = {
         destination: BIONET_LOG_TO_STDOUT,
@@ -260,9 +261,11 @@ int main(int argc, char *argv[]) {
     //
 
     simulate_loops = 0;
+    simulate_updates_args.tv_ptr = &tv;
+    simulate_updates_args.bionet_fd = bionet_fd;
     do {	
 	tv = NULL;
-	g_slist_foreach(events, simulate_updates, &tv);
+	g_slist_foreach(events, simulate_updates, &simulate_updates_args);
         simulate_loops ++;
     } while (
         (loops == 0)

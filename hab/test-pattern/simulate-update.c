@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
+#include <sys/select.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
 
@@ -208,43 +209,61 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
 
 void simulate_updates(gpointer data, gpointer user_data) {
     struct event_t *event = (struct event_t*)data;
-    struct timeval **ptr;
+    struct simulate_updates_args_t *args = (struct simulate_updates_args_t*)user_data;
 
     struct timeval *next, *last;
-    int sec = 0, usec = 0;
+
+    fd_set read_fds;
+    struct timeval sleep_duration, sleep_until, now;
+
 
     next = event->tv;
 
-    ptr = (struct timeval**)user_data;
-    if (*ptr == NULL) {
+    if (*(args->tv_ptr) == NULL) {
         last = next;
-        *ptr = next;
+        *(args->tv_ptr) = next;
     } else {
-        last = *ptr;
+        last = *(args->tv_ptr);
     }
 
     if (0 == fast) {
-	// determine the time to sleep
-	sec = next->tv_sec - last->tv_sec;
-	
-	// milliseconds are a bit different ...
-	if (sec == 0) {
-	    usec = next->tv_usec - last->tv_usec;
-	} else if (sec > 0) {
-	    if (next->tv_usec >= last->tv_usec) {
-		usec = next->tv_usec - last->tv_usec;
-	    } else {
-		usec = 1000000 - (last->tv_usec - next->tv_usec);
-		sec -= 1;
+	gettimeofday(&now, NULL);
+
+	// determine the duration to sleep
+	sleep_duration = bionet_timeval_subtract(next, last);
+
+	// using "now" and the duration to sleep, calculate the wall time we 
+	// should "sleep" until.  Instead of really sleeping, we'll hab_read().
+	if(sleep_duration.tv_sec > 0 || (sleep_duration.tv_usec > 0 && sleep_duration.tv_sec == 0)) {
+	    sleep_until.tv_usec = (now.tv_usec + sleep_duration.tv_usec) % 1000000;
+	    sleep_until.tv_sec  = (now.tv_usec + sleep_duration.tv_usec) / 1000000;
+	    sleep_until.tv_sec += (now.tv_sec  + sleep_duration.tv_sec);
+	} else {
+	    sleep_until.tv_sec = now.tv_sec;
+	    sleep_until.tv_usec = now.tv_usec;
+	}
+
+	// "sleep" until sleep_until, except also call hab_read() as needed.
+	while(1) {
+	    // Recalculate sleep_duration based on how long we've been sleeping so far.
+	    gettimeofday(&now, NULL);
+	    sleep_duration = bionet_timeval_subtract(&sleep_until, &now);
+	    if (!(sleep_duration.tv_sec > 0 || (sleep_duration.tv_usec > 0 && sleep_duration.tv_sec == 0))) {
+	        break;
+	    }
+
+	    FD_ZERO(&read_fds);
+	    FD_SET(args->bionet_fd, &read_fds);
+	    if (select(args->bionet_fd + 1, &read_fds, NULL, NULL, &sleep_duration) <= 0) {
+	        break;
+	    }
+	    if(FD_ISSET(args->bionet_fd, &read_fds)) {
+	        hab_read();
 	    }
 	}
-	
-	if(sec > 0 || (usec > 0 && sec == 0)) {
-	    usleep(usec);
-	    sleep(sec);
+
 	    // set the timeval for the next step
-	    *ptr = next;
-	}
+	    *(args->tv_ptr) = next;
     }
 
     switch (event->type) {
