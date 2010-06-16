@@ -15,7 +15,7 @@ static int fd = 0;
  *  @param void
  *  @return file descriptor of opened port
  */
-int open_port(void)
+int proxr_connect(void)
 {
     struct termios my_termios;
 
@@ -97,7 +97,7 @@ int read_port(char *result)
  *  @param void
  *  @return void
  */
-void close_port(void)
+void proxr_disconnect(void)
 {
     if(fd > 0)
     {
