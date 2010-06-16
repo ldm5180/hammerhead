@@ -58,7 +58,7 @@ usr/bin/bionet-watcher
 # bdm clients
 usr/bin/bdm-watcher
 usr/bin/bdm-client
-usr/bin/bdmplot-cacher
+usr/bin/bdmplot
 
 # little test programs that maybe shouldn't be installed at all
 usr/bin/test-asn-c2h
