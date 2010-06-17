@@ -49,6 +49,8 @@ def bdmplot(kwargs, bionet_resources):
         for k,v in kwargs.iteritems():
             args[k] = v
 
+    print args['filter']
+
     fname = "/tmp/" + args['resource name'] + "." + args['timespan'][0]
     
     # Get values from CGI
