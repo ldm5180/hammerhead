@@ -66,32 +66,39 @@ def bdmplot(kwargs, bionet_resources):
     
     # Get the results
     from bdmplot_datapoints_to_dict import datapoints_to_dict
-    (updated, results) = datapoints_to_dict(timespan_vals, args["resource name"], args['timespan'], args["regexp"], bionet_resources)
 
-    # if it hasn't been updated then just use the cached image
-    if (updated == False):
-        return (fname, args['format'])
-
-    # Split the dictionary into:
-    #   - an array of legends based on the keys
-    #   - a tuple of args for the lines
     legend = []
     plotargs = []
-    if len(results) == 0:
-        # If there are no results, matplotlib will barf on an empty set.  Add
-        # two datapoints that are off-screen.
-        plotargs.append([timespan_stamps_now[0]-100, timespan_stamps_now[0]-99])
-        plotargs.append([0, 0])
-    else:
-        for k,v in results.iteritems():
-            legend.append(k)
-            vals_T = zip(*v)
-            plotargs.append(vals_T[0])
-            plotargs.append(vals_T[1])
-            # FIXME
-            # If the results have a bigger timestamp than our idea about "now", and we wanted to
-            # plot until "now", expand the right plot boundary.
-    
+    resource_index = 0
+    for resource in kwargs['resource']:
+
+        (updated, results) = datapoints_to_dict(timespan_vals, resource, args['timespan'], args["regexp"], bionet_resources)
+
+        # if it hasn't been updated then just use the cached image
+        if (updated == False):
+            return (fname, args['format'])
+
+        # Split the dictionary into:
+        #   - an array of legends based on the keys
+        #   - a tuple of args for the lines
+        plottypes = ["r--", "g^"]
+        if len(results) == 0:
+            # If there are no results, matplotlib will barf on an empty set.  Add
+            # two datapoints that are off-screen.
+            plotargs.append([timespan_stamps_now[0]-100, timespan_stamps_now[0]-99])
+            plotargs.append([0, 0])
+        else:
+            for k,v in results.iteritems():
+                legend.append(k)
+                vals_T= zip(*v)
+                plotargs.append(vals_T[0])
+                plotargs.append(vals_T[1])
+                plotargs.append(plottypes[resource_index])
+                # FIXME
+                # If the results have a bigger timestamp than our idea about "now", and we wanted to
+                # plot until "now", expand the right plot boundary.
+            resource_index += 1
+
     # Plot the results
     import pylab
     f = pylab.figure(figsize=(int(args["width"]), int(args["height"])))
