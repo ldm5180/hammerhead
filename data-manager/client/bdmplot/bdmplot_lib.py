@@ -108,6 +108,7 @@ def bdmplot(kwargs, bionet_resources):
     pylab.show()
 
     pylab.savefig(fname, format=args["format"], dpi=args["dpi"])
+    pylab.close()
     
     return (fname, args['format'])
 

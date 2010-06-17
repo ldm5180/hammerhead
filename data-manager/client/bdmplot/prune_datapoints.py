@@ -27,7 +27,6 @@ def prune_datapoints(subscriptions, bionet_resources):
         for dp in dpcache['list']:
             if (dp[0] < oldest_timeval):
                 dpcache['list'].remove(dp)
-                bionet_datapoint_free(dp)
                 for s in subscriptions:
                     if (bionet_resource_name_matches(name, s['resource name'])):
                         s['new'] += 1

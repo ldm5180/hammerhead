@@ -46,7 +46,7 @@ def process_new_session_or_subscription(request):
     timespan_vals = timespan_to_timevals(request.args["timespan"][0])
     
     #subscribe to the resource name pattern requested in the HTTP request
-    bdm_subscribe_datapoints_by_name(request.args['resource'][0], timespan_vals[0], timespan_vals[1])
+    bdm_subscribe_datapoints_by_name(res_filter, timespan_vals[0], timespan_vals[1])
 
 
 
