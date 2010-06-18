@@ -35,7 +35,7 @@ Description: A network-transparent pub/sub system for information exchange
 Package: bionet2-data-manager
 Section: net
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, sqlite3
 Description: A network-transparent pub/sub system for information exchange
  This package contains the Bionet Data Manager (BDM) server.
  The BDM Clients are in the bionet2 package.
