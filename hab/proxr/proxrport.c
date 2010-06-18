@@ -15,11 +15,11 @@ static int fd = 0;
  *  @param void
  *  @return file descriptor of opened port
  */
-int proxr_connect(void)
+int proxr_connect(char *conn)
 {
     struct termios my_termios;
 
-    fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
+    fd = open(conn, O_RDWR | O_NOCTTY | O_NDELAY);
     if(fd == -1)
     {
         printf("open_port: open error %d: %s\n", errno, strerror(errno));

@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
     g_message("%s connected to Bionet!", bionet_hab_get_name(hab));
 
     // connect to proxr controller
-    proxr_fd = proxr_connect();
+    proxr_fd = proxr_connect("dev/ttyUSB0");
     if(proxr_fd < 0)
     {
         g_warning("could not connect to proxr device, exiting");
