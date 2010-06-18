@@ -1,5 +1,4 @@
 etc/mon-hab.d
-etc/init.d/bdmplot
 usr/share/doc/bionet/index.html usr/share/doc/bionet2
 
 
@@ -9,12 +8,6 @@ usr/lib/python*/*/_bdm_client.la
 usr/lib/python*/*/bdm_client.py
 usr/lib/python*/*/_bdm_client.so
 usr/lib/python*/*/twisted_bdm_client.py
-usr/lib/python*/*/bdmplot2_callback.py
-usr/lib/python*/*/bdmplot2.py
-usr/lib/python*/*/bdmplot_callback_cacher.py
-usr/lib/python*/*/bdmplot_lib.py
-usr/lib/python*/*/bdmplot_timespan.py
-usr/lib/python*/*/bdmplot_datapoints_to_dict.py
 
 usr/lib/python*/*/_bionet.a
 usr/lib/python*/*/_bionet.la
@@ -60,7 +53,6 @@ usr/bin/bionet-watcher
 # bdm clients
 usr/bin/bdm-watcher
 usr/bin/bdm-client
-usr/bin/bdmplot
 
 # little test programs that maybe shouldn't be installed at all
 usr/bin/test-asn-c2h

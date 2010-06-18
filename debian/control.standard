@@ -41,6 +41,14 @@ Description: A network-transparent pub/sub system for information exchange
  This package contains the Bionet Data Manager (BDM) server.
  The BDM Clients are in the bionet2 package.
 
+Package: bionet2-bdmplot
+Section: net
+Architecture: any
+Depends: ${shlibs:Depends}, ${python:Depends}, python-matplotlib
+Description: A network-transparent pub/sub system for information exchange
+ This package contains a BDM Client named bdmplot, which helps display
+ information from the BDM on web pages.
+
 Package: bionet2-cpod
 Section: net
 Architecture: any

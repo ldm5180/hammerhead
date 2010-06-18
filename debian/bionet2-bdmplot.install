@@ -1,0 +1,11 @@
+etc/init.d/bdmplot
+
+usr/bin/bdmplot
+
+usr/lib/python*/*/bdmplot2_callback.py
+usr/lib/python*/*/bdmplot2.py
+usr/lib/python*/*/bdmplot_callback_cacher.py
+usr/lib/python*/*/bdmplot_lib.py
+usr/lib/python*/*/bdmplot_timespan.py
+usr/lib/python*/*/bdmplot_datapoints_to_dict.py
+
