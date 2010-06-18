@@ -5,177 +5,16 @@
 #include <signal.h>
 #include <getopt.h>
 
-#include "hardware-abstractor.h"
 #include "glib.h"
 
+#include "sim-hab.h"
 #include "proxrcmds.h"
 #include "proxrport.h"
 
-#define HAB_TYPE "proxr-hab"
+#define HAB_TYPE "sim-hab"
 
-void usage(void)
-{
-    printf("fill this in\n");
-}
-
-bionet_hab_t *hab;
 int should_exit = 0;
-
-void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
-{
-    uint8_t content;
-    int id;
-    bionet_node_t *node;
-
-    bionet_value_get_uint8(value, &content);
-
-    node = bionet_resource_get_node(resource);
-    // get index of resource
-    //FIXME: probably a better way to do this
-    for(int i=0; i<16; i++)
-    {
-        char buf[5];
-        char name[24];
-        strcpy(name, "Potentiometer\0");
-        sprintf(buf,"%d", i);
-        int len = strlen(buf);
-        buf[len] = '\0';
-        strcat(name, buf);
-
-        if(bionet_resource_matches_id(resource, name))
-        {
-            id = i;
-            break;
-        }
-    }
-    // command proxr to adjust to new value
-    set_potentiometer(id, (int)content); 
-    // set resources datapoint to new value
-    bionet_resource_set(resource, value, NULL);
-    hab_report_datapoints(bionet_resource_get_node(resource));
-}
-
-void add_pot_resource(bionet_node_t *node, int id)
-{ 
-    bionet_resource_t *resource;
-    bionet_value_t *value;
-    bionet_datapoint_t *datapoint;
-    int r;
-
-    char buf[5];
-    char name[24];
-    strcpy(name, "Potentiometer\0");
-    sprintf(buf,"%d", id);
-    int i = strlen(buf);
-    buf[i] = '\0';
-    strcat(name, buf);
-
-    resource = bionet_resource_new(
-        node,
-        BIONET_RESOURCE_DATA_TYPE_UINT8,
-        BIONET_RESOURCE_FLAVOR_PARAMETER,
-        name);
-    if(resource == NULL)
-    {
-        fprintf(stderr, "Error creating Resource for resource %d\n", id);
-        return;
-    }
-
-    r = bionet_node_add_resource(node, resource);
-    if(r != 0)
-    {
-        fprintf(stderr, "Error adding Resource for resource %d\n", id);
-        return;
-    }
-
-    value = bionet_value_new_uint8(resource, 0);
-    if(value == NULL)
-    {
-        fprintf(stderr, "Error creating value for resource %d\n", id);
-        return;
-    }
-
-    datapoint = bionet_datapoint_new(resource, value, NULL);
-    bionet_resource_add_datapoint(resource, datapoint);
-
-
-}
-
-void add_do_resource(bionet_node_t *node, int id)
-{ 
-    bionet_resource_t *resource;
-    bionet_value_t *value;
-    bionet_datapoint_t *datapoint;
-    int r;
-
-    char buf[5];
-    char name[24];
-    strcpy(name, "DO\0");
-    sprintf(buf,"%d", id);
-    int i = strlen(buf);
-    buf[i] = '\0';
-    strcat(name, buf);
-
-    resource = bionet_resource_new(
-        node,
-        BIONET_RESOURCE_DATA_TYPE_BINARY,
-        BIONET_RESOURCE_FLAVOR_PARAMETER,
-        name);
-    if(resource == NULL)
-    {
-        fprintf(stderr, "Error creating Resource for resource %d\n", id);
-        return;
-    }
-
-    r = bionet_node_add_resource(node, resource);
-    if(r != 0)
-    {
-        fprintf(stderr, "Error adding Resource for resource %d\n", id);
-        return;
-    }
-
-    value = bionet_value_new_binary(resource, 0);
-    if(value == NULL)
-    {
-        fprintf(stderr, "Error creating value for resource %d\n", id);
-        return;
-    }
-
-    datapoint = bionet_datapoint_new(resource, value, NULL);
-    bionet_resource_add_datapoint(resource, datapoint);
-
-
-}
-void add_node(bionet_hab_t *hab, char *name)
-{
-    bionet_node_t *node;
-
-    // add new node
-    node = bionet_node_new(hab, name);
-
-    // add potentiometer resources
-    for(int i=0; i<16; i++)
-    {
-        add_pot_resource(node, i);
-    }
-
-    // add digital out resources
-    for(int i=0; i<8; i++)
-    {
-        add_do_resource(node, i);
-    }
-
-    bionet_hab_add_node(hab, node);
-
-    hab_report_new_node(node);
-}
-
-void signal_handler(int unused)
-{
-    printf("\n");
-    g_message("Exiting...");
-    should_exit = 1;
-}
+bionet_hab_t *hab;
 
 int main(int argc, char* argv[])
 {
@@ -239,7 +78,7 @@ int main(int argc, char* argv[])
     g_message("%s connected to Bionet!", bionet_hab_get_name(hab));
 
     // connect to proxr controller
-    proxr_fd = proxr_connect("dev/ttyUSB0");
+    proxr_fd = proxr_connect("/dev/ttyUSB1");
     if(proxr_fd < 0)
     {
         g_warning("could not connect to proxr device, exiting");
