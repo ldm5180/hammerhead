@@ -202,7 +202,7 @@ START_TEST (test_libutil_hab_new_3) {
 
 
 
-START_TEST (test_libutil_hab_new_and_free) {
+START_TEST (test_libutil_hab_new_and_free_0) {
     bionet_hab_t *hab;
 
     // make a hab with NULL Type and ID
@@ -211,6 +211,17 @@ START_TEST (test_libutil_hab_new_and_free) {
 
     // and clean it up
     bionet_hab_free(hab);
+} END_TEST
+
+START_TEST (test_libutil_hab_new_and_free_1) {
+    bionet_hab_t *hab;
+
+    // make a hab with NULL Type and ID
+    hab = bionet_hab_new(NULL, NULL);
+    fail_if(hab == NULL, "error creating a new hab");
+
+    // and clean it up
+    bionet_hab_free(NULL); //passing in a NULL just to make sure it doesn't crash
 } END_TEST
 
 
@@ -424,6 +435,496 @@ START_TEST (test_libutil_hab_get_node_by_index_2) {
 } END_TEST /* test_libutil_hab_get_node_by_index_2 */
 
 
+/*
+ * bionet_hab_get_node_by_id(hab, id)
+ */
+START_TEST (test_libutil_hab_get_node_by_id_0) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_node_t * this_node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "new-node");
+    fail_unless(NULL != node, "Failed to get a new node: %m\n");
+    this_node = node;
+
+    num = bionet_hab_add_node(hab, node);
+    fail_unless(0 == num, 
+		"Failed to add node\n");
+
+    node = bionet_hab_get_node_by_id(hab, "new-node");
+    fail_if(NULL == node, 
+		"Failed to get node new-node.\n");
+    fail_if(node != this_node, "Failed to get node 'new-node'\n");
+} END_TEST /* test_libutil_hab_get_node_by_id_0 */
+
+
+/*
+ * bionet_hab_get_node_by_id(hab, id)
+ */
+START_TEST (test_libutil_hab_get_node_by_id_1) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_hab_get_node_by_id(hab, "new-node");
+    fail_unless(NULL == node, 
+		"Node should have been NULL because it hasn't been added yet.\n");
+} END_TEST /* test_libutil_hab_get_node_by_id_1 */
+
+
+/*
+ * bionet_hab_get_node_by_id(hab, id)
+ */
+START_TEST (test_libutil_hab_get_node_by_id_2) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_node_t * this_node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "new-node");
+    fail_unless(NULL != node, "Failed to get a new node: %m\n");
+    this_node = node;
+
+    num = bionet_hab_add_node(hab, node);
+    fail_unless(0 == num, 
+		"Failed to add node\n");
+
+    node = bionet_hab_get_node_by_id(hab, "fake-node");
+    fail_unless(NULL == node, 
+		"fake-node does not exist. Nothing should have been found\n");
+} END_TEST /* test_libutil_hab_get_node_by_id_2 */
+
+
+/*
+ * bionet_hab_remove_node_by_id(hab, id)
+ */
+START_TEST (test_libutil_hab_remove_node_by_id_0) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_node_t * this_node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "new-node");
+    fail_unless(NULL != node, "Failed to get a new node: %m\n");
+    this_node = node;
+
+    num = bionet_hab_add_node(hab, node);
+    fail_unless(0 == num, 
+		"Failed to add node\n");
+
+    node = bionet_hab_get_node_by_id(hab, "new-node");
+    fail_if(NULL == node, "Failed to get node new-node.\n");
+
+    node = bionet_hab_remove_node_by_id(hab, "new-node");
+    fail_if (node != this_node, "Failed to remove new-node");
+
+    fail_unless(0 == bionet_hab_get_num_nodes(hab),
+		"The only node added has been removed. It should have 0 nodes");
+} END_TEST /* test_libutil_hab_remove_node_by_id_0 */
+
+
+/*
+ * bionet_hab_remove_node_by_id(hab, id)
+ */
+START_TEST (test_libutil_hab_remove_node_by_id_1) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_node_t * this_node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "new-node");
+    fail_unless(NULL != node, "Failed to get a new node: %m\n");
+    this_node = node;
+
+    num = bionet_hab_add_node(hab, node);
+    fail_unless(0 == num, 
+		"Failed to add node\n");
+
+    node = bionet_hab_get_node_by_id(hab, "new-node");
+    fail_if(NULL == node, "Failed to get node new-node.\n");
+
+    node = bionet_hab_remove_node_by_id(hab, "fake-node");
+    fail_if (node != NULL, "fake-node should not have been removed since it doesn't exist\n");
+
+    fail_unless(1 == bionet_hab_get_num_nodes(hab),
+		"The only node added hasn't been removed.\n");
+} END_TEST /* test_libutil_hab_remove_node_by_id_1 */
+
+
+/*
+ * bionet_hab_remove_node_by_id(hab, id)
+ */
+START_TEST (test_libutil_hab_remove_node_by_id_2) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_node_t * this_node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_hab_remove_node_by_id(hab, "new-node");
+    fail_unless(NULL == node, "No nodes have been added. Removing 'new-node' is impossible.\n");
+
+    fail_unless(0 == bionet_hab_get_num_nodes(hab),
+		"No nodes have been added.\n");
+} END_TEST /* test_libutil_hab_remove_node_by_id_2 */
+
+
+/*
+ * bionet_hab_remove_node_by_id(hab, id)
+ */
+START_TEST (test_libutil_hab_remove_node_by_id_3) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_node_t * this_node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "new-node");
+    fail_unless(NULL != node, "Failed to get a new node: %m\n");
+    this_node = node;
+
+    num = bionet_hab_add_node(hab, node);
+    fail_unless(0 == num, 
+		"Failed to add node\n");
+
+    node = bionet_hab_get_node_by_id(hab, "new-node");
+    fail_if(NULL == node, "Failed to get node new-node.\n");
+
+    node = bionet_hab_remove_node_by_id(NULL, "new-node");
+    fail_unless (NULL == node, "NULL hab was passed in. Should have failed.\n");
+
+    fail_unless(1 == bionet_hab_get_num_nodes(hab),
+		"The only node added hasn't been removed.\n");
+} END_TEST /* test_libutil_hab_remove_node_by_id_3 */
+
+
+/*
+ * bionet_hab_remove_node_by_id(hab, id)
+ */
+START_TEST (test_libutil_hab_remove_node_by_id_4) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_node_t * this_node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "new-node");
+    fail_unless(NULL != node, "Failed to get a new node: %m\n");
+    this_node = node;
+
+    num = bionet_hab_add_node(hab, node);
+    fail_unless(0 == num, 
+		"Failed to add node\n");
+
+    node = bionet_hab_get_node_by_id(hab, "new-node");
+    fail_if(NULL == node, "Failed to get node new-node.\n");
+
+    node = bionet_hab_remove_node_by_id(hab, NULL);
+    fail_unless (NULL == node, "NULL ID was passed in. Should have failed.\n");
+
+    fail_unless(1 == bionet_hab_get_num_nodes(hab),
+		"The only node added hasn't been removed.\n");
+} END_TEST /* test_libutil_hab_remove_node_by_id_4 */
+
+
+/*
+ * bionet_hab_remove_all_nodes(hab)
+ */
+START_TEST (test_libutil_hab_remove_all_nodes_0) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    int r;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "new-node0");
+    fail_unless(NULL != node, "Failed to get a new node: %m\n");
+
+    num = bionet_hab_add_node(hab, node);
+    fail_unless(0 == num, 
+		"Failed to add node\n");
+
+    node = bionet_node_new(hab, "new-node1");
+    fail_unless(NULL != node, "Failed to get a new node: %m\n");
+
+    num = bionet_hab_add_node(hab, node);
+    fail_unless(0 == num, 
+		"Failed to add node\n");
+
+    r = bionet_hab_remove_all_nodes(hab);
+    fail_unless (0 == r, "Removing all nodes failed.\n");
+
+    fail_unless(0 == bionet_hab_get_num_nodes(hab),
+		"The nodes added haven't been removed.\n");
+
+    node = bionet_hab_get_node_by_id(hab, "new-node0");
+    fail_unless(NULL == node, "Failed to remove node new-node0.\n");
+
+    node = bionet_hab_get_node_by_id(hab, "new-node1");
+    fail_unless(NULL == node, "Failed to remove node new-node1.\n");
+} END_TEST /* test_libutil_hab_remove_all_nodes_0 */
+
+
+/*
+ * bionet_hab_remove_all_nodes(hab)
+ */
+START_TEST (test_libutil_hab_remove_all_nodes_1) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    int r;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    r = bionet_hab_remove_all_nodes(hab);
+    fail_unless (0 == r, "Removing all nodes failed.\n");
+
+    fail_unless(0 == bionet_hab_get_num_nodes(hab),
+		"The nodes added haven't been removed.\n");
+} END_TEST /* test_libutil_hab_remove_all_nodes_1 */
+
+
+/*
+ * bionet_hab_remove_all_nodes(hab)
+ */
+START_TEST (test_libutil_hab_remove_all_nodes_2) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    int r;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "new-node");
+    fail_unless(NULL != node, "Failed to get a new node: %m\n");
+
+    num = bionet_hab_add_node(hab, node);
+    fail_unless(0 == num, 
+		"Failed to add node\n");
+
+    r = bionet_hab_remove_all_nodes(NULL);
+    fail_if (0 == r, "Passing in a NULL did not cause a failure.\n");
+
+    fail_unless(1 == bionet_hab_get_num_nodes(hab),
+		"Removing nodes should have failed when a NULL was passed in.\n");
+} END_TEST /* test_libutil_hab_remove_all_nodes_2 */
+
+
+/*
+ * bionet_hab_matches_type_and_id(hab, type, id)
+ */
+START_TEST (test_libutil_hab_matches_type_and_id_0) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new("foo", "bar");
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(bionet_hab_matches_type_and_id(hab, "foo", "bar"),
+		"Failed to match exact type and id");
+} END_TEST /* test_libutil_hab_matches_type_and_id_0 */
+
+
+/*
+ * bionet_hab_matches_type_and_id(hab, type, id)
+ */
+START_TEST (test_libutil_hab_matches_type_and_id_1) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new("foo", "bar");
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(bionet_hab_matches_type_and_id(hab, "*", "bar"),
+		"Failed to match any type and exact id");
+} END_TEST /* test_libutil_hab_matches_type_and_id_1 */
+
+
+/*
+ * bionet_hab_matches_type_and_id(hab, type, id)
+ */
+START_TEST (test_libutil_hab_matches_type_and_id_2) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new("foo", "bar");
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(bionet_hab_matches_type_and_id(hab, "foo", "*"),
+		"Failed to match exact type and any id");
+} END_TEST /* test_libutil_hab_matches_type_and_id_2 */
+
+
+/*
+ * bionet_hab_matches_type_and_id(hab, type, id)
+ */
+START_TEST (test_libutil_hab_matches_type_and_id_3) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new("foo", "bar");
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(bionet_hab_matches_type_and_id(hab, "*", "*"),
+		"Failed to match any type and id");
+} END_TEST /* test_libutil_hab_matches_type_and_id_3 */
+
+
+/*
+ * bionet_hab_matches_type_and_id(hab, type, id)
+ */
+START_TEST (test_libutil_hab_matches_type_and_id_4) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new("foo", "bar");
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_if(bionet_hab_matches_type_and_id(NULL, "foo", "bar"),
+		"matched NULL hab with exact type and id");
+} END_TEST /* test_libutil_hab_matches_type_and_id_4 */
+
+
+/*
+ * bionet_hab_matches_type_and_id(hab, type, id)
+ */
+START_TEST (test_libutil_hab_matches_type_and_id_5) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new("foo", "bar");
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_if(bionet_hab_matches_type_and_id(hab, NULL, "bar"),
+		"matched hab with NULL type and exact id");
+} END_TEST /* test_libutil_hab_matches_type_and_id_5 */
+
+
+/*
+ * bionet_hab_matches_type_and_id(hab, type, id)
+ */
+START_TEST (test_libutil_hab_matches_type_and_id_6) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new("foo", "bar");
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_if(bionet_hab_matches_type_and_id(hab, "foo", NULL),
+		"matched hab with exact type and NULL id");
+} END_TEST /* test_libutil_hab_matches_type_and_id_6 */
+
+
+/*
+ * bionet_hab_matches_type_and_id(hab, type, id)
+ */
+START_TEST (test_libutil_hab_matches_type_and_id_7) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new("foo", "bar");
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_if(bionet_hab_matches_type_and_id(hab, "bar", "foo"),
+		"matched hab with reversed type and id");
+} END_TEST /* test_libutil_hab_matches_type_and_id_7 */
+
+
+/*
+ * bionet_hab_set_user_data(hab, user_data)
+ * bionet_hab_set_user_data(hab)
+ */
+START_TEST (test_libutil_hab_set_get_user_data_0) {
+    bionet_hab_t * hab;
+    char * my_user_data = "my data";
+    char * user_data;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    bionet_hab_set_user_data(hab, my_user_data);
+    user_data = bionet_hab_get_user_data(hab);
+    fail_unless(my_user_data == user_data,
+		"User data fetched is not the same pointer as the one set.\n");
+} END_TEST /* test_libutil_hab_set_get_user_data_0 */
+
+
+/*
+ * bionet_hab_set_user_data(hab, user_data)
+ * bionet_hab_set_user_data(hab)
+ */
+START_TEST (test_libutil_hab_set_get_user_data_1) {
+    bionet_hab_t * hab;
+    char * my_user_data = "my data";
+    char * user_data;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    bionet_hab_set_user_data(hab, my_user_data);
+    bionet_hab_set_user_data(hab, NULL);
+    user_data = bionet_hab_get_user_data(hab);
+    fail_unless(NULL == user_data,
+		"User data fetched is not the same pointer as the one set.\n");
+} END_TEST /* test_libutil_hab_set_get_user_data_1 */
+
+
+/*
+ * bionet_hab_set_user_data(hab, user_data)
+ * bionet_hab_set_user_data(hab)
+ */
+START_TEST (test_libutil_hab_set_get_user_data_2) {
+    bionet_hab_t * hab;
+    char * my_user_data = "my data";
+    char * user_data;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    bionet_hab_set_user_data(NULL, my_user_data);
+    user_data = bionet_hab_get_user_data(hab);
+    fail_unless(NULL == user_data,
+		"User data should be NULL because no hab was passed into the set function.\n");
+} END_TEST /* test_libutil_hab_set_get_user_data_2 */
+
+
+/*
+ * bionet_hab_set_user_data(hab, user_data)
+ * bionet_hab_set_user_data(hab)
+ */
+START_TEST (test_libutil_hab_set_get_user_data_3) {
+    bionet_hab_t * hab;
+    char * my_user_data = "my data";
+    char * user_data;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    bionet_hab_set_user_data(hab, my_user_data);
+    user_data = bionet_hab_get_user_data(NULL);
+    fail_unless(NULL == user_data,
+		"User data should be NULL because no hab was passed into the get function.\n");
+} END_TEST /* test_libutil_hab_set_get_user_data_3 */
+
+
 void libutil_hab_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("bionet_hab_new()");
@@ -434,7 +935,8 @@ void libutil_hab_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_hab_new_1);
     tcase_add_test(tc, test_libutil_hab_new_2);
     tcase_add_test(tc, test_libutil_hab_new_3);
-    tcase_add_test(tc, test_libutil_hab_new_and_free);
+    tcase_add_test(tc, test_libutil_hab_new_and_free_0);
+    tcase_add_test(tc, test_libutil_hab_new_and_free_1);
 
     /* bionet_hab_get_name() */
     tcase_add_test(tc, test_libutil_hab_get_name_0);
@@ -460,6 +962,39 @@ void libutil_hab_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_hab_get_node_by_index_0);
     tcase_add_test(tc, test_libutil_hab_get_node_by_index_1);
     tcase_add_test(tc, test_libutil_hab_get_node_by_index_2);
+
+    /* bionet_hab_get_node_by_id() */
+    tcase_add_test(tc, test_libutil_hab_get_node_by_id_0);
+    tcase_add_test(tc, test_libutil_hab_get_node_by_id_1);
+    tcase_add_test(tc, test_libutil_hab_get_node_by_id_2);
+
+    /* bionet_hab_remove_node_by_id() */
+    tcase_add_test(tc, test_libutil_hab_remove_node_by_id_0);
+    tcase_add_test(tc, test_libutil_hab_remove_node_by_id_1);
+    tcase_add_test(tc, test_libutil_hab_remove_node_by_id_2);
+    tcase_add_test(tc, test_libutil_hab_remove_node_by_id_3);
+    tcase_add_test(tc, test_libutil_hab_remove_node_by_id_4);
+
+    /* bionet_hab_remove_all_nodes() */
+    tcase_add_test(tc, test_libutil_hab_remove_all_nodes_0);
+    tcase_add_test(tc, test_libutil_hab_remove_all_nodes_1);
+    tcase_add_test(tc, test_libutil_hab_remove_all_nodes_2);
+
+    /* bionet_hab_matches_type_and_id() */
+    tcase_add_test(tc, test_libutil_hab_matches_type_and_id_0);
+    tcase_add_test(tc, test_libutil_hab_matches_type_and_id_1);
+    tcase_add_test(tc, test_libutil_hab_matches_type_and_id_2);
+    tcase_add_test(tc, test_libutil_hab_matches_type_and_id_3);
+    tcase_add_test(tc, test_libutil_hab_matches_type_and_id_4);
+    tcase_add_test(tc, test_libutil_hab_matches_type_and_id_5);
+    tcase_add_test(tc, test_libutil_hab_matches_type_and_id_6);
+    tcase_add_test(tc, test_libutil_hab_matches_type_and_id_7);
+
+    /* bionet_hab_set_user_data() */
+    tcase_add_test(tc, test_libutil_hab_set_get_user_data_0);
+    tcase_add_test(tc, test_libutil_hab_set_get_user_data_1);
+    tcase_add_test(tc, test_libutil_hab_set_get_user_data_2);
+    tcase_add_test(tc, test_libutil_hab_set_get_user_data_3);
 
     return;
 } /* libutil_hab_tests_suite() */
