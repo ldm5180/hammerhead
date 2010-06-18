@@ -80,6 +80,12 @@ if [ ! -z "$*" ]; then
 fi
 
 
+# make sure sqlite3 is available
+if [ -z $(which sqlite3) ]; then
+    echo "the sqlite3 program is not available, quitting"
+    exit 1
+fi
+
 # make a fresh, empty database based on the current schema
 if [ -f "$DB" ]; then
     echo "DB $DB already exists, quitting"
