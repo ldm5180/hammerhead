@@ -12,7 +12,7 @@ usr/lib/python*/*/twisted_bdm_client.py
 usr/lib/python*/*/bdmplot2_callback.py
 usr/lib/python*/*/bdmplot2.py
 usr/lib/python*/*/bdmplot_callback_cacher.py
-usr/lib/python*/*/bdmplot.py
+usr/lib/python*/*/bdmplot_lib.py
 
 usr/lib/python*/*/_bionet.a
 usr/lib/python*/*/_bionet.la
