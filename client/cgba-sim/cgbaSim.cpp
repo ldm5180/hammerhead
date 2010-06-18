@@ -99,7 +99,7 @@ void cgbaSim::bionetSetup()
     }
 
     //convert QString to char* for bionet_subscribe
-    QString habFull = "proxr-hab.";
+    QString habFull = "sim-hab.";
     habFull += habId;
     QByteArray ba = habFull.toLatin1();
     char *id = ba.data();
