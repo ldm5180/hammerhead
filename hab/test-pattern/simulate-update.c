@@ -227,7 +227,9 @@ void simulate_updates(gpointer data, gpointer user_data) {
     }
 
     if (0 == fast) {
-	gettimeofday(&now, NULL);
+	if (gettimeofday(&now, NULL)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "Failed to get time of day.");
+	}
 
 	// determine the duration to sleep
 	sleep_duration = bionet_timeval_subtract(next, last);
@@ -246,7 +248,9 @@ void simulate_updates(gpointer data, gpointer user_data) {
 	// "sleep" until sleep_until, except also call hab_read() as needed.
 	while(1) {
 	    // Recalculate sleep_duration based on how long we've been sleeping so far.
-	    gettimeofday(&now, NULL);
+	    if (gettimeofday(&now, NULL)) {
+		g_log("", G_LOG_LEVEL_WARNING, "Failed to get time of day.");
+	    }
 	    sleep_duration = bionet_timeval_subtract(&sleep_until, &now);
 	    if (!(sleep_duration.tv_sec > 0 || (sleep_duration.tv_usec > 0 && sleep_duration.tv_sec == 0))) {
 	        break;
