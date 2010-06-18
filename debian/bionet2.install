@@ -13,6 +13,8 @@ usr/lib/python*/*/bdmplot2_callback.py
 usr/lib/python*/*/bdmplot2.py
 usr/lib/python*/*/bdmplot_callback_cacher.py
 usr/lib/python*/*/bdmplot_lib.py
+usr/lib/python*/*/bdmplot_timespan.py
+usr/lib/python*/*/bdmplot_datapoints_to_dict.py
 
 usr/lib/python*/*/_bionet.a
 usr/lib/python*/*/_bionet.la
@@ -28,10 +30,10 @@ usr/lib/python*/*/_hab.la
 usr/lib/python*/*/hab.py
 usr/lib/python*/*/_hab.so
 
-usr/lib/python*/*/datapoints_to_dict.py
 usr/lib/python*/*/prune_datapoints.py
 usr/lib/python*/*/timechooser.py
 usr/lib/python*/*/timespan.py
+usr/lib/python*/*/datapoints_to_dict.py
 
 
 # HABs
