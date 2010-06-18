@@ -15,6 +15,7 @@ nodist_check_libutil_SOURCES = \
 	check-libutil.c \
 	check-libutil-resource-set.c \
 	check-libutil-hab-tests.c \
+	check-libutil-node-tests.c \
 	check-libutil-split-hab-name.c \
 	check-libutil-split-node-name.c \
 	check-libutil-split-resource-name.c

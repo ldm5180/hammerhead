@@ -927,7 +927,7 @@ START_TEST (test_libutil_hab_set_get_user_data_3) {
 
 void libutil_hab_tests_suite(Suite *s)
 {
-    TCase *tc = tcase_create("bionet_hab_new()");
+    TCase *tc = tcase_create("Bionet HAB");
     suite_add_tcase(s, tc);
 
     /* bionet_hab_new() */
