@@ -41,6 +41,7 @@ def bdmplot(kwargs, bionet_resources):
              "dpi": 60,
              "bionet-resources" : {},
              "resource name" : [],
+             "axis" : [],
              }
 
     # Get args from the caller; these override the defaults but are 
@@ -115,7 +116,12 @@ def bdmplot(kwargs, bionet_resources):
             resource_index += 1
         
         ax = pylab.gca()
-        if (resource_index == 2):
+
+#TODO : add axis labels
+#TODO : add name at the top of the image
+#TODO : add axis labels to the file name if available.
+
+        if (resource_index == 2) and (len(args["axis"])):
             ax = ax.twinx()
 
         # Plot the results
