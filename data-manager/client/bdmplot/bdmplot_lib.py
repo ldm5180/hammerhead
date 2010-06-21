@@ -79,10 +79,13 @@ def bdmplot(kwargs, bionet_resources):
     # Get the results
     from bdmplot_datapoints_to_dict import datapoints_to_dict
 
+    import pylab
+    f = pylab.figure(figsize=(int(args["width"][0]), int(args["height"][0])))
+
     legend = []
-    plotargs = []
     resource_index = 0
     for resource in args['resource name']:
+        plotargs = []
 
         (updated, results) = datapoints_to_dict(timespan_vals, resource, args['timespan'], args["regexp"], bionet_resources)
 
@@ -110,14 +113,15 @@ def bdmplot(kwargs, bionet_resources):
                 # If the results have a bigger timestamp than our idea about "now", and we wanted to
                 # plot until "now", expand the right plot boundary.
             resource_index += 1
+        
+        ax = pylab.gca()
+        if (resource_index == 2):
+            ax = ax.twinx()
 
-    # Plot the results
-    import pylab
-    f = pylab.figure(figsize=(int(args["width"][0]), int(args["height"][0])))
-    pylab.step(*plotargs, **{'figure': f})
+        # Plot the results
+        pylab.step(*plotargs, **{'figure': f})
 
     # Set the x-axis interval and formatter appropriately
-    ax = pylab.gca()
     ax.xaxis.set_major_formatter(timechooser.SmartDateFormatter(timespan_stamps_now))
     pylab.xlim( timespan_stamps_now )
 
