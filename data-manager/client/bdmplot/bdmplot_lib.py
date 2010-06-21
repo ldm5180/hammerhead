@@ -49,8 +49,6 @@ def bdmplot(kwargs, bionet_resources):
         for k,v in kwargs.iteritems():
             args[k] = v
 
-    print args['filter']
-
     fname = "/tmp/" + args['resource name'] + "." + args['timespan'][0]
     
     # Get values from CGI
@@ -101,7 +99,7 @@ def bdmplot(kwargs, bionet_resources):
 
     # Plot the results
     import pylab
-    f = pylab.figure(figsize=(int(args["width"]), int(args["height"])))
+    f = pylab.figure(figsize=(int(args["width"][0]), int(args["height"][0])))
     pylab.step(*plotargs, **{'figure': f})
 
     # Set the x-axis interval and formatter appropriately
