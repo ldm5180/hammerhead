@@ -22,20 +22,16 @@ options = None
 res_filter = None
 bionet_resname = None
 
-def process_new_session_or_subscription(request):
+def process_new_session_or_subscription(res, timespan, regex):
     global res_filter
     global bionet_resname
 
-    if ('resource' not in request.args) or ('timespan' not in request.args):
+    if (res == None) or (timespan == None):
         return
-
-    regex = None
-    if 'regexp' in request.args:
-        regex = request.args['regexp'][0]
 
     #create the session
     subscriptions.append( { 'filter' : res_filter,
-                            'timespan' : request.args['timespan'],
+                            'timespan' : timespan,
                             'last requested' : time.time(),
                             'last rendered' : time.time() - time.time(),
                             'regexp' : regex,
@@ -43,11 +39,10 @@ def process_new_session_or_subscription(request):
                             'new' : 0 } )
 
     # Convert the timespan into timevals and timestamps
-    timespan_vals = timespan_to_timevals(request.args["timespan"][0])
+    timespan_vals = timespan_to_timevals(timespan[0])
     
     #subscribe to the resource name pattern requested in the HTTP request
     bdm_subscribe_datapoints_by_name(res_filter, timespan_vals[0], timespan_vals[1])
-
 
 
 class Datapoints(resource.Resource):
@@ -59,45 +54,47 @@ class Datapoints(resource.Resource):
         global res_filter
         global bionet_resname
 
-        found = None
+        found = 0
 
-        (bdm_ids_hab_node, resource_id) = request.args['resource'][0].rsplit(":")
-        (bdm_ids_hab_type, hab_id, node_id) = bdm_ids_hab_node.rsplit(".", 3)
-        if (bdm_ids_hab_type.count("/")):
-            (bdm_ids, hab_type) = bdm_ids_hab_type.rsplit("/")
-            (peer_id, bdm_id) = bdm_ids.split(",")
-        else:
-            hab_type = bdm_ids_hab_type
-            peer_id = "*"
-            bdm_id = options.bdm_id
+        
+        for res in request.args['resource']:
+            if (res.count("/")):
+                (bdm_ids, bionet_resname) = res.split("/");
+                (peer_id, bdm_id) = bdm_ids.split(",")
+            else:
+                peer_id = "*"
+                bdm_id = options.bdm_id
+                bionet_resname = res
 
-        res_filter =  peer_id + "," + bdm_id + "/" + hab_type + "." + hab_id + "." + node_id + ":" + resource_id 
-        bionet_resname = hab_type + "." + hab_id + "." + node_id + ":" + resource_id 
+            res_filter =  peer_id + "," + bdm_id + "/" + bionet_resname
 
-        # existing session
-        for sub in subscriptions:
-            if (sub['filter'] == res_filter) and (sub['timespan'] == request.args['timespan']):
-                if (time.time() - sub['last rendered'] >= 120):
-                    sub['new'] += 1
-                sub['last requested'] = time.time()
-                found = sub
-                break
-
-        if (found == None): # new subscription!
-            retval = process_new_session_or_subscription(request)
+            # existing session
+            looking = found
             for sub in subscriptions:
                 if (sub['filter'] == res_filter) and (sub['timespan'] == request.args['timespan']):
                     if (time.time() - sub['last rendered'] >= 120):
                         sub['new'] += 1
                     sub['last requested'] = time.time()
-                    found = sub
+                    found += 1
                     break
+
+            if (looking == found): # new subscription!
+                regex = None
+                if "regexp" in request.args:
+                    regex = request.args['regexp'][0]
+
+                retval = process_new_session_or_subscription(res, request.args['timespan'], regex)
+                for sub in subscriptions:
+                    if (sub['filter'] == res_filter) and (sub['timespan'] == request.args['timespan']):
+                        if (time.time() - sub['last rendered'] >= 120):
+                            sub['new'] += 1
+                    sub['last requested'] = time.time()
+                    found += 1
         
-        (fname, format) = bdmplot_lib.bdmplot(found, bionet_resources)
+        (fname, format) = bdmplot_lib.bdmplot(request.args, bionet_resources)
         request.setHeader('Content-Type', 'image/' + format)
         f = open(fname, 'rb')
         return f.read()
-
         #return retval
 
 def main():
