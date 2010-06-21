@@ -43,7 +43,6 @@ def process_new_session_or_subscription(res, timespan, regex):
     
     #subscribe to the resource name pattern requested in the HTTP request
     bdm_subscribe_datapoints_by_name(res_filter, timespan_vals[0], timespan_vals[1])
-    print "Subscribing to" + res_filter
 
 
 class Datapoints(resource.Resource):
@@ -59,18 +58,15 @@ class Datapoints(resource.Resource):
 
         
         for res in request.args['resource']:
-            (bdm_ids_hab_node, resource_id) = res.rsplit(":")
-            (bdm_ids_hab_type, hab_id, node_id) = bdm_ids_hab_node.rsplit(".", 3)
-            if (bdm_ids_hab_type.count("/")):
-                (bdm_ids, hab_type) = bdm_ids_hab_type.rsplit("/")
+            if (res.count("/")):
+                (bdm_ids, bionet_resname) = res.split("/");
                 (peer_id, bdm_id) = bdm_ids.split(",")
             else:
-                hab_type = bdm_ids_hab_type
                 peer_id = "*"
                 bdm_id = options.bdm_id
+                bionet_resname = res
 
-                res_filter =  peer_id + "," + bdm_id + "/" + hab_type + "." + hab_id + "." + node_id + ":" + resource_id 
-                bionet_resname = hab_type + "." + hab_id + "." + node_id + ":" + resource_id 
+            res_filter =  peer_id + "," + bdm_id + "/" + bionet_resname
 
             # existing session
             looking = found

@@ -32,7 +32,7 @@ def bdmplot(kwargs, bionet_resources):
     """
     # Supply default values
     args = { "label": "plot",
-             "filter": ["syshealth.*.*:15-min-load-average"],
+             "resource": ["syshealth.*.*:15-min-load-average"],
              "timespan": ["last 6h"],
              "regexp": None,
              "format": "png",
@@ -40,7 +40,7 @@ def bdmplot(kwargs, bionet_resources):
              "height": [5],
              "dpi": 60,
              "bionet-resources" : {},
-             "resource name" : "syshealth.*.*:15-min-load-average",
+             "resource name" : [],
              }
 
     # Get args from the caller; these override the defaults but are 
@@ -49,10 +49,22 @@ def bdmplot(kwargs, bionet_resources):
         for k,v in kwargs.iteritems():
             args[k] = v
 
-    print args['filter']
 
-    fname = "/tmp/" + args['resource name'] + "." + args['timespan'][0]
-    
+    #build the file name from the set of resources in the plot and the timespan
+    fname = "/tmp/"
+    for x in args['resource']:
+        if (x.count("/")):
+            (bdm_ids, resource_name) = x.split("/")
+        else:
+            resource_name = x
+
+        # while we are at it, add the resource name to the list
+        args['resource name'].append(resource_name)
+
+        fname += resource_name + "." 
+    fname += args['timespan'][0]
+
+
     # Get values from CGI
     # CGI overrides any previous values.
     form = cgi.FieldStorage()
@@ -70,7 +82,7 @@ def bdmplot(kwargs, bionet_resources):
     legend = []
     plotargs = []
     resource_index = 0
-    for resource in kwargs['resource']:
+    for resource in args['resource name']:
 
         (updated, results) = datapoints_to_dict(timespan_vals, resource, args['timespan'], args["regexp"], bionet_resources)
 
@@ -81,7 +93,7 @@ def bdmplot(kwargs, bionet_resources):
         # Split the dictionary into:
         #   - an array of legends based on the keys
         #   - a tuple of args for the lines
-        plottypes = ["r--", "g^"]
+        plottypes = ["r--", "g--"]
         if len(results) == 0:
             # If there are no results, matplotlib will barf on an empty set.  Add
             # two datapoints that are off-screen.
