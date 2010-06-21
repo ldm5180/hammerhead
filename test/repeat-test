@@ -47,8 +47,8 @@ while : ; do
             echo "TEST PASSED!"
         elif [ $RC -eq $TEST_SKIP_CODE ]; then
             echo "test disabled itself, skipping"
-        #elif [ $RC -eq $TEST_WARNING_CODE ]; then
-        #    echo "test generated a warning"
+        elif [ $RC -eq $TEST_WARNING_CODE ]; then
+            echo "test generated a warning, keep going"
         else
 	    echo "*** ${TEST} (Iteration $LOOP) FAILED!"
             exit 1
