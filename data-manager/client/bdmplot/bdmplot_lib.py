@@ -36,8 +36,8 @@ def bdmplot(kwargs, bionet_resources):
              "timespan": ["last 6h"],
              "regexp": None,
              "format": "png",
-             "width": 7,
-             "height": 5,
+             "width": [7],
+             "height": [5],
              "dpi": 60,
              "bionet-resources" : {},
              "resource name" : "syshealth.*.*:15-min-load-average",
@@ -48,6 +48,8 @@ def bdmplot(kwargs, bionet_resources):
     if kwargs != None and len(kwargs) > 0:
         for k,v in kwargs.iteritems():
             args[k] = v
+
+    print args['filter']
 
     fname = "/tmp/" + args['resource name'] + "." + args['timespan'][0]
     
