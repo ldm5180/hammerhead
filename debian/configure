@@ -6,11 +6,69 @@
 
 function subst () {
     sed                                            \
+        -e "s|@ION_BUILD_DEP@|$ION_BUILD_DEP|g"  \
         -e "s|@ALSA_BUILD_DEP@|$ALSA_BUILD_DEP|g"  \
         -e "s|@ALSA_HAB@|$ALSA_HAB|g"              \
         $*
 }
 
+
+function usage() {
+    cat <<-END
+usage: configure [OPTIONS]
+
+Configure the bionet2 Debian source package.
+
+OPTIONS:
+
+    --with-ion   Enable a build-dependency on ion-dev.  Without this
+                 argument, the dsc will not build-depend on ION.
+
+    --help       Show this help.
+
+END
+    exit $1
+}
+
+
+
+
+#
+# parse command-line arguments
+#
+
+
+# Note that we use `"$@"' to let each command-line parameter expand to a
+# separate word. The quotes around `$@' are essential!
+# We need TEMP as the `eval set --' would nuke the return value of getopt.
+TEMP=`getopt -o h --long help,with-ion -n "$0" -- "$@"`
+if [ $? != 0 ] ; then
+    echo "Terminating..." >&2
+    exit 1
+fi
+
+# Note the quotes around `$TEMP': they are essential!
+eval set -- "$TEMP"
+
+while true ; do
+    case "$1" in
+        --with-ion)
+            echo "build-depending on ion"
+            ION_BUILD_DEP="ion-dev, "
+            shift 1
+            ;;
+        -h|--help) usage 0 ;;
+        --) shift ; break ;;
+        *) echo "Internal error!  got $1" ; exit 1 ;;
+    esac
+done
+
+
+
+
+# 
+# should we build-dep on libasound?
+#
 
 DIST=$(lsb_release -cs)
 if [ $DIST = "hardy" ]; then
@@ -19,9 +77,12 @@ if [ $DIST = "hardy" ]; then
     ALSA_HAB="# no ALSA-HAB on Hardy, libasound is too old"
 else
     echo "customizing source package for Ubuntu newer-than-Hardy: build with alsa"
-    ALSA_BUILD_DEP="libasound2-dev (>= 1.0.16), "
+    ALSA_BUILD_DEP="libasound2-dev (>= 1.0.16),"
     ALSA_HAB="usr/bin/alsa-hab"
 fi
+
+
+
 
 subst control.in > control
 subst bionet2-streams.install.in > bionet2-streams.install
