@@ -1,0 +1,15 @@
+#!/usr/bin/python
+
+import os
+import urllib2
+
+TCP_IP = '127.0.0.1'
+TCP_PORT = '8082'
+
+urlreq = 'http://' + TCP_IP + ':' + TCP_PORT + os.environ['REQUEST_URI'].replace("/cgi-bin", "")
+req = urllib2.Request(urlreq);
+u = urllib2.urlopen(req)
+data = u.read()
+print "Content-type: image/png"         # this is the header to the server
+print                                   # so is this blank line
+print data

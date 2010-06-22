@@ -46,7 +46,6 @@ def process_new_session_or_subscription(res, timespan, regex):
 
 
 class Datapoints(resource.Resource):
-
     isLeaf = True
 
     def render_GET(self, request):
@@ -56,7 +55,6 @@ class Datapoints(resource.Resource):
 
         found = 0
 
-        
         for res in request.args['resource']:
             if (res.count("/")):
                 (bdm_ids, bionet_resname) = res.split("/");

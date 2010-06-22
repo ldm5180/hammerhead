@@ -15,3 +15,5 @@ python_PYTHON = bdmplot_lib.py \
 bin_SCRIPTS = bdmplot
 
 nobase_dist_sysconf_DATA = init.d/bdmplot
+
+nobase_dist_data_SCRIPTS = cgi-bin/bdmplot

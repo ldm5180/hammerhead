@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ "$1" = "purge" ]; then
+    rm -f /usr/lib/cgi-bin/bdmplot
+fi
+
+
