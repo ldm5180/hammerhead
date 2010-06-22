@@ -5,11 +5,9 @@
 #include <signal.h>
 #include <getopt.h>
 
-#include "glib.h"
+#include <glib.h>
 
 #include "sim-hab.h"
-#include "proxrcmds.h"
-#include "proxrport.h"
 
 #define HAB_TYPE "sim-hab"
 
@@ -20,12 +18,15 @@ int main(int argc, char* argv[])
 {
     int bionet_fd;
     int proxr_fd;
+    int arduino_fd;
     int i;
 
     char *hab_type = HAB_TYPE;
     char *hab_id = NULL;
     char *proxr_loc = NULL;
     char *arduino_loc = NULL;
+
+    GMainLoop *main_loop;
 
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -106,14 +107,34 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    arduino_fd = arduino_connect(arduino_loc);
+    if(arduino_fd < 0)
+    {
+        g_warning("could not connect to arduino device, exiting");
+        return 1;
+    }
+
     // add node
     add_node(hab, "sim1");
     set_all_potentiometers(0);
 
+    main_loop = g_main_loop_new(NULL, TRUE);
+
+    {
+        GIOChannel *ch;
+        ch = g_io_channel_unix_new(bionet_fd);
+        g_io_add_watch(ch, G_IO_IN, read_from_bionet, NULL);
+    }
+
+    g_timeout_add(1000, poll_arduino, NULL);
+    
+    g_main_loop_run(main_loop);
+    
+
     //
     // main loop
     //
-    while(1)
+   /* while(1)
     {
         hab_read_with_timeout(NULL);
 
@@ -123,7 +144,7 @@ int main(int argc, char* argv[])
             proxr_disconnect();
             break;
         }
-    }
+    }*/
 
     return 0;
 }
