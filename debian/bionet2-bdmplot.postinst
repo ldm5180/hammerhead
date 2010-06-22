@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ "$1" = "configure" ]; then
+    # create the database if needed
+    cp /usr/share/cgi-bin/bdmplot /usr/lib/cgi-bin/bdmplot
+    chmod a+rw /usr/lib/cgi-bin/bdmplot
+fi
+
