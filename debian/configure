@@ -3,14 +3,26 @@
 # it's a cheesy little script to customize the debian source package for the dist it's targeted for
 # specifically, it disables ALSA if the dists' version is less than 1.0.16
 
+
+function subst () {
+    sed                                            \
+        -e "s|@ALSA_BUILD_DEP@|$ALSA_BUILD_DEP|g"  \
+        -e "s|@ALSA_HAB@|$ALSA_HAB|g"              \
+        $*
+}
+
+
 DIST=$(lsb_release -cs)
 if [ $DIST = "hardy" ]; then
-    echo "customizing source package for hardy:"
-    echo "    do not build-depend on alsa"
-    cp control.hardy control
-    cp bionet2-streams.install.hardy bionet2-streams.install
+    echo "customizing source package for Ubuntu Hardy: do not build with alsa"
+    ALSA_BUILD_DEP=""
+    ALSA_HAB="# no ALSA-HAB on Hardy, libasound is too old"
 else
-    cp control.standard control
-    cp bionet2-streams.install.standard bionet2-streams.install
+    echo "customizing source package for Ubuntu newer-than-Hardy: build with alsa"
+    ALSA_BUILD_DEP="libasound2-dev (>= 1.0.16), "
+    ALSA_HAB="usr/bin/alsa-hab"
 fi
+
+subst control.in > control
+subst bionet2-streams.install.in > bionet2-streams.install
 

@@ -1,7 +1,0 @@
-# HABs
-usr/bin/streamy-hab
-usr/bin/alsa-hab
-
-# Clients
-usr/bin/bionet-stream
-usr/bin/stream-manager

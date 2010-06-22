@@ -1,8 +1,6 @@
 # HABs
 usr/bin/streamy-hab
-
-# No ALSA HAB on Hardy
-#usr/bin/alsa-hab
+@ALSA_HAB@
 
 # Clients
 usr/bin/bionet-stream
