@@ -24,6 +24,11 @@ int main(int argc, char* argv[])
 
     char *hab_type = HAB_TYPE;
     char *hab_id = NULL;
+    char *proxr_loc = NULL;
+    char *arduino_loc = NULL;
+
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
 
     while(1)
     {
@@ -33,10 +38,12 @@ int main(int argc, char* argv[])
             {"help", 0, 0, '?'},
             {"version", 0, 0, 'v'},
             {"id", 1, 0, 'i'},
+            {"proxr", 1, 0, 'p'},
+            {"arduino", 1, 0, 'a'},
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "?hvi:", long_options, &i);
+        c = getopt_long(argc, argv, "?hva:p:i:", long_options, &i);
         if(c == -1)
         {
             break;
@@ -57,9 +64,23 @@ int main(int argc, char* argv[])
                 print_bionet_version(stdout);
                 return 0;
 
+            case 'p':
+                proxr_loc = optarg;
+                break;
+
+            case 'a':
+                arduino_loc = optarg;
+                break;
+
             default:
                 break;
         }
+    }
+
+    if(proxr_loc == NULL || arduino_loc == NULL)
+    {
+        usage();
+        return 0;
     }
 
     hab = bionet_hab_new(hab_type, hab_id);
@@ -78,15 +99,12 @@ int main(int argc, char* argv[])
     g_message("%s connected to Bionet!", bionet_hab_get_name(hab));
 
     // connect to proxr controller
-    proxr_fd = proxr_find_and_connect();
+    proxr_fd = proxr_connect(proxr_loc);
     if(proxr_fd < 0)
     {
         g_warning("could not connect to proxr device, exiting");
         return 1;
     }
-
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
 
     // add node
     add_node(hab, "sim1");
