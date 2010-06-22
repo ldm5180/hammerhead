@@ -11,7 +11,6 @@
 
 #define HAB_TYPE "sim-hab"
 
-int should_exit = 0;
 bionet_hab_t *hab;
 
 int main(int argc, char* argv[])
@@ -129,22 +128,6 @@ int main(int argc, char* argv[])
     g_timeout_add(1000, poll_arduino, NULL);
     
     g_main_loop_run(main_loop);
-    
-
-    //
-    // main loop
-    //
-   /* while(1)
-    {
-        hab_read_with_timeout(NULL);
-
-        if(should_exit)
-        {
-            hab_disconnect();
-            proxr_disconnect();
-            break;
-        }
-    }*/
 
     return 0;
 }

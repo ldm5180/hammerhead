@@ -64,7 +64,7 @@ int arduino_write(char cmd)
 }
 
 //
-// read from arduino device
+// read from arduino device until specified char is reached
 //
 int arduino_read_until(char* buf, char until)
 {

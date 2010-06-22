@@ -4,7 +4,6 @@
 #include "arduinoport.h"
 
 extern bionet_hab_t *hab;
-extern int should_exit;
 extern GMainLoop *main_loop;
 
 // bionet functions

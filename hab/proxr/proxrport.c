@@ -11,8 +11,8 @@
 
 static int fd = 0;
 
-/** @brief attempts to open USB0 port and configures terminal attributes
- *  @param void
+/** @brief attempts to open serial file
+ *  @param serial file to be opened
  *  @return file descriptor of opened port
  */
 int proxr_connect(char *conn)
