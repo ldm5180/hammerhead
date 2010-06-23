@@ -8,7 +8,7 @@ class cgbaLed : public QWidget
 {
 public:
     cgbaLed(QString info, QWidget *parent=0);
-    void toggleValue();
+    void setValue(bool val);
 private:
     QLed *led;
     QVBoxLayout *layout;

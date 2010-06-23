@@ -109,6 +109,7 @@ void cgbaSim::bionetSetup()
     bionet_subscribe_datapoints_by_name(strcat(id, ":*"));
 
     connect(liveIO, SIGNAL(newNode(bionet_node_t*,void*)), this, SLOT(setNode(bionet_node_t*)));
+    connect(liveIO, SIGNAL(datapointUpdate(bionet_datapoint_t*,void*)), this,  SLOT(setDO(bionet_datapoint_t*)));
 }
 
 void cgbaSim::setNode(bionet_node_t *node)
@@ -121,10 +122,81 @@ void cgbaSim::setNode(bionet_node_t *node)
     disconnect(liveIO, SIGNAL(newHab(bionet_hab_t*,void*)), this, SLOT(setNode(bionet_node_t*)));
 }
 
+void cgbaSim::setDO(bionet_datapoint_t *data)
+{
+    const char *name = NULL;
+    bionet_resource_t *resource;
+    bionet_value_t *value;
+    int content;
+
+    resource = bionet_datapoint_get_resource(data);
+    name = bionet_resource_get_id(resource);
+
+    // huge if else ball. checks to see if the updated datapoint is one we care about
+    // if it is check the value it changed to and update led light accordingly
+    if(strcmp(name, "DO0") == 0) {
+        value = bionet_datapoint_get_value(data);
+        bionet_value_get_binary(value, &content);
+        if(content == 0)
+            leds[0]->setValue(false);
+        else
+            leds[0]->setValue(true);
+    }else if(strcmp(name, "DO1") == 0) {
+        value = bionet_datapoint_get_value(data);
+        bionet_value_get_binary(value, &content);
+        if(content  == 0)
+            leds[1]->setValue(false);
+        else
+            leds[1]->setValue(true);
+    }else if(strcmp(name, "DO2") == 0) {
+        value = bionet_datapoint_get_value(data);
+        bionet_value_get_binary(value, &content);
+        if(content  == 0)
+            leds[2]->setValue(false);
+        else
+            leds[2]->setValue(true);
+    }else if(strcmp(name, "DO3") == 0) {
+        value = bionet_datapoint_get_value(data);
+        bionet_value_get_binary(value, &content);
+        if(content  == 0)
+            leds[3]->setValue(false);
+        else
+            leds[3]->setValue(true);
+    }else if(strcmp(name, "DO4") == 0) {
+        value = bionet_datapoint_get_value(data);
+        bionet_value_get_binary(value, &content);
+        if(content  == 0)
+            leds[4]->setValue(false);
+        else
+            leds[4]->setValue(true);
+    }else if(strcmp(name, "DO5") == 0) {
+        value = bionet_datapoint_get_value(data);
+        bionet_value_get_binary(value, &content);
+        if(content  == 0)
+            leds[5]->setValue(false);
+        else
+            leds[5]->setValue(true);;
+    }else if(strcmp(name, "DO6") == 0) {
+        value = bionet_datapoint_get_value(data);
+        bionet_value_get_binary(value, &content);
+        if(content  == 0)
+            leds[6]->setValue(false);
+        else
+            leds[6]->setValue(true);
+    }else if(strcmp(name, "DO7") == 0) {
+        value = bionet_datapoint_get_value(data);
+        bionet_value_get_binary(value, &content);
+        if(content  == 0)
+            leds[7]->setValue(false);
+        else
+            leds[7]->setValue(true);
+    }
+}
+
 void cgbaSim::testSignal()
 {
     int light = rand()%8;
-    leds[light]->toggleValue();
+    leds[light]->setValue(true);
 }
 
 cgbaSim::~cgbaSim()

@@ -12,7 +12,7 @@ cgbaLed::cgbaLed(QString info, QWidget *parent)
     this->setLayout(layout);
 }
 
-void cgbaLed::toggleValue()
+void cgbaLed::setValue(bool val)
 {
-    led->toggleValue();
+    led->setValue(val);
 }

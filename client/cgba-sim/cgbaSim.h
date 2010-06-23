@@ -26,6 +26,7 @@ public:
 public slots:
     void testSignal();
     void setNode(bionet_node_t *node);
+    void setDO(bionet_datapoint_t *data);
 protected:
     void bionetSetup();
 private:
