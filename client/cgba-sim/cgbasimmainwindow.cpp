@@ -25,24 +25,15 @@ void CgbaSimMainWindow::createActions()
 
     exitAction = new QAction(tr("&Quit"), this);
     connect(exitAction, SIGNAL(triggered()), this, SLOT(quit()));
-
-    changeLedAction = new QAction(tr("&Switch Light"), this);
-    connect(changeLedAction, SIGNAL(triggered()), this, SLOT(switchLed()));
 }
 
 void CgbaSimMainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(changeLedAction);
     fileMenu->addAction(exitAction);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAction);
-}
-
-void CgbaSimMainWindow::switchLed()
-{
-    mainWidget->testSignal();
 }
 
 void CgbaSimMainWindow::quit()
@@ -62,6 +53,5 @@ CgbaSimMainWindow::~CgbaSimMainWindow()
     delete helpMenu;
     delete exitAction;
     delete aboutAction;
-    delete changeLedAction;
     delete mainWidget;
 }

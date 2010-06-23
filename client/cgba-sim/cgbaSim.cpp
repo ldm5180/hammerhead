@@ -193,12 +193,6 @@ void cgbaSim::setDO(bionet_datapoint_t *data)
     }
 }
 
-void cgbaSim::testSignal()
-{
-    int light = rand()%8;
-    leds[light]->setValue(true);
-}
-
 cgbaSim::~cgbaSim()
 {
     delete[] dial;

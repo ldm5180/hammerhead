@@ -13,7 +13,6 @@ public:
 public slots:
     void quit();
     void about();
-    void switchLed();
 protected:
     void setupWindow();
     void createActions();
@@ -23,7 +22,6 @@ private:
     QMenu *helpMenu;
     QAction *exitAction;
     QAction *aboutAction;
-    QAction *changeLedAction;
 
     cgbaSim *mainWidget;
 };
