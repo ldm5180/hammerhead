@@ -16,4 +16,4 @@ bin_SCRIPTS = bdmplot
 
 nobase_dist_sysconf_DATA = init.d/bdmplot
 
-nobase_dist_data_SCRIPTS = cgi-bin/bdmplot
+nobase_dist_data_DATA = cgi-bin/bdmplot
