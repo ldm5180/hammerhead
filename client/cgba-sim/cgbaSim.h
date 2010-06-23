@@ -26,6 +26,7 @@ public:
 public slots:
     void setNode(bionet_node_t *node);
     void setDO(bionet_datapoint_t *data);
+    void lostHab();
 protected:
     void bionetSetup();
 private:

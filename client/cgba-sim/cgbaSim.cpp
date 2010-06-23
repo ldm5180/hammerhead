@@ -110,6 +110,7 @@ void cgbaSim::bionetSetup()
 
     connect(liveIO, SIGNAL(newNode(bionet_node_t*,void*)), this, SLOT(setNode(bionet_node_t*)));
     connect(liveIO, SIGNAL(datapointUpdate(bionet_datapoint_t*,void*)), this,  SLOT(setDO(bionet_datapoint_t*)));
+    connect(liveIO, SIGNAL(lostHab(bionet_hab_t*,void*)), this, SLOT(lostHab()));
 }
 
 void cgbaSim::setNode(bionet_node_t *node)
@@ -191,6 +192,13 @@ void cgbaSim::setDO(bionet_datapoint_t *data)
         else
             leds[7]->setValue(true);
     }
+}
+
+void cgbaSim::lostHab()
+{
+    QMessageBox::critical(this, tr("Lost Hab"), tr("The hab subscribed to by this client has either crashed or closed."),
+                          QMessageBox::Ok);
+    exit(1);
 }
 
 cgbaSim::~cgbaSim()
