@@ -27,6 +27,12 @@ int poll_arduino()
     res = bionet_node_get_resource_by_index(node, 25);
     bionet_resource_set_uint32(res, content, NULL);
 
+    // testing
+    arduino_write(200);
+    arduino_read_until(response, '\n');
+    content = atoi(response);
+    printf("digital 0: %d\n", content);
+
     // report new data
     hab_report_datapoints(node);
 
