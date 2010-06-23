@@ -82,13 +82,20 @@ def bdmplot(kwargs, bionet_resources):
 
     import pylab
     f = pylab.figure(figsize=(int(args["width"][0]), int(args["height"][0])))
-
+    title = ""
+    
     legend = []
     resource_index = 0
     for resource in args['resource name']:
         plotargs = []
 
+        if (title != ""):
+            title += " vs "
+
         (updated, results) = datapoints_to_dict(timespan_vals, resource, args['timespan'], args["regexp"], bionet_resources)
+        title += resource
+        if (args['resource name'].index(resource) == (len(args['resource name'])-1)):
+            f.suptitle(title, fontsize=12)
 
         # if it hasn't been updated then just use the cached image
         if (updated == False):
@@ -97,7 +104,7 @@ def bdmplot(kwargs, bionet_resources):
         # Split the dictionary into:
         #   - an array of legends based on the keys
         #   - a tuple of args for the lines
-        plottypes = ["r--", "g--"]
+        plottypes = ["r-", "g-"]
         if len(results) == 0:
             # If there are no results, matplotlib will barf on an empty set.  Add
             # two datapoints that are off-screen.
@@ -126,6 +133,7 @@ def bdmplot(kwargs, bionet_resources):
 
         # Plot the results
         pylab.step(*plotargs, **{'figure': f})
+
 
     # Set the x-axis interval and formatter appropriately
     ax.xaxis.set_major_formatter(timechooser.SmartDateFormatter(timespan_stamps_now))
