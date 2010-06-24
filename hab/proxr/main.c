@@ -9,7 +9,7 @@
 
 #include "sim-hab.h"
 
-#define HAB_TYPE "sim-hab"
+#define HAB_TYPE "cgba-sim"
 
 bionet_hab_t *hab;
 
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
     }
 
     // add node
-    add_node(hab, "sim1");
+    add_node(hab, "sim");
     set_all_potentiometers(0);
 
     main_loop = g_main_loop_new(NULL, TRUE);
