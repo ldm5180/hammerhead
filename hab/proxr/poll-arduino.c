@@ -5,6 +5,7 @@ int poll_arduino()
 {
     char response[256];
     uint32_t content;
+    int oldVal;
     bionet_resource_t *res;
     bionet_node_t *node;
     
@@ -35,7 +36,9 @@ int poll_arduino()
     {
         content = atoi(&response[i]);
         res = bionet_node_get_resource_by_index(node, 16+i);
-        bionet_resource_set_binary(res, content, NULL);
+        bionet_resource_get_binary(res, &oldVal, NULL);
+        if(content != oldVal)
+            bionet_resource_set_binary(res, content, NULL);
     }
 
     // report new data
