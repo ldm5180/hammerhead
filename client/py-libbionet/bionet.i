@@ -35,6 +35,8 @@
 %pointer_functions(int16_t,  int16p);
 %pointer_functions(uint32_t, uint32p);
 %pointer_functions(int32_t,  int32p);
+%pointer_functions(float,  floatp);
+%pointer_functions(double,  doublep);
 %pointer_functions(char**,  strp);
 
 %include "typemaps.i"
