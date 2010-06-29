@@ -4,11 +4,14 @@
 
 void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
 {
-    uint8_t content;
+    uint8_t data;
+    float content;
     int id;
     bionet_node_t *node;
 
-    bionet_value_get_uint8(value, &content);
+    bionet_value_get_uint8(value, &data);
+    if(data < 0 || data > 255)
+	return;
 
     node = bionet_resource_get_node(resource);
     // get index of resource
@@ -30,9 +33,10 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
         }
     }
     // command proxr to adjust to new value
-    set_potentiometer(id, (int)content); 
+    set_potentiometer(id, data); 
     // set resources datapoint to new value
-    bionet_resource_set(resource, value, NULL);
+    content = data*POT_CONVERSION;
+    bionet_resource_set_float(resource, content, NULL);
     hab_report_datapoints(node);
 }
 
