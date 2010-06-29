@@ -14,9 +14,9 @@ libcal_mdnssd_bip_server_la_CFLAGS = \
 	$(OPENSSL_CFLAGS) \
 	$(GLIB_CFLAGS) \
 	$(GTHREAD_CFLAGS) \
-	$(AVAHI_COMPAT_LIBDNS_SD_CFLAGS) \
 	$(DBUS_CFLAGS) \
-	-I.. -I../.. -I../../util -I../shared
+	-I.. -I../.. -I../../util -I../shared \
+	$(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
 
 libcal_mdnssd_bip_server_la_SOURCES = \
 	cal-server-api.c \
@@ -27,11 +27,13 @@ libcal_mdnssd_bip_server_la_LIBADD = \
 	$(AM_LDADD) \
 	$(LIBS_CAL_MDNSSD_BIP_SHARED) \
 	$(LIBS_CAL_UTIL) \
-	$(AVAHI_COMPAT_LIBDNS_SD_LIBS) \
 	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(OPENSSL_LIBS) \
-	$(GTHREAD_LIBS)
+	$(GTHREAD_LIBS) \
+	$(AVAHI_COMPAT_LIBDNS_SD_LIBS)
 
-libcal_mdnssd_bip_server_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(BIONET_INTERFACE_VERSION)
-
+libcal_mdnssd_bip_server_la_LDFLAGS = \
+	$(AM_LDFLAGS) \
+	-version-info \
+	$(BIONET_INTERFACE_VERSION)
