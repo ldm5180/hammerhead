@@ -725,13 +725,12 @@ void cleanup_text_record(cal_server_mdnssd_bip_t * this) {
 
 void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
     char mdnssd_service_name[100];
+    struct timeval *timeout = NULL;
     int r;
 
     DNSServiceErrorType error;
 
     cal_event_t *event;
-
-
 
 #if 0
     // block all signals in this thread
@@ -827,6 +826,15 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
             return 0;
         }
     }
+
+#ifdef HAVE_EMBEDDED_MDNSSD
+    cal_pthread_mutex_lock(&avahi_mutex);
+    r = cal_mDNS_init(&mDNSStorage, &timeout);
+    cal_pthread_mutex_unlock(&avahi_mutex);
+
+    // an error has already been logged
+    if (r <= 0) return NULL;
+#endif
 
     cal_pthread_mutex_lock(&avahi_mutex);
     error = DNSServiceRegister(
