@@ -61,8 +61,9 @@ void cgbaDial::setResource(bionet_node_t *node)
 {
     potResource = bionet_node_get_resource_by_index(node, potNum);
     // set the start up values of the dials to reflect the proxr-hab's values
-    uint8_t content;
-    bionet_resource_get_uint8(potResource, &content, NULL);
+    float content;
+    bionet_resource_get_float(potResource, &content, NULL);
+    content = content/VOLTAGE_INCREMENT;
     setValue(int(content));
 }
 
