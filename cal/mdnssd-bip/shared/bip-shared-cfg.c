@@ -17,6 +17,18 @@ mDNS_PlatformSupport *PlatformSupportStorage;
 CacheEntity *rrcachestorage;
 int mDNS_instances = 0;
 
+// grow the cache as necessary
+void mDNS_StatusCallback(mDNS *const m, mStatus status) {
+    if (status == mStatus_GrowCache) {
+        CacheEntity *storage = calloc(RR_CACHE_SIZE, sizeof(CacheEntity));
+        if (storage) {
+            mDNS_GrowCache(m, storage, RR_CACHE_SIZE);
+        } else {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "mDNS_StatusCallback: out of memory!");
+        }
+    }
+}
+
 int cal_mDNS_init(mDNS *m, struct timeval **timeout) {
     mStatus status = mStatus_NoError;
 
@@ -63,17 +75,6 @@ int cal_mDNS_init(mDNS *m, struct timeval **timeout) {
     return 1;
 }
 
-// grow the cache as necessary
-void mDNS_StatusCallback(mDNS *const m, mStatus status) {
-    if (status == mStatus_GrowCache) {
-        CacheEntity *storage = calloc(RR_CACHE_SIZE, sizeof(CacheEntity));
-        if (storage) {
-            mDNS_GrowCache(m, storage, RR_CACHE_SIZE);
-        } else {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "mDNS_StatusCallback: out of memory!");
-        }
-    }
-}
 
 // cleanup
 void mDNS_Terminate() {
