@@ -1065,6 +1065,9 @@ shutdown_thread:
 
 void cal_server_mdnssd_bip_destroy(cal_server_mdnssd_bip_t * server_thread_data) {
     cleanup_advertisedRef(server_thread_data);
+#ifdef HAVE_EMBEDDED_MDNSSD
+    mDNS_Terminate();
+#endif
     cleanup_text_record(server_thread_data);
     cleanup_clients_and_listener(server_thread_data);
 }
