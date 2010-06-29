@@ -688,8 +688,6 @@ static void DNSSD_API browse_callback(
         sc->peer_name = strdup(name);
 	sc->this = (cal_client_mdnssd_bip_t *)context;
 
-        // Now create a resolve call to fill out the network info part of the bip_peer
-	cal_pthread_mutex_lock(&avahi_mutex);
         error = DNSServiceResolve(
             &sc->service_ref,
             0,
@@ -700,7 +698,6 @@ static void DNSSD_API browse_callback(
             resolve_callback,
             (void*)sc
         );
-	cal_pthread_mutex_unlock(&avahi_mutex);
         if (error != kDNSServiceErr_NoError) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "browse_callback: failed to start resolv service, dropping this joining peer");
             free(sc->peer_name);
