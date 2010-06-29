@@ -437,7 +437,7 @@ static int read_ack_tcp(sync_sender_config_t *config) {
 
     memset(&sync_ack, 0, sizeof(sync_ack));
 
-    do {
+    while (1) {
 	bytes_to_read = sizeof(buffer) - index;
 	bytes_read = read(config->fd, &buffer[index], bytes_to_read);
 	if (bytes_read < 0) {
@@ -502,7 +502,7 @@ static int read_ack_tcp(sync_sender_config_t *config) {
             index -= rval.consumed;
             memmove(buffer, &buffer[rval.consumed], index);
         }
-    } while ((rval.consumed > 0) && (index > 0));
+    }
 
     return -1;
 }
