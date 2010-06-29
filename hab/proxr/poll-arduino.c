@@ -4,7 +4,8 @@
 int poll_arduino()
 {
     char response[256];
-    uint32_t content;
+    int data;
+    float content;
     int oldVal;
     bionet_resource_t *res;
     bionet_node_t *node;
@@ -15,18 +16,20 @@ int poll_arduino()
     // read value and set resource
     arduino_write(100);
     arduino_read_until(response, '\n');
-    content = atoi(response); 
+    data = atoi(response);
+    content = data*ANALOG_INPUT_CONVERSION;
     res = bionet_node_get_resource_by_index(node, 24);
-    bionet_resource_set_uint32(res, content, NULL);
+    bionet_resource_set_float(res, content, NULL);
 
 
     // send command 101. requests analog1's value
     // read value and set resource
     arduino_write(101);
     arduino_read_until(response, '\n');
-    content = atoi(response);
+    data = atoi(response);
+    content = data*ANALOG_INPUT_CONVERSION;
     res = bionet_node_get_resource_by_index(node, 25);
-    bionet_resource_set_uint32(res, content, NULL);
+    bionet_resource_set_float(res, content, NULL);
 
     // send command 200. requests the 8 digital values
     // read values and set resource
@@ -34,11 +37,11 @@ int poll_arduino()
     arduino_read_until(response, '\n');
     for(int i=0; i<8; i++)
     {
-        content = atoi(&response[i]);
+        data = atoi(&response[i]);
         res = bionet_node_get_resource_by_index(node, 16+i);
         bionet_resource_get_binary(res, &oldVal, NULL);
-        if(content != oldVal)
-            bionet_resource_set_binary(res, content, NULL);
+        if(data != oldVal)
+            bionet_resource_set_binary(res, data, NULL);
     }
 
     // report new data
