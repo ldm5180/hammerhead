@@ -13,6 +13,7 @@ include_HEADERS = bionet.h libbionet-decl.h
 libbionet_la_SOURCES =        \
     set-id.c                  \
     connect.c                 \
+    disconnect.c	      \
     read.c                    \
     register-callback.c       \
     subscribe-datapoints.c    \
