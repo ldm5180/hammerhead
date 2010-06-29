@@ -252,11 +252,9 @@ static void reset_connection(cal_client_mdnssd_bip_t * this, bip_peer_t * peer) 
     report_peer_lost(this, peer);
 
     bip_peer_disconnect(peer);
-    int fd = bip_peer_connect_nonblock(this, peer);
-    if(fd >= 0) {
-        // The next net is not ready yet
-        this->connecting_peer_list = g_list_append(this->connecting_peer_list, peer);
-    }
+
+    bip_peer_connect_nonblock(this, peer);
+
 }
 
 // this function is called by the thread main function when the user thread wants to tell it something
@@ -563,17 +561,20 @@ static void DNSSD_API resolve_callback(
     struct cal_client_mdnssd_bip_service_context *sc = context;
     char * peer_name = sc->peer_name;
     cal_client_mdnssd_bip_t * this = sc->this;
+    
+    // We don't delete the service ref here because of an odd embedded
+    // mDNS behaviour: when a client disconnects and then reconnects on a
+    // different port, this callback get called twice: once for client's 
+    // original info and once for it's new connection/info. This occurs
+    // because the resolve callback is called before the cache is updated 
+    // with the client's new info.
+    // To get around this, we don't delete the service reference until after
+    // we try to connect to it. If we're able to successfully connect to it,
+    // we cleanup, using cleanup_resolve_service_ref. If we're unable to
+    // connect to it, we do nothing.
 
     bip_peer_t *peer;
     bip_peer_network_info_t *net;
-
-
-    // remove this service_ref from the list
-    cal_pthread_mutex_lock(&avahi_mutex);
-    DNSServiceRefDeallocate(sc->service_ref);
-    cal_pthread_mutex_unlock(&avahi_mutex);
-    this->service_list = g_slist_remove(this->service_list, sc);
-    free(sc);
 
     if (errorCode != kDNSServiceErr_NoError) {
         if (errorCode != kDNSServiceErr_Unknown) {
@@ -584,7 +585,7 @@ static void DNSSD_API resolve_callback(
     }
 
     peer = get_peer_by_name(this, peer_name);
-    free(peer_name);
+    //free(peer_name); // free it later, see comment ^^
     if (peer == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "resolve_callback: out of memory");
         return;
@@ -622,15 +623,10 @@ static void DNSSD_API resolve_callback(
         return;
     }
 
-
     //
     // New peer just showed up on the network. Push it on the list of hosts to connect to
     // 
-    if(bip_peer_connect_nonblock(this, peer) < 0) {
-        return;
-    }
-    this->connecting_peer_list = g_list_append(this->connecting_peer_list, peer);
-
+    bip_peer_connect_nonblock(this, peer);
     return;
 }
 
@@ -1048,14 +1044,9 @@ SELECT_LOOP_CONTINUE:
                     this->connecting_peer_list = g_list_delete_link(this->connecting_peer_list, dptr);
                     if( r < 0 ) {
                         // This connect failed. Try the next one
-                        int fd = bip_peer_connect_nonblock(this, peer);
-                        if(fd >= 0) {
-                            // The next net is not ready yet
-                            this->connecting_peer_list = g_list_append(this->connecting_peer_list, peer);
-                        } else {
-                            // No more nets to try.
-                            // TODO Send an error message instead of a duplicate 
-                            // PEER_LEAVING
+                        if (bip_peer_connect_nonblock(this, peer) < 0) {
+                            // all connects failed, report the peer as lost
+                            //cleanup_resolve_service_ref(this, peer->peer_name);
                             report_peer_lost(this, peer);
                         }
                     } else {

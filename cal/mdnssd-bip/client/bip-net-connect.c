@@ -35,12 +35,13 @@
 // 
 // Use bip_net_connect_check() after the returned fd is writable to see if it succeeded
 //
-int bip_net_connect_nonblock(void * cal_handle, const char* peer_name, bip_peer_network_info_t *net) {
+int bip_net_connect_nonblock(
+    void * cal_handle, 
+    const char* peer_name, 
+    bip_peer_network_info_t *net, 
+    const struct sockaddr *saddr
+) {
     int s;
-    int r;
-
-    struct addrinfo ai_hints;
-    struct addrinfo *ai;
 
     cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
 
@@ -98,32 +99,13 @@ int bip_net_connect_nonblock(void * cal_handle, const char* peer_name, bip_peer_
     // Make socket non-blocking
     bip_socket_set_blocking(s, 0);
 
-    memset(&ai_hints, 0, sizeof(ai_hints));
-    ai_hints.ai_family = AF_INET;  // IPv4
-    ai_hints.ai_socktype = SOCK_STREAM;  // TCP
-    r = getaddrinfo(net->hostname, NULL, &ai_hints, &ai);
-    if (r != 0) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            "%s: error with getaddrinfo(\"%s\", ...): %s",
-                __FUNCTION__, net->hostname, gai_strerror(r));
-        return -1;
-    }
-    if (ai == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-            "%s: no results from getaddrinfo(\"%s\", ...)", 
-                __FUNCTION__, net->hostname);
-        return -1;
-    }
-
-    ((struct sockaddr_in *)ai->ai_addr)->sin_port = htons(net->port);
+    ((struct sockaddr_in*)saddr)->sin_port = htons(net->port);
 
     net->socket = s;
     net->security_status = BIP_SEC_NONE;
-    if( 0 != bip_socket_connect(s, ai->ai_addr, ai->ai_addrlen, peer_name, net) ) {
+    if( 0 != bip_socket_connect(s, saddr, sizeof(*saddr), peer_name, net) ) {
         return -1;
     }
-
-    freeaddrinfo(ai);
 
     return s;
 }
