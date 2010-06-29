@@ -172,6 +172,29 @@ static void report_peer_lost(cal_client_mdnssd_bip_t * this, bip_peer_t *peer) {
 }
 
 
+void cleanup_resolve_service_ref (cal_client_mdnssd_bip_t * this, char *peer_name) {
+    GSList *me;
+    for (me = this->service_list; me != NULL; me = me->next) {
+        struct cal_client_mdnssd_bip_service_context *sc = me->data;
+
+        // the 'browse' service context has a null peer_name, skip it
+        if (sc->peer_name == NULL)
+            continue;
+
+        if (strcmp(sc->peer_name, peer_name) == 0) {
+            cal_pthread_mutex_lock(&avahi_mutex);
+            DNSServiceRefDeallocate(sc->service_ref);
+            cal_pthread_mutex_unlock(&avahi_mutex);
+
+            this->service_list = g_slist_remove(this->service_list, sc);
+            free(sc->peer_name);
+            free(sc);
+            return;
+        }
+    }
+}
+
+
 // NOTE: This assumes control of 'msg_data', which will be free'd
 // later as a result of calling this function
 static void _peer_add_pending_msg(
@@ -1050,6 +1073,8 @@ SELECT_LOOP_CONTINUE:
                             report_peer_lost(this, peer);
                         }
                     } else {
+                        // success! ... so remove the resolve service ref/service_list entry
+                        cleanup_resolve_service_ref(this, peer->peer_name);
                         // Do post-connect stuff
                         post_connect(this, peer);
                     }
