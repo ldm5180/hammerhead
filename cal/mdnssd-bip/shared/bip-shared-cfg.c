@@ -10,6 +10,84 @@
 #include <glib.h>
 #include <pthread.h>
 
+// POSIX
+#ifdef HAVE_EMBEDDED_MDNSSD
+mDNS mDNSStorage;
+mDNS_PlatformSupport *PlatformSupportStorage;
+CacheEntity *rrcachestorage;
+int mDNS_instances = 0;
+
+int cal_mDNS_init(mDNS *m, struct timeval **timeout) {
+    mStatus status = mStatus_NoError;
+
+    if ( !mDNS_instances ) {
+        rrcachestorage = calloc(RR_CACHE_SIZE, sizeof(CacheEntity));
+        if (rrcachestorage == NULL) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "cal_mDNS_init: out of memory!");
+            return 0;
+        }
+
+        PlatformSupportStorage = calloc(1, sizeof(mDNS_PlatformSupport));
+        if (PlatformSupportStorage == NULL) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "cal_mDNS_init: out of memory!");
+            return 0;
+        }
+
+        memset(m, '\x00', sizeof(mDNS));
+
+        status = mDNS_Init(
+            m,
+            PlatformSupportStorage,
+            rrcachestorage,
+            RR_CACHE_SIZE,
+            mDNS_Init_AdvertiseLocalAddresses,
+            mDNS_StatusCallback,
+            mDNS_Init_NoInitCallbackContext
+        );
+    }
+
+    if (status != mStatus_NoError) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "cal_mDNS_init: Error initializing mDNS %ld", (long)status);
+        return 0;
+    }
+
+    *timeout = calloc(1, sizeof(struct timeval));
+    if (*timeout == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "cal_mDNS_init: out of memory!");
+        return 0;
+    }
+
+    // increment threads using mDNS
+    mDNS_instances++;
+
+    return 1;
+}
+
+// grow the cache as necessary
+void mDNS_StatusCallback(mDNS *const m, mStatus status) {
+    if (status == mStatus_GrowCache) {
+        CacheEntity *storage = calloc(RR_CACHE_SIZE, sizeof(CacheEntity));
+        if (storage) {
+            mDNS_GrowCache(m, storage, RR_CACHE_SIZE);
+        } else {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "mDNS_StatusCallback: out of memory!");
+        }
+    }
+}
+
+// cleanup
+void mDNS_Terminate() {
+    mDNS_instances--;
+
+    if (mDNS_instances <= 0) {
+        mDNS_Close(&mDNSStorage);
+
+        free(PlatformSupportStorage);
+        free(rrcachestorage);
+    }
+}
+#endif
+
 bip_shared_config_t bip_shared_cfg;
 pthread_mutex_t avahi_mutex = PTHREAD_MUTEX_INITIALIZER;
 
