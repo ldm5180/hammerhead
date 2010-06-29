@@ -4,12 +4,12 @@
 
 void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
 {
-    uint8_t data;
+    float data;
     float content;
     int id;
     bionet_node_t *node;
 
-    bionet_value_get_uint8(value, &data);
+    bionet_value_get_float(value, &data);
     if(data < 0 || data > 255)
 	return;
 
@@ -33,7 +33,7 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
         }
     }
     // command proxr to adjust to new value
-    set_potentiometer(id, data); 
+    set_potentiometer(id, (int)data); 
     // set resources datapoint to new value
     content = data*POT_CONVERSION;
     bionet_resource_set_float(resource, content, NULL);
