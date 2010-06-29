@@ -1,6 +1,6 @@
 #include "cgbaDial.h"
 
-#define VOLTAGE_INCREMENT 0.01953125
+#define VOLTAGE_INCREMENT 0.019607843
 
 cgbaDial::cgbaDial(QString toolTip, QString label, int pot, QWidget *parent)
     :QWidget(parent)
