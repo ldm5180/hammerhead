@@ -56,7 +56,7 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
 
     client->index = 0;
 
-    do {
+    while (1) {
 	bytes_to_read = sizeof(client->buffer) - client->index;
 	bytes_read = read(client->fd, &client->buffer[client->index], bytes_to_read);
 	if (bytes_read < 0) {
@@ -111,7 +111,7 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
             client->index -= rval.consumed;
             memmove(client->buffer, &client->buffer[rval.consumed], client->index);
         }
-    } while ((rval.consumed > 0) && (client->index > 0));
+    }
 
     return TRUE;
 }
