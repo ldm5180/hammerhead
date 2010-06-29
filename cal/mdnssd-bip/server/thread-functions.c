@@ -25,6 +25,26 @@
 #include "cal-mdnssd-bip.h"
 #include "cal-server-mdnssd-bip.h"
 
+
+void mDNSGetFDSetServer(
+    int *max_fd,
+    fd_set *readers,
+    struct timeval *timeout
+) {
+#ifdef HAVE_EMBEDDED_MDNSSD
+    mDNSPosixGetFDSet(&mDNSStorage, max_fd, readers, timeout);
+#endif
+}
+
+void mDNSProcessFDSetServer(
+    fd_set *readers
+) {
+#ifdef HAVE_EMBEDDED_MDNSSD
+    mDNSPosixProcessFDSet(&mDNSStorage, readers);
+#endif
+}
+         
+
 // key is a bip peer name "bip://$HOST:$PORT"
 // value is a bip_peer_t*
 
@@ -946,8 +966,16 @@ SELECT_LOOP_CONTINUE:
             max_fd = Max(max_fd, fd);
         }
 
+        cal_pthread_mutex_lock(&avahi_mutex);
+        mDNSGetFDSetServer(&max_fd, &readers, timeout);
+        cal_pthread_mutex_unlock(&avahi_mutex);
+
         // block until there's something to do
-        r = select(max_fd + 1, &readers, NULL, NULL, NULL);
+        r = select(max_fd + 1, &readers, NULL, NULL, timeout);
+
+        cal_pthread_mutex_lock(&avahi_mutex);
+        mDNSProcessFDSetServer(&readers);
+        cal_pthread_mutex_unlock(&avahi_mutex);
 
         // First, see if we can write to our peers
         {
