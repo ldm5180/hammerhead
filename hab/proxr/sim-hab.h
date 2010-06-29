@@ -3,8 +3,8 @@
 #include "proxrport.h"
 #include "arduinoport.h"
 
-#define ANALOG_INPUT_CONVERSION 0.004882813
-#define POT_CONVERSION 0.01953125
+#define ANALOG_INPUT_CONVERSION 0.004887586
+#define POT_CONVERSION 0.019607843
 
 extern bionet_hab_t *hab;
 extern GMainLoop *main_loop;
