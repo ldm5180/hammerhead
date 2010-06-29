@@ -701,11 +701,17 @@ static int read_from_client(cal_server_mdnssd_bip_t *this, const char *peer_name
 
 void cleanup_advertisedRef(cal_server_mdnssd_bip_t * this) {
     if (this->advertisedRef != NULL) {
-	cal_pthread_mutex_lock(&avahi_mutex);
+        // the mutex should already be locked
         DNSServiceRefDeallocate(*this->advertisedRef);
-	cal_pthread_mutex_unlock(&avahi_mutex);
-	free(this->advertisedRef);
-	this->advertisedRef = NULL;
+
+#ifdef HAVE_EMBEDDED_MDNSSD
+        // DNSServiceRefDeallocate only schedules sending the goodbye packet.
+        // mDNS_Execute actually sends the packet. We know the goodbye 
+        // packet is scheduled to be sent next because we modified embedded
+        // mDNS to do so.
+        mDNS_Execute(&mDNSStorage);
+#endif
+	this->advertisedRef = NULL; 
     }
 }
 
@@ -1060,16 +1066,21 @@ shutdown_thread:
     //
     bip_msg_queue_close(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER);
 
+    if (timeout != NULL) 
+        free(timeout);
+
     return 0;
 }
 
 void cal_server_mdnssd_bip_destroy(cal_server_mdnssd_bip_t * server_thread_data) {
+    cal_pthread_mutex_lock(&avahi_mutex);
     cleanup_advertisedRef(server_thread_data);
 #ifdef HAVE_EMBEDDED_MDNSSD
     mDNS_Terminate();
 #endif
     cleanup_text_record(server_thread_data);
     cleanup_clients_and_listener(server_thread_data);
+    cal_pthread_mutex_unlock(&avahi_mutex);
 }
 
 
