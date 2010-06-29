@@ -7,6 +7,7 @@ cgbaDial::cgbaDial(QString toolTip, QString label, int pot, QWidget *parent)
 {
     dialToolTip = toolTip;
     potNum = pot;
+    potResource = NULL;
 
     dial = new Dial();
     dial->setNotchesVisible(true);
@@ -54,6 +55,13 @@ void cgbaDial::setPotentiometer()
     QByteArray ba = s.toLatin1();
     char *newVal = ba.data();
     //send set resource command to proxr hab
+    if(potResource == NULL)
+    {
+        QMessageBox::critical(this, tr("null resource"), tr("The bionet resource this dial controlls is null. Exiting..."),
+                              QMessageBox::Ok);
+        exit(1);
+    }
+
     bionet_set_resource(potResource, newVal);
 }
 

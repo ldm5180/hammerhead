@@ -5,6 +5,7 @@
 #include <QDial>
 #include <QLineEdit>
 #include <QVBoxLayout>
+#include <QMessageBox>
 #include <QLabel>
 #include "dial.h"
 extern "C"
