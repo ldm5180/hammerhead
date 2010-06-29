@@ -48,6 +48,7 @@ intervals = {}
 newamps = 0
 newwatts = 0
 TotalWattHour=0
+numbersamples = 0
 cal_ampdata = {}
 
 def add_node(hab, xb_address_16):
@@ -96,16 +97,18 @@ def add_node(hab, xb_address_16):
 
 
 def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorhistory):
-    global newamps, newwatts, cal_ampdata
+    global newamps, newwatts, cal_ampdata, numbersamples
+
     for i in range(len(voltagedata)):
         voltagedata[i] = xb_analog_samples[i+1][VOLTSENSE]
         ampdata[i] = xb_analog_samples[i+1][CURRENTSENSE]
     
     count_ampdata = 0
     cal_ampdata[xb_address_16] = 0
-    for i in range(len(voltagedata)):
-        cal_ampdata[xb_address_16] += ampdata[i]
-        count_ampdata = count_ampdata + 1
+    for i in range(len(ampdata)):
+        if(ampdata[i] > 300):
+            cal_ampdata[xb_address_16] += ampdata[i]
+            count_ampdata = count_ampdata + 1
     cal_ampdata[xb_address_16] = cal_ampdata[xb_address_16]/count_ampdata
 
     if (options.debug != None):
@@ -156,19 +159,19 @@ def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorh
     num_samples = 17
     for i in range(num_samples):
         avgamp += abs(ampdata[i])
-        avgamp /= num_samples
+    avgamp /= num_samples
 
     # sum up power drawn over one 1/60hz cycle
     avgwatt = 0
     for i in range(num_samples):
         avgwatt += abs(wattdata[i])
-        avgwatt /= num_samples
+    avgwatt /= num_samples
     # Print out our most recent measurements
     logger.info(str(xb_address_16)+"Current draw, in amperes: "+str(avgamp))
     logger.info("Watt draw, in VA: "+str(avgwatt))
     if (avgamp > 13):
         return            # hmm, bad data
-
+    
     # add up the delta-watthr used since last reading
     # Figure out how many watt hours were used since last reading
     elapsedseconds = time.time() - sensorhistory.lasttime
@@ -183,17 +186,20 @@ def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorh
     newamps += avgamp
     newwatts += avgwatt
 
+    numbersamples = numbersamples + 1
+
     measurements = {}
     measurements["Amps"] = newamps
     measurements["Watts"] = newwatts
     measurements["WattHr"] = dwatthr
     measurements["TotalWattHr"] = TotalWattHour
+    measurements["NumberSamples"] = numbersamples
     return measurements
 
 
 # the 'main loop' runs once a second or so
 def update_graph(idleevent):
-    global avgwattdataidx, sensorhistories, DEBUG, intervals, newamps, newwatts
+    global avgwattdataidx, sensorhistories, DEBUG, intervals, newamps, newwatts, numbersamples
     packet = xbee.find_packet(ser)
     if not packet:
         return
@@ -224,8 +230,8 @@ def update_graph(idleevent):
 
     if (int(options.interval) < intervals[xb.address_16]):
         
-        newamps = 100 * measurements["Amps"]/intervals[xb.address_16]
-        newwatts = 100 * measurements["Watts"]/intervals[xb.address_16]
+        newamps = measurements["Amps"]/measurements["NumberSamples"]
+        newwatts = measurements["Watts"]/measurements["NumberSamples"]
 
         resource = bionet_node_get_resource_by_id(node, "Amps")
         if (resource == None):
@@ -254,6 +260,7 @@ def update_graph(idleevent):
         newwatts = 0
         newamps = 0
         intervals[xb.address_16] = 0
+        numbersamples = 0
 
 while True:
     update_graph(None)
