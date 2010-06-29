@@ -20,6 +20,11 @@
 #define ID "mDNS-SD/BIP Client "
 
 
+#ifdef HAVE_EMBEDDED_MDNSSD
+extern mDNS mDNSStorage;
+#endif
+
+
 extern pthread_mutex_t avahi_mutex;
 
 typedef struct {
@@ -71,6 +76,23 @@ void *cal_client_mdnssd_bip_function(void *arg);
 
 
 extern void cal_client_mdnssd_bip_thread_destroy(cal_client_mdnssd_bip_t* thread_data);
+
+//
+// this is a linked list, each payload is a (struct cal_client_mdnssd_bip_service_context *)
+// we add the first one when we start the mDNS-SD browse running, then we add one each time we start a resolve
+// when the resolve finishes we remove its node from the list
+//
+
+struct cal_client_mdnssd_bip_service_context {
+    DNSServiceRef service_ref;
+    char * peer_name;
+    cal_client_mdnssd_bip_t * this;
+};
+
+typedef struct {
+    char *peer_name;
+    char *topic;
+} cal_client_mdnssd_bip_subscription_t;
 
 
 #endif  //  __CAL_MDNSSD_BIP_CLIENT_H

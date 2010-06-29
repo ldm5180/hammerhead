@@ -32,23 +32,65 @@
 #endif
 
 
+void mDNSGetFDSetClient(
+    GSList *service_list,
+    int *max_fd,
+    fd_set *readers,
+    struct timeval *timeout
+) {
+#ifdef HAVE_EMBEDDED_MDNSSD
+    mDNSPosixGetFDSet(&mDNSStorage, max_fd, readers, timeout);
+#else
+    GSList *ptr;
+    // each DNS-SD service request has its own fd
+    for (ptr = service_list; ptr != NULL; ptr = ptr->next) {
+        struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
+        int fd = DNSServiceRefSockFD(sc->service_ref);
+        FD_SET(fd, readers);
+        *max_fd = Max(*max_fd, fd);
+    }
+#endif
+}
 
-// 
-// this is a linked list, each payload is a (struct cal_client_mdnssd_bip_service_context *)
-// we add the first one when we start the mDNS-SD browse running, then we add one each time we start a resolve
-// when the resolve finishes we remove its node from the list
-//
 
-struct cal_client_mdnssd_bip_service_context {
-    DNSServiceRef service_ref;
-    char * peer_name;
-    cal_client_mdnssd_bip_t * this;
-};
+int mDNSProcessFDSetClient(
+    GSList *service_list,
+    fd_set *readers
+) {
+#ifdef HAVE_EMBEDDED_MDNSSD
+    mDNSPosixProcessFDSet(&mDNSStorage, readers);
+#else
+    // see if any DNS-SD service requests finished
+    GSList *ptr;
+    for (ptr = service_list; ptr != NULL; ptr = ptr->next) {
+        struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
+        int fd = DNSServiceRefSockFD(sc->service_ref);
 
-typedef struct {
-    char *peer_name;
-    char *topic;
-} cal_client_mdnssd_bip_subscription_t;
+        if (FD_ISSET(fd, readers)) {
+            DNSServiceErrorType err;
+
+            // this will call the service_ref's callback, which will
+            // change the service_list (and possibly known_peers and
+            // connected_publishers)
+            // embedded mdns (dnssd_clientshim.c) leaves this function as an unimplemented stub
+            err = DNSServiceProcessResult(sc->service_ref);
+
+            if (err != kDNSServiceErr_NoError) {
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "client thread: Error processing service reference result: %d.", err);
+                sleep(1);
+            }
+
+            // since the service_list has changed, we should stop iterating over it
+            // Also, the open file descriptors may have changed, so we need to 
+            // check select() again
+            return 1;
+        }
+    }
+#endif
+    return 0;
+}
+
+
 
 static void report_new_peer(cal_client_mdnssd_bip_t * this, bip_peer_t * peer);
 static void report_new_subscription(cal_client_mdnssd_bip_t * this, bip_peer_t * peer, const char * subscription);
@@ -853,6 +895,7 @@ void *cal_client_mdnssd_bip_function(void *arg) {
     cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)arg;
     struct cal_client_mdnssd_bip_service_context *browse;
     DNSServiceErrorType error;
+    struct timeval *timeout = NULL;
 
     char mdnssd_service_name[100];
     int r;
@@ -892,6 +935,16 @@ void *cal_client_mdnssd_bip_function(void *arg) {
         return NULL;
     }
 
+
+#ifdef HAVE_EMBEDDED_MDNSSD
+    cal_pthread_mutex_lock(&avahi_mutex);
+    r = cal_mDNS_init(&mDNSStorage, &timeout);
+    cal_pthread_mutex_unlock(&avahi_mutex);
+
+    // an error has already been logged
+    if (r <= 0) return NULL;
+#endif
+
     cal_pthread_mutex_lock(&avahi_mutex);
     error = DNSServiceBrowse(
         &browse->service_ref,
@@ -922,7 +975,6 @@ void *cal_client_mdnssd_bip_function(void *arg) {
         fd_set writers;
         int max_fd;
         int r;
-        GSList *ptr;
         GList *dptr;
 
 SELECT_LOOP_CONTINUE:
@@ -932,13 +984,9 @@ SELECT_LOOP_CONTINUE:
         max_fd = -1;
 
 
-        // each DNS-SD service request has its own fd
-        for (ptr = this->service_list; ptr != NULL; ptr = ptr->next) {
-            struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
-            int fd = DNSServiceRefSockFD(sc->service_ref);
-            FD_SET(fd, &readers);
-            max_fd = Max(max_fd, fd);
-        }
+        cal_pthread_mutex_lock(&avahi_mutex);
+        mDNSGetFDSetClient(this->service_list, &max_fd, &readers, timeout);
+        cal_pthread_mutex_unlock(&avahi_mutex);
 
         // each connect-pending socket
         for ( dptr = this->connecting_peer_list; dptr != NULL; dptr = dptr->next) {
@@ -982,7 +1030,7 @@ SELECT_LOOP_CONTINUE:
         }
 
         // block until there's something to do
-        r = select(max_fd + 1, &readers, &writers, NULL, NULL);
+        r = select(max_fd + 1, &readers, &writers, NULL, timeout);
 
         // See if any connect()s have finished. 
         for ( dptr = this->connecting_peer_list; dptr != NULL; dptr = dptr->next) {
@@ -1019,30 +1067,11 @@ SELECT_LOOP_CONTINUE:
             }
         }
 
-        // see if any DNS-SD service requests finished
-        for (ptr = this->service_list; ptr != NULL; ptr = ptr->next) {
-            struct cal_client_mdnssd_bip_service_context *sc = ptr->data;
-            int fd = DNSServiceRefSockFD(sc->service_ref);
+        cal_pthread_mutex_lock(&avahi_mutex);
+        r = mDNSProcessFDSetClient(this->service_list, &readers);
+        cal_pthread_mutex_unlock(&avahi_mutex);
 
-            if (FD_ISSET(fd, &readers)) {
-                DNSServiceErrorType err;
-
-                // this will call the service_ref's callback, which will
-                // change the service_list (and possibly known_peers and
-                // connected_publishers)
-                err = DNSServiceProcessResult(sc->service_ref);
-
-                if (err != kDNSServiceErr_NoError) {
-                    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "client thread: Error processing service reference result: %d.", err);
-                    sleep(1);
-                }
-
-                // since the service_list has changed, we should stop iterating over it
-		// Also, the open file descriptors may have changed, so we need to 
-		// check select() again
-		goto SELECT_LOOP_CONTINUE;
-            }
-        }
+        if (r != 0) goto SELECT_LOOP_CONTINUE;
 
         // see if the user thread said anything
         if (FD_ISSET(q_fd, &readers)) {
@@ -1085,6 +1114,9 @@ SELECT_LOOP_CONTINUE:
     //
     bip_msg_queue_close(&this->msg_queue, BIP_MSG_QUEUE_TO_USER);
     
+    if (timeout != NULL)
+        free(timeout);
+
     return 0;
 }
 
@@ -1092,5 +1124,8 @@ void cal_client_mdnssd_bip_thread_destroy(cal_client_mdnssd_bip_t* thread_data) 
     cleanup_peers(thread_data);
     cleanup_service_list(thread_data);
     cleanup_subscriptions(thread_data);
+#ifdef HAVE_EMBEDDED_MDNSSD
+    mDNS_Terminate();
+#endif
 }
 
