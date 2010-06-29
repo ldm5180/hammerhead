@@ -20,7 +20,7 @@ void add_node(bionet_hab_t *hab, char *name)
     // add digital out resources
     for(int i=0; i<8; i++)
     {
-        add_do_resource(node, i);
+        add_di_resource(node, i);
     }
     
     // add analog in resources

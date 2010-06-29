@@ -52,7 +52,7 @@ void add_pot_resource(bionet_node_t *node, int id)
 //
 // create digital out resources
 //
-void add_do_resource(bionet_node_t *node, int id)
+void add_di_resource(bionet_node_t *node, int id)
 { 
     bionet_resource_t *resource;
     bionet_value_t *value;
@@ -61,7 +61,7 @@ void add_do_resource(bionet_node_t *node, int id)
 
     char buf[5];
     char name[24];
-    strcpy(name, "DO\0");
+    strcpy(name, "digital-input\0");
     sprintf(buf,"%d", id);
     int i = strlen(buf);
     buf[i] = '\0';
@@ -70,7 +70,7 @@ void add_do_resource(bionet_node_t *node, int id)
     resource = bionet_resource_new(
         node,
         BIONET_RESOURCE_DATA_TYPE_BINARY,
-        BIONET_RESOURCE_FLAVOR_PARAMETER,
+        BIONET_RESOURCE_FLAVOR_SENSOR,
         name);
     if(resource == NULL)
     {
