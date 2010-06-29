@@ -326,6 +326,7 @@ extern char * security_dir;
 extern int require_security;
 
 int try_to_connect_to_bionet(void *unused);
+void disconnect_from_bionet(void *unused);
 
 
 

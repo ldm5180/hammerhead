@@ -223,6 +223,12 @@ int try_to_connect_to_bionet(void *unused) {
     return FALSE;
 }
 
+
+void disconnect_from_bionet(void *unused) {
+    bionet_disconnect();
+    return;
+}
+
 // Emacs cruft
 // Local Variables:
 // mode: C

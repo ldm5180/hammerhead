@@ -943,6 +943,9 @@ int main(int argc, char *argv[]) {
     g_main_loop_unref(bdm_main_loop);
     db_shutdown(main_db);
 
+    disconnect_from_bionet(NULL);
+    cal_server.shutdown(libbdm_cal_handle);
+
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
         "Bionet Data Manager shut down cleanly");
     return 0;
