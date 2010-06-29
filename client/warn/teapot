@@ -1,0 +1,19 @@
+on = 0
+
+def f(x):
+    global on
+    if (x>20):
+        on = 1
+    if (x<10 and on == 1):
+        on = 5
+        return on
+        on = 0
+            
+warn = [
+    {
+    'resource': "Kill-A-Watt.*.*:Watts", 
+    'compare': lambda x: f(x) > 2,
+    'command': "echo Teapot is ready"
+    }
+]
+
