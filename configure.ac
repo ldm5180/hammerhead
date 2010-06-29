@@ -200,7 +200,6 @@ if test "x$with_mdnssd" = "x" || test "x$with_mdnssd" = "xcheck"; then
         fi
     fi
 else
-    AC_MSG_RESULT([using embedded stuff])
     AVAHI_COMPAT_LIBDNS_SD_CFLAGS="-I$with_mdnssd/mDNSPosix/ -I$with_mdnssd/mDNSShared/ -I$with_mdnssd/mDNSCore/"
     AVAHI_COMPAT_LIBDNS_SD_LIBS="-L$with_mdnssd/mDNSPosix/build/prod -lembeddeddns_sd"
     AC_DEFINE([HAVE_EMBEDDED_MDNSSD], [1], ["Define if embedded mdns is being used"])
