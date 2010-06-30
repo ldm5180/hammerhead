@@ -20,20 +20,21 @@ int arduino_connect(char *conn)
 {
     struct termios my_termios;
 
-    fd = open(conn, O_RDWR | O_NOCTTY | O_NDELAY);
+    fd = open(conn, O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK);
     if(fd == -1)
     {
         printf("open_port: open error %d: %s\n", errno, strerror(errno));
     }
     else
     {
-        fcntl(fd, F_SETFL, 0);
+        fcntl(fd, F_SETFL);
     }
 
     tcgetattr(fd, &my_termios);
     tcflush(fd, TCIFLUSH);
 
     my_termios.c_cflag |= B9600 | CREAD | CLOCAL | CS8;
+    my_termios.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
     cfsetispeed(&my_termios, B9600);
     cfsetospeed(&my_termios, B9600);
 
@@ -72,15 +73,19 @@ int arduino_read_until(char* buf, char until)
     int i=0;
     do {
         int n = read(fd, b, 1);  // read a char at a time
-        if( n==-1) return -1;    // couldn't read
-        if( n==0 ) {
-            //usleep( 10 * 1000 ); // wait 10 msec try again
+        if( n==-1)
+        {
+            printf("fail\n");
+            return -1;    // couldn't read
+        }
+        if(n == 0)
+        {
             continue;
         }
         buf[i] = b[0]; i++;
     } while( b[0] != until );
 
-    buf[i] = 0;  // null terminate the string
+    buf[--i] = 0;  // null terminate the string
     return 0;
 }
 

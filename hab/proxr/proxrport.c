@@ -19,14 +19,14 @@ int proxr_connect(char *conn)
 {
     struct termios my_termios;
 
-    fd = open(conn, O_RDWR | O_NOCTTY | O_NDELAY);
+    fd = open(conn, O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK);
     if(fd == -1)
     {
         printf("open_port: open error %d: %s\n", errno, strerror(errno));
     }
     else
     {
-        fcntl(fd, F_SETFL, 0);
+        fcntl(fd, F_SETFL);
     }
 
     tcgetattr(fd, &my_termios);

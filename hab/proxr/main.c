@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -115,6 +116,10 @@ int main(int argc, char* argv[])
 
     // add node
     add_node(hab, "sim");
+    
+    //give hardware time to connect
+    sleep(5);
+
     set_all_potentiometers(0);
 
     main_loop = g_main_loop_new(NULL, TRUE);
@@ -125,7 +130,7 @@ int main(int argc, char* argv[])
         g_io_add_watch(ch, G_IO_IN, read_from_bionet, NULL);
     }
 
-    g_timeout_add(1000, poll_arduino, NULL);
+    g_timeout_add(2000, poll_arduino, NULL);
     
     g_main_loop_run(main_loop);
 
