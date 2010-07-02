@@ -31,7 +31,7 @@ int arduino_connect(char *conn)
     }
 
     tcgetattr(fd, &my_termios);
-    tcflush(fd, TCIFLUSH);
+    tcflush(fd, TCIOFLUSH);
 
     my_termios.c_cflag |= B9600 | CREAD | CLOCAL | CS8;
     my_termios.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
@@ -69,24 +69,37 @@ int arduino_write(char cmd)
 //
 int arduino_read_until(char* buf, char until)
 {
+    int n;
     char b[1];
-    int i=0;
-    do {
-        int n = read(fd, b, 1);  // read a char at a time
-        if( n==-1)
+    int i = 0;
+    do
+    {
+        n = read(fd, b, 1);
+        if(n < 0)
         {
-            printf("fail\n");
-            return -1;    // couldn't read
+            printf("arduino_read_until: read error %d: %s\n", errno, strerror(errno));
         }
-        if(n == 0)
+        else if(n == 0)
         {
-            continue;
+            //hace nada
         }
-        buf[i] = b[0]; i++;
-    } while( b[0] != until );
+        else
+        {
+            printf("dec b[0] = %d   char b[0] = %c\n",(int)b[0], b[0]);
+            buf[i] = b[0];
+            i++;
+        }
+     } while(b[0] != until);
 
-    buf[--i] = 0;  // null terminate the string
+     buf[--i] = '\0';
+
     return 0;
+}
+
+
+int get_arduino_fd(void)
+{
+    return fd;
 }
 
 /** @brief closes open port

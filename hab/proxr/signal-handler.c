@@ -7,6 +7,7 @@
 void signal_handler(int unused)
 {
     printf("\n");
+    arduino_write(2);
     g_message("Exiting...");
     hab_disconnect();
     proxr_disconnect();

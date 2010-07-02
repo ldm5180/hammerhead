@@ -16,6 +16,9 @@ bionet_hab_t *hab;
 
 int main(int argc, char* argv[])
 {
+    printf("version 1.0\n");
+    char a = '\n';
+    printf("%d\n", (int)a);
     int bionet_fd;
     int proxr_fd;
     int arduino_fd;
@@ -26,10 +29,12 @@ int main(int argc, char* argv[])
     char *proxr_loc = NULL;
     char *arduino_loc = NULL;
 
-    GMainLoop *main_loop;
+//    GMainLoop *main_loop;
 
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
+    signal(SIGIO, SIG_IGN);
+
 
     while(1)
     {
@@ -117,12 +122,15 @@ int main(int argc, char* argv[])
     // add node
     add_node(hab, "sim");
     
-    //give hardware time to connect
-    sleep(5);
-
     set_all_potentiometers(0);
+    arduino_write(1);
 
-    main_loop = g_main_loop_new(NULL, TRUE);
+    while(1)
+    {
+        poll_arduino(bionet_fd);
+    }
+
+   /* main_loop = g_main_loop_new(NULL, TRUE);
 
     {
         GIOChannel *ch;
@@ -133,7 +141,7 @@ int main(int argc, char* argv[])
     g_timeout_add(2000, poll_arduino, NULL);
     
     g_main_loop_run(main_loop);
-
+    */
     return 0;
 }
        

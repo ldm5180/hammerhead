@@ -1,67 +1,138 @@
 #include "sim-hab.h"
+#include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
-int poll_arduino()
+int poll_arduino(int bionet_fd)
 {
-    printf("version 1.1\n");
     char response[256];
-    int data, err;
+    char b[1];
+
+    bionet_resource_t *res = NULL;
+    bionet_node_t *node = NULL;
+
+    int n, data;
     float content;
-    int oldVal;
-    bionet_resource_t *res;
-    bionet_node_t *node;
-    
+    int arduino_fd = get_arduino_fd();
+    int max_fd;
+    fd_set fds;
+    struct timeval timeout;
+
     node = bionet_hab_get_node_by_index(hab, 0);
 
-    // send command 100. requests analog0's value
-    // read value and set resource
-    arduino_write(100);
-    printf("\nanalog1\n");
-    err = arduino_read_until(response, 'x');
-    if(err == 0)
-    {
-        printf("%s\n", response);
-        data = atoi(response);
-        content = data*ANALOG_INPUT_CONVERSION;
-        res = bionet_node_get_resource_by_index(node, 24);
-        bionet_resource_set_float(res, content, NULL);
-    }
+    FD_ZERO(&fds);
+    FD_SET(arduino_fd, &fds);
+    FD_SET(bionet_fd, &fds);
 
-    // send command 101. requests analog1's value
-    // read value and set resource
-    arduino_write(101);
-    printf("\nanalog2\n");
-    err = arduino_read_until(response, 'x');
-    if(err == 0)
-    {
-        printf("%s\n", response);
-        data = atoi(response);
-        content = data*ANALOG_INPUT_CONVERSION;
-        res = bionet_node_get_resource_by_index(node, 25);
-        bionet_resource_set_float(res, content, NULL);
-    }
+    max_fd = (arduino_fd > bionet_fd ? arduino_fd : bionet_fd);
 
-    // send command 200. requests the 8 digital values
-    // read values and set resource
-    arduino_write(200);
-    printf("\ndigital\n");
-    err = arduino_read_until(response, 'x');
-    if(err == 0)
+    timeout.tv_sec = 10;
+    timeout.tv_usec = 0;
+
+    n = select(max_fd+1, &fds, NULL, NULL, &timeout);
+
+    if(n < 0)
+        printf("select failed\n");
+    else if(n == 0)
+        printf("TIMEOUT\n");
+    else
     {
-        printf("%s\n", response);
-        for(int i=0; i<8; i++)
+        
+        if(FD_ISSET(arduino_fd, &fds))
         {
-            data = atoi(&response[i]);
-            res = bionet_node_get_resource_by_index(node, 16+i);
-            bionet_resource_get_binary(res, &oldVal, NULL);
-            if(data != oldVal)
-                bionet_resource_set_binary(res, data, NULL);
-        }   
-    }
-    // report new data
-    hab_report_datapoints(node);
+            printf("-----%d-DATA-----\n", n);
+       
+            read(arduino_fd, b, 1);
+            printf("b: %d\n", (int)b[0]);
 
-    printf("\n----------------------------------------------\n");
+            switch((int)b[0])
+            {
+                case 100: // ANALOG INPUT 0
+                    arduino_read_until(response, '\n');
+                    data = atoi(response);
+                    content = data*ANALOG_INPUT_CONVERSION;
+                    res = bionet_node_get_resource_by_index(node, ANALOG_INPUT_0);
+                    bionet_resource_set_float(res, content, NULL);
+                    break;
+
+                case 101: // ANALOG INPUT 1
+                    arduino_read_until(response, '\n');
+                    data = atoi(response);
+                    content = data*ANALOG_INPUT_CONVERSION;
+                    res = bionet_node_get_resource_by_index(node, ANALOG_INPUT_1);
+                    bionet_resource_set_float(res, content, NULL);
+                    break;
+
+               case 110: // DIGITAL INPUT 0
+                    arduino_read_until(response, '\n');
+                    data = atoi(response);
+                    res = bionet_node_get_resource_by_index(node, DIGITAL_INPUT_0);
+                    bionet_resource_set_binary(res, data, NULL);
+                    break;
+                    
+                case 111: // DIGITAL INPUT 1
+                    arduino_read_until(response, '\n');
+                    data = atoi(response);
+                    res = bionet_node_get_resource_by_index(node, DIGITAL_INPUT_1);
+                    bionet_resource_set_binary(res, data, NULL);
+                    break;
+
+                case 112: // DIGITAL INPUT 2
+                    arduino_read_until(response, '\n');
+                    data = atoi(response);
+                    res = bionet_node_get_resource_by_index(node, DIGITAL_INPUT_2);
+                    bionet_resource_set_binary(res, data, NULL);
+                    break;
+
+                case 113: // DIGITAL INPUT 3
+                    arduino_read_until(response, '\n');
+                    data = atoi(response);
+                    res = bionet_node_get_resource_by_index(node, DIGITAL_INPUT_3);
+                    bionet_resource_set_binary(res, data, NULL);
+                    break;
+
+                case 114: // DIGITAL INPUT 4
+                    arduino_read_until(response, '\n');
+                    data = atoi(response);
+                    res = bionet_node_get_resource_by_index(node, DIGITAL_INPUT_4);
+                    bionet_resource_set_binary(res, data, NULL);
+                    break;
+
+                case 115: // DIGITAL INPUT 5
+                    arduino_read_until(response, '\n');
+                    data = atoi(response);
+                    res = bionet_node_get_resource_by_index(node, DIGITAL_INPUT_5);
+                    bionet_resource_set_binary(res, data, NULL);
+                    break;
+
+                case 116: // DIGITAL INPUT 6
+                    arduino_read_until(response, '\n');
+                    data = atoi(response);
+                    res = bionet_node_get_resource_by_index(node, DIGITAL_INPUT_6);
+                    bionet_resource_set_binary(res, data, NULL);
+                    break;
+
+                case 117: // DIGITAL INPUT 7
+                    arduino_read_until(response, '\n');
+                    data = atoi(response);
+                    res = bionet_node_get_resource_by_index(node, DIGITAL_INPUT_7);
+                    bionet_resource_set_binary(res, data, NULL);
+                    break;
+                    
+                default:
+                    printf("invalid data\n");
+                    break;
+            }
+        }
+
+        if(FD_ISSET(bionet_fd, &fds))
+        {
+            hab_read_with_timeout(NULL);
+        }
+    }
+
+    hab_report_datapoints(node);
     return 1;
 }  
     
