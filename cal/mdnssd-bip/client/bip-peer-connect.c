@@ -181,7 +181,7 @@ static int start_get_addr_info(cal_client_mdnssd_bip_t *this, bip_peer_t *peer, 
 
 
 // Returns fd of connection if its in-progress, -1 if there are no more nets
-int try_bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer) {
+int start_bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer) {
     cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
     int r;
 
