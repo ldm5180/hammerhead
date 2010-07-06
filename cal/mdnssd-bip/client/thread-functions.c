@@ -276,7 +276,7 @@ static void reset_connection(cal_client_mdnssd_bip_t * this, bip_peer_t * peer) 
 
     bip_peer_disconnect(peer);
 
-    bip_peer_connect_nonblock(this, peer);
+    start_bip_peer_connect_nonblock(this, peer);
 
 }
 
@@ -649,7 +649,7 @@ static void DNSSD_API resolve_callback(
     //
     // New peer just showed up on the network. Push it on the list of hosts to connect to
     // 
-    bip_peer_connect_nonblock(this, peer);
+    start_bip_peer_connect_nonblock(this, peer);
     return;
 }
 
@@ -1064,7 +1064,7 @@ SELECT_LOOP_CONTINUE:
                     this->connecting_peer_list = g_list_delete_link(this->connecting_peer_list, dptr);
                     if( r < 0 ) {
                         // This connect failed. Try the next one
-                        if (bip_peer_connect_nonblock(this, peer) < 0) {
+                        if (start_bip_peer_connect_nonblock(this, peer) < 0) {
                             // all connects failed, report the peer as lost
                             //cleanup_resolve_service_ref(this, peer->peer_name);
                             report_peer_lost(this, peer);

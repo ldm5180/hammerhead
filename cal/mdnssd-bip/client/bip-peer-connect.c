@@ -95,7 +95,7 @@ static void DNSSD_API get_addr_info_callback(
     bip_net_destroy(me);
 
     // and try to connect to the next one
-    bip_peer_connect_nonblock(this, peer);
+    start_bip_peer_connect_nonblock(this, peer);
 
     return;
 }

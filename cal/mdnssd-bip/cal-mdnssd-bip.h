@@ -287,7 +287,7 @@ bip_peer_t *bip_peer_new(void);
  * @return -1 if no connection was possible, and all the nets have been exhausted.
  */
 
-int bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer);
+int start_bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer);
 
 /**
  * @brief Connect to a peer.
