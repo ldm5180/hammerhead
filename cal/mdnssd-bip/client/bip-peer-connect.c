@@ -21,6 +21,8 @@
 #include "cal-client-mdnssd-bip.h"
 
 
+
+#ifdef HAVE_EMBEDDED_MDNSSD
 static void DNSSD_API get_addr_info_callback(
     DNSServiceRef service_ref,
     DNSServiceFlags flags,
@@ -99,15 +101,89 @@ static void DNSSD_API get_addr_info_callback(
 
     return;
 }
+#endif
+
  
 
-
-// FIXME: should be renamed to start_bip_peer_connection? bip_peer_address_lookup
-// Returns fd of connection if its in-progress, -1 if there are no more nets
-int bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer) {
-    cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
+static int start_get_addr_info(cal_client_mdnssd_bip_t *this, bip_peer_t *peer, bip_peer_network_info_t *net) {
+#ifdef HAVE_EMBEDDED_MDNSSD
     struct cal_client_mdnssd_bip_service_context *sc;
     DNSServiceErrorType error;
+
+    sc = malloc(sizeof(struct cal_client_mdnssd_bip_service_context));
+    if (sc == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "bip_peer_connect: out of memory!");
+        return -1;
+    }
+
+    sc->peer_name = strdup(peer->peer_name);
+    sc->this = this;
+
+    error = DNSServiceGetAddrInfo(
+        &sc->service_ref,
+        0,
+        0,
+        kDNSServiceType_A,
+        net->hostname,
+        get_addr_info_callback,
+        sc
+    );
+    if (error != kDNSServiceErr_NoError) {
+        if (error != kDNSServiceErr_Unknown) {
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "bip_peer_connect: GetAddrInfo failed: %d", error);
+        }
+
+        free(sc->peer_name);
+        free(sc);
+    } else {
+        // this link will be removed by the get_addr callback
+        sc->this->service_list = g_slist_prepend(sc->this->service_list, sc);
+        return 1;
+    }
+#else
+    struct addrinfo ai_hints, *ai;
+    int r;
+
+    // must gethostaddrinfo here ... 
+    memset(&ai_hints, 0, sizeof(ai_hints));
+
+    ai_hints.ai_family = AF_INET;  // IPv4
+    ai_hints.ai_socktype = SOCK_STREAM;  // TCP
+    r = getaddrinfo(net->hostname, NULL, &ai_hints, &ai);
+    if (r != 0) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+            "%s: error with getaddrinfo(\"%s\", ...): %s",
+                __FUNCTION__, net->hostname, gai_strerror(r));
+        return -1;
+    }
+    if (ai == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+            "%s: no results from getaddrinfo(\"%s\", ...)",
+                __FUNCTION__, net->hostname);
+        return -1;
+    }
+
+
+    int fd = bip_net_connect_nonblock((void *)this, peer->peer_name, net, ai->ai_addr);
+    if ( fd >= 0 ) {
+        this->connecting_peer_list = g_list_append(this->connecting_peer_list, peer);
+        return fd;
+    }
+
+    freeaddrinfo(ai);
+
+#endif
+    //g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_peer_connect: unable to connect to any net");
+    return -1;
+}
+
+
+
+
+// Returns fd of connection if its in-progress, -1 if there are no more nets
+int try_bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer) {
+    cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
+    int r;
 
     if (cal_handle == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_peer_connect: NULL cal handle passed in");
@@ -119,6 +195,7 @@ int bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer) {
         return -1;
     }
 
+
     // keep trying to a net until there are none left
     while (peer->nets->len > 0) {
         bip_peer_network_info_t *net;
@@ -127,39 +204,12 @@ int bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer) {
         if (net == NULL)
             break;
 
-        sc = malloc(sizeof(struct cal_client_mdnssd_bip_service_context));
-        if (sc == NULL) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "bip_peer_connect: out of memory!");
-            break;
+        if ((r = start_get_addr_info(this, peer, net)) > 0) {
+            return r;
         }
 
-        sc->peer_name = strdup(peer->peer_name);
-        sc->this = this;
-
-        error = DNSServiceGetAddrInfo(
-            &sc->service_ref,
-            0,
-            0,
-            kDNSServiceType_A,
-            net->hostname,
-            get_addr_info_callback,
-            sc
-        );
-        if (error != kDNSServiceErr_NoError) {
-            if (error != kDNSServiceErr_Unknown) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "bip_peer_connect: GetAddrInfo failed: %d", error);
-            }
-
-            g_ptr_array_remove_fast(peer->nets, net);
-            bip_net_destroy(net);
-
-            free(sc->peer_name);
-            free(sc);
-        } else {
-            // this link will be removed by the get_addr callback
-            sc->this->service_list = g_slist_prepend(sc->this->service_list, sc);
-            return 1;
-        }
+        g_ptr_array_remove_fast(peer->nets, net);
+        bip_net_destroy(net);
     }
 
     //g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bip_peer_connect: unable to connect to any net");
