@@ -13,6 +13,7 @@
 #include <pthread.h>
 
 #include "cal-mdnssd-bip.h"
+#include "../shared/bip-socket-api.h"
 
 
 
