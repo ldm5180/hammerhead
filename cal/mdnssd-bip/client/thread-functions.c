@@ -1067,6 +1067,10 @@ SELECT_LOOP_CONTINUE:
                         if (start_bip_peer_connect_nonblock(this, peer) < 0) {
                             // all connects failed, report the peer as lost
                             //cleanup_resolve_service_ref(this, peer->peer_name);
+                            // comment in  resolve_callback describes why we 
+                            // dont clean here (but essentially its so that 
+                            // if the first resolve callback is old & invalid,
+                            // we'll still get the second valid one).
                             report_peer_lost(this, peer);
                         }
                     } else {
