@@ -178,15 +178,31 @@ PKG_CHECK_MODULES(OPENSSL, [ openssl >= 0.9.8 ])
 AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
 
-if test "$cross_compiling" != yes; then
-    if test "x$HAVE_LINUX" = "xyes"; then
-        PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
-	AC_DEFINE([HAVE_AVAHI], [1], [Define if AVAHI is being used])
-    else if test "x$SYSAPI" != "xposix"; then
-        # Look for bonjour library elsewhere
-        echo ""
+AC_ARG_WITH(
+    [mdnssd],
+    AC_HELP_STRING([--with-mdnssd], [Use mdnssd library @<:@default=check@:>@]),
+        [with_mndssd=$withval],
+        [with_mndssd=check]
+    )
+
+echo "with_mdnssd = $with_mdnssd"
+if test "x$with_mdnssd" = "x" || test "x$with_mdnssd" = "xcheck"; then
+    if test "$cross_compiling" != "yes"; then
+        if test "x$HAVE_LINUX" = "xyes"; then
+            PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
+            AC_DEFINE([HAVE_AVAHI], [1], ["Define if AVAHI is being used"])
+            #AC_DEFINE([HAVE_EMBEDDED_MDNSSD], [0], ["Define if embedded mdns is being used"])
+        else 
+            if test "x$SYSAPI" != "xposix"; then
+                # Look for bonjour library elsewhere
+                AC_MSG_ERROR([unable to find mdnssd library])
+            fi
+        fi
     fi
-    fi
+else
+    AVAHI_COMPAT_LIBDNS_SD_CFLAGS="-I$with_mdnssd/mDNSPosix/ -I$with_mdnssd/mDNSShared/ -I$with_mdnssd/mDNSCore/"
+    AVAHI_COMPAT_LIBDNS_SD_LIBS="-L$with_mdnssd/mDNSPosix/build/prod -lembeddeddns_sd"
+    AC_DEFINE([HAVE_EMBEDDED_MDNSSD], [1], ["Define if embedded mdns is being used"])
 fi
 AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
 AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_LIBS)

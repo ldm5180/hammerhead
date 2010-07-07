@@ -49,12 +49,12 @@ exec 8> fifo0
 WFD0=8
 
 echo starting BDM
-$ROOT/data-manager/server/bionet-data-manager --habs "random-hab.A$UNIQUE" --habs "random-hab.B$UNIQUE" --nodes "random-hab.A$UNIQUE.*"  --nodes "random-hab.B$UNIQUE.*" --resources "random-hab.A$UNIQUE.*:*" --resources "random-hab.B$UNIQUE.*:*" &
+$ROOT/data-manager/server/bionet-data-manager --id "bdm-$UNIQUE" --habs "random-hab.A$UNIQUE" --habs "random-hab.B$UNIQUE" --nodes "random-hab.A$UNIQUE.*"  --nodes "random-hab.B$UNIQUE.*" --resources "random-hab.A$UNIQUE.*:*" --resources "random-hab.B$UNIQUE.*:*" &
 BDMPID=$!
 sleep 3 # let the bdm come up before starting the HAB
 
 echo "Client 0 subscribing to hab A"
-echo "subscribe_datapoints random-hab.A$UNIQUE.*:*" >&8
+echo "subscribe_datapoints bdm-$UNIQUE,bdm-$UNIQUE/random-hab.A$UNIQUE.*:*" >&8
 
 echo "starting random-hab A"
 $ROOT/hab/random/random-hab --id A$UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab.A &
@@ -68,7 +68,7 @@ echo "Generate some data..."
 sleep `expr $TEST_DURATION / 2`
 
 echo "Client 0 subscribing to hab B"
-echo "subscribe_datapoints random-hab.B$UNIQUE.*:*" >&$WFD0
+echo "subscribe_datapoints bdm-$UNIQUE,bdm-$UNIQUE/random-hab.B$UNIQUE.*:*" >&$WFD0
 
 echo "BDM Client 1 After some data generated"
 mkfifo fifo1
@@ -78,14 +78,14 @@ exec 7> fifo1
 WFD1=7
 
 echo "Client 1 subscribing to hab B"
-echo "subscribe_datapoints random-hab.B$UNIQUE.*:*" >&$WFD1
+echo "subscribe_datapoints bdm-$UNIQUE,bdm-$UNIQUE/random-hab.B$UNIQUE.*:*" >&$WFD1
 
 
 echo "Generate some more data..."
 sleep `expr $TEST_DURATION / 2`
 
 echo "Client 1 subscribing to hab A"
-echo "subscribe_datapoints random-hab.A$UNIQUE.*:*" >&$WFD1
+echo "subscribe_datapoints bdm-$UNIQUE,bdm-$UNIQUE/random-hab.A$UNIQUE.*:*" >&$WFD1
 
 
 echo "all datapoints generated. Killing random-habs"

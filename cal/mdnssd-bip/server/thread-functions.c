@@ -25,6 +25,26 @@
 #include "cal-mdnssd-bip.h"
 #include "cal-server-mdnssd-bip.h"
 
+
+void mDNSGetFDSetServer(
+    int *max_fd,
+    fd_set *readers,
+    struct timeval *timeout
+) {
+#ifdef HAVE_EMBEDDED_MDNSSD
+    mDNSPosixGetFDSet(&mDNSStorage, max_fd, readers, timeout);
+#endif
+}
+
+void mDNSProcessFDSetServer(
+    fd_set *readers
+) {
+#ifdef HAVE_EMBEDDED_MDNSSD
+    mDNSPosixProcessFDSet(&mDNSStorage, readers);
+#endif
+}
+         
+
 // key is a bip peer name "bip://$HOST:$PORT"
 // value is a bip_peer_t*
 
@@ -681,11 +701,17 @@ static int read_from_client(cal_server_mdnssd_bip_t *this, const char *peer_name
 
 void cleanup_advertisedRef(cal_server_mdnssd_bip_t * this) {
     if (this->advertisedRef != NULL) {
-	cal_pthread_mutex_lock(&avahi_mutex);
+        // the mutex should already be locked
         DNSServiceRefDeallocate(*this->advertisedRef);
-	cal_pthread_mutex_unlock(&avahi_mutex);
-	free(this->advertisedRef);
-	this->advertisedRef = NULL;
+
+#ifdef HAVE_EMBEDDED_MDNSSD
+        // DNSServiceRefDeallocate only schedules sending the goodbye packet.
+        // mDNS_Execute actually sends the packet. We know the goodbye 
+        // packet is scheduled to be sent next because we modified embedded
+        // mDNS to do so.
+        mDNS_Execute(&mDNSStorage);
+#endif
+	this->advertisedRef = NULL; 
     }
 }
 
@@ -725,13 +751,12 @@ void cleanup_text_record(cal_server_mdnssd_bip_t * this) {
 
 void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
     char mdnssd_service_name[100];
+    struct timeval *timeout = NULL;
     int r;
 
     DNSServiceErrorType error;
 
     cal_event_t *event;
-
-
 
 #if 0
     // block all signals in this thread
@@ -827,6 +852,15 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
             return 0;
         }
     }
+
+#ifdef HAVE_EMBEDDED_MDNSSD
+    cal_pthread_mutex_lock(&avahi_mutex);
+    r = cal_mDNS_init(&mDNSStorage, &timeout);
+    cal_pthread_mutex_unlock(&avahi_mutex);
+
+    // an error has already been logged
+    if (r <= 0) return NULL;
+#endif
 
     cal_pthread_mutex_lock(&avahi_mutex);
     error = DNSServiceRegister(
@@ -938,8 +972,16 @@ SELECT_LOOP_CONTINUE:
             max_fd = Max(max_fd, fd);
         }
 
+        cal_pthread_mutex_lock(&avahi_mutex);
+        mDNSGetFDSetServer(&max_fd, &readers, timeout);
+        cal_pthread_mutex_unlock(&avahi_mutex);
+
         // block until there's something to do
-        r = select(max_fd + 1, &readers, NULL, NULL, NULL);
+        r = select(max_fd + 1, &readers, NULL, NULL, timeout);
+
+        cal_pthread_mutex_lock(&avahi_mutex);
+        mDNSProcessFDSetServer(&readers);
+        cal_pthread_mutex_unlock(&avahi_mutex);
 
         // First, see if we can write to our peers
         {
@@ -1024,13 +1066,21 @@ shutdown_thread:
     //
     bip_msg_queue_close(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER);
 
+    if (timeout != NULL) 
+        free(timeout);
+
     return 0;
 }
 
 void cal_server_mdnssd_bip_destroy(cal_server_mdnssd_bip_t * server_thread_data) {
+    cal_pthread_mutex_lock(&avahi_mutex);
     cleanup_advertisedRef(server_thread_data);
+#ifdef HAVE_EMBEDDED_MDNSSD
+    mDNS_Terminate();
+#endif
     cleanup_text_record(server_thread_data);
     cleanup_clients_and_listener(server_thread_data);
+    cal_pthread_mutex_unlock(&avahi_mutex);
 }
 
 

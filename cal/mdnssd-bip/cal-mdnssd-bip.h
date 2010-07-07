@@ -26,6 +26,14 @@
 #include "cal-util.h"
 #include "shared/bip-itc.h"
 
+
+#ifdef HAVE_EMBEDDED_MDNSSD
+#include "mDNSEmbeddedAPI.h"
+#include "mDNSPosix.h"
+// Start off with a default cache of 16K (about 100 records) (mDNS example default)
+#define RR_CACHE_SIZE ((16*1024) / sizeof(CacheRecord))
+#endif
+
 #define BIP_MAX_WRITE_BUF_SIZE (1024 * 256)
 
 #define BIP_MSG_MAX_SIZE (1024 * 1024)
@@ -150,21 +158,6 @@ bip_peer_network_info_t *bip_net_new(const char *hostname, uint16_t port);
 
 
 
-
-/**
- * @brief Start to connect a bip net.
- *
- * @param peer_name The name of the peer whose net to connect to.  Only
- *     used for log messages.
- *
- * @param net The net to connect.
- *
- * @return The socket that the connection is in progress 
- *
- * @return -1 on failure (in which case the caller should destroy the net).
- */
-
-int bip_net_connect_nonblock(void * cal_handle, const char *peer_name, bip_peer_network_info_t *net);
 
 /**
  * @brief Finish the connect, and check the status
@@ -294,7 +287,7 @@ bip_peer_t *bip_peer_new(void);
  * @return -1 if no connection was possible, and all the nets have been exhausted.
  */
 
-int bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer);
+int start_bip_peer_connect_nonblock(void * cal_handle, bip_peer_t * peer);
 
 /**
  * @brief Connect to a peer.
@@ -440,5 +433,26 @@ void cal_pthread_mutex_lock(pthread_mutex_t * mutex);
  * @param[in] mutex The mutex
  */
 void cal_pthread_mutex_unlock(pthread_mutex_t * mutex);
+
+#ifdef HAVE_EMBEDDED_MDNSSD
+int cal_mDNS_init(mDNS *m, struct timeval **timeout);
+
+/**
+ * @brief Callback for embedded mdns
+ *
+ * Whenever mDNS requires assistance (i.e., out of memory errors), this callback is called
+ *
+ * @param[in] m The mDNS instance
+ * @param[in] status the mStatus error code
+ */
+void mDNS_StatusCallback(mDNS *const m, mStatus status);
+
+/**
+ * @brief Kill mDNS
+ *
+ * Call to clean-up & kill embedded mDNS
+ */
+void mDNS_Terminate();
+#endif
 
 #endif  // __CAL_MDNSSD_BIP_H

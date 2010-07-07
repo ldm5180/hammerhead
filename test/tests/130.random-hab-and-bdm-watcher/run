@@ -28,11 +28,11 @@ NEXT_YEAR=$(($YEAR+1))
 make_bdm_db "bdm.db"
 
 echo starting BDM
-$ROOT/data-manager/server/bionet-data-manager --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
+$ROOT/data-manager/server/bionet-data-manager --id "test-130" --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
 BDMPID=$!
 sleep 3 # let the bdm come up before starting the HAB
 
-WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -r 'random-hab.$UNIQUE.*:*'"
+WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -r 'test-130,test-130/random-hab.$UNIQUE.*:*'"
 
 echo "bdm-watcher args: $WATCHCMD"
 

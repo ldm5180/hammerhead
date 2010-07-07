@@ -119,7 +119,7 @@ static int sync_send_metadata(
     }
 
     r = sync_finish_connection(config);
-    if( r == 0 ) {
+    if ( r == 0 ) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
               "    Sync metadata finished");
 
@@ -295,7 +295,7 @@ gpointer sync_thread(gpointer config_list) {
 	    db_get_last_sync_seq_metadata(cfg->db, cfg->sync_recipient);
 	cfg->last_entry_end_seq = 
 	    db_get_last_sync_seq_datapoints(cfg->db, cfg->sync_recipient);
-    
+
 	// One-time setup
 #if ENABLE_ION
 	if( cfg->method == BDM_SYNC_METHOD_ION ) {
@@ -370,7 +370,6 @@ static gboolean sync_check(gpointer data) {
 	      "    No metadata to sync.");
     }
     if (curr_seq > cfg->last_entry_end_seq) {
-	
 	sync_send_datapoints(cfg, cfg->last_entry_end_seq+1, curr_seq);
     } else {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
@@ -437,7 +436,7 @@ static int read_ack_tcp(sync_sender_config_t *config) {
 
     memset(&sync_ack, 0, sizeof(sync_ack));
 
-    do {
+    while (1) {
 	bytes_to_read = sizeof(buffer) - index;
 	bytes_read = read(config->fd, &buffer[index], bytes_to_read);
 	if (bytes_read < 0) {
@@ -502,16 +501,15 @@ static int read_ack_tcp(sync_sender_config_t *config) {
             index -= rval.consumed;
             memmove(buffer, &buffer[rval.consumed], index);
         }
-    } while ((rval.consumed > 0) && (index > 0));
+    }
 
     return -1;
 }
 
 static int sync_finish_connection_tcp(sync_sender_config_t * config) {
-    int rc = 0;
-    int r = 0;
+    int rc = 0, r = 0;
 
-    if(config->bytes_sent){
+    if(config->bytes_sent) {
         // TCP will ack the message in the same connection. Wait for it.
         rc = read_ack_tcp(config);
     }
@@ -524,7 +522,7 @@ static int sync_finish_connection_tcp(sync_sender_config_t * config) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "Can't close TCP connection: %m");
         rc = -1;
-    }   
+    }
 
     return rc;
 }

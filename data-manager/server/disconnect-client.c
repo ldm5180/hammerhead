@@ -31,8 +31,9 @@ void disconnect_client(client_t *client) {
 }
 
 void disconnect_sync_sender(client_t *client) {
+
     if (client->ch != NULL) {
-        g_io_channel_shutdown(client->ch, FALSE, NULL);
+        g_io_channel_shutdown(client->ch, TRUE, NULL);
         g_io_channel_unref(client->ch);
     }
 

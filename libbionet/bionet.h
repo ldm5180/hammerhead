@@ -192,6 +192,15 @@ int bionet_is_connected(void);
 
 
 /**
+ * @brief Cleanly disconnects from Bionet
+ *
+ * Disconnect from Bionet after using bionet_connect
+ */
+BIONET_API_DECL
+void bionet_disconnect(void);
+
+
+/**
  * @brief Reads the bionet file descriptor returned from bionet_connect()
  *
  * This function should be called whenever the Client application wants to

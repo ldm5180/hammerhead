@@ -21,6 +21,10 @@
 
 #define ID "mDNS-SD/BIP Server "
 
+#ifdef HAVE_EMBEDDED_MDNSSD
+extern mDNS mDNSStorage;
+#endif
+
 extern pthread_mutex_t avahi_mutex;
 
 // describes "this" server
