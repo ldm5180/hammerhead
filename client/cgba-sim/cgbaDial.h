@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QLabel>
 #include "dial.h"
+
 extern "C"
 {
 #include "bionet-util.h"

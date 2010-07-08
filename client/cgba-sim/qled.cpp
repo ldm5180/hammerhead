@@ -12,13 +12,7 @@
  *   GNU Lesser General Public License for more details.                   *
  *   http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.               *
  ***************************************************************************/
-  
-#include <QColor>
-#include <QtGlobal>
-#include <QtGui>
-#include <QPolygon>
-#include <QtSvg>
-#include <QSvgRenderer>
+
 #include "qled.h"
 
 

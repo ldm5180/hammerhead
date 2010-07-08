@@ -16,9 +16,14 @@
 #ifndef QLED_H
 #define QLED_H
 
+#include <QtGui>
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QColor>
+#include <QtGlobal>
+#include <QPolygon>
+#include <QtSvg/QSvgRenderer>
 
 class QColor;
 
