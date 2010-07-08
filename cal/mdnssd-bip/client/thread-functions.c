@@ -740,8 +740,12 @@ static void cleanup_service_list(cal_client_mdnssd_bip_t * this) {
 	cal_pthread_mutex_lock(&avahi_mutex);
         DNSServiceRefDeallocate(sc->service_ref);
 	cal_pthread_mutex_unlock(&avahi_mutex);
+
         this->service_list = g_slist_remove(this->service_list, sc);
-        free(sc->peer_name);
+
+        // the browse service context has a NULL peer_name
+        if (sc->peer_name != NULL)
+            free(sc->peer_name);
         free(sc);
         ptr = next;
     }
