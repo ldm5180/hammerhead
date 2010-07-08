@@ -603,7 +603,8 @@ static void DNSSD_API resolve_callback(
         if (errorCode != kDNSServiceErr_Unknown) {
             g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "resolve_callback: Error returned from resolve: %d", errorCode);
         }
-        free(peer_name);
+        //delete when we delete the entire service context
+        //free(peer_name);
         return;
     }
 
