@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if [ "$1" = "configure" ]; then
+   chmod -R 2777 /var/lib/bionet
+fi

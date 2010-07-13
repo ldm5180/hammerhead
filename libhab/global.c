@@ -24,21 +24,7 @@ void (*libhab_callback_lost_client)(const char *client_id) = NULL;
 void (*libhab_callback_stream_subscription)(const char *client_id, const bionet_stream_t *stream) = NULL;
 void (*libhab_callback_stream_unsubscription)(const char *client_id, const bionet_stream_t *stream) = NULL;
 
-char * persist_dir = "/var/local/bionet";
+char * persist_dir = "/var/lib/bionet";
 
 
-#if 0
-
-GSList *libhab_queued_messages_from_nag = NULL;
-
-char *libhab_type = NULL;
-char *libhab_id = NULL;
-
-
-bionet_nxio_t *libhab_nag_nxio = NULL;
-
-
-char *libhab_nag_error = NULL;
-
-#endif
 
