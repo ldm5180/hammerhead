@@ -2,7 +2,7 @@ etc/init.d/bdmplot
 
 usr/bin/bdmplot
 
-usr/lib/cgi-bin/bdmplot
+usr/share/cgi-bin/bdmplot
 
 usr/lib/python*/*/bdmplot2_callback.py
 usr/lib/python*/*/bdmplot2.py
