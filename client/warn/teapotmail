@@ -1,0 +1,30 @@
+#!/usr/bin/python
+import smtplib, sys
+
+import optparse
+
+parser = optparse.OptionParser()
+parser.add_option("-s", "--sender", dest="sender", default="teapot-mouseroom@bioserve.colorado.edu",help="Choose the email address of sender", metavar = "SEND")
+parser.add_option("-r", "--receiver", dest="receiver", default="ilana.bellowe@colorado.edu",help="Choose the email address of receiver", metavar = "SEND")
+parser.add_option("-c", "--smtp", dest="smtp", default="bioserve.colorado.edu", help="Choose the SMTP address", metavar = "SMTP"
+
+(options, args) = parser.parse_args()
+
+from email.mime.text import MIMEText
+
+me = options.sender
+you = options.receiver
+
+msg = MIMEText(args[0])
+
+msg['Subject'] = args[0]
+msg['From'] = me
+msg['To'] = you
+
+s = smtplib.SMTP()
+
+s.connect(options.smtp)
+
+print "I am sending an email"
+s.sendmail(me, you, msg.as_string())
+s.quit()

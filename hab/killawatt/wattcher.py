@@ -99,21 +99,23 @@ def add_node(hab, xb_address_16):
 def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorhistory):
     global newamps, newwatts, cal_ampdata, numbersamples
 
+    if (options.debug != None):
+        logger.debug("Debug - ampdata: "+str(ampdata))
+        logger.debug("Debug - voltdata: "+str(voltagedata))
+
     for i in range(len(voltagedata)):
         voltagedata[i] = xb_analog_samples[i+1][VOLTSENSE]
         ampdata[i] = xb_analog_samples[i+1][CURRENTSENSE]
     
     count_ampdata = 0
     cal_ampdata[xb_address_16] = 0
+
     for i in range(len(ampdata)):
-        if(ampdata[i] > 300):
+        if(ampdata[i] > 400 and ampdata[i] < 600):
             cal_ampdata[xb_address_16] += ampdata[i]
             count_ampdata = count_ampdata + 1
-    cal_ampdata[xb_address_16] = cal_ampdata[xb_address_16]/count_ampdata
-
-    if (options.debug != None):
-        logger.debug("Debug - ampdata: "+str(ampdata))
-        logger.debug("Debug - voltdata: "+str(voltagedata))
+    if count_ampdata != 0:
+        cal_ampdata[xb_address_16] = cal_ampdata[xb_address_16]/count_ampdata
 
     # get max and min voltage and normalize the curve to '0'
     # to make the graph 'AC coupled' / signed
@@ -134,8 +136,10 @@ def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorh
     #remove 'dc bias', which we call the average read
         voltagedata[i] -= avgv
         # We know that the mains voltage is 120Vrms = +-170Vpp
-        voltagedata[i] = (voltagedata[i] * MAINSVPP) / vpp
-
+        if vpp != 0:
+	    voltagedata[i] = (voltagedata[i] * MAINSVPP) / vpp
+	else:
+	    voltagedata[i] = 0
     # normalize current readings to amperes
     for i in range(len(ampdata)):
     # VREF is the hardcoded 'DC bias' value, its
@@ -170,7 +174,7 @@ def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorh
     logger.info(str(xb_address_16)+"Current draw, in amperes: "+str(avgamp))
     logger.info("Watt draw, in VA: "+str(avgwatt))
     if (avgamp > 13):
-        return            # hmm, bad data
+	logger.critical("Reporting bad data")
     
     # add up the delta-watthr used since last reading
     # Figure out how many watt hours were used since last reading
@@ -196,15 +200,50 @@ def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorh
     measurements["NumberSamples"] = numbersamples
     return measurements
 
-
 # the 'main loop' runs once a second or so
 def update_graph(idleevent):
     global avgwattdataidx, sensorhistories, DEBUG, intervals, newamps, newwatts, numbersamples
     packet = xbee.find_packet(ser)
+    hab_read()
     if not packet:
         return
     xb = xbee(packet)
-    sensorhistory = sensorhistories.find(xb.address_16)
+    #print "Got a packet: %s, makes an xb: %s, address: %d, xb.analog_samples: %s" % (packet.encode("hex"), repr(xb), xb.address_16, xb.analog_samples)
+    sensorhistory = sensorhistories.findwithoutcreating(xb.address_16)
+
+    # If all the analog samples are zero, consider the KaW dead
+    isDeadByCurrent = True
+    isDeadByVoltage = True
+    for i in range(len(xb.analog_samples)):
+        if xb.analog_samples[i][CURRENTSENSE] != 0:
+            isDeadByCurrent = False
+	if xb.analog_samples[i][VOLTSENSE] != 0:
+            isDeadByVoltage = False
+    isDead = isDeadByCurrent or isDeadByVoltage
+
+    if isDead:
+	if sensorhistory == None:
+		return
+#	print "Considering Kill-a-Watt %d to be dead" % xb.address_16
+	node = bionet_hab_remove_node_by_id(hab, str(xb.address_16))
+	hab_report_lost_node(str(xb.address_16))
+	bionet_node_free(node)
+        intervals[xb.address_16] = 0
+	sensorhistories.remove(xb.address_16)
+	return
+
+    # If it isn't in sensorhistory, and it isn't dead, it's a new node.
+    if sensorhistory == None:
+#        print "A new KaW %d appeared, isDead: %s" % (xb.address_16, str(isDead))
+#        print "Got a packet: %s, makes an xb: %s, address: %d, xb.analog_samples: %s" % (packet.encode("hex"), repr(xb), xb.address_16, xb.analog_samples)
+
+        node = add_node(hab, xb.address_16)
+        sensorhistory = sensorhistories.find(xb.address_16)
+
+    # we'll only store n-1 samples since the first one is usually messed up
+    voltagedata = [-1] * (len(xb.analog_samples) - 1)
+    ampdata = [-1] * (len(xb.analog_samples ) -1)
+    # grab 1 thru n of the ADC readings, referencing the ADC constants
 
     # Update the interval or assign it 0 if it doesn't exist, yet
     try:
@@ -214,17 +253,9 @@ def update_graph(idleevent):
     sensorhistory.lasttime = time.time() 
 
 
-    hab_read()
-
     if (options.debug != None):       # for debugging sometimes we only want one
         print xb.address_16
 
-    node = add_node(hab, xb.address_16)
-
-    # we'll only store n-1 samples since the first one is usually messed up
-    voltagedata = [-1] * (len(xb.analog_samples) - 1)
-    ampdata = [-1] * (len(xb.analog_samples ) -1)
-    # grab 1 thru n of the ADC readings, referencing the ADC constants
 
     measurements = calculations(voltagedata, ampdata, xb.analog_samples, xb.address_16, sensorhistory)
 
@@ -232,6 +263,8 @@ def update_graph(idleevent):
         
         newamps = measurements["Amps"]/measurements["NumberSamples"]
         newwatts = measurements["Watts"]/measurements["NumberSamples"]
+
+        node = add_node(hab, xb.address_16)
 
         resource = bionet_node_get_resource_by_id(node, "Amps")
         if (resource == None):

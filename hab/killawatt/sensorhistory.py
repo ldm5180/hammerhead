@@ -22,15 +22,29 @@ class SensorHistories:
 #    def __init__(self, f):
 #        if f:
 #            self.readfromfile(f)
-            
-    def find(self, sensornum):
-        for history in self.sensorhistories:
+
+    def findwithoutcreating(self, sensornum):
+	for history in self.sensorhistories:
             if history.sensornum == sensornum:
                 return history
+        return None
+        
+    def find(self, sensornum):
+	history = self.findwithoutcreating(sensornum)
+	if history != None:
+	    return history
         # none found, create it!
         history = SensorHistory(sensornum)
         self.sensorhistories.append(history)
         return history
+
+    def remove(self, sensornum):
+        thingtoremove = self.findwithoutcreating(sensornum)
+	if thingtoremove != None:
+		self.sensorhistories.remove(thingtoremove)
+	else:
+		print "Couldn't remove %d cuz I couldn't find it." % sensornum
+        return None
 
     def readfromfile(self, f):
         curryear = 0
