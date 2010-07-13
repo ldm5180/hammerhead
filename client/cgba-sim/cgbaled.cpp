@@ -4,6 +4,7 @@ cgbaLed::cgbaLed(QString info, QWidget *parent)
     : QWidget(parent)
 {
     label = new QLabel(info, this);
+    label->setAlignment(Qt::AlignCenter);
     led = new QLed(this);
     layout = new QVBoxLayout();
 
