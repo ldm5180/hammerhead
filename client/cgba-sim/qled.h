@@ -54,5 +54,7 @@ protected:
     QStringList colors;
     void paintEvent(QPaintEvent *event);
     QLabel *label;
+private:
+    QSvgRenderer *renderer;
 };
 #endif

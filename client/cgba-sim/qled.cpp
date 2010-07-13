@@ -31,6 +31,8 @@ QLed::QLed(QWidget *parent)
    setMaximumSize(QSize(125,125));
    shapes << "resources/square_";
    colors << "red.svg" << "grey.svg";
+
+   renderer = new QSvgRenderer();
 }
 
 /*!
@@ -40,7 +42,6 @@ QLed::QLed(QWidget *parent)
 */
 void QLed::paintEvent(QPaintEvent *)
 {
-    QSvgRenderer *renderer = new QSvgRenderer();
     QString ledShapeAndColor;
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
