@@ -5,7 +5,7 @@ import optparse
 
 parser = optparse.OptionParser()
 parser.add_option("-s", "--sender", dest="sender", default="teapot-mouseroom@bioserve.colorado.edu",help="Choose the email address of sender", metavar = "SEND")
-parser.add_option("-r", "--receiver", dest="receiver", default="ilana.bellowe@colorado.edu",help="Choose the email address of receiver", metavar = "SEND")
+parser.add_option("-r", "--receiver", dest="receiver", default="fakeaddress",help="Choose the email address of receiver", metavar = "SEND")
 parser.add_option("-c", "--smtp", dest="smtp", default="bioserve.colorado.edu", help="Choose the SMTP address", metavar = "SMTP"
 
 (options, args) = parser.parse_args()
