@@ -15,7 +15,7 @@ warn = [
     {
     'resource': "Kill-A-Watt.dogfood.1:Watts", 
     'compare': lambda x: f(x) > 2,
-    'command': "./teapotmail -s teapot-mouseroom@colorado.edu \"Teapot is now ready\""
+    'command': "./teapotmail -s teapot-mouseroom@colorado.edu -r teapot@bioserve.colorado.edu \"Teapot is now ready\""
     }
 ]
 
