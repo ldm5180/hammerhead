@@ -85,7 +85,6 @@ int arduino_read_until(char* buf, char until)
         }
         else
         {
-            printf("dec b[0] = %d   char b[0] = %c\n",(int)b[0], b[0]);
             buf[i] = b[0];
             i++;
         }

@@ -41,10 +41,8 @@ int poll_arduino(int bionet_fd)
         
         if(FD_ISSET(arduino_fd, &fds))
         {
-            printf("-----%d-DATA-----\n", n);
-       
+    
             read(arduino_fd, b, 1);
-            printf("b: %d\n", (int)b[0]);
 
             switch((int)b[0])
             {
