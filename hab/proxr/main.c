@@ -16,7 +16,6 @@ bionet_hab_t *hab;
 
 int main(int argc, char* argv[])
 {
-    char a = '\n';
     int bionet_fd;
     int proxr_fd;
     int arduino_fd;
