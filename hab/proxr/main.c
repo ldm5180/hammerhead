@@ -16,9 +16,7 @@ bionet_hab_t *hab;
 
 int main(int argc, char* argv[])
 {
-    printf("version 1.0\n");
     char a = '\n';
-    printf("%d\n", (int)a);
     int bionet_fd;
     int proxr_fd;
     int arduino_fd;
