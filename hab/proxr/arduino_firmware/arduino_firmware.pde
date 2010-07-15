@@ -1,6 +1,8 @@
-int command = 0;
+int active = 1;
+int ack = -1;
+int previous_value = 0;
 int analogIn[2];
-int digitalIn[8];
+int digitalIn[8] = {0,0,0,0,0,0,0,0};
 
  void setup() 
  {
@@ -16,29 +18,41 @@ int digitalIn[8];
  }
  
  void loop()
- {
-   command = Serial.read();
-   if(command == 100)
-   {
-     analogIn[0] = analogRead(0);
-     Serial.println(analogIn[0]);
-   }
-   else if(command == 101)
-   {
-     analogIn[1] = analogRead(1);
-     Serial.println(analogIn[1]);
-   }
-   else if(command == 200)
-   {
-     for(int i=0; i<8; i++)
-     {
-       digitalIn[i] = digitalRead(i+2); //i+2 because pinning
-       Serial.print(digitalIn[i]);
-     }
-     Serial.println();
-   } 
-   else if(command == 254)
-   {
-     Serial.println("ok");
+ { 
+   delay(2000);
+   
+   while(active == 1)
+   {  
+      delay(1000);
+      
+      previous_value = analogIn[0];
+      analogIn[0] = analogRead(0);
+      if(analogIn[0] != previous_value)
+      {
+	  Serial.print(100, BYTE);
+     	  Serial.print(analogIn[0]);
+          Serial.print('\n');
+      }
+
+      previous_value = analogIn[1];
+      analogIn[1] = analogRead(1);
+      if(analogIn[1] != previous_value)
+      {
+	  Serial.print(101, BYTE);
+          Serial.print(analogIn[1]);
+          Serial.print('\n');
+      }     
+   
+      for(int i=0; i<8; i++)
+      {
+          previous_value = digitalIn[i];
+          digitalIn[i] = digitalRead(i+2);
+          if(digitalIn[i] != previous_value)
+          {
+	      Serial.print(110+i, BYTE);
+	      Serial.print(digitalIn[i]);
+              Serial.print('\n');
+          }
+      }
    }
  }
