@@ -1,7 +1,0 @@
-CFLAGS= -g -Wall
-findPort: proxrcmds.c proxrport.c findPort.c arduinoport.c
-	gcc -g -c -Wall proxrcmds.c -o proxrcmds.o
-	gcc -g -c -Wall proxrport.c -o proxrport.o
-	gcc -g -c -Wall findPort.c -o findPort.o
-	gcc -g -c -Wall arduinoport.c -o arduinoport.o
-	gcc proxrcmds.o arduinoport.o proxrport.o findPort.o -o findPort
