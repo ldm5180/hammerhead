@@ -1251,6 +1251,92 @@ START_TEST (test_libutil_node_matches_habtype_habid_nodeid_8) {
 } END_TEST /* test_libutil_node_matches_habtype_habid_nodeid_8 */
 
 
+/*
+ * bionet_node_set_user_data(node, user_data)
+ * bionet_node_get_user_data(node)
+ */
+START_TEST (test_libutil_node_get_set_user_data_0) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_node_set_user_data(node, (void *)hab);
+    fail_unless(hab == (bionet_hab_t *)bionet_node_get_user_data(node),
+		"Failed to get user data which was set.\n");
+} END_TEST /* test_libutil_node_get_set_user_data_0 */
+
+
+/*
+ * bionet_node_set_user_data(node, user_data)
+ * bionet_node_get_user_data(node)
+ */
+START_TEST (test_libutil_node_get_set_user_data_1) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_node_set_user_data(node, NULL);
+    fail_unless(NULL == bionet_node_get_user_data(node),
+		"Failed to get user data which was set to NULL.\n");
+} END_TEST /* test_libutil_node_get_set_user_data_1 */
+
+
+/*
+ * bionet_node_set_user_data(node, user_data)
+ * bionet_node_get_user_data(node)
+ */
+START_TEST (test_libutil_node_get_set_user_data_2) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_node_set_user_data(NULL, (void *)hab);
+    fail_unless(NULL == bionet_node_get_user_data(node),
+		"Failed to get user data which was never.\n");
+} END_TEST /* test_libutil_node_get_set_user_data_2 */
+
+
+/*
+ * bionet_node_set_user_data(node, user_data)
+ * bionet_node_get_user_data(node)
+ */
+START_TEST (test_libutil_node_get_set_user_data_3) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_node_set_user_data(node, (void *)hab);
+    bionet_node_set_user_data(node, NULL);
+    fail_unless(NULL == bionet_node_get_user_data(node),
+		"Failed to get user data which was unset.\n");
+} END_TEST /* test_libutil_node_get_set_user_data_3 */
+
+
+/*
+ * bionet_node_set_user_data(node, user_data)
+ * bionet_node_get_user_data(node)
+ */
+START_TEST (test_libutil_node_get_set_user_data_4) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_node_set_user_data(NULL, (void *)hab);
+    fail_unless(NULL == bionet_node_get_user_data(NULL),
+		"Failed to detect NULL node passed into get user data\n");
+} END_TEST /* test_libutil_node_get_set_user_data_4 */
+
+
 void libutil_node_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet Node");
@@ -1352,6 +1438,14 @@ void libutil_node_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_6);
     tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_7);
     tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_8);
+
+    /* bionet_node_get_user_data() */
+    /* bionet_node_set_user_data() */
+    tcase_add_test(tc, test_libutil_node_get_set_user_data_0);
+    tcase_add_test(tc, test_libutil_node_get_set_user_data_1);
+    tcase_add_test(tc, test_libutil_node_get_set_user_data_2);
+    tcase_add_test(tc, test_libutil_node_get_set_user_data_3);
+    tcase_add_test(tc, test_libutil_node_get_set_user_data_4);
 
     return;
 } /* libutil_node_tests_suite() */
