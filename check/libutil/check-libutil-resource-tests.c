@@ -20,6 +20,77 @@
 #include "check-libutil-resource-tests.h"
 
 
+START_TEST (test_libutil_resource_new_0) {
+    bionet_resource_t * resource;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+} END_TEST /* test_libutil_resource_new_0 */
+
+
+START_TEST (test_libutil_resource_new_1) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to resources?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Couldn't even make a node. How can I possibly move on to resources?\n");
+
+    bionet_resource_t * resource = bionet_resource_new(node, 
+						       BIONET_RESOURCE_DATA_TYPE_STRING, 
+						       BIONET_RESOURCE_FLAVOR_PARAMETER, 
+						       "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+} END_TEST /* test_libutil_resource_new_1 */
+
+
+START_TEST (test_libutil_resource_new_2) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to resources?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Couldn't even make a node. How can I possibly move on to resources?\n");
+
+    bionet_resource_t * resource = bionet_resource_new(node, 
+						       BIONET_RESOURCE_DATA_TYPE_INVALID, 
+						       BIONET_RESOURCE_FLAVOR_PARAMETER, 
+						       "resource");
+    fail_unless(resource == NULL, "failed to detect invalid data type");
+} END_TEST /* test_libutil_resource_new_2 */
+
+
+START_TEST (test_libutil_resource_new_3) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to resources?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Couldn't even make a node. How can I possibly move on to resources?\n");
+
+    bionet_resource_t * resource = bionet_resource_new(node, 
+						       BIONET_RESOURCE_DATA_TYPE_STRING, 
+						       BIONET_RESOURCE_FLAVOR_INVALID, 
+						       "resource");
+    fail_unless(resource == NULL, "failed to detect invalid flavor");
+} END_TEST /* test_libutil_resource_new_3 */
+
+
+START_TEST (test_libutil_resource_new_4) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to resources?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Couldn't even make a node. How can I possibly move on to resources?\n");
+
+    bionet_resource_t * resource = bionet_resource_new(node, 
+						       BIONET_RESOURCE_DATA_TYPE_STRING, 
+						       BIONET_RESOURCE_FLAVOR_INVALID, 
+						       NULL);
+    fail_unless(resource == NULL, "failed to detect ID");
+} END_TEST /* test_libutil_resource_new_4 */
+
+
 START_TEST (test_libutil_resource_set_str_0) {
     bionet_resource_t *resource;
     int r;
@@ -44,6 +115,14 @@ void libutil_resource_tests_suite(Suite *s) {
     TCase *tc = tcase_create("Bionet Resource");
     suite_add_tcase(s, tc);
 
+    /* bionet_resource_new() */
+    tcase_add_test(tc, test_libutil_resource_new_0);
+    tcase_add_test(tc, test_libutil_resource_new_1);
+    tcase_add_test(tc, test_libutil_resource_new_2);
+    tcase_add_test(tc, test_libutil_resource_new_3);
+    tcase_add_test(tc, test_libutil_resource_new_4);
+
+    /* bionet_resource_set_str() */
     tcase_add_test(tc, test_libutil_resource_set_str_0);
 
     return;
