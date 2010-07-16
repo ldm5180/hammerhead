@@ -27,7 +27,15 @@ int bionet_node_add_stream(bionet_node_t *node, bionet_stream_t *stream) {
         return -1;
     }
 
-    // NOTE: in BIONET, Resource IDs dont have to be unique within a Node...
+    if(bionet_node_get_stream_by_id(node, stream->id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+               "bionet_node_add_stream(): Node %s already has a stream with id %s",
+               node->id, stream->id);
+        errno = EINVAL;
+        return -1;
+
+    }
+
     node->streams = g_slist_append(node->streams, stream);
 
     stream->node = node;

@@ -196,6 +196,10 @@ bionet_stream_t *bionet_node_get_stream_by_id(const bionet_node_t *node, const c
  * As a side-effect all resources and streams will also be free'd
  *
  * @param[in] node Node to free
+ *
+ * @note This function will not remove the node from any HABs. If it 
+ * has been added to a HAB it should be removed using 
+ * bionet_hab_remove_node_by_id() before calling this function.
  */
 BIONET_UTIL_API_DECL
 void bionet_node_free(bionet_node_t *node);

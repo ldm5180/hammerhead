@@ -48,6 +48,12 @@ void bionet_node_free(bionet_node_t *node) {
         bionet_stream_free(stream);
     }
 
+    bionet_hab_t * hab = bionet_node_get_hab(node);
+    if (hab && bionet_hab_get_node_by_id(hab, bionet_node_get_id(node))) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "bionet_free_node(): Node is still in %s HAB list. It should have been removed before calling bionet_free_node().",
+	      bionet_hab_get_name(hab));
+    }
 
     free(node);
 }

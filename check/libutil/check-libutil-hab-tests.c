@@ -384,6 +384,33 @@ START_TEST (test_libutil_hab_add_node_2) {
 
 
 /*
+ * bionet_hab_add_node(hab, node) twice
+ */
+START_TEST (test_libutil_hab_add_node_3) {
+    int num;
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "new-node");
+    fail_unless(NULL != node, "Failed to get a new node: %m\n");
+
+    num = bionet_hab_add_node(hab, node);
+    fail_unless(0 == num, 
+		"Failed to add node\n");
+
+    node = bionet_node_new(hab, "new-node");
+    fail_if(NULL == node, "Failed to get a new node: %m\n");
+
+    num = bionet_hab_add_node(hab, node);
+    fail_if(0 == num,
+	    "Failed to detect adding a node with the same name.");
+} END_TEST /* test_libutil_hab_add_node_3 */
+
+
+/*
  * bionet_hab_get_node_by_index(NULL, 0)
  */
 START_TEST (test_libutil_hab_get_node_by_index_0) {
@@ -957,6 +984,7 @@ void libutil_hab_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_hab_add_node_0);
     tcase_add_test(tc, test_libutil_hab_add_node_1);
     tcase_add_test(tc, test_libutil_hab_add_node_2);
+    tcase_add_test(tc, test_libutil_hab_add_node_3);
 
     /* bionet_hab_get_node_by_index() */
     tcase_add_test(tc, test_libutil_hab_get_node_by_index_0);
