@@ -27,7 +27,15 @@ int bionet_node_add_resource(bionet_node_t *node, bionet_resource_t *resource) {
         return -1;
     }
 
-    // NOTE: in BIONET, Resource IDs dont have to be unique within a Node...
+    if(bionet_node_get_resource_by_id(node, resource->id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+               "bionet_node_add_resource(): Node %s already has a resource with id %s",
+               node->id, resource->id);
+        errno = EINVAL;
+        return -1;
+
+    }
+
     node->resources = g_slist_append(node->resources, resource);
 
     resource->node = node;
