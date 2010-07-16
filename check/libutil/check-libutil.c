@@ -18,7 +18,7 @@
 #include "check-libutil-split-hab-name.h"
 #include "check-libutil-split-node-name.h"
 #include "check-libutil-split-resource-name.h"
-#include "check-libutil-resource-set.h"
+#include "check-libutil-resource-tests.h"
 
 int main(int argc, char * argv[])
 {
@@ -28,10 +28,10 @@ int main(int argc, char * argv[])
         {
             { "Bionet Util HAB Tests", &libutil_hab_tests_suite },
             { "Bionet Util Node Tests", &libutil_node_tests_suite },
+            { "Bionet Util Resource Tests", &libutil_resource_tests_suite },
             { "Bionet Util Split HAB Name", &libutil_split_hab_name_suite },
             { "Bionet Util Split Node Name", &libutil_split_node_name_suite },
             { "Bionet Util Split Resource Name", &libutil_split_resource_name_suite },
-            { "Bionet Util Resource Set", &libutil_resource_set_suite },
         };
 
     /* run all the integration test suites */

@@ -17,7 +17,7 @@
 
 #include "check-common.h"
 #include "bionet-util.h"
-#include "check-libutil-hab-tests.h"
+#include "check-libutil-resource-tests.h"
 
 
 START_TEST (test_libutil_resource_set_str_0) {
@@ -35,17 +35,17 @@ START_TEST (test_libutil_resource_set_str_0) {
 
     bionet_resource_free(resource);
 
-} END_TEST
+} END_TEST /* test_libutil_resource_set_str_0 */
 
 
 
 
-void libutil_resource_set_suite(Suite *s) {
-    TCase *tc = tcase_create("bionet_resource_set");
+void libutil_resource_tests_suite(Suite *s) {
+    TCase *tc = tcase_create("Bionet Resource");
     suite_add_tcase(s, tc);
 
     tcase_add_test(tc, test_libutil_resource_set_str_0);
 
     return;
-}
+} /* libutil_resource_tests_suite */
 
