@@ -185,7 +185,6 @@ AC_ARG_WITH(
         [with_mndssd=check]
     )
 
-echo "with_mdnssd = $with_mdnssd"
 if test "x$with_mdnssd" = "x" || test "x$with_mdnssd" = "xcheck"; then
     if test "$cross_compiling" != "yes"; then
         if test "x$HAVE_LINUX" = "xyes"; then
