@@ -568,6 +568,417 @@ START_TEST (test_libutil_node_get_resource_by_id_4) {
 } END_TEST /* test_libutil_node_get_resource_by_index_4 */
 
 
+/*
+ * bionet_node_add_stream(node, stream)
+ */
+START_TEST (test_libutil_node_add_stream_0) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream = bionet_stream_new(node, 
+						 "stream",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+    fail_if (NULL == stream, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream), 
+	     "Failed to add stream to node.\n");
+} END_TEST /* test_libutil_node_add_stream_0 */
+
+
+/*
+ * bionet_node_add_stream(node, stream)
+ */
+START_TEST (test_libutil_node_add_stream_1) {
+    bionet_node_t * node = bionet_node_new(NULL, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream = bionet_stream_new(node, 
+						 "stream",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+    fail_if (NULL == stream, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream), 
+	     "Failed to add stream to node that doesn't have a hab.\n");
+} END_TEST /* test_libutil_node_add_stream_1 */
+
+
+/*
+ * bionet_node_add_stream(node, stream)
+ */
+START_TEST (test_libutil_node_add_stream_2) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream = bionet_stream_new(node, 
+						 "stream",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream, "Failed to create stream.\n");
+
+    fail_unless (bionet_node_add_stream(NULL, stream), 
+		 "Failed to detect NULL node passed in.\n");
+} END_TEST /* test_libutil_node_add_stream_2 */
+
+
+/*
+ * bionet_node_add_stream(node, stream)
+ */
+START_TEST (test_libutil_node_add_stream_3) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (bionet_node_add_stream(node, NULL), 
+		 "Failed to detect NULL stream passed in.\n");
+} END_TEST /* test_libutil_node_add_stream_3 */
+
+
+/*
+ * bionet_node_add_stream(node, stream)
+ */
+START_TEST (test_libutil_node_add_stream_4) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream = bionet_stream_new(node, 
+						 "stream",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream), 
+	     "Failed to add stream to node.\n");
+
+    stream = bionet_stream_new(node, 
+			       "stream",
+			       BIONET_STREAM_DIRECTION_PRODUCER,
+			       "streamy");
+    
+    fail_if (NULL == stream, "Failed to create stream.\n");
+
+    fail_unless (bionet_node_add_stream(node, stream), 
+		 "Failed to detect a stream with a duplicate ID is being added.\n");
+} END_TEST /* test_libutil_node_add_stream_4 */
+
+
+/*
+ * bionet_node_get_num_streams(node)
+ */
+START_TEST (test_libutil_node_get_num_streams_0) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream = bionet_stream_new(node, 
+						 "stream",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream), 
+	     "Failed to add stream to node.\n");
+
+    fail_unless(1 == bionet_node_get_num_streams(node), 
+		"Failed get correct number of nodes after 1 was added.\n");
+} END_TEST /* test_libutil_node_get_num_streams_0 */
+
+
+/*
+ * bionet_node_get_num_streams(node)
+ */
+START_TEST (test_libutil_node_get_num_streams_1) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless(0 == bionet_node_get_num_streams(node), 
+		"Failed get correct number of nodes after none were added.\n");
+} END_TEST /* test_libutil_node_get_num_streams_1 */
+
+
+/*
+ * bionet_node_get_num_streams(node)
+ */
+START_TEST (test_libutil_node_get_num_streams_2) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (bionet_node_add_stream(node, NULL), 
+		 "Failed to detect NULL stream being added to node.\n");
+
+    fail_unless(0 == bionet_node_get_num_streams(node), 
+		"Failed get correct number of nodes after NULL node was added .\n");
+} END_TEST /* test_libutil_node_get_num_streams_2 */
+
+
+/*
+ * bionet_node_get_num_streams(NULL)
+ */
+START_TEST (test_libutil_node_get_num_streams_3) {
+    fail_unless(-1 == bionet_node_get_num_streams(NULL), 
+		"Failed to detect NULL node passed in.\n");
+} END_TEST /* test_libutil_node_get_num_streams_3 */
+
+
+/*
+ * bionet_node_get_stream_by_index(node, index)
+ */
+START_TEST (test_libutil_node_get_stream_by_index_0) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream = bionet_stream_new(node, 
+						 "stream",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream), 
+	     "Failed to add stream to node.\n");
+
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_index(node, 0);
+    fail_unless(fetched_stream == stream, 
+		"Failed to get the stream added.\n");
+} END_TEST /* test_libutil_node_get_stream_by_index_0 */
+
+
+/*
+ * bionet_node_get_stream_by_index(node, index)
+ */
+START_TEST (test_libutil_node_get_stream_by_index_1) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream = bionet_stream_new(node, 
+						 "stream",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream), 
+	     "Failed to add stream to node.\n");
+
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_index(node, 1);
+    fail_unless(fetched_stream == NULL, 
+		"Failed to get a NULL stream for an index which doesn't exist.\n");
+} END_TEST /* test_libutil_node_get_stream_by_index_1 */
+
+
+/*
+ * bionet_node_get_stream_by_index(node, index)
+ */
+START_TEST (test_libutil_node_get_stream_by_index_2) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_index(node, 0);
+    fail_unless(fetched_stream == NULL, 
+		"Failed to get a NULL stream when no streams were added.\n");
+} END_TEST /* test_libutil_node_get_stream_by_index_2 */
+
+
+/*
+ * bionet_node_get_stream_by_index(node, index)
+ */
+START_TEST (test_libutil_node_get_stream_by_index_3) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream1 = bionet_stream_new(node, 
+						 "stream1",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream1, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream1), 
+	     "Failed to add stream to node.\n");
+
+    bionet_stream_t * stream2 = bionet_stream_new(node, 
+						 "stream2",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream2, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream2), 
+	     "Failed to add stream to node.\n");
+
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_index(node, 0);
+    fail_unless(fetched_stream == stream1, 
+		"Failed to get the first stream added.\n");
+
+    fetched_stream = bionet_node_get_stream_by_index(node, 1);
+    fail_unless(fetched_stream == stream2, 
+		"Failed to get the second stream added.\n");
+} END_TEST /* test_libutil_node_get_stream_by_index_3 */
+
+
+/*
+ * bionet_node_get_stream_by_index(node, index)
+ */
+START_TEST (test_libutil_node_get_stream_by_index_4) {
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_index(NULL, 0);
+    fail_unless(fetched_stream == NULL, 
+		"Failed to detect NULL node passed in.\n");
+} END_TEST /* test_libutil_node_get_stream_by_index_4 */
+
+
+/*
+ * bionet_node_get_stream_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_stream_by_id_0) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream = bionet_stream_new(node, 
+						 "stream",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream), 
+	     "Failed to add stream to node.\n");
+
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_id(node, "stream");
+    fail_unless(fetched_stream == stream, 
+		"Failed to get the stream added.\n");
+} END_TEST /* test_libutil_node_get_stream_by_id_0 */
+
+
+/*
+ * bionet_node_get_stream_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_stream_by_id_1) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream = bionet_stream_new(node, 
+						 "stream",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream), 
+	     "Failed to add stream to node.\n");
+
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_id(node, "stream1");
+    fail_unless(fetched_stream == NULL, 
+		"Failed to get a NULL stream for an index which doesn't exist.\n");
+} END_TEST /* test_libutil_node_get_stream_by_id_1 */
+
+
+/*
+ * bionet_node_get_stream_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_stream_by_id_2) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_id(node, "stream");
+    fail_unless(fetched_stream == NULL, 
+		"Failed to get a NULL stream when no streams were added.\n");
+} END_TEST /* test_libutil_node_get_stream_by_id_2 */
+
+
+/*
+ * bionet_node_get_stream_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_stream_by_id_3) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_stream_t * stream1 = bionet_stream_new(node, 
+						 "stream1",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream1, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream1), 
+	     "Failed to add stream to node.\n");
+
+    bionet_stream_t * stream2 = bionet_stream_new(node, 
+						 "stream2",
+						 BIONET_STREAM_DIRECTION_PRODUCER,
+						 "streamy");
+
+    fail_if (NULL == stream2, "Failed to create stream.\n");
+
+    fail_if (bionet_node_add_stream(node, stream2), 
+	     "Failed to add stream to node.\n");
+
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_id(node, "stream1");
+    fail_unless(fetched_stream == stream1, 
+		"Failed to get the first stream added.\n");
+
+    fetched_stream = bionet_node_get_stream_by_id(node, "stream2");
+    fail_unless(fetched_stream == stream2, 
+		"Failed to get the second stream added.\n");
+} END_TEST /* test_libutil_node_get_stream_by_index_3 */
+
+
+/*
+ * bionet_node_get_stream_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_stream_by_id_4) {
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_id(NULL, "stream");
+    fail_unless(fetched_stream == NULL, 
+		"Failed to detect NULL node passed in.\n");
+} END_TEST /* test_libutil_node_get_stream_by_index_4 */
+
+
 void libutil_node_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet Node");
@@ -620,9 +1031,37 @@ void libutil_node_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_node_get_resource_by_id_3);
     tcase_add_test(tc, test_libutil_node_get_resource_by_id_4);
 
+    /* bionet_node_add_stream() */
+    tcase_add_test(tc, test_libutil_node_add_stream_0);
+    tcase_add_test(tc, test_libutil_node_add_stream_1);
+    tcase_add_test(tc, test_libutil_node_add_stream_2);
+    tcase_add_test(tc, test_libutil_node_add_stream_3);
+    tcase_add_test(tc, test_libutil_node_add_stream_4);
+
+    /* bionet_node_get_num_streams() */
+    tcase_add_test(tc, test_libutil_node_get_num_streams_0);
+    tcase_add_test(tc, test_libutil_node_get_num_streams_1);
+    tcase_add_test(tc, test_libutil_node_get_num_streams_2);
+    tcase_add_test(tc, test_libutil_node_get_num_streams_3);
+
+    /* bionet_node_get_stream_by_index() */
+    tcase_add_test(tc, test_libutil_node_get_stream_by_index_0);
+    tcase_add_test(tc, test_libutil_node_get_stream_by_index_1);
+    tcase_add_test(tc, test_libutil_node_get_stream_by_index_2);
+    tcase_add_test(tc, test_libutil_node_get_stream_by_index_3);
+    tcase_add_test(tc, test_libutil_node_get_stream_by_index_4);
+
+    /* bionet_node_get_stream_by_id() */
+    tcase_add_test(tc, test_libutil_node_get_stream_by_id_0);
+    tcase_add_test(tc, test_libutil_node_get_stream_by_id_1);
+    tcase_add_test(tc, test_libutil_node_get_stream_by_id_2);
+    tcase_add_test(tc, test_libutil_node_get_stream_by_id_3);
+    tcase_add_test(tc, test_libutil_node_get_stream_by_id_4);
+
 
     return;
 } /* libutil_node_tests_suite() */
+
 
 
 // Emacs cruft
