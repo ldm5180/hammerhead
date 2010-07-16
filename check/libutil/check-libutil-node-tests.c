@@ -966,7 +966,16 @@ START_TEST (test_libutil_node_get_stream_by_id_3) {
     fetched_stream = bionet_node_get_stream_by_id(node, "stream2");
     fail_unless(fetched_stream == stream2, 
 		"Failed to get the second stream added.\n");
-} END_TEST /* test_libutil_node_get_stream_by_index_3 */
+} END_TEST /* test_libutil_node_get_stream_by_id_3 */
+
+/*
+ * bionet_node_get_stream_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_stream_by_id_4) {
+    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_id(NULL, "stream");
+    fail_unless(fetched_stream == NULL, 
+		"Failed to detect NULL node passed in.\n");
+} END_TEST /* test_libutil_node_get_stream_by_id_4 */
 
 
 /*
@@ -1107,13 +1116,139 @@ START_TEST (test_libutil_node_matches_id_3) {
 
 
 /*
- * bionet_node_get_stream_by_id(node, id)
+ * bionet_node_matches_habtype_habid_nodeid(node, habtype, habid, nodeid)
  */
-START_TEST (test_libutil_node_get_stream_by_id_4) {
-    bionet_stream_t * fetched_stream = bionet_node_get_stream_by_id(NULL, "stream");
-    fail_unless(fetched_stream == NULL, 
-		"Failed to detect NULL node passed in.\n");
-} END_TEST /* test_libutil_node_get_stream_by_index_4 */
+START_TEST (test_libutil_node_matches_habtype_habid_nodeid_0) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (bionet_node_matches_habtype_habid_nodeid(node, "type", "id", "node"),
+		 "Failed to match node id %s.%s.%s to 'type.id.node'", 
+		 bionet_hab_get_type(hab), bionet_hab_get_id(hab), bionet_node_get_id(node));
+} END_TEST /* test_libutil_node_matches_habtype_habid_nodeid_0 */
+
+
+/*
+ * bionet_node_matches_habtype_habid_nodeid(node, habtype, habid, nodeid)
+ */
+START_TEST (test_libutil_node_matches_habtype_habid_nodeid_1) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (bionet_node_matches_habtype_habid_nodeid(node, "*", "*", "*"),
+		 "Failed to match node id %s to '*'", bionet_node_get_id(node));
+} END_TEST /* test_libutil_node_matches_habtype_habid_nodeid_1 */
+
+
+/*
+ * bionet_node_matches_habtype_habid_nodeid(node, habtype, habid, nodeid)
+ */
+START_TEST (test_libutil_node_matches_habtype_habid_nodeid_2) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (0 == bionet_node_matches_habtype_habid_nodeid(node, "type", "id", NULL),
+		 "Failed to detect NULL node ID passed in.");
+} END_TEST /* test_libutil_node_matches_habtype_habid_nodeid_2 */
+
+
+/*
+ * bionet_node_matches_habtype_habid_nodeid(node, habtype, habid, nodeid)
+ */
+START_TEST (test_libutil_node_matches_habtype_habid_nodeid_3) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (0 == bionet_node_matches_habtype_habid_nodeid(node, "type", NULL, "node"),
+		 "Failed to detect NULL HAB ID passed in.");
+} END_TEST /* test_libutil_node_matches_habtype_habid_nodeid_3 */
+
+
+/*
+ * bionet_node_matches_habtype_habid_nodeid(node, habtype, habid, nodeid)
+ */
+START_TEST (test_libutil_node_matches_habtype_habid_nodeid_4) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (0 == bionet_node_matches_habtype_habid_nodeid(node, NULL, "id", "node"),
+		 "Failed to detect NULL HAB type passed in.");
+} END_TEST /* test_libutil_node_matches_habtype_habid_nodeid_4 */
+
+
+/*
+ * bionet_node_matches_habtype_habid_nodeid(node, habtype, habid, nodeid)
+ */
+START_TEST (test_libutil_node_matches_habtype_habid_nodeid_5) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (0 == bionet_node_matches_habtype_habid_nodeid(NULL, "type", "id", "node"),
+		 "Failed to detect NULL node passed in.");
+} END_TEST /* test_libutil_node_matches_habtype_habid_nodeid_5 */
+
+
+/*
+ * bionet_node_matches_habtype_habid_nodeid(node, habtype, habid, nodeid)
+ */
+START_TEST (test_libutil_node_matches_habtype_habid_nodeid_6) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (bionet_node_matches_habtype_habid_nodeid(node, "type", "*", "*"),
+		 "Failed to match node id %s to 'type.*.*'", bionet_node_get_id(node));
+} END_TEST /* test_libutil_node_matches_habtype_habid_nodeid_6 */
+
+
+/*
+ * bionet_node_matches_habtype_habid_nodeid(node, habtype, habid, nodeid)
+ */
+START_TEST (test_libutil_node_matches_habtype_habid_nodeid_7) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (bionet_node_matches_habtype_habid_nodeid(node, "*", "id", "*"),
+		 "Failed to match node id %s to '*.id.*'", bionet_node_get_id(node));
+} END_TEST /* test_libutil_node_matches_habtype_habid_nodeid_7 */
+
+
+/*
+ * bionet_node_matches_habtype_habid_nodeid(node, habtype, habid, nodeid)
+ */
+START_TEST (test_libutil_node_matches_habtype_habid_nodeid_8) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (bionet_node_matches_habtype_habid_nodeid(node, "*", "*", "node"),
+		 "Failed to match node id %s to '*.*.node'", bionet_node_get_id(node));
+} END_TEST /* test_libutil_node_matches_habtype_habid_nodeid_8 */
 
 
 void libutil_node_tests_suite(Suite *s)
@@ -1206,6 +1341,17 @@ void libutil_node_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_node_matches_id_1);
     tcase_add_test(tc, test_libutil_node_matches_id_2);
     tcase_add_test(tc, test_libutil_node_matches_id_3);
+
+    /* bionet_node_matches_habtype_habid_nodeid() */
+    tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_0);
+    tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_1);
+    tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_2);
+    tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_3);
+    tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_4);
+    tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_5);
+    tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_6);
+    tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_7);
+    tcase_add_test(tc, test_libutil_node_matches_habtype_habid_nodeid_8);
 
     return;
 } /* libutil_node_tests_suite() */
