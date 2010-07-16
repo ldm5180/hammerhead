@@ -1047,6 +1047,66 @@ START_TEST (test_libutil_node_free_3) {
 
 
 /*
+ * bionet_node_matches_id(node, id)
+ */
+START_TEST (test_libutil_node_matches_id_0) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (bionet_node_matches_id(node, "node"),
+		 "Failed to match node id %s to 'node'", bionet_node_get_id(node));
+} END_TEST /* test_libutil_node_matches_id_0 */
+
+
+/*
+ * bionet_node_matches_id(node, id)
+ */
+START_TEST (test_libutil_node_matches_id_1) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (bionet_node_matches_id(node, "*"),
+		 "Failed to match node id %s to '*'", bionet_node_get_id(node));
+} END_TEST /* test_libutil_node_matches_id_1 */
+
+
+/*
+ * bionet_node_matches_id(node, id)
+ */
+START_TEST (test_libutil_node_matches_id_2) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (0 == bionet_node_matches_id(node, NULL),
+		 "Failed to detect NULL node ID passed in.");
+} END_TEST /* test_libutil_node_matches_id_2 */
+
+
+/*
+ * bionet_node_matches_id(node, id)
+ */
+START_TEST (test_libutil_node_matches_id_3) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    fail_unless (0 == bionet_node_matches_id(NULL, "node"),
+		 "Failed to detect NULL node passed in.");
+} END_TEST /* test_libutil_node_matches_id_3 */
+
+
+/*
  * bionet_node_get_stream_by_id(node, id)
  */
 START_TEST (test_libutil_node_get_stream_by_id_4) {
@@ -1135,13 +1195,17 @@ void libutil_node_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_node_get_stream_by_id_3);
     tcase_add_test(tc, test_libutil_node_get_stream_by_id_4);
 
-
     /* bionet_node_free() */
     tcase_add_test(tc, test_libutil_node_free_0);
     tcase_add_test(tc, test_libutil_node_free_1);
     tcase_add_test(tc, test_libutil_node_free_2);
     tcase_add_test(tc, test_libutil_node_free_3);
 
+    /* bionet_node_matches_id() */
+    tcase_add_test(tc, test_libutil_node_matches_id_0);
+    tcase_add_test(tc, test_libutil_node_matches_id_1);
+    tcase_add_test(tc, test_libutil_node_matches_id_2);
+    tcase_add_test(tc, test_libutil_node_matches_id_3);
 
     return;
 } /* libutil_node_tests_suite() */
