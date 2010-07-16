@@ -323,11 +323,11 @@ START_TEST (test_libutil_node_get_num_resources_2) {
     bionet_node_t * node = bionet_node_new(hab, "node");
     fail_if (NULL == node, "Failed to create a node.\n");
 
-    fail_if (bionet_node_add_resource(node, NULL), 
-	     "Failed to add resource to node.\n");
+    fail_unless (bionet_node_add_resource(node, NULL), 
+		 "Failed to detect NULL resource being added to node.\n");
 
     fail_unless(0 == bionet_node_get_num_resources(node), 
-		"Failed get correct number of nodes after 1 failed to be added.\n");
+		"Failed get correct number of nodes after NULL node was added .\n");
 } END_TEST /* test_libutil_node_get_num_resources_2 */
 
 
