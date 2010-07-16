@@ -4,8 +4,8 @@
 // NNC07CB47C.
 
 
-#ifndef CHECK_LIBUTIL_RESOURCE_SET_H
-#define CHECK_LIBUTIL_RESOURCE_SET_H
+#ifndef CHECK_LIBUTIL_RESOURCE_TESTS_H
+#define CHECK_LIBUTIL_RESOURCE_TESTS_H
 
 
 
@@ -17,10 +17,10 @@
 #include <check.h>
 
 
-void libutil_resource_set_suite(Suite *s);
+void libutil_resource_tests_suite(Suite *s);
 
 
 
 
-#endif  //  CHECK_LIBUTIL_RESOURCE_SET_H
+#endif  //  CHECK_LIBUTIL_RESOURCE_TESTS_H
 

@@ -13,7 +13,7 @@ check_PROGRAMS = check-libutil
 nodist_check_libutil_SOURCES = \
 	../check-common.c \
 	check-libutil.c \
-	check-libutil-resource-set.c \
+	check-libutil-resource-tests.c \
 	check-libutil-hab-tests.c \
 	check-libutil-node-tests.c \
 	check-libutil-split-hab-name.c \
