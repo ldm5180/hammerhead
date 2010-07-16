@@ -454,6 +454,120 @@ START_TEST (test_libutil_node_get_resource_by_index_4) {
 } END_TEST /* test_libutil_node_get_resource_by_index_4 */
 
 
+/*
+ * bionet_node_get_resource_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_resource_by_id_0) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_resource_t * resource = bionet_resource_new(node, 
+						       BIONET_RESOURCE_DATA_TYPE_BINARY, 
+						       BIONET_RESOURCE_FLAVOR_SENSOR, 
+						       "resource");
+    fail_if (NULL == resource, "Failed to create resource.\n");
+
+    fail_if (bionet_node_add_resource(node, resource), 
+	     "Failed to add resource to node.\n");
+
+    bionet_resource_t * fetched_resource = bionet_node_get_resource_by_id(node, "resource");
+    fail_unless(fetched_resource == resource, 
+		"Failed to get the resource added.\n");
+} END_TEST /* test_libutil_node_get_resource_by_id_0 */
+
+
+/*
+ * bionet_node_get_resource_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_resource_by_id_1) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_resource_t * resource = bionet_resource_new(node, 
+						       BIONET_RESOURCE_DATA_TYPE_BINARY, 
+						       BIONET_RESOURCE_FLAVOR_SENSOR, 
+						       "resource");
+    fail_if (NULL == resource, "Failed to create resource.\n");
+
+    fail_if (bionet_node_add_resource(node, resource), 
+	     "Failed to add resource to node.\n");
+
+    bionet_resource_t * fetched_resource = bionet_node_get_resource_by_id(node, "resource1");
+    fail_unless(fetched_resource == NULL, 
+		"Failed to get a NULL resource for an index which doesn't exist.\n");
+} END_TEST /* test_libutil_node_get_resource_by_id_1 */
+
+
+/*
+ * bionet_node_get_resource_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_resource_by_id_2) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_resource_t * fetched_resource = bionet_node_get_resource_by_id(node, "resource");
+    fail_unless(fetched_resource == NULL, 
+		"Failed to get a NULL resource when no resources were added.\n");
+} END_TEST /* test_libutil_node_get_resource_by_id_2 */
+
+
+/*
+ * bionet_node_get_resource_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_resource_by_id_3) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_resource_t * resource1 = bionet_resource_new(node, 
+						       BIONET_RESOURCE_DATA_TYPE_BINARY, 
+						       BIONET_RESOURCE_FLAVOR_SENSOR, 
+						       "resource1");
+    fail_if (NULL == resource1, "Failed to create resource.\n");
+
+    fail_if (bionet_node_add_resource(node, resource1), 
+	     "Failed to add resource to node.\n");
+
+    bionet_resource_t * resource2 = bionet_resource_new(node, 
+						       BIONET_RESOURCE_DATA_TYPE_BINARY, 
+						       BIONET_RESOURCE_FLAVOR_SENSOR, 
+						       "resource2");
+    fail_if (NULL == resource2, "Failed to create resource.\n");
+
+    fail_if (bionet_node_add_resource(node, resource2), 
+	     "Failed to add resource to node.\n");
+
+    bionet_resource_t * fetched_resource = bionet_node_get_resource_by_id(node, "resource1");
+    fail_unless(fetched_resource == resource1, 
+		"Failed to get the first resource added.\n");
+
+    fetched_resource = bionet_node_get_resource_by_id(node, "resource2");
+    fail_unless(fetched_resource == resource2, 
+		"Failed to get the second resource added.\n");
+} END_TEST /* test_libutil_node_get_resource_by_index_3 */
+
+
+/*
+ * bionet_node_get_resource_by_id(node, id)
+ */
+START_TEST (test_libutil_node_get_resource_by_id_4) {
+    bionet_resource_t * fetched_resource = bionet_node_get_resource_by_id(NULL, "resource");
+    fail_unless(fetched_resource == NULL, 
+		"Failed to detect NULL node passed in.\n");
+} END_TEST /* test_libutil_node_get_resource_by_index_4 */
+
+
 void libutil_node_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet Node");
@@ -498,6 +612,14 @@ void libutil_node_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_node_get_resource_by_index_2);
     tcase_add_test(tc, test_libutil_node_get_resource_by_index_3);
     tcase_add_test(tc, test_libutil_node_get_resource_by_index_4);
+
+    /* bionet_node_get_resource_by_id() */
+    tcase_add_test(tc, test_libutil_node_get_resource_by_id_0);
+    tcase_add_test(tc, test_libutil_node_get_resource_by_id_1);
+    tcase_add_test(tc, test_libutil_node_get_resource_by_id_2);
+    tcase_add_test(tc, test_libutil_node_get_resource_by_id_3);
+    tcase_add_test(tc, test_libutil_node_get_resource_by_id_4);
+
 
     return;
 } /* libutil_node_tests_suite() */
