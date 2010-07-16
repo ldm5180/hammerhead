@@ -65,10 +65,6 @@ rm -rf $RPM_BUILD_ROOT
    /usr/local/include/*.h
 
 %files ignore
-/usr/local/lib/python2.6/site-packages/_bonjour.a
-/usr/local/lib/python2.6/site-packages/_bonjour.la
-/usr/local/lib/python2.6/site-packages/_bonjour.so
-/usr/local/lib/python2.6/site-packages/_bonjour.so.*
 /usr/local/lib/python2.6/site-packages/*.pyc
 /usr/local/lib/python2.6/site-packages/*.pyo
 
