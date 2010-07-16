@@ -244,6 +244,37 @@ START_TEST (test_libutil_node_add_resource_3) {
 
 
 /*
+ * bionet_node_add_resource(node, resource)
+ */
+START_TEST (test_libutil_node_add_resource_4) {
+    bionet_hab_t * hab = bionet_hab_new("type", "id");
+    fail_if (NULL == hab, "Couldn't even make a hab. How can I possibly move on to nodes?\n");
+
+    bionet_node_t * node = bionet_node_new(hab, "node");
+    fail_if (NULL == node, "Failed to create a node.\n");
+
+    bionet_resource_t * resource = bionet_resource_new(node, 
+						       BIONET_RESOURCE_DATA_TYPE_BINARY, 
+						       BIONET_RESOURCE_FLAVOR_SENSOR, 
+						       "resource");
+    fail_if (NULL == resource, "Failed to create resource.\n");
+
+    fail_if (bionet_node_add_resource(node, resource), 
+	     "Failed to add resource to node.\n");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_SENSOR, 
+				   "resource");
+    
+    fail_if (NULL == resource, "Failed to create resource.\n");
+
+    fail_unless (bionet_node_add_resource(node, resource), 
+		 "Failed to detect a resource with a duplicate ID is being added.\n");
+} END_TEST /* test_libutil_node_add_resource_4 */
+
+
+/*
  * bionet_node_get_resource_by_index(node, index)
  */
 START_TEST (test_libutil_node_get_resource_by_index_0) {
@@ -387,6 +418,7 @@ void libutil_node_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_node_add_resource_1);
     tcase_add_test(tc, test_libutil_node_add_resource_2);
     tcase_add_test(tc, test_libutil_node_add_resource_3);
+    tcase_add_test(tc, test_libutil_node_add_resource_4);
 
     /* bionet_node_get_resource_by_index() */
     tcase_add_test(tc, test_libutil_node_get_resource_by_index_0);
