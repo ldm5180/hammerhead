@@ -44,11 +44,8 @@ if (0 > bionet_fd):
 sensorhistories = sensorhistory.SensorHistories()
 print sensorhistories
 
+addresses = {}
 intervals = {}
-newamps = 0
-newwatts = 0
-TotalWattHour=0
-numbersamples = 0
 cal_ampdata = {}
 
 def add_node(hab, xb_address_16):
@@ -97,7 +94,7 @@ def add_node(hab, xb_address_16):
 
 
 def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorhistory):
-    global newamps, newwatts, cal_ampdata, numbersamples
+    global newamps, newwatts, cal_ampdata, addresses
 
     if (options.debug != None):
         logger.debug("Debug - ampdata: "+str(ampdata))
@@ -157,52 +154,46 @@ def calculations(voltagedata, ampdata, xb_analog_samples, xb_address_16, sensorh
     for i in range(len(wattdata)):
         wattdata[i] = voltagedata[i] * ampdata[i]
 
+    new_calculations = addresses[xb_address_16]
+
     # sum up the current drawn over one 1/60hz cycle
-    avgamp = 0
+    new_calculations["avgamp"] = 0
     # 16.6 samples per second, one cycle = ~17 samples
     num_samples = 17
     for i in range(num_samples):
-        avgamp += abs(ampdata[i])
-    avgamp /= num_samples
+        new_calculations["avgamp"] += abs(ampdata[i])
+    new_calculations["avgamp"] /= num_samples
 
     # sum up power drawn over one 1/60hz cycle
-    avgwatt = 0
+    new_calculations["avgwatt"] = 0
     for i in range(num_samples):
-        avgwatt += abs(wattdata[i])
-    avgwatt /= num_samples
+        new_calculations["avgwatt"] += abs(wattdata[i])
+    new_calculations["avgwatt"] /= num_samples
     # Print out our most recent measurements
-    logger.info(str(xb_address_16)+"Current draw, in amperes: "+str(avgamp))
-    logger.info("Watt draw, in VA: "+str(avgwatt))
-    if (avgamp > 13):
+    logger.info(str(xb_address_16)+"Current draw, in amperes: "+str(new_calculations["avgamp"]))
+    logger.info("Watt draw, in VA: "+str(new_calculations["avgwatt"]))
+    if (new_calculations["avgamp"] > 13):
 	logger.critical("Reporting bad data")
     
     # add up the delta-watthr used since last reading
     # Figure out how many watt hours were used since last reading
     elapsedseconds = time.time() - sensorhistory.lasttime
-    dwatthr = (avgwatt * elapsedseconds) / (60.0 * 60.0)  # 60 seconds in 60 minutes = 1 hr
+    new_calculations["WattHr"] = (new_calculations["avgwatt"] * elapsedseconds) / (60.0 * 60.0)  # 60 seconds in 60 minutes = 1 hr
     sensorhistory.lasttime = time.time()
-    logger.info("Wh used in last "+str(elapsedseconds)+" seconds: "+str(dwatthr))
-    sensorhistory.addwatthr(dwatthr)
+    logger.info("Wh used in last "+str(elapsedseconds)+" seconds: "+str(new_calculations["WattHr"]))
+    sensorhistory.addwatthr(new_calculations["WattHr"])
     
-    global TotalWattHour
-    TotalWattHour += dwatthr
+    new_calculations["TotalWattHr"] += new_calculations["WattHr"]
 
-    newamps += avgamp
-    newwatts += avgwatt
-
-    numbersamples = numbersamples + 1
-
-    measurements = {}
-    measurements["Amps"] = newamps
-    measurements["Watts"] = newwatts
-    measurements["WattHr"] = dwatthr
-    measurements["TotalWattHr"] = TotalWattHour
-    measurements["NumberSamples"] = numbersamples
-    return measurements
+    new_calculations["newamps"] += new_calculations["avgamp"]
+    new_calculations["newwatts"] += new_calculations["avgwatt"]
+    
+    new_calculations["NumberSamples"] += 1
+    return new_calculations
 
 # the 'main loop' runs once a second or so
 def update_graph(idleevent):
-    global avgwattdataidx, sensorhistories, DEBUG, intervals, newamps, newwatts, numbersamples
+    global avgwattdataidx, sensorhistories, DEBUG, intervals, addresses
     packet = xbee.find_packet(ser)
     hab_read()
     if not packet:
@@ -229,6 +220,7 @@ def update_graph(idleevent):
 	hab_report_lost_node(str(xb.address_16))
 	bionet_node_free(node)
         intervals[xb.address_16] = 0
+	del addresses[xb.address_16]
 	sensorhistories.remove(xb.address_16)
 	return
 
@@ -236,9 +228,14 @@ def update_graph(idleevent):
     if sensorhistory == None:
 #        print "A new KaW %d appeared, isDead: %s" % (xb.address_16, str(isDead))
 #        print "Got a packet: %s, makes an xb: %s, address: %d, xb.analog_samples: %s" % (packet.encode("hex"), repr(xb), xb.address_16, xb.analog_samples)
-
+	new_calculations = {}
         node = add_node(hab, xb.address_16)
         sensorhistory = sensorhistories.find(xb.address_16)
+	new_calculations["TotalWattHr"] = 0
+	new_calculations["newamps"] = 0
+	new_calculations["newwatts"] = 0
+	new_calculations["NumberSamples"] = 0
+	addresses[xb.address_16] = new_calculations
 
     # we'll only store n-1 samples since the first one is usually messed up
     voltagedata = [-1] * (len(xb.analog_samples) - 1)
@@ -257,12 +254,12 @@ def update_graph(idleevent):
         print xb.address_16
 
 
-    measurements = calculations(voltagedata, ampdata, xb.analog_samples, xb.address_16, sensorhistory)
+    new_calculations = calculations(voltagedata, ampdata, xb.analog_samples, xb.address_16, sensorhistory)
 
     if (int(options.interval) < intervals[xb.address_16]):
         
-        newamps = measurements["Amps"]/measurements["NumberSamples"]
-        newwatts = measurements["Watts"]/measurements["NumberSamples"]
+        new_calculations["newamps"] = new_calculations["newamps"]/new_calculations["NumberSamples"]
+        new_calculations["newwatts"] = new_calculations["newwatts"]/new_calculations["NumberSamples"]
 
         node = add_node(hab, xb.address_16)
 
@@ -270,30 +267,31 @@ def update_graph(idleevent):
         if (resource == None):
             logger.error("Error no such resource - Amps")
         else:
-            bionet_resource_set_float(resource, newamps, None)
+            bionet_resource_set_float(resource, new_calculations["newamps"], None)
 
         resource = bionet_node_get_resource_by_id(node, "Watts")
         if (resource == None):
             logger.error("Error no such resource - Watts")
         else:
-            bionet_resource_set_float(resource, newwatts, None)
+            bionet_resource_set_float(resource, new_calculations["newwatts"], None)
 
         resource = bionet_node_get_resource_by_id(node, "WHour")
         if (resource == None):
             logger.error("Error no such resource - WHour")
         else:
-            bionet_resource_set_float(resource, measurements["WattHr"], None)
+            bionet_resource_set_float(resource, new_calculations["WattHr"], None)
 
         resource = bionet_node_get_resource_by_id(node, "TotalWHour")
         if (resource == None):
             logger.error("Error no such resource - TotalWHour")
         else:
-            bionet_resource_set_float(resource, measurements["TotalWattHr"], None)
+            bionet_resource_set_float(resource, new_calculations["TotalWattHr"], None)
         hab_report_datapoints (node)
-        newwatts = 0
-        newamps = 0
+        new_calculations["newwatts"] = 0
+        new_calculations["newamps"] = 0
+	new_calculations["WattHr"] = 0
         intervals[xb.address_16] = 0
-        numbersamples = 0
+        new_calculations["NumberSamples"] = 0
 
 while True:
     update_graph(None)
