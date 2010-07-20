@@ -13,9 +13,9 @@ def f(x):
             
 warn = [
     {
-    'resource': "Kill-A-Watt.dogfood.1:Watts", 
+    'resource': "Kill-A-Watt.ilana-desktop.2:Watts", 
     'compare': lambda x: f(x) > 2,
-    'command': "./teapotmail -s teapot-mouseroom@colorado.edu -r teapot@bioserve.colorado.edu \"Teapot is now ready\""
+    'command': "./examples/teapotmail -s teapot-mouseroom@bioserve.colorado.edu -r teapot@bioserve.colorado.edu \"Teapot is now ready. Come get a cup of tea, while it's still hot!\""
     }
 ]
 
