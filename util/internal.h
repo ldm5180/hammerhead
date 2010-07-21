@@ -94,6 +94,23 @@ typedef union {
     char *string_v; /**< NULL-terminated array of characters */
 } bionet_datapoint_value_t;
 
+typedef union {
+    int binary_v; /**< 0 or 1, TRUE or FALSE */
+
+    uint8_t  uint8_v; /**< 8-bit unsigned integer */
+    int8_t   int8_v; /**< 8-bit signed integer */
+
+    uint16_t uint16_v; /**< 16-bit unsigned integer */
+    int16_t  int16_v; /**< 16-bit signed integer */
+
+    uint32_t uint32_v; /**< 32-bit unsigned integer */
+    int32_t  int32_v; /**< 32-bit signed integer */
+
+    float float_v; /**< float */
+    double double_v; /**< double */
+
+    int string_v; /**< return value of strncmp() */
+} bionet_delta_value_t;
 
 // 
 // This holds a resource.  'flavor', 'id', and 'data_type' are all used by
@@ -114,6 +131,10 @@ struct bionet_resource_opaque_t {
 
     const void *user_data;
 
+    bionet_delta_t * delta;
+
+    struct timeval epsilon;
+
     int persist;
 };
 
@@ -128,6 +149,10 @@ struct bionet_datapoint_opaque_t {
     struct timeval timestamp;
 
     int dirty;  // 1 if the datapoint has new information that hasnt been reported to Bionet, 0 if the datapoint has nothing new
+};
+
+struct bionet_delta_opaque_t {
+    bionet_delta_value_t content;
 };
 
 /**
@@ -172,6 +197,14 @@ int bionet_parse_topic_params(
  */
 int bionet_param_to_timeval(GHashTable * params, const char * key, struct timeval * tv);
 
+
+int bionet_value_check_delta_epsilon(const bionet_value_t * original_val, 
+				     const bionet_value_t * new_val, 
+				     const bionet_delta_t * delta, 
+				     bionet_resource_data_type_t data_type,
+				     const struct timeval * original_tv,
+				     const struct timeval * new_tv,
+				     const struct timeval * epsilon);
 #endif /* INTERNAL_H */
 
 // Emacs cruft

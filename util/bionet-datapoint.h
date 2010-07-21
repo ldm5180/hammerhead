@@ -223,7 +223,7 @@ int bionet_timeval_compare(const struct timeval * tva, const struct timeval * tv
  * @note return = tva - tvb
  */
 BIONET_UTIL_API_DECL
-struct timeval bionet_timeval_subtract(struct timeval * tva, struct timeval *tvb);
+struct timeval bionet_timeval_subtract(const struct timeval * tva, const struct timeval *tvb);
 
 
 #endif /* __BIONET_DATAPOINT_H */

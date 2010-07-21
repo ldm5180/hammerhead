@@ -459,7 +459,7 @@ int bionet_value_set_str(bionet_value_t *value,
  * @note content is undefined if a failure occurred.
  */
 BIONET_UTIL_API_DECL
-int bionet_value_get_binary(bionet_value_t *value,
+int bionet_value_get_binary(const bionet_value_t *value,
 			    int * content);
 
 
@@ -475,7 +475,7 @@ int bionet_value_get_binary(bionet_value_t *value,
  * @note content is undefined if a failure occurred.
  */
 BIONET_UTIL_API_DECL
-int bionet_value_get_uint8(bionet_value_t *value,
+int bionet_value_get_uint8(const bionet_value_t *value,
 			   uint8_t * content);
 
 
@@ -491,7 +491,7 @@ int bionet_value_get_uint8(bionet_value_t *value,
  * @note content is undefined if a failure occurred.
  */
 BIONET_UTIL_API_DECL
-int bionet_value_get_int8(bionet_value_t *value,
+int bionet_value_get_int8(const bionet_value_t *value,
 			  int8_t * content);
 
 
@@ -507,7 +507,7 @@ int bionet_value_get_int8(bionet_value_t *value,
  * @note content is undefined if a failure occurred.
  */
 BIONET_UTIL_API_DECL
-int bionet_value_get_uint16(bionet_value_t *value,
+int bionet_value_get_uint16(const bionet_value_t *value,
 			    uint16_t * content);
 
 
@@ -523,7 +523,7 @@ int bionet_value_get_uint16(bionet_value_t *value,
  * @note content is undefined if a failure occurred.
  */
 BIONET_UTIL_API_DECL
-int bionet_value_get_int16(bionet_value_t *value,
+int bionet_value_get_int16(const bionet_value_t *value,
 			   int16_t * content);
 
 
@@ -539,7 +539,7 @@ int bionet_value_get_int16(bionet_value_t *value,
  * @note content is undefined if a failure occurred.
  */
 BIONET_UTIL_API_DECL
-int bionet_value_get_uint32(bionet_value_t *value,
+int bionet_value_get_uint32(const bionet_value_t *value,
 			    uint32_t * content);
 
 
@@ -555,7 +555,7 @@ int bionet_value_get_uint32(bionet_value_t *value,
  * @note content is undefined if a failure occurred.
  */
 BIONET_UTIL_API_DECL
-int bionet_value_get_int32(bionet_value_t *value,
+int bionet_value_get_int32(const bionet_value_t *value,
 			   int32_t * content);
 
 
@@ -571,7 +571,7 @@ int bionet_value_get_int32(bionet_value_t *value,
  * @note content is undefined if a failure occurred.
  */
 BIONET_UTIL_API_DECL
-int bionet_value_get_float(bionet_value_t *value,
+int bionet_value_get_float(const bionet_value_t *value,
 			   float * content);
 
 
@@ -587,7 +587,7 @@ int bionet_value_get_float(bionet_value_t *value,
  * @note content is undefined if a failure occurred.
  */
 BIONET_UTIL_API_DECL
-int bionet_value_get_double(bionet_value_t *value,
+int bionet_value_get_double(const bionet_value_t *value,
 			    double * content);
 
 
@@ -603,7 +603,7 @@ int bionet_value_get_double(bionet_value_t *value,
  * @note content is undefined if a failure occurred.
  */
 BIONET_UTIL_API_DECL
-int bionet_value_get_str(bionet_value_t *value,
+int bionet_value_get_str(const bionet_value_t *value,
 			 char ** content);
 
 

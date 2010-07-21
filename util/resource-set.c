@@ -34,6 +34,22 @@ int bionet_resource_set(
         return -1;
     }
 
+    if (bionet_resource_get_num_datapoints(resource) > 0) {
+	if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(BIONET_RESOURCE_GET_DATAPOINT(resource)),
+						  content,
+						  bionet_resource_get_delta(resource),
+						  bionet_resource_get_data_type(resource),
+						  bionet_datapoint_get_timestamp(BIONET_RESOURCE_GET_DATAPOINT(resource)),
+						  timestamp,
+						  bionet_resource_get_epsilon(resource))) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		  "bionet_resource_set(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		  bionet_value_to_str(content),
+		  bionet_resource_get_name(resource));
+	    return 0;
+	}	    
+    }
+
     value = bionet_value_dup(resource, content);
     if (value == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_set(): error duplicating content");
@@ -91,6 +107,22 @@ int bionet_resource_set_binary(bionet_resource_t *resource,
 	    return -1;
 	}
 
+	if (bionet_resource_get_num_datapoints(resource) > 0) {
+	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
+						      value,
+						      bionet_resource_get_delta(resource),
+						      bionet_resource_get_data_type(resource),
+						      bionet_datapoint_get_timestamp(d),
+						      timestamp,
+						      bionet_resource_get_epsilon(resource))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "bionet_resource_set_binary(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		      bionet_value_to_str(value),
+		      bionet_resource_get_name(resource));
+		return 0;
+	    }	    
+	}
+
 	bionet_value_set_binary(value, content);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
@@ -133,6 +165,22 @@ int bionet_resource_set_uint8(bionet_resource_t *resource,
 	if (NULL == value)
 	{
 	    return -1;
+	}
+
+	if (bionet_resource_get_num_datapoints(resource) > 0) {
+	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
+						      value,
+						      bionet_resource_get_delta(resource),
+						      bionet_resource_get_data_type(resource),
+						      bionet_datapoint_get_timestamp(d),
+						      timestamp,
+						      bionet_resource_get_epsilon(resource))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "bionet_resource_set_uint8(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		      bionet_value_to_str(value),
+		      bionet_resource_get_name(resource));
+		return 0;
+	    }	    
 	}
 
 	bionet_value_set_uint8(value, content);
@@ -179,6 +227,22 @@ int bionet_resource_set_int8(bionet_resource_t *resource,
 	    return -1;
 	}
 
+	if (bionet_resource_get_num_datapoints(resource) > 0) {
+	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
+						      value,
+						      bionet_resource_get_delta(resource),
+						      bionet_resource_get_data_type(resource),
+						      bionet_datapoint_get_timestamp(d),
+						      timestamp,
+						      bionet_resource_get_epsilon(resource))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "bionet_resource_set_int8(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		      bionet_value_to_str(value),
+		      bionet_resource_get_name(resource));
+		return 0;
+	    }	    
+	}
+
 	bionet_value_set_int8(value, content);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
@@ -221,6 +285,22 @@ int bionet_resource_set_uint16(bionet_resource_t *resource,
 	if (NULL == value)
 	{
 	    return -1;
+	}
+
+	if (bionet_resource_get_num_datapoints(resource) > 0) {
+	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
+						      value,
+						      bionet_resource_get_delta(resource),
+						      bionet_resource_get_data_type(resource),
+						      bionet_datapoint_get_timestamp(d),
+						      timestamp,
+						      bionet_resource_get_epsilon(resource))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "bionet_resource_set_uint16(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		      bionet_value_to_str(value),
+		      bionet_resource_get_name(resource));
+		return 0;
+	    }	    
 	}
 
 	bionet_value_set_uint16(value, content);
@@ -267,6 +347,22 @@ int bionet_resource_set_int16(bionet_resource_t *resource,
 	    return -1;
 	}
 
+	if (bionet_resource_get_num_datapoints(resource) > 0) {
+	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
+						      value,
+						      bionet_resource_get_delta(resource),
+						      bionet_resource_get_data_type(resource),
+						      bionet_datapoint_get_timestamp(d),
+						      timestamp,
+						      bionet_resource_get_epsilon(resource))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "bionet_resource_set_int16(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		      bionet_value_to_str(value),
+		      bionet_resource_get_name(resource));
+		return 0;
+	    }	    
+	}
+
 	bionet_value_set_int16(value, content);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
@@ -309,6 +405,22 @@ int bionet_resource_set_uint32(bionet_resource_t *resource,
 	if (NULL == value)
 	{
 	    return -1;
+	}
+
+	if (bionet_resource_get_num_datapoints(resource) > 0) {
+	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
+						      value,
+						      bionet_resource_get_delta(resource),
+						      bionet_resource_get_data_type(resource),
+						      bionet_datapoint_get_timestamp(d),
+						      timestamp,
+						      bionet_resource_get_epsilon(resource))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "bionet_resource_set_uint32(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		      bionet_value_to_str(value),
+		      bionet_resource_get_name(resource));
+		return 0;
+	    }	    
 	}
 
 	bionet_value_set_uint32(value, content);
@@ -355,6 +467,22 @@ int bionet_resource_set_int32(bionet_resource_t *resource,
 	    return -1;
 	}
 
+	if (bionet_resource_get_num_datapoints(resource) > 0) {
+	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
+						      value,
+						      bionet_resource_get_delta(resource),
+						      bionet_resource_get_data_type(resource),
+						      bionet_datapoint_get_timestamp(d),
+						      timestamp,
+						      bionet_resource_get_epsilon(resource))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "bionet_resource_set_int32(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		      bionet_value_to_str(value),
+		      bionet_resource_get_name(resource));
+		return 0;
+	    }	    
+	}
+
 	bionet_value_set_int32(value, content);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
@@ -397,6 +525,22 @@ int bionet_resource_set_float(bionet_resource_t *resource,
 	if (NULL == value)
 	{
 	    return -1;
+	}
+
+	if (bionet_resource_get_num_datapoints(resource) > 0) {
+	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
+						      value,
+						      bionet_resource_get_delta(resource),
+						      bionet_resource_get_data_type(resource),
+						      bionet_datapoint_get_timestamp(d),
+						      timestamp,
+						      bionet_resource_get_epsilon(resource))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "bionet_resource_set_float(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		      bionet_value_to_str(value),
+		      bionet_resource_get_name(resource));
+		return 0;
+	    }	    
 	}
 
 	bionet_value_set_float(value, content);
@@ -443,6 +587,22 @@ int bionet_resource_set_double(bionet_resource_t *resource,
 	    return -1;
 	}
 
+	if (bionet_resource_get_num_datapoints(resource) > 0) {
+	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
+						      value,
+						      bionet_resource_get_delta(resource),
+						      bionet_resource_get_data_type(resource),
+						      bionet_datapoint_get_timestamp(d),
+						      timestamp,
+						      bionet_resource_get_epsilon(resource))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "bionet_resource_set_double(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		      bionet_value_to_str(value),
+		      bionet_resource_get_name(resource));
+		return 0;
+	    }	    
+	}
+
 	bionet_value_set_double(value, content);
 	bionet_datapoint_set_timestamp(d, timestamp);
     }
@@ -485,6 +645,22 @@ int bionet_resource_set_str(bionet_resource_t *resource,
 	if (NULL == value)
 	{
 	    return -1;
+	}
+
+	if (bionet_resource_get_num_datapoints(resource) > 0) {
+	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
+						      value,
+						      bionet_resource_get_delta(resource),
+						      bionet_resource_get_data_type(resource),
+						      bionet_datapoint_get_timestamp(d),
+						      timestamp,
+						      bionet_resource_get_epsilon(resource))) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "bionet_resource_set_str(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
+		      bionet_value_to_str(value),
+		      bionet_resource_get_name(resource));
+		return 0;
+	    }	    
 	}
 
 	bionet_value_set_str(value, content);
