@@ -38,7 +38,7 @@ int arduino_connect(char *conn)
     cfsetispeed(&my_termios, B9600);
     cfsetospeed(&my_termios, B9600);
 
-    tcsetattr(fd, TCSADRAIN, &my_termios);
+    tcsetattr(fd, TCSAFLUSH, &my_termios);
 
     return fd;
 }

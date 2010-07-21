@@ -30,13 +30,14 @@ int proxr_connect(char *conn)
     }
 
     tcgetattr(fd, &my_termios);
-    tcflush(fd, TCIFLUSH);
+    tcflush(fd, TCIOFLUSH);
 
     my_termios.c_cflag |= B115200 | CREAD | CLOCAL | CS8 | HUPCL;
+    my_termios.c_oflag &= ~OPOST;
     cfsetispeed(&my_termios, B115200);
     cfsetospeed(&my_termios, B115200);
 
-    tcsetattr(fd, TCSADRAIN, &my_termios);
+    tcsetattr(fd, TCSAFLUSH, &my_termios);
 
     return fd;
 }
