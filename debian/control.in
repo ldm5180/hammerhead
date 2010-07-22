@@ -43,7 +43,7 @@ Description: A network-transparent pub/sub system for information exchange
 Package: bionet2-bdmplot
 Section: net
 Architecture: any
-Depends: ${shlibs:Depends}, ${python:Depends}, python-matplotlib
+Depends: ${shlibs:Depends}, ${python:Depends}, python-matplotlib, httpd-cgi
 Description: A network-transparent pub/sub system for information exchange
  This package contains a BDM Client named bdmplot, which helps display
  information from the BDM on web pages.
