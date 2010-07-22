@@ -17,7 +17,7 @@ SUBDIRS += py-libbionet twisted plot
 endif
 
 if ENABLE_CLIENTS
-SUBDIRS += realtime-watcher stream commander get
+SUBDIRS += realtime-watcher stream commander get cgba-sim
 
 if ENABLE_QT4
 SUBDIRS += monitor stream-manager
