@@ -6,6 +6,7 @@
 
 function subst () {
     sed                                            \
+        -e "s|@RECOMMENDS_ION@|$RECOMMENDS_ION|g"  \
         -e "s|@ION_BUILD_DEP@|$ION_BUILD_DEP|g"  \
         -e "s|@ALSA_BUILD_DEP@|$ALSA_BUILD_DEP|g"  \
         -e "s|@ALSA_HAB@|$ALSA_HAB|g"              \
@@ -57,6 +58,7 @@ while true ; do
     case "$1" in
         --with-ion)
             echo "build-depending on ion"
+            RECOMMENDS_ION="ion,"
             ION_BUILD_DEP="ion-dev, "
             BPSTATS2_HAB="usr/bin/bpstats2-hab"
             BP_COMMANDER="usr/bin/bionet-bp-commander"
