@@ -9,6 +9,9 @@ function subst () {
         -e "s|@ION_BUILD_DEP@|$ION_BUILD_DEP|g"  \
         -e "s|@ALSA_BUILD_DEP@|$ALSA_BUILD_DEP|g"  \
         -e "s|@ALSA_HAB@|$ALSA_HAB|g"              \
+        -e "s|@BPSTATS2_HAB@|$BPSTATS2_HAB|g"  \
+        -e "s|@BP_COMMANDER@|$BP_COMMANDER|g"  \
+        -e "s|@BP_COMMAND_PROXY@|$BP_COMMAND_PROXY|g"  \
         $*
 }
 
@@ -55,6 +58,9 @@ while true ; do
         --with-ion)
             echo "build-depending on ion"
             ION_BUILD_DEP="ion-dev, "
+            BPSTATS2_HAB="usr/bin/bpstats2-hab"
+            BP_COMMANDER="usr/bin/bionet-bp-commander"
+            BP_COMMAND_PROXY="usr/bin/bionet-bp-command-proxy"
             shift 1
             ;;
         -h|--help) usage 0 ;;
@@ -85,5 +91,6 @@ fi
 
 
 subst control.in > control
+subst bionet2.install.in > bionet2.install
 subst bionet2-streams.install.in > bionet2-streams.install
 
