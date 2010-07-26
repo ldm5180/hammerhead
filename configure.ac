@@ -684,6 +684,7 @@ AC_CONFIG_FILES([Makefile
                  hab/mon/Makefile
                  hab/commandable/Makefile
                  hab/proxr/Makefile
+                 hab/arduino/Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile

@@ -10,7 +10,7 @@
 
 #include "sim-hab.h"
 
-#define HAB_TYPE "cgba-sim"
+#define HAB_TYPE "proxr"
 
 bionet_hab_t *hab;
 
@@ -18,19 +18,16 @@ int main(int argc, char* argv[])
 {
     int bionet_fd;
     int proxr_fd;
-    int arduino_fd;
     int i;
 
     char *hab_type = HAB_TYPE;
     char *hab_id = NULL;
     char *proxr_loc = NULL;
-    char *arduino_loc = NULL;
 
 //    GMainLoop *main_loop;
 
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
-    signal(SIGIO, SIG_IGN);
 
 
     while(1)
@@ -42,11 +39,10 @@ int main(int argc, char* argv[])
             {"version", 0, 0, 'v'},
             {"id", 1, 0, 'i'},
             {"proxr", 1, 0, 'p'},
-            {"arduino", 1, 0, 'a'},
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "?hva:p:i:", long_options, &i);
+        c = getopt_long(argc, argv, "?hvp:i:", long_options, &i);
         if(c == -1)
         {
             break;
@@ -71,16 +67,12 @@ int main(int argc, char* argv[])
                 proxr_loc = optarg;
                 break;
 
-            case 'a':
-                arduino_loc = optarg;
-                break;
-
             default:
                 break;
         }
     }
 
-    if(proxr_loc == NULL || arduino_loc == NULL)
+    if(proxr_loc == NULL)
     {
         usage();
         return 0;
@@ -109,22 +101,38 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    arduino_fd = arduino_connect(arduino_loc);
-    if(arduino_fd < 0)
-    {
-        g_warning("could not connect to arduino device, exiting");
-        return 1;
-    }
-
     // add node
-    add_node(hab, "sim");
-    
+    add_node(hab, "potentiometers");
+
+    // initialize all the pot's to zero
     set_all_potentiometers(0);
-    arduino_write(1);
 
     while(1)
     {
-        poll_arduino(bionet_fd);
+	fd_set fds;
+	int n;
+	struct timeval timeout;
+
+	timeout.tv_sec = 10;
+	timeout.tv_usec = 0;
+
+	FD_ZERO(&fds);
+	FD_SET(bionet_fd, &fds);
+	
+	n = select(bionet_fd+1, &fds, NULL, NULL, &timeout);
+
+	if(n < 0)
+	    printf("select failed\n");
+	else if(n == 0)
+	   //timeout printf("TIMEOUT\n");
+	else
+	{
+	    if(FD_ISSET(bionet_fd, &fds))
+	    {
+		hab_read_with_timeout(NULL);
+	    }
+	}
+	
     }
 
    /* main_loop = g_main_loop_new(NULL, TRUE);

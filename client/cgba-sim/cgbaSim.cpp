@@ -99,14 +99,23 @@ void cgbaSim::bionetSetup()
     }
 
     //convert QString to char* for bionet_subscribe
-    QString habFull = "cgba-sim.";
-    habFull += habId;
-    QByteArray ba = habFull.toLatin1();
+    QString proxr = "proxr.";
+    proxr += habId;
+    QByteArray ba = proxr.toLatin1();
     char *id = ba.data();
-
+    //subscribe to proxr
     bionet_subscribe_hab_list_by_name(id);
     bionet_subscribe_node_list_by_name(strcat(id, ".*"));
     bionet_subscribe_datapoints_by_name(strcat(id, ":*"));
+    //subscribe to arduino
+    QString arduino = "arduino.";
+    arduino += habId;
+    QByteArray ba1 = arduino.toLatin1();
+    char *id1 = ba1.data();
+
+    bionet_subscribe_hab_list_by_name(id1);
+    bionet_subscribe_node_list_by_name(strcat(id1, ".*"));
+    bionet_subscribe_datapoints_by_name(strcat(id1, ":*"));
 
     connect(liveIO, SIGNAL(newNode(bionet_node_t*,void*)), this, SLOT(setNode(bionet_node_t*)));
     connect(liveIO, SIGNAL(datapointUpdate(bionet_datapoint_t*,void*)), this,  SLOT(setDO(bionet_datapoint_t*)));
@@ -115,12 +124,14 @@ void cgbaSim::bionetSetup()
 
 void cgbaSim::setNode(bionet_node_t *node)
 {
-    for(int i=0; i<16; i++)
+    int n = bionet_node_get_num_resources(node);
+    if(n == 16)
     {
-        dial[i]->setResource(node);
+        for(int i=0; i<16; i++)
+        {
+            dial[i]->setResource(node);
+        }
     }
-    // disconnect so new nodes won't cause the dials to switch what they control
-    disconnect(liveIO, SIGNAL(newHab(bionet_hab_t*,void*)), this, SLOT(setNode(bionet_node_t*)));
 }
 
 void cgbaSim::setDO(bionet_datapoint_t *data)
