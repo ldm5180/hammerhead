@@ -26,6 +26,7 @@ GMainLoop *bdm_main_loop = NULL;
 #define DB_NAME "bdm.db"
 
 gchar * database_file = NULL;
+int database_file_set = 0;
 
 void * libbdm_cal_handle = NULL;
 bionet_bdm_t * this_bdm = NULL;
@@ -400,6 +401,7 @@ int main(int argc, char *argv[]) {
 
 	case 'f':
 	    database_file = optarg;
+	    database_file_set = 1;
 	    break;
 
 	case 'h':
@@ -552,7 +554,8 @@ int main(int argc, char *argv[]) {
     GKeyFileFlags flags;
     GError *error = NULL;
     gsize length;
-    
+    int no_config_file = 0;
+
     /* read the DMM ini file */
     keyfile = g_key_file_new ();
     flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;
@@ -560,18 +563,22 @@ int main(int argc, char *argv[]) {
     /* Load the GKeyFile from keyfile.conf or return. */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Loading configuration from keyfile %s", bdm_config_file);
     if (!g_key_file_load_from_file (keyfile, bdm_config_file, flags, &error)) {
-	g_log (BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "%s", error->message);
-	return 1;
+	g_log (BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "%s %s", error->message, bdm_config_file);
+	no_config_file = 1;
     }
     
-    if (database_file) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Using %s specified by --file instead the default.", database_file);
+    if (database_file_set) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Using %s specified by --file instead the default.", database_file);
     } else {	    
-	database_file = g_key_file_get_string(keyfile, "BDM", "DBFILE", &error);
-	if (NULL == database_file) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to get DB File name from the file %s. %s", 
-		  bdm_config_file, error->message);
-	    return 1;
+	if (0 == no_config_file) {
+	    database_file = g_key_file_get_string(keyfile, "BDM", "DBFILE", &error);
+	    if (NULL == database_file) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Failed to get DB File name from the file %s. %s", 
+		      bdm_config_file, error->message);
+	    }
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Using database file %s", DB_NAME);
+	    database_file = DB_NAME;
 	}
     }
 
