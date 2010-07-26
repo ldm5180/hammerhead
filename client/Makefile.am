@@ -20,7 +20,7 @@ if ENABLE_CLIENTS
 SUBDIRS += realtime-watcher stream commander get
 
 if ENABLE_QT4
-SUBDIRS += monitor stream-manager cgba-sim
+SUBDIRS += monitor stream-manager proxr-arduino
 endif
 
 if ENABLE_BDM

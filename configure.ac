@@ -650,7 +650,7 @@ AC_CONFIG_FILES([Makefile
                  libbionet/Makefile
                  libbdm/Makefile
                  client/Makefile
-                 client/cgba-sim/Makefile
+                 client/proxr-arduino/Makefile
 		 client/commander/Makefile
 		 client/get/Makefile
                  client/libbionet-qt4/Makefile
