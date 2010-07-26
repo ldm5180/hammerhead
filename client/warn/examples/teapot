@@ -1,4 +1,9 @@
 
+# To use teapot client: 
+# Amend 'resource' as appropriate. Choose Kill-A-Watt ID.
+# Change send/receive e-mail addresses as desired ('command', -s and -r)
+# Use bionet warn client with the command ./bionet-warn -c "examples/teapot"
+
 on = 0
 
 def f(x):

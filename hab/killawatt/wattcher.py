@@ -289,7 +289,7 @@ def update_graph(idleevent):
         hab_report_datapoints (node)
         new_calculations["newwatts"] = 0
         new_calculations["newamps"] = 0
-	new_calculations["WattHr"] = 0
+    	new_calculations["WattHr"] = 0
         intervals[xb.address_16] = 0
         new_calculations["NumberSamples"] = 0
 
