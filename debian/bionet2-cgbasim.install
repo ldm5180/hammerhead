@@ -1,2 +1,3 @@
 usr/bin/cgba-sim-client
-usr/bin/cgba-sim-hab
+usr/bin/cgba-sim-proxr-hab
+usr/bin/cgba-sim-arduino-hab
