@@ -18,13 +18,13 @@ extern uint32_t num_bionet_datapoints;
 //
 
 int hab_list_index = 0;
-char *hab_list_name_patterns[MAX_SUBSCRIPTIONS];
+gchar ** hab_list_name_patterns = NULL;
 
 int node_list_index = 0;
-char *node_list_name_patterns[MAX_SUBSCRIPTIONS];
+gchar ** node_list_name_patterns = NULL;
 
 int resource_index = 0;
-char *resource_name_patterns[MAX_SUBSCRIPTIONS];
+gchar ** resource_name_patterns = NULL;
 
 char * security_dir = NULL;
 int require_security = 0;

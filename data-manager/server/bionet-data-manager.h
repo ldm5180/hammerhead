@@ -314,13 +314,13 @@ int bdm_report_new_hab(
 
 #define MAX_SUBSCRIPTIONS 100
 extern int hab_list_index;
-extern char *hab_list_name_patterns[MAX_SUBSCRIPTIONS];
+extern gchar ** hab_list_name_patterns;
 
 extern int node_list_index;
-extern char *node_list_name_patterns[MAX_SUBSCRIPTIONS];
+extern gchar ** node_list_name_patterns;
 
 extern int resource_index;
-extern char *resource_name_patterns[MAX_SUBSCRIPTIONS];
+extern gchar ** resource_name_patterns;
 
 extern char * security_dir;
 extern int require_security;

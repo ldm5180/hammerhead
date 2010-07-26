@@ -1,4 +1,5 @@
 etc/init.d/bionet-data-manager
+etc/bdm.ini
 
 # bdm
 usr/share/bionet2/schema
