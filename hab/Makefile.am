@@ -15,7 +15,7 @@ endif
 SUBDIRS += info
 
 if ENABLE_HABS
-SUBDIRS += random csa-cp syshealth pal-650 streamy commandable proxr
+SUBDIRS += random csa-cp syshealth pal-650 streamy commandable proxr arduino
 
 if ENABLE_ALSA
 SUBDIRS += alsa
