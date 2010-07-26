@@ -21,7 +21,7 @@
 
 
 EXE="/usr/bin/bionet-data-manager"
-BDM_DB_FILE="/var/lib/bionet-data-manager/bdm.db"
+BDM_CONFIG_FILE="/etc/bdm.ini"
 PIDFILE="/var/run/bionet-data-manager.pid"
 
 
@@ -31,7 +31,7 @@ test -x $EXE || exit 0
 
 
 function bdm_start () {
-    start-stop-daemon --start --exec $EXE --background --make-pidfile --pidfile $PIDFILE -- --file $BDM_DB_FILE
+    start-stop-daemon --start --exec $EXE --background --make-pidfile --pidfile $PIDFILE -- --bdm-config-file $BDM_CONFIG_FILE
 }
 
 function bdm_stop () {

@@ -25,7 +25,7 @@ GMainLoop *bdm_main_loop = NULL;
 
 #define DB_NAME "bdm.db"
 
-char * database_file = DB_NAME;
+gchar * database_file = NULL;
 
 void * libbdm_cal_handle = NULL;
 bionet_bdm_t * this_bdm = NULL;
@@ -54,6 +54,9 @@ extern struct timeval db_accum;
 
 bionet_hab_t * bdm_hab = NULL;
 int ignore_self = 1;
+
+char * bdm_config_file = NULL;
+
 
 void usage(void) {
     printf(
@@ -94,6 +97,9 @@ void usage(void) {
 	"                                                and  --dtn-sync-receiver\n"
 #endif
 	" -v,--version                                   Show the version number\n"
+	" -x,--bdm-config-file <FILE>                    BDM configuration file to specify location\n"
+	"                                                of database file and subscriptions. Precludes\n"
+	"                                                --file, --hab, --node and --resources settings.\n"
 	"\n"
 	"Security can only be required when a security directory has been specified.\n"
 	"  bionet-data-manager [--security-dir <dir> [--require-security]]\n",
@@ -282,7 +288,7 @@ int main(int argc, char *argv[]) {
 
     bionet_log_context_t lc = {
         destination: BIONET_LOG_TO_STDOUT,
-        log_limit: G_LOG_LEVEL_INFO
+        log_limit: G_LOG_LEVEL_DEBUG
     };
 
     bionet_log_use_default_handler(&lc);
@@ -320,10 +326,11 @@ int main(int argc, char *argv[]) {
 	    {"bdm-stats",          1, 0, 'b'},
 	    {"keep-stats",         0, 0, 'k'},
 	    {"no-resources",       0, 0, 'u'},
+	    {"bdm-config-file",    1, 0, 'x'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c= getopt_long(argc, argv, "?vedbkt::f:h:I:i:n:p:r:s:c:o:", long_options, &i);
+	c= getopt_long(argc, argv, "?vedbkt::f:h:I:i:n:p:r:s:c:o:x:", long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -397,6 +404,11 @@ int main(int argc, char *argv[]) {
 
 	case 'h':
 	    if (hab_list_index < MAX_SUBSCRIPTIONS) {
+		hab_list_name_patterns = realloc(hab_list_name_patterns, sizeof(gchar *) * (hab_list_index + 1));
+		if (NULL == hab_list_name_patterns) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate hab_list_name_patterns");
+		    return 1;
+		}
 		hab_list_name_patterns[hab_list_index] = optarg;
 		hab_list_index++;
 	    } else {
@@ -436,6 +448,11 @@ int main(int argc, char *argv[]) {
 
 	case 'n':
 	    if (node_list_index < MAX_SUBSCRIPTIONS) {
+		node_list_name_patterns = realloc(node_list_name_patterns, sizeof(gchar *) * (node_list_index + 1));
+		if (NULL == node_list_name_patterns) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate node_list_name_patterns");
+		    return 1;
+		}
 		node_list_name_patterns[node_list_index] = optarg;
 		node_list_index++;
 	    } else {
@@ -456,6 +473,11 @@ int main(int argc, char *argv[]) {
 
 	case 'r':
 	    if (resource_index < MAX_SUBSCRIPTIONS) {
+		resource_name_patterns = realloc(resource_name_patterns, sizeof(gchar *) * (resource_index + 1));
+		if (NULL == resource_name_patterns) {
+		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate resource_name_patterns");
+		    return 1;
+		}
 		resource_name_patterns[resource_index] = optarg;
 		resource_index++;
 	    } else {
@@ -513,6 +535,10 @@ int main(int argc, char *argv[]) {
 	    print_bionet_version(stdout);
 	    return 0;
 	    
+	case 'x':
+	    bdm_config_file = optarg;
+	    break;
+
 	default:
             printf("Unknown option\n");
 	    usage();
@@ -520,6 +546,86 @@ int main(int argc, char *argv[]) {
 	    break;
 	}
     } //while(1)
+
+
+    if (bdm_config_file) {
+	if (database_file) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "BDM Config File and Database File specified.");
+	    usage();
+	    return 1;
+	}
+
+	if (resource_index || node_list_index || hab_list_index) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "BDM Config File and HAB/Node/Resource subscriptions specified.");
+	    usage();
+	    return 1;
+	}
+
+	GKeyFile *keyfile;
+	GKeyFileFlags flags;
+	GError *error = NULL;
+	gsize length;
+	
+	/* read the DMM ini file */
+	keyfile = g_key_file_new ();
+	flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;
+	
+	/* Load the GKeyFile from keyfile.conf or return. */
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Loading configuration from keyfile.");
+	if (!g_key_file_load_from_file (keyfile, bdm_config_file, flags, &error)) {
+	    g_log (BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "%s", error->message);
+	    return 1;
+	}
+
+	database_file = g_key_file_get_string(keyfile, "BDM", "DBFILE", &error);
+	if (NULL == database_file) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Failed to get DB File name from the file %s. %s", 
+		  bdm_config_file, error->message);
+	}
+
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting HAB subscriptions from %s", bdm_config_file);
+	hab_list_name_patterns = g_key_file_get_string_list(keyfile, "BDM", "HABS", &length, NULL);
+	if ((NULL == hab_list_name_patterns) || (0 >= length)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		  "Failed to get HAB subscriptions from the file %s.", bdm_config_file);
+	} else {
+	    hab_list_index = (int)length;
+	    for (length = 0; length < hab_list_index; length++) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "Subscribing to HABs matching: %s", hab_list_name_patterns[length]);
+	    }
+	}
+
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Node subscriptions from %s", bdm_config_file);
+	node_list_name_patterns = g_key_file_get_string_list(keyfile, "BDM", "NODES", &length, NULL);
+	if ((NULL == node_list_name_patterns) || (0 >= length)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		  "Failed to get Node subscriptions from the file %s.", bdm_config_file);
+	} else {
+	    node_list_index = (int)length;
+	    for (length = 0; length < node_list_index; length++) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "Subscribing to Nodes matching: %s", node_list_name_patterns[length]);
+	    }
+	}
+
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Resource subscriptions from %s", bdm_config_file);
+	resource_name_patterns = g_key_file_get_string_list(keyfile, "BDM", "RESOURCES", &length, NULL);
+	if ((NULL == resource_name_patterns) || (0 >= length)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		  "Failed to get Resource subscriptions from the file %s.", bdm_config_file);
+	} else {
+	    resource_index = (int)length;
+	    for (length = 0; length < resource_index; length++) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+		      "Subscribing to Resources matching: %s", resource_name_patterns[length]);
+	    }
+	}
+    }
+
+    if (NULL == database_file) {
+	database_file = DB_NAME;
+    }
 
     if(optind < argc){
         printf("Extra options\n");
