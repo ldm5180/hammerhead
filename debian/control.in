@@ -81,13 +81,21 @@ Conflicts: bionet2 (<= 2.5.0+bzr1602)
 Description: A network-transparent pub/sub system for information exchange
  This package contains some HABs and Clients that deal with "Streams".
 
-Package: bionet2-cgbasim
+Package: bionet2-proxr
 Section: net
 Architecture: any
 Depends: ${shlibs:Depends}
 Conflicts: bionet2 (<= 2.5.0+bzr1602)
-Description: This package contains the cgba sim hab and the cgba sim client.
- Move dials to control voltages and observe digital outs of the cgba. 
+Description: This package contains the proxr hab. It controls sixteen
+ potentiometers.
+
+Package: bionet2-arduino
+Section: net
+Architecture: any
+Depends: ${shlibs:Depends}
+Conflicts: bionet2 (<= 2.5.0+bzr1602)
+Description: This package contains the arduino hab. It reads two analog
+ inputs and eight digital inputs.
 
 Package: libbionet2
 Section: devel
