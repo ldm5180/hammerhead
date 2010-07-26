@@ -1,7 +1,13 @@
 #!/bin/bash
 
+BDM_DB_FILE=/var/lib/bionet-data-manager/bdm.db
+
 if [ "$1" = "purge" ]; then
     update-rc.d bionet-data-manager remove
+
+    rm -f $BDM_DB_FILE
+
+    update-alternatives --remove bdm.ini /etc/bdm.ini.default
 fi
 
 

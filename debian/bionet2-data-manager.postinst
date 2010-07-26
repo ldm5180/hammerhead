@@ -12,5 +12,8 @@ if [ "$1" = "configure" ]; then
 
     # 25 is hardy-speak for "after syslog and avahi and the mta, but before exproc"
     update-rc.d bionet-data-manager start 25 S .
+
+    # make the bdm.ini file use debian alternatives
+    update-alternatives --install /etc/bdm.ini bdm.ini /etc/bdm.ini.default       50
 fi
 
