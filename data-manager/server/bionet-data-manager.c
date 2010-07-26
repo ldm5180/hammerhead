@@ -554,7 +554,8 @@ int main(int argc, char *argv[]) {
     GKeyFileFlags flags;
     GError *error = NULL;
     gsize length;
-    
+    int no_config_file = 0;
+
     /* read the DMM ini file */
     keyfile = g_key_file_new ();
     flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;
@@ -563,16 +564,21 @@ int main(int argc, char *argv[]) {
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Loading configuration from keyfile %s", bdm_config_file);
     if (!g_key_file_load_from_file (keyfile, bdm_config_file, flags, &error)) {
 	g_log (BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "%s %s", error->message, bdm_config_file);
+	no_config_file = 1;
     }
     
     if (database_file_set) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Using %s specified by --file instead the default.", database_file);
     } else {	    
-	database_file = g_key_file_get_string(keyfile, "BDM", "DBFILE", &error);
-	if (NULL == database_file) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to get DB File name from the file %s. %s", 
-		  bdm_config_file, error->message);
-	    return 1;
+	if (0 == no_config_file) {
+	    database_file = g_key_file_get_string(keyfile, "BDM", "DBFILE", &error);
+	    if (NULL == database_file) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Failed to get DB File name from the file %s. %s", 
+		      bdm_config_file, error->message);
+	    }
+	} else {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Using database file %s", DB_NAME);
+	    database_file = DB_NAME;
 	}
     }
 
