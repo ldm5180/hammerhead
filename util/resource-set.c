@@ -35,13 +35,13 @@ int bionet_resource_set(
     }
 
     if (bionet_resource_get_num_datapoints(resource) > 0) {
-	if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(BIONET_RESOURCE_GET_DATAPOINT(resource)),
-						  content,
-						  bionet_resource_get_delta(resource),
-						  bionet_resource_get_data_type(resource),
-						  bionet_datapoint_get_timestamp(BIONET_RESOURCE_GET_DATAPOINT(resource)),
-						  timestamp,
-						  bionet_resource_get_epsilon(resource))) {
+	if (0 == bionet_value_check_delta_epsilon_by_value(bionet_datapoint_get_value(BIONET_RESOURCE_GET_DATAPOINT(resource)),
+							   content,
+							   bionet_resource_get_delta(resource),
+							   bionet_resource_get_data_type(resource),
+							   bionet_datapoint_get_timestamp(BIONET_RESOURCE_GET_DATAPOINT(resource)),
+							   timestamp,
+							   bionet_resource_get_epsilon(resource))) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 		  "bionet_resource_set(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
 		  bionet_value_to_str(content),
@@ -109,7 +109,7 @@ int bionet_resource_set_binary(bionet_resource_t *resource,
 
 	if (bionet_resource_get_num_datapoints(resource) > 0) {
 	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
-						      value,
+						      (void *)&content,
 						      bionet_resource_get_delta(resource),
 						      bionet_resource_get_data_type(resource),
 						      bionet_datapoint_get_timestamp(d),
@@ -169,7 +169,7 @@ int bionet_resource_set_uint8(bionet_resource_t *resource,
 
 	if (bionet_resource_get_num_datapoints(resource) > 0) {
 	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
-						      value,
+						      (void *)&content,
 						      bionet_resource_get_delta(resource),
 						      bionet_resource_get_data_type(resource),
 						      bionet_datapoint_get_timestamp(d),
@@ -229,7 +229,7 @@ int bionet_resource_set_int8(bionet_resource_t *resource,
 
 	if (bionet_resource_get_num_datapoints(resource) > 0) {
 	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
-						      value,
+						      (void *)&content,
 						      bionet_resource_get_delta(resource),
 						      bionet_resource_get_data_type(resource),
 						      bionet_datapoint_get_timestamp(d),
@@ -289,7 +289,7 @@ int bionet_resource_set_uint16(bionet_resource_t *resource,
 
 	if (bionet_resource_get_num_datapoints(resource) > 0) {
 	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
-						      value,
+						      (void *)&content,
 						      bionet_resource_get_delta(resource),
 						      bionet_resource_get_data_type(resource),
 						      bionet_datapoint_get_timestamp(d),
@@ -349,7 +349,7 @@ int bionet_resource_set_int16(bionet_resource_t *resource,
 
 	if (bionet_resource_get_num_datapoints(resource) > 0) {
 	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
-						      value,
+						      (void *)&content,
 						      bionet_resource_get_delta(resource),
 						      bionet_resource_get_data_type(resource),
 						      bionet_datapoint_get_timestamp(d),
@@ -409,7 +409,7 @@ int bionet_resource_set_uint32(bionet_resource_t *resource,
 
 	if (bionet_resource_get_num_datapoints(resource) > 0) {
 	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
-						      value,
+						      (void *)&content,
 						      bionet_resource_get_delta(resource),
 						      bionet_resource_get_data_type(resource),
 						      bionet_datapoint_get_timestamp(d),
@@ -469,7 +469,7 @@ int bionet_resource_set_int32(bionet_resource_t *resource,
 
 	if (bionet_resource_get_num_datapoints(resource) > 0) {
 	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
-						      value,
+						      (void *)&content,
 						      bionet_resource_get_delta(resource),
 						      bionet_resource_get_data_type(resource),
 						      bionet_datapoint_get_timestamp(d),
@@ -529,7 +529,7 @@ int bionet_resource_set_float(bionet_resource_t *resource,
 
 	if (bionet_resource_get_num_datapoints(resource) > 0) {
 	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
-						      value,
+						      (void *)&content,
 						      bionet_resource_get_delta(resource),
 						      bionet_resource_get_data_type(resource),
 						      bionet_datapoint_get_timestamp(d),
@@ -589,7 +589,7 @@ int bionet_resource_set_double(bionet_resource_t *resource,
 
 	if (bionet_resource_get_num_datapoints(resource) > 0) {
 	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
-						      value,
+						      (void *)&content,
 						      bionet_resource_get_delta(resource),
 						      bionet_resource_get_data_type(resource),
 						      bionet_datapoint_get_timestamp(d),
@@ -645,22 +645,6 @@ int bionet_resource_set_str(bionet_resource_t *resource,
 	if (NULL == value)
 	{
 	    return -1;
-	}
-
-	if (bionet_resource_get_num_datapoints(resource) > 0) {
-	    if (0 == bionet_value_check_delta_epsilon(bionet_datapoint_get_value(d),
-						      value,
-						      bionet_resource_get_delta(resource),
-						      bionet_resource_get_data_type(resource),
-						      bionet_datapoint_get_timestamp(d),
-						      timestamp,
-						      bionet_resource_get_epsilon(resource))) {
-		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
-		      "bionet_resource_set_str(): New content %s for %s does not pass delta/epsilon filter. Not publishing.",
-		      bionet_value_to_str(value),
-		      bionet_resource_get_name(resource));
-		return 0;
-	    }	    
 	}
 
 	bionet_value_set_str(value, content);

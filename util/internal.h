@@ -199,12 +199,21 @@ int bionet_param_to_timeval(GHashTable * params, const char * key, struct timeva
 
 
 int bionet_value_check_delta_epsilon(const bionet_value_t * original_val, 
-				     const bionet_value_t * new_val, 
+				     const void * content, 
 				     const bionet_delta_t * delta, 
 				     bionet_resource_data_type_t data_type,
 				     const struct timeval * original_tv,
 				     const struct timeval * new_tv,
 				     const struct timeval * epsilon);
+
+int bionet_value_check_delta_epsilon_by_value(const bionet_value_t * original_val, 
+					      const bionet_value_t * new_val, 
+					      const bionet_delta_t * delta, 
+					      bionet_resource_data_type_t data_type,
+					      const struct timeval * original_tv,
+					      const struct timeval * new_tv,
+					      const struct timeval * epsilon);
+
 #endif /* INTERNAL_H */
 
 // Emacs cruft
