@@ -124,7 +124,9 @@ int main(int argc, char* argv[])
 	if(n < 0)
 	    printf("select failed\n");
 	else if(n == 0)
+	{	
 	   //timeout printf("TIMEOUT\n");
+	}
 	else
 	{
 	    if(FD_ISSET(bionet_fd, &fds))
