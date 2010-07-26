@@ -13,14 +13,14 @@
 #include "bionet-util.h"
 
 
-const struct timeval * bionet_resource_get_epsilon(const bionet_resource_t *resource) {
+bionet_epsilon_t * bionet_resource_get_epsilon(const bionet_resource_t *resource) {
     if (resource == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_get_epsilon(): NULL Resource passed in");
         errno = EINVAL;
         return NULL;
     }
 
-    return &resource->epsilon;
+    return resource->epsilon;
 }
 
 

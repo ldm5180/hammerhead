@@ -46,10 +46,10 @@ libbionet_util_la_SOURCES =    \
     bdm-free.c                 \
     bdm-matches.c              \
     bdm-remove-hab.c           \
-    delta-free.c               \
-    delta-get.c                \
-    delta-new.c                \
-    delta-to-string.c          \
+    epsilon-free.c               \
+    epsilon-get.c                \
+    epsilon-new.c                \
+    epsilon-to-string.c          \
     hab-add-bdm.c              \
     hab-add-node.c             \
     hab-remove-bdm.c           \
@@ -83,10 +83,10 @@ libbionet_util_la_SOURCES =    \
     resource-persist.c         \
     resource-make-clean.c      \
     resource-get-datapoint.c   \
-    resource-get-delta.c       \
-    resource-get-epsilon.c     \
+    resource-get-epsilon.c       \
+    resource-get-delta.c     \
     resource-set.c             \
-    resource-set-delta-epsilon.c \
+    resource-set-epsilon-delta.c \
     resource-name.c            \
     resource-user-data.c       \
     datapoint-new.c            \
@@ -109,7 +109,7 @@ libbionet_util_la_SOURCES =    \
     stream-user-data.c                  \
     stream-node.c                       \
     stream-hab.c                        \
-    value-check-delta-epsilon.c         \
+    value-check-epsilon-delta.c         \
     value-free.c                        \
     value-get.c                         \
     value-get-resource.c                \

@@ -965,14 +965,14 @@ void *bionet_resource_get_user_data(const bionet_resource_t *resource);
 
 
 /**
- * @brief Get the delta of a Resource
+ * @brief Get the epsilon of a Resource
  * 
  * @param[in] resource The Resource
  *
- * @return The pointer to the delta, or NULL if none has been set.
+ * @return The pointer to the epsilon, or NULL if none has been set.
  */
 BIONET_UTIL_API_DECL
-bionet_delta_t * bionet_resource_get_delta(const bionet_resource_t * resource);
+bionet_epsilon_t * bionet_resource_get_epsilon(const bionet_resource_t * resource);
 
 
 /**
@@ -983,29 +983,29 @@ bionet_delta_t * bionet_resource_get_delta(const bionet_resource_t * resource);
  * @return The epsilon timeval.
  */
 BIONET_UTIL_API_DECL
-const struct timeval * bionet_resource_get_epsilon(const bionet_resource_t * resource);
+const struct timeval * bionet_resource_get_delta(const bionet_resource_t * resource);
 
 
 /**
- * @brief Set the delta and epsilon thresholds before resource gets published.
+ * @brief Set the epsilon and epsilon thresholds before resource gets published.
  *
  * By default resources get published any time they get set. This modifies
  * that behavior so that it only gets published once the change in the value
- * is greater than or equal to (>=) the delta or the time since the 
+ * is greater than or equal to (>=) the epsilon or the time since the 
  * last published datapoint timestamp is greater than or equal to (>=)
  * the epsilon.
  *
  * @param[in] resource Bionet resource to set
- * @param[in] delta Difference in value
+ * @param[in] epsilon Difference in value
  * @param[in] epsilon Difference in datapoint timestamp and current time
  *
  * @retval 0 Success.
  * @retval 1 Failure.
  */
 BIONET_UTIL_API_DECL
-int bionet_resource_set_delta_epsilon(bionet_resource_t * resource,
-				      bionet_delta_t * delta,
-				      struct timeval epsilon);
+int bionet_resource_set_epsilon_delta(bionet_resource_t * resource,
+				      bionet_epsilon_t * epsilon,
+				      struct timeval delta);
 
 #ifdef __cplusplus
 }

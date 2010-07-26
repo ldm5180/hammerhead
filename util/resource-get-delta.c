@@ -13,14 +13,14 @@
 #include "bionet-util.h"
 
 
-bionet_delta_t * bionet_resource_get_delta(const bionet_resource_t *resource) {
+const struct timeval * bionet_resource_get_delta(const bionet_resource_t *resource) {
     if (resource == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_get_delta(): NULL Resource passed in");
         errno = EINVAL;
         return NULL;
     }
 
-    return resource->delta;
+    return &resource->delta;
 }
 
 

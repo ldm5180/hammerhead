@@ -15,18 +15,18 @@
 #include "internal.h"
 
 
-void bionet_delta_free(bionet_delta_t *delta)
+void bionet_epsilon_free(bionet_epsilon_t *epsilon)
 {
     /* sanity */
-    if (NULL == delta)
+    if (NULL == epsilon)
     {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-	      "bionet_delta_free(): NULL delta passed in");
+	      "bionet_epsilon_free(): NULL epsilon passed in");
 	errno = EINVAL;
 	return;
     }
     
-    free(delta);
+    free(epsilon);
 
     return;
 }

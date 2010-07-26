@@ -21,7 +21,7 @@ typedef struct bionet_stream_opaque_t    bionet_stream_t;
 typedef struct bionet_resource_opaque_t  bionet_resource_t;
 typedef struct bionet_datapoint_opaque_t bionet_datapoint_t;
 typedef struct bionet_value_opaque_t     bionet_value_t;
-typedef struct bionet_delta_opaque_t     bionet_delta_t;
+typedef struct bionet_epsilon_opaque_t   bionet_epsilon_t;
 
 #include "libbionet-util-decl.h"
 
@@ -32,7 +32,7 @@ typedef struct bionet_delta_opaque_t     bionet_delta_t;
 #include "bionet-resource.h"
 #include "bionet-datapoint.h"
 #include "bionet-value.h"
-#include "bionet-delta.h"
+#include "bionet-epsilon.h"
 #include "bionet-version.h"
 
 /**
