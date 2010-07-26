@@ -97,6 +97,14 @@ Conflicts: bionet2 (<= 2.5.0+bzr1602)
 Description: This package contains the arduino hab. It reads two analog
  inputs and eight digital inputs.
 
+Package: bionet2-proxr-arduino-client
+Section: net
+Architecture: any
+Depends: ${shlibs:Depends}
+Conflicts: bionet2 (<= 2.5.0+bzr1602)
+Description: Controls the proxr-hab potentiometers by moving the dials.
+ Graphically displays the state of the digital inputs from arduino-hab.
+
 Package: libbionet2
 Section: devel
 Architecture: any
