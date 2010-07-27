@@ -26,5 +26,5 @@ s = smtplib.SMTP()
 s.connect(options.smtp)
 
 s.sendmail(me, you, msg.as_string())
-print "I am sending an email"
+#print msg.as_string()
 s.quit()

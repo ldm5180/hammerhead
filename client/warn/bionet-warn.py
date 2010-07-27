@@ -58,6 +58,7 @@ def cb_datapoint(datapoint):
     check = 0;
 
     for item in warn:
+        check = 0
         hab_type,hab_id,resource_name = item['resource'].split('.', 3)
         node_id,resource_id = resource_name.split(':', 2)
 
@@ -67,84 +68,84 @@ def cb_datapoint(datapoint):
             ((resource_id == bionet_resource_get_id(resource)) or (resource_id == "*"))):
             check = 1
 
-    #not found, get outta here
-    if (check == 0):
-        return 0;
+        #not found, get outta here
+        if (check == 0):
+            continue;
 
-    #switch on the type
+        #switch on the type
         #create a new value
         #populate the value
         #run the compare
             #execute the action
         #delete the value
 
-    if (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_BINARY):
-        val = new_binaryp();
-        bionet_value_get_binary(value, val)
-        if (item['compare'](binaryp_value(val))):
-            os.system(item['command'])
-        delete_binaryp(val)
+        if (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_BINARY):
+            val = new_binaryp();
+            bionet_value_get_binary(value, val)
+            if (item['compare'](binaryp_value(val))):
+                os.system(item['command'])
+            delete_binaryp(val)
 
-    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT8):
-        val = new_uint8p();
-        bionet_value_get_uint8(value, val)
-        if (item['compare'](uint8p_value(val))):
-            os.system(item['command'])
-        delete_uint8p(val)
+        elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT8):
+            val = new_uint8p();
+            bionet_value_get_uint8(value, val)
+            if (item['compare'](uint8p_value(val))):
+                os.system(item['command'])
+            delete_uint8p(val)
 
-    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT8):
-        val = new_int8p();
-        bionet_value_get_int8(value, val)
-        if (item['compare'](int8p_value(val))):
-            os.system(item['command'])
-        delete_int8p(val)
+        elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT8):
+            val = new_int8p();
+            bionet_value_get_int8(value, val)
+            if (item['compare'](int8p_value(val))):
+                os.system(item['command'])
+            delete_int8p(val)
 
-    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT16):
-        val = new_uint16p();
-        bionet_value_get_uint16(value, val)
-        if (item['compare'](uint16p_value(val))):
-            os.system(item['command'])
-        delete_uint16p(val)
+        elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT16):
+            val = new_uint16p();
+            bionet_value_get_uint16(value, val)
+            if (item['compare'](uint16p_value(val))):
+                os.system(item['command'])
+            delete_uint16p(val)
 
-    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT16):
-        val = new_int16p();
-        bionet_value_get_int16(value, val)
-        if (item['compare'](int16p_value(val))):
-            os.system(item['command'])
-        delete_int16p(val)
+        elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT16):
+            val = new_int16p();
+            bionet_value_get_int16(value, val)
+            if (item['compare'](int16p_value(val))):
+                os.system(item['command'])
+            delete_int16p(val)
 
-    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT32):
-        val = new_uint32p();
-        bionet_value_get_uint32(value, val)
-        if (item['compare'](uint32p_value(val))):
-            os.system(item['command'])
-        delete_uint32p(val)
+        elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_UINT32):
+            val = new_uint32p();
+            bionet_value_get_uint32(value, val)
+            if (item['compare'](uint32p_value(val))):
+                os.system(item['command'])
+            delete_uint32p(val)
 
-    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT32):
-        val = new_int32p();
-        bionet_value_get_int32(value, val)
-        if (item['compare'](int32p_value(val))):
-            os.system(item['command'])
-        delete_int32p(val)
+        elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_INT32):
+            val = new_int32p();
+            bionet_value_get_int32(value, val)
+            if (item['compare'](int32p_value(val))):
+                os.system(item['command'])
+            delete_int32p(val)
 
-    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_FLOAT):
-        val = new_floatp();
-        bionet_value_get_float(value, val)
-        if (item['compare'](floatp_value(val))):
-            os.system(item['command'])
-        delete_floatp(val)
+        elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_FLOAT):
+            val = new_floatp();
+            bionet_value_get_float(value, val)
+            if (item['compare'](floatp_value(val))):
+                os.system(item['command'])
+            delete_floatp(val)
 
-    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_DOUBLE):
-        val = new_doublep();
-        bionet_value_get_double(value, val)
-        if (item['compare'](doublep_value(val))):
-            os.system(item['command'])
-        delete_doublep(val)
+        elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_DOUBLE):
+            val = new_doublep();
+            bionet_value_get_double(value, val)
+            if (item['compare'](doublep_value(val))):
+                os.system(item['command'])
+            delete_doublep(val)
 
-    elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_STRING):
-        val = bionet_value_get_str(value, val)
-        if (item['compare'](val)):
-            os.system(item['command'])
+        elif (bionet_resource_get_data_type(resource) == BIONET_RESOURCE_DATA_TYPE_STRING):
+            val = bionet_value_get_str(value, val)
+            if (item['compare'](val)):
+                os.system(item['command'])
 
 
 # main
