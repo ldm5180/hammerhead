@@ -13,7 +13,7 @@
 #include "bionet-resource.h"
 #include "bionet-datapoint.h"
 #include "bionet-value.h"
-#include "bionet-delta.h"
+#include "bionet-epsilon.h"
 %}
 
 typedef struct timeval
@@ -31,7 +31,7 @@ typedef struct timeval
 %include "bionet-resource.h"
 %include "bionet-datapoint.h"
 %include "bionet-value.h"
-%include "bionet-delta.h"
+%include "bionet-epsilon.h"
 
 %include "typemaps.i"
 %import "stdint.i"
