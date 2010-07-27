@@ -298,12 +298,282 @@ int main(int argc, char *argv[]) {
     int bdm_port = BDM_PORT;
     int enable_tcp_sync_receiver = 0;
     int enable_dtn_sync_receiver = 0;
+    sync_sender_config_t * sync_config = NULL;
+    char * sync_sender_config_file_name = NULL;
+    long key;
+    int i = 0;
+    int c;
+
+    GKeyFile *keyfile;
+    GKeyFileFlags flags;
+    GError *error = NULL;
+    gsize length;
+    int no_config_file = 0;
+
+    while(1) {
+	static struct option more_long_options[] = {
+	    {"bdm-config-file",    1, 0, 'x'},
+	    {0, 0, 0, 0} //this must be last in the list
+	};
+
+	c= getopt_long(argc, argv, "x:", more_long_options, &i);
+	if ((-1) == c) {
+	    break;
+	}
+
+	switch (c) {
+	case 'x':
+	    bdm_config_file = optarg;
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    /* read the DMM ini file */
+    keyfile = g_key_file_new ();
+    flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;
+    
+    /* Load the GKeyFile from keyfile.conf or return. */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Loading configuration from keyfile %s", bdm_config_file);
+    if (!g_key_file_load_from_file (keyfile, bdm_config_file, flags, &error)) {
+	g_log (BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "%s %s", error->message, bdm_config_file);
+	no_config_file = 1;
+    }
+    g_clear_error(&error);
+
+    /* Database File */
+    if (0 == no_config_file) {
+	database_file = g_key_file_get_string(keyfile, "BDM", "DBFILE", &error);
+	if (NULL == database_file) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Failed to get DB File name from the file %s. %s", 
+		  bdm_config_file, error->message);
+	}
+    } else {
+	database_file = DB_NAME;
+	goto skip;
+    }
+    g_clear_error(&error);
+
+    /* HAB subscriptions */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting HAB subscriptions from %s", bdm_config_file);
+    hab_list_name_patterns = g_key_file_get_string_list(keyfile, "BDM", "HABS", &length, &error);
+    if ((NULL == hab_list_name_patterns) || (0 >= length)) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+	      "Failed to get HAB subscriptions from the file %s.", bdm_config_file);
+    } else {
+	hab_list_index = (int)length;
+    }
+    g_clear_error(&error);
+
+    /* Node subscriptions */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Node subscriptions from %s", bdm_config_file);
+    node_list_name_patterns = g_key_file_get_string_list(keyfile, "BDM", "NODES", &length, &error);
+    if ((NULL == node_list_name_patterns) || (0 >= length)) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+	      "Failed to get Node subscriptions from the file %s.", bdm_config_file);
+    } else {
+	node_list_index = (int)length;
+    }
+    g_clear_error(&error);
+
+    /* Resource subscriptions */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Resource subscriptions from %s", bdm_config_file);
+    resource_name_patterns = g_key_file_get_string_list(keyfile, "BDM", "RESOURCES", &length, &error);
+    if ((NULL == resource_name_patterns) || (0 >= length)) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+	      "Failed to get Resource subscriptions from the file %s.", bdm_config_file);
+    } else {
+	resource_index = (int)length;
+    }
+    g_clear_error(&error);
+    
+    /* BDM ID */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting ID from %s", bdm_config_file);
+    bdm_id = g_key_file_get_string(keyfile, "BDM", "ID", &error);
+    if (NULL == bdm_id) {
+	 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Failed to get BDM ID from the file %s. %s", 
+	       bdm_config_file, error->message);
+    }
+    g_clear_error(&error);
+
+    /* BDM Stats Interval */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting BDM Stats interval from %s", bdm_config_file);
+    bdm_stats = g_key_file_get_integer(keyfile, "BDM", "BdmStats", &error);
+    if (NULL == error) {
+	start_hab = 1;
+    } else {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "BdmStats key not found in %s so not starting the BDM Stats HAB. %s", 
+	      bdm_config_file, error->message);
+    }
+    g_clear_error(&error);
+
+    /* Sync Sender Config File Name */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Sync Sender Config from %s", bdm_config_file);
+    sync_sender_config_file_name = g_key_file_get_string(keyfile, "BDM", "SyncSenderConfig", &error);
+    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "SyncSenderConfig key not found in %s. %s",
+	      bdm_config_file, error->message);
+    } else {
+	sync_config = read_config_file(sync_sender_config_file_name);
+	if (NULL == sync_config) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "Failed to parse config file %s", sync_sender_config_file_name);
+	}
+	sync_config->last_entry_end_seq = -1;
+	sync_config->last_entry_end_seq_metadata = -1;
+	if(sync_config->method == BDM_SYNC_METHOD_ION && !bp_attached){
+#if ENABLE_ION
+	    if (bp_attach() < 0)
+	    {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		      "Can't attach to BP, but DTN syncing requested");
+		return 1;
+	    }
+	    bp_attached++;
+#else
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "Bad config file '%s': BDM Syncronization over DTN was disabled at compile time.", 
+		  sync_sender_config_file_name);
+	    return (1);
+#endif
+	}
+	sync_config_list = g_slist_append(sync_config_list, sync_config);
+    }
+    g_clear_error(&error);
+
+    /* DTN Sync Receiver */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting DTN Sync Receiver from %s", bdm_config_file);
+    enable_dtn_sync_receiver = (int)g_key_file_get_boolean(keyfile, "BDM", "DtnSyncReceiver", &error);
+    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "DtnSyncReceiver key not found in %s. %s",
+	      bdm_config_file, error->message);
+    } else {
+#if ENABLE_ION
+	enable_dtn_sync_receiver = 1;
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+	      "Starting BDM-DTN sync receiver");
+#else
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "BDM Syncronization over DTN was disabled at compile time.");
+	return (1);
+#endif
+    }
+    g_clear_error(&error);
+
+    /* Security Directory*/
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Security Directory from %s", bdm_config_file);
+    security_dir = g_key_file_get_string(keyfile, "BDM", "SecurityDir", &error);
+    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "SecurityDir key not found in %s. %s", 
+	      bdm_config_file, error->message);
+    } 
+    g_clear_error(&error);
+   
+    /* Require Security */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Security Requirements from %s", bdm_config_file);
+    require_security = (int)g_key_file_get_boolean(keyfile, "BDM", "RequireSecurity", &error);
+    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "RequireSecurity key not found in %s. %s", 
+	      bdm_config_file, error->message);
+    }
+    g_clear_error(&error);
+
+    /* ION Key */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting ION Key from %s", bdm_config_file);
+    key = (long)g_key_file_get_integer(keyfile, "BDM", "IonKey", &error);
+    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "IonKey key not found in %s. %s", 
+	      bdm_config_file, error->message);
+    } else {
+#if HAVE_SM_SET_BASEKEY
+	sm_set_basekey(key);
+#else	
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "Setting ION basekey not supported");
+	return (1);
+#endif // HAVE_SM_SET_BASEKEY
+    }
+    g_clear_error(&error);
+
+    /* Keep Stats for BDM HAB too */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Keep Stats from %s", bdm_config_file);
+    int keep_stats = (int)g_key_file_get_boolean(keyfile, "BDM", "KeepStats", &error);
+    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "KeepStats key not found in %s. %s", 
+	      bdm_config_file, error->message);
+    } else if (keep_stats) {
+	ignore_self = 0;
+    }
+    g_clear_error(&error);
+
+    /* DTN Endpoint ID */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting DTN Endpoint ID from %s", bdm_config_file);
+    dtn_endpoint_id = g_key_file_get_string(keyfile, "BDM", "DtnEndpointId", &error);
+    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "DtnEndpointId key not found in %s. %s", 
+	      bdm_config_file, error->message);
+    } else {
+#if ENABLE_ION
+	//nothing to do
+#else
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "DTN capabilities were disabled at compile time.");
+	return (-1);
+#endif
+    }
+    g_clear_error(&error);
+
+    /* BDM Port */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting BDM Port from %s", bdm_config_file);
+    bdm_port = g_key_file_get_integer(keyfile, "BDM", "BdmPort", &error);
+    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "BdmPort key not found in %s. %s", 
+	      bdm_config_file, error->message);
+    } else {
+	if (bdm_port >= USHRT_MAX) {
+	    g_warning("invalid tcp port specified: '%d'", bdm_port);
+	    bdm_port = BDM_PORT;
+	}
+    }
+    g_clear_error(&error);
+
+    /* Enable TCP Sync Receiver */
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting TCP Sync Receiver from %s", bdm_config_file);
+    enable_tcp_sync_receiver = (int)g_key_file_get_boolean(keyfile, "BDM", "TcpSyncReceiver", &error);
+    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "TcpSyncReceiver key not found in %s. %s", 
+	      bdm_config_file, error->message);
+    }
+    g_clear_error(&error);
+
+    if (enable_tcp_sync_receiver) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting TCP Sync Receiver Port from %s", bdm_config_file);
+	tcp_sync_recv_port = g_key_file_get_integer(keyfile, "BDM", "TcpSyncReceiverPort", &error);
+	if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "BdmPort key not found in %s. %s", 
+		  bdm_config_file, error->message);
+	} else {
+	    if (tcp_sync_recv_port >= USHRT_MAX) {
+		g_warning("invalid tcp port specified: '%d'", tcp_sync_recv_port);
+		tcp_sync_recv_port = BDM_SYNC_PORT;
+	    }
+	}
+    }
+    g_clear_error(&error);
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting No Resources from %s", bdm_config_file);
+    no_resources = (int)g_key_file_get_boolean(keyfile, "BDM", "NoResources", &error);
+    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "NoResources key not found in %s. %s", 
+	      bdm_config_file, error->message);
+    }
+    g_clear_error(&error);
 
     //
     // parse command-line arguments
     //
-    int i = 0;
-    int c;
+skip:
     while(1) {
 	static struct option long_options[] = {
 	    {"help",               0, 0, '?'},
@@ -391,17 +661,11 @@ int main(int argc, char *argv[]) {
 	    break;
 
 	case 'e':
-	    if (security_dir) {
-		require_security++;
-	    } else {
-		usage();
-		return (-1);
-	    }
+	    require_security++;
 	    break;
 
 	case 'f':
 	    database_file = optarg;
-	    database_file_set = 1;
 	    break;
 
 	case 'h':
@@ -427,7 +691,6 @@ int main(int argc, char *argv[]) {
         {
 #if HAVE_SM_SET_BASEKEY
             char * endptr = NULL;
-            long key;
             key = strtoul(optarg, &endptr, 10);
             if(endptr > optarg 
             && endptr[0] == '\0')
@@ -538,7 +801,7 @@ int main(int argc, char *argv[]) {
 	    return 0;
 	    
 	case 'x':
-	    bdm_config_file = optarg;
+	    //skip this time, we already got it
 	    break;
 
 	default:
@@ -549,95 +812,37 @@ int main(int argc, char *argv[]) {
 	}
     } //while(1)
 
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Using database file %s", database_file);
 
-    GKeyFile *keyfile;
-    GKeyFileFlags flags;
-    GError *error = NULL;
-    gsize length;
-    int no_config_file = 0;
-
-    /* read the DMM ini file */
-    keyfile = g_key_file_new ();
-    flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;
-    
-    /* Load the GKeyFile from keyfile.conf or return. */
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Loading configuration from keyfile %s", bdm_config_file);
-    if (!g_key_file_load_from_file (keyfile, bdm_config_file, flags, &error)) {
-	g_log (BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "%s %s", error->message, bdm_config_file);
-	no_config_file = 1;
-    }
-    
-    if (database_file_set) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Using %s specified by --file instead the default.", database_file);
-    } else {	    
-	if (0 == no_config_file) {
-	    database_file = g_key_file_get_string(keyfile, "BDM", "DBFILE", &error);
-	    if (NULL == database_file) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Failed to get DB File name from the file %s. %s", 
-		      bdm_config_file, error->message);
-	    }
-	} else {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "Using database file %s", DB_NAME);
-	    database_file = DB_NAME;
-	}
-    }
-
-    if (hab_list_index) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Using HAB subscriptions passed on the command line");
-    } else {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting HAB subscriptions from %s", bdm_config_file);
-	hab_list_name_patterns = g_key_file_get_string_list(keyfile, "BDM", "HABS", &length, NULL);
-	if ((NULL == hab_list_name_patterns) || (0 >= length)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
-		  "Failed to get HAB subscriptions from the file %s.", bdm_config_file);
-	} else {
-	    hab_list_index = (int)length;
-	}
-    }
+    /* debug print the HABs subscribed to */
     for (length = 0; length < hab_list_index; length++) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 	      "Subscribing to HABs matching: %s", hab_list_name_patterns[length]);
     }
 
-    if (node_list_index) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Using Node subscriptions passed on the command line");
-    } else {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Node subscriptions from %s", bdm_config_file);
-	node_list_name_patterns = g_key_file_get_string_list(keyfile, "BDM", "NODES", &length, NULL);
-	if ((NULL == node_list_name_patterns) || (0 >= length)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
-		  "Failed to get Node subscriptions from the file %s.", bdm_config_file);
-	} else {
-	    node_list_index = (int)length;
-	}
-    }
+    /* debug print the Nodes subscribed to */
     for (length = 0; length < node_list_index; length++) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 	      "Subscribing to Nodes matching: %s", node_list_name_patterns[length]);
     }
 
-    if (resource_index) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Using Resource subscriptions passed on the command line");
-    } else {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Resource subscriptions from %s", bdm_config_file);
-	resource_name_patterns = g_key_file_get_string_list(keyfile, "BDM", "RESOURCES", &length, NULL);
-	if ((NULL == resource_name_patterns) || (0 >= length)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
-		  "Failed to get Resource subscriptions from the file %s.", bdm_config_file);
-	} else {
-	    resource_index = (int)length;
-	}
-    }
+    /* debug print the Resources subscribed to */
     for (length = 0; length < resource_index; length++) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
 	      "Subscribing to Resources matching: %s", resource_name_patterns[length]);
     }
-    
+
 
     if(optind < argc){
         printf("Extra options\n");
         usage();
         return 1;
+    }
+
+    if ((require_security) && (security_dir == NULL)) {
+	usage();
+	g_error("Security required, but no secutiry dir provided.");
+	return 1;
     }
 
     g_thread_init(NULL);
