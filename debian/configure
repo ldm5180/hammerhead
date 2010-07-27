@@ -8,6 +8,7 @@ function subst () {
     sed                                            \
         -e "s|@RECOMMENDS_ION@|$RECOMMENDS_ION|g"  \
         -e "s|@ION_BUILD_DEP@|$ION_BUILD_DEP|g"  \
+        -e "s|@CONFIGURE_WITH_ION@|$CONFIGURE_WITH_ION|g"  \
         -e "s|@ALSA_BUILD_DEP@|$ALSA_BUILD_DEP|g"  \
         -e "s|@ALSA_HAB@|$ALSA_HAB|g"              \
         -e "s|@BPSTATS2_HAB@|$BPSTATS2_HAB|g"  \
@@ -38,6 +39,15 @@ END
 
 
 #
+# defaults
+#
+
+CONFIGURE_WITH_ION="--without-ion"
+
+
+
+
+#
 # parse command-line arguments
 #
 
@@ -60,6 +70,7 @@ while true ; do
             echo "build-depending on ion"
             RECOMMENDS_ION="ion,"
             ION_BUILD_DEP="ion-dev, "
+            CONFIGURE_WITH_ION="--with-ion"
             BPSTATS2_HAB="usr/bin/bpstats2-hab"
             BP_COMMANDER="usr/bin/bionet-bp-commander"
             BP_COMMAND_PROXY="usr/bin/bionet-bp-command-proxy"
@@ -95,4 +106,7 @@ fi
 subst control.in > control
 subst bionet2.install.in > bionet2.install
 subst bionet2-streams.install.in > bionet2-streams.install
+
+subst rules.in > rules
+chmod 755 rules
 
