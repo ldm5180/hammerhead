@@ -21,6 +21,32 @@
 #include "hardware-abstractor.h"
 
 #define BDM_OPTIONS_STRING "?vedbkt::f:h:I:i:n:p:r:s:c:o:x:"
+static struct option long_options[] = {
+    {"help",               0, 0, '?'},
+    {"version",            0, 0, 'v'},
+    {"file",               1, 0, 'f'},
+    {"habs",               1, 0, 'h'},
+    {"hab",                1, 0, 'h'},
+    {"ion-key",            1, 0, 'I'},
+    {"id",                 1, 0, 'i'},
+    {"nodes",              1, 0, 'n'},
+    {"node",               1, 0, 'n'},
+    {"resources",          1, 0, 'r'},
+    {"resource",           1, 0, 'r'},
+    {"require-security",   0, 0, 'e'},
+    {"security-dir",       1, 0, 's'},
+    {"tcp-sync-receiver",  2, 0, 't'},
+    {"sync-sender-config", 1, 0, 'c'},
+    {"port",               1, 0, 'p'},
+    {"dtn-sync-receiver",  0, 0, 'd'},
+    {"dtn-endpoint-id",    1, 0, 'o'},
+    {"bdm-stats",          1, 0, 'b'},
+    {"keep-stats",         0, 0, 'k'},
+    {"no-resources",       0, 0, 'u'},
+    {"bdm-config-file",    1, 0, 'x'},
+    {0, 0, 0, 0} //this must be last in the list
+};
+
 
 GMainLoop *bdm_main_loop = NULL;
 
@@ -319,12 +345,7 @@ int main(int argc, char *argv[]) {
     int no_config_file = 0;
 
     while(1) {
-	static struct option more_long_options[] = {
-	    {"bdm-config-file",    1, 0, 'x'},
-	    {0, 0, 0, 0} //this must be last in the list
-	};
-
-	c= getopt_long(argc, argv, BDM_OPTIONS_STRING, more_long_options, &i);
+	c= getopt_long(argc, argv, BDM_OPTIONS_STRING, long_options, &i);
 	if ((-1) == c) {
 	    break;
 	}
@@ -581,32 +602,6 @@ int main(int argc, char *argv[]) {
 skip:
     i = 0;
     while(1) {
-	static struct option long_options[] = {
-	    {"help",               0, 0, '?'},
-	    {"version",            0, 0, 'v'},
-	    {"file",               1, 0, 'f'},
-	    {"habs",               1, 0, 'h'},
-	    {"hab",                1, 0, 'h'},
-	    {"ion-key",            1, 0, 'I'},
-	    {"id",                 1, 0, 'i'},
-	    {"nodes",              1, 0, 'n'},
-	    {"node",               1, 0, 'n'},
-	    {"resources",          1, 0, 'r'},
-	    {"resource",           1, 0, 'r'},
-	    {"require-security",   0, 0, 'e'},
-	    {"security-dir",       1, 0, 's'},
-	    {"tcp-sync-receiver",  2, 0, 't'},
-	    {"sync-sender-config", 1, 0, 'c'},
-	    {"port",               1, 0, 'p'},
-	    {"dtn-sync-receiver",  0, 0, 'd'},
-	    {"dtn-endpoint-id",    1, 0, 'o'},
-	    {"bdm-stats",          1, 0, 'b'},
-	    {"keep-stats",         0, 0, 'k'},
-	    {"no-resources",       0, 0, 'u'},
-	    {"bdm-config-file",    1, 0, 'x'},
-	    {0, 0, 0, 0} //this must be last in the list
-	};
-
 	c= getopt_long(argc, argv, BDM_OPTIONS_STRING, long_options, &i);
 	if ((-1) == c) {
 	    break;
