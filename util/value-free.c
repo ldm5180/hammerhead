@@ -34,6 +34,8 @@ void bionet_value_free(bionet_value_t *value)
 	free(value->content.string_v);
     }
 
+    free(value->as_string);
+
     free(value);
 
     return;

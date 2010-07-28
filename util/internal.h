@@ -120,6 +120,8 @@ struct bionet_resource_opaque_t {
 struct bionet_value_opaque_t {
     bionet_resource_t * resource;
     bionet_datapoint_value_t content;
+
+    char * as_string;
 };
 
 
