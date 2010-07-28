@@ -41,8 +41,15 @@ int poll_arduino(int bionet_fd)
         
         if(FD_ISSET(arduino_fd, &fds))
         {
-    
-            read(arduino_fd, b, 1);
+	    int r;
+	    r = read(arduino_fd, b, 1);
+	    if (-1 == r) {
+		printf("read from arduino_fd failed: %m\n");
+		return 0;
+	    } else if (0 == r) {
+		printf("0 bytes read from arduino_fd\n");
+		return 0;
+	    }
 
             switch((int)b[0])
             {
