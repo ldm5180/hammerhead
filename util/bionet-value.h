@@ -278,9 +278,27 @@ void bionet_value_free(bionet_value_t *value);
  * @note The returned string becomes the property (and responsibility) of
  *       the caller.  The caller must free the returned string or leak
  *       memory.
+ *
+ * @deprecated Use the new bionet_value_as_str() instead.
  */
 BIONET_UTIL_API_DECL
 char *bionet_value_to_str(const bionet_value_t *value);
+
+
+/**
+ * @brief Renders a Value as an ASCII string.
+ *
+ * @param[in] value The value to create the string from
+ *
+ * @return A dynamically allocated string containing an ASCII
+ *         representation of the Value
+ * @return NULL Failure
+ *
+ * @note The returned string is property of the bionet_value_t
+ * and will be free'd when bionet_value_free() is called.
+ */
+BIONET_UTIL_API_DECL
+char *bionet_value_as_str(bionet_value_t *value);
 
 
 /**

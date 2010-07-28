@@ -35,7 +35,7 @@ BdmStats=60
 #KeepStats=true
 
 # DTN endpoint ID (ex: ipn:1.2)\n"
-#DtnEndpointID=1.2
+#DtnEndpointID=ipn:1.2
 
 # Alternate BDM Client port.
 #BdmPort=11002

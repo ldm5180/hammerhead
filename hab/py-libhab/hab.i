@@ -15,6 +15,8 @@
 #include "bionet-value.h"
 %}
 
+%newobject bionet_value_to_str;
+
 typedef struct timeval
 {
     long int tv_sec;
@@ -34,7 +36,6 @@ typedef struct timeval
 %include "typemaps.i"
 %import "stdint.i"
 %import "inttypes.i"
-
 
 %inline %{
 #define SWIG_RESOURCE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_resource_opaque_t, 1)

@@ -102,12 +102,13 @@ libbionet_util_la_SOURCES =    \
     stream-user-data.c                  \
     stream-node.c                       \
     stream-hab.c                        \
-    value-free.c \
-    value-get.c \
-    value-get-resource.c \
-    value-new.c \
-    value-set.c \
-    value-to-string.c \
+    value-as-string.c                   \
+    value-free.c                        \
+    value-get.c                         \
+    value-get-resource.c                \
+    value-new.c                         \
+    value-set.c                         \
+    value-to-string.c                   \
     version.c
 
 
