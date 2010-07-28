@@ -646,7 +646,7 @@ int main(int argc, char *argv[]) {
 	sync_config->last_entry_end_seq_metadata = -1;
 	if(sync_config->method == BDM_SYNC_METHOD_ION && !bp_attached){
 #if ENABLE_ION
-	    if (bp_attach() < 0)
+            if ((*bdm_bp_funcs.bp_attach)() < 0)
 	    {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		      "Can't attach to BP, but DTN syncing requested");
@@ -709,7 +709,7 @@ int main(int argc, char *argv[]) {
 	      bdm_config_file, error->message);
     } else {
 #if HAVE_SM_SET_BASEKEY
-	sm_set_basekey(key);
+        (*bdm_bp_funcs.sm_set_basekey)(key);
 #else	
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 	      "Setting ION basekey not supported");
