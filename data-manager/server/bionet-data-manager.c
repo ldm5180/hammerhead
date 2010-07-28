@@ -644,15 +644,22 @@ int main(int argc, char *argv[]) {
 	}
 	sync_config->last_entry_end_seq = -1;
 	sync_config->last_entry_end_seq_metadata = -1;
-	if(sync_config->method == BDM_SYNC_METHOD_ION && !bp_attached){
+	if (sync_config->method == BDM_SYNC_METHOD_ION) {
 #if ENABLE_ION
-            if ((*bdm_bp_funcs.bp_attach)() < 0)
-	    {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		      "Can't attach to BP, but DTN syncing requested");
-		return 1;
-	    }
-	    bp_attached++;
+            if (!bp_attached) {
+                if (load_ion() != 0) {
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "DTN syncing requested, but can't load ION libraries, aborting");
+                    return 1;
+                }
+
+                if ((*bdm_bp_funcs.bp_attach)() < 0)
+                {
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                          "Can't attach to BP, but DTN syncing requested");
+                    return 1;
+                }
+                bp_attached++;
+            }
 #else
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Bad config file '%s': BDM Syncronization over DTN was disabled at compile time.", 
@@ -709,6 +716,11 @@ int main(int argc, char *argv[]) {
 	      bdm_config_file, error->message);
     } else {
 #if HAVE_SM_SET_BASEKEY
+        if (load_ion() != 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ION SM basekey supplied, but can't load ION libraries, aborting");
+            return 1;
+        }
+
         (*bdm_bp_funcs.sm_set_basekey)(key);
 #else	
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
