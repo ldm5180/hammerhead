@@ -31,7 +31,7 @@ static void exit_signal_handler(int signal_number) {
         bdm_shutdown_now = 1;
     }
 #if ENABLE_ION
-    bp_interrupt(dtn_thread_data.ion.sap);
+    (*bdm_bp_funcs.bp_interrupt)(dtn_thread_data.ion.sap);
 #endif
     if (sync_sender_main_loop) {
 	g_main_loop_quit(sync_sender_main_loop);

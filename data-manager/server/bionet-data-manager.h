@@ -17,10 +17,47 @@
 #include "bionet-util.h"
 #include "cal-event.h"
 
+
+// Default bundle lifetime in seconds.
+#define BDM_BUNDLE_LIFETIME (300)
+
 #if ENABLE_ION
 #include "zco.h"
 #include "sdr.h"
 #include "bp.h"
+
+typedef struct {
+    void (*sm_set_basekey)(unsigned int key);
+    int (*bp_attach)(void);
+    void (*bp_interrupt)(BpSAP sap);
+    int (*bp_open)(char *eid, BpSAP *ionsapPtr);
+    void (*bp_close)(BpSAP sap);
+    Sdr (*bp_get_sdr)(void);
+    int (*bp_send)(BpSAP sap, int mode, char *destEid, char *reportToEid, int lifespan, int classOfService, BpCustodySwitch custodySwitch, unsigned char srrFlags, int ackRequested, BpExtendedCOS *extendedCOS, Object adu, Object *newBundle);
+    int (*bp_receive)(BpSAP sap, BpDelivery *dlvBuffer, int timeoutSeconds);
+    int (*bp_add_endpoint)(char *eid, char *script);
+    void (*bp_release_delivery)(BpDelivery *dlvBuffer, int releaseAdu);
+
+    Object (*Sdr_malloc)(char *file, int line, Sdr sdr, unsigned long size);
+    void (*sdr_begin_xn)(Sdr sdr);
+    void (*sdr_cancel_xn)(Sdr sdr);
+    int (*sdr_end_xn)(Sdr sdr);
+    void (*Sdr_write)(char *file, int line, Sdr sdr, Address into, char *from, int length);
+
+    Object (*zco_create)(Sdr sdr, ZcoMedium firstExtentSourceMedium, Object firstExtentLocation, unsigned int firstExtentOffset, unsigned int firstExtentLength);
+    int (*zco_append_extent)(Sdr sdr, Object zcoRef, ZcoMedium sourceMedium, Object location, unsigned int offset, unsigned int length);
+    void (*zco_start_receiving)(Sdr sdr, Object zcoRef, ZcoReader *reader);
+    int (*zco_receive_source)(Sdr sdr, ZcoReader *reader, unsigned int length, char *buffer);
+    void (*zco_stop_receiving)(Sdr sdr, ZcoReader *reader);
+
+    void (*writeErrMemo)(char *);
+    void (*writeErrmsgMemos)(void);
+} bdm_bp_funcs_t;
+
+#define bdm_sdr_malloc(sdr, size)            (*bdm_bp_funcs.Sdr_malloc)(__FILE__, __LINE__, sdr, size)
+#define bdm_sdr_write(sdr, into, from, size) (*bdm_bp_funcs.Sdr_write)(__FILE__, __LINE__, sdr, into, from, size)
+
+extern bdm_bp_funcs_t bdm_bp_funcs;
 #endif
 
 
@@ -43,9 +80,6 @@
 
 #define BDM_PORT      (11002)
 #define BDM_SYNC_PORT (11003)
-
-// Default bundle lifetime in seconds.
-#define BDM_BUNDLE_LIFETIME (300)
 
 
 extern void * libbdm_cal_handle;

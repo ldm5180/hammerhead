@@ -4,6 +4,7 @@
 // NNC07CB47C.
 
 
+#include <dlfcn.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,7 +62,6 @@ bionet_bdm_t * this_bdm = NULL;
 
 GSList * sync_config_list = NULL;
 static GSList * sync_thread_list = NULL;
-static int bp_attached = 0;
 
 static int hab_fd = -1;
 int start_hab = 0;
@@ -87,6 +87,196 @@ int ignore_self = 1;
 char * bdm_config_file = "/etc/bdm.ini";
 
 extern int optind;
+
+#if ENABLE_ION
+
+static int bp_attached = 0;
+bdm_bp_funcs_t bdm_bp_funcs;
+
+
+int load_ion(void) {
+    void *libbp_handle;
+    char *error;
+    static int loaded_ion = 0;
+
+    if (loaded_ion) return 0;
+
+    libbp_handle = dlopen("libbp.so", RTLD_NOW);
+    if (libbp_handle == NULL) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "failed to dlopen libbp.so: %s", dlerror());
+        return -1;
+    }
+
+    dlerror();    /* Clear any existing error */
+
+    /* Writing: cosine = (double (*)(double)) dlsym(handle, "cos");
+    would seem more natural, but the C99 standard leaves
+    casting from "void *" to a function pointer undefined.
+    The assignment used below is the POSIX.1-2003 (Technical
+    Corrigendum 1) workaround; see the Rationale for the
+    POSIX specification of dlsym(). */
+
+    *(void **)(&bdm_bp_funcs.sm_set_basekey) = dlsym(libbp_handle, "sm_set_basekey");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sm_set_basekey() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.bp_attach) = dlsym(libbp_handle, "bp_attach");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_attach() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.bp_interrupt) = dlsym(libbp_handle, "bp_interrupt");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_interrupt() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.bp_open) = dlsym(libbp_handle, "bp_open");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_open() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.bp_close) = dlsym(libbp_handle, "bp_close");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_close() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.bp_get_sdr) = dlsym(libbp_handle, "bp_get_sdr");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_get_sdr() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.bp_send) = dlsym(libbp_handle, "bp_send");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_send() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.bp_receive) = dlsym(libbp_handle, "bp_receive");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_receive() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.bp_add_endpoint) = dlsym(libbp_handle, "bp_add_endpoint");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_add_endpoint() in libbp.so: %s, ignoring error", error);
+    }
+
+    *(void **)(&bdm_bp_funcs.bp_release_delivery) = dlsym(libbp_handle, "bp_release_delivery");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_release_delivery() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.Sdr_malloc) = dlsym(libbp_handle, "Sdr_malloc");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find Sdr_malloc() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.sdr_begin_xn) = dlsym(libbp_handle, "sdr_begin_xn");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sdr_begin_xn() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.sdr_cancel_xn) = dlsym(libbp_handle, "sdr_cancel_xn");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sdr_cancel_xn() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.sdr_end_xn) = dlsym(libbp_handle, "sdr_end_xn");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sdr_end_xn() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.Sdr_write) = dlsym(libbp_handle, "Sdr_write");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find Sdr_write() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.zco_create) = dlsym(libbp_handle, "zco_create");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_create() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.zco_append_extent) = dlsym(libbp_handle, "zco_append_extent");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_append_extent() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.zco_start_receiving) = dlsym(libbp_handle, "zco_start_receiving");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_start_receiving() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.zco_receive_source) = dlsym(libbp_handle, "zco_receive_source");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_receive_source() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.zco_stop_receiving) = dlsym(libbp_handle, "zco_stop_receiving");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_stop_receiving() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.writeErrMemo) = dlsym(libbp_handle, "writeErrMemo");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find writeErrMemo() in libbp.so: %s", error);
+        return -1;
+    }
+
+    *(void **)(&bdm_bp_funcs.writeErrmsgMemos) = dlsym(libbp_handle, "writeErrmsgMemos");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find writeErrmsgMemos() in libbp.so: %s", error);
+        return -1;
+    }
+
+    loaded_ion = 1;
+    return 0;
+}
+
+#endif
+
+
+
 
 void usage(void) {
     printf(
@@ -630,24 +820,32 @@ skip:
 	    }
 	    sync_config->last_entry_end_seq = -1;
 	    sync_config->last_entry_end_seq_metadata = -1;
-            if(sync_config->method == BDM_SYNC_METHOD_ION && !bp_attached){
+
+            if(sync_config->method == BDM_SYNC_METHOD_ION) {
 #if ENABLE_ION
-                if (bp_attach() < 0)
-                {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-                        "Can't attach to BP, but DTN syncing requested");
-                    return 1;
+                if (!bp_attached) {
+                    if (load_ion() != 0) {
+                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "DTN syncing requested, but can't load ION libraries, aborting");
+                        return 1;
+                    }
+
+                    if ((*bdm_bp_funcs.bp_attach)() < 0)
+                    {
+                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                            "Can't attach to BP, but DTN syncing requested");
+                        return 1;
+                    }
+                    bp_attached++;
                 }
-                bp_attached++;
 #else
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
                       "Bad config file '%s': BDM Syncronization over DTN was disabled at compile time.", optarg);
                 return (1);
 #endif
             }
-	    sync_config_list = g_slist_append(sync_config_list, sync_config);
-	    break;
-	}
+            sync_config_list = g_slist_append(sync_config_list, sync_config);
+            break;
+        }
 
 	case 'd':
 #if ENABLE_ION
@@ -693,11 +891,18 @@ skip:
         {
 #if HAVE_SM_SET_BASEKEY
             char * endptr = NULL;
+            long key;
+
+            if (load_ion() != 0) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ION shared memory base key requested, but can't load ION libraries, aborting");
+                return 1;
+            }
+
             key = strtoul(optarg, &endptr, 10);
             if(endptr > optarg 
             && endptr[0] == '\0')
             {
-                sm_set_basekey(key);
+                (*bdm_bp_funcs.sm_set_basekey)(key);
             } else {
                 g_warning("invalid ION key specified: '%s'", optarg); 
             }
@@ -1216,8 +1421,13 @@ skip:
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	      "DTN Sync Receiver starting. DTN endpoint ID: %s", dtn_endpoint_id);
 
+        if (load_ion() != 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "DTN syncing requested, but can't load ION libraries, aborting");
+            return 1;
+        }
+
         if(!bp_attached){
-            if (bp_attach() < 0)
+            if ((*bdm_bp_funcs.bp_attach)() < 0)
             {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
                     "Can't attach to BP.");

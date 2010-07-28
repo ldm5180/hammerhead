@@ -252,10 +252,10 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
         return 0;
     }
 
-    extent = sdr_malloc(sdr, size);
+    extent = bdm_sdr_malloc(sdr, size);
     if (extent == 0)
     {
-        sdr_cancel_xn(sdr);
+        (*bdm_bp_funcs.sdr_cancel_xn)(sdr);
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "No space for ZCO extent.");
 
@@ -263,8 +263,8 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
         return -1;
     }
 
-    sdr_write(sdr, extent, (void*)buffer, size);
-    zco_append_extent(sdr, bundleZco, ZcoSdrSource, extent, 0, size);
+    bdm_sdr_write(sdr, extent, (void*)buffer, size);
+    (*bdm_bp_funcs.zco_append_extent)(sdr, bundleZco, ZcoSdrSource, extent, 0, size);
     ion.bundle_size += size;
 
     return size;
@@ -310,20 +310,23 @@ gpointer sync_thread(gpointer config_list) {
     }
 
 #ifdef ENABLE_ION
-    if ((need_bp) && (bp_open(dtn_endpoint_id, &ion.sap) < 0))
-    {
-#ifdef HAVE_BP_ADD_ENDPOINT
-	if(bp_add_endpoint(dtn_endpoint_id, NULL) != 1) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "Can't create own endpoint ('%s')", dtn_endpoint_id);
-	    return NULL;
-	} else if(bp_open(dtn_endpoint_id, &ion.sap) < 0)
-#endif // HAVE_BP_ADD_ENDPOINT
-	{
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "Can't open own endpoint ('%s')", dtn_endpoint_id);
-	    return NULL;
-	}
+    if (need_bp) {
+        int r;
+        
+        r = (*bdm_bp_funcs.bp_open)(dtn_endpoint_id, &ion.sap);
+        if (r < 0) {
+            if (bdm_bp_funcs.bp_add_endpoint != NULL) {
+                if ((*bdm_bp_funcs.bp_add_endpoint)(dtn_endpoint_id, NULL) != 0) {
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Can't create own endpoint ('%s')", dtn_endpoint_id);
+                    return NULL;
+                }
+                r = (*bdm_bp_funcs.bp_open)(dtn_endpoint_id, &ion.sap);
+            }
+            if (r < 0) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Can't open own endpoint ('%s')", dtn_endpoint_id);
+                return NULL;
+            }
+        }
     }
 #endif // ENABLE_ION
 
@@ -381,15 +384,15 @@ static gboolean sync_check(gpointer data) {
 
 #if ENABLE_ION
 static int sync_init_connection_ion(sync_sender_config_t * config) {
-    ion.sdr = bp_get_sdr();
+    ion.sdr = (*bdm_bp_funcs.bp_get_sdr)();
 	
-    sdr_begin_xn(ion.sdr);
+    (*bdm_bp_funcs.sdr_begin_xn)(ion.sdr);
 
-    ion.bundleZco = zco_create(ion.sdr, ZcoSdrSource, 0,
+    ion.bundleZco = (*bdm_bp_funcs.zco_create)(ion.sdr, ZcoSdrSource, 0,
 			       0, 0);
     ion.bundle_size = 0;
 
-    writeErrmsgMemos();
+    (*bdm_bp_funcs.writeErrmsgMemos)();
 
     return 0;
 }
@@ -404,7 +407,7 @@ static void sync_cancel_connection(sync_sender_config_t *config) {
 
 #if ENABLE_ION
         case BDM_SYNC_METHOD_ION:
-            sdr_cancel_xn(ion.sdr);
+            (*bdm_bp_funcs.sdr_cancel_xn)(ion.sdr);
             ion.sdr = NULL;
             break;
 #endif
@@ -531,11 +534,11 @@ static int sync_finish_connection_tcp(sync_sender_config_t * config) {
 #if ENABLE_ION
 static int sync_finish_connection_ion(sync_sender_config_t * config) {
 
-    if (sdr_end_xn(ion.sdr) < 0 || ion.bundleZco == 0)
+    if ((*bdm_bp_funcs.sdr_end_xn)(ion.sdr) < 0 || ion.bundleZco == 0)
     {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
                 "Can't end sdr transaction");
-            sdr_cancel_xn(ion.sdr);
+            (*bdm_bp_funcs.sdr_cancel_xn)(ion.sdr);
             ion.sdr = NULL;
             return -1;
     }
@@ -548,7 +551,7 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
             "Sending bundle with payload of %lu bytes",
             (unsigned long)ion.bundle_size);
 
-        r = bp_send(
+        r = (*bdm_bp_funcs.bp_send)(
             ion.sap,
             BP_BLOCKING,
             config->sync_recipient, 
@@ -574,7 +577,7 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
     }
 
 
-    writeErrmsgMemos();
+    (*bdm_bp_funcs.writeErrmsgMemos)();
     return 0;
 
 }

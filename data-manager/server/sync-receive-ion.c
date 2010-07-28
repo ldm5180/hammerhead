@@ -35,6 +35,7 @@ static void	handleQuit()
 */
 
 gpointer dtn_receive_thread(gpointer config) {
+    int r;
 
 
     int running = 1;
@@ -42,29 +43,29 @@ gpointer dtn_receive_thread(gpointer config) {
     client_t *client = (client_t*)config;
     
     // One-time setup
-    if (bp_open(dtn_endpoint_id, &client->ion.sap) < 0)
-    {
-#ifdef HAVE_BP_ADD_ENDPOINT
-        if(bp_add_endpoint(dtn_endpoint_id, NULL) != 1) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "Can't create own endpoint ('%s')", dtn_endpoint_id);
-            return NULL;
-        } else if(bp_open(dtn_endpoint_id, &client->ion.sap) < 0)
-#endif
-        {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "Can't open own endpoint ('%s')", dtn_endpoint_id);
+    r = (*bdm_bp_funcs.bp_open)(dtn_endpoint_id, &client->ion.sap);
+    if (r < 0) {
+        if (bdm_bp_funcs.bp_add_endpoint != NULL) {
+            if ((*bdm_bp_funcs.bp_add_endpoint)(dtn_endpoint_id, NULL) != 1) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Can't create own endpoint ('%s')", dtn_endpoint_id);
+                return NULL;
+            }
+            r = (*bdm_bp_funcs.bp_open)(dtn_endpoint_id, &client->ion.sap);
+        }
+
+        if (r < 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Can't open own endpoint ('%s')", dtn_endpoint_id);
             return 0;
         }
     }
 
-    client->ion.sdr = bp_get_sdr();
+    client->ion.sdr = (*bdm_bp_funcs.bp_get_sdr)();
 
     // Wait for bundles, and dispatch them
     while (!bdm_shutdown_now && running) {
 	BpDelivery	dlv;
 
-        if (bp_receive(client->ion.sap, &dlv, BP_BLOCKING) < 0)
+        if ((*bdm_bp_funcs.bp_receive)(client->ion.sap, &dlv, BP_BLOCKING) < 0)
         {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                 "bpsink bundle reception failed.");
@@ -82,8 +83,8 @@ gpointer dtn_receive_thread(gpointer config) {
             asn_dec_rval_t rval = {0};
 
             //contentLength = zco_source_data_length(client->ion.sdr, dlv.adu);
-            sdr_begin_xn(client->ion.sdr);
-            zco_start_receiving(client->ion.sdr, dlv.adu, &client->ion.reader);
+            (*bdm_bp_funcs.sdr_begin_xn)(client->ion.sdr);
+            (*bdm_bp_funcs.zco_start_receiving)(client->ion.sdr, dlv.adu, &client->ion.reader);
 
             client->index = 0;
             client->message.sync_message = NULL;
@@ -91,11 +92,11 @@ gpointer dtn_receive_thread(gpointer config) {
             do {
 
 	        bytes_to_read = sizeof(client->buffer) - client->index;
-                bytes_read = zco_receive_source(client->ion.sdr, &client->ion.reader,
+                bytes_read = (*bdm_bp_funcs.zco_receive_source)(client->ion.sdr, &client->ion.reader,
                                 bytes_to_read, (void*)(client->buffer+client->index));
                 if(bytes_read < 0)
                 {
-                    sdr_cancel_xn(client->ion.sdr);
+                    (*bdm_bp_funcs.sdr_cancel_xn)(client->ion.sdr);
                     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                         "ION event: can't receive payload");
                     running = 0;
@@ -162,8 +163,8 @@ gpointer dtn_receive_thread(gpointer config) {
                 }
             } while (running && (rval.consumed > 0) && (client->index > 0));
 
-            zco_stop_receiving(client->ion.sdr, &client->ion.reader);
-            if (sdr_end_xn(client->ion.sdr) < 0)
+            (*bdm_bp_funcs.zco_stop_receiving)(client->ion.sdr, &client->ion.reader);
+            if ((*bdm_bp_funcs.sdr_end_xn)(client->ion.sdr) < 0)
             {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                     "ION event: can't hande delivery");
@@ -172,12 +173,12 @@ gpointer dtn_receive_thread(gpointer config) {
             }
         }
 
-        bp_release_delivery(&dlv, 1);
+        (*bdm_bp_funcs.bp_release_delivery)(&dlv, 1);
     }
 
     // Shutdown
-    bp_close(client->ion.sap);
-    writeErrmsgMemos();
+    (*bdm_bp_funcs.bp_close)(client->ion.sap);
+    (*bdm_bp_funcs.writeErrmsgMemos)();
 
     return NULL;
 }
