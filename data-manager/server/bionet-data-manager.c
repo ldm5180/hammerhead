@@ -518,22 +518,16 @@ int main(int argc, char *argv[]) {
     }
     g_clear_error(&error);
 
+#if ENABLE_ION
     /* DTN Endpoint ID */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting DTN Endpoint ID from %s", bdm_config_file);
     dtn_endpoint_id = g_key_file_get_string(keyfile, "BDM", "DtnEndpointId", &error);
     if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "DtnEndpointId key not found in %s. %s", 
 	      bdm_config_file, error->message);
-    } else {
-#if ENABLE_ION
-	//nothing to do
-#else
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	      "DTN capabilities were disabled at compile time.");
-	return (-1);
-#endif
-    }
+    } 
     g_clear_error(&error);
+#endif
 
     /* BDM Port */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting BDM Port from %s", bdm_config_file);
