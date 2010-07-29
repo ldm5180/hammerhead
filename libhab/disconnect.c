@@ -33,6 +33,7 @@
 
 
 void hab_disconnect(void) {
+    g_hash_table_destroy(libhab_most_recently_published);
     cal_server.shutdown(libhab_cal_handle);
     libhab_cal_handle = NULL;
 }

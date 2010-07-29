@@ -79,6 +79,21 @@ BIONET_UTIL_API_DECL
 int bionet_resource_write_persist(bionet_resource_t * resource, char * persist_dir);
 
 
+int bionet_value_check_epsilon(const bionet_value_t * original_val, 
+			       const void * content, 
+			       const bionet_epsilon_t * epsilon, 
+			       bionet_resource_data_type_t data_type);
+
+int bionet_value_check_epsilon_by_value(const bionet_value_t * original_val, 
+					const bionet_value_t * new_val, 
+					const bionet_epsilon_t * epsilon, 
+					bionet_resource_data_type_t data_type);
+
+
+int bionet_value_check_delta(const struct timeval * original_tv,
+			     const struct timeval * new_tv,
+			     const struct timeval * delta);
+
 #endif /* BIONET_UTIL_PROTECTED_H */
 
 // Emacs cruft

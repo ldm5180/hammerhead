@@ -36,6 +36,9 @@
 #include "hardware-abstractor.h"
 
 
+static void hash_element_datapoint_destroy (gpointer data);
+
+
 int hab_connect(bionet_hab_t *hab) {
     const char *cal_name;
 
@@ -78,11 +81,26 @@ int hab_connect(bionet_hab_t *hab) {
         return -1;
     }
 
+    if (NULL != libhab_most_recently_published) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "hab_connect(): Most Recently Published Hash Table is already initialized.");
+    } else {
+	libhab_most_recently_published = g_hash_table_new_full(NULL, NULL, 
+							       NULL, hash_element_datapoint_destroy);
+    }
+
+    if (NULL == libhab_most_recently_published) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "hab_connect(): error initializing Most Recently Published hash table.");
+    }
 
     return cal_server.get_fd(libhab_cal_handle);
 }
 
-
+static void hash_element_datapoint_destroy (gpointer data) {
+    bionet_datapoint_free((bionet_datapoint_t *)data);
+    return;
+} /* hash_element_datapoint_destroy() */
 
 
 #if 0

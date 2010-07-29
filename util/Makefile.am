@@ -89,6 +89,7 @@ libbionet_util_la_SOURCES =    \
     resource-set-epsilon-delta.c \
     resource-name.c            \
     resource-user-data.c       \
+    datapoint-dup.c            \
     datapoint-new.c            \
     datapoint-free.c	\
     datapoint-value.c          \

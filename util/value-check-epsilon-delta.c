@@ -10,14 +10,10 @@
 #include "internal.h"
 #include "bionet-util.h"
 
-int bionet_value_check_epsilon_delta(const bionet_value_t * original_val, 
-				     const void * new_val, 
-				     const bionet_epsilon_t * epsilon, 
-				     bionet_resource_data_type_t data_type,
-				     const struct timeval * original_tv,
-				     const struct timeval * new_tv,
-				     const struct timeval * delta) {
-    struct timeval cur_tv;
+int bionet_value_check_epsilon(const bionet_value_t * original_val, 
+			       const void * new_val, 
+			       const bionet_epsilon_t * epsilon, 
+			       bionet_resource_data_type_t data_type) {
 
     if (NULL == original_val) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_value_check_epsilon_delta: NULL original value passed in.");
@@ -26,16 +22,6 @@ int bionet_value_check_epsilon_delta(const bionet_value_t * original_val,
     if (NULL == new_val) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_value_check_epsilon_delta: NULL new value passed in.");
 	return 1;
-    }
-    if (NULL == original_tv) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_value_check_epsilon_delta: NULL original timestamp passed in.");
-	return 1;
-    }
-    if (NULL == new_tv) {
-	gettimeofday(&cur_tv, NULL);
-    } else {
-	cur_tv.tv_sec = new_tv->tv_sec;
-	cur_tv.tv_usec = new_tv->tv_usec;
     }
 
     if (epsilon) {
@@ -203,7 +189,7 @@ int bionet_value_check_epsilon_delta(const bionet_value_t * original_val,
 	}
 
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
-	    break;
+	    return 1;
 
 	default:
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -212,25 +198,14 @@ int bionet_value_check_epsilon_delta(const bionet_value_t * original_val,
 	}
     }
 
-    if (delta->tv_sec != 0 || delta->tv_usec != 0) {
-	struct timeval diff = bionet_timeval_subtract(&cur_tv, original_tv);
-	if (0 <= bionet_timeval_compare(&diff, delta)) {
-	    return 1;
-	}
-    }
-
     return 0;
 } /* bionet_value_check_epsilon_delta() */
 
 
-int bionet_value_check_epsilon_delta_by_value(const bionet_value_t * original_val, 
-					      const bionet_value_t * new_val, 
-					      const bionet_epsilon_t * epsilon, 
-					      bionet_resource_data_type_t data_type,
-					      const struct timeval * original_tv,
-					      const struct timeval * new_tv,
-					      const struct timeval * delta) {
-    struct timeval cur_tv;
+int bionet_value_check_epsilon_by_value(const bionet_value_t * original_val, 
+					const bionet_value_t * new_val, 
+					const bionet_epsilon_t * epsilon, 
+					bionet_resource_data_type_t data_type) {
 
     if (NULL == original_val) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_value_check_epsilon_delta: NULL original value passed in.");
@@ -239,16 +214,6 @@ int bionet_value_check_epsilon_delta_by_value(const bionet_value_t * original_va
     if (NULL == new_val) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_value_check_epsilon_delta: NULL new value passed in.");
 	return 1;
-    }
-    if (NULL == original_tv) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_value_check_epsilon_delta: NULL original timestamp passed in.");
-	return 1;
-    }
-    if (NULL == new_tv) {
-	gettimeofday(&cur_tv, NULL);
-    } else {
-	cur_tv.tv_sec = new_tv->tv_sec;
-	cur_tv.tv_usec = new_tv->tv_usec;
     }
 
     if (epsilon) {
@@ -443,7 +408,7 @@ int bionet_value_check_epsilon_delta_by_value(const bionet_value_t * original_va
 	}
 
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
-	    break;
+	    return 1;
 
 	default:
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -452,12 +417,20 @@ int bionet_value_check_epsilon_delta_by_value(const bionet_value_t * original_va
 	}
     }
 
+    return 0;
+} /* bionet_value_check_epsilon_delta_by_value() */
+
+int bionet_value_check_delta(struct timeval * original_tv,
+			     struct timeval * new_tv,
+			     struct timeval * delta) {
+    struct timeval diff;
+
     if (delta->tv_sec != 0 || delta->tv_usec != 0) {
-	struct timeval diff = bionet_timeval_subtract(&cur_tv, original_tv);
+	diff = bionet_timeval_subtract(new_tv, original_tv);
 	if (0 <= bionet_timeval_compare(&diff, delta)) {
 	    return 1;
 	}
     }
 
     return 0;
-} /* bionet_value_check_epsilon_delta_by_value() */
+} /* bionet_value_check_delta() */
