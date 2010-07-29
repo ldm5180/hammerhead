@@ -34,11 +34,11 @@ mv $ROOT/data-manager/server/bdm.db orig-bdm.db
 cp orig-bdm.db sync-bdm.db
 
 echo starting TCP sync receiver BDM
-$ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --resources "a.a.a:a" --tcp-sync-receiver &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --resources "a.a.a:a" --tcp-sync-receiver &
 RCVPID=$!
 
 echo starting TCP sync sender BDM
-$ROOT/data-manager/server/bionet-data-manager --file orig-bdm.db --id sync-send-$SYNCUNIQUE --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/111.bdmsync-over-tcp-random-to-bdm-to-bdm-with-kill/test.cfg --port 11111 &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/111.bdmsync-over-tcp-random-to-bdm-to-bdm-with-kill/test.cfg --port 11111 &
 SNDPID=$!
 sleep 6 # let the bdm come up before starting the HAB
 
@@ -54,7 +54,7 @@ wait $RCVPID
 sleep 10
 
 echo "Restarting TCP sync receiver BDM"
-$ROOT/data-manager/server/bionet-data-manager --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --resources "a.a.a:a" --tcp-sync-receiver &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --resources "a.a.a:a" --tcp-sync-receiver &
 RCVPID=$!
 
 

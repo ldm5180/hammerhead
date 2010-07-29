@@ -49,7 +49,7 @@ exec 8> fifo0
 WFD0=8
 
 echo starting BDM
-$ROOT/data-manager/server/bionet-data-manager --id "bdm-$UNIQUE" --habs "random-hab.A$UNIQUE" --habs "random-hab.B$UNIQUE" --nodes "random-hab.A$UNIQUE.*"  --nodes "random-hab.B$UNIQUE.*" --resources "random-hab.A$UNIQUE.*:*" --resources "random-hab.B$UNIQUE.*:*" &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --id "bdm-$UNIQUE" --habs "random-hab.A$UNIQUE" --habs "random-hab.B$UNIQUE" --nodes "random-hab.A$UNIQUE.*"  --nodes "random-hab.B$UNIQUE.*" --resources "random-hab.A$UNIQUE.*:*" --resources "random-hab.B$UNIQUE.*:*" &
 BDMPID=$!
 sleep 3 # let the bdm come up before starting the HAB
 

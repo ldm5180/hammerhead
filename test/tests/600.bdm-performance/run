@@ -65,7 +65,7 @@ for i in `jot $NUMWATCHERS`; do
 done;
 
 echo "Starting bionet-data-manager"
-$ROOT/data-manager/server/bionet-data-manager -i $BDMID -f bdm.db --bdm-stats 10 --resources="test-pattern-hab.$UNIQUE.*:*" &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test -i $BDMID -f bdm.db --bdm-stats 10 --resources="test-pattern-hab.$UNIQUE.*:*" &
 BDMPID=$!
 
 echo "Starting test-pattern-hab"

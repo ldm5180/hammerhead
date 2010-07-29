@@ -34,7 +34,7 @@ popd > /dev/null
 mv $ROOT/data-manager/server/bdm.db .
 
 echo starting BDM
-$ROOT/data-manager/server/bionet-data-manager --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
 sleep 3 # let the bdm come up before starting the HAB
 
 echo starting random-hab
