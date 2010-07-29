@@ -101,7 +101,8 @@ int main(int argc, char* argv[])
     // add node
     add_node(hab, "resources");
     
-
+    //tell arduino board to activate
+    arduino_write((char)1);
     while(1)
     {
         poll_arduino(bionet_fd);

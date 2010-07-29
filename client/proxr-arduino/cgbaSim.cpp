@@ -98,6 +98,10 @@ void cgbaSim::bionetSetup()
         exit(1);
     }
 
+    connect(liveIO, SIGNAL(newNode(bionet_node_t*,void*)), this, SLOT(setNode(bionet_node_t*)));
+    connect(liveIO, SIGNAL(datapointUpdate(bionet_datapoint_t*,void*)), this,  SLOT(setDO(bionet_datapoint_t*)));
+    connect(liveIO, SIGNAL(lostHab(bionet_hab_t*,void*)), this, SLOT(lostHab()));
+
     //convert QString to char* for bionet_subscribe
     QString proxr = "proxr.";
     proxr += habId;
@@ -116,10 +120,6 @@ void cgbaSim::bionetSetup()
     bionet_subscribe_hab_list_by_name(id1);
     bionet_subscribe_node_list_by_name(strcat(id1, ".*"));
     bionet_subscribe_datapoints_by_name(strcat(id1, ":*"));
-
-    connect(liveIO, SIGNAL(newNode(bionet_node_t*,void*)), this, SLOT(setNode(bionet_node_t*)));
-    connect(liveIO, SIGNAL(datapointUpdate(bionet_datapoint_t*,void*)), this,  SLOT(setDO(bionet_datapoint_t*)));
-    connect(liveIO, SIGNAL(lostHab(bionet_hab_t*,void*)), this, SLOT(lostHab()));
 }
 
 void cgbaSim::setNode(bionet_node_t *node)

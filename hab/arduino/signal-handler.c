@@ -6,9 +6,10 @@
 //
 void signal_handler(int unused)
 {
-    printf("\n");
-    g_message("Exiting...");
+    arduino_write((char)1);
     hab_disconnect();
     arduino_disconnect();
+    printf("\n");
+    g_message("Exiting...");
     exit(1);
 }

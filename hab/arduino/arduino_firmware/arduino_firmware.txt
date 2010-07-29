@@ -1,8 +1,8 @@
-int active = 1;
+int active = 0;
 int ack = -1;
 int previous_value = 0;
 int analogIn[2];
-int digitalIn[8] = {0,0,0,0,0,0,0,0};
+int digitalIn[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
 
  void setup() 
  {
@@ -21,6 +21,17 @@ int digitalIn[8] = {0,0,0,0,0,0,0,0};
  { 
    delay(2000);
    
+   ack = Serial.read();
+   if(ack != -1)
+   {
+     active = 1;
+     for(int i=0; i<8; i++)
+     {
+       digitalIn[i] = -1;
+     }
+     analogIn[0] = -1;
+     analogIn[1] = -1;
+   }
    while(active == 1)
    {  
       delay(1000);
@@ -53,6 +64,11 @@ int digitalIn[8] = {0,0,0,0,0,0,0,0};
 	      Serial.print(digitalIn[i]);
               Serial.print('\n');
           }
+      }
+      ack = Serial.read();
+      if(ack != -1)
+      {
+        active = 0;
       }
    }
  }
