@@ -57,7 +57,7 @@ bionet_node_add_resource(node_d1, resource)
 delta = timeval()
 delta.tv_sec = 1
 delta.tv_usec = 0
-if (bionet_resource_set_epsilon_delta(resource, None, delta)):
+if (bionet_resource_set_delta(resource, delta)):
     logger.warning("Not setting delta/epsilon on resource %s" % bionet_resource_get_name(resource))
 
 # report stuff
@@ -84,7 +84,7 @@ bionet_node_add_resource(node_d5, resource)
 delta = timeval()
 delta.tv_sec = 5
 delta.tv_usec = 0
-if (bionet_resource_set_epsilon_delta(resource, None, delta)):
+if (bionet_resource_set_delta(resource, delta)):
     logger.warning("Not setting delta/epsilon on resource %s" % bionet_resource_get_name(resource))
 
 # report stuff
@@ -112,7 +112,7 @@ epsilon = bionet_epsilon_new_uint32(1)
 delta = timeval()
 delta.tv_sec = 0
 delta.tv_usec = 0
-if (bionet_resource_set_epsilon_delta(resource, epsilon, delta)):
+if (bionet_resource_set_epsilon(resource, epsilon)):
     logger.warning("Not setting delta/epsilon on resource %s" % bionet_resource_get_name(resource))
 
 # report stuff
@@ -140,7 +140,7 @@ epsilon = bionet_epsilon_new_uint32(5)
 delta = timeval()
 delta.tv_sec = 0
 delta.tv_usec = 0
-if (bionet_resource_set_epsilon_delta(resource, epsilon, delta)):
+if (bionet_resource_set_epsilon(resource, epsilon)):
     logger.warning("Not setting delta/epsilon on resource %s" % bionet_resource_get_name(resource))
 
 # report stuff

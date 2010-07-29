@@ -46,7 +46,7 @@ if ENABLE_LINUX
     AM_CFLAGS += -DLINUX 
 endif
  
-INCLUDES_BIONET_UTIL = $(top_srcdir)/util/bionet-util.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-datapoint.h $(top_srcdir)/util/bionet-value.h $(top_srcdir)/util/bionet-version.h
+INCLUDES_BIONET_UTIL = $(top_srcdir)/util/bionet-util.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-datapoint.h $(top_srcdir)/util/bionet-value.h $(top_srcdir)/util/bionet-epsilon.h $(top_srcdir)/util/bionet-version.h
 CFLAGS_BIONET_UTIL = -I$(top_srcdir)/util $(OPENSSL_CFLAGS)
 LDFLAGS_BIONET_UTIL = -L$(top_srcdir)/util 
 LIBS_BIONET_UTIL = $(top_srcdir)/util/libbionet-util.la $(OPENSSL_LIBS)

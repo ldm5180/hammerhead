@@ -987,7 +987,7 @@ const struct timeval * bionet_resource_get_delta(const bionet_resource_t * resou
 
 
 /**
- * @brief Set the epsilon and epsilon thresholds before resource gets published.
+ * @brief Set the epsilon thresholds before resource gets published.
  *
  * By default resources get published any time they get set. This modifies
  * that behavior so that it only gets published once the change in the value
@@ -997,15 +997,33 @@ const struct timeval * bionet_resource_get_delta(const bionet_resource_t * resou
  *
  * @param[in] resource Bionet resource to set
  * @param[in] epsilon Difference in value
+ *
+ * @retval 0 Success.
+ * @retval 1 Failure.
+ */
+BIONET_UTIL_API_DECL
+int bionet_resource_set_epsilon(bionet_resource_t * resource,
+				bionet_epsilon_t * epsilon);
+
+
+/**
+ * @brief Set the delta thresholds before resource gets published.
+ *
+ * By default resources get published any time they get set. This modifies
+ * that behavior so that it only gets published once the change in the value
+ * is greater than or equal to (>=) the epsilon or the time since the 
+ * last published datapoint timestamp is greater than or equal to (>=)
+ * the epsilon.
+ *
+ * @param[in] resource Bionet resource to set
  * @param[in] epsilon Difference in datapoint timestamp and current time
  *
  * @retval 0 Success.
  * @retval 1 Failure.
  */
 BIONET_UTIL_API_DECL
-int bionet_resource_set_epsilon_delta(bionet_resource_t * resource,
-				      bionet_epsilon_t * epsilon,
-				      struct timeval delta);
+int bionet_resource_set_delta(bionet_resource_t * resource,
+			      struct timeval delta);
 
 #ifdef __cplusplus
 }
