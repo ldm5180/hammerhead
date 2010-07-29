@@ -20,7 +20,11 @@ const struct timeval * bionet_resource_get_delta(const bionet_resource_t *resour
         return NULL;
     }
 
-    return &resource->delta;
+    if (resource->delta.tv_sec || resource->delta.tv_usec) {
+	return &resource->delta;
+    }
+
+    return NULL;
 }
 
 

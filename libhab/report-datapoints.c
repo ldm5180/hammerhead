@@ -95,8 +95,11 @@ publish:
         r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 1);
         if (r != 0) continue;
 	
-	bionet_datapoint_t * recent_dp = bionet_datapoint_dup(BIONET_RESOURCE_GET_DATAPOINT(resource));
-	g_hash_table_insert(libhab_most_recently_published, resource, recent_dp);
+	/* if there is a delta or an epsilon, put a copy of the datapoint in the hash table */
+	if (delta || epsilon) {
+	    bionet_datapoint_t * recent_dp = bionet_datapoint_dup(BIONET_RESOURCE_GET_DATAPOINT(resource));
+	    g_hash_table_insert(libhab_most_recently_published, resource, recent_dp);
+	}
 
         bionet_resource_make_clean(resource);
 

@@ -154,6 +154,7 @@ next_pub = 0
 starttime = time.time()
 while(time.time() - starttime < 30):
     (rr, wr, er) = select.select([hab_fd], [], [], 1.0)
+#    (rr, wr, er) = select.select([hab_fd], [], [], 0.00001)
     if (rr):
         hab_read()
 
@@ -221,6 +222,5 @@ while(time.time() - starttime < 30):
     #report stuff
     hab_report_datapoints(node_e5)
 
-time.sleep(1)
 hab_read()
 exit(0)
