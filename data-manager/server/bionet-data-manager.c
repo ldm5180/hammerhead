@@ -755,9 +755,10 @@ int main(int argc, char *argv[]) {
     /* BDM Port */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting BDM Port from %s", bdm_config_file);
     bdm_port = g_key_file_get_integer(keyfile, "BDM", "BdmPort", &error);
-    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "BdmPort key not found in %s. %s", 
+    if (error) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading BdmPort key in %s. %s", 
 	      bdm_config_file, error->message);
+	bdm_port = BDM_PORT;
     } else {
 	if (bdm_port >= USHRT_MAX) {
 	    g_warning("invalid tcp port specified: '%d'", bdm_port);
