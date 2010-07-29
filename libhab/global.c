@@ -18,6 +18,8 @@ void * libhab_cal_handle = NULL;
 
 bionet_hab_t *libhab_this = NULL;
 
+GHashTable * libhab_most_recently_published = NULL;
+
 void (*libhab_callback_set_resource)(bionet_resource_t *resource, bionet_value_t *value) = NULL;
 void (*libhab_callback_stream_data)(const char *client_id, bionet_stream_t *stream, const void *buf, unsigned int size) = NULL;
 void (*libhab_callback_lost_client)(const char *client_id) = NULL;

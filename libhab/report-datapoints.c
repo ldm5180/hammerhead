@@ -34,10 +34,7 @@ int hab_report_datapoints(const bionet_node_t *node) {
         resource = bionet_node_get_resource_by_index(node, ri);
         if (!bionet_resource_is_dirty(resource)) continue;
 
-        // send dirty datapoints only
-        r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 1);
-        if (r != 0) continue;
-	
+	/* persist the resource if necessary */
 	if (bionet_resource_is_persisted(resource)) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "hab_report_datapoints: Persisting resource %s", 
@@ -49,6 +46,60 @@ int hab_report_datapoints(const bionet_node_t *node) {
 	    }
 	}
 
+	/* do delta/epsilon checking */
+	bionet_epsilon_t * epsilon = bionet_resource_get_epsilon(resource);
+	const struct timeval * delta = bionet_resource_get_delta(resource);
+	bionet_datapoint_t * dp = NULL;
+	
+	if (delta || epsilon) {
+	    dp = g_hash_table_lookup(libhab_most_recently_published, resource);
+	    if (NULL == dp) {
+		goto publish;
+	    }
+	}
+
+	if (epsilon) {
+	    bionet_value_t * recent_val = bionet_datapoint_get_value(dp);
+	    if (NULL == recent_val) {
+		goto publish;
+	    }
+
+	    if (bionet_value_check_epsilon_by_value(recent_val,
+						    bionet_datapoint_get_value(BIONET_RESOURCE_GET_DATAPOINT(resource)), 
+						    epsilon, 
+						    bionet_resource_get_data_type(resource))) {
+		goto publish;
+	    }
+	}
+
+	if (delta) {
+	    struct timeval * recent_tv = bionet_datapoint_get_timestamp(dp);
+
+	    if (NULL == recent_tv) {
+		goto publish;
+	    }
+
+	    if (recent_tv && bionet_value_check_delta(recent_tv,
+					 bionet_datapoint_get_timestamp(BIONET_RESOURCE_GET_DATAPOINT(resource)), 
+					 delta)) {
+		goto publish;
+	    }
+	}
+
+	/* Delta/Epsilon didn't trigger. This resource doesn't need to be published. */
+	bionet_resource_make_clean(resource);
+	continue;
+
+publish:
+        // send dirty datapoints only
+        r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 1);
+        if (r != 0) continue;
+	
+	/* if there is a delta or an epsilon, put a copy of the datapoint in the hash table */
+	if (delta || epsilon) {
+	    bionet_datapoint_t * recent_dp = bionet_datapoint_dup(BIONET_RESOURCE_GET_DATAPOINT(resource));
+	    g_hash_table_insert(libhab_most_recently_published, resource, recent_dp);
+	}
 
         bionet_resource_make_clean(resource);
 

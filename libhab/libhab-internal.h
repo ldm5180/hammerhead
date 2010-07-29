@@ -22,6 +22,8 @@ extern void * libhab_cal_handle;
 
 extern bionet_hab_t *libhab_this;
 
+extern GHashTable * libhab_most_recently_published;
+
 extern void * libhab_ssl_ctx;
 extern int libhab_require_security;
 
