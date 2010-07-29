@@ -51,25 +51,25 @@ fi
 
 echo "starting BDM 1 (TCP Sync sender)"
 if $ONLYRESOURCES; then
-    $ROOT/data-manager/server/bionet-data-manager --file bdm0.db --id bdm0-$SYNCUNIQUE --resources "$HABTYPE.A-$UNIQUE.*:*" --sync-sender-config bdm0.cfg --port 11111 &
+    $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm0.db --id bdm0-$SYNCUNIQUE --resources "$HABTYPE.A-$UNIQUE.*:*" --sync-sender-config bdm0.cfg --port 11111 &
 else
-    $ROOT/data-manager/server/bionet-data-manager --file bdm0.db --id bdm0-$SYNCUNIQUE --habs "$HABTYPE.A-$UNIQUE" --nodes "$HABTYPE.A-$UNIQUE.*" --resources "$HABTYPE.A-$UNIQUE.*:*" --sync-sender-config bdm0.cfg --port 11111 &
+    $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm0.db --id bdm0-$SYNCUNIQUE --habs "$HABTYPE.A-$UNIQUE" --nodes "$HABTYPE.A-$UNIQUE.*" --resources "$HABTYPE.A-$UNIQUE.*:*" --sync-sender-config bdm0.cfg --port 11111 &
 fi
 BDM0PID=$!
 echo " [$BDM0PID] ->  bionet-data-manager bdm0-$SYNCUNIQUE"
 
 echo "starting BDM 2 (TCP Sync sender/receiver)"
 if $ONLYRESOURCES; then
-    $ROOT/data-manager/server/bionet-data-manager --file bdm1.db --id bdm1-$SYNCUNIQUE --resources "$HABTYPE.B-$UNIQUE.*:*" --sync-sender-config bdm1.cfg --port 22222 --tcp-sync-receiver=22220 &
+    $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm1.db --id bdm1-$SYNCUNIQUE --resources "$HABTYPE.B-$UNIQUE.*:*" --sync-sender-config bdm1.cfg --port 22222 --tcp-sync-receiver=22220 &
 else
-    $ROOT/data-manager/server/bionet-data-manager --file bdm1.db --id bdm1-$SYNCUNIQUE --habs "$HABTYPE.B-$UNIQUE" --nodes "$HABTYPE.B-$UNIQUE.*" --resources "$HABTYPE.B-$UNIQUE.*:*" --sync-sender-config bdm1.cfg --port 22222 --tcp-sync-receiver=22220 &
+    $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm1.db --id bdm1-$SYNCUNIQUE --habs "$HABTYPE.B-$UNIQUE" --nodes "$HABTYPE.B-$UNIQUE.*" --resources "$HABTYPE.B-$UNIQUE.*:*" --sync-sender-config bdm1.cfg --port 22222 --tcp-sync-receiver=22220 &
 fi
 BDM1PID=$!
 echo " [$BDM1PID] ->  bionet-data-manager bdm1-$SYNCUNIQUE"
 
 if $DOHOP2; then
 echo "starting BDM 3 (TCP Sync sender)"
-$ROOT/data-manager/server/bionet-data-manager --file bdm2.db --id bdm2-$SYNCUNIQUE --no-resources --tcp-sync-receiver=33330 --port 33333 &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm2.db --id bdm2-$SYNCUNIQUE --no-resources --tcp-sync-receiver=33330 --port 33333 &
 BDM2PID=$!
 echo " [$BDM2PID] ->  bionet-data-manager bdm2-$SYNCUNIQUE"
 fi

@@ -28,7 +28,7 @@ NEXT_YEAR=$(($YEAR+1))
 make_bdm_db "bdm.db"
 
 echo starting BDM
-$ROOT/data-manager/server/bionet-data-manager --id "bdm-$UNIQUE" --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --id "bdm-$UNIQUE" --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
 BDMPID=$!
 sleep 3 # let the bdm come up before starting the HAB
 

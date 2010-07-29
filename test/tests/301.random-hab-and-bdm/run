@@ -36,7 +36,7 @@ mv bdm.db-old bdm.db
 cd $ORIG_DIR
 
 echo "Starting BDM server..."
-$ROOT/data-manager/server/bionet-data-manager --resource "random-hab.$UNIQUE.*:*" -f $ORIG_DIR/bdm.db &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --resource "random-hab.$UNIQUE.*:*" -f $ORIG_DIR/bdm.db &
 
 echo "Starting Bionet Watcher..."
 $ROOT/client/watcher/bionet-watcher --hab "random-hab.$UNIQUE" --node "random-hab.$UNIQUE.*" --resource "random-hab.$UNIQUE.*:*" > watcher.out &

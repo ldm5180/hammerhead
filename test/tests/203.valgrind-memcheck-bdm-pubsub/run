@@ -43,7 +43,7 @@ export G_SLICE=always-malloc
 export G_DEBUG=gc-friendly,resident-modules 
 
 echo starting BDM under valgrind memcheck
-$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.bdm --tool=memcheck --trace-children=yes $VGLEAK $ROOT/data-manager/server/bionet-data-manager --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
+$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.bdm --tool=memcheck --trace-children=yes $VGLEAK $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
 BDMPID=$!
 sleep 3 # let the bdm come up before starting the HAB
 

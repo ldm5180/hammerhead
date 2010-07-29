@@ -622,7 +622,7 @@ int main(int argc, char *argv[]) {
     /* BDM Stats Interval */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting BDM Stats interval from %s", bdm_config_file);
     bdm_stats = g_key_file_get_integer(keyfile, "BDM", "BdmStats", &error);
-    if (NULL == error) {
+    if ((NULL == error) && (0 != bdm_stats)) {
 	start_hab = 1;
     } else {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "BdmStats key not found in %s so not starting the BDM Stats HAB. %s", 
@@ -633,8 +633,8 @@ int main(int argc, char *argv[]) {
     /* Sync Sender Config File Name */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Sync Sender Config from %s", bdm_config_file);
     sync_sender_config_file_name = g_key_file_get_string(keyfile, "BDM", "SyncSenderConfig", &error);
-    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "SyncSenderConfig key not found in %s. %s",
+    if (error) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading SyncSenderConfig key in %s. %s",
 	      bdm_config_file, error->message);
     } else {
 	sync_config = read_config_file(sync_sender_config_file_name);
@@ -674,10 +674,10 @@ int main(int argc, char *argv[]) {
     /* DTN Sync Receiver */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting DTN Sync Receiver from %s", bdm_config_file);
     enable_dtn_sync_receiver = (int)g_key_file_get_boolean(keyfile, "BDM", "DtnSyncReceiver", &error);
-    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "DtnSyncReceiver key not found in %s. %s",
+    if (error) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading DtnSyncReceiver key in %s. %s",
 	      bdm_config_file, error->message);
-    } else {
+    } else if (enable_dtn_sync_receiver) {
 #if ENABLE_ION
 	enable_dtn_sync_receiver = 1;
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
@@ -693,8 +693,8 @@ int main(int argc, char *argv[]) {
     /* Security Directory*/
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Security Directory from %s", bdm_config_file);
     security_dir = g_key_file_get_string(keyfile, "BDM", "SecurityDir", &error);
-    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "SecurityDir key not found in %s. %s", 
+    if (error) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading SecurityDir key in %s. %s", 
 	      bdm_config_file, error->message);
     } 
     g_clear_error(&error);
@@ -702,8 +702,8 @@ int main(int argc, char *argv[]) {
     /* Require Security */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Security Requirements from %s", bdm_config_file);
     require_security = (int)g_key_file_get_boolean(keyfile, "BDM", "RequireSecurity", &error);
-    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "RequireSecurity key not found in %s. %s", 
+    if (error) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading RequireSecurity key in %s. %s", 
 	      bdm_config_file, error->message);
     }
     g_clear_error(&error);
@@ -711,8 +711,8 @@ int main(int argc, char *argv[]) {
     /* ION Key */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting ION Key from %s", bdm_config_file);
     key = (long)g_key_file_get_integer(keyfile, "BDM", "IonKey", &error);
-    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "IonKey key not found in %s. %s", 
+    if (error) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading IonKey key in %s. %s", 
 	      bdm_config_file, error->message);
     } else {
 #if HAVE_SM_SET_BASEKEY
@@ -733,8 +733,8 @@ int main(int argc, char *argv[]) {
     /* Keep Stats for BDM HAB too */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Keep Stats from %s", bdm_config_file);
     int keep_stats = (int)g_key_file_get_boolean(keyfile, "BDM", "KeepStats", &error);
-    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "KeepStats key not found in %s. %s", 
+    if (error) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading KeepStats key in %s. %s", 
 	      bdm_config_file, error->message);
     } else if (keep_stats) {
 	ignore_self = 0;
@@ -745,8 +745,8 @@ int main(int argc, char *argv[]) {
     /* DTN Endpoint ID */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting DTN Endpoint ID from %s", bdm_config_file);
     dtn_endpoint_id = g_key_file_get_string(keyfile, "BDM", "DtnEndpointId", &error);
-    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "DtnEndpointId key not found in %s. %s", 
+    if (error) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading DtnEndpointId key in %s. %s", 
 	      bdm_config_file, error->message);
     } 
     g_clear_error(&error);
@@ -770,8 +770,8 @@ int main(int argc, char *argv[]) {
     /* Enable TCP Sync Receiver */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting TCP Sync Receiver from %s", bdm_config_file);
     enable_tcp_sync_receiver = (int)g_key_file_get_boolean(keyfile, "BDM", "TcpSyncReceiver", &error);
-    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "TcpSyncReceiver key not found in %s. %s", 
+    if (error) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading TcpSyncReceiver key in %s. %s", 
 	      bdm_config_file, error->message);
     }
     g_clear_error(&error);
@@ -779,8 +779,8 @@ int main(int argc, char *argv[]) {
     if (enable_tcp_sync_receiver) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting TCP Sync Receiver Port from %s", bdm_config_file);
 	tcp_sync_recv_port = g_key_file_get_integer(keyfile, "BDM", "TcpSyncReceiverPort", &error);
-	if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "BdmPort key not found in %s. %s", 
+	if (error) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading BdmPort key in %s. %s", 
 		  bdm_config_file, error->message);
 	} else {
 	    if (tcp_sync_recv_port >= USHRT_MAX) {
@@ -793,8 +793,8 @@ int main(int argc, char *argv[]) {
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting No Resources from %s", bdm_config_file);
     no_resources = (int)g_key_file_get_boolean(keyfile, "BDM", "NoResources", &error);
-    if ((error) && G_KEY_FILE_ERROR_KEY_NOT_FOUND == (int)error->code) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "NoResources key not found in %s. %s", 
+    if (error) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading NoResources key in %s. %s", 
 	      bdm_config_file, error->message);
     }
     g_clear_error(&error);
