@@ -570,6 +570,7 @@ int main(int argc, char *argv[]) {
 	if (NULL == database_file) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Failed to get DB File name from the file %s. %s", 
 		  bdm_config_file, error->message);
+	    database_file = DB_NAME;
 	}
     } else {
 	database_file = DB_NAME;
