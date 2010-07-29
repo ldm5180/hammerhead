@@ -17,6 +17,8 @@
 #include "bionet-asn.h"
 %}
 
+%newobject bionet_value_to_str;
+
 typedef unsigned short uint16_t;
  
 typedef struct timeval

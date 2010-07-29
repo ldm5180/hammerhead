@@ -141,6 +141,7 @@ static int bionet_value_set_internal(bionet_value_t *value,
     }
 
     free(value->as_string);
+    value->as_string = NULL;
 
     /* set content */
     switch (datatype)
