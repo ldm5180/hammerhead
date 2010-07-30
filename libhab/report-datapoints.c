@@ -56,6 +56,8 @@ int hab_report_datapoints(const bionet_node_t *node) {
 	    if (NULL == dp) {
 		goto publish;
 	    }
+	} else {
+	    goto publish;
 	}
 
 	if (epsilon) {

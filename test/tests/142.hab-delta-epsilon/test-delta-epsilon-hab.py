@@ -148,6 +148,27 @@ hab_report_new_node(node_e5)
 hab_report_datapoints(node_e5)
 
 
+generic = bionet_node_new(hab, "generic")
+if (None == generic):
+    logger.error("Failed to create node, exiting")
+    exit(1)
+bionet_hab_add_node(hab, generic)
+
+# uint32 
+resource = bionet_resource_new(generic, 
+                               BIONET_RESOURCE_DATA_TYPE_UINT32, 
+                               BIONET_RESOURCE_FLAVOR_SENSOR,
+                               "generic-count");
+if (None == resource):
+    logger.error("Failed to create resource, exiting")
+    exit(1)
+bionet_node_add_resource(generic, resource)
+
+# report stuff
+hab_report_new_node(generic)
+hab_report_datapoints(generic)
+
+
 
 i = 0
 next_pub = 0
@@ -221,6 +242,20 @@ while(time.time() - starttime < 30):
 
     #report stuff
     hab_report_datapoints(node_e5)
+
+
+    resource = bionet_node_get_resource_by_id(generic, "generic-count")
+    bionet_resource_set_uint32(resource, int(time.time()), None)
+    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
+    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
+                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                                    value_str,
+                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
+
+    #report stuff
+    hab_report_datapoints(generic)
 
 hab_read()
 exit(0)
