@@ -1,0 +1,41 @@
+#!/bin/bash -x
+#
+# Copyright (c) 2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+# Test Theory:
+#
+# Start a HAB which persists data and validate the data is correct.
+#
+
+RETVAL=0
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+PYPATHADD=$ROOT/hab/py-libhab:$ROOT/client/py-libbionet:$ROOT/data-manager/client/py-libbdm:$ROOT/hab/py-libhab/.libs:$ROOT/client/py-libbionet/.libs:$ROOT/data-manager/client/py-libbdm/.libs
+if [ -z "$PYTHONPATH" ]; then
+    export PYTHONPATH=$PYPATHADD
+else
+    export PYTHONPATH=$PYPATHADD:$PYTHONPATH
+fi
+
+UNIQUE=$$
+
+$ROOT/client/watcher/bionet-watcher -r "test-patter-hab.$UNIQUE.*:*" > out.watcher &
+
+$ROOT/hab/test-pattern/delta-epsilon-test-hab.py --id $UNIQUE
+
+
+
+kill %2
+wait %2
+kill %1
+wait %1
+
+
+exit $RETVAL
