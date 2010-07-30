@@ -100,6 +100,8 @@ int main(int argc, char* argv[])
 
     // add node
     add_node(hab, "resources");
+    //give arduino board a moment before we write to it
+    sleep(2);
     
     //tell arduino board to activate
     arduino_write((char)1);
