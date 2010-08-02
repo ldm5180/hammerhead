@@ -76,7 +76,7 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
             free(node_data);
             bionet_node_set_user_data(node, NULL);
             bionet_hab_remove_node_by_id(hab, bionet_node_get_id(node));
-            hab_report_lost_node(bionet_node_get_id(node));
+            hab_report_lost_node(node);
             bionet_node_free(node);
             ni --;
         }

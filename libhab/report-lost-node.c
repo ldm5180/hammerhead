@@ -15,30 +15,40 @@
 #include "bionet-asn.h"
 
 
-int hab_report_lost_node(const char *node_id) {
+int hab_report_lost_node(const bionet_node_t * node) {
     H2C_Message_t m;
     PrintableString_t *lostnode;
     asn_enc_rval_t asn_r;
     int r;
     char topic[BIONET_NAME_COMPONENT_MAX_LEN + 2];
-
+    int i;
     bionet_asn_buffer_t buf;
-
+    const char * node_id;
 
     //
     // sanity checks
     //
 
-    if (node_id == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_lost_node(): NULL Node-ID passed in");
+    if (node == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_lost_node(): NULL Node passed in");
         goto fail0;
     }
+
+    node_id = bionet_node_get_id(node);
 
     if (bionet_hab_get_node_by_id(libhab_this, node_id) != NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_report_lost_node(): passed-in Node still exists in this HAB");
         goto fail0;
     }
 
+    for (i = 0; i < bionet_node_get_num_resources(node); i++) {
+	bionet_resource_t * resource = bionet_node_get_resource_by_index(node, i);
+	if (resource) {
+	    bionet_pthread_mutex_lock(&published_hash_mutex);
+	    g_hash_table_remove(libhab_most_recently_published, resource);
+	    bionet_pthread_mutex_unlock(&published_hash_mutex);
+	}
+    }
 
     memset(&buf, 0x00, sizeof(bionet_asn_buffer_t));
 

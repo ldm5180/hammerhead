@@ -34,10 +34,14 @@ bionet_datapoint_t * bionet_datapoint_dup(bionet_datapoint_t * datapoint) {
     }
 
     new->value = bionet_value_dup(bionet_datapoint_get_resource(datapoint), bionet_datapoint_get_value(datapoint));
+    if(NULL == new->value) {
+	free(new);
+	return NULL;
+    }
 
     bionet_datapoint_set_timestamp(new, bionet_datapoint_get_timestamp(datapoint));
 
-    new->dirty = 1;
+    new->dirty = 0;
 
     return new;
 } /* bionet_datapoint_dup() */

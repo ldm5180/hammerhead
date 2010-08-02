@@ -409,7 +409,7 @@ void destroy_node(bionet_hab_t* random_hab) {
     }
 
     bionet_hab_remove_node_by_id(random_hab, bionet_node_get_id(node));
-    hab_report_lost_node(bionet_node_get_id(node));
+    hab_report_lost_node(node);
     bionet_node_free(node);
 }
 

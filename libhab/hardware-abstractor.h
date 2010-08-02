@@ -138,13 +138,13 @@ int hab_report_datapoints(const bionet_node_t *node);
  * removed from the HAB.  It may be freed or overwritten after the
  * function returns.
  *
- * @param[in] node_id The Node ID string.
+ * @param[in] node The Node.
  *
  * @retval 0 Success
  * @retval -1 Failure
  */
 LIBHAB_API_DECL 
-int hab_report_lost_node(const char *node_id);
+int hab_report_lost_node(const bionet_node_t * node);
 
 
 /**

@@ -58,7 +58,7 @@ int hab_publish_info(bionet_hab_t * hab, const uint32_t flags) {
 	const char * node_id = "bionet-info";
 	bionet_node_t * node;
 	node = bionet_hab_remove_node_by_id(hab, node_id);
-	if (hab_report_lost_node(node_id)) {
+	if (hab_report_lost_node(node)) {
 	    g_warning("Failed to report lost node %s\n", node_id);
 	    return 1;
 	}

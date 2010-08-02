@@ -408,7 +408,7 @@ connecting:
 
                 close(s);
 
-                hab_report_lost_node(NODE_ID);
+                hab_report_lost_node(node);
 
                 streaming = 0;
 

@@ -150,8 +150,7 @@ char *bionet_value_as_str(bionet_value_t *value)
 	break;
 
     case BIONET_RESOURCE_DATA_TYPE_STRING:
-	free(str);
-	str = strdup(value->content.string_v);
+	str = strncpy(str, value->content.string_v, BIONET_STR_MAX);
 	if (NULL == str)
 	{
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 

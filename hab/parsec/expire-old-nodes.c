@@ -58,7 +58,7 @@ void expire_old_nodes(unsigned int timeout_secs) {
 
 	// The update is older than the timeout time
 	node = bionet_hab_remove_node_by_id(parsec_hab, bionet_node_get_id(node));
-	if (hab_report_lost_node(bionet_node_get_id(node))) {
+	if (hab_report_lost_node(node)) {
 	  g_warning("Error reporting a lost node...continuing.");
 	}
 	bionet_node_free(node);

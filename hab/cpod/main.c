@@ -263,7 +263,7 @@ connecting:
         close(cpod_fd);
         cpod_fd = -1;
         bionet_hab_remove_node_by_id(hab, NODE_ID);
-        hab_report_lost_node(NODE_ID);
+        hab_report_lost_node(node);
         bionet_node_free(node);
         goto connecting;
     }
@@ -278,7 +278,7 @@ connecting:
         close(cpod_fd);
         cpod_fd = -1;
         bionet_hab_remove_node_by_id(hab, NODE_ID);
-        hab_report_lost_node(NODE_ID);
+        hab_report_lost_node(node);
         bionet_node_free(node);
         g_usleep(3*1000*1000);
         goto connecting;
@@ -315,7 +315,7 @@ connecting:
             cpod_fd = -1;
 
             bionet_hab_remove_node_by_id(hab, NODE_ID);
-            hab_report_lost_node(NODE_ID);
+            hab_report_lost_node(node);
             bionet_node_free(node);
 
             g_usleep(3*1000*1000);
@@ -336,7 +336,7 @@ connecting:
                 cpod_fd = -1;
 
                 bionet_hab_remove_node_by_id(hab, NODE_ID);
-                hab_report_lost_node(NODE_ID);
+                hab_report_lost_node(node);
                 bionet_node_free(node);
 
                 goto connecting;
@@ -360,7 +360,7 @@ connecting:
                 cpod_fd = -1;
 
                 bionet_hab_remove_node_by_id(hab, NODE_ID);
-                hab_report_lost_node(NODE_ID);
+                hab_report_lost_node(node);
                 bionet_node_free(node);
 
                 g_usleep(3*1000*1000);

@@ -392,7 +392,7 @@ next_card:
             // this node has been lost
             printf("lost node %s\n", bionet_node_get_id(node));
             bionet_hab_remove_node_by_id(this_hab, bionet_node_get_id(node));
-            hab_report_lost_node(bionet_node_get_id(node));
+            hab_report_lost_node(node);
 
             free(node_user_data);
             bionet_node_set_user_data(node, NULL);

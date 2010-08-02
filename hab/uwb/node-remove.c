@@ -11,19 +11,19 @@
 void node_remove() {
     bionet_node_t *node;
 
-	if (bionet_hab_get_num_nodes(uwb_hab) == 0) {
+    if (bionet_hab_get_num_nodes(uwb_hab) == 0) {
         return;
-	}
+    }
 
-	node = bionet_hab_remove_node_by_id(uwb_hab, node_id);
+    node = bionet_hab_remove_node_by_id(uwb_hab, node_id);
 
     if (node == NULL) {
         g_warning("Cannot remove the node from bionet, continuing...");
-	}
+    }
 
-	if (hab_report_lost_node(node_id)) {
-        g_warning("Failed to report lost node %s\n", node_id);
-	}
+    if (hab_report_lost_node(node)) {
+	g_warning("Failed to report lost node %s\n", node_id);
+    }
 
     bionet_node_free(node);
 

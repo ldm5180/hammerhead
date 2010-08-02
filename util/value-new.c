@@ -263,7 +263,9 @@ static bionet_value_t * bionet_value_new_internal(const bionet_resource_t *resou
             free(value);
             errno = ENOMEM;
             return NULL;
-        }
+        } else {
+	    g_warning("%s", value->content.string_v);
+	}
 	break;	
     }
     default:

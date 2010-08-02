@@ -84,9 +84,11 @@ int hab_connect(bionet_hab_t *hab) {
     if (NULL != libhab_most_recently_published) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "hab_connect(): Most Recently Published Hash Table is already initialized.");
-    } else {
-	libhab_most_recently_published = g_hash_table_new_full(NULL, NULL, 
+    } else {	
+	bionet_pthread_mutex_lock(&published_hash_mutex);
+	libhab_most_recently_published = g_hash_table_new_full(NULL, NULL,
 							       NULL, hash_element_datapoint_destroy);
+	bionet_pthread_mutex_unlock(&published_hash_mutex);
     }
 
     if (NULL == libhab_most_recently_published) {

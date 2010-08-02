@@ -64,6 +64,7 @@ libbionet_util_la_SOURCES =    \
     hab-user-data.c            \
     hab-name.c                 \
     hab-is-secure.c            \
+    mutex.c                    \
     node-new.c                 \
     node-add-resource.c        \
     node-sort-resource.c       \

@@ -311,7 +311,7 @@ int download_session(serial_handle_t serial_handle, int session_number, int reco
 
     bionet_hab_remove_node_by_id(this_hab, bionet_node_get_id(node));
     
-    hab_report_lost_node("csa-cp");
+    hab_report_lost_node(node);
 
     bionet_node_free(node);
     node = NULL;
@@ -323,7 +323,7 @@ int download_session(serial_handle_t serial_handle, int session_number, int reco
 
 fail:
     if (node != NULL) {
-        hab_report_lost_node("csa-cp");
+        hab_report_lost_node(node);
         bionet_node_free(node);
         node = NULL;
     }

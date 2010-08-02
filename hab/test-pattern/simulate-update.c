@@ -324,10 +324,10 @@ void simulate_updates(gpointer data, gpointer user_data) {
                 }
 		
 		node = bionet_hab_remove_node_by_id(hab, lost_event->id);
+		hab_report_lost_node(node);
 		bionet_node_free(node);
 		
 		hab_read();
-		hab_report_lost_node(lost_event->id);
 	    }
             break;
         }
