@@ -29,7 +29,7 @@ QLed::QLed(QWidget *parent)
    m_shape=Square;
    setMinimumSize(QSize(50,50));
    setMaximumSize(QSize(125,125));
-   shapes << "resources/square_";
+   shapes << ":icons/square_";
    colors << "red.svg" << "grey.svg";
 
    renderer = new QSvgRenderer();

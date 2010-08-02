@@ -12,8 +12,8 @@ void CgbaSimMainWindow::setupWindow()
     mainWidget = new cgbaSim();
     this->setCentralWidget(mainWidget);
 
-    this->setWindowTitle(tr("CGBA Simulator"));
-    this->setWindowIcon(QIcon("resources/bionet.png"));
+    this->setWindowTitle(tr("CGBA Interface Simulator"));
+    this->setWindowIcon(QIcon(":icons/bionet.png"));
     this->setMinimumSize(QSize(550, 550));
     this->resize(QSize(825,825));
 }
@@ -43,8 +43,8 @@ void CgbaSimMainWindow::quit()
 
 void CgbaSimMainWindow::about()
 {
-    QMessageBox::about(this, tr("About CGBA Simulator"),
-                       tr("This program simulates a Commercial Generic Bioprocessing Apparatus (CGBA)."));;
+    QMessageBox::about(this, tr("About CGBA Interface Simulator"),
+                       tr("This program simulates an interface to a Commercial Generic Bioprocessing Apparatus (CGBA)."));;
 }
 
 CgbaSimMainWindow::~CgbaSimMainWindow()

@@ -21,7 +21,8 @@ proxr_arduino_client_SOURCES =       \
     cgbaSim.moc.cpp             \
     cgbasimmainwindow.moc.cpp   \
     dial.moc.cpp                \
-    qled.moc.cpp			    			
+    qled.moc.cpp		\
+    qrc_icons.cpp	 		
 
 proxr_arduino_client_CPPFLAGS = $(QT_CPPFLAGS) $(AM_CPPFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_QWT) $(CFLAGS_BIONET_CLIENT_QT4) $(CFLAGS_BDM)
 
@@ -30,4 +31,4 @@ proxr_arduino_client_LDFLAGS = $(QT_LDFLAGS) $(AM_LDFLAGS) $(AVAHI_COMPAT_LIBDNS
 proxr_arduino_client_LDADD = $(QT_LIBS) $(AM_LDADD) -lpthread -lm $(QWT_LIBADD) $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_CAL_CLIENT) $(LIBS_BIONET_CLIENT_QT4) $(LIBS_BDM)
 
 clean-local:
-	rm -f $(BUILT_SOURCES)
+	rm -f *.o proxr-arduino-client
