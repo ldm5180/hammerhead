@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/icons" >
+    <file>bionet.png</file>
+    <file>square_grey.svg</file>
+    <file>square_red.svg</file>
+</qresource>
+</RCC>
