@@ -43,16 +43,13 @@ in the release branch:
 
         ./configure && make all check test
 
-    building the release tarball also builds the docs, install them on our webserver: rsync -av doxygen/html/ bioserve.colorado.edu:/var/www/bionet/doc/2.1.2
+    building the release tarball also builds the docs, install them on our webserver: rsync -av doxygen/html/ bioserve.colorado.edu:/var/www/bionet/doc/2.1.1
 
     create symlink:
     	   rm -f /var/www/bionet-api
-	   ln -s /var/www/bionet/doc/2.1.2 /var/www/bionet-api
+	   ln -s /var/www/bionet/doc/2.1.1 /var/www/bionet-api
     
     upload the tarball to bioserve.colorado.edu:/data/bionet-release
-
-    create symlink of htaccess file in doc dir
-    	   ln -s /data/bionet-release/.htaccess /var/www/bionet-api/.
 
     Build iPhone App for AdHoc distribution:
      - Build supporting libs with './configure-make-install-iphone.sh'
@@ -74,11 +71,18 @@ in the release branch:
          -  tar czf bionet_simulator_sdk.tgz bionet_simulator_sdk
          -  Copy those .tgz files to the release location (Also copy deps from last release)
 
-    update /data/bionet-release/index.html to include correct links
+    update Wordpress's Download page to link to the correct tarball and contain the current ChangeLog.
 
-    send out an announcement email with links to the tarball and the
+    update Wordpress's Changelog page with the latest changelog and tarball link.
+
+    send out an announcement email with links to the tarball, repos and the
     API docs, and the top of the changelog
 
+    update both of the VMs (VMWare and KVM) which are the demo VMs in /data/bionet-release.
+    	   - copy them to your machine, uncompress and start them
+	   - run 'sudo apt-get update' then 'sudo apt-get dist-upgrade'
+	   - shut them down and recompress them
+	   - copy them back to bioserve.colorado.edu
 
 in mainline:
 
