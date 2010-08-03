@@ -13,9 +13,8 @@ That will start it recording into bdm.db.  It shows (on stdout) what
 it's recording.  While bionet-data-manager is running, run dump-db to
 show what it has recorded so far.
 
-As of r11885, it only records HABs seen, Nodes seen, and Resources seen.
-It does not record Resource Values, or Node or HAB coming and going
-events.
+As of r1822, it only records HABs seen, Nodes seen, and Resources seen.
+It does not record Node or HAB coming and going events.
 
 
 
