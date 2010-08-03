@@ -1,3 +1,41 @@
+Copyright (c) 2008 - 2010 Regents of the University of Colorado
+This work was supported by NASA Award No. NNJ05HE10G.
+ 
+This library is free software; you can redistribute it and/or modify 
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, version 2.1 of the License.
+This library is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of 
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+Lesser General Public License for more details. A copy of the GNU 
+Lesser General Public License v 2.1 can be found in the file named
+“COPYING.LESSER”. You should have received a copy of the GNU Lesser
+ General Public License along with this library; if not, write to the
+Free Software Foundation, Inc., 
+51 Franklin Street, Fifth Floor, 
+Boston, MA 02110-1301 USA.
+ 
+You may contact the Automation Group at:
+bionet@bioserve.colorado.edu or http://bioserve.colorado.edu/developers-corner
+ 
+Dr. Kevin Gifford
+University of Colorado
+Engineering Center, ECAE 1B08
+Boulder, CO 80309
+ 
+Because BioNet was developed at a university, we ask that you provide 
+attribution to the BioNet authors in any redistribution, modification, 
+work, or article based on this library.
+ 
+You may contribute modifications or suggestions to the University of 
+Colorado for the purpose of discussing and improving this software. 
+Before your modifications are incorporated into the master version 
+distributed by the University of Colorado, we must have a contributor 
+license agreement on file from each contributor. If you wish to supply 
+the University with your modifications, please join our mailing list. 
+Instructions can be found on our website at 
+http://bioserve.colorado.edu/developers-corner.
+
 
 Bionet 2
 ~~~~~~~~
@@ -5,17 +43,6 @@ Bionet 2
 Bionet 2 uses mDNS-SD (multicast DNS with Service Discovery) to find
 the peers on the network.  In order for this to work, you need to be
 running the avahi-daemon on each host that will run HABs or Clients.
-
-EXPORT COMPLIANCE ASSURANCE: The Receiving Party acknowledges that all
-products, software, and technology (herein referred to as "Products") obtained
-from the Disclosing Party are subject to the United States (U.S.) government
-export control and economic sanctions laws.  The Receiving Party agrees that
-neither it nor its subsidiaries or affiliates will directly or indirectly
-export, re-export, transfer, or release, (herein referred to as "export"), any
-such Products or any direct product thereof to any destination, person, entity,
-or end-use prohibited or restricted under such laws without prior U.S.
-government authorization as applicable, either in writing or as permitted by
-applicable regulation.
 
 To compile:
 
