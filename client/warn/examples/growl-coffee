@@ -1,0 +1,40 @@
+#!/usr/bin/python
+
+# To use coffeepot client:
+# First, change resource to appropriate address. Use correct Kill-A-Watt ID.
+# Change sender and receiver emails if desired ('command', -s and -r)
+# To run, use bionet-warn client with command ./bionet-warn -c "examples/coffeepot"
+
+on = { 'coffeepot' : False }
+
+def turn_off(x, name):
+    global on
+    if (x < 50 and on[name] == True):
+        on[name] = False
+        return 1
+    return 0
+
+def turn_on(x, name):
+    global on
+    if (x > 200 and on[name] == False):
+        on[name] = True
+	return 1
+    return 0
+            
+
+
+warn = [
+    {
+    'resource': "Kill-A-Watt.quick.1:Watts", 
+    'compare': lambda x: turn_on(x, 'coffeepot') > 0,
+    'command': "growlnotify --image examples/coffee-icon.png --title \"Relax...\" --message \"Coffee is brewing.\""
+    },
+
+    {
+    'resource': "Kill-A-Watt.quick.1:Watts", 
+    'compare': lambda x: turn_off(x, 'coffeepot') > 0,
+    'command': "growlnotify --image examples/coffee-icon.png --title \"Perk Up...\" --message \"Coffee is ready.\" --sticky"
+    }
+]
+
+
