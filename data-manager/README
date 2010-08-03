@@ -16,6 +16,13 @@ show what it has recorded so far.
 As of r1822, it only records HABs seen, Nodes seen, and Resources seen.
 It does not record Node or HAB coming and going events.
 
+The BDM client-server and sync protocols are designed to handle clients
+and servers starting, stopping, and restarting in any order. However, if
+you do the following:
+   - Stop a BDM.
+   - Remove its database file.
+   - Restart the BDM.
+you must restart all the clients that connect to that BDM.
 
 
 
