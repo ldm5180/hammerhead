@@ -4,8 +4,8 @@
 
 void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
 {
-    float data;
-    float content;
+    double data;
+    double content;
     int id;
     bionet_node_t *node;
 

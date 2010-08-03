@@ -22,7 +22,7 @@ void add_pot_resource(bionet_node_t *node, int id)
 
     resource = bionet_resource_new(
         node,
-        BIONET_RESOURCE_DATA_TYPE_FLOAT,
+        BIONET_RESOURCE_DATA_TYPE_DOUBLE,
         BIONET_RESOURCE_FLAVOR_ACTUATOR,
         name);
     if(resource == NULL)
@@ -38,7 +38,7 @@ void add_pot_resource(bionet_node_t *node, int id)
         return;
     }
 
-    value = bionet_value_new_float(resource, 0);
+    value = bionet_value_new_double(resource, 0);
     if(value == NULL)
     {
         fprintf(stderr, "Error creating value for resource %d\n", id);
