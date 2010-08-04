@@ -26,6 +26,32 @@
 #include "sdr.h"
 #include "bp.h"
 
+typedef void (*sm_set_basekey_t)(unsigned int key);
+typedef int (*bp_attach_t)(void);
+typedef void (*bp_interrupt_t)(BpSAP sap);
+typedef int (*bp_open_t)(char *eid, BpSAP *ionsapPtr);
+typedef void (*bp_close_t)(BpSAP sap);
+typedef Sdr (*bp_get_sdr_t)(void);
+typedef int (*bp_send_t)(BpSAP sap, int mode, char *destEid, char *reportToEid, int lifespan, int classOfService, BpCustodySwitch custodySwitch, unsigned char srrFlags, int ackRequested, BpExtendedCOS *extendedCOS, Object adu, Object *newBundle);
+typedef int (*bp_receive_t)(BpSAP sap, BpDelivery *dlvBuffer, int timeoutSeconds);
+typedef int (*bp_add_endpoint_t)(char *eid, char *script);
+typedef void (*bp_release_delivery_t)(BpDelivery *dlvBuffer, int releaseAdu);
+
+typedef Object (*Sdr_malloc_t)(char *file, int line, Sdr sdr, unsigned long size);
+typedef void (*sdr_begin_xn_t)(Sdr sdr);
+typedef void (*sdr_cancel_xn_t)(Sdr sdr);
+typedef int (*sdr_end_xn_t)(Sdr sdr);
+typedef void (*Sdr_write_t)(char *file, int line, Sdr sdr, Address into, char *from, int length);
+
+typedef Object (*zco_create_t)(Sdr sdr, ZcoMedium firstExtentSourceMedium, Object firstExtentLocation, unsigned int firstExtentOffset, unsigned int firstExtentLength);
+typedef int (*zco_append_extent_t)(Sdr sdr, Object zcoRef, ZcoMedium sourceMedium, Object location, unsigned int offset, unsigned int length);
+typedef void (*zco_start_receiving_t)(Sdr sdr, Object zcoRef, ZcoReader *reader);
+typedef int (*zco_receive_source_t)(Sdr sdr, ZcoReader *reader, unsigned int length, char *buffer);
+typedef void (*zco_stop_receiving_t)(Sdr sdr, ZcoReader *reader);
+
+typedef void (*writeErrMemo_t)(char *);
+typedef void (*writeErrmsgMemos_t)(void);
+
 typedef struct {
     void (*sm_set_basekey)(unsigned int key);
     int (*bp_attach)(void);

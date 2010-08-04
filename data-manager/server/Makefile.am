@@ -9,6 +9,7 @@ include $(top_srcdir)/common.am
 bin_PROGRAMS = bionet-data-manager
 noinst_LTLIBRARIES = libbionet-data-manager.la
 
+AM_CFLAGS += -fstrict-aliasing -Wstrict-aliasing
 AM_YFLAGS = -d 
 AM_LFLAGS = --yylineno
 

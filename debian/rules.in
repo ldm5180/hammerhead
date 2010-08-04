@@ -32,7 +32,7 @@ configure: configure-stamp
 configure-stamp: debian/changelog
 	dh_testdir
 	[ -f ./configure ] || ./autogen.sh
-	./configure --prefix=/usr --sysconfdir=/etc $(DISABLE_ALSA) @CONFIGURE_WITH_ION@
+	./configure --prefix=/usr --sysconfdir=/etc $(DISABLE_ALSA) @CONFIGURE_WITH_ION@ @CONFIGURE_WITH_MDNSSD@
 	touch configure-stamp
 
 

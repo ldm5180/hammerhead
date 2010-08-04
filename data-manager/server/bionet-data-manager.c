@@ -116,153 +116,153 @@ int load_ion(void) {
     Corrigendum 1) workaround; see the Rationale for the
     POSIX specification of dlsym(). */
 
-    *(void **)(&bdm_bp_funcs.sm_set_basekey) = dlsym(libbp_handle, "sm_set_basekey");
+    bdm_bp_funcs.sm_set_basekey = (sm_set_basekey_t)dlsym(libbp_handle, "sm_set_basekey");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sm_set_basekey() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.bp_attach) = dlsym(libbp_handle, "bp_attach");
+    bdm_bp_funcs.bp_attach = (bp_attach_t)dlsym(libbp_handle, "bp_attach");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_attach() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.bp_interrupt) = dlsym(libbp_handle, "bp_interrupt");
+    bdm_bp_funcs.bp_interrupt = (bp_interrupt_t)dlsym(libbp_handle, "bp_interrupt");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_interrupt() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.bp_open) = dlsym(libbp_handle, "bp_open");
+    bdm_bp_funcs.bp_open = (bp_open_t)dlsym(libbp_handle, "bp_open");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_open() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.bp_close) = dlsym(libbp_handle, "bp_close");
+    bdm_bp_funcs.bp_close = (bp_close_t)dlsym(libbp_handle, "bp_close");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_close() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.bp_get_sdr) = dlsym(libbp_handle, "bp_get_sdr");
+    bdm_bp_funcs.bp_get_sdr = (bp_get_sdr_t)dlsym(libbp_handle, "bp_get_sdr");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_get_sdr() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.bp_send) = dlsym(libbp_handle, "bp_send");
+    bdm_bp_funcs.bp_send = (bp_send_t)dlsym(libbp_handle, "bp_send");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_send() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.bp_receive) = dlsym(libbp_handle, "bp_receive");
+    bdm_bp_funcs.bp_receive = (bp_receive_t)dlsym(libbp_handle, "bp_receive");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_receive() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.bp_add_endpoint) = dlsym(libbp_handle, "bp_add_endpoint");
+    bdm_bp_funcs.bp_add_endpoint = (bp_add_endpoint_t)dlsym(libbp_handle, "bp_add_endpoint");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_add_endpoint() in libbp.so: %s, ignoring error", error);
     }
 
-    *(void **)(&bdm_bp_funcs.bp_release_delivery) = dlsym(libbp_handle, "bp_release_delivery");
+    bdm_bp_funcs.bp_release_delivery = (bp_release_delivery_t)dlsym(libbp_handle, "bp_release_delivery");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_release_delivery() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.Sdr_malloc) = dlsym(libbp_handle, "Sdr_malloc");
+    bdm_bp_funcs.Sdr_malloc = (Sdr_malloc_t)dlsym(libbp_handle, "Sdr_malloc");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find Sdr_malloc() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.sdr_begin_xn) = dlsym(libbp_handle, "sdr_begin_xn");
+    bdm_bp_funcs.sdr_begin_xn = (sdr_begin_xn_t)dlsym(libbp_handle, "sdr_begin_xn");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sdr_begin_xn() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.sdr_cancel_xn) = dlsym(libbp_handle, "sdr_cancel_xn");
+    bdm_bp_funcs.sdr_cancel_xn = (sdr_cancel_xn_t)dlsym(libbp_handle, "sdr_cancel_xn");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sdr_cancel_xn() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.sdr_end_xn) = dlsym(libbp_handle, "sdr_end_xn");
+    bdm_bp_funcs.sdr_end_xn = (sdr_end_xn_t)dlsym(libbp_handle, "sdr_end_xn");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sdr_end_xn() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.Sdr_write) = dlsym(libbp_handle, "Sdr_write");
+    bdm_bp_funcs.Sdr_write = (Sdr_write_t)dlsym(libbp_handle, "Sdr_write");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find Sdr_write() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.zco_create) = dlsym(libbp_handle, "zco_create");
+    bdm_bp_funcs.zco_create = (zco_create_t)dlsym(libbp_handle, "zco_create");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_create() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.zco_append_extent) = dlsym(libbp_handle, "zco_append_extent");
+    bdm_bp_funcs.zco_append_extent = (zco_append_extent_t)dlsym(libbp_handle, "zco_append_extent");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_append_extent() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.zco_start_receiving) = dlsym(libbp_handle, "zco_start_receiving");
+    bdm_bp_funcs.zco_start_receiving = (zco_start_receiving_t)dlsym(libbp_handle, "zco_start_receiving");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_start_receiving() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.zco_receive_source) = dlsym(libbp_handle, "zco_receive_source");
+    bdm_bp_funcs.zco_receive_source = (zco_receive_source_t)dlsym(libbp_handle, "zco_receive_source");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_receive_source() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.zco_stop_receiving) = dlsym(libbp_handle, "zco_stop_receiving");
+    bdm_bp_funcs.zco_stop_receiving = (zco_stop_receiving_t)dlsym(libbp_handle, "zco_stop_receiving");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_stop_receiving() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.writeErrMemo) = dlsym(libbp_handle, "writeErrMemo");
+    bdm_bp_funcs.writeErrMemo = (writeErrMemo_t)dlsym(libbp_handle, "writeErrMemo");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find writeErrMemo() in libbp.so: %s", error);
         return -1;
     }
 
-    *(void **)(&bdm_bp_funcs.writeErrmsgMemos) = dlsym(libbp_handle, "writeErrmsgMemos");
+    bdm_bp_funcs.writeErrmsgMemos = (writeErrmsgMemos_t)dlsym(libbp_handle, "writeErrmsgMemos");
     error = dlerror();
     if (error != NULL)  {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find writeErrmsgMemos() in libbp.so: %s", error);
