@@ -9,7 +9,7 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
     int id;
     bionet_node_t *node;
 
-    bionet_value_get_float(value, &data);
+    bionet_value_get_double(value, &data);
     if(data < 0 || data > 255)
 	return;
 
