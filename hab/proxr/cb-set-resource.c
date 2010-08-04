@@ -33,7 +33,7 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
     	    set_potentiometer(id, (int)data); 
 	    // set resources datapoint to new value
             content = data*POT_CONVERSION; 
-            bionet_resource_set_float(resource, content, NULL);
+            bionet_resource_set_double(resource, content, NULL);
             hab_report_datapoints(node);
             return;
         }
