@@ -24,6 +24,8 @@ YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
 
+. ../../testlib.sh
+
 ulimit -Sc unlimited
 
 echo "making DB file"
@@ -57,9 +59,11 @@ echo "killing BDM"
 kill %1
 wait
 
-if ! diff -q out.random-hab out.bdm-client.py; then
+normalize_bdm_client out.random-hab > norm.random-hab
+normalize_bdm_client out.bdm-client.py > norm.bdm-client.py
+if ! diff -q norm.random-hab norm.bdm-client.py; then
     echo "ERROR: bdm-client.py output differs from random-hab output:"
-    diff -u out.random-hab out.bdm-client.py
+    diff -u norm.random-hab norm.bdm-client.py
     RETVAL=1
 else
     echo "bdm-client.py output is identical to random-hab output, yay"

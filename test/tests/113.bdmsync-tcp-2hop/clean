@@ -8,4 +8,5 @@
 
 
 rm -f *.db
-rm -f out.*
+rm -f out.* norm.*
+rm -f core core.*

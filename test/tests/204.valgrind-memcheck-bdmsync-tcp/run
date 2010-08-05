@@ -42,7 +42,7 @@ cp orig-bdm.db sync-bdm.db
 export G_SLICE=always-malloc 
 export G_DEBUG=gc-friendly,resident-modules
 
-DOVALGRIND="$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --tool=memcheck --trace-children=yes $VGLEAK"
+DOVALGRIND="$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --tool=memcheck --trace-children=yes --track-origins=yes $VGLEAK"
 
 echo starting TCP sync receiver BDM
 $DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --no-resources --tcp-sync-receiver &
@@ -78,22 +78,29 @@ echo "killing BDM"
 kill $RECVPID
 wait $RECVPID
 
-if ! diff -q out.random-hab out.bdm-orig; then
-    echo "ERROR: Originating BDM output differs from random-hab output:"
-    diff -u out.random-hab out.bdm-orig
+normalize_bdm_client out.random-hab  > norm.random-hab
+
+for log in bdm-orig; do
+    normalize_bdm_client out.$log > norm.$log
+    if ! diff -q norm.random-hab norm.$log; then
+	echo "ERROR: $log BDM output differs from random-hab output:"
+	diff -u norm.random-hab norm.$log
+	RETVAL=1
+    else
+	echo "$log BDM output is identical to random-hab output, yay"
+    fi
+done
+
+sort out.bdm-orig > sorted.bdm-orig
+sort out.bdm-sync > sorted.bdm-sync
+
+if ! diff -q sorted.bdm-orig sorted.bdm-sync; then
+    echo "ERROR: Origional BDM output differs from sync'd:"
+    diff -u sorted.bdm-orig sorted.bdm-sync
     RETVAL=1
 else
-    echo "Originating BDM output is identical to random-hab output, yay"
+    echo "Origional BDM output identical to sync'd, yay"
 fi
-
-if ! diff -q out.random-hab out.bdm-sync; then
-    echo "ERROR: Sync'd BDM output differs from random-hab output:"
-    diff -u out.random-hab out.bdm-sync
-    RETVAL=1
-else
-    echo "Sync'd BDM output is identical to random-hab output, yay"
-fi
-
 
 for log in log.vg.send log.vg.recv; do
     if [ $(wc -l < $log) -gt 0 ]; then

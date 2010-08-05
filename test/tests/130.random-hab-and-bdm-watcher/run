@@ -5,6 +5,8 @@
 # NNC07CB47C.
 #
 
+#Define to run with a test-pattern file, instead of random
+#TEST_PATTERN=testpattern.in.a
 
 if [ -z "$ROOT" ]; then
     echo "ROOT environment variable is undefined"
@@ -26,6 +28,7 @@ PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
 
 ulimit -Sc unlimited
+rm -f core core.*
 
 make_bdm_db "bdm.db"
 
@@ -35,7 +38,7 @@ $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --id "bdm-$UNIQUE"
 BDMPID=$!
 sleep 3 # let the bdm come up before starting the HAB
 
-WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -r 'bdm-$UNIQUE,bdm-$UNIQUE/random-hab.$UNIQUE.*:*'"
+WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' --habs 'bdm-$UNIQUE,bdm-$UNIQUE/random-hab.$UNIQUE' --nodes 'bdm-$UNIQUE,bdm-$UNIQUE/random-hab.$UNIQUE.*' --resources 'bdm-$UNIQUE,bdm-$UNIQUE/random-hab.$UNIQUE.*:*'"
 
 echo "bdm-watcher args: $WATCHCMD"
 
@@ -45,14 +48,19 @@ eval "$WATCHCMD >| out.bdm-watcher.0 &"
 WPID0=$!
 
 
-test_log "Starting test-pattern-hab recorder"
-rm -f testpattern.in
-$ROOT/client/watcher/bionet-watcher --output-mode 'test-pattern' > testpattern.in &
-TPPID=$!
+if [ "$TEST_PATTERN" != "testpattern.in" ]; then
+  test_log "Starting test-pattern-hab recorder"
+  rm -f testpattern.in
+  $ROOT/client/watcher/bionet-watcher --output-mode 'test-pattern' > testpattern.in &
+  TPPID=$!
+fi
 
 test_log "starting random-hab"
-$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
-#$ROOT/hab/test-pattern/test-pattern-hab --id $UNIQUE --type random-hab --output-mode bdm-client --current-time testpattern.in >| out.random-hab &
+if [ -z "$TEST_PATTERN" ]; then
+  $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+else
+  $ROOT/hab/test-pattern/test-pattern-hab --id $UNIQUE --type random-hab --output-mode bionet-watcher --current-time "$TEST_PATTERN" >| out.random-hab &
+fi
 HABPID=$!
 
 sleep `expr $TEST_DURATION / 2`
@@ -61,11 +69,17 @@ test_log "some datapoints generated, starting bdm-watcher.1"
 eval "$WATCHCMD >| out.bdm-watcher.1 &"
 WPID1=$!
 
-sleep `expr $TEST_DURATION / 2`
+if [ -z "$TEST_PATTERN" ]; then
+  sleep `expr $TEST_DURATION / 2`
 
-test_log "all datapoints generated. Killing random-hab"
-kill $HABPID
-wait $HABPID
+  test_log "all datapoints generated. Killing random-hab"
+  kill $HABPID
+  wait $HABPID
+else
+  wait $HABPID
+  test_log "all datapoints generated. test-pattern-hab exited"
+fi
+
 
 # Let the BDM commit the last info to disk
 sleep 10
@@ -91,17 +105,34 @@ test_log "killing BDM"
 kill $BDMPID
 wait $BDMPID
 
-kill $TPPID
-wait $TPPID
+if [ -n "$TPPID" ]; then
+  kill $TPPID
+  wait $TPPID
+fi
 
+
+normalize_bdm_client out.random-hab > norm.random-hab
 for i in 0 1 2; do
+    normalize_bdm_client out.bdm-watcher.$i > norm.bdm-watcher.$i
     sort out.bdm-watcher.$i > sorted.bdm-watcher.$i
-    if ! diff -q out.random-hab sorted.bdm-watcher.$i; then
+
+    if ! diff -q norm.random-hab norm.bdm-watcher.$i; then
 	echo "ERROR: bdm-watcher.$i output differs from random-hab output:"
-	diff -u out.random-hab sorted.bdm-watcher.$i
+	#diff -u norm.random-hab norm.bdm-watcher.$i
 	RETVAL=1
     else
-	echo "bdm-watcher.$i same as random-hab output:"
+	echo "bdm-watcher.$i same as random-hab output"
+    fi
+
+done
+
+for i in 1 2; do
+    if ! diff -q sorted.bdm-watcher.0 sorted.bdm-watcher.$i; then
+	echo "ERROR: bdm-watcher.$i output differs from bdm-watcher.0 output:"
+	#diff -u norm.random-hab norm.bdm-watcher.$i
+	RETVAL=1
+    else
+	echo "bdm-watcher.$i same as bdm-watcher.0 output"
     fi
 done
 

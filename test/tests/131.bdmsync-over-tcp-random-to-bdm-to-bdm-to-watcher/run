@@ -27,6 +27,7 @@ PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
 
 #Generate core files on error
+rm -f core core.*
 ulimit -Sc unlimited
 
 echo "making DB file"
@@ -53,7 +54,7 @@ echo " ->  $ROOT/data-manager/server/bionet-data-manager $SENDPID"
 sleep 6 # let the bdm come up before starting the HAB
 
 
-WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -r 'sync-recv-$SYNCUNIQUE,sync-send-$SYNCUNIQUE/random-hab.$UNIQUE.*:*'"
+WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -h 'sync-recv-$SYNCUNIQUE,sync-send-$SYNCUNIQUE/random-hab.$UNIQUE' -n 'sync-recv-$SYNCUNIQUE,sync-send-$SYNCUNIQUE/random-hab.$UNIQUE.*'  -r 'sync-recv-$SYNCUNIQUE,sync-send-$SYNCUNIQUE/random-hab.$UNIQUE.*:*'"
 
 echo "bdm-watcher args: $WATCHCMD"
 
@@ -110,14 +111,25 @@ wait $RECVPID
 kill $TPPID
 wait $TPPID
 
-for i in out.bdm-watcher.0 out.bdm-watcher.1 out.bdm-watcher.2 out.bdm-orig; do
-    sort $i > $i.sorted
-    if ! diff -q out.random-hab $i.sorted; then
-	echo "ERROR: $i output differs from random-hab output:"
-	diff -u out.random-hab $i.sorted
+normalize_bdm_client out.random-hab > norm.random-hab
+normalize_bdm_client out.bdm-orig > norm.bdm-orig
+sort out.bdm-orig > sorted.bdm-orig
+if ! diff -q norm.random-hab norm.bdm-orig; then
+    echo "ERROR: bdm-orig output differs from random-hab output:"
+    diff -u norm.random-hab norm.bdm-orig
+    RETVAL=1
+else
+    echo "bdm-orig output same as random-hab output"
+fi
+
+for i in bdm-watcher.0 bdm-watcher.1 bdm-watcher.2; do
+    sort out.$i > sorted.$i
+    if ! diff -q sorted.bdm-orig sorted.$i; then
+	echo "ERROR: $i output differs from bdm-orig output:"
+	diff -u sorted.bdm-orig sorted.$i
 	RETVAL=1
     else
-	echo "$i output same as random-hab output"
+	echo "$i output same as bdm-orig output"
     fi
 done
 

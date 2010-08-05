@@ -33,7 +33,7 @@ VGLEAK=
 #    VGLEAK="--leak-check=full --leak-resolution=high"
 #fi
 
-WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -r 'random-hab.$UNIQUE.*:*'"
+WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -h 'random-hab.$UNIQUE' -n 'random-hab.$UNIQUE.*' -r 'random-hab.$UNIQUE.*:*'"
 
 echo "making DB file"
 rm -f bdm.db
@@ -77,11 +77,12 @@ wait $WATCHPID
 # let the valgrind output finish
 sleep 1
 
-for log in out.watcher; do
-    sort -u $log > $log.sorted
-    if ! diff -q out.random-hab $log.sorted; then
+normalize_bdm_client out.random-hab > norm.random-hab
+for log in watcher; do
+    normalize_bdm_client out.$log > norm.$log
+    if ! diff -q norm.random-hab norm.$log; then
 	echo "ERROR: $log output differs from random-hab output:"
-	diff -u out.random-hab $log.sorted
+	diff -u norm.random-hab norm.$log
 	RETVAL=1
     fi
 done

@@ -50,3 +50,7 @@ skip_if_no_valgrind() {
 test_log() {
 	printf "%s: %s\n" "`date +'%F %r'`" "$@"
 }
+
+normalize_bdm_client() {
+  sort $1 | sed -r 's/^[^,]*,//' 
+}

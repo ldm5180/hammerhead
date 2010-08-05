@@ -16,6 +16,8 @@ if [ -z "$TEST_DURATION" ]; then
     TEST_DURATION=30
 fi
 
+. ../../testlib.sh
+
 UNIQUE=$$
 SYNCUNIQUE=${HOSTNAME//\./-}
 RETVAL=0
@@ -68,7 +70,8 @@ kill $HABPID
 wait $HABPID
 
 sleep 15
-$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
+#$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
+$ROOT/data-manager/client/bdm-client/bdm-client -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig 2> err.bdm-sync
 echo "test run complete. killing the TCP sync sender BDM"
 kill $SENDPID
 wait $SENDPID
@@ -76,7 +79,8 @@ wait $SENDPID
 echo "getting data from TCP sync receiver BDM"
 
 
-$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
+#$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
+$ROOT/data-manager/client/bdm-client/bdm-client -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync 2>err.bdm-sync
 
 echo "killing BDM"
 kill $RECVPID
@@ -86,20 +90,25 @@ fi
 wait
 
 
-if ! diff -q out.random-hab out.bdm-orig; then
-    echo "ERROR: Originating BDM output differs from random-hab output:"
-    diff -u out.random-hab out.bdm-orig
-    RETVAL=1
-else
-    echo "Originating BDM output is identical to random-hab output, yay"
-fi
+normalize_bdm_client out.random-hab > norm.random-hab
 
-if ! diff -q out.random-hab out.bdm-sync; then
-    echo "ERROR: Sync'd BDM output differs from random-hab output:"
-    diff -u out.random-hab out.bdm-sync
+for x in bdm-orig bdm-sync; do
+    normalize_bdm_client out.$x > norm.$x
+    if ! diff -q norm.random-hab norm.$x; then
+	echo "ERROR: $x output differs from random-hab output:"
+	diff -u norm.random-hab norm.$x
+	RETVAL=1
+    else
+	echo "$x output is identical to random-hab output, yay"
+    fi
+done
+
+if ! diff -q out.bdm-orig out.bdm-sync; then
+    echo "ERROR: Sync'd BDM output differs from Original:"
+    diff -u out.bdm-orig out.bdm-sync
     RETVAL=1
 else
-    echo "Sync'd BDM output is identical to random-hab output, yay"
+    echo "Sync'd BDM output is identical to original, yay"
 fi
 
 

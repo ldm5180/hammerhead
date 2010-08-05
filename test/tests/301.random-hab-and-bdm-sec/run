@@ -5,6 +5,11 @@
 # NNC07CB47C.
 #
 
+#
+# This test is supposed to verify that bdm-watchers honor security
+#
+# Enable this test once bdm security is implemented
+#
 
 if [ -z "$ROOT" ]; then
     echo "ROOT environment variable is undefined"
@@ -26,14 +31,9 @@ ORIG_DIR=$PWD
 echo "Killing any running BDM servers..."
 killall bionet-data-manager lt-bionet-data-manager > /dev/null 2> /dev/null
 sleep 1
+
+#Let bionet-data-manager generate a clean database
 rm -f $ORIG_DIR/bdm.db
-cd $ROOT/data-manager/server
-mv bdm.db bdm.db-old
-echo "Making DB file..."
-./bdm-make-db > /dev/null
-mv bdm.db $ORIG_DIR/.
-mv bdm.db-old bdm.db
-cd $ORIG_DIR
 
 echo "Starting BDM server..."
 rm -f bdm.log

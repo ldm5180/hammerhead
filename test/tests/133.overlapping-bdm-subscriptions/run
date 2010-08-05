@@ -51,7 +51,8 @@ sleep 3 # let the bdm come up before starting the HAB
 echo "starting random-hab"
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
 HABPID=$!
-START_TIME=`date -v+3S '+%Y-%m-%d %H:%M:%S'`
+sleep 3
+START_TIME=`date '+%Y-%m-%d %H:%M:%S'`
 
 echo "Starting BDM Client"
 mkfifo fifo0
@@ -106,11 +107,11 @@ kill $BDMPID
 wait
 
 for log in out.client.0; do
-    sort -u out.random-hab > sorted.random-habs
-    sort -u $log > sorted.$log
-    if ! diff -q sorted.random-habs sorted.$log; then
+    normalize_bdm_client out.random-hab | grep '+D' > norm.random-habs
+    normalize_bdm_client $log | uniq > norm.$log
+    if ! diff -q norm.random-habs norm.$log; then
 	echo "ERROR: $log output differs from random-hab output:"
-	diff -u sorted.random-habs sorted.$log
+	diff -u norm.random-habs norm.$log
 	RETVAL=1
     fi
 done

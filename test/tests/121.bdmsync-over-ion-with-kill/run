@@ -15,7 +15,7 @@ if [ -z "$TEST_DURATION" ]; then
     TEST_DURATION=30
 fi
 
-
+. $ROOT/test/testlib.sh
 . $ROOT/test/config.sh
 
 if [ -z "$ENABLE_ION" ]; then
@@ -44,12 +44,11 @@ PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
 
 
+rm -f core core.*
 rm -f ion.log
 
-echo "making DB file"
-rm -f orig-bdm.db
-sqlite3 orig-bdm.db < $ROOT/data-manager/server/schema
-cp orig-bdm.db sync-bdm.db
+echo "removing old DB files"
+rm -f orig-bdm.db sync-bdm.db
 
 echo starting ION Loopback interface
 CONFIGDIR="./ionconfig"
@@ -63,50 +62,72 @@ ionstart                           \
 # receive the message and store it in a file via test bundle sink
 echo "Starting ION sync receiver BDM"
 $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver &
+RCVPID=$!
 
 echo starting ION sync sender BDM
 $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  sync-send.cfg --port 11111 &
+SNDPID=$!
 sleep 12 # let the bdm come up before starting the HAB
 
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+HABPID=$!
 
 echo "Generating data for a while..."
 sleep `expr $TEST_DURATION / 2`
 
 echo "killing the ION sync receiver BDM"
-kill %1
-wait %1
+kill $RCVPID
+wait $RCVPID
 sleep 20 
 
 echo re-starting ION sync receiver BDM
 $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver &
+RCVPID=$!
 
 sleep `expr $TEST_DURATION / 2`
 
 echo "test run complete, killing random-hab"
-kill %3
-wait %3
+kill $HABPID
+wait $HABPID
 
 sleep 30
+
+echo "getting data from ION sync sender BDM"
+
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
+
 echo "killing the ION sync sender BDM"
-kill %2
-wait %2
+kill $SNDPID
+wait $SNDPID
 
 echo "getting data from TCP sync receiver BDM"
 
-$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-client.py
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
 
 echo "killing ION Sync Receive BDM"
-kill %4
-wait
+kill $RCVPID
+wait $RCVPID
 
-if ! diff -q out.random-hab out.bdm-client.py; then
-    echo "ERROR: bdm-client.py output differs from random-hab output:"
-    diff -u out.random-hab out.bdm-client.py
+normalize_bdm_client out.random-hab > norm.random-hab
+
+for x in bdm-orig bdm-sync; do
+    normalize_bdm_client out.$x > norm.$x
+    if ! diff -q norm.random-hab norm.$x; then
+	echo "ERROR: $x output differs from random-hab output:"
+	diff -u norm.random-hab norm.$x
+	RETVAL=1
+    else
+	echo "$x output is identical to random-hab output, yay"
+    fi
+done
+
+if ! diff -q out.bdm-orig out.bdm-sync; then
+    echo "ERROR: Sync'd BDM output differs from Original:"
+    diff -u out.bdm-orig out.bdm-sync
     RETVAL=1
 else
-    echo "bdm-client.py output is identical to random-hab output, yay"
+    echo "Sync'd BDM output is identical to original, yay"
 fi
 
 # see what we got

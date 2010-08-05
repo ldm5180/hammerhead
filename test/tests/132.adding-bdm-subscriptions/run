@@ -112,11 +112,27 @@ echo "killing BDM"
 kill $BDMPID
 wait
 
-for log in out.client.0 out.client.1; do
-    cat out.random-hab.A out.random-hab.B | sort > sorted.random-habs
-    sort $log > sorted.$log
-    if ! diff -q sorted.random-habs sorted.$log; then
+# NOTE: The BDM may not see the same order as the combined random-hab logs
+# when both habs do something at essentially the same time, so when comparing the
+# combined hab output, we must sort after trimming the event timestamp
+cat out.random-hab.A out.random-hab.B | grep '+D' > datapoints.random-habs
+normalize_bdm_client datapoints.random-habs | sort  > sorted.norm.random-habs
+
+for log in out.client.0; do
+    normalize_bdm_client $log | sort  > sorted.norm.$log
+    if ! diff -q sorted.norm.random-habs sorted.norm.$log; then
 	echo "ERROR: $log output differs from random-hab output:"
+	diff -u sorted.norm.random-habs sorted.norm.$log
+	RETVAL=1
+    fi
+done
+
+# Verify that both clients saw the same timestamps
+sort out.client.0 > sorted.out.client.0
+for log in out.client.1; do
+    sort $log > sorted.$log
+    if ! diff -q sorted.out.client.0 sorted.$log; then
+	echo "ERROR: $log output differs from client 0	output:"
 	diff -u sorted.random-habs sorted.$log
 	RETVAL=1
     fi

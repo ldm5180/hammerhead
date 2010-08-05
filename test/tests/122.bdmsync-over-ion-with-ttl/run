@@ -20,6 +20,7 @@ GENERATE_TIME=`expr $BUNDLE_LIFETIME / 4`
 echo "BUNDLE_LIFETIME=$BUNDLE_LIFETIME"
 echo "GENERATE_TIME=$GENERATE_TIME"
 
+. $ROOT/test/testlib.sh
 . $ROOT/test/config.sh
 
 if [ -z "$ENABLE_ION" ]; then
@@ -50,10 +51,8 @@ NEXT_YEAR=$(($YEAR+1))
 
 rm -f ion.log
 
-echo "making DB file"
-rm -f orig-bdm.db
-sqlite3 orig-bdm.db < $ROOT/data-manager/server/schema
-cp orig-bdm.db sync-bdm.db
+echo "removing old DB files"
+rm -f orig-bdm.db sync-bdm.db
 
 echo starting ION Loopback interface
 CONFIGDIR="./ionconfig"
@@ -101,14 +100,14 @@ echo "Generating data for  while..."
 sleep `expr $GENERATE_TIME / 4`
 
 echo "test run complete, killing random-hab"
-kill %3
-wait %3
+kill $HABPID
+wait $HABPID
 
 echo "Waiting for all data to be stuffed into sync bundles"
 sleep 2
 echo "killing the ION sync sender BDM"
-kill %2
-wait %2
+kill $SYNCSENDERPID
+wait $SYNCSENDERPID
 
 echo "waiting for less than sync bundles expiration"
 sleep `expr $BUNDLE_LIFETIME / 4`
@@ -129,15 +128,18 @@ $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-0
 echo "killing ION Sync Receive BDM"
 logger "killing ION Sync Receive BDM"
 jobs -l
-kill %1
-wait
+kill $SYNCRECEIVERPID
+wait $SYNCRECEIVERPID
 
-if ! diff -q out.random-hab out.bdm-client.py; then
+normalize_bdm_client out.random-hab > norm.random-hab
+normalize_bdm_client out.bdm-client.py > norm.bdm-client
+
+if ! diff -q norm.random-hab norm.bdm-client; then
     echo "ERROR: bdm-client.py output differs from random-hab output when not expired:"
-    diff -u out.random-hab out.bdm-client.py
+    diff -u norm.random-hab norm.bdm-client
     RETVAL=1
 else
-    echo "bdm-client.py output is identical to random-hab output, yay"
+    echo "bdm-client output is identical to random-hab output, yay"
 fi
 
 # see what we got
@@ -179,14 +181,14 @@ sleep `expr $GENERATE_TIME`
 
 echo "test run complete, killing random-hab"
 jobs -l
-kill %3
-wait %3
+kill $HABPID
+wait $HABPID
 
 echo "Waiting for all data to be stuffed into sync bundles"
 sleep 2
 echo "killing the ION sync sender BDM"
-kill %2
-wait %2
+kill $SYNCSENDERPID
+wait $SYNCSENDERPID
 
 echo "waiting for more than sync bundles expiration"
 sleep `expr $BUNDLE_LIFETIME + 2`
@@ -200,19 +202,21 @@ sleep 5  # If ION has any bundles to send, this will let it send them.
 
 echo "getting data from TCP sync receiver BDM"
 
-$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-client.py
+$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
 
 #sleep 3
 
 echo "killing ION Sync Receive BDM"
 logger "killing ION Sync Receive BDM"
 jobs -l
-kill %1
-wait
+kill $SYNCRECEIVERPID
+wait $SYNCRECEIVERPID
 
-if ! diff -q out.random-hab out.bdm-client.py; then
-    echo "bdm-client.py output is different than random-hab output, yay"
-    diff -u out.random-hab out.bdm-client.py
+normalize_bdm_client out.random-hab > norm.random-hab
+normalize_bdm_client out.bdm-client.py > norm.bdm-client
+
+if ! diff -q norm.random-hab norm.bdm-client; then
+    echo "bdm-client.py output is different than random-hab output when expired, yay"
 else
     echo "ERROR: bdm-client.py output matches random-hab output when expired:"
     RETVAL=1

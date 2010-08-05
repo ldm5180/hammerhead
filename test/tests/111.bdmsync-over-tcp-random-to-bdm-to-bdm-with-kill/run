@@ -15,6 +15,7 @@ if [ -z "$TEST_DURATION" ]; then
     TEST_DURATION=30
 fi
 
+. $ROOT/test/testlib.sh
 
 UNIQUE=$$
 SYNCUNIQUE=${HOSTNAME//\./-}
@@ -24,6 +25,8 @@ RETVAL=0
 YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
+
+rm -f core core.*
 
 echo "making DB file"
 rm -f bdm.db
@@ -78,20 +81,25 @@ echo "killing BDM"
 kill $RCVPID
 wait $RCVPID
 
-if ! diff -q out.random-hab out.bdm-orig; then
-    echo "ERROR: Originating BDM output differs from random-hab output:"
-    diff -u out.random-hab out.bdm-orig
-    RETVAL=1
-else
-    echo "Originating BDM output is identical to random-hab output, yay"
-fi
+normalize_bdm_client out.random-hab > norm.random-hab
 
-if ! diff -q out.random-hab out.bdm-sync; then
-    echo "ERROR: Sync'd BDM output differs from random-hab output:"
-    diff -u out.random-hab out.bdm-sync
+for x in bdm-orig bdm-sync; do
+    normalize_bdm_client out.$x > norm.$x
+    if ! diff -q norm.random-hab norm.$x; then
+	echo "ERROR: $x output differs from random-hab output:"
+	diff -u norm.random-hab norm.$x
+	RETVAL=1
+    else
+	echo "$x output is identical to random-hab output, yay"
+    fi
+done
+
+if ! diff -q out.bdm-orig out.bdm-sync; then
+    echo "ERROR: Sync'd BDM output differs from Original:"
+    diff -u out.bdm-orig out.bdm-sync
     RETVAL=1
 else
-    echo "Sync'd BDM output is identical to random-hab output, yay"
+    echo "Sync'd BDM output is identical to original, yay"
 fi
 
 exit $RETVAL
