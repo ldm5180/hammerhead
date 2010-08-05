@@ -5,20 +5,12 @@
 //
 // create potentiometer resources
 //
-void add_pot_resource(bionet_node_t *node, int id)
+void add_pot_resource(bionet_node_t *node, char *name)
 { 
     bionet_resource_t *resource;
     bionet_value_t *value;
     bionet_datapoint_t *datapoint;
     int r;
-
-    char buf[5];
-    char name[24];
-    strcpy(name, "Potentiometer\0");
-    sprintf(buf,"%d", id);
-    int i = strlen(buf);
-    buf[i] = '\0';
-    strcat(name, buf);
 
     resource = bionet_resource_new(
         node,
@@ -27,21 +19,21 @@ void add_pot_resource(bionet_node_t *node, int id)
         name);
     if(resource == NULL)
     {
-        fprintf(stderr, "Error creating Resource for resource %d\n", id);
+        fprintf(stderr, "Error creating Resource for resource %s\n", name);
         return;
     }
 
     r = bionet_node_add_resource(node, resource);
     if(r != 0)
     {
-        fprintf(stderr, "Error adding Resource for resource %d\n", id);
+        fprintf(stderr, "Error adding Resource for resource %s\n", name);
         return;
     }
 
     value = bionet_value_new_double(resource, 0);
     if(value == NULL)
     {
-        fprintf(stderr, "Error creating value for resource %d\n", id);
+        fprintf(stderr, "Error creating value for resource %s\n", name);
         return;
     }
 
