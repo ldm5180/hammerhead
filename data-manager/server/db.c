@@ -16,6 +16,8 @@
 
 #include <bionet.h>
 
+#include <inttypes.h>
+
 #include "bionet-data-manager.h"
 #include "bdm-db.h"
 #include "../../util/protected.h"
@@ -651,7 +653,7 @@ int db_insert_node(
                     ret = 1; // Row already existed
                 }
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-                      "%s(%p): => %ld",
+                      "%s(%p): => %" PRId64,
                       __FUNCTION__, db, (int64_t)*rowid);
             }
             break;
@@ -817,8 +819,7 @@ int db_insert_resource(
         uint8_t node_guid[BDM_UUID_LEN],
         const char * resource_id,
         bionet_resource_flavor_t flavor,
-        bionet_resource_data_type_t data_type,
-        sqlite3_int64 *rowid)
+        bionet_resource_data_type_t data_type)
 {
     int r;
 
@@ -932,9 +933,6 @@ int db_insert_resource(
         case SQLITE_DONE:
             if(1 == sqlite3_changes(db)) {
                 // Success!
-                if(rowid) {
-                    *rowid = sqlite3_last_insert_rowid(db);
-                }
             } else {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                         "%s(): No rows modified (%d). %s.%s.%s:%s (%s,%s)", 
@@ -948,26 +946,13 @@ int db_insert_resource(
 
         case SQLITE_CONSTRAINT:
             // Row already exists. That's cool...
-            if(rowid) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                        "add-resource %s.%s.%s:%s: SQL constraint error: %s", 
-                        hab_type, hab_id, node_id, resource_id,
-                        sqlite3_errmsg(db));
-                *rowid = (uint64_t)resource_key;
-                ret = 1;
-            }
+            ret = 1;
             break;
 
         default:
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                     "add-resource SQL error: %s", sqlite3_errmsg(db));
             ret = -1;
-    }
-
-    if(rowid) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-              "%s(%p): => %ld",
-              __FUNCTION__, db, (int64_t)*rowid);
     }
 
     sqlite3_reset(this_stmt);
@@ -1219,7 +1204,7 @@ int db_insert_datapoint(sqlite3* db,
 
     if(rowid) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-              "add_datapoint_to_db(%p): => %ld",
+              "add_datapoint_to_db(%p): => %" PRId64,
           db, (int64_t)*rowid);
     }
 
@@ -1445,7 +1430,7 @@ int db_insert_event(
             if(rowid) {
                 *rowid = sqlite3_last_insert_rowid(db);
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-                      "%s(): => %ld",
+                      "%s(): => %" PRId64,
                       __FUNCTION__, (int64_t)*rowid);
             }
             break;

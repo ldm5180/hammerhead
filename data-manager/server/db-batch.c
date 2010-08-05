@@ -411,8 +411,7 @@ static void _flush_foreach_resource(GQuark key_id, void* data, void* user_data) 
     r = db_insert_resource(main_db, 
             hab->hab_type, hab->hab_id, 
             node->node_id, node->guid,
-            resource->resource_id, resource->flavor, resource->data_type,
-            &resource->rowid);
+            resource->resource_id, resource->flavor, resource->data_type);
     if (r < 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
               "%s(): Failed to add resource %s.%s.%s:%s to DB.",
@@ -421,6 +420,7 @@ static void _flush_foreach_resource(GQuark key_id, void* data, void* user_data) 
         dat->ret = -1;
         return;
     }
+    resource->rowid = 1;
 
     // For performance, the list is prepended with new datapoints. 
     // Reverse it once here, so that we can efficiently traverse in the correct order

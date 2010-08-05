@@ -263,39 +263,29 @@ END_TEST
 START_TEST (check_db_insert_resource)
 {
     int r;
-    sqlite3_int64 rowid;
-
     uint8_t guid1[BDM_RESOURCE_KEY_LENGTH];
     uint8_t guid2[BDM_RESOURCE_KEY_LENGTH];
     insert_test_nodes(db, guid1, guid2);
 
     r = db_insert_resource(db, "hab-type", "hab-id", "node-id", guid2, "resource-id",
             BIONET_RESOURCE_FLAVOR_SENSOR,
-            BIONET_RESOURCE_DATA_TYPE_STRING,
-            &rowid);
+            BIONET_RESOURCE_DATA_TYPE_STRING);
     fail_unless(r == 0, "Failed to insert first Resource");
-    //fail_unless(rowid == 1, "Got wrong rowid for first resource");
 
     r = db_insert_resource(db, "hab-type", "hab-id", "node-id", guid2, "resource-id",
             BIONET_RESOURCE_FLAVOR_SENSOR,
-            BIONET_RESOURCE_DATA_TYPE_STRING,
-            &rowid);
+            BIONET_RESOURCE_DATA_TYPE_STRING);
     fail_unless(r > 0, "Failed to insert duplicate  Resource");
-    //fail_unless(rowid == 1, "Got wrong rowid when re-inserting first resource");
 
     r = db_insert_resource(db, "hab-type", "hab-id", "node-id", guid2, "resource-id-2",
             BIONET_RESOURCE_FLAVOR_SENSOR,
-            BIONET_RESOURCE_DATA_TYPE_STRING,
-            &rowid);
+            BIONET_RESOURCE_DATA_TYPE_STRING);
     fail_unless(r == 0, "Failed to insert second Resource");
-    //fail_unless(rowid == 2, "Got wrong rowid for second resource: %d", rowid);
 
     r = db_insert_resource(db, "hab-type", "hab-id", "node-id", guid2, "resource-id",
             BIONET_RESOURCE_FLAVOR_SENSOR,
-            BIONET_RESOURCE_DATA_TYPE_STRING,
-            &rowid);
+            BIONET_RESOURCE_DATA_TYPE_STRING);
     fail_unless(r > 0, "Failed to insert duplicate Resource");
-    //fail_unless(rowid == 1, "Got wrong rowid when re-inserting first resource after the second");
 
 }
 END_TEST
@@ -374,7 +364,6 @@ static void _insert_node(
         sqlite_int64 * dp_eventrow)
 {
     sqlite3_int64 noderow;
-    sqlite3_int64 resourcerow;
     sqlite3_int64 dprow;
     int r;
 
@@ -396,8 +385,7 @@ static void _insert_node(
 
     r = db_insert_resource(db, "hab-type", "hab-id", "node-id", guid, "resource-id",
             BIONET_RESOURCE_FLAVOR_SENSOR,
-            BIONET_RESOURCE_DATA_TYPE_STRING,
-            &resourcerow);
+            BIONET_RESOURCE_DATA_TYPE_STRING);
     fail_unless(r == 0, "Failed to insert resource");
 
 

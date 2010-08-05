@@ -221,8 +221,7 @@ int db_insert_resource(
         uint8_t node_guid[BDM_UUID_LEN],
         const char * resource_id,
         bionet_resource_flavor_t flavor,
-        bionet_resource_data_type_t data_type,
-        sqlite3_int64 *rowid);
+        bionet_resource_data_type_t data_type);
 
 int db_insert_datapoint(sqlite3* db, 
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
