@@ -5,7 +5,6 @@
 # NNC07CB47C.
 #
 
-set -x
 
 
 if [ -z "$ROOT" ]; then
@@ -26,22 +25,25 @@ YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
 
-echo "making DB file"
-rm -f bdm.db
-pushd $ROOT/data-manager/server > /dev/null
-./bdm-make-db > /dev/null
-popd > /dev/null
-mv $ROOT/data-manager/server/bdm.db orig-bdm.db
-cp orig-bdm.db sync-bdm.db
+echo "removing old DB file, and allowing bionet-data-manger to create schema"
+rm -f orig-bdm.db sync-bdm.db
 
 echo starting TCP sync receiver BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --resources "a.a.a:a" --tcp-sync-receiver &
+rm -f sync-recv.log
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --resources "a.a.a:a" --tcp-sync-receiver --debug --log-file=sync-recv.log &
 RECVPID=$!
 
 echo starting TCP sync sender BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
+rm -f sync-send.log
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 --debug --log-file=sync-send.log &
 SENDPID=$!
 sleep 6 # let the bdm come up before starting the HAB
+
+echo starting Test-patern-hab generator
+rm -f test-pattern.in
+$ROOT/client/watcher/bionet-watcher --output-mode test-pattern  >| test-pattern.in &
+WATCHERPID=$!
+
 
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
@@ -66,7 +68,9 @@ $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-0
 
 echo "killing BDM"
 kill $RECVPID
+kill $WATCHERPID
 wait
+
 
 if ! diff -q out.random-hab out.bdm-orig; then
     echo "ERROR: Originating BDM output differs from random-hab output:"

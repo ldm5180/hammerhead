@@ -21,6 +21,12 @@
 #include "cal-server.h"
 #include "hardware-abstractor.h"
 
+// Options without a single char short option
+enum extra_opts {
+    EXTRA_OPT_DEBUG = 256, 
+    EXTRA_OPT_LOG_FILE
+};
+
 #define BDM_OPTIONS_STRING "?vedbkt::f:h:I:i:n:p:r:s:c:o:x:"
 static struct option long_options[] = {
     {"help",               0, 0, '?'},
@@ -45,6 +51,8 @@ static struct option long_options[] = {
     {"keep-stats",         0, 0, 'k'},
     {"no-resources",       0, 0, 'u'},
     {"bdm-config-file",    1, 0, 'x'},
+    {"debug",              0, 0, EXTRA_OPT_DEBUG},
+    {"log-file",           1, 0, EXTRA_OPT_LOG_FILE},
     {0, 0, 0, 0} //this must be last in the list
 };
 
@@ -325,6 +333,9 @@ void usage(void) {
 	" -v,--version                                   Show the version number\n"
 	" -x,--bdm-config-file <FILE>                    BDM configuration file to specify location\n"
 	"                                                of database file and subscriptions.\n"
+	" --debug                                        Enable debug messages\n"
+	" --log-file <path>                              Log message to <path>, instead of syslog\n"
+	"                                                Use '-' for stdout\n"
 	"\n"
 	"Security can only be required when a security directory has been specified.\n"
 	"  bionet-data-manager [--security-dir <dir> [--require-security]]\n",
@@ -505,18 +516,73 @@ ret:
 } /* update_hab() */
 
 
+
+typedef struct {
+    FILE * log_to; // If NULL, log to syslog
+
+    // messages with log_level *below* log_limit are logged, all others are dropped
+    // FIXME: really we want a default log_limit and then optional per-domain limits
+    GLogLevelFlags log_limit;
+} bdm_log_context_t;
+
+void bdm_glib_log_handler(
+    const gchar *log_domain,
+    GLogLevelFlags log_level,
+    const gchar *message,
+    gpointer log_context
+) {
+    static bdm_log_context_t default_log_context;
+
+    bdm_log_context_t *lc;
+
+
+    if (log_context == NULL) {
+        lc = &default_log_context;
+        lc->log_to = stdout;
+        lc->log_limit = G_LOG_LEVEL_INFO;
+    } else {
+        lc = log_context;
+    }
+
+
+    if (log_level > lc->log_limit) return;
+
+    if ( NULL == lc->log_to) {
+#if defined(LINUX) || defined(MACOSX)
+        if ((log_domain == NULL) || (log_domain[0] == '\0')) {
+            syslog(LOG_INFO, "%s", message);
+        } else {
+            syslog(LOG_INFO, "%s: %s\n", log_domain, message);
+        }
+#endif
+        return;
+    } else {
+        if ((log_domain == NULL) || (log_domain[0] == '\0')) {
+            fprintf(lc->log_to, "%s\n", message);
+        } else {
+            fprintf(lc->log_to, "%s: %s\n", log_domain, message);
+        }
+        fflush(stdout);
+        return;
+    }
+}
+
+
+
 int main(int argc, char *argv[]) {
     //
     // we'll be using glib, so capture its log messages
     //
     const char * bdm_id = NULL;
+    int switch_to_syslog = 1;
 
-    bionet_log_context_t lc = {
-        destination: BIONET_LOG_TO_STDOUT,
+    bdm_log_context_t lc = {
+        log_to: stdout,
         log_limit: G_LOG_LEVEL_INFO
     };
 
-    bionet_log_use_default_handler(&lc);
+    //bionet_log_use_default_handler(&lc);
+    (void)g_log_set_default_handler(bdm_glib_log_handler, &lc);
 
     int tcp_sync_recv_port = BDM_SYNC_PORT;
     int bdm_port = BDM_PORT;
@@ -1022,6 +1088,27 @@ skip:
 	case 'v':
 	    print_bionet_version(stdout);
 	    return 0;
+
+        case EXTRA_OPT_DEBUG:
+            lc.log_limit = G_LOG_LEVEL_DEBUG;
+            break;
+
+        case EXTRA_OPT_LOG_FILE:
+        {
+            FILE* log_dest = stdout;
+            if(strcmp("-", optarg)) {
+                log_dest = fopen(optarg, "a");
+            }
+            if( NULL == log_dest ) {
+                fprintf(stderr, "Unable to open log file '%s' for appending: %s",
+                        optarg, strerror(errno));
+                return 1;
+            }
+            switch_to_syslog = 0;
+
+            lc.log_to = log_dest;
+            break;
+        }
 	    
 	case 'x':
 	    //skip this time, we already got it
@@ -1378,8 +1465,10 @@ skip:
     //  good place because everything that could go wrong, hasn't.
     //
 
-    openlog(NULL, LOG_PID, LOG_USER);
-    lc.destination = BIONET_LOG_TO_SYSLOG;
+    if ( switch_to_syslog) {
+        openlog(NULL, LOG_PID, LOG_USER);
+        lc.log_to = NULL; // Syslog
+    }
 
 
 
@@ -1494,6 +1583,10 @@ skip:
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
         "Bionet Data Manager shut down cleanly");
+
+    if(lc.log_to) {
+        fclose(lc.log_to);
+    }
     return 0;
 }
 
