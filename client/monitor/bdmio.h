@@ -51,11 +51,11 @@ class BDMIO : public IO {
         void messageReceived();
 
         // map callbacks into signals/slots
-        static void new_hab_cb(bionet_hab_t *hab, void *user_data) { emit io->newHab(hab, user_data); }
-        static void lost_hab_cb(bionet_hab_t *hab, void *user_data) { emit io->lostHab(hab, user_data); }
-        static void new_node_cb(bionet_node_t *node, void *user_data) { emit io->newNode(node, user_data); }
-        static void lost_node_cb(bionet_node_t *node, void *user_data) { emit io->lostNode(node, user_data); }
-        static void datapoint_cb(bionet_datapoint_t *dp, void *user_data) { emit io->datapointUpdate(dp, user_data); }
+        static void new_hab_cb(bionet_hab_t *hab, bionet_event_t * event, void *user_data) { emit io->newHab(hab, event, user_data); }
+        static void lost_hab_cb(bionet_hab_t *hab, bionet_event_t * event, void *user_data) { emit io->lostHab(hab, event, user_data); }
+        static void new_node_cb(bionet_node_t *node, bionet_event_t * event, void *user_data) { emit io->newNode(node, event, user_data); }
+        static void lost_node_cb(bionet_node_t *node, bionet_event_t * event, void *user_data) { emit io->lostNode(node, event, user_data); }
+        static void datapoint_cb(bionet_datapoint_t *dp, bionet_event_t * event, void *user_data) { emit io->datapointUpdate(dp, event, user_data); }
 
     private:
         int bdmFD;

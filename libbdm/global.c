@@ -11,17 +11,17 @@ void * libbdm_callback_new_bdm_usr_data = NULL;
 void (*libbdm_callback_lost_bdm)(bionet_bdm_t *bdm, void* usr_data) = NULL;
 void * libbdm_callback_lost_bdm_usr_data = NULL;
 
-void (*libbdm_callback_new_hab)(bionet_hab_t *hab, void* usr_data) = NULL;
+void (*libbdm_callback_new_hab)(bionet_hab_t *hab, bionet_event_t * event, void* usr_data) = NULL;
 void * libbdm_callback_new_hab_usr_data = NULL;
-void (*libbdm_callback_lost_hab)(bionet_hab_t *hab, void* usr_data) = NULL;
+void (*libbdm_callback_lost_hab)(bionet_hab_t *hab, bionet_event_t * event, void* usr_data) = NULL;
 void * libbdm_callback_lost_hab_usr_data = NULL;
 
-void (*libbdm_callback_new_node)(bionet_node_t *node, void* usr_data) = NULL;
+void (*libbdm_callback_new_node)(bionet_node_t *node, bionet_event_t * event, void* usr_data) = NULL;
 void * libbdm_callback_new_node_usr_data = NULL;
-void (*libbdm_callback_lost_node)(bionet_node_t *node, void* usr_data) = NULL;
+void (*libbdm_callback_lost_node)(bionet_node_t *node, bionet_event_t * event, void* usr_data) = NULL;
 void * libbdm_callback_lost_node_usr_data = NULL;
 
-void (*libbdm_callback_datapoint)(bionet_datapoint_t *datapoint, void* usr_data) = NULL;
+void (*libbdm_callback_datapoint)(bionet_datapoint_t *datapoint, bionet_event_t * event, void* usr_data) = NULL;
 void * libbdm_callback_datapoint_usr_data = NULL;
 
 void (*libbdm_callback_stream)(bionet_stream_t *stream, void *buffer, int size, void* usr_data) = NULL;

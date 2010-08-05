@@ -20,11 +20,11 @@ class IO : public QObject {
 
     signals:        
         // These signals correspond to bionet/bdm callbacks
-        void newHab(bionet_hab_t* hab, void *usr_data);
-        void lostHab(bionet_hab_t* hab, void *user_data);
-        void newNode(bionet_node_t* node, void *user_data);
-        void lostNode(bionet_node_t* node, void *user_data);
-        void datapointUpdate(bionet_datapoint_t* datapoint, void *user_data);
+        void newHab(bionet_hab_t* hab, bionet_event_t * event, void *usr_data);
+        void lostHab(bionet_hab_t* hab, bionet_event_t * event, void *user_data);
+        void newNode(bionet_node_t* node, bionet_event_t * event, void *user_data);
+        void lostNode(bionet_node_t* node, bionet_event_t * event, void *user_data);
+        void datapointUpdate(bionet_datapoint_t* datapoint, bionet_event_t * event, void *user_data);
         void streamRW(bionet_stream_t* stream, void* buffer, int size);
 };
 

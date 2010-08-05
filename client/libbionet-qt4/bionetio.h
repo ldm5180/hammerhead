@@ -35,11 +35,11 @@ class BionetIO : public IO {
         ~BionetIO();
         
         // These functions map callbacks into signals & slots
-        static void cbNewHab(bionet_hab_t *hab) { emit bn->newHab(hab, NULL);}
-        static void cbLostHab(bionet_hab_t *hab) { emit bn->lostHab(hab, NULL); }
-        static void cbNewNode(bionet_node_t *node) { emit bn->newNode(node, NULL); }
-        static void cbLostNode(bionet_node_t *node) { emit bn->lostNode(node, NULL); }
-        static void cbDatapoint(bionet_datapoint_t *datapoint) { emit bn->datapointUpdate(datapoint, NULL); }
+        static void cbNewHab(bionet_hab_t *hab) { emit bn->newHab(hab, NULL, NULL);}
+        static void cbLostHab(bionet_hab_t *hab) { emit bn->lostHab(hab, NULL, NULL); }
+        static void cbNewNode(bionet_node_t *node) { emit bn->newNode(node, NULL, NULL); }
+        static void cbLostNode(bionet_node_t *node) { emit bn->lostNode(node, NULL, NULL); }
+        static void cbDatapoint(bionet_datapoint_t *datapoint) { emit bn->datapointUpdate(datapoint, NULL, NULL); }
         static void cbStream(bionet_stream_t *stream, void *buffer, int size) { emit bn->streamRW(stream, buffer, size); }
         
         void setup();

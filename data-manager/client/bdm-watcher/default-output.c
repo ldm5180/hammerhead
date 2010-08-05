@@ -14,7 +14,7 @@
 
 #include "bdm-client.h"
    
-void cb_datapoint(bionet_datapoint_t *datapoint, void * usr_data) {
+void cb_datapoint(bionet_datapoint_t *datapoint, bionet_event_t * event, void * usr_data) {
     bionet_value_t * value = bionet_datapoint_get_value(datapoint);
     if (NULL == value) {
 	g_log("", G_LOG_LEVEL_WARNING, "Failed to get value from datapoint.");
@@ -42,12 +42,12 @@ void cb_datapoint(bionet_datapoint_t *datapoint, void * usr_data) {
 }
 
 
-void cb_lost_node(bionet_node_t *node, void* usr_data) {
+void cb_lost_node(bionet_node_t *node, bionet_event_t * event, void* usr_data) {
     g_message("lost node: %s", bionet_node_get_name(node));
 }
 
 
-void cb_new_node(bionet_node_t *node, void* usr_data) {
+void cb_new_node(bionet_node_t *node, bionet_event_t * event, void* usr_data) {
     int i;
 
     g_message("new node: %s", bionet_node_get_name(node));
@@ -107,12 +107,12 @@ void cb_new_node(bionet_node_t *node, void* usr_data) {
 }
 
 
-void cb_lost_hab(bionet_hab_t *hab, void* usr_data) {
+void cb_lost_hab(bionet_hab_t *hab, bionet_event_t * event, void* usr_data) {
     g_message("lost hab: %s", bionet_hab_get_name(hab));
 }
 
 
-void cb_new_hab(bionet_hab_t *hab, void* usr_data) {
+void cb_new_hab(bionet_hab_t *hab, bionet_event_t * event, void* usr_data) {
     g_message("new hab: %s", bionet_hab_get_name(hab));
     if (bionet_hab_is_secure(hab)) {
         g_message("    %s: security enabled", bionet_hab_get_name(hab));

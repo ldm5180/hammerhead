@@ -292,7 +292,7 @@ void bdm_register_callback_lost_bdm(void (*cb_lost_bdm)(bionet_bdm_t *bdm, void*
  *
  * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab, void* usr_data), void*usr_data);
+void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab, bionet_event_t * event, void* usr_data), void*usr_data);
 
 
 /**
@@ -315,7 +315,7 @@ void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab, void* u
  *
  * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab, void* usr_data), void*usr_data);
+void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab, bionet_event_t * event, void* usr_data), void*usr_data);
 
 
 /**
@@ -339,7 +339,7 @@ void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab, void*
  *
  * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node, void* usr_data), void*usr_data);
+void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node, bionet_event_t * event, void* usr_data), void*usr_data);
 
 
 /**
@@ -363,7 +363,7 @@ void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node, voi
  *
  * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node, void* usr_data), void*usr_data);
+void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node, bionet_event_t * event, void* usr_data), void*usr_data);
 
 
 /**
@@ -384,7 +384,7 @@ void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node, v
  *
  * @param[in] usr_data A pointer to user data that will be passed into the function registered
  */
-void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint, void* usr_data), void*usr_data);
+void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint, bionet_event_t * event, void* usr_data), void*usr_data);
 
 
 #if 0

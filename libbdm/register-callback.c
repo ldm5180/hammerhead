@@ -17,29 +17,29 @@ void bdm_register_callback_lost_bdm(void (*cb_lost_bdm)(bionet_bdm_t *bdm, void*
     libbdm_callback_lost_bdm_usr_data = usr_data;
 }
 
-void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab, void* usr_data), void*usr_data) {
+void bdm_register_callback_new_hab(void (*cb_new_hab)(bionet_hab_t *hab, bionet_event_t * event, void* usr_data), void*usr_data) {
     libbdm_callback_new_hab = cb_new_hab;
     libbdm_callback_new_hab_usr_data = usr_data;
 }
 
-void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab, void* usr_data), void*usr_data) {
+void bdm_register_callback_lost_hab(void (*cb_lost_hab)(bionet_hab_t *hab, bionet_event_t * event, void* usr_data), void*usr_data) {
     libbdm_callback_lost_hab = cb_lost_hab;
     libbdm_callback_lost_hab_usr_data = usr_data;
 }
 
 
-void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node, void* usr_data), void*usr_data) {
+void bdm_register_callback_new_node(void (*cb_new_node)(bionet_node_t *node, bionet_event_t * event, void* usr_data), void*usr_data) {
     libbdm_callback_new_node = cb_new_node;
     libbdm_callback_new_node_usr_data = usr_data;
 }
 
-void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node, void* usr_data), void*usr_data) {
+void bdm_register_callback_lost_node(void (*cb_lost_node)(bionet_node_t *node, bionet_event_t * event, void* usr_data), void*usr_data) {
     libbdm_callback_lost_node = cb_lost_node;
     libbdm_callback_lost_node_usr_data = usr_data;
 }
 
 
-void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint, void* usr_data), void*usr_data) {
+void bdm_register_callback_datapoint(void (*cb_datapoint)(bionet_datapoint_t *datapoint, bionet_event_t * event, void* usr_data), void*usr_data) {
     libbdm_callback_datapoint = cb_datapoint;
     libbdm_callback_datapoint_usr_data = usr_data;
 }

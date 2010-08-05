@@ -62,6 +62,7 @@ typedef struct timeval
 #define SWIG_RESOURCE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_resource_opaque_t, 1)
 #define SWIG_DATAPOINT_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_datapoint_opaque_t, 1)
 #define SWIG_VALUE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_value_opaque_t, 1)
+#define SWIG_EVENT_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_event_opaque_t, 1)
 
     /* callbacks */
     static PyObject * py_cb_lost_bdm = NULL;
@@ -148,11 +149,11 @@ typedef struct timeval
 
 
     /* HABs */
-    void pybdm_callback_lost_hab(bionet_hab_t *hab, void * user_data) {
+    void pybdm_callback_lost_hab(bionet_hab_t *hab, bionet_event_t * event, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
-	arglist = Py_BuildValue("(O)", SWIG_HAB_WRAPPER(hab));
+	arglist = Py_BuildValue("(OO)", SWIG_HAB_WRAPPER(hab), SWIG_EVENT_WRAPPER(event));
 	result = PyEval_CallObject(py_cb_lost_hab, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
@@ -180,11 +181,11 @@ typedef struct timeval
     }
 
 
-    void pybdm_callback_new_hab(bionet_hab_t *hab, void * user_data) {
+    void pybdm_callback_new_hab(bionet_hab_t *hab, bionet_event_t * event, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
-	arglist = Py_BuildValue("(O)", SWIG_HAB_WRAPPER(hab));
+	arglist = Py_BuildValue("(OO)", SWIG_HAB_WRAPPER(hab), SWIG_EVENT_WRAPPER(event));
 	result = PyEval_CallObject(py_cb_new_hab, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
@@ -212,11 +213,11 @@ typedef struct timeval
     }
 
 
-    void pybdm_callback_lost_node(bionet_node_t *node, void * user_data) {
+    void pybdm_callback_lost_node(bionet_node_t *node, bionet_event_t * event, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
-	arglist = Py_BuildValue("(O)", SWIG_NODE_WRAPPER(node));
+	arglist = Py_BuildValue("(OO)", SWIG_NODE_WRAPPER(node), SWIG_EVENT_WRAPPER(event));
 	result = PyEval_CallObject(py_cb_lost_node, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
@@ -244,11 +245,11 @@ typedef struct timeval
     }
 
 
-    void pybdm_callback_new_node(bionet_node_t *node, void * user_data) {
+    void pybdm_callback_new_node(bionet_node_t *node, bionet_event_t * event, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
-	arglist = Py_BuildValue("(O)", SWIG_NODE_WRAPPER(node));
+	arglist = Py_BuildValue("(OO)", SWIG_NODE_WRAPPER(node), SWIG_EVENT_WRAPPER(event));
 	result = PyEval_CallObject(py_cb_new_node, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
@@ -275,11 +276,11 @@ typedef struct timeval
 	return py_cb_new_node;
     }
 
-    void pybdm_callback_datapoint(bionet_datapoint_t *datapoint, void * user_data) {
+    void pybdm_callback_datapoint(bionet_datapoint_t *datapoint, bionet_event_t * event, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
-	arglist = Py_BuildValue("(O)", SWIG_DATAPOINT_WRAPPER(datapoint));
+	arglist = Py_BuildValue("(OO)", SWIG_DATAPOINT_WRAPPER(datapoint), SWIG_EVENT_WRAPPER(event));
 	result = PyEval_CallObject(py_cb_datapoint, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {

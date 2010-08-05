@@ -74,7 +74,7 @@ static const char *current_timestamp_string(void)
 }
 
 
-void cbtp_datapoint(bionet_datapoint_t *datapoint, void * usr_data) {
+void cbtp_datapoint(bionet_datapoint_t *datapoint, bionet_event_t * event, void * usr_data) {
     bionet_value_t * value = bionet_datapoint_get_value(datapoint);
     if (NULL == value) {
 	g_log("", G_LOG_LEVEL_WARNING, "Failed to get value from datapoint.");
@@ -101,14 +101,14 @@ void cbtp_datapoint(bionet_datapoint_t *datapoint, void * usr_data) {
 }
 
 
-void cbtp_lost_node(bionet_node_t *node, void* usr_data) {
+void cbtp_lost_node(bionet_node_t *node, bionet_event_t * event, void* usr_data) {
     g_message("%s - %s", 
         current_timestamp_string(),
         bionet_node_get_id(node));
 }
 
 
-void cbtp_new_node(bionet_node_t *node, void* usr_data) {
+void cbtp_new_node(bionet_node_t *node, bionet_event_t * event, void* usr_data) {
     int i;
 
     g_message("%s + %s", 
@@ -159,11 +159,11 @@ void cbtp_new_node(bionet_node_t *node, void* usr_data) {
 }
 
 
-void cbtp_lost_hab(bionet_hab_t *hab, void* usr_data) {
+void cbtp_lost_hab(bionet_hab_t *hab, bionet_event_t * event, void* usr_data) {
 }
 
 
-void cbtp_new_hab(bionet_hab_t *hab, void* usr_data) {
+void cbtp_new_hab(bionet_hab_t *hab, bionet_event_t * event, void* usr_data) {
 }
 
 void cbtp_lost_bdm(bionet_bdm_t *bdm, void* usr_data) {

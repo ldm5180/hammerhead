@@ -19,10 +19,10 @@ void cb_new_node(bionet_node_t *node);
 void cb_lost_hab(bionet_hab_t *hab);
 void cb_new_hab(bionet_hab_t *hab);
 
-void cb_bdm_datapoint(bionet_datapoint_t *datapoint, void * usr_data);
-void cb_bdm_lost_node(bionet_node_t *node, void * usr_data);
-void cb_bdm_new_node(bionet_node_t *node, void * usr_data);
-void cb_bdm_lost_hab(bionet_hab_t *hab, void * usr_data);
-void cb_bdm_new_hab(bionet_hab_t *hab, void * usr_data);
+void cb_bdm_datapoint(bionet_datapoint_t *datapoint, bionet_event_t * event, void * usr_data);
+void cb_bdm_lost_node(bionet_node_t *node, bionet_event_t * event, void * usr_data);
+void cb_bdm_new_node(bionet_node_t *node, bionet_event_t * event, void * usr_data);
+void cb_bdm_lost_hab(bionet_hab_t *hab, bionet_event_t * event, void * usr_data);
+void cb_bdm_new_hab(bionet_hab_t *hab, bionet_event_t * event, void * usr_data);
 
 #endif /* WATCHER_CALLBACKS_H */

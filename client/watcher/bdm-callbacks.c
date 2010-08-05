@@ -29,7 +29,7 @@ extern om_t output_mode;
 
 extern const char *current_timestamp_string(void);
 
-void cb_bdm_datapoint(bionet_datapoint_t *datapoint, void * usr_data) {
+void cb_bdm_datapoint(bionet_datapoint_t *datapoint, bionet_event_t * event, void * usr_data) {
     bionet_value_t * value = bionet_datapoint_get_value(datapoint);
     if (NULL == value) {
 	g_log("", G_LOG_LEVEL_WARNING, "Failed to get value from datapoint.");
@@ -67,7 +67,7 @@ void cb_bdm_datapoint(bionet_datapoint_t *datapoint, void * usr_data) {
 }
 
 
-void cb_bdm_lost_node(bionet_node_t *node, void * usr_data) {
+void cb_bdm_lost_node(bionet_node_t *node, bionet_event_t * event, void * usr_data) {
     if (output_mode == OM_NORMAL) {
         g_message("BDM lost node: %s", bionet_node_get_name(node));
     } else if (output_mode == OM_TEST_PATTERN) {
@@ -78,7 +78,7 @@ void cb_bdm_lost_node(bionet_node_t *node, void * usr_data) {
 }
 
 
-void cb_bdm_new_node(bionet_node_t *node, void * usr_data) {
+void cb_bdm_new_node(bionet_node_t *node, bionet_event_t * event, void * usr_data) {
     int i;
 
     if (output_mode == OM_NORMAL) {
@@ -168,14 +168,14 @@ void cb_bdm_new_node(bionet_node_t *node, void * usr_data) {
 }
 
 
-void cb_bdm_lost_hab(bionet_hab_t *hab, void * usr_data) {
+void cb_bdm_lost_hab(bionet_hab_t *hab, bionet_event_t * event, void * usr_data) {
     if (output_mode == OM_NORMAL) {
         g_message("BDM lost hab: %s", bionet_hab_get_name(hab));
     }
 }
 
 
-void cb_bdm_new_hab(bionet_hab_t *hab, void * usr_data) {
+void cb_bdm_new_hab(bionet_hab_t *hab, bionet_event_t * event, void * usr_data) {
     if (output_mode == OM_NORMAL) {
         g_message("BDM new hab: %s", bionet_hab_get_name(hab));
         if (bionet_hab_is_secure(hab)) {

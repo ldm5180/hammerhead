@@ -58,7 +58,7 @@ static void bdm_handle_new_hab(const cal_event_t *event, const BDMNewHab_t *newH
     bionet_hab_add_event(hab, bionet_event);
 
     if (libbdm_callback_new_hab != NULL) {
-        libbdm_callback_new_hab(hab, libbdm_callback_new_hab_usr_data);
+        libbdm_callback_new_hab(hab, bionet_event, libbdm_callback_new_hab_usr_data);
     }
 }
 
@@ -108,7 +108,7 @@ static void bdm_handle_new_node(const cal_event_t *event, const BDMNewNode_t *ne
     bionet_node_add_event(node, bionet_event);
 
     if (libbdm_callback_new_node != NULL) {
-        libbdm_callback_new_node(node, libbdm_callback_new_node_usr_data);
+        libbdm_callback_new_node(node, bionet_event, libbdm_callback_new_node_usr_data);
     }
 }
 
@@ -137,7 +137,7 @@ static void bdm_handle_lost_hab(const cal_event_t *event, const BDMLostHab_t *lo
     bionet_hab_add_event(hab, bionet_event);
 
     if (libbdm_callback_lost_hab != NULL) {
-        libbdm_callback_lost_hab(hab, libbdm_callback_lost_hab_usr_data);
+        libbdm_callback_lost_hab(hab, bionet_event, libbdm_callback_lost_hab_usr_data);
     }
 }
 
@@ -169,7 +169,7 @@ static void bdm_handle_lost_node(const cal_event_t *event, const BDMLostNode_t *
     bionet_node_add_event(node, bionet_event);
 
     if (libbdm_callback_lost_node != NULL) {
-        libbdm_callback_lost_node(node, libbdm_callback_lost_node_usr_data);
+        libbdm_callback_lost_node(node, bionet_event, libbdm_callback_lost_node_usr_data);
     }
 }
 
@@ -306,7 +306,7 @@ static void bdm_handle_resource_datapoints(const cal_event_t *event, BDMResource
         bionet_resource_add_datapoint(resource, new_d);
 
         if(libbdm_callback_datapoint) {
-            libbdm_callback_datapoint(new_d, libbdm_callback_datapoint_usr_data);
+            libbdm_callback_datapoint(new_d, bionet_datapoint_get_event_by_index(new_d, 0), libbdm_callback_datapoint_usr_data);
         }
     }
 }
