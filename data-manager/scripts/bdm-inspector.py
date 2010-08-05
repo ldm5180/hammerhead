@@ -182,11 +182,13 @@ instance
 
         sql = '''
         SELECT d.Timestamp_Sec, d.Timestamp_Usec, b.BDM_ID, 
-                  h.HAB_Type, h.HAB_ID, n.Node_ID, r.Resource_ID, d.value, d.Entry_NUm
+                  h.HAB_Type, h.HAB_ID, n.Node_ID, r.Resource_ID, d.value, 
+		  e.seq
         FROM BDMs b, Datapoints d, Resources r , Nodes n, Hardware_Abstractors h, 
-             Resource_Data_types t, Resource_Flavors f
+             Resource_Data_types t, Resource_Flavors f, Events e
         WHERE d.Resource_key = r.Key
-          AND d.BDM_Key = b.Key
+          AND e.recording_bdm = b.Key
+	  AND e.datapoint = d.key
           AND r.Node_Key = n.Key
           AND r.Flavor_Key = f.Key
           AND r.Data_Type_Key = t.Key
