@@ -27,6 +27,7 @@ NEXT_YEAR=$(($YEAR+1))
 . ../../testlib.sh
 
 ulimit -Sc unlimited
+rm -f core core.*
 
 echo "making DB file"
 rm -f bdm.db
