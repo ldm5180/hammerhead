@@ -185,7 +185,7 @@ AC_ARG_WITH(
         [with_mndssd=check]
     )
 
-if test "x$with_mdnssd" = "x" || test "x$with_mdnssd" = "xcheck"; then
+if test "x$with_mdnssd" = "x" || test "x$with_mdnssd" = "xno"; then
     if test "$cross_compiling" != "yes"; then
         if test "x$HAVE_LINUX" = "xyes"; then
             PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
@@ -198,6 +198,8 @@ if test "x$with_mdnssd" = "x" || test "x$with_mdnssd" = "xcheck"; then
             fi
         fi
     fi
+elif test "x$with_mdnssd" = "xyes" ; then
+    AVAHI_COMPAT_LIBDNS_SD_LIBS="-lembeddeddns_sd"
 else
     AVAHI_COMPAT_LIBDNS_SD_CFLAGS="-I$with_mdnssd/mDNSPosix/ -I$with_mdnssd/mDNSShared/ -I$with_mdnssd/mDNSCore/"
     AVAHI_COMPAT_LIBDNS_SD_LIBS="-L$with_mdnssd/mDNSPosix/build/prod -lembeddeddns_sd"
