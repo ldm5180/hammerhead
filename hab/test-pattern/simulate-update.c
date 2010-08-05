@@ -41,8 +41,12 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
 
     if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
         g_message("new node: %s", bionet_node_get_name(node));
-    if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
+
+    if (event->resources 
+    && ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY)))
+    {
         g_message("    Resources:");
+    }
 
     for (cursor = event->resources; cursor != NULL; cursor = cursor->next) {
         struct resource_info_t* res_info;
