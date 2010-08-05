@@ -631,6 +631,9 @@ if test "$cross_compiling" != yes; then
 AC_FUNC_MALLOC
 fi
 
+AC_ARG_VAR([REBUILD_ASN], [Rebuild ASN automatically])
+AM_CONDITIONAL([REBUILD_ASN], [test "x$REBUILD_ASN" != "x"])
+
 # Output files
 AC_CONFIG_HEADERS([config.h])
 
