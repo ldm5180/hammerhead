@@ -94,6 +94,9 @@ struct event_t *update_event(struct timeval *tv, char *node, char *resource, cha
 
 void free_event(struct event_t *event);
 
+char * timeval_as_str(
+    struct timeval *tv,
+    char * time_str, size_t size);
 
 extern int yyparse();
 extern FILE* yyin;

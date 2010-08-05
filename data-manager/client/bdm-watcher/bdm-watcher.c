@@ -22,13 +22,15 @@
 extern void default_output_register_callbacks(void);
 extern void test_pattern_output_register_callbacks(void);
 extern void bdm_client_output_register_callbacks(void);
+extern void bdm_watcher_output_register_callbacks(void);
 
 static GMainLoop *bdmsub_main_loop = NULL;
 
 typedef enum {
     OM_NORMAL,
     OM_TEST_PATTERN,
-    OM_BDM_CLIENT
+    OM_BDM_CLIENT,
+    OM_BDM_WATCHER,
 } om_t;
 
 om_t output_mode = OM_NORMAL;
@@ -190,7 +192,13 @@ void usage(void) {
 	    "\n"
 	    " -?,--help                          Show this usage information\n"
 	    " -v,--version                       Show the version number\n"
-	    " -r,--resources,--resources <Resources> \n"
+            " -b, --bdm, --bdms <pattern>        Subscribe to a BDM list.\n"
+            "                                    \"BDM-ID,Recording-BDM-ID\" \n"
+            " -h, --hab, --habs <pattern>        Subscribe to a HAB list.\n"
+            "                                    \"[[BDM-ID,]Recording-BDM-ID/]HAB-Type.Hab-ID\" \n"
+            " -n, --node, --nodes <pattern>      Subscribe to a Node list\n"
+            "                                    \"[[BDM-ID,]Recording-BDM-ID/]HAB-Type.HAB-ID.Node-ID\"\n"
+	    " -r,--resources,--resources <pattern> \n"
             "                                    Subscribe to updates to this resource name pattern\n"
             "                                    \"[[BDM-ID,]Recording-BDM-ID/]HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
 	    "                                    May contain wildcards. (default: \"*,*/*.*.*:*\")\n"
@@ -204,8 +212,7 @@ void usage(void) {
             "                                     normal       (default)\n"
             "                                     test-pattern (For generating test-pattern-hab input)\n"
             "                                     bdm-client   (Sortable, comma separated)\n"
-            "                                     bdm-watcher  (like bdm-client, but with recording bdm)"
-	    "\n"
+            "                                     bdm-watcher  (like bdm-client, but with recording bdm)\n"
 	    "note: StartTime and EndTime are given in this format: \"YYYY-MM-DD hh:mm:ss\"\n"
 	    "      YYYY is the four-digit year, for example 2008\n"
 	    "      MM is the two-digit month, with 01 meaning January and 12 meaning December\n"
@@ -255,27 +262,46 @@ int main(int argc, char *argv[]) {
 	static struct option long_options[] = {
 	    {"help", 0, 0, '?'},
 	    {"version", 0, 0, 'v'},
+	    {"bdm", 1, 0, 'b'},
+	    {"bdms", 1, 0, 'b'},
+	    {"hab", 1, 0, 'h'},
+	    {"habs", 1, 0, 'h'},
+	    {"node", 1, 0, 'n'},
+	    {"nodes", 1, 0, 'n'},
 	    {"resource", 1, 0, 'r'},
 	    {"resources", 1, 0, 'r'},
 	    {"datapoint-start", 1, 0, 'T'},
 	    {"datapoint-end", 1, 0, 't'},
 	    {"port", 1, 0, 'p'},
-	    {"resources", 1, 0, 'r'},
 	    {"server", 1, 0, 's'},
 	    {"output-mode", 1, 0, 'o'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?hvT:t:p:r:s:o:", long_options, &i);
+	c = getopt_long(argc, argv, "?h:vn:o:p:r:s:T:t:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
 
 	switch (c) {
 	case '?':
-	case 'h':
 	    usage();
        	    return 0;
+
+	case 'b':
+	    bdm_list = g_slist_append(bdm_list, optarg);
+	    subscribed_to_something = 1;
+	    break;
+
+	case 'h':
+	    hab_list = g_slist_append(hab_list, optarg);
+	    subscribed_to_something = 1;
+	    break;
+
+	case 'n':
+	    node_list = g_slist_append(node_list, optarg);
+	    subscribed_to_something = 1;
+	    break;
 
 	case 'r':
 	    dp_list = g_slist_append(dp_list, optarg);
@@ -348,6 +374,8 @@ int main(int argc, char *argv[]) {
         test_pattern_output_register_callbacks();
     } else if ( output_mode == OM_BDM_CLIENT ) {
         bdm_client_output_register_callbacks();
+    } else if ( output_mode == OM_BDM_WATCHER ) {
+        bdm_watcher_output_register_callbacks();
     }
 
     // Add subscriptions

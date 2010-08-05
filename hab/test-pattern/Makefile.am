@@ -18,6 +18,7 @@ test_pattern_hab_SOURCES =      \
     create-resource.c           \
     new-event.c                 \
     free-event.c                \
+    output.c                    \
     simulate-update.c           \
     str-to-timeval.c            \
     str-to-value.c              \

@@ -40,14 +40,46 @@ int urandom_fd;
 
 void show_stuff_going_away(void) {
     int i;
+    char time_str[48];
 
-    if (output_mode != OM_BIONET_WATCHER) return;
+    switch(output_mode) {
+        case OM_BIONET_WATCHER: 
+        case OM_BDM_CLIENT: 
+            break;
+        default:
+            return;
+    }
+
+    timeval_as_str(NULL, time_str, sizeof(time_str));
 
     for (i = 0; i < bionet_hab_get_num_nodes(hab); i ++) {
         bionet_node_t *node = bionet_hab_get_node_by_index(hab, i);
-        g_message("lost node: %s", bionet_node_get_name(node));
+        switch(output_mode) {
+            case OM_BIONET_WATCHER: 
+                g_message("lost node: %s", bionet_node_get_name(node));
+                break;
+            case OM_BDM_CLIENT: 
+                g_message("%s,-N,%s", 
+                        time_str,
+                        bionet_node_get_name(node));
+                break;
+            default:
+                break;
+        }
     }
-    g_message("lost hab: %s", bionet_hab_get_name(hab));
+
+    switch(output_mode) {
+        case OM_BIONET_WATCHER: 
+            g_message("lost hab: %s", bionet_hab_get_name(hab));
+            break;
+        case OM_BDM_CLIENT: 
+            g_message("%s,-H,%s", 
+                    time_str,
+                    bionet_hab_get_name(hab));
+            break;
+        default:
+            break;
+    }
 }
 
 
@@ -142,7 +174,10 @@ int main (int argc, char *argv[]) {
                 output_mode = OM_NORMAL;
                 sorted_resources = 1;
             }
-            else if (strcmp(optarg, "bdm-client") == 0) output_mode = OM_BDM_CLIENT;
+            else if (strcmp(optarg, "bdm-client") == 0) {
+                output_mode = OM_BDM_CLIENT;
+                sorted_resources = 1;
+            }
             else if (strcmp(optarg, "bionet-watcher") == 0) output_mode = OM_BIONET_WATCHER;
             else if (strcmp(optarg, "bionet-watcher-sorted") == 0) {
                 output_mode = OM_BIONET_WATCHER;
@@ -198,11 +233,29 @@ int main (int argc, char *argv[]) {
         return 1;
     }
 
-    if (output_mode == OM_BIONET_WATCHER) {
-        g_message("new hab: %s", bionet_hab_get_name(hab));
-	if (security_dir) {
-	    g_message("    %s: security enabled", bionet_hab_get_name(hab));
-	}
+    switch(output_mode) {
+        case OM_BIONET_WATCHER: 
+        {
+            g_message("new hab: %s", bionet_hab_get_name(hab));
+            if (security_dir) {
+                g_message("    %s: security enabled", bionet_hab_get_name(hab));
+            }
+        }
+        break;
+
+        case OM_BDM_CLIENT: 
+        {
+            char time_str[48];
+            g_message(
+                "%s,+H,%s",
+                timeval_as_str(NULL, time_str, sizeof(time_str)),
+                bionet_hab_get_name(hab)
+            );
+        }
+        break;
+
+        default:
+            break;
     }
 
     signal(SIGTERM, signal_handler);
@@ -333,12 +386,27 @@ int main (int argc, char *argv[]) {
 
 void destroy_node(bionet_hab_t* random_hab) {
     bionet_node_t *node;
+    char time_str[48];
 
     node = pick_random_node(random_hab);
     if (node == NULL) return;
 
-    if (output_mode == OM_NORMAL) printf("removing Node %s\n", bionet_node_get_id(node));
-    else if (output_mode == OM_BIONET_WATCHER) printf("lost node: %s\n", bionet_node_get_name(node));
+    switch(output_mode) {
+        case OM_NORMAL:
+            printf("removing Node %s\n", bionet_node_get_id(node));
+            break;
+        case OM_BIONET_WATCHER: 
+            printf("lost node: %s\n", bionet_node_get_name(node));
+            break;
+        case OM_BDM_CLIENT: 
+            printf("%s,-N,%s\n",
+                timeval_as_str(NULL, time_str, sizeof(time_str)),
+                bionet_node_get_name(node)
+            );
+            break;
+        default:
+            break;
+    }
 
     bionet_hab_remove_node_by_id(random_hab, bionet_node_get_id(node));
     hab_report_lost_node(bionet_node_get_id(node));

@@ -10,7 +10,8 @@
 
 typedef enum {
     OM_NORMAL,
-    OM_TEST_PATTERN
+    OM_TEST_PATTERN,
+    OM_CSV
 } om_t;
 
 void cb_datapoint(bionet_datapoint_t *datapoint);
@@ -24,5 +25,10 @@ void cb_bdm_lost_node(bionet_node_t *node, bionet_event_t * event, void * usr_da
 void cb_bdm_new_node(bionet_node_t *node, bionet_event_t * event, void * usr_data);
 void cb_bdm_lost_hab(bionet_hab_t *hab, bionet_event_t * event, void * usr_data);
 void cb_bdm_new_hab(bionet_hab_t *hab, bionet_event_t * event, void * usr_data);
+
+// BDM Client output formats for bionet and bdm callbacks
+
+void csv_output_register_bdm_callbacks(void);
+void csv_output_register_callbacks(void);
 
 #endif /* WATCHER_CALLBACKS_H */

@@ -16,6 +16,7 @@ random_hab_SOURCES =               \
     random-hab.c                   \
     set-random-resource-value.c    \
     update-node.c                  \
+    output.c                       \
     usage.c
 
 random_hab_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) 

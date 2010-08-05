@@ -32,6 +32,9 @@ void add_node(bionet_hab_t* random_hab);
 void update_node(bionet_hab_t* random_hab);
 void set_random_resource_value(bionet_resource_t *resource);
 
+char * timeval_as_str(
+    struct timeval *tv,
+    char * time_str, size_t size);
 
 #endif //  RANDOM_HAB_H
 

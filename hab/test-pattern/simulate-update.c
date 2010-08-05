@@ -27,10 +27,12 @@ extern struct timeval tv_wait;
 
 extern int s;
 
+
 void new_node(struct new_node_event_t *event, struct timeval *tv) {
     bionet_node_t *node;
     GSList *cursor;
     struct timeval * pubtv = tv;
+    char time_str[64];
 
     if (current_time) {
 	pubtv = NULL;
@@ -41,6 +43,10 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
 
     if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
         g_message("new node: %s", bionet_node_get_name(node));
+    if ((output_mode == OM_BDM_CLIENT)){
+        timeval_as_str(NULL, time_str, sizeof(time_str));
+        g_message("%s,+N,%s", time_str, bionet_node_get_name(node));
+    }
 
     if (event->resources 
     && ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY)))
@@ -87,6 +93,16 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
 		      bionet_resource_get_id(resource),
 		      bionet_node_get_name(node));
 	}
+
+        if (output_mode == OM_BDM_CLIENT) {
+            g_message(
+                "%s,+N,%s,%s %s",
+                time_str,
+                bionet_resource_get_name(resource),
+                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
+            );
+        }
     }
     
     if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_RESOURCES_ONLY) || (output_mode == OM_BDM_CLIENT)) {
@@ -102,10 +118,13 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
             if (dp != NULL) {
                 if (output_mode == OM_BDM_CLIENT) {
                     g_message(
-                        "%s,%s,%s",
-                        bionet_datapoint_timestamp_to_string(dp),
+                        "%s,+D,%s,%s %s %s @ %s",
+                        time_str,
                         bionet_resource_get_name(resource),
-                        bionet_value_to_str(bionet_datapoint_get_value(dp))
+                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                        bionet_value_to_str(bionet_datapoint_get_value(dp)),
+                        bionet_datapoint_timestamp_to_string(dp)
                     );
                 } else {
                     g_message(
@@ -139,6 +158,8 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
     struct timeval tv_diff;
     static struct timeval tv_now;
     fd_set dummy;
+
+    char time_str[64];
     
     if (s == -1) {
 	s = socket(AF_INET, SOCK_STREAM, 0);
@@ -173,6 +194,8 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
     dp = bionet_datapoint_new(resource, value, pubtv);
     bionet_resource_add_datapoint(resource, dp);
 
+    timeval_as_str(NULL, time_str, sizeof(time_str));
+
     if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_RESOURCES_ONLY)) {
         g_message(
             "%s = %s %s %s @ %s",
@@ -184,10 +207,13 @@ void update(struct datapoint_event_t *event, struct timeval *tv) {
         );
     } else if (output_mode == OM_BDM_CLIENT) {
         g_message(
-            "%s,%s,%s",
-            bionet_datapoint_timestamp_to_string(dp),
+            "%s,+D,%s,%s %s %s @ %s",
+            time_str,
             bionet_resource_get_name(resource),
-            bionet_value_to_str(bionet_datapoint_get_value(dp))
+            bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+            bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+            bionet_value_to_str(value),
+            bionet_datapoint_timestamp_to_string(dp)
         );
     }
 
@@ -274,6 +300,7 @@ void simulate_updates(gpointer data, gpointer user_data) {
 	    *(args->tv_ptr) = next;
     }
 
+
     switch (event->type) {
         case NEW_NODE: {
 	    if ((0 == no_node_updates) || (0 == simulate_loops)) {
@@ -290,6 +317,11 @@ void simulate_updates(gpointer data, gpointer user_data) {
 		
 		if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
 		    g_message("lost node: %s", bionet_node_get_name(bionet_hab_get_node_by_id(hab, lost_event->id)));
+                if ((output_mode == OM_BDM_CLIENT)){
+                    char time_str[64];
+                    timeval_as_str(NULL, time_str, sizeof(time_str));
+                    g_message("%s,-N,%s", time_str, bionet_node_get_name(bionet_hab_get_node_by_id(hab, lost_event->id)));
+                }
 		
 		node = bionet_hab_remove_node_by_id(hab, lost_event->id);
 		bionet_node_free(node);

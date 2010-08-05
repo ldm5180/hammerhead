@@ -264,6 +264,11 @@ int main(int argc, char *argv[]) {
 
     if (output_mode == OM_BIONET_WATCHER)
         g_message("new hab: %s", bionet_hab_get_name(hab));
+    if ((output_mode == OM_BDM_CLIENT)){
+        char time_str[64];
+        timeval_as_str(NULL, time_str, sizeof(time_str));
+        g_message("%s,+H,%s", time_str, bionet_hab_get_name(hab));
+    }
 
     //
     // dump for each node
@@ -283,6 +288,11 @@ int main(int argc, char *argv[]) {
     
     if (output_mode == OM_BIONET_WATCHER)
         g_message("lost hab: %s", bionet_hab_get_name(hab));
+    if ((output_mode == OM_BDM_CLIENT)){
+        char time_str[64];
+        timeval_as_str(NULL, time_str, sizeof(time_str));
+        g_message("%s,-H,%s", time_str, bionet_hab_get_name(hab));
+    }
 
     hab_disconnect();
     bionet_hab_free(hab);

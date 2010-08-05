@@ -109,36 +109,86 @@ while 1:
 
     for hi in range(bdm_get_hab_list_len(hab_list)):  # loop over all the HABs
         hab = bdm_get_hab_by_index(hab_list, hi); 
-        
+
+	# Log the hab's events
+	if (options.output == "csv" or options.output == "chrono"):
+            for ei in range(bionet_hab_get_num_events(hab)):
+                event = bionet_hab_get_event_by_index(hab, ei)
+                if bionet_event_get_type(event) == BIONET_EVENT_LOST:
+                    typestr = '-H'
+                else:
+                    typestr = '+H'
+                output_string = "%s,%s,%s" % (bionet_event_get_timestamp_as_str(event), typestr, bionet_hab_get_name(hab))
+                if (options.output == "csv"):
+                    print output_string
+                else:
+                    li.append(output_string);
+                    need_print = 1
+                    
         # loop over all the nodes
         for ni in range(bionet_hab_get_num_nodes(hab)):  
             node = bionet_hab_get_node_by_index(hab, ni)
+
+            if (options.output == "csv" or options.output == "chrono"):
+                for ei in range(bionet_node_get_num_events(node)):
+                    event = bionet_node_get_event_by_index(node, ei)
+                    if bionet_event_get_type(event) == BIONET_EVENT_LOST:
+                        typestr = '-N'
+                    else:
+                        typestr = '+N'
+
+                    output_string = "%s,%s,%s" % (bionet_event_get_timestamp_as_str(event), typestr, bionet_node_get_name(node))
+                    if (options.output == "csv"):
+                        print output_string
+                    else:
+                        li.append(output_string);
+                        need_print = 1
+
+                    if bionet_event_get_type(event) == BIONET_EVENT_PUBLISHED:
+                        for ri in range (bionet_node_get_num_resources(node)):
+                            resource = bionet_node_get_resource_by_index(node, ri)
+                            res_flavor = bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
+                            res_type = bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource))
+
+                            if resource:
+                                output_string = "%s,%s,%s,%s %s" % (bionet_event_get_timestamp_as_str(event), typestr, bionet_resource_get_name(resource), res_type, res_flavor)
+                                if (options.output == "csv"):
+                                    print output_string
+                                else:
+                                    li.append(output_string);
+                                    need_print = 1
             
             for ri in range (bionet_node_get_num_resources(node)):
                 resource = bionet_node_get_resource_by_index(node, ri)
-                
+
+                res_flavor = bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
+                res_type = bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource))
+
                 # loop over all the datapoints
                 if resource:
                     for di in range (0, bionet_resource_get_num_datapoints(resource)): 
                         d = bionet_resource_get_datapoint_by_index(resource, di)
                         v = bionet_datapoint_get_value(d);
-                        
-                        if (options.output == "csv"):
-                            print bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "," + bionet_datapoint_timestamp_to_string(d) + "," + bionet_value_to_str(v) 
-                        elif (options.output == "matlab"):
-                            timematch = re.compile("((.*) (.*))\..*")
-                            ts = bionet_datapoint_timestamp_to_string(d)
-                            match = timematch.match(ts)
-                            mlts = time.strftime("%Y:%m:%d\t%H:%M:%S", time.strptime(match.group(1), "%Y-%m-%d %H:%M:%S"))
-                            print bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "\t" + mlts + "\t" + bionet_value_to_str(v) 
-                        elif (options.output == "chrono"):
-                            #sort me
-                            output_string = bionet_datapoint_timestamp_to_string(d) + "," + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "," + bionet_value_to_str(v)          
-                            li.append(output_string);
-                            need_print = 1
-                        else:
-                            print "Unknown format"
-                            parser.usage()
+
+                        for ei in range(bionet_datapoint_get_num_events(d)):
+                            event = bionet_datapoint_get_event_by_index(d, ei)
+                            
+                            if (options.output == "csv"):
+                                print "%s,+D,%s,%s %s %s @ %s" % (bionet_event_get_timestamp_as_str(event), bionet_resource_get_name(resource), res_type, res_flavor,  bionet_value_to_str(v), bionet_datapoint_timestamp_to_string(d))
+                            elif (options.output == "matlab"):
+                                timematch = re.compile("((.*) (.*))\..*")
+                                ts = bionet_datapoint_timestamp_to_string(d)
+                                match = timematch.match(ts)
+                                mlts = time.strftime("%Y:%m:%d\t%H:%M:%S", time.strptime(match.group(1), "%Y-%m-%d %H:%M:%S"))
+                                print bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "\t" + mlts + "\t" + bionet_value_to_str(v) 
+                            elif (options.output == "chrono"):
+                                #sort me
+                                output_string =  "%s,+D,%s,%s %s %s @ %s" % (bionet_event_get_timestamp_as_str(event), bionet_resource_get_name(resource), res_type, res_flavor,  bionet_value_to_str(v), bionet_datapoint_timestamp_to_string(d))
+                                li.append(output_string);
+                                need_print = 1
+                            else:
+                                print "Unknown format"
+                                parser.usage()
                             
         bionet_hab_free(hab)
 

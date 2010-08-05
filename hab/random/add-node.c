@@ -26,6 +26,8 @@
 
 extern int urandom_fd;
 
+char time_str[64];
+
 static int my_cmp_resource(const void * a_ptr, const void *b_ptr) {
     bionet_resource_t * a = *(bionet_resource_t**)a_ptr; 
     bionet_resource_t * b = *(bionet_resource_t**)b_ptr; 
@@ -162,13 +164,6 @@ void add_resources(bionet_node_t *node, int num_resources) {
                     val_str,
                     bionet_datapoint_timestamp_to_string(datapoint)
                 );
-            } else if (output_mode == OM_BDM_CLIENT) {
-                g_message(
-                    "%s,%s,%s",
-                    bionet_datapoint_timestamp_to_string(datapoint),
-                    bionet_resource_get_name(resource),
-                    val_str
-                );
             } else if (output_mode == OM_BIONET_WATCHER) {
                 g_message(
                     "        %s %s %s = %s @ %s",
@@ -181,6 +176,15 @@ void add_resources(bionet_node_t *node, int num_resources) {
             }
 
             free(val_str);
+        }
+        if (output_mode == OM_BDM_CLIENT) {
+            g_message(
+                "%s,+N,%s,%s %s",
+                time_str,
+                bionet_resource_get_name(resource),
+                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
+            );
         }
     }
 
@@ -217,6 +221,14 @@ void add_node(bionet_hab_t* random_hab) {
     node = bionet_node_new(random_hab, node_id);
 
     if (output_mode == OM_BIONET_WATCHER) g_message("new node: %s", bionet_node_get_name(node));
+    if (output_mode == OM_BDM_CLIENT) {
+        timeval_as_str(NULL, time_str, sizeof(time_str));
+        g_message(
+            "%s,+N,%s",
+            time_str,
+            bionet_node_get_name(node)
+        );
+    }
 
     // add 0-29 resources
     if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
@@ -229,7 +241,9 @@ void add_node(bionet_hab_t* random_hab) {
 	}
     }
 
-    if (output_mode == OM_BIONET_WATCHER) {
+    if (output_mode == OM_BIONET_WATCHER
+    ||  output_mode == OM_BDM_CLIENT) 
+    {
         // we have to walk through all the resources again to correctly report the
         // datapoints
         for (i = 0; i < num_resources; i ++) {
@@ -250,14 +264,26 @@ void add_node(bionet_hab_t* random_hab) {
 
                 value_str = bionet_value_to_str(bionet_datapoint_get_value(dp));
 
-                g_message(
-                    "%s = %s %s %s @ %s",
-                    bionet_resource_get_name(resource),
-                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                    value_str,
-                    bionet_datapoint_timestamp_to_string(dp)
-                );
+                if (output_mode == OM_BIONET_WATCHER) {
+                    g_message(
+                        "%s = %s %s %s @ %s",
+                        bionet_resource_get_name(resource),
+                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                        value_str,
+                        bionet_datapoint_timestamp_to_string(dp)
+                    );
+                } else if (output_mode == OM_BDM_CLIENT) {
+                    g_message(
+                        "%s,+D,%s,%s %s %s @ %s",
+                        time_str,
+                        bionet_resource_get_name(resource),
+                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                        value_str,
+                        bionet_datapoint_timestamp_to_string(dp)
+                    );
+                }
 
                 free(value_str);
             }

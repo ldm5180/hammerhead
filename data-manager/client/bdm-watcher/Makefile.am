@@ -11,6 +11,7 @@ bin_PROGRAMS = bdm-watcher
 bdm_watcher_SOURCES = \
     bdm-watcher.c \
     default-output.c \
+    bdm-watcher-output.c \
     test-pattern-output.c \
     bdm-client-output.c
 

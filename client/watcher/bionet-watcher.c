@@ -173,9 +173,11 @@ void usage(void) {
 " -d, --randomize-subscriptions <RATE>              randomly add/remove\n"
 "                                                   subscriptions every RATE\n"
 "                                                   seconds\n"
-" -o, --output-mode <MODE>                          either normal (default) or\n"
-"                                                   test-pattern for generating\n"
-"                                                   test-pattern-hab-input\n"
+" -o, --output-mode <MODE>                          Set output format to one of:\n"
+"                                                    normal (default)\n"
+"                                                    test-pattern for generating\n"
+"                                                         test-pattern-hab-input\n"
+"                                                    csv for post-processing\n"
 " -T,--datapoint-start <start-time>                 Timestamp of datapoint as reported by the HAB\n"
 "                                                   time (default: Current time)\n"
 " -t,--datapoint-end <end-time>                     Timestamp of datapoint as reported by the HAB\n"
@@ -303,6 +305,7 @@ int main(int argc, char *argv[]) {
 	case 'o':
 	    if (strcmp(optarg, "normal") == 0) output_mode = OM_NORMAL;
 	    else if (strcmp(optarg, "test-pattern") == 0) output_mode = OM_TEST_PATTERN;
+	    else if (strcmp(optarg, "csv") == 0) output_mode = OM_CSV;
 	    else {
 		fprintf(stderr, "unknown output mode %s\n", optarg);
 		usage();
@@ -365,13 +368,17 @@ int main(int argc, char *argv[]) {
 	    exit(1);
 	}
 
-	bionet_register_callback_new_hab(cb_new_hab);
-	bionet_register_callback_lost_hab(cb_lost_hab);
-	
-	bionet_register_callback_new_node(cb_new_node);
-	bionet_register_callback_lost_node(cb_lost_node);
-	
-	bionet_register_callback_datapoint(cb_datapoint);
+        if(output_mode == OM_CSV) {
+            csv_output_register_callbacks();
+        } else {
+            bionet_register_callback_new_hab(cb_new_hab);
+            bionet_register_callback_lost_hab(cb_lost_hab);
+            
+            bionet_register_callback_new_node(cb_new_node);
+            bionet_register_callback_lost_node(cb_lost_node);
+            
+            bionet_register_callback_datapoint(cb_datapoint);
+        }
 	
 	if (subscribed_to_something) {
 	    int i;
@@ -400,13 +407,17 @@ int main(int argc, char *argv[]) {
 	    exit(1);
 	}
 
-	bdm_register_callback_new_hab(cb_bdm_new_hab, NULL);
-	bdm_register_callback_lost_hab(cb_bdm_lost_hab, NULL);
-	
-	bdm_register_callback_new_node(cb_bdm_new_node, NULL);
-	bdm_register_callback_lost_node(cb_bdm_lost_node, NULL);
-	
-	bdm_register_callback_datapoint(cb_bdm_datapoint, NULL);
+        if(output_mode == OM_CSV) {
+            csv_output_register_bdm_callbacks();
+        } else {
+            bdm_register_callback_new_hab(cb_bdm_new_hab, NULL);
+            bdm_register_callback_lost_hab(cb_bdm_lost_hab, NULL);
+            
+            bdm_register_callback_new_node(cb_bdm_new_node, NULL);
+            bdm_register_callback_lost_node(cb_bdm_lost_node, NULL);
+            
+            bdm_register_callback_datapoint(cb_bdm_datapoint, NULL);
+        }
 
 	if (subscribed_to_something) {
 	    int i;

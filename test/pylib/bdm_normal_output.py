@@ -35,41 +35,42 @@ class BDMNormalOutput:
 
 #callbacks
 def cb_lost_bdm(bdm):
-    bdmlog.write("lost bdm: " + bionet_bdm_get_id(bdm) + '\n')
+    pass
+
 
 
 def cb_new_bdm(bdm):
-    bdmlog.write("new bdm: " + bionet_bdm_get_id(bdm) + '\n')
+    pass
 
-def cb_lost_hab(hab):
-    bdmlog.write("lost hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + '\n')
-
-
-def cb_new_hab(hab):
-    bdmlog.write("new hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + '\n')
+def cb_lost_hab(hab, event):
+    bdmlog.write("%s,-H,%s\n" % (bionet_event_get_timestamp_as_str(event), bionet_hab_get_name(hab)))
 
 
-def cb_new_node(node):
-    hab = bionet_node_get_hab(node)
+def cb_new_hab(hab, event):
+    bdmlog.write("%s,+H,%s\n" % (bionet_event_get_timestamp_as_str(event), bionet_hab_get_name(hab)))
+
+
+def cb_new_node(node, event):
+    bdmlog.write("%s,+N,%s\n" % (bionet_event_get_timestamp_as_str(event), bionet_node_get_name(node)))
+
+    for i in range(bionet_node_num_resources(node)):
+	resource = bionet_node_get_resource_by_index(node, i)
+	res_flavor = bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
+	res_type = bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource))
+	bdmlog.write("%s,+N,%s,%s %s\n" % (bionet_event_get_timestamp_as_str(event, timestamp_str, 64), bionet_resource_get_name(resource), res_type, res_flavor))
+
 	
-    bdmlog.write("new node: " + bionet_node_get_name(node) + '\n')
-	
-def cb_lost_node(node):
-    hab = bionet_node_get_hab(node);
-    bdmlog.write("lost node: " + bionet_node_get_name(node) + '\n')
+def cb_lost_node(node, event):
+    bdmlog.write("%s,-N,%s\n" % (bionet_event_get_timestamp_as_str(event), bionet_node_get_name(node)))
 
 
-def cb_datapoint(datapoint):
+def cb_datapoint(datapoint, event):
     value = bionet_datapoint_get_value(datapoint);
     resource = bionet_value_get_resource(value);
-    node = bionet_resource_get_node(resource);
-    hab = bionet_node_get_hab(node);
-    
-    #bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + "," +
-    #bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + "," + 
+
+    res_flavor = bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
+    res_type = bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource))
     value_str = bionet_value_to_str(value);
-    bdmlog.write(
-            bionet_datapoint_timestamp_to_string(datapoint) + "," +
-            bionet_resource_get_name(resource) + "," + 
-            value_str + "\n") 
+
+    bdmlog.write("%s,+D,%s,%s %s %s @ %s\n" % (bionet_event_get_timestamp_as_str(event), bionet_resource_get_name(resource), res_type, res_flavor, value_str, bionet_datapoint_timestamp_to_string(datapoint)))
     

@@ -950,7 +950,9 @@ int db_insert_resource(
             // Row already exists. That's cool...
             if(rowid) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                        "add-resource SQL constraint error: %s", sqlite3_errmsg(db));
+                        "add-resource %s.%s.%s:%s: SQL constraint error: %s", 
+                        hab_type, hab_id, node_id, resource_id,
+                        sqlite3_errmsg(db));
                 *rowid = (uint64_t)resource_key;
                 ret = 1;
             }

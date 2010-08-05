@@ -9,7 +9,12 @@ include $(top_srcdir)/common.am
 bin_PROGRAMS = bionet-watcher
 
 
-bionet_watcher_SOURCES = bionet-watcher.c bionet-callbacks.c bdm-callbacks.c timestamps.c
+bionet_watcher_SOURCES = \
+	bionet-watcher.c \
+	bionet-callbacks.c \
+	bdm-callbacks.c \
+	timestamps.c \
+	csv-output-callbacks.c
 
 bionet_watcher_CFLAGS = \
 	$(AM_CFLAGS) \

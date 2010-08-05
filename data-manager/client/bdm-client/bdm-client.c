@@ -235,44 +235,101 @@ restart_poll:
     if (hab_list == NULL) {
         g_message("error getting resource datapoints");
     } else {
-        int hi;
+        int hi, ei;
+        char * time_str;
 
         for (hi = 0; hi < bdm_get_hab_list_len(hab_list); hi ++) {
             bionet_hab_t *hab;
             int ni;
 
             hab = bdm_get_hab_by_index(hab_list, hi);
-            printf("%s.%s\n", bionet_hab_get_type(hab), bionet_hab_get_id(hab));
+
+            for(ei=0; ei<bionet_hab_get_num_events(hab); ei++) {
+                bionet_event_t * event = bionet_hab_get_event_by_index(hab, ei);
+                const char * type;
+                if(bionet_event_get_type(event) == BIONET_EVENT_PUBLISHED) {
+                    type = "+H";
+                } else {
+                    type = "-H";
+                }
+
+                time_str = bionet_event_get_timestamp_as_str(event);
+                printf(
+                    "%s,%s,%s\n",
+                    time_str,
+                    type,
+                    bionet_hab_get_name(hab));
+                free(time_str);
+            }
 
             for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
                 bionet_node_t *node;
                 int ri;
 
                 node = bionet_hab_get_node_by_index(hab, ni);
-                printf("    %s\n", bionet_node_get_id(node));
+
+                for(ei=0; ei<bionet_hab_get_num_events(hab); ei++) {
+                    bionet_event_t * event = bionet_node_get_event_by_index(node, ei);
+                    const char * type;
+                    if(bionet_event_get_type(event) == BIONET_EVENT_PUBLISHED) {
+                        type = "+N";
+                    } else {
+                        type = "-N";
+                    }
+
+                    time_str = bionet_event_get_timestamp_as_str(event);
+                    printf(
+                        "%s,%s,%s\n",
+                        time_str,
+                        type,
+                        bionet_node_get_name(node)
+                    );
+
+                    if(bionet_event_get_type(event) == BIONET_EVENT_PUBLISHED) {
+                        int i;
+                        for (i = 0; i < bionet_node_get_num_resources(node); i++) {
+                            bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
+                            if (NULL == resource) {
+                                g_log("", G_LOG_LEVEL_WARNING, "Failed to get resource at index %d from node", i);
+                                continue;
+                            }
+                            printf(
+                                "%s,+N,%s,%s %s\n",
+                                time_str,
+                                bionet_resource_get_name(resource),
+                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
+                            );
+                        }
+                    }
+                    free(time_str);
+                }
 
                 for (ri = 0; ri < bionet_node_get_num_resources(node); ri ++) {
                     bionet_resource_t *resource;
                     int di;
 
                     resource = bionet_node_get_resource_by_index(node, ri);
-                    printf(
-                        "        %s %s %s\n",
-                        bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                        bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                        bionet_resource_get_id(resource)
-                    );
-
                     for (di = 0; di < bionet_resource_get_num_datapoints(resource); di ++) {
                         bionet_datapoint_t *d;
 
                         d = bionet_resource_get_datapoint_by_index(resource, di);
+                        char * value_str = bionet_value_to_str(bionet_datapoint_get_value(d));
 
-                        printf(
-                            "            %s @ %s\n",
-                            bionet_value_to_str(bionet_datapoint_get_value(d)),
-                            bionet_datapoint_timestamp_to_string(d)
-                        );
+                        for(ei=0; ei<bionet_datapoint_get_num_events(d); ei++) {
+                            bionet_event_t * event = bionet_datapoint_get_event_by_index(d, ei);
+                            time_str = bionet_event_get_timestamp_as_str(event);
+                            printf("%s,+D,%s,%s %s %s @ %s\n",
+                                time_str,
+                                bionet_resource_get_name(resource),
+                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                                value_str,
+                                bionet_datapoint_timestamp_to_string(d));
+                            free(time_str);
+                        }
+
+                        free(value_str);
                     }
                 }
             }
