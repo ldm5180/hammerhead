@@ -18,6 +18,8 @@
 
 #include "bionet-data-manager.h"
 
+extern const char * bdm_schema_sql;
+
 extern uint32_t num_db_commits;
 
 static int db_get_last_sync_seq(sqlite3 *db, char * bdm_id, sqlite3_stmt *stmt);
@@ -229,10 +231,16 @@ typedef struct sql_return {
     GPtrArray *bdm_list;
 } sql_return_t;
 
-sqlite3 *db_init(void) {
+sqlite3 *db_init(const char * database_file) {
     int r;
 
     sqlite3 * db = NULL;
+
+    if (! sqlite3_threadsafe() ) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ERROR: sqlite3 was not compiled threadsafe");
+        return NULL;
+    }
+
 
     r = sqlite3_open(database_file, &db);
     if (r != 0) {
@@ -240,6 +248,27 @@ sqlite3 *db_init(void) {
         sqlite3_close(db);
         return NULL;
     }
+
+    const char * dataType;
+    const char * collSeq;
+    int bNotNull;
+    int bPrimaryKey;
+    int bAutoInc;
+    r = sqlite3_table_column_metadata(db, NULL, "Datapoints", "Key", 
+            &dataType, &collSeq, &bNotNull, &bPrimaryKey, &bAutoInc);
+    if (SQLITE_OK != r || !bPrimaryKey) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "No schema found in database '%s'. Creating one now...\n", database_file);
+
+        char * errMsg = NULL;
+        r = sqlite3_exec(db, bdm_schema_sql, NULL, NULL, &errMsg);
+        if (r != SQLITE_OK) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "error creating schema: %s\n", errMsg);
+            sqlite3_close(db);
+            return NULL;
+        }
+    }
+
 
     r = sqlite3_busy_timeout(db, 5 * 1000);
     if (r != 0) {

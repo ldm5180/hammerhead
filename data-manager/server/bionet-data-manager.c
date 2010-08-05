@@ -54,7 +54,6 @@ GMainLoop *bdm_main_loop = NULL;
 
 #define DB_NAME "bdm.db"
 
-gchar * database_file = NULL;
 int database_file_set = 0;
 
 void * libbdm_cal_handle = NULL;
@@ -295,6 +294,7 @@ void usage(void) {
 	" -e,--require-security                          Require security\n"
 	" -f,--file /Path/to/database/file.db            Full path of database file (bdm.db). Overrides\n"
 	"                                                --bdm-config-file\n"
+        "                                                If the file doesn't exist, it will be created\n"
 	" -h,--hab,--habs \"HAB-Type.Hab-ID\"              Subscribe to a HAB list. Appends to ones"
 	"                                                listed in bdm.ini file.\n"
 	" -i,--id <ID>                                   ID of Bionet Data Manager\n"
@@ -522,6 +522,8 @@ int main(int argc, char *argv[]) {
     int bdm_port = BDM_PORT;
     int enable_tcp_sync_receiver = 0;
     int enable_dtn_sync_receiver = 0;
+    char * database_file = NULL;
+
     sync_sender_config_t * sync_config = NULL;
     char * sync_sender_config_file_name = NULL;
     long key;
@@ -1080,7 +1082,7 @@ skip:
 	}
     }
 
-    if ((main_db = db_init()) == NULL) {
+    if ((main_db = db_init(database_file?database_file:DB_NAME)) == NULL) {
         // an informative error message has already been logged by db_init()
         exit(1);
     }
@@ -1395,7 +1397,7 @@ skip:
 	//init the latest entry end time for the config
 	sync_config = g_slist_nth_data(sync_config_list, i);
 	if (sync_config) {
-	    sync_config->db = db_init();
+	    sync_config->db = db_init(database_file);
 	    sync_config->last_entry_end_seq = 
                 db_get_last_sync_seq_datapoints(sync_config->db, 
                     sync_config->sync_recipient);

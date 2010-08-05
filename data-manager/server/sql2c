@@ -1,0 +1,21 @@
+#!/bin/bash
+
+SRC=$1
+DST=$2
+
+
+echo "const char * bdm_schema_sql = " > $DST
+
+# Parse the schema through sqlite3 to verify syntax, and strip comments
+# Then Convert it to a const char * in a c file
+echo -e ".read $SRC\n.dump" | \
+sqlite3 ':memory:' | \
+  sed -e 's/\\/\\\\/g' | \
+  sed -e 's/"/\\"/g' | \
+  sed -e 's/^/    "/' | \
+  sed -e 's/$/\\n"/'  >> $DST
+
+echo '"";' >> $DST
+
+
+

@@ -124,6 +124,11 @@ extern int libbdm_cal_fd;
 extern void libbdm_cal_callback(void * cal_handle, const cal_event_t *event);
 extern int libbdm_cal_topic_matches(const char * topic, const char *subscription);
 
+// Global BDM Statistics
+extern uint32_t num_bionet_datapoints;
+extern uint32_t num_sync_datapoints;
+extern uint32_t num_db_commits;
+
 // Call from threads instead of sleep after starting a g_main_loop.
 // Returns if thread should exit
 int bdm_thread_sleep();
@@ -193,71 +198,8 @@ typedef struct {
 // Main thread db handle. Used by bionet callbacks
 //
 extern sqlite3 * main_db;
+extern bdm_db_batch * dbb;
 
-//
-// set up the database
-//
-// return 0 on success, -1 on failure
-//
-sqlite3 * db_init(void);
-
-
-// 
-// shut down the database
-//
-
-void db_shutdown(sqlite3 *db);
-int db_begin_transaction(sqlite3 *db);
-int db_commit(sqlite3 *db);
-void db_rollback(sqlite3 *db);
-
-//
-// Make a resource key
-//
-int db_make_resource_key(
-    const char * hab_type,
-    const char * hab_id,
-    const char * node_id,
-    const char * resource_id,
-    bionet_resource_data_type_t data_type,
-    bionet_resource_flavor_t flavor,
-    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH]);
-
-//
-// Each of these functions inserts a bionet object and, if needed, all its
-// parent objects.  These functions are idempotent.
-//
-// Return 0 on success, -1 on failure.
-//
-
-int db_add_datapoint(sqlite3 *db, bionet_datapoint_t *datapoint);
-int db_add_node(sqlite3 *db, bionet_node_t *node);
-int db_add_hab(sqlite3 *db, bionet_hab_t *hab);
-int db_add_bdm(sqlite3 *db, const char * bdm_id);
-
-// Basic insert wrapper. No consistancy checking or transactions...
-int db_insert_hab(sqlite3* db, const char * hab_type, const char * hab_id, int entry_seq);
-int db_insert_node(
-        sqlite3* db,
-        const char * node_id,
-        const char * hab_type,
-        const char * hab_id,
-        int entry_seq);
-
-int db_insert_resource(
-        sqlite3* db,
-        const char * hab_type,
-        const char * hab_id,
-        const char * node_id,
-        const char * resource_id,
-        bionet_resource_flavor_t flavor,
-        bionet_resource_data_type_t data_type,
-        int entry_seq);
-
-int db_insert_datapoint(sqlite3* db, 
-    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
-    bdm_datapoint_t *dp,
-    int entry_seq);
 
 int datapoint_bionet_to_bdm(
     bionet_datapoint_t * datapoint,
@@ -274,11 +216,6 @@ typedef struct dbb_hab dbb_hab_t;
 typedef struct dbb_node dbb_node_t;
 typedef struct dbb_resource dbb_resource_t;
 
-bdm_datapoint_t * dbb_add_datapoint(bdm_db_batch *dbb, bionet_datapoint_t *datapoint, const char * bdm_id);
-dbb_resource_t * dbb_add_resource(bdm_db_batch *dbb, bionet_resource_t *resource);
-dbb_node_t * dbb_add_node(bdm_db_batch *dbb, bionet_node_t *node);
-dbb_hab_t *  dbb_add_hab(bdm_db_batch *dbb, bionet_hab_t *hab);
-dbb_bdm_t *  dbb_add_bdm(bdm_db_batch *dbb, const char * bdm_id);
 int dbb_flush_to_db(bdm_db_batch * dbb); // no-op when batch empty
 
 

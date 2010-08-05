@@ -13,15 +13,16 @@ AM_CFLAGS += -fstrict-aliasing -Wstrict-aliasing
 AM_YFLAGS = -d 
 AM_LFLAGS = --yylineno
 
-BUILT_SOURCES = cfg-parser.h
+BUILT_SOURCES = cfg-parser.h db-schema.c
 
 bionet_data_manager_SOURCES =         \
     bionet-data-manager.c             
 
-libbionet_data_manager_la_SOURCES =      \
+libbionet_data_manager_la_SOURCES =   \
     bionet-io.c                       \
     db.c                              \
     db-batch.c                        \
+    db-schema.c                       \
     bdm-asn.c                         \
     cal-callback.c                    \
     cal-topic-matches.c               \
@@ -70,6 +71,10 @@ libbionet_data_manager_la_LDFLAGS = $(AM_LDFLAGS) $(OPENSSL_LIBS) $(GLIB_LIBS) $
 libbionet_data_manager_la_LIBADD = $(AM_LDADD) -lsqlite3 $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_CLIENT) $(LIBS_BIONET_CAL_SERVER) -lm 
 
 libbionet_data_manager_la_DEPENDENCIES = $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_ASN1) $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_CAL_CLIENT) 
+
+db-schema.c: schema sql2c
+	./sql2c schema $@
+
 
 clean-local:
 	rm -f  cfg-parser.h cfg-parser.c cfg-lexer.c
