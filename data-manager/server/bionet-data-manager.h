@@ -121,7 +121,7 @@ extern int bdm_shutdown_now;
 
 // Global CAL vars
 extern int libbdm_cal_fd;
-extern void libbdm_cal_callback(void * cal_handle, const cal_event_t *event);
+extern void bdm_cal_callback(void * cal_handle, const cal_event_t *event);
 extern int libbdm_cal_topic_matches(const char * topic, const char *subscription);
 
 // Global BDM Statistics

@@ -1427,7 +1427,7 @@ skip:
 
         libbdm_cal_handle = 
             cal_server.init("bionet-db", bionet_bdm_get_id(this_bdm), 
-			    libbdm_cal_callback, libbdm_cal_topic_matches, NULL, 0);
+			    bdm_cal_callback, libbdm_cal_topic_matches, NULL, 0);
         if (libbdm_cal_handle == NULL) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error initializing CAL");
             return 1;

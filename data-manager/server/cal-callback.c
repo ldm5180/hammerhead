@@ -509,7 +509,7 @@ static void libbdm_stream_data(const char *peer_name, StreamData_t *sd) {
 
 
 
-void libbdm_cal_callback(void * cal_handle, const cal_event_t *event) {
+void bdm_cal_callback(void * cal_handle, const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_CONNECT: {
             // we don't do anything with this
