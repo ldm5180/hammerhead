@@ -26,110 +26,165 @@
 
 extern int urandom_fd;
 
+static int my_cmp_resource(const void * a_ptr, const void *b_ptr) {
+    bionet_resource_t * a = *(bionet_resource_t**)a_ptr; 
+    bionet_resource_t * b = *(bionet_resource_t**)b_ptr; 
+    int r;
 
-void add_resource(bionet_node_t *node) {
-    bionet_resource_flavor_t flavor;
-    bionet_resource_data_type_t data_type;
-    bionet_datapoint_t *datapoint;
-    const char *resource_id;
-    bionet_resource_t *resource;
+    r = strcmp(bionet_resource_get_id(a), bionet_resource_get_id(b));
+    if(0 == r) {
+        r = (int)bionet_resource_get_data_type(b) - (int)bionet_resource_get_data_type(a);
+    }
+    if(0 == r) {
+        r = (int)bionet_resource_get_flavor(b) - (int)bionet_resource_get_flavor(a);
+    }
+
+    return r;
+}
+
+void add_resources(bionet_node_t *node, int num_resources) {
     int r;
     unsigned int rnd;
+    int i;
 
-    do {
-        resource_id = get_random_word();
-        if (bionet_node_get_resource_by_id(node, resource_id) == NULL) break;
-    } while(1);
-    
-    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
-	return;
-    }
-    flavor = rnd % (BIONET_RESOURCE_FLAVOR_MAX + 1);
-
-    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
-	return;
-    }
-    data_type = rnd % (BIONET_RESOURCE_DATA_TYPE_MAX + 1);
-
-    resource = bionet_resource_new(
-        node,
-        data_type,
-        flavor,
-        resource_id
-    );
-    if (resource == NULL) {
-        fprintf(stderr, "Error creating Resource\n");
+    bionet_resource_t ** resources = malloc(sizeof(bionet_resource_t*) * num_resources);
+    if (NULL == resources ) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Out of memory!");
         return;
     }
 
-    r = bionet_node_add_resource(node, resource);
-    if (r != 0) {
-        fprintf(stderr, "Error adding Resource\n");
-    }
+    for ( i=0; i<num_resources; i++ ) {
+        const char *resource_id;
+        bionet_resource_flavor_t flavor;
+        bionet_resource_data_type_t data_type;
 
-    //
-    // half of the resources start out without a datapoint
-    // the other half of the resources get an initial datapoint
-    //
-    if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
-	return;
-    }
-    if ((rnd % 2) == 0) {
-        if (output_mode == OM_NORMAL) {
-            g_message(
-                "    %s %s %s = (starts with no value)",
-                resource_id,
-                bionet_resource_data_type_to_string(data_type),
-                bionet_resource_flavor_to_string(flavor)
-            );
-        } else if (output_mode == OM_BIONET_WATCHER) {
-            g_message(
-                "        %s %s %s (no known value)",
-                bionet_resource_data_type_to_string(data_type),
-                bionet_resource_flavor_to_string(flavor),
-                resource_id
-            );
+        // Look through the list to ensure this resource is unique
+        int unique = 1;
+        do {
+            int j;
+            unique = 1;
+            resource_id = get_random_word();
+            for ( j=0; j<i; j++ ) {
+                if(0 == strcmp(resource_id, bionet_resource_get_id(resources[j]))) {
+                    unique=0;
+                    break;
+                }
+            }
+        } while(!unique);
+        
+        if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+            return;
         }
-    } else {
-        char *val_str;
+        flavor = rnd % (BIONET_RESOURCE_FLAVOR_MAX + 1);
 
-        set_random_resource_value(resource);
+        if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+            return;
+        }
+        data_type = rnd % (BIONET_RESOURCE_DATA_TYPE_MAX + 1);
 
-        datapoint = bionet_resource_get_datapoint_by_index(resource, 0);  // there's only one datapoint
-        val_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+        resources[i] = bionet_resource_new(
+            node,
+            data_type,
+            flavor,
+            resource_id
+        );
+        if (resources[i] == NULL) {
+            fprintf(stderr, "Error creating Resource\n");
+            return;
+        }
+    }
 
-        if (output_mode == OM_NORMAL) {
-            g_message(
-                "    %s %s %s = %s @ %s",
-                resource_id,
-                bionet_resource_data_type_to_string(data_type),
-                bionet_resource_flavor_to_string(flavor),
-                val_str,
-                bionet_datapoint_timestamp_to_string(datapoint)
-            );
-        } else if (output_mode == OM_BDM_CLIENT) {
-            g_message(
-                "%s,%s,%s",
-                bionet_datapoint_timestamp_to_string(datapoint),
-                bionet_resource_get_name(resource),
-                val_str
-            );
-        } else if (output_mode == OM_BIONET_WATCHER) {
-            g_message(
-                "        %s %s %s = %s @ %s",
-                bionet_resource_data_type_to_string(data_type),
-                bionet_resource_flavor_to_string(flavor),
-                resource_id,
-                val_str,
-                bionet_datapoint_timestamp_to_string(datapoint)
-            );
+    if(sorted_resources) {
+        qsort(resources, num_resources, sizeof(bionet_resource_t*), my_cmp_resource);
+    }
+
+
+    // Now add the resources to the node
+    for ( i=0; i<num_resources; i++ ) {
+        bionet_datapoint_t *datapoint;
+        bionet_resource_t * resource;
+
+        const char *resource_id;
+        bionet_resource_flavor_t flavor;
+        bionet_resource_data_type_t data_type;
+
+        resource  = resources[i];
+        resource_id = bionet_resource_get_id(resource);
+        flavor = bionet_resource_get_flavor(resource);
+        data_type = bionet_resource_get_data_type(resource);
+
+        r = bionet_node_add_resource(node, resource);
+        if (r != 0) {
+            fprintf(stderr, "Error adding Resource\n");
+            continue;
         }
 
-        free(val_str);
+        //
+        // half of the resources start out without a datapoint
+        // the other half of the resources get an initial datapoint
+        //
+        if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
+            return;
+        }
+        if ((rnd % 2) == 0) {
+            if (output_mode == OM_NORMAL) {
+                g_message(
+                    "    %s %s %s = (starts with no value)",
+                    resource_id,
+                    bionet_resource_data_type_to_string(data_type),
+                    bionet_resource_flavor_to_string(flavor)
+                );
+            } else if (output_mode == OM_BIONET_WATCHER) {
+                g_message(
+                    "        %s %s %s (no known value)",
+                    bionet_resource_data_type_to_string(data_type),
+                    bionet_resource_flavor_to_string(flavor),
+                    resource_id
+                );
+            }
+        } else {
+            char *val_str;
+
+            set_random_resource_value(resource);
+
+            datapoint = bionet_resource_get_datapoint_by_index(resource, 0);  // there's only one datapoint
+            val_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+
+            if (output_mode == OM_NORMAL) {
+                g_message(
+                    "    %s %s %s = %s @ %s",
+                    resource_id,
+                    bionet_resource_data_type_to_string(data_type),
+                    bionet_resource_flavor_to_string(flavor),
+                    val_str,
+                    bionet_datapoint_timestamp_to_string(datapoint)
+                );
+            } else if (output_mode == OM_BDM_CLIENT) {
+                g_message(
+                    "%s,%s,%s",
+                    bionet_datapoint_timestamp_to_string(datapoint),
+                    bionet_resource_get_name(resource),
+                    val_str
+                );
+            } else if (output_mode == OM_BIONET_WATCHER) {
+                g_message(
+                    "        %s %s %s = %s @ %s",
+                    bionet_resource_data_type_to_string(data_type),
+                    bionet_resource_flavor_to_string(flavor),
+                    resource_id,
+                    val_str,
+                    bionet_datapoint_timestamp_to_string(datapoint)
+                );
+            }
+
+            free(val_str);
+        }
     }
+
+    free(resources);
 }
 
 
@@ -170,9 +225,7 @@ void add_node(bionet_hab_t* random_hab) {
 	num_resources = rnd % 30;
 	if (num_resources > 0) {
 	    if (output_mode == OM_BIONET_WATCHER) g_message("    Resources:");
-	    for (i = 0; i < num_resources; i ++) {
-		add_resource(node);
-	    }
+            add_resources(node, num_resources);
 	}
     }
 

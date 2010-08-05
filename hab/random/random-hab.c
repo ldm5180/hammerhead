@@ -32,6 +32,7 @@
 int should_exit = 0;
 
 om_t output_mode = OM_NORMAL;
+int sorted_resources  = 0;
 bionet_hab_t *hab;
 
 int urandom_fd;
@@ -137,8 +138,16 @@ int main (int argc, char *argv[]) {
 
 	case 'o':
             if (strcmp(optarg, "normal") == 0) output_mode = OM_NORMAL;
+            if (strcmp(optarg, "normal-sorted") == 0) {
+                output_mode = OM_NORMAL;
+                sorted_resources = 1;
+            }
             else if (strcmp(optarg, "bdm-client") == 0) output_mode = OM_BDM_CLIENT;
             else if (strcmp(optarg, "bionet-watcher") == 0) output_mode = OM_BIONET_WATCHER;
+            else if (strcmp(optarg, "bionet-watcher-sorted") == 0) {
+                output_mode = OM_BIONET_WATCHER;
+                sorted_resources = 1;
+            }
             else {
                 fprintf(stderr, "unknown output mode %s\n", optarg);
                 usage();

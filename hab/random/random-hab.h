@@ -18,6 +18,7 @@ typedef enum {
 } om_t;
 
 extern om_t output_mode;
+extern int sorted_resources;
 
 
 void new_node_with_resources(bionet_hab_t* random_hab);
