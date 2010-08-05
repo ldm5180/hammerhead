@@ -34,7 +34,7 @@ libbdm_la_SOURCES =             \
 
 libbdm_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -I$(top_srcdir)/data-manager/include $(CFLAGS_BIONET_CAL_CLIENT) $(CFLAGS_BIONET_CAL_UTIL) -fno-strict-aliasing
 
-libbdm_la_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_BDM) $(LDFLAGS_BIONET_CAL_CLIENT)
+libbdm_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(BIONET_INTERFACE_VERSION) $(LDFLAGS_BDM) $(LDFLAGS_BIONET_CAL_CLIENT) 
 
 libbdm_la_LIBADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_CLIENT) -lpthread -lm
 

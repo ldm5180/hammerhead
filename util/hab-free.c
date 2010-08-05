@@ -34,12 +34,15 @@ void bionet_hab_free(bionet_hab_t *hab) {
         free(hab->name);
     }
 
-    if (hab->recording_bdm != NULL) {
-        free(hab->recording_bdm);
-    }
-
-
     bionet_hab_remove_all_nodes(hab);
+
+    // free all the events
+    while (hab->events != NULL) {
+        bionet_event_t *event = hab->events->data;
+
+        hab->events = g_slist_remove(hab->events, event);
+        bionet_event_free(event);
+    }
 
     free(hab);
 }

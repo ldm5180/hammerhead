@@ -13,6 +13,10 @@
 #include "bdm-client.h"
 #include "libbdm-internal.h"
 
+#include "util/protected.h"
+
+#include "bdm-asn.h"
+
 int bdm_send_asn(const void *buffer, size_t size, void *unused) {
     return write(bdm_fd, buffer, size);
 }
@@ -62,7 +66,8 @@ void bdm_hab_list_free(bdm_hab_list_t * hab_list) {
 
 static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
     bdm_hab_list_t *hab_list;
-    int hi;
+    int bi;
+    int ei;
 
     hab_list = calloc(1, sizeof(bdm_hab_list_t));
     if (NULL == hab_list) {
@@ -70,77 +75,127 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
     }
     hab_list->bdm_last_entry = -1;
 
+
     hab_list->hab_list = g_ptr_array_new();
 
-    if ((rdr->habs.list.count) && (rdr->lastEntry)) {
+    if ((rdr->bdms.list.count) && (rdr->lastEntry)) {
 	hab_list->bdm_last_entry = rdr->lastEntry;
     }
 
-    for (hi = 0; hi < rdr->habs.list.count; hi ++) {
-        HardwareAbstractor_t *asn_hab;
-        bionet_hab_t *hab;
-        int ni;
+    for (bi = 0; bi < rdr->bdms.list.count; bi++) {
+        DataManager_t * asn_bdm = rdr->bdms.list.array[bi];
+        const char * bdm_id = (const char*)asn_bdm->id.buf;
+        int hi;
 
-        asn_hab = rdr->habs.list.array[hi];
+        for (hi = 0; hi < asn_bdm->hablist.list.count; hi ++) {
+            BDM_HardwareAbstractor_t *asn_hab;
+            bionet_hab_t *hab;
+            int ni;
 
-        hab = bionet_hab_new((char *)asn_hab->type.buf, (char *)asn_hab->id.buf);
-        if (hab == NULL) goto cleanup;
+            asn_hab = asn_bdm->hablist.list.array[hi];
 
-        g_ptr_array_add(hab_list->hab_list, hab);
+            hab = bionet_hab_new((char *)asn_hab->type.buf, (char *)asn_hab->id.buf);
+            if (hab == NULL) goto cleanup;
 
-        for (ni = 0; ni < asn_hab->nodes.list.count; ni ++) {
-            Node_t *asn_node;
-            bionet_node_t *node;
-            int ri;
+            for( ei = 0; ei < asn_hab->events.list.count; ei++) {
+                BDM_Event_t * asn_event = asn_hab->events.list.array[ei];
+                struct timeval ts;
+                bionet_event_t * event;
 
-            asn_node = asn_hab->nodes.list.array[ni];
+                bionet_GeneralizedTime_to_timeval(&asn_event->timestamp, &ts);
 
-            node = bionet_node_new(hab, (char *)asn_node->id.buf);
-            if (node == NULL) goto cleanup;
+                event = bionet_event_new(&ts, bdm_id,
+                    (asn_event->type == BDM_Event_Type_new)?
+                         BIONET_EVENT_PUBLISHED:BIONET_EVENT_LOST);
 
-            if (bionet_hab_add_node(hab, node)) {
-		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		      "handle_Resource_Datapoints_Reply(): Failed to add node to hab.");
-	    }
+                if(event == NULL) goto cleanup;
 
-            for (ri = 0; ri < asn_node->resources.list.count; ri ++) {
-                Resource_t *asn_resource;
-                bionet_resource_data_type_t datatype;
-                bionet_resource_flavor_t flavor;
-                bionet_resource_t *resource;
-                int di;
+                bionet_hab_add_event(hab, event);
+            }
 
-                asn_resource = asn_node->resources.list.array[ri];
+            g_ptr_array_add(hab_list->hab_list, hab);
 
-                datatype = bionet_asn_to_datatype(asn_resource->datatype);
-                if (datatype == -1) goto cleanup;
+            for (ni = 0; ni < asn_hab->nodes.list.count; ni ++) {
+                BDM_Node_t *asn_node;
+                bionet_node_t *node;
+                int ri;
 
-                flavor = bionet_asn_to_flavor(asn_resource->flavor);
-                if (flavor == -1) goto cleanup;
+                asn_node = asn_hab->nodes.list.array[ni];
 
-                resource = bionet_resource_new(node, datatype, flavor, (char *)asn_resource->id.buf);
-                if (resource == NULL) goto cleanup;
+                node = bionet_node_new(hab, (char *)asn_node->id.buf);
+                if (node == NULL) goto cleanup;
 
-                if (bionet_node_add_resource(node, resource)) {
-		    g_log("", G_LOG_LEVEL_WARNING, 
-			  "handle_Resource_Datapoints_Reply(): Failed to add resource to node.");
-		    bionet_resource_free(resource);
-		    goto cleanup;
-		}
+                for( ei = 0; ei < asn_node->events.list.count; ei++) {
+                    BDM_Event_t * asn_event = asn_node->events.list.array[ei];
+                    struct timeval ts;
+                    bionet_event_t * event;
 
-                for (di = 0; di < asn_resource->datapoints.list.count; di++) {
-                    Datapoint_t *asn_datapoint;
-                    bionet_datapoint_t *d;
+                    bionet_GeneralizedTime_to_timeval(&asn_event->timestamp, &ts);
 
-                    asn_datapoint = asn_resource->datapoints.list.array[di];
+                    event = bionet_event_new(&ts, bdm_id,
+                        (asn_event->type == BDM_Event_Type_new)?
+                             BIONET_EVENT_PUBLISHED:BIONET_EVENT_LOST);
 
-                    d = bionet_asn_to_datapoint(asn_datapoint, resource);
-                    bionet_resource_add_datapoint(resource, d);
+                    if(event == NULL) goto cleanup;
+
+                    bionet_node_add_event(node, event);
                 }
+
+                for (ri = 0; ri < asn_node->resources.list.count; ri ++) {
+                    BDM_Resource_t *asn_resource;
+                    bionet_resource_data_type_t datatype;
+                    bionet_resource_flavor_t flavor;
+                    bionet_resource_t *resource;
+                    int di;
+
+                    asn_resource = asn_node->resources.list.array[ri];
+
+                    datatype = bionet_asn_to_datatype(asn_resource->datatype);
+                    if (datatype == -1) goto cleanup;
+
+                    flavor = bionet_asn_to_flavor(asn_resource->flavor);
+                    if (flavor == -1) goto cleanup;
+
+                    resource = bionet_resource_new(node, datatype, flavor, (char *)asn_resource->id.buf);
+                    if (resource == NULL) goto cleanup;
+
+                    if (bionet_node_add_resource(node, resource)) {
+                        g_log("", G_LOG_LEVEL_WARNING, 
+                              "handle_Resource_Datapoints_Reply(): Failed to add resource to node.");
+                        bionet_resource_free(resource);
+                        goto cleanup;
+                    }
+
+                    for (di = 0; di < asn_resource->datapoints.list.count; di++) {
+                        BDM_Datapoint_t *asn_datapoint;
+                        bionet_datapoint_t *d;
+
+                        asn_datapoint = asn_resource->datapoints.list.array[di];
+
+                        d = bionet_asn_to_datapoint(&asn_datapoint->datapoint, resource);
+                        bionet_resource_add_datapoint(resource, d);
+
+                        struct timeval ts = {0,0};
+                        bionet_GeneralizedTime_to_timeval(&asn_datapoint->event.timestamp, &ts);
+                        bionet_event_t * event = bionet_event_new(&ts, bdm_id, BIONET_EVENT_PUBLISHED);
+
+                        bionet_datapoint_add_event(d, event);
+
+                    }
+                }
+
+                uint8_t node_uid[BDM_UUID_LEN];
+                if (db_make_node_guid(node, node_uid) ) goto cleanup;
+                bionet_node_set_uid(node, node_uid);
+
+                if (bionet_hab_add_node(hab, node)) {
+                    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                          "handle_Resource_Datapoints_Reply(): Failed to add node to hab.");
+                }
+
             }
         }
     }
-
 
     return hab_list;
 
@@ -163,7 +218,8 @@ bdm_hab_list_t *bdm_get_resource_datapoints(const char *resource_name_pattern,
 				       struct timeval *datapointStart, 
 				       struct timeval *datapointEnd,
 				       int entryStart,
-				       int entryEnd) {
+				       int entryEnd) 
+{
     char *hab_type;
     char *hab_id;
     char *node_id;

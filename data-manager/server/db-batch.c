@@ -13,48 +13,44 @@
 #include <assert.h>
 
 #include "bionet-data-manager.h"
+#include "bdm-db.h"
+#include "../../util/protected.h"
 
-// These structure defs are only needed here
-struct dbb_bdm {
-    char * bdm_id;
-    GData * hab_list;
-    int seq_index;
-};
+#define MAX_DB_COMMIT_ATTEMPT 10
 
-struct dbb_hab {
-    char * hab_id;
-    char * hab_type;
-    dbb_bdm_t * recording_bdm;
-    GData * node_list;
-    int seq_index;
-};
+/*
+ * This file provides a DB Batch API that can be used by 
+ * all components that want to insert into the database.
+ *
+ * It caches changes into a batch that can be inserted in 
+ * one transaction for performance.
+ */
 
-struct dbb_node {
-    struct dbb_hab * hab;
-    char * node_id;
-    GData * resource_list;
-    int seq_index;
-};
+// The return_resource is optional
+bdm_datapoint_t * dbb_add_datapoint(
+        bdm_db_batch_t *dbb,
+        bionet_datapoint_t *bionet_datapoint,
+        dbb_resource_t ** return_resource) ;
 
-struct dbb_resource {
-    struct dbb_node * node;
-    char * resource_id;
-    bionet_resource_data_type_t data_type;
-    bionet_resource_flavor_t flavor;
-    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
-    bionet_resource_t * bionet_resource;
-
-    GSList *datapoint_list;
-    int seq_index;
-};
+dbb_resource_t * dbb_add_resource(bdm_db_batch_t *dbb, bionet_resource_t *resource);
+dbb_node_t * dbb_add_node(bdm_db_batch_t *dbb, bionet_node_t *node);
+dbb_hab_t *  dbb_add_hab(bdm_db_batch_t *dbb, bionet_hab_t *hab);
+dbb_bdm_t *  dbb_add_bdm(bdm_db_batch_t *dbb, const char * bdm_id);
 
 
+
+/*
+ * Structure used for "foreach" add callbacks
+ */
 typedef struct {
-    int entry_seq;
     int ret;
+    
+    int64_t first_seq;
+    int64_t last_seq;
 } dbb_foreach_t;
 
-void dbb_datapoint_delete(void * data) {
+
+static void dbb_datapoint_delete(void * data) {
     bdm_datapoint_t * dp = (bdm_datapoint_t*)data;
 
     if ( dp->type == DB_STRING) free(dp->value.str);
@@ -62,7 +58,14 @@ void dbb_datapoint_delete(void * data) {
 }
 
 
-bdm_datapoint_t * dbb_add_datapoint(bdm_db_batch *dbb, bionet_datapoint_t *bionet_datapoint, const char * bdm_id) {
+/*
+ * Add the datapoint to the batch
+ */
+bdm_datapoint_t * dbb_add_datapoint(
+        bdm_db_batch_t *dbb,
+        bionet_datapoint_t *bionet_datapoint,
+        dbb_resource_t ** return_resource) 
+{
     int r;
     bionet_value_t * bionet_value = NULL;
     bionet_resource_t * bionet_resource = NULL;
@@ -74,13 +77,8 @@ bdm_datapoint_t * dbb_add_datapoint(bdm_db_batch *dbb, bionet_datapoint_t *bione
     bionet_node = bionet_resource_get_node(bionet_resource);
     bionet_hab = bionet_node_get_hab(bionet_node);
 
-    dbb_bdm_t * bdm = dbb_add_bdm(dbb, bdm_id);
-    if (bdm == NULL ) return NULL;
-
     dbb_hab_t * hab = dbb_add_hab(dbb, bionet_hab);
     if (hab == NULL ) return NULL;
-
-    hab->recording_bdm = bdm;
 
     dbb_node_t * node = dbb_add_node(dbb, bionet_node);
     if (node == NULL ) return NULL;
@@ -94,7 +92,7 @@ bdm_datapoint_t * dbb_add_datapoint(bdm_db_batch *dbb, bionet_datapoint_t *bione
     bdm_datapoint_t * dp = calloc(1, sizeof(bdm_datapoint_t));
     if(dp == NULL) return NULL;
 
-    r = datapoint_bionet_to_bdm(bionet_datapoint, dp, bdm_id);
+    r = datapoint_bionet_to_bdm(bionet_datapoint, dp);
     if (r != 0) {
         dbb_datapoint_delete(dp);
         return NULL;
@@ -102,12 +100,14 @@ bdm_datapoint_t * dbb_add_datapoint(bdm_db_batch *dbb, bionet_datapoint_t *bione
 
     res->datapoint_list = g_slist_prepend(res->datapoint_list, dp);
 
-    dp->seq_index = dbb->num_seq_needed++;
+    if(return_resource){
+        *return_resource = res;
+    }
 
     return dp;
 }
 
-void dbb_node_delete(void *data) {
+static void dbb_node_delete(void *data) {
     dbb_node_t * node = (dbb_node_t*)data;
 
     free(node->node_id);
@@ -116,7 +116,7 @@ void dbb_node_delete(void *data) {
 }
 
 
-void dbb_resource_delete(void *data) {
+static void dbb_resource_delete(void *data) {
     dbb_resource_t * res = (dbb_resource_t*)data;
 
     free(res->resource_id);
@@ -131,12 +131,49 @@ void dbb_resource_delete(void *data) {
     free(res);
 }
 
+static dbb_node_t * dbb_hab_get_node(
+        dbb_hab_t * hab, 
+        const char * node_id,
+        const uint8_t node_uid[BDM_UUID_LEN])
+{
+    GQuark k;
+    dbb_node_t * node;
 
-dbb_node_t * dbb_add_node(bdm_db_batch *dbb, bionet_node_t *bionet_node) {
+    char quark_str[(2*BDM_UUID_LEN) +  BIONET_NAME_COMPONENT_MAX_LEN + 2];
+
+    snprintf(quark_str, sizeof(quark_str), UUID_FMTSTR " %s", 
+            UUID_ARGS(node_uid), node_id);
+
+    k = g_quark_from_string(quark_str);
+
+    node = (dbb_node_t*)g_datalist_id_get_data(&hab->node_list, k);
+
+    if ( node == NULL ) {
+        node = calloc(sizeof(dbb_node_t), 1);
+        if ( NULL == node ) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Out of Memory");
+            return NULL;
+        }
+        g_datalist_init(&node->resource_list);
+
+        memcpy(node->guid, node_uid, BDM_UUID_LEN);
+
+        node->hab = hab;
+        node->node_id = strdup(node_id);
+
+        g_datalist_id_set_data_full(&hab->node_list, k, node, dbb_node_delete);
+    }
+
+    return node;
+}
+
+dbb_node_t * dbb_add_node(bdm_db_batch_t *dbb, bionet_node_t *bionet_node) {
     int i;
     bionet_hab_t * bionet_hab = NULL;
-    GQuark k, rk;
     dbb_node_t * node;
+    GQuark rk;
+
+
 
     bionet_hab = bionet_node_get_hab(bionet_node);
 
@@ -145,28 +182,13 @@ dbb_node_t * dbb_add_node(bdm_db_batch *dbb, bionet_node_t *bionet_node) {
     dbb_hab_t * hab = dbb_add_hab(dbb, bionet_hab);
     if (hab == NULL) return NULL;
 
-    k = g_quark_from_string(bionet_node_get_id(bionet_node));
+    node = dbb_hab_get_node(hab, 
+            bionet_node_get_id(bionet_node),
+            bionet_node_get_uid(bionet_node));
+    if (node == NULL) return NULL;
 
-    node = (dbb_node_t*)g_datalist_id_get_data(&hab->node_list, k);
-
-    if ( node == NULL ) {
-        node = calloc(sizeof(dbb_node_t), 1);
-        if ( NULL == node ) return NULL;
-
-        node->hab = hab;
-        node->node_id = strdup(bionet_node_get_id(bionet_node));
-
-        g_datalist_id_set_data_full(&hab->node_list, k, node, dbb_node_delete);
-
-        node->seq_index = dbb->num_seq_needed++;
-    }
-
-
-    // We re-cehck to make sure all resources are present in the off chance that
-    // a hab removed then re-added a node with new resources
     for (i = 0; i < bionet_node_get_num_resources(bionet_node); i++) {
         bionet_resource_t *r = bionet_node_get_resource_by_index(bionet_node, i);
-        //bionet_datapoint_t *d = bionet_resource_get_datapoint_by_index(r, 0);
 
         rk = g_quark_from_string(bionet_resource_get_id(r));
 
@@ -190,8 +212,6 @@ dbb_node_t * dbb_add_node(bdm_db_batch *dbb, bionet_node_t *bionet_node) {
             res->data_type = bionet_resource_get_data_type(r);
             res->flavor = bionet_resource_get_flavor(r);
 
-            res->seq_index = dbb->num_seq_needed++;
-
             g_datalist_id_set_data_full(&node->resource_list, rk, res, dbb_resource_delete);
         }
 
@@ -201,7 +221,7 @@ dbb_node_t * dbb_add_node(bdm_db_batch *dbb, bionet_node_t *bionet_node) {
 
 }
 
-void dbb_hab_delete(void * data) {
+static void dbb_hab_delete(void * data) {
     dbb_hab_t * hab = (dbb_hab_t*)data;
 
     free(hab->hab_type);
@@ -210,7 +230,7 @@ void dbb_hab_delete(void * data) {
     free(hab);
 }
 
-dbb_hab_t * dbb_add_hab(bdm_db_batch *dbb, bionet_hab_t *bionet_hab) {
+dbb_hab_t * dbb_add_hab(bdm_db_batch_t *dbb, bionet_hab_t *bionet_hab) {
     const char * hab_name = bionet_hab_get_name(bionet_hab);
 
     GQuark k = g_quark_from_string(hab_name);
@@ -225,30 +245,20 @@ dbb_hab_t * dbb_add_hab(bdm_db_batch *dbb, bionet_hab_t *bionet_hab) {
         hab->hab_type = strdup(bionet_hab_get_type(bionet_hab));
 
         g_datalist_id_set_data_full(&dbb->hab_list, k, hab, dbb_hab_delete);
-
-        hab->seq_index = dbb->num_seq_needed++;
-    }
-
-    const char * bdm_id = bionet_hab_get_recording_bdm(bionet_hab);
-    if ( bdm_id ) {
-        dbb_bdm_t * bdm = dbb_add_bdm(dbb, bdm_id);
-        if (bdm == NULL ) return NULL;
-
-        hab->recording_bdm = bdm;
     }
 
 
     return hab;
 }
 
-void dbb_bdm_delete(void* data) {
+static void dbb_bdm_delete(void* data) {
     dbb_bdm_t * bdm = (dbb_bdm_t*)data;
 
     free(bdm->bdm_id);
     free(bdm);
 }
 
-dbb_bdm_t * dbb_add_bdm(bdm_db_batch *dbb, const char * bdm_id) {
+dbb_bdm_t * dbb_add_bdm(bdm_db_batch_t *dbb, const char * bdm_id) {
     
 
     GQuark k = g_quark_from_string(bdm_id);
@@ -263,8 +273,6 @@ dbb_bdm_t * dbb_add_bdm(bdm_db_batch *dbb, const char * bdm_id) {
         bdm->bdm_id = strdup(bdm_id);
         g_datalist_id_set_data_full(&dbb->bdm_list, k, bdm, dbb_bdm_delete);
 
-        // BDMs do not (yet) use sequence numbers...
-        //dbb->num_seq_needed++;
     }
 
     return bdm;
@@ -272,11 +280,111 @@ dbb_bdm_t * dbb_add_bdm(bdm_db_batch *dbb, const char * bdm_id) {
 }
 
 
+
+/*
+ * Add the datapoint to the batch
+ */
+dbb_event_t * dbb_add_event(
+        bdm_db_batch_t *dbb,
+        dbb_event_type_t type,
+        dbb_bionet_event_data_t bionet_ptr,
+        const char * bdm_id,
+        const struct timeval *timestamp)
+{
+    //Create new event
+
+    dbb_event_t * event = calloc(1, sizeof(dbb_event_t));
+    if(event == NULL) return NULL;
+
+    dbb_bdm_t * bdm = dbb_add_bdm(dbb, bdm_id);
+    if (bdm == NULL ) {
+        free(event);
+        return NULL;
+    }
+
+    event->type = type;
+    event->recording_bdm = bdm;
+
+    event->timestamp.tv_sec = timestamp->tv_sec;
+    event->timestamp.tv_usec = timestamp->tv_usec;
+
+
+    // Add metadata
+    switch(type) {
+        case DBB_LOST_HAB_EVENT:
+        case DBB_NEW_HAB_EVENT:
+            {
+                dbb_hab_t * hab = dbb_add_hab(dbb, bionet_ptr.hab);
+                if(NULL == hab) goto fail;
+
+                event->data.hab = hab;
+
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+                        "%s(): new/lost hab: %s.%s", __FUNCTION__,
+                        hab->hab_type, hab->hab_id);
+            }
+            break;
+
+        case DBB_LOST_NODE_EVENT:
+        case DBB_NEW_NODE_EVENT:
+            {
+                dbb_node_t * node = dbb_add_node(dbb, bionet_ptr.node);
+                if ( NULL == node ) goto fail;
+
+                event->data.node = node;
+
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+                        "%s(): new/lost node: %s.%s.%s", __FUNCTION__,
+                            node->hab->hab_type,
+                            node->hab->hab_id,
+                            node->node_id);
+            }
+            break;
+
+        case DBB_DATAPOINT_EVENT:
+            {
+                dbb_resource_t * resource = NULL;
+                bdm_datapoint_t * dp = dbb_add_datapoint(dbb, bionet_ptr.datapoint, &resource);
+                if ( NULL == dp ) goto fail;
+
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+                        "%s(): datapoint: %s", __FUNCTION__,
+                        resource->resource_id);
+
+                event->data.datapoint.resource = resource;
+                event->data.datapoint.dp = dp;
+            }
+            break;
+
+        default:
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+                    "Unknown db-batch event type");
+            goto fail;
+    }
+
+    dbb->event_list = g_list_prepend(dbb->event_list, event);
+    
+    return event;
+
+fail:
+    free(event);
+    return NULL;
+}
+
+
+
+
+
+/*****  Flush and Publish *****/
+
+
 static void _flush_foreach_bdm(GQuark key_id, void* data, void* user_data) {
     dbb_foreach_t * dat = (dbb_foreach_t*)user_data;
     dbb_bdm_t * bdm = (dbb_bdm_t*)data;
 
-    if (db_add_bdm(main_db, bdm->bdm_id)) {
+    if(bdm->rowid) return;
+
+    if (db_insert_bdm(main_db, bdm->bdm_id, &bdm->rowid) < 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
               "%s(): Failed to add BDM %s to DB.",
               __FUNCTION__,
@@ -294,64 +402,49 @@ static void _flush_foreach_resource(GQuark key_id, void* data, void* user_data) 
     int r;
     dbb_resource_t * resource = (dbb_resource_t*)data;
 
+    if(resource->rowid) return; //Already inserted
+
     dbb_node_t * node = resource->node;
     dbb_hab_t * hab = node->hab;
 
 
     r = db_insert_resource(main_db, 
             hab->hab_type, hab->hab_id, 
-            node->node_id, 
+            node->node_id, node->guid,
             resource->resource_id, resource->flavor, resource->data_type,
-            dat->entry_seq + resource->seq_index);
-    if (r) {
+            &resource->rowid);
+    if (r < 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-              "%s(): Failed to add HAB %s to DB.",
-              __FUNCTION__,
-              resource->resource_id);
+              "%s(): Failed to add resource %s.%s.%s:%s to DB.",
+              __FUNCTION__, hab->hab_type, hab->hab_id, 
+              node->node_id, resource->resource_id);
         dat->ret = -1;
         return;
     }
 
     // For performance, the list is prepended with new datapoints. 
     // Reverse it once here, so that we can efficiently traverse in the correct order
-    GSList * dplist = g_slist_reverse(resource->datapoint_list);
-    resource->datapoint_list = dplist;
+    GSList * dplist = resource->datapoint_list;
+    if(!resource->datapoint_list_reversed) {
+        dplist = g_slist_reverse(resource->datapoint_list);
+        resource->datapoint_list = dplist;
+        resource->datapoint_list_reversed = 1;
+    }
 
-    while(dplist) {
+    for(; dplist != NULL; dplist = g_slist_next(dplist))
+    {
         bdm_datapoint_t * dp = (bdm_datapoint_t*)dplist->data;
 
-        r = db_insert_datapoint(main_db, resource->resource_key, dp, 
-                dat->entry_seq + dp->seq_index);
-        if (r) {
+        if(dp->rowid) continue;
+
+        r = db_insert_datapoint(main_db, resource->resource_key, dp, &dp->rowid);
+        if (r < 0) {
             dat->ret = -1;
             return;
         }
-
-        dplist = g_slist_next(dplist);
     }
 
     dat->ret = 0;
-
-}
-
-static void _publish_foreach_add_resource(GQuark key_id, void* data, void* user_data) {
-    bionet_node_t * bionet_node = (bionet_node_t*)user_data;
-    dbb_resource_t * resource = (dbb_resource_t*)data;
-
-    bionet_resource_t * bionet_resource;
-
-    bionet_resource = bionet_resource_new(bionet_node, 
-            resource->data_type,
-            resource->flavor,
-            resource->resource_id);
-
-    if (bionet_node_add_resource(bionet_node, bionet_resource)) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-	      "_publish_foreach_add_resource: Failed to add resource %s to node %s",
-	      bionet_resource_get_id(bionet_resource), bionet_node_get_name(bionet_node));
-    }
-    resource->bionet_resource = bionet_resource;
-    bionet_resource_set_user_data(bionet_resource,(void*)resource);
 
 }
 
@@ -360,7 +453,10 @@ static void _flush_foreach_node(GQuark key_id, void* data, void* user_data) {
     dbb_node_t * node = (dbb_node_t*)data;
     dbb_hab_t * hab = node->hab;
 
-    if (db_insert_node(main_db, node->node_id, hab->hab_type, hab->hab_id, dat->entry_seq + node->seq_index )) {
+    if( node->rowid ) return; // Already inserted
+
+    if (db_insert_node(main_db, node->node_id, hab->hab_type, hab->hab_id, node->guid, &node->rowid) < 0)
+    {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
               "%s(): Failed to add HAB %s to DB.",
               __FUNCTION__,
@@ -373,67 +469,16 @@ static void _flush_foreach_node(GQuark key_id, void* data, void* user_data) {
 
 }
 
-static void _publish_foreach_node(GQuark key_id, void* data, void* user_data) {
-    dbb_foreach_t * dat = (dbb_foreach_t*)user_data;
-    dbb_node_t * node = (dbb_node_t*)data;
-    dbb_hab_t * hab = node->hab;
-
-    bionet_hab_t * bionet_hab = bionet_hab_new(hab->hab_type, hab->hab_id);
-    bionet_node_t * bionet_node = bionet_node_new(bionet_hab, node->node_id);
-    if ( hab->recording_bdm ) {
-        bionet_hab_set_recording_bdm(bionet_hab, hab->recording_bdm->bdm_id);
-    }
-
-    // Add the resources to the bionet_node
-    g_datalist_foreach(&node->resource_list, _publish_foreach_add_resource, (void*)bionet_node);
-
-    // publish this node and its resources
-    bdm_report_new_node(bionet_node, dat->entry_seq + node->seq_index);
-
-
-    // Publish the resource datapoints
-    // walk list of bionet resources
-    int ri;
-    for (ri = 0; ri < bionet_node_get_num_resources(bionet_node); ri++) {
-        bionet_resource_t * bionet_resource;
-       
-        bionet_resource = bionet_node_get_resource_by_index(bionet_node, ri);
-        if (NULL == bionet_resource) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-                  "Failed to get resource %d from Node %s",
-                  ri, bionet_node_get_name(bionet_node));
-            continue;
-        }
-
-        dbb_resource_t * resource = bionet_resource_get_user_data(bionet_resource);
-
-        GSList * dplist = resource->datapoint_list;
-        for(; dplist != NULL; dplist = g_slist_next(dplist)) {
-            bdm_datapoint_t * dp = (bdm_datapoint_t*)dplist->data;
-
-            bionet_resource_remove_datapoint_by_index(bionet_resource, 0);
-            bionet_resource_add_datapoint(
-                    bionet_resource, 
-                    datapoint_bdm_to_bionet(dp, bionet_resource));
-
-            bdm_report_datapoints(bionet_resource, dat->entry_seq + dp->seq_index);
-        }
-
-        bionet_resource_set_user_data(bionet_resource, NULL);
-
-    } //for each resource
-
-    bionet_node_free(bionet_node);
-    bionet_hab_free(bionet_hab);
-
-
-}
-
 static void _flush_foreach_hab(GQuark key_id, void* data, void* user_data) {
     dbb_foreach_t * dat = (dbb_foreach_t*)user_data;
     dbb_hab_t * hab = (dbb_hab_t*)data;
 
-    if (db_insert_hab(main_db, hab->hab_type, hab->hab_id, dat->entry_seq + hab->seq_index)) {
+    if(hab->rowid) {
+        // This was inserted before...
+        return;
+    }
+                    
+    if (db_insert_hab(main_db, hab->hab_type, hab->hab_id, &hab->rowid) < 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
               "%s(): Failed to add HAB %s.%s to DB.",
               __FUNCTION__,
@@ -447,71 +492,260 @@ static void _flush_foreach_hab(GQuark key_id, void* data, void* user_data) {
 
 }
 
-static void _publish_foreach_hab(GQuark key_id, void* data, void* user_data) {
+static void _flush_foreach_event(void *data, void *user_data) {
     dbb_foreach_t * dat = (dbb_foreach_t*)user_data;
-    dbb_hab_t * hab = (dbb_hab_t*)data;
+    dbb_event_t * event = (dbb_event_t*)data;
 
+    sqlite3_int64 rowid;
+    sqlite3_int64 data_rowid;
 
-    bionet_hab_t * bionet_hab = bionet_hab_new(hab->hab_type, hab->hab_id);
-    if ( hab->recording_bdm ) {
-        bionet_hab_set_recording_bdm(bionet_hab, hab->recording_bdm->bdm_id);
+    dbb_hab_t * hab = NULL;
+    dbb_node_t * node = NULL;
+    bdm_datapoint_t * dp = NULL;
+
+    switch(event->type) {
+        case DBB_NEW_HAB_EVENT:
+        case DBB_LOST_HAB_EVENT:
+            hab = event->data.hab;
+            data_rowid = hab->rowid;
+            break;
+
+        case DBB_NEW_NODE_EVENT:
+        case DBB_LOST_NODE_EVENT:
+            node = event->data.node;
+            hab = node->hab;
+            data_rowid = node->rowid;
+            break;
+
+        case DBB_DATAPOINT_EVENT:
+            dp = event->data.datapoint.dp;
+            data_rowid = dp->rowid;
+            break;
     }
 
-    bdm_report_new_hab(bionet_hab, dat->entry_seq + hab->seq_index);
+    if (db_insert_event(main_db, 
+                &event->timestamp, event->recording_bdm->rowid, event->type, data_rowid, &rowid) < 0)
+    {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+              "%s(): Failed to add event to DB.",
+              __FUNCTION__);
 
-    bionet_hab_free(bionet_hab);
+        dat->ret = -1;
+        return;
+    }
+    event->rowid = rowid;
 
-    g_datalist_foreach(&hab->node_list, _publish_foreach_node, user_data);
+    if(dat->first_seq < 0) {
+        dat->first_seq = rowid;
+    }
+    dat->last_seq = rowid;
+
+} 
+
+static void _publish_foreach_event(void *data, void *user_data) {
+    dbb_event_t * event = (dbb_event_t*)data;
+
+    const char * bdm_id = event->recording_bdm->bdm_id;
+    bionet_event_type_t event_type;
+
+
+
+    switch(event->type) {
+        case DBB_LOST_HAB_EVENT:
+        case DBB_LOST_NODE_EVENT:
+            event_type = BIONET_EVENT_LOST;
+            break;
+
+        case DBB_NEW_HAB_EVENT: 
+        case DBB_NEW_NODE_EVENT: 
+        case DBB_DATAPOINT_EVENT:
+            event_type = BIONET_EVENT_PUBLISHED;
+            break;
+    }
+    bionet_event_t * bionet_event = bionet_event_new(
+            &event->timestamp,
+            bdm_id,
+            event_type);
+
+    // publish the thing
+    switch(event->type) {
+        case DBB_LOST_HAB_EVENT:
+            bdm_report_lost_hab(event, bionet_event);
+            break;
+
+        case DBB_NEW_HAB_EVENT: 
+            bdm_report_new_hab(event, bionet_event);
+            break;
+
+        case DBB_LOST_NODE_EVENT:
+            bdm_report_lost_node(event, bionet_event);
+            break;
+
+        case DBB_NEW_NODE_EVENT: 
+            bdm_report_new_node(event, bionet_event);
+            break;
+
+        case DBB_DATAPOINT_EVENT:
+            bdm_report_datapoint(event, bionet_event);
+            break;
+    }
+
+} 
+
+static void _reset_foreach_resource(GQuark key_id, void* data, void* user_data) {
+    dbb_resource_t * resource = (dbb_resource_t*)data;
+
+    resource->rowid = 0;
+
+    GSList * dplist = resource->datapoint_list;
+    for(; dplist != NULL; dplist = g_slist_next(dplist))
+    {
+        bdm_datapoint_t * dp = (bdm_datapoint_t*)dplist->data;
+        dp->rowid = 0;
+    }
+}
+static void _reset_foreach_node(GQuark key_id, void* data, void* user_data) {
+    dbb_node_t * node = (dbb_node_t*)data;
+
+    node->rowid = 0;
+    g_datalist_foreach(&node->resource_list, _reset_foreach_resource, user_data);
 
 }
+static void _reset_foreach_hab(GQuark key_id, void* data, void* user_data) {
+    dbb_hab_t * hab = (dbb_hab_t*)data;
+    hab->rowid = 0;
+    g_datalist_foreach(&hab->node_list, _reset_foreach_node, user_data);
+}
 
+static void _reset_foreach_bdm(GQuark key_id, void* data, void* user_data) {
+    dbb_bdm_t * bdm = (dbb_bdm_t*)data;
+    bdm->rowid = 0;
+}
+static void _reset_foreach_event(void *data, void *user_data) {
+    dbb_event_t * event = (dbb_event_t*)data;
+    event->rowid = 0;
+}
 
-int dbb_flush_to_db(bdm_db_batch * dbb) {
+void dbb_reset_rowcache(bdm_db_batch_t * dbb) {
+        g_datalist_foreach(&dbb->bdm_list, _reset_foreach_bdm, NULL);
+        g_datalist_foreach(&dbb->hab_list, _reset_foreach_hab, NULL);
+        g_list_foreach(dbb->event_list, _reset_foreach_event, NULL);
+}
+
+void dbb_free(bdm_db_batch_t * dbb) {
+    GList * item;
+
+    g_datalist_clear(&dbb->bdm_list);
+    g_datalist_clear(&dbb->hab_list);
+
+    for(item=dbb->event_list; item != NULL; item = g_list_next(item) )
+    {
+        dbb_event_t * event = item->data;
+        free(event);
+        item->data = NULL;
+    }
+    g_list_free(dbb->event_list);
+    dbb->event_list = NULL;
+
+    free(dbb);
+}
+
+int dbb_flush_to_db(bdm_db_batch_t * dbb) {
+    GList * item;
+    int i;
+
+    if(dbb->event_list == NULL) {
+        return 0;
+    }
+
+    // The newest event is first. Reverse now to efficiently walk from 
+    // oldest to newest
+    dbb->event_list = g_list_reverse(dbb->event_list);
+
     dbb_foreach_t flush_dat = {0};
-    flush_dat.ret = -1;
-    int seq = -1;
+    for(i=0; i<MAX_DB_COMMIT_ATTEMPT; i++) {
+        flush_dat.ret = -1;
+        flush_dat.first_seq = -1;
+        flush_dat.last_seq = -1;
 
-    if ( dbb->bdm_list || dbb->hab_list ) {
-        while(1) {
-            seq = db_get_next_entry_seq_new_transaction(main_db, dbb->num_seq_needed);
+        db_begin_transaction(main_db);
 
-            if(seq < 0) return -1;
+        g_datalist_foreach(&dbb->bdm_list, _flush_foreach_bdm, &flush_dat);
+        if ( flush_dat.ret ) goto retry_flush;
 
-            flush_dat.entry_seq = seq;
+        g_datalist_foreach(&dbb->hab_list, _flush_foreach_hab, &flush_dat);
+        if ( flush_dat.ret ) goto retry_flush;
 
-            g_datalist_foreach(&dbb->bdm_list, _flush_foreach_bdm, &flush_dat);
-            if ( flush_dat.ret == 0 ) {
-                g_datalist_foreach(&dbb->hab_list, _flush_foreach_hab, &flush_dat);
-            }
-            if ( flush_dat.ret == 0 ) {
-                int r;
-                r = db_commit(main_db);
+        g_list_foreach(dbb->event_list, _flush_foreach_event, &flush_dat);
+        if ( flush_dat.ret ) goto retry_flush;
 
-                if ( r == 0 ) {
-                    // Insert completed. Yeah!
-                    break;
-                }
-            }
-
-            // Try again. We had a conflict with another thread
-            db_rollback(main_db);
+        if( 0 == db_commit(main_db) ) {
+            // Insert completed. Yeah!
+            break;
         }
 
-        dbb_foreach_t pub_dat = {0};
-        pub_dat.entry_seq = seq;
-
-        g_datalist_foreach(&dbb->hab_list, _publish_foreach_hab, &pub_dat);
-
-        g_datalist_clear(&dbb->bdm_list);
-        g_datalist_clear(&dbb->hab_list);
-
-        dbb->num_seq_needed = 0;
+retry_flush:
+        // Try again. We had a conflict with another thread
+        dbb_reset_rowcache(dbb);
+        db_rollback(main_db);
     }
 
-    return flush_dat.ret;
+    if(i == MAX_DB_COMMIT_ATTEMPT) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "Failed to commit batch %d times", i);
+        return -1;
+    }
+
+    dbb->first_seq = flush_dat.first_seq;
+    dbb->last_seq = flush_dat.last_seq;
+
+    // Data safely in DB.
+    // Now publish it
+    dbb_foreach_t pub_dat = {0};
+
+    g_list_foreach(dbb->event_list, _publish_foreach_event, &pub_dat);
+
+
+    g_datalist_clear(&dbb->bdm_list);
+    g_datalist_clear(&dbb->hab_list);
+    for(item=dbb->event_list; item != NULL; item = g_list_next(item) )
+    {
+        dbb_event_t * event = item->data;
+        free(event);
+        item->data = NULL;
+    }
+    g_list_free(dbb->event_list);
+    dbb->event_list = NULL;
+
+    return 0;
+}
+
+static void _foreach_add_resource(GQuark key_id, void* data, void* user_data) {
+    bionet_node_t * bionet_node = (bionet_node_t*)user_data;
+    dbb_resource_t * resource = (dbb_resource_t*)data;
+
+    bionet_resource_t * bionet_resource;
+
+    bionet_resource = bionet_resource_new(bionet_node, 
+            resource->data_type,
+            resource->flavor,
+            resource->resource_id);
+
+    bionet_node_add_resource(bionet_node, bionet_resource);
+    resource->bionet_resource = bionet_resource;
 
 }
 
+bionet_node_t * node_bdm_to_bionet(dbb_node_t * dbb_node, bionet_hab_t * hab) {
+    bionet_node_t * node = bionet_node_new(hab, dbb_node->node_id);
+    if(node == NULL) return NULL;
+
+    g_datalist_foreach(&dbb_node->resource_list, _foreach_add_resource, node);
+
+    bionet_node_set_uid(node, dbb_node->guid);
+
+    return node;
+}
 
 // Emacs cruft
 // Local Variables:

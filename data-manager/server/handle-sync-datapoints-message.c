@@ -9,16 +9,26 @@
 #include <unistd.h>
 
 #include "bionet-data-manager.h"
+#include "bdm-db.h"
 
 extern uint32_t num_sync_datapoints;
 
 void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Message_t *message) {
     int sri;
+    int r;
+    int counter = 0;
+
+    int64_t first_seq = -1;
+    int64_t last_seq = -1;
+
+    r = db_begin_transaction(main_db);
+    if (r != 0) goto fail;
 
     for (sri = 0; sri < message->list.count; sri++) {
 	BDMSyncRecord_t * sync_record;
 	const char * bdm_id;
 	int rri;
+        sqlite_int64 bdmrow;
 
 	//get the sync record
 	sync_record = message->list.array[sri];
@@ -26,7 +36,10 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 	//get the BDM-ID from the sync record
 	bdm_id = (const char *)sync_record->bdmID.buf;
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-	      "Received sync record from BDM: %s", bdm_id);
+	      "Received sync datapoints record from BDM: %s", bdm_id);
+
+        r = db_insert_bdm(main_db, bdm_id, &bdmrow);
+        if (r < 0) goto fail;
 
 	//process every resource
 	for (rri = 0; rri < sync_record->syncResources.list.count; rri++) {
@@ -40,11 +53,16 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 	    
 	    for (dpi = 0; dpi < resource_rec->resourceDatapoints.list.count; dpi++) {
 		Datapoint_t *dp;
+                struct timeval event_ts;
                 bdm_datapoint_t bdmdp;
 
-                bdmdp.bdm_id = (char*)bdm_id;
+		dp = &resource_rec->resourceDatapoints.list.array[dpi]->datapoint;
 
-		dp = resource_rec->resourceDatapoints.list.array[dpi];
+		bionet_GeneralizedTime_to_timeval(
+                        &resource_rec->resourceDatapoints.list.array[dpi]->timestamp,
+                        &event_ts);
+
+
 		
 		switch(dp->value.present) {
 
@@ -142,15 +160,38 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		    return;  // FIXME: return an error message to the client
 		}
 
-		if (db_add_datapoint_sync(main_db, resource_key, &bdmdp)) {
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-			  "Failed adding datapoint to DB.");
-		} else {
-		    num_sync_datapoints++;
-		}
+                sqlite3_int64 dprow, eventrow;
+                r = db_insert_datapoint(main_db, resource_key, &bdmdp, &dprow);
+                if (r < 0) goto fail;
+
+                r = db_insert_event(main_db, &event_ts, bdmrow, DBB_DATAPOINT_EVENT, dprow, &eventrow);
+                if (r < 0) goto fail;
+
+                if(first_seq < 0) {
+                    first_seq = eventrow;
+                }
+                last_seq = eventrow;
+
+                counter++;
+                num_sync_datapoints++;
 	    }
 	}
     }
+
+    r = db_commit(main_db);
+    if (r != 0) goto fail;
+
+    if(first_seq >= 0 && last_seq >=0) { 
+        db_publish_synced_datapoints(main_db, first_seq, last_seq);
+    }
+
+    return;
+
+fail:
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+          "Sync datapoint message processing failed");
+
+    db_rollback(main_db);
 
 }
 

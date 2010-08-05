@@ -12,6 +12,7 @@
 #include <errno.h>
 
 #include "bionet-data-manager.h"
+#include "bdm-db.h"
 #include "cal-server.h"
 #include "bdm-asn.h"
 #include "subscription.h"
@@ -24,62 +25,143 @@ static void libbdm_process_subscription_request(
         const char *topic,
         bdm_subscription_t *state);
 
-static void bdm_sendto_each_resource(
-        GPtrArray * bdm_list,
+static void bdm_sendto_each_hab(
+        GPtrArray * hab_list,
         int this_seq,
         const char * peer_name,
-        int (*encode_resource)(bionet_resource_t *resource, 
-                                long entry_seq, bionet_asn_buffer_t *buf) 
-        ) 
-{
-    int bi, r;
+        int (*encode_new_hab)(
+            const char * hab_type, 
+            const char * hab_id,
+            long entry_seq, 
+            const struct timeval *timestamp, 
+            const char * bdm_id,
+            bionet_asn_buffer_t *buf),
+        int (*encode_lost_hab)(
+            const char * hab_type, 
+            const char * hab_id,
+            long entry_seq, 
+            const struct timeval *timestamp, 
+            const char * bdm_id,
+            bionet_asn_buffer_t *buf)
+){
+    int hi, r;
 
-    for (bi = 0; bi < bdm_list->len; bi++) {
-	int hi;
-	bionet_bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
-	if (NULL == bdm) {
+    //walk list of habs
+    for (hi = 0; hi < hab_list->len; hi++) {
+        int ei;
+	bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);
+	if (NULL == hab) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "Failed to get BDM %d from BDM list", bi);
+		  "Failed to get Hab %d from HAB list", hi);
             continue;
 	}
 
-	//walk list of habs
-	for (hi = 0; hi < bionet_bdm_get_num_habs(bdm); hi++) {
-	    int ni;
-	    bionet_hab_t * hab = bionet_bdm_get_hab_by_index(bdm, hi);
-	    if (NULL == hab) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-		      "Failed to get HAB %d from array of HABs", hi);
+        for (ei = 0; ei < bionet_hab_get_num_events(hab); ei++ ) {
+            bionet_event_type_t type;
+            bionet_asn_buffer_t buf;
+            bionet_event_t * event = bionet_hab_get_event_by_index(hab, ei);
+            if (NULL == event) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                      "Failed to get event %d from hab %s", ei, bionet_hab_get_name(hab));
                 continue;
-	    }
-	    
-	    //walk list of nodes
-	    for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
-		int ri;
-		bionet_node_t * node = bionet_hab_get_node_by_index(hab, ni);
-		if (NULL == node) {
-		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-			  "Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
-                    continue;
-		}
-		
-		
-		//walk list of resources
-		for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
-                    bionet_asn_buffer_t buf;
-		    bionet_resource_t * resource;
-                   
-                    resource = bionet_node_get_resource_by_index(node, ri);
-		    if (NULL == resource) {
-			g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-			      "Failed to get resource %d from Node %s",
-                              ri, bionet_node_get_name(node));
-                        continue;
-		    }
+            }
 
+            type = bionet_event_get_type(event);
+            if(type == BIONET_EVENT_PUBLISHED && encode_new_hab) {
+                //
+                // Encode the hab with the supplied function
+                r = encode_new_hab(
+                        bionet_hab_get_type(hab), bionet_hab_get_id(hab),
+                        this_seq,
+                        bionet_event_get_timestamp(event), bionet_event_get_bdm_id(event),
+                        &buf);
+                if (r != 0) {
+                    // an error has already been logged, and the buffer has been freed
+                    continue;
+                }
+
+                // "send" the message to the newly connected subscriber
+                // Can't use publishto, becuase the topic string it would
+                // use to weed out duplicates does the wrong thing
+                cal_server.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size);
+            } else if ( encode_lost_hab) {
+                //
+                // Encode the hab with the supplied function
+                r = encode_lost_hab(
+                        bionet_hab_get_type(hab), 
+                        bionet_hab_get_id(hab),
+                        this_seq, 
+                        bionet_event_get_timestamp(event),
+                        bionet_event_get_bdm_id(event),
+                        &buf);
+
+                if (r != 0) {
+                    // an error has already been logged, and the buffer has been freed
+                    continue;
+                }
+
+                // "send" the message to the newly connected subscriber
+                // Can't use publishto, becuase the topic string it would
+                // use to weed out duplicates does the wrong thing
+                cal_server.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size);
+            }
+        }
+    } //for each hab
+}
+static void bdm_sendto_each_node(
+        GPtrArray * hab_list,
+        int this_seq,
+        const char * peer_name,
+        int (*encode_new_node)(
+            bionet_node_t *node,
+            bionet_event_t *event,
+            long entry_seq,
+            bionet_asn_buffer_t *buf) ,
+        int (*encode_lost_node)(
+            const uint8_t guid[BDM_UUID_LEN],
+            long entry_seq, 
+            const struct timeval *timestamp, 
+            const char * bdm_id,
+            bionet_asn_buffer_t *buf)
+        ) 
+{
+    int hi, r;
+
+    //walk list of habs
+    for (hi = 0; hi < hab_list->len; hi++) {
+        int ni;
+	bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);
+	if (NULL == hab) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to get Hab %d from HAB list", hi);
+            continue;
+	}
+
+        //walk list of nodes
+        for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
+            int ei;
+            bionet_node_t * node = bionet_hab_get_node_by_index(hab, ni);
+            if (NULL == node) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                      "Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
+                continue;
+            }
+
+            for (ei = 0; ei < bionet_node_get_num_events(node); ei++ ) {
+                bionet_event_type_t type;
+                bionet_asn_buffer_t buf;
+                bionet_event_t * event = bionet_node_get_event_by_index(node, ei);
+                if (NULL == event) {
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                          "Failed to get event %d from node %s", ei, bionet_node_get_name(node));
+                    continue;
+                }
+
+                type = bionet_event_get_type(event);
+                if(type == BIONET_EVENT_PUBLISHED && encode_new_node) {
                     //
-                    // Encode the resource with the supplied function
-                    r = encode_resource(resource, this_seq, &buf);
+                    // Encode the node with the supplied function
+                    r = encode_new_node(node, event, this_seq, &buf);
                     if (r != 0) {
                         // an error has already been logged, and the buffer has been freed
                         continue;
@@ -89,10 +171,88 @@ static void bdm_sendto_each_resource(
                     // Can't use publishto, becuase the topic string it would
                     // use to weed out duplicates does the wrong thing
                     cal_server.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size);
-		} //for each resource
-	    } //for each node
-	} //for each hab
-    } //for each bdm
+                } else if ( type == BIONET_EVENT_LOST && encode_lost_node) {
+                    //
+                    // Encode the node with the supplied function
+                    r = encode_lost_node(
+                            bionet_node_get_uid(node), 
+                            this_seq, 
+                            bionet_event_get_timestamp(event),
+                            bionet_event_get_bdm_id(event),
+                            &buf);
+                    if (r != 0) {
+                        // an error has already been logged, and the buffer has been freed
+                        continue;
+                    }
+
+                    // "send" the message to the newly connected subscriber
+                    // Can't use publishto, becuase the topic string it would
+                    // use to weed out duplicates does the wrong thing
+                    cal_server.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size);
+                }
+            }
+        } //for each node
+    } //for each hab
+}
+
+static void bdm_sendto_each_resource(
+        GPtrArray * hab_list,
+        int this_seq,
+        const char * peer_name,
+        int (*encode_resource)(bionet_resource_t *resource, 
+                                long entry_seq, bionet_asn_buffer_t *buf) 
+        ) 
+{
+    int hi, r;
+
+    //walk list of habs
+    for (hi = 0; hi < hab_list->len; hi++) {
+        int ni;
+	bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);
+	if (NULL == hab) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to get Hab %d from HAB list", hi);
+            continue;
+	}
+
+        //walk list of nodes
+        for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni++) {
+            int ri;
+            bionet_node_t * node = bionet_hab_get_node_by_index(hab, ni);
+            if (NULL == node) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                      "Failed to get node %d from HAB %s", ni, bionet_hab_get_name(hab));
+                continue;
+            }
+            
+            //walk list of resources
+            for (ri = 0; ri < bionet_node_get_num_resources(node); ri++) {
+                bionet_asn_buffer_t buf;
+                bionet_resource_t * resource;
+               
+                resource = bionet_node_get_resource_by_index(node, ri);
+                if (NULL == resource) {
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                          "Failed to get resource %d from Node %s",
+                          ri, bionet_node_get_name(node));
+                    continue;
+                }
+
+                //
+                // Encode the resource with the supplied function
+                r = encode_resource(resource, this_seq, &buf);
+                if (r != 0) {
+                    // an error has already been logged, and the buffer has been freed
+                    continue;
+                }
+
+                // "send" the message to the newly connected subscriber
+                // Can't use publishto, becuase the topic string it would
+                // use to weed out duplicates does the wrong thing
+                cal_server.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size);
+            } //for each resource
+        } //for each node
+    } //for each hab
 }
 
 static void bdm_send_state(
@@ -139,6 +299,182 @@ static void bdm_send_state(
 //
 // Handle the subscription request once both the actual subscription and state have been sent
 //
+// Construct and send publish messages with the results of a
+// database query. This is inefficient for large changesets. 
+//
+// Send a sync record when thats the case (Which has the tradeoff of
+// not removing duplicates from overlapping subscriptions...)
+//
+// @param query_results
+//   The results of db_get_resource_datapoints()
+//
+// TODO: There are a few ways this is broken.
+//  1 - Like BDMSync, there's no way on initial subscribe to filter metadata by 
+//  datapoint time, because the database doesn't store node/hab arrive/depart.
+//
+//  2 - Because the messages are grouped in sync records, there's no way to filter out
+//  metadata that match multiple subscriptions. This is a result of the compromise detailed in #1
+//  
+//  3 - This could be done more efficiently by re-writing db_get_resource_datapoints()
+//  to directly publish... That would limit the data in-memory at once.
+//
+static void libbdm_process_hab_subscription_request(
+        const char *peer_name,
+        const char *topic,
+        bdm_subscription_t *state)
+{
+    char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char topic_hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char topic_hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    struct timeval tv_start, tv_end;
+    struct timeval *event_start = NULL;
+    struct timeval *event_end = NULL;
+    int r;
+    GPtrArray *hab_list;
+
+    r = bdm_split_hab_name_r(&topic[2], NULL, bdm_id, topic_hab_type, topic_hab_id);
+    if (r < 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "client '%s' requests invalid Hab subscription topic '%s'", peer_name, &topic[2]);
+        return;
+    }
+
+    if ( r > 0 ) {
+        GHashTable * params = NULL;
+        r = bionet_parse_topic_params(topic + 2 + r, &params);
+        if (r != 0) {
+            // Error logged
+            return;
+        }
+
+        if( 0 == bionet_param_to_timeval(params, "estart", &tv_start) ) {
+            event_start = &tv_start;
+        }
+        if( 0 == bionet_param_to_timeval(params, "eend", &tv_end) ) {
+            event_end = &tv_end;
+        }
+        g_hash_table_destroy(params);
+    }
+
+    // do that database lookup
+    long this_seq = db_get_latest_entry_seq(main_db);
+
+    hab_list = db_get_metadata(main_db,
+        strcmp("*",bdm_id)?bdm_id:NULL,
+        strcmp("*",topic_hab_type)?topic_hab_type:NULL,
+        strcmp("*",topic_hab_id)?topic_hab_id:NULL,
+        NULL,
+        NULL,
+        event_start, event_end,
+        state->curr_seq, this_seq);
+    if (NULL == hab_list) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "Failed to get a HAB list.");
+	return;
+    }
+    bdm_sendto_each_hab(hab_list, this_seq, peer_name, 
+            bdm_new_hab_to_asnbuf,
+            bdm_lost_hab_to_asnbuf);
+    hab_list_free(hab_list);
+
+    bdm_send_state(this_seq, peer_name, topic);
+
+    // Tell CAL we'll accept this subscription
+    cal_server.subscribe(libbdm_cal_handle, peer_name, topic);
+}
+
+//
+// Handle the subscription request once both the actual subscription and state have been sent
+//
+// Construct and send publish messages with the results of a
+// database query. This is inefficient for large changesets. 
+//
+// Send a sync record when thats the case (Which has the tradeoff of
+// not removing duplicates from overlapping subscriptions...)
+//
+// @param query_results
+//   The results of db_get_resource_datapoints()
+//
+// TODO: There are a few ways this is broken.
+//  1 - Like BDMSync, there's no way on initial subscribe to filter metadata by 
+//  datapoint time, because the database doesn't store node/hab arrive/depart.
+//
+//  2 - Because the messages are grouped in sync records, there's no way to filter out
+//  metadata that match multiple subscriptions. This is a result of the compromise detailed in #1
+//  
+//  3 - This could be done more efficiently by re-writing db_get_resource_datapoints()
+//  to directly publish... That would limit the data in-memory at once.
+//
+static void libbdm_process_node_subscription_request(
+        const char *peer_name,
+        const char *topic,
+        bdm_subscription_t *state)
+{
+    char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char topic_hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char topic_hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char topic_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    struct timeval tv_start, tv_end;
+    struct timeval *event_start = NULL;
+    struct timeval *event_end = NULL;
+    int r;
+    GPtrArray *hab_list;
+
+    r = bdm_split_node_name_r(&topic[2], NULL, bdm_id, topic_hab_type, topic_hab_id, topic_node_id);
+    if (r < 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "client '%s' requests invalid Node subscription topic '%s'", peer_name, &topic[2]);
+        return;
+    }
+
+    if ( r > 0 ) {
+        GHashTable * params = NULL;
+        r = bionet_parse_topic_params(topic + 2 + r, &params);
+        if (r != 0) {
+            // Error logged
+            return;
+        }
+
+        if( 0 == bionet_param_to_timeval(params, "estart", &tv_start) ) {
+            event_start = &tv_start;
+        }
+        if( 0 == bionet_param_to_timeval(params, "eend", &tv_end) ) {
+            event_end = &tv_end;
+        }
+        g_hash_table_destroy(params);
+    }
+
+    // do that database lookup
+    long this_seq = db_get_latest_entry_seq(main_db);
+
+    hab_list = db_get_metadata(main_db,
+        strcmp("*",bdm_id)?bdm_id:NULL,
+        strcmp("*",topic_hab_type)?topic_hab_type:NULL,
+        strcmp("*",topic_hab_id)?topic_hab_id:NULL,
+        strcmp("*",topic_node_id)?topic_node_id:NULL,
+        NULL,
+        event_start, event_end,
+        state->curr_seq, this_seq);
+    if (NULL == hab_list) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+	      "Failed to get a HAB list.");
+	return;
+    }
+    bdm_sendto_each_node(hab_list, this_seq, peer_name, 
+            bdm_new_node_to_asnbuf,
+            bdm_lost_node_to_asnbuf);
+    hab_list_free(hab_list);
+
+    bdm_send_state(this_seq, peer_name, topic);
+
+    // Tell CAL we'll accept this subscription
+    cal_server.subscribe(libbdm_cal_handle, peer_name, topic);
+}
+
+
+//
+// Handle the subscription request once both the actual subscription and state have been sent
+//
 //
 // Construct and send publish messages with the results of a
 // database query. This is inefficient for large changesets. 
@@ -170,7 +506,7 @@ static void libbdm_process_datapoint_subscription_request(
     char topic_node_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char topic_resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
     int r;
-    GPtrArray *bdm_list;
+    GPtrArray *hab_list;
 
     struct timeval tv_start;
     struct timeval *pDatapointStart = NULL;
@@ -204,41 +540,42 @@ static void libbdm_process_datapoint_subscription_request(
     // do that database lookup
     long this_seq = db_get_latest_entry_seq(main_db);
 
-    bdm_list = db_get_metadata(main_db,
+    hab_list = db_get_metadata(main_db,
         strcmp("*",bdm_id)?bdm_id:NULL,
         strcmp("*",topic_hab_type)?topic_hab_type:NULL,
         strcmp("*",topic_hab_id)?topic_hab_id:NULL,
         strcmp("*",topic_node_id)?topic_node_id:NULL,
         strcmp("*",topic_resource_id)?topic_resource_id:NULL,
-        pDatapointStart, pDatapointEnd, 
-        0, this_seq);
-    if (NULL == bdm_list) {
+        NULL, NULL,
+        state->curr_seq, this_seq);
+    if (NULL == hab_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	      "Failed to get a BDM list.");
+	      "Failed to get a HAB list.");
 	return;
     }
-    bdm_sendto_each_resource(bdm_list, this_seq, peer_name, 
+    bdm_sendto_each_resource(hab_list, this_seq, peer_name, 
             bdm_resource_metadata_to_asnbuf); 
-    bdm_list_free(bdm_list);
+    hab_list_free(hab_list);
 
     
-    bdm_list = db_get_resource_datapoints(main_db,
+    hab_list = db_get_resource_datapoints(main_db,
         strcmp("*",bdm_id)?bdm_id:NULL,
         strcmp("*",topic_hab_type)?topic_hab_type:NULL,
         strcmp("*",topic_hab_id)?topic_hab_id:NULL,
         strcmp("*",topic_node_id)?topic_node_id:NULL,
         strcmp("*",topic_resource_id)?topic_resource_id:NULL,
         pDatapointStart, pDatapointEnd, 
+        NULL, NULL,
         state->curr_seq, this_seq);
-    if (NULL == bdm_list) {
+    if (NULL == hab_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 	      "Failed to get a BDM list.");
 	return;
     }
 
-    bdm_sendto_each_resource(bdm_list, this_seq, peer_name, 
+    bdm_sendto_each_resource(hab_list, this_seq, peer_name, 
             bdm_resource_datapoints_to_asnbuf); 
-    bdm_list_free(bdm_list);
+    hab_list_free(hab_list);
 
     bdm_send_state(this_seq, peer_name, topic);
 
@@ -268,6 +605,10 @@ static void libbdm_handle_sent_state(
     } else {
         state->curr_seq = ss->seq;
     }
+
+    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_INFO, 
+            "client '%s' sends state: %ld (now %ld) for '%s'", 
+            peer_name, ss->seq, state->curr_seq, &topic[2]);
 
     libbdm_process_subscription_request(peer_name, topic, state);
 }
@@ -331,45 +672,10 @@ static void libbdm_handle_stream_subscription_request(const char *peer_name, con
 
     cal_server.subscribe(peer_name, topic);
 }
+#endif 
 
 
 
-
-static void libbdm_handle_node_list_subscription_request(const char *peer_name, const char *topic) {
-    char node_topic[BIONET_NAME_COMPONENT_MAX_LEN + 2];
-
-    if (!bionet_is_valid_name_component_or_wildcard(&topic[2])) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "client '%s' requests invalid Node-list subscription topic '%s'", peer_name, &topic[2]);
-        return;
-    }
-
-    // send all matching nodes
-    int i;
-    for (i = 0; i < bionet_hab_get_num_nodes(libbdm_this); i++) {
-        bionet_asn_buffer_t buf;
-        bionet_node_t *node = bionet_hab_get_node_by_index(libbdm_this, i);
-        int r;
-
-        if (!bionet_name_component_matches(bionet_node_get_id(node), &topic[2])) continue;
-
-        r = bionet_node_to_asnbuf(node, &buf);
-        if (r != 0) {
-            // an error has already been logged, and the buffer has been freed
-            continue;
-        }
-
-        snprintf(node_topic, sizeof(node_topic), "N %s/%s", bdmid, bionet_node_get_id(node));
-
-        // "publish" the message to the newly connected subscriber (via publishto)
-        cal_server.publishto(peer_name, node_topic, buf.buf, buf.size);
-
-        // FIXME: cal_server.publish should take the buf
-        free(buf.buf);
-    }
-
-    cal_server.subscribe(peer_name, topic);
-}
-#endif
 
 static void libbdm_handle_subscription_request(const char *peer_name, const char *topic) {
     if(NULL == peer_states){
@@ -399,13 +705,13 @@ static void libbdm_process_subscription_request(
 
     // node subscription?
     if (strncmp(topic, "N ", 2) == 0) {
-        //libbdm_handle_node_list_subscription_request(peer_name, topic);
+        libbdm_process_node_subscription_request(peer_name, topic, state);
         return;
     }
 
     // Hab subscription then, hopefully
     if (strncmp(topic, "H ", 2) == 0) {
-        //libbdm_handle_hab_list_subscription_request(peer_name, topic);
+        libbdm_process_hab_subscription_request(peer_name, topic, state);
         return;
     }
 }

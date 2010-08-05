@@ -12,6 +12,7 @@
 
 #include "bionet-asn.h"
 #include "bionet-util.h"
+#include "util/protected.h"
 
 #ifdef __WIN32
 static struct tm * gmtime_r(const time_t *timep, struct tm* _tm) {
@@ -147,18 +148,23 @@ bionet_resource_data_type_t bionet_asn_to_datatype(ResourceDataType_t asn_dataty
 
 
 Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d) {
-    int r;
-    bionet_value_t *dval = bionet_datapoint_get_value(d);
-    bionet_resource_t * resource = bionet_value_get_resource(dval);
-    bionet_resource_data_type_t datatype = bionet_resource_get_data_type(resource);
     Datapoint_t *asn_datapoint;
-    bionet_value_t *value;
 
     asn_datapoint = (Datapoint_t *)calloc(1, sizeof(Datapoint_t));
     if (asn_datapoint == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_to_asn(): out of memory");
         return NULL;
     }
+
+    return bionet_datapoint_to_asn_r(d, asn_datapoint);
+}
+
+Datapoint_t *bionet_datapoint_to_asn_r(bionet_datapoint_t *d, Datapoint_t * asn_datapoint) {
+    int r;
+    bionet_value_t *dval = bionet_datapoint_get_value(d);
+    bionet_resource_t * resource = bionet_value_get_resource(dval);
+    bionet_resource_data_type_t datatype = bionet_resource_get_data_type(resource);
+    bionet_value_t *value;
 
     r = bionet_timeval_to_GeneralizedTime(bionet_datapoint_get_timestamp(d), &asn_datapoint->timestamp);
     if (r != 0) {
@@ -250,7 +256,6 @@ cleanup:
     ASN_STRUCT_FREE(asn_DEF_Datapoint, asn_datapoint);
     return NULL;
 }
-
 
 
 
@@ -647,81 +652,51 @@ cleanup:
 }
 
 
-
-
-bionet_node_t *bionet_asn_to_node(const Node_t *asn_node) {
+bionet_hab_t *bionet_asn_to_hab(const HardwareAbstractor_t *asn_hab) {
     int i;
-    bionet_node_t *node;
+    bionet_hab_t *hab;
 
 
-    // 
-    // make the Node and grab the Node-ID
-    //
 
-    node = bionet_node_new(NULL, (char *)asn_node->id.buf);
-    if (node == NULL) {
+    hab = bionet_hab_new((char *)asn_hab->type.buf, (char*)asn_hab->id.buf);
+    if (hab == NULL) {
         // an error has been logged
         return NULL;
     }
 
 
     // 
-    // the Node's Resources
+    // the Hab's Nodes
     //
 
-    for (i = 0; i < asn_node->resources.list.count; i ++) {
-        bionet_resource_t *resource;
-        Resource_t *asn_resource = asn_node->resources.list.array[i];
+    for (i = 0; i < asn_hab->nodes.list.count; i ++) {
+        bionet_node_t *node;
+        Node_t *asn_node = asn_hab->nodes.list.array[i];
         int r;
 
-        resource = bionet_asn_to_resource(asn_resource);
-        if (resource == NULL) {
+        node = bionet_asn_to_node(asn_node, hab);
+        if (node == NULL) {
             // an error has been logged already
             goto cleanup;
         }
 
-        r = bionet_node_add_resource(node, resource);
+        r = bionet_hab_add_node(hab, node);
         if (r != 0) {
             // an error's been logged
-            bionet_resource_free(resource);
+            bionet_node_free(node);
             goto cleanup;
         }
     }
 
-
-    // 
-    // the Node's Streams
-    //
-
-    for (i = 0; i < asn_node->streams.list.count; i ++) {
-        bionet_stream_t *stream;
-        Stream_t *asn_stream = asn_node->streams.list.array[i];
-        int r;
-
-        stream = bionet_asn_to_stream(asn_stream);
-        if (stream == NULL) {
-            // an error has been logged already
-            goto cleanup;
-        }
-
-        r = bionet_node_add_stream(node, stream);
-        if (r != 0) {
-            // an error's been logged
-            bionet_stream_free(stream);
-            goto cleanup;
-        }
-    }
-
-    return node;
+    return hab;
 
 
 cleanup:
-    bionet_node_free(node);
+    bionet_hab_free(hab);
     return NULL;
 }
 
-
-bionet_node_t *bionet_asn_to_node_21(const Node_t *asn_node, bionet_hab_t *hab) {
+bionet_node_t *bionet_asn_to_node(const Node_t *asn_node, bionet_hab_t *hab) {
     int i;
     bionet_node_t *node;
 

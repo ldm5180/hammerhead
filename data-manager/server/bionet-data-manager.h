@@ -94,13 +94,6 @@ extern bdm_bp_funcs_t bdm_bp_funcs;
 #define BDM_RESOURCE_KEY_LENGTH 8 
 
 //
-// The bionet code uses glib's logging facility to log internal messages,
-// and this is the domain.
-//
-
-#define  BDM_LOG_DOMAIN  "bdm"
-
-//
 // bdm server listens on this TCP port, clients connect
 //
 
@@ -146,11 +139,13 @@ typedef union {
 } db_value_t;
 
 typedef struct {
-    const char * bdm_id;
     struct timeval timestamp;
     db_type_t type;
     db_value_t value;
-    int seq_index;
+    sqlite3_int64 rowid;
+
+    uint8_t node_uid[BDM_RESOURCE_KEY_LENGTH];
+    uint8_t res_uid[BDM_RESOURCE_KEY_LENGTH];
 } bdm_datapoint_t;
 
 typedef struct {
@@ -176,17 +171,20 @@ typedef struct {
     //State vars
     sqlite3 *db;
     int last_entry_end_seq;    
-    int last_entry_end_seq_metadata; 
     // TCP Specific
     int fd;
     int bytes_sent;
 } sync_sender_config_t;
 
 typedef struct {
-    GData *bdm_list; 
-    GData *hab_list; 
-    unsigned int num_seq_needed;
-} bdm_db_batch;
+    GList *event_list; // List of dbb_event_t to insert
+    GData *bdm_list; // Cache of dbb_bdm_t to reference, and cleanup
+    GData *hab_list; // Cache of dbb_hab_t to reference and cleanup
+
+    // Set after a successfull flush.
+    sqlite_int64 first_seq;
+    sqlite_int64 last_seq;
+} bdm_db_batch_t;
 
 
 // 
@@ -198,89 +196,116 @@ typedef struct {
 // Main thread db handle. Used by bionet callbacks
 //
 extern sqlite3 * main_db;
-extern bdm_db_batch * dbb;
+extern bdm_db_batch_t * dbb;
 
+/**
+ * Type of recorded event
+ */
+typedef enum {
+    DBB_NEW_HAB_EVENT,
+    DBB_LOST_HAB_EVENT,
+    DBB_NEW_NODE_EVENT,
+    DBB_LOST_NODE_EVENT,
+    DBB_DATAPOINT_EVENT,
+} dbb_event_type_t;
+
+/**
+ * Data pointers for all possible event types
+ */
+typedef union {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_datapoint_t * datapoint;
+} dbb_bionet_event_data_t;
 
 int datapoint_bionet_to_bdm(
     bionet_datapoint_t * datapoint,
-    bdm_datapoint_t *dp,
-    const char * bdm_id);
+    bdm_datapoint_t *dp);
 
 bionet_datapoint_t * datapoint_bdm_to_bionet(
     bdm_datapoint_t *dp,
     bionet_resource_t * resource);
 
 
+
+typedef struct dbb_event dbb_event_t;
 typedef struct dbb_bdm dbb_bdm_t;
 typedef struct dbb_hab dbb_hab_t;
 typedef struct dbb_node dbb_node_t;
 typedef struct dbb_resource dbb_resource_t;
 
-int dbb_flush_to_db(bdm_db_batch * dbb); // no-op when batch empty
+bionet_node_t * node_bdm_to_bionet(dbb_node_t * dbb_node, bionet_hab_t * hab);
+
+typedef union {
+    dbb_hab_t * hab;
+    dbb_node_t * node;
+    struct {
+        dbb_resource_t * resource;
+        bdm_datapoint_t * dp;
+    } datapoint;
+} dbb_event_data_t;
+
+struct dbb_event {
+    dbb_bdm_t * recording_bdm;
+    struct timeval timestamp;
+    dbb_event_type_t type;
+    dbb_event_data_t data;
+    sqlite_int64 rowid;
+};
+
+struct dbb_bdm {
+    sqlite3_int64 rowid;
+    char * bdm_id;
+    GData * hab_list;
+};
+
+struct dbb_hab {
+    sqlite3_int64 rowid;
+    char * hab_id;
+    char * hab_type;
+    GData * node_list;
+};
+
+struct dbb_node {
+    sqlite3_int64 rowid;
+    struct dbb_hab * hab;
+    char * node_id;
+    uint8_t guid[BDM_RESOURCE_KEY_LENGTH];
+    GData * resource_list;
+};
+
+struct dbb_resource {
+    sqlite3_int64 rowid;
+    struct dbb_node * node;
+    char * resource_id;
+    bionet_resource_data_type_t data_type;
+    bionet_resource_flavor_t flavor;
+    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH];
+    bionet_resource_t * bionet_resource;
+
+    GSList *datapoint_list;
+    int datapoint_list_reversed; // Set to true when the list is 'reversed' when flushing
+};
 
 
-//
-// Insert a datapoint, possibly before the metadata is available
-//
-int db_add_datapoint_sync(
-    sqlite3 *db,
-    uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
-    bdm_datapoint_t * dp);
 
+dbb_event_t * dbb_add_event(
+        bdm_db_batch_t *dbb,
+        dbb_event_type_t type,
+        dbb_bionet_event_data_t bionet_ptr,
+        const char * bdm_id,
+        const struct timeval *timestamp);
 
-// 
-// Finds all matching datapoints, and returns them as a GPtrArray of bionet_bdm_t.
-// Use bdm_list_free to free the list returned
-//
-GPtrArray *db_get_resource_datapoints(
-    sqlite3 *db,
-    const char *bdm_id,
-    const char *hab_type,
-    const char *hab_id,
-    const char *node_id,
-    const char *resource_id,
-    struct timeval *datapoint_start,
-    struct timeval *datapoint_end,
-    int entry_start,
-    int entry_end
-);
+int dbb_flush_to_db(bdm_db_batch_t * dbb); // no-op when batch empty
 
-// 
-// Finds all matching metadata, and returns them as a GPtrArray of bionet_bdm_t.
-// Use bdm_list_free to free the list returned
-//
-GPtrArray *db_get_metadata(
-    sqlite3 *db,
-    const char *bdm_id,
-    const char *hab_type,
-    const char *hab_id,
-    const char *node_id,
-    const char *resource_id,
-    struct timeval *datapoint_start,
-    struct timeval *datapoint_end,
-    int entry_start,
-    int entry_end);
 
 //
 // Free the list returned from db_get_metadata or db_get_resource_datapoints
 //
-void bdm_list_free(GPtrArray *bdm_list);
+void bdm_list_free(GPtrArray *hab_list);
+void hab_list_free(GPtrArray *hab_list);
 
-//
-// Request 'num' new entry numbers to use.
-//
-// On success, the first new number is returned. The set of numbers are sequential,
-// and the full requested amount will be available. 
-// ex: if db_get_next_entry_seq(db, 3) returns 12, the caller should use 12, 13, 14 for entry 
-// sequences.
-//
-// On error, -1 is returned
-int db_get_next_entry_seq_new_transaction(sqlite3 *db, unsigned int num);
 int db_get_latest_entry_seq(sqlite3 *db);
-int db_get_last_sync_seq_metadata(sqlite3 *db, char * bdm_id);
-void db_set_last_sync_seq_metadata(sqlite3 *db, char * bdm_id, int seq);
-int db_get_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id);
-void db_set_last_sync_seq_datapoints(sqlite3 *db, char * bdm_id, int seq);
 
 //
 // Stuff to handle messages and asn
@@ -289,21 +314,42 @@ void libbdm_handle_resourceDatapointsQuery(
         const char * peer_name, 
         ResourceDatapointsQuery_t *rdpq);
 
-BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray *bdm_list);
-BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray *bdm_list);
+BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray *hab_list);
+BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray *hab_list);
 
 
-int bdm_report_datapoints(
-        bionet_resource_t * resource,
-        int entry_seq) ;
+int bdm_report_datapoint(
+        dbb_event_t * event,
+        bionet_event_t * bionet_event);
+
+int bdm_report_lost_node(
+        dbb_event_t * event,
+        bionet_event_t * bionet_event);
 
 int bdm_report_new_node(
-        bionet_node_t * node,
-        int entry_seq) ;
+        dbb_event_t * event,
+        bionet_event_t * bionet_event);
 
 int bdm_report_new_hab(
-        bionet_hab_t * hab,
-        int entry_seq) ;
+        dbb_event_t * event,
+        bionet_event_t * bionet_event);
+
+int bdm_report_lost_hab(
+        dbb_event_t * event,
+        bionet_event_t * bionet_event);
+
+int db_publish_synced_datapoints(
+        sqlite3 *db,
+        sqlite_int64 first_seq, 
+        sqlite_int64 last_seq);
+
+int db_publish_sync_affected_datapoints(
+        sqlite3 *db,
+        sqlite_int64 first_seq, 
+        sqlite_int64 last_seq);
+
+void dbb_free(bdm_db_batch_t * dbb);
+
 
 // 
 // stuff for being a bionet client
@@ -382,8 +428,6 @@ void make_shutdowns_clean(int withThreads);
 // BDM sync'ing
 gpointer sync_thread(gpointer config_list);
 gpointer dtn_receive_thread(gpointer config);
-
-extern GSList * sync_config_list;
 
 sync_sender_config_t * read_config_file(const char * fname);
 

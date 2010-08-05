@@ -167,10 +167,10 @@ Resource_t *bionet_resource_to_asn(bionet_resource_t *resource);
 
 
 BIONET_ASN_API_DECL
-bionet_node_t *bionet_asn_to_node(const Node_t *asn_node);
-BIONET_ASN_API_DECL
-bionet_node_t *bionet_asn_to_node_21(const Node_t *asn_node, bionet_hab_t *hab);
+bionet_node_t *bionet_asn_to_node(const Node_t *asn_node, bionet_hab_t *hab);
 
+BIONET_ASN_API_DECL
+bionet_hab_t *bionet_asn_to_hab(const HardwareAbstractor_t *asn_hab);
 
 BIONET_ASN_API_DECL
 ResourceFlavor_t bionet_flavor_to_asn(bionet_resource_flavor_t flavor);
@@ -178,6 +178,8 @@ BIONET_ASN_API_DECL
 ResourceDataType_t bionet_datatype_to_asn(bionet_resource_data_type_t datatype);
 BIONET_ASN_API_DECL
 Datapoint_t *bionet_datapoint_to_asn(bionet_datapoint_t *d);
+BIONET_ASN_API_DECL
+Datapoint_t *bionet_datapoint_to_asn_r(bionet_datapoint_t *d, Datapoint_t * asn_datapoint_buf);
 
 BIONET_ASN_API_DECL
 bionet_resource_flavor_t bionet_asn_to_flavor(ResourceFlavor_t asn_flavor);

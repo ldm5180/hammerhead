@@ -103,6 +103,19 @@ const char *bionet_node_get_name(const bionet_node_t * node);
 BIONET_UTIL_API_DECL
 const char * bionet_node_get_id(const bionet_node_t *node);
 
+/**
+ * @brief Get the UUID of an existing Node 
+ *
+ * @param[in] node Pointer to a Node
+ * 
+ * @return UUID as a pointer to an BDM_UUID_LEN byte char array
+ * @return NULL on failure
+ *
+ * @note Do not free the returned pointer
+ */
+BIONET_UTIL_API_DECL
+const uint8_t * bionet_node_get_uid(const bionet_node_t *node);
+
 
 /**
  * @brief Get the parent HAB of a node
@@ -301,6 +314,48 @@ void bionet_node_set_user_data(bionet_node_t *node, const void *user_data);
  */
 BIONET_UTIL_API_DECL
 void *bionet_node_get_user_data(const bionet_node_t *node);
+
+
+/**
+ * @brief Get the number of events in the Node
+ * 
+ * @param[in] node Pointer to a Node
+ * 
+ * @retval -1 Invalid Node pointer
+ * @retval Number of events in the Node on success
+ */
+BIONET_UTIL_API_DECL
+int bionet_node_get_num_events(const bionet_node_t *node);
+
+
+/**
+ * @brief Get a event by its index in the Nodes list
+ * 
+ * Useful for iterating over all the events in a Node
+ *
+ * @param[in] node Pointer to a Node
+ * @param[in] index Index of the event desired
+ *
+ * @retval NULL Invalid Node pointer or index is greater than number of events
+ * @retval Valid event pointer on success
+ */
+BIONET_UTIL_API_DECL
+bionet_event_t *bionet_node_get_event_by_index(const bionet_node_t *node, 
+					    unsigned int index);
+
+
+/**
+ * @brief Add a event to the Node
+ *
+ * @param[in] node Pointer to a Node
+ * @param[in] event Pointer to a event
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+BIONET_UTIL_API_DECL
+int bionet_node_add_event(bionet_node_t *node, const bionet_event_t *event);
+
 
 #ifdef __cplusplus
 }

@@ -14,6 +14,15 @@
 
 #define BDM_DEFAULT_HOST "localhost"
 
+#define UUID_FMTSTR "%02x%02x%02x%02x%02x%02x%02x%02x"
+#define UUID_ARGS(x) x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7] 
+
+// If using gcc, use attributes
+#ifdef __GNUC__
+#define WARN_UNUSED_RESULT __attribute__ ((warn_unused_result))
+#else
+#define WARN_UNUSED_RESULT
+#endif
 
 extern bdm_hab_list_t * _libbdm_query_response;
 
@@ -69,18 +78,19 @@ extern int bdm_fd;
 
 typedef struct {
     char * bdm_id;
-    GSList * recording_bdms;
     long curr_seq; // The sequence for all completed subscriptions
     GHashTable * new_seq_by_topic; // The starting secuence for new subscriptions
 } libbdm_peer_t;
 
 extern GHashTable *libbdm_all_peers; // All peers reported by CAL. Table of libbdm_peer_t pointers
-extern GSList *libbdm_bdms;
-extern GSList *libbdm_habs;
+
+extern GSList *libbdm_bdms; // List of all bdms. This is the manager of BDM memory.
+extern GSList *libbdm_habs; // List of all habs. This is the manager of Hab memory
+
+extern GSList *libbdm_nodes; // List of all nodes. This is NOT the manager, just a list to lookup into
 
 typedef struct {
     char *peer_id;
-    char *bdm_id;
 } libbdm_bdm_subscription_t;
 
 // 
@@ -132,10 +142,11 @@ extern GSList *libbdm_stream_subscriptions;
 void libbdm_cache_add_bdm(bionet_bdm_t *bdm);
 void libbdm_cache_remove_bdm(bionet_bdm_t *bdm);
 
+// These may free the pointer passed in, and return a different one
 void libbdm_cache_add_hab(bionet_hab_t *hab);
-void libbdm_cache_remove_hab(bionet_hab_t *hab);
-
 void libbdm_cache_add_node(bionet_node_t *node);
+
+void libbdm_cache_remove_hab(bionet_hab_t *hab);
 void libbdm_cache_remove_node(bionet_node_t *node);
 
 void libbdm_cache_add_resource(bionet_resource_t *resource);

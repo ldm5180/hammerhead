@@ -201,9 +201,10 @@ void usage(void) {
 	    " -t,--datapoint-end <end-time>      Timestamp of datapoint as reported by the HAB\n"
 	    "                                    time (default: infinite future)\n"
             " -0,--output-mode <MODE>            Format the output. Can be one of:\n"
-            "                                     normal (default)\n"
+            "                                     normal       (default)\n"
             "                                     test-pattern (For generating test-pattern-hab input)\n"
-            "                                     bdm-client (Datapoints only, like bdm client)\n"
+            "                                     bdm-client   (Sortable, comma separated)\n"
+            "                                     bdm-watcher  (like bdm-client, but with recording bdm)"
 	    "\n"
 	    "note: StartTime and EndTime are given in this format: \"YYYY-MM-DD hh:mm:ss\"\n"
 	    "      YYYY is the four-digit year, for example 2008\n"
@@ -308,6 +309,7 @@ int main(int argc, char *argv[]) {
             if (strcmp(optarg, "normal") == 0) output_mode = OM_NORMAL;
             else if (strcmp(optarg, "test-pattern") == 0) output_mode = OM_TEST_PATTERN;
             else if (strcmp(optarg, "bdm-client") == 0) output_mode = OM_BDM_CLIENT;
+            else if (strcmp(optarg, "bdm-watcher") == 0) output_mode = OM_BDM_WATCHER;
             else {
                 fprintf(stderr, "unknown output mode %s\n", optarg);
                 usage();

@@ -109,6 +109,8 @@ bionet_bdm_t* bionet_bdm_new(const char* id) {
         return NULL;
     }
 
+    bdm->hab_list = g_ptr_array_new();
+
     return bdm;
 }
 

@@ -11,26 +11,62 @@
 #include "libbdm-internal.h"
 
 #include "bionet-asn.h"
+#include "bdm-asn.h"
+#include "../util/protected.h"
 
-#if 0
-// We synthesize new/lost hab and node mesages until those events are tracked by the server
-static void bdm_handle_new_node(const cal_event_t *event, const BDMNewNode_t *newNode) {
-    bionet_node_t *node;
+static void bdm_handle_new_hab(const cal_event_t *event, const BDMNewHab_t *newHab) {
     bionet_hab_t *hab;
-    bionet_bdm_t *bdm;
+    bionet_event_t * bionet_event;
+    int i;
 
-    int crossLink = 0;
-
-    bdm = bdm_cache_lookup_bdm((const char *)newNode->bdmId.buf);
-    if (bdm == NULL) {
-        bdm = bionet_bdm_new((const char*)newNode->bdmId.buf);
-        if (bdm == NULL) {
+    hab = bdm_cache_lookup_hab((const char*)newHab->habType.buf, (const char*)newHab->habId.buf);
+    if (hab == NULL) {
+        hab = bionet_hab_new((const char*)newHab->habType.buf, (const char*)newHab->habId.buf);
+        if (hab == NULL) {
             // an error has been logged already
             return;
         }
-        libbdm_cache_add_bdm(bdm);
-        crossLink = 1;
+
+        libbdm_cache_add_hab(hab);
     }
+
+    for(i=0; i<bionet_hab_get_num_nodes(hab); i++) {
+        bionet_node_t *new_node, *old_node;
+        const uint8_t * node_uid;
+
+
+        new_node = bionet_hab_get_node_by_index(hab, i);
+        node_uid = bionet_node_get_uid(new_node);
+        old_node = bdm_cache_lookup_node_uid(node_uid);
+
+        if(NULL == old_node) {
+            libbdm_cache_add_node(new_node);
+        } else if ( old_node != new_node) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                "%s(): New node already exists in cache %s " UUID_FMTSTR , 
+                __FUNCTION__, bionet_node_get_name(old_node), UUID_ARGS(node_uid));
+        }
+    }
+
+    struct timeval timestamp;
+    bionet_GeneralizedTime_to_timeval(&newHab->timestamp, &timestamp);
+    bionet_event = bionet_event_new(&timestamp, (const char*)newHab->bdmId.buf, BIONET_EVENT_PUBLISHED);
+    if (bionet_event == NULL) {
+        // an error has been logged already
+        return;
+    }
+    bionet_hab_add_event(hab, bionet_event);
+
+    if (libbdm_callback_new_hab != NULL) {
+        libbdm_callback_new_hab(hab, libbdm_callback_new_hab_usr_data);
+    }
+}
+
+static void bdm_handle_new_node(const cal_event_t *event, const BDMNewNode_t *newNode) {
+    bionet_hab_t *hab;
+    bionet_node_t *node, *tmp_node;
+    bionet_event_t * bionet_event;
+    uint8_t node_uid[BDM_UUID_LEN];
 
     hab = bdm_cache_lookup_hab((const char*)newNode->habType.buf, (const char*)newNode->habId.buf);
     if (hab == NULL) {
@@ -40,92 +76,127 @@ static void bdm_handle_new_node(const cal_event_t *event, const BDMNewNode_t *ne
             return;
         }
         libbdm_cache_add_hab(hab);
-        crossLink = 1;
-
     }
 
-    if(crossLink) {
-        bionet_hab_add_bdm(hab, bdm);
-        bionet_bdm_add_hab(bdm, hab);
-    }
-
-
-    node = bionet_asn_to_node_21(&newNode->node, hab);
-    if (node == NULL) {
+    // There is no UID in BDMNewNode, so calculate it
+    tmp_node = bionet_asn_to_node(&newNode->node, hab);
+    if (tmp_node == NULL) {
         // an error has been logged
         return;
     }
+    db_make_node_guid(tmp_node, node_uid);
 
-    // don't log an error message (the hab may already be in the cache)
-    bionet_hab_add_node(hab, node);
+
+    // Get and use existing node, or add the tmp_node
+    node = bionet_hab_get_node_by_id_and_uid(hab, bionet_node_get_id(tmp_node), node_uid);
+    if( NULL == node ) {
+        bionet_node_set_uid(tmp_node, node_uid);
+        bionet_hab_add_node(hab, tmp_node);
+        node = tmp_node;
+        libbdm_cache_add_node(node);
+    } else {
+        bionet_node_free(tmp_node);
+    }
+
+    struct timeval timestamp;
+    bionet_GeneralizedTime_to_timeval(&newNode->timestamp, &timestamp);
+    bionet_event = bionet_event_new(&timestamp, (const char*)newNode->bdmId.buf, BIONET_EVENT_PUBLISHED);
+    if (bionet_event == NULL) {
+        // an error has been logged already
+        return;
+    }
+    bionet_node_add_event(node, bionet_event);
 
     if (libbdm_callback_new_node != NULL) {
         libbdm_callback_new_node(node, libbdm_callback_new_node_usr_data);
     }
 }
-#endif
+
+
+static void bdm_handle_lost_hab(const cal_event_t *event, const BDMLostHab_t *lostHab) {
+    bionet_hab_t *hab;
+    bionet_event_t * bionet_event;
+
+    hab = bdm_cache_lookup_hab((const char*)lostHab->habType.buf, (const char*)lostHab->habId.buf);
+    if (hab == NULL) {
+        hab = bionet_hab_new((const char*)lostHab->habType.buf, (const char*)lostHab->habId.buf);
+        if (hab == NULL) {
+            // an error has been logged already
+            return;
+        }
+        libbdm_cache_add_hab(hab);
+    }
+
+    struct timeval timestamp;
+    bionet_GeneralizedTime_to_timeval(&lostHab->timestamp, &timestamp);
+    bionet_event = bionet_event_new(&timestamp, (const char*)lostHab->bdmId.buf, BIONET_EVENT_LOST);
+    if (bionet_event == NULL) {
+        // an error has been logged already
+        return;
+    }
+    bionet_hab_add_event(hab, bionet_event);
+
+    if (libbdm_callback_lost_hab != NULL) {
+        libbdm_callback_lost_hab(hab, libbdm_callback_lost_hab_usr_data);
+    }
+}
+
+static void bdm_handle_lost_node(const cal_event_t *event, const BDMLostNode_t *lostNode) {
+    bionet_node_t *node;
+    bionet_event_t * bionet_event;
+
+    if(lostNode->uid.size != BDM_UUID_LEN){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s(): asn syntax error: bad uuid length", __FUNCTION__);
+        return;
+    }
+
+    node = bdm_cache_lookup_node_uid(lostNode->uid.buf);
+    if (node == NULL) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s(): Cannot find node by uuid " UUID_FMTSTR, __FUNCTION__,
+                UUID_ARGS(lostNode->uid.buf));
+        return;
+    }
+
+    struct timeval timestamp;
+    bionet_GeneralizedTime_to_timeval(&lostNode->timestamp, &timestamp);
+    bionet_event = bionet_event_new(&timestamp, (const char*)lostNode->bdmId.buf, BIONET_EVENT_LOST);
+    if (bionet_event == NULL) {
+        // an error has been logged already
+        return;
+    }
+    bionet_node_add_event(node, bionet_event);
+
+    if (libbdm_callback_lost_node != NULL) {
+        libbdm_callback_lost_node(node, libbdm_callback_lost_node_usr_data);
+    }
+}
+
 
 static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMResourceMetadata_t *rm) {
-    bionet_bdm_t *bdm;
     bionet_hab_t *hab;
     bionet_node_t *node;
     bionet_resource_t *resource;
 
-    int notify_new_node = 0;
-
-    const char * bdm_id = (const char*)rm->bdmId.buf;
     const char * hab_type = (const char*)rm->habType.buf;
     const char * hab_id = (const char*)rm->habId.buf;
     const char * node_id = (const char*)rm->nodeId.buf;
     const char * resource_id = (const char*)rm->resourceId.buf;
+    uint8_t node_uid[BDM_UUID_LEN];
+
 
     libbdm_peer_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
     if (NULL == bdm_state) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message from unknown peer %s", event->peer_name);
+        return;
+    }
+    
+    if(rm->nodeUid.size != sizeof(node_uid)) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message corrupt. Bad node UID length");
 	return;
     }
-
-    if(rm->entrySeq > bdm_state->curr_seq) {
-        bdm_state->curr_seq = rm->entrySeq;
-    }
-
-    bdm = bdm_cache_lookup_bdm(bdm_id);
-    if (bdm == NULL) {
-        bdm = bionet_bdm_new(bdm_id);
-        if (bdm == NULL) {
-            // an error has been logged already
-            return;
-        }
-        libbdm_cache_add_bdm(bdm);
-
-        {
-            // see if we need to publish this to the user
-            GSList *i;
-            for (i = libbdm_bdm_subscriptions; i != NULL; i = i->next) {
-                libbdm_bdm_subscription_t *sub = i->data;
-
-                if (bionet_name_component_matches(bdm_id, sub->peer_id)
-                &&  bionet_name_component_matches(bdm->id, sub->bdm_id)) 
-                {
-                    if (libbdm_callback_new_bdm != NULL) {
-                        libbdm_callback_new_bdm(bdm, libbdm_callback_new_bdm_usr_data);
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    {
-        // Do linkage if this is the first time this peer has reported this bdm
-        GSList * b;
-        b = g_slist_find( bdm_state->recording_bdms, bdm );
-        if ( NULL == b ) {
-            // New BDM for this peer
-            bdm_state->recording_bdms = g_slist_prepend(bdm_state->recording_bdms, bdm);
-            bdm->peer_refcount++;
-        }
-    }
+    memcpy(node_uid, rm->nodeUid.buf, sizeof(node_uid));
 
     hab = bdm_cache_lookup_hab(hab_type, hab_id);
     if (hab == NULL) {
@@ -135,54 +206,23 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMReso
             return;
         }
         libbdm_cache_add_hab(hab);
-
-        // see if we need to publish this to the user
-        {
-            GSList *i;
-            for (i = libbdm_hab_subscriptions; i != NULL; i = i->next) {
-                libbdm_hab_subscription_t *sub = i->data;
-
-                if (bionet_hab_matches_type_and_id(hab, sub->hab_type, sub->hab_id)) {
-
-                    bionet_hab_add_bdm(hab, bdm);
-                    bionet_bdm_add_hab(bdm, hab);
-
-                    if (libbdm_callback_new_hab != NULL) {
-                        libbdm_callback_new_hab(hab, libbdm_callback_new_hab_usr_data);
-                    }
-                    break;
-                }
-            }
-        }
     }
 
-    node = bionet_hab_get_node_by_id(hab, node_id);
+    node = bionet_hab_get_node_by_id_and_uid(hab, node_id, node_uid);
     if (node == NULL) {
         node = bionet_node_new(hab, node_id);
         if (node == NULL) {
             // an error has been logged already
             return;
         }
+
+        bionet_node_set_uid(node, node_uid);
+        bionet_hab_add_node(hab, node);
+
         libbdm_cache_add_node(node);
-
-        // see if we need to publish this to the user
-        if (libbdm_callback_new_node != NULL) {
-            GSList *i;
-
-            for (i = libbdm_node_subscriptions; i != NULL; i = i->next) {
-                libbdm_node_subscription_t *sub = i->data;
-
-                if (bionet_node_matches_id(node, sub->node_id)) {
-                    notify_new_node = 1;
-                    break;
-                }
-            }
-        }
     }
 
-    resource = bdm_cache_lookup_resource(
-        hab_type, hab_id, node_id, resource_id
-    );
+    resource = bdm_cache_lookup_resource_uid(node_uid, resource_id);
     if (resource == NULL) {
         bionet_resource_data_type_t data_type;
         bionet_resource_flavor_t flavor;
@@ -209,22 +249,25 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMReso
             // an error has been logged already
             return;
         }
-        libbdm_cache_add_resource(resource);
-    }
+        bionet_node_add_resource(node, resource);
 
-    if(notify_new_node){
-        libbdm_callback_new_node(node, libbdm_callback_new_node_usr_data);
+        libbdm_cache_add_resource(resource);
     }
 }
 
 static void bdm_handle_resource_datapoints(const cal_event_t *event, BDMResourceDatapoints_t *rd) {
     bionet_resource_t *resource;
     int i;
+    uint8_t node_uid[BDM_UUID_LEN];
 
-    const char * hab_type = (const char*)rd->habType.buf;
-    const char * hab_id = (const char*)rd->habId.buf;
-    const char * node_id = (const char*)rd->nodeId.buf;
     const char * resource_id = (const char*)rd->resourceId.buf;
+
+    if(rd->nodeUid.size != sizeof(node_uid)) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "message corrupt. Bad node UID length");
+	return;
+    }
+    memcpy(node_uid, rd->nodeUid.buf, sizeof(node_uid));
+
 
     libbdm_peer_t * bdm_state = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
     if (NULL == bdm_state) {
@@ -232,43 +275,37 @@ static void bdm_handle_resource_datapoints(const cal_event_t *event, BDMResource
 	return;
     }
 
-    if ( rd->entrySeq > bdm_state->curr_seq) {
-        bdm_state->curr_seq = rd->entrySeq;
-    }
 
-    resource = bdm_cache_lookup_resource(hab_type, hab_id, node_id, resource_id);
+    resource = bdm_cache_lookup_resource_uid(node_uid, resource_id);
     if (resource == NULL) {
         g_log(
             BDM_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
-            "got a Datapoint for unknown Resource %s.%s.%s:%s",
-            hab_type, hab_id, node_id, resource_id
+            "got a Datapoint for unknown Resource " UUID_FMTSTR ":%s",
+            UUID_ARGS(node_uid), resource_id
         );
         return;
     }
 
     for (i = 0; i < rd->newDatapointsBDM.list.count; i ++) {
-        Datapoint_t *asn_d = rd->newDatapointsBDM.list.array[i];
-        bionet_datapoint_t *new_d = bionet_asn_to_datapoint(asn_d, resource);
-        int do_notify = 0;
+        BDMPublishDatapoint_t *asn_pd = rd->newDatapointsBDM.list.array[i];
+        long seq;
+        bionet_datapoint_t *new_d = bdm_publish_asn_to_datapoint(asn_pd, resource, &seq);
 
         if( NULL == new_d ){
             // An error has been logged already
             continue;
         }
 
-        if(libbdm_callback_datapoint) {
-            bionet_datapoint_t * curr_d = bionet_resource_get_datapoint_by_index(resource, 0);
-            if(curr_d == NULL || bionet_datapoint_iseq(curr_d, new_d)) {
-                do_notify =1;
-            }
+        if(seq > bdm_state->curr_seq) {
+            bdm_state->curr_seq = seq;
         }
 
 
         bionet_resource_remove_datapoint_by_index(resource, 0);
         bionet_resource_add_datapoint(resource, new_d);
 
-        if (do_notify) {
+        if(libbdm_callback_datapoint) {
             libbdm_callback_datapoint(new_d, libbdm_callback_datapoint_usr_data);
         }
     }
@@ -422,22 +459,22 @@ static void bdm_handle_server_message(const cal_event_t *event) {
     switch (m->present) {
 
         case BDM_S2C_Message_PR_newHab: {
-            //bdm_handle_new_hab(event, &m->choice.newHab);
+            bdm_handle_new_hab(event, &m->choice.newHab);
             break;
         }
 
         case BDM_S2C_Message_PR_lostHab: {
-            //bdm_handle_lost_hab(event, &m->choice.lostHab);
+            bdm_handle_lost_hab(event, &m->choice.lostHab);
             break;
         }
 
         case BDM_S2C_Message_PR_newNode: {
-            //bdm_handle_new_node(event, &m->choice.newNode);
+            bdm_handle_new_node(event, &m->choice.newNode);
             break;
         }
 
         case BDM_S2C_Message_PR_lostNode: {
-            //bdm_handle_lost_node(event, &m->choice.lostNode);
+            bdm_handle_lost_node(event, &m->choice.lostNode);
             break;
         }
 
@@ -500,33 +537,46 @@ void libbdm_cal_callback(void * cal_handle, const cal_event_t *event) {
                 g_hash_table_insert(libbdm_all_peers, strdup(event->peer_name), bdm_peer);
             }
 
+            bionet_bdm_t * bdm = bdm_cache_lookup_bdm(event->peer_name);
+            if (bdm == NULL) {
+                bdm = bionet_bdm_new(event->peer_name);
+                if (bdm == NULL) {
+                    // an error has been logged already
+                    return;
+                }
+                libbdm_cache_add_bdm(bdm);
+            }
+            // see if we need to publish this to the user
+            {
+                GSList *i;
+                for (i = libbdm_bdm_subscriptions; i != NULL; i = i->next) {
+                    libbdm_bdm_subscription_t *sub = i->data;
+
+                    if (bionet_name_component_matches(event->peer_name, sub->peer_id))
+                    {
+                        if (libbdm_callback_new_bdm != NULL) {
+                            libbdm_callback_new_bdm(bdm, libbdm_callback_new_bdm_usr_data);
+                        }
+                        break;
+                    }
+                }
+            }
+
             // TODO: Implement BDM cal-security
 	    //bionet_bdm_set_secure(bdm_peer, event->is_secure);
             break;
         }
 
         case CAL_EVENT_LEAVE: {
-            GSList *b;
-            libbdm_peer_t * peer = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
-            if ( NULL == peer ) {
-                // This can happen if a connect failed
-                return;
+            // Note, we keep a reference to all peers, to maintain state
+            //libbdm_peer_t * peer = g_hash_table_lookup(libbdm_all_peers, event->peer_name);
+
+            // However, do remove the peer from the cache, and notify the user
+            bionet_bdm_t * bdm = bdm_cache_lookup_bdm(event->peer_name);
+            if ( bdm ) { 
+                libbdm_cache_remove_bdm(bdm); // This will call callbacks
             }
 
-            // Decrement refcounts of all recording bdms this peer has seen,
-            // and remove the BDMs from the cache with no reporting peers.
-            //
-            // keep the peer in libbdm_all_peers, so that the state is 
-            // maintained if the peer returns
-            for (b = peer->recording_bdms; b != NULL; b = b->next) {
-                bionet_bdm_t * bdm = b->data;
-
-                if ( --bdm->peer_refcount <= 0 ) {
-                    libbdm_cache_remove_bdm(bdm); // this sends lost callbacks as needed
-                }
-            }
-            g_slist_free(peer->recording_bdms);
-            peer->recording_bdms = NULL;
             break;
         }
 

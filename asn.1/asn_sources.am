@@ -28,6 +28,8 @@ ASN_MODULE_SOURCES=	\
 	BDM-S2C-Message.c	\
 	BDM-Event-Type.c	\
 	BDM-Event.c	\
+	BDM-Datapoint.c	\
+	BDM-Resource.c	\
 	BDM-Node.c	\
 	BDM-HardwareAbstractor.c	\
 	DataManager.c	\

@@ -13,6 +13,7 @@
 #include <sys/time.h>
 
 #include "bionet-data-manager.h"
+#include "bdm-db.h"
 
 int yylex();
 extern int yyerror();

@@ -11,35 +11,28 @@
 -- 
 
 
-CREATE TABLE Entry_Sequence (
-    Num INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL -- The Sequence number
-);
-INSERT INTO Entry_Sequence VALUES (NULL);
-
 -- this table has one row for each distinct HAB we've ever seen
 CREATE TABLE Hardware_Abstractors (
     Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
     HAB_Type VARCHAR(255) NOT NULL,       
     HAB_ID VARCHAR(255) NOT NULL,
-    Entry_Num  INTEGER NOT NULL,                -- Time that this HAB was entered into the database
     UNIQUE (HAB_Type, HAB_ID)
 );
 CREATE INDEX HAB_Type_Index ON Hardware_Abstractors(HAB_Type);
 CREATE INDEX HAB_ID_Index ON Hardware_Abstractors(HAB_ID);
-CREATE INDEX HAB_Entry_Num ON Hardware_Abstractors(Entry_Num);
 
 
 -- this table has one row for each distinct Node we've ever seen
 CREATE TABLE Nodes (
-    Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
-    HAB_Key INTEGER NOT NULL,                        -- the row index in the Hardware_Abstractors table of the HAB that this Node belongs to
+    Key     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
+    GUID    BLOB,                                        --bottom 64 bits of SHA1 of all resources' metadata
+    HAB_Key INTEGER NOT NULL REFERENCES Hardware_Abstractor(Key), -- Key of the HAB that this Node belongs to
     Node_ID VARCHAR(255) NOT NULL,
-    Entry_Num  INTEGER NOT NULL,                -- Time that this Node was entered into the database
-    UNIQUE (HAB_Key, Node_ID)
+    UNIQUE (GUID)
 );
 CREATE INDEX HAB_Key_Index ON Nodes(HAB_Key);
 CREATE INDEX Node_ID_Index ON Nodes(Node_ID);
-CREATE INDEX Node_Entry_Num ON Nodes(Entry_Num);
+CREATE INDEX GUID_ID_Index ON Nodes(GUID);
 
 
 -- this table has one row for each Data Type we support
@@ -80,63 +73,62 @@ CREATE TABLE BDMs (
     -- NOTE: Once a bundle is sent, these values are updated, and the bundle is 
     -- inserted into the 'Sync_*_Bundle_Outstatnding' table, and later removed
     -- once it has been confirmed.
-    Last_Sync_Metadata INTEGER, --Seq of the last successfully sent metadata
-    Last_Sync_Datapoints INTEGER, --Seq of the last successfully sent datapoints
+    Last_Sync INTEGER REFERENCES Events(seq), --Seq of the last successfully sent event
     UNIQUE (BDM_ID)
 );
 CREATE INDEX BDM_ID_Index ON BDMs(BDM_ID);
-
--- these tables track all outstanding bundles, and when they were
--- last transmitted. 
-CREATE TABLE Sync_Datapoints_Bundle_Outstanding (
-    BDM_Key            INTEGER NOT NULL,
-    Sent_Timestamp     FLOAT   NOT NULL, --Part of bundle ID, and used for retransmit timers
-    Sent_Timestamp_Seq FLOAT   NOT NULL, --Part of bundle ID
-    Start_Seq          INTEGER NOT NULL, --First seq in bundle, inclusive
-    End_Seq            INTEGER NOT NULL  --Last seq in bundle, inclusive
-);
-
-CREATE TABLE Sync_Metadata_Bundle_Outstanding (
-    BDM_Key            INTEGER NOT NULL,
-    Sent_Timestamp     FLOAT   NOT NULL, --Part of bundle ID, and used for retransmit timers
-    Sent_Timestamp_Seq FLOAT   NOT NULL, --Part of bundle ID
-    Start_Seq          INTEGER NOT NULL, --First seq in bundle, inclusive
-    End_Seq            INTEGER NOT NULL --Last seq in bundle, inclusive
-);
 
 
 -- this table has one row for each distinct resource we've ever seen
 -- this is the resource metadata
 CREATE TABLE Resources (
     Key BLOB PRIMARY KEY NOT NULL,                   -- bottom 64 bits of SHA1 of metadata
-    Node_Key INTEGER NOT NULL,                       -- the row index in the Nodes table of the Node that this Resource belongs to
+    Node_Key INTEGER NOT NULL REFERENCES Nodes(Key), -- key of  Node that this Resource belongs to
     Resource_ID VARCHAR(255) NOT NULL,
     Data_Type_Key INTEGER NOT NULL,
     Flavor_Key INTEGER NOT NULL,
-    Entry_Num  INTEGER NOT NULL,                -- Time that this Resource was entered into the database
     UNIQUE (Key),
     UNIQUE (Node_Key, Resource_ID, Data_Type_Key, Flavor_Key)
 );
 CREATE INDEX Node_Key_Index ON Resources(Node_Key);
 CREATE INDEX Resource_ID_Index ON Resources(Resource_ID);
-CREATE INDEX Resource_Entry_Num ON Resources(Entry_Num);
-
-
 
 
 -- one row for each Datapoint we've ever seen
 -- this is the resource data
 CREATE TABLE Datapoints (
     Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
-    Resource_Key INTEGER NOT NULL,                   -- the row index in the Resources table of the Resource that this Datapoint belongs to
-    BDM_Key INTEGER NOT NULL,                        -- the row index in the BDMs table of the BDM that this Datapoint was first recorded
+    Resource_Key INTEGER NOT NULL REFERENCES Resources (Key),  -- the row index in the Resources table of the Resource that this Datapoint belongs to
     Value INTEGER NOT NULL,                          -- taking advantage of sqlite's manifest typing
     Timestamp_Sec  INTEGER NOT NULL,
     Timestamp_Usec INTEGER NOT NULL,
-    Entry_Num INTEGER NOT NULL,                 -- Time that this datapoint was entered into the database
     UNIQUE (Resource_Key, Value, Timestamp_Sec, Timestamp_Usec)
 );
 CREATE INDEX Resource_Key_Index ON Datapoints(Resource_Key);
 CREATE INDEX Timestamp_Sec_Index ON Datapoints(Timestamp_Sec);
-CREATE INDEX Datapoints_Entry_Num ON Datapoints(Entry_Num);
+
+-- Events table
+--
+-- This table records the time and sequence of all events
+-- Sync'd events will have another recoding_bdm
+-- Each event records one type of information. 
+--
+-- This is a single table for all events to make sequencing more simple 
+-- in sqlite3, which doesn't provide a nextval()/curval() feature
+CREATE TABLE Events (
+    seq        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,   -- sequence number
+    timestamp_sec  INTEGER,                                  -- Time this event was recorded
+    timestamp_usec INTEGER,                                  -- Time this event was recorded
+    recording_bdm INTEGER REFERENCES BDMs(Key),
+    islost     BOOLEAN,                                      -- True if "lost" event, False if "new".
+    -- One of the following will be not null
+    hab        INTEGER REFERENCES Hardware_Abstractors(Key), 
+    node       INTEGER REFERENCES Nodes(Key),
+    datapoint  INTEGER REFERENCES Datapoints(Key)
+);
+CREATE INDEX time_Index ON Events(timestamp_sec, timestamp_usec);
+CREATE INDEX bdm_Index ON Events(recording_bdm);
+CREATE INDEX hab_Index ON Events(hab);
+CREATE INDEX node_Index ON Events(node);
+CREATE INDEX datapoint_Index ON Events(datapoint);
 

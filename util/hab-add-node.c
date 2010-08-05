@@ -21,7 +21,7 @@ int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node) {
         return -1;
     }
 
-    if (bionet_hab_get_node_by_id(hab, node->id) != NULL) {
+    if (bionet_hab_get_node_by_id_and_uid(hab, node->id, node->guid) != NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_add_node(): Node %s already present in HAB %s.%s", node->id, hab->type, hab->id);
         return -1;
     }

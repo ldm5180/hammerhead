@@ -9,7 +9,9 @@
 #include <unistd.h>
 
 #include "bionet-data-manager.h"
+#include "bdm-db.h"
 #include "bionet-asn.h"
+#include "bdm-asn.h"
 #include "cal-server.h"
 
 
@@ -81,13 +83,13 @@ static int libbdm_process_resourceDatapointsQuery(
 	entry_end = db_get_latest_entry_seq(main_db);
     }
 
-    // do that database lookup
-    bdm_list = db_get_resource_datapoints(main_db, NULL,
+    // do the database lookup
+    bdm_list = db_get_bdmlist(main_db, NULL, 
                                           (const char *)rdpq->habType.buf, 
 					  (const char *)rdpq->habId.buf, 
 					  (const char *)rdpq->nodeId.buf, 
 					  (const char *)rdpq->resourceId.buf, 
-					  pDatapointStart, pDatapointEnd, 
+                                          NULL, NULL,
 					  entry_start, entry_end);
     if (NULL == bdm_list) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
@@ -100,41 +102,25 @@ static int libbdm_process_resourceDatapointsQuery(
     rdpr = &reply.choice.resourceDatapointsReply;
 
     // build the reply message
-    // debuggingly print out what we got
     for (bi = 0; bi < bdm_list->len; bi++) {
-        int hi;
+        DataManager_t * asn_bdm;
 	bionet_bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
+	if (NULL == bdm) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "Failed to get BDM %d from BDM list", bi);
+	    goto cleanup;
+	}
 
-	//BDM-BP TODO someday add the BDM ID to the client message
+        //add the BDM to the message
+        asn_bdm = bionet_bdm_to_asn(bdm);
 
-        rdpr->lastEntry = entry_end;
-
-        for (hi = 0; hi < bionet_bdm_get_num_habs(bdm); hi ++) {
-            HardwareAbstractor_t *asn_hab;
-            bionet_hab_t *hab = bionet_bdm_get_hab_by_index(bdm, hi);
-
-            asn_hab = (HardwareAbstractor_t *)calloc(1, sizeof(HardwareAbstractor_t));
-            if (asn_hab == NULL) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): out of memory!", __FUNCTION__);
-                goto cleanup;
-            }
-
-            r = bionet_hab_to_asn(hab, asn_hab);
-            if (r != 0) {
-                free(asn_hab);
-                goto cleanup;
-            }
-
-            r = asn_sequence_add(&rdpr->habs.list, asn_hab);
-            if (r != 0) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error adding HAB to ResourceDatapointReply: %s", __FUNCTION__,  strerror(errno));
-                goto cleanup;
-            }
-
+        r = asn_sequence_add(&rdpr->bdms.list, asn_bdm);
+        if (r != 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                  "sync_send_metadata(): error adding BDM to Sync Metadata: %s", strerror(errno));
+            goto cleanup;
         }
-    }
-
-    
+    } //for (bi = 0; bi < bdm_list->len; bi++)
 
     //
     // Encode ASN message and send to requesting peer

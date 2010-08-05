@@ -56,8 +56,14 @@ typedef struct bionet_resource_opaque_t  bionet_resource_t;
 typedef struct bionet_datapoint_opaque_t bionet_datapoint_t;
 typedef struct bionet_value_opaque_t     bionet_value_t;
 typedef struct bionet_epsilon_opaque_t   bionet_epsilon_t;
+typedef struct bionet_event_opaque_t     bionet_event_t;
 
 #include "libbionet-util-decl.h"
+
+/**
+ * This is the number of bytes for UUIDS in various BDM data structures
+ */
+#define BDM_UUID_LEN 8
 
 #include "bionet-bdm.h"
 #include "bionet-hab.h"
@@ -68,6 +74,7 @@ typedef struct bionet_epsilon_opaque_t   bionet_epsilon_t;
 #include "bionet-value.h"
 #include "bionet-epsilon.h"
 #include "bionet-version.h"
+#include "bionet-event.h"
 
 /**
  * The bionet code uses glib's logging facility to log internal messages,
@@ -75,11 +82,18 @@ typedef struct bionet_epsilon_opaque_t   bionet_epsilon_t;
  */
 #define  BIONET_LOG_DOMAIN  "bionet"
 
+/**
+ * The bionet code uses glib's logging facility to log internal messages,
+ * and this is the domain.
+ */
+#define  BDM_LOG_DOMAIN  "bdm"
+
 
 /**
  * name components are no more than this long (including the terminating NULL)
  */
 #define BIONET_NAME_COMPONENT_MAX_LEN (100)
+
 
 #ifdef __cplusplus
 extern "C" {

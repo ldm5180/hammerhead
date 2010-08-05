@@ -10,6 +10,11 @@ bin_PROGRAMS = bionet-data-manager
 noinst_LTLIBRARIES = libbionet-data-manager.la
 
 AM_CFLAGS += -fstrict-aliasing -Wstrict-aliasing
+
+TESTS = check/check-db
+
+check_PROGRAMS = check/check-db
+
 AM_YFLAGS = -d 
 AM_LFLAGS = --yylineno
 
@@ -19,11 +24,11 @@ bionet_data_manager_SOURCES =         \
     bionet-data-manager.c             
 
 libbionet_data_manager_la_SOURCES =   \
+    global.c                          \
     bionet-io.c                       \
     db.c                              \
     db-batch.c                        \
     db-schema.c                       \
-    bdm-asn.c                         \
     cal-callback.c                    \
     cal-topic-matches.c               \
     client-connecting-handler.c       \
@@ -53,7 +58,19 @@ nobase_sysconf_DATA =           \
     bdm.ini.default
 
 
+check_check_db_SOURCES = \
+    check/check-bdm.c                 \
+    check/check-db.c                  \
+    db.c                              \
+    db-batch.c                        \
+    db-schema.c                       \
+    publish.c                         \
+    global.c
+
 extra_cflags = $(OPENSSL_CFLAGS) $(GLIB_CFLAGS) $(OPENSSL_CFLAGS) $(CFLAGS_BIONET_CAL_SERVER) $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) $(ION_CFLAGS) $(CFLAGS_BIONET_HAB)
+
+check_check_db_CFLAGS = $(AM_CFLAGS) $(extra_cflags) @CHECK_CFLAGS@
+check_check_db_LDADD =  -lsqlite3 $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_CLIENT) $(LIBS_BIONET_CAL_SERVER)  -lpthread -lm $(LIBS_BIONET_CAL_SERVER) $(LIBS_BIONET_HAB) @CHECK_LIBS@
 
 bionet_data_manager_CFLAGS = $(AM_CFLAGS) $(extra_cflags)
 

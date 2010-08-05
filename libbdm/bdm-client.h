@@ -55,12 +55,6 @@
  * Describes the Bionet Data Manager API
  */
 
-//
-// The bionet code uses glib's logging facility to log internal messages,
-// and this is the domain.
-//
-
-#define  BDM_LOG_DOMAIN  "bdm"
 
 //
 // bdm server listens on this TCP port, clients connect
@@ -557,19 +551,27 @@ bionet_hab_t *bdm_cache_lookup_hab(const char *hab_type, const char *hab_id);
  */
 bionet_node_t *bdm_cache_lookup_node(const char *hab_type, const char *hab_id, const char *node_id);
 
+/**
+ * @brief Looks through the locally cached information for a specific Node.
+ *
+ * @param[in] node_uid The UUID of the node to return
+ *
+ * @return Pointer to the Node if found
+ * @retval NULL Not found
+ */
+bionet_node_t *bdm_cache_lookup_node_uid(const uint8_t node_uid[BDM_UUID_LEN]);
 
 /**
  * @brief Looks through the locally cached information for a specific Resource
  *
- * @param[in] hab_type The HAB-Type to look up
- * @param[in] hab_id The HAB-ID to look up
- * @param[in] node_id The Node-ID to look up
+ * @param[in] node_uid The UUID of the node to return
  * @param[in] resource_id The Resource-ID to look up
  *
  * @return Pointer to the Resource if found
  * @retval NULL Not found
  */
-bionet_resource_t *bdm_cache_lookup_resource(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
+bionet_resource_t *bdm_cache_lookup_resource_uid(const uint8_t node_uid[BDM_UUID_LEN], const char *resource_id);
+
 
 
 #if 0

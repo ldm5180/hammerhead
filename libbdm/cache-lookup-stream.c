@@ -11,10 +11,10 @@
 #include "libbdm-internal.h"
 
 
-bionet_stream_t *bdm_cache_lookup_stream(const char *hab_type, const char *hab_id, const char *node_id, const char *stream_id) {
+bionet_stream_t *bdm_cache_lookup_stream(uint8_t node_uid[BDM_UUID_LEN], const char *stream_id) {
     bionet_node_t *node;
 
-    node = bdm_cache_lookup_node(hab_type, hab_id, node_id);
+    node = bdm_cache_lookup_node_uid(node_uid);
     if (node == NULL) {
         return NULL;
     }

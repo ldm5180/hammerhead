@@ -7,8 +7,6 @@
 
 #include <asn_application.h>
 
-#include "libbionet-asn-decl.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,7 +16,6 @@ struct asn_TYPE_descriptor_s;	/* Forward declaration */
 /*
  * The DER encoder of any type. May be invoked by the application.
  */
-BIONET_ASN_API_DECL
 asn_enc_rval_t der_encode(struct asn_TYPE_descriptor_s *type_descriptor,
 		void *struct_ptr,	/* Structure to be encoded */
 		asn_app_consume_bytes_f *consume_bytes_cb,

@@ -12,13 +12,10 @@
 #include <stdint.h>
 
 
-
 struct bionet_bdm_opaque_t {
     char *id;
 
-    GSList *habs;
-
-    int peer_refcount; // Number of peers that point to this bdm
+    GPtrArray *hab_list; // Used only internally by BDM server/client
 
     const void *user_data;
 };
@@ -30,13 +27,13 @@ struct bionet_hab_opaque_t {
     char *name;
 
     GSList *nodes;
+    GSList *events;
 
     const void *user_data;
 
     int is_secure;
 
-    GSList *bdms; // NULL unless in bdm library
-    char * recording_bdm; //NULL unless in bdm library
+    bionet_bdm_t *bdm; // Used only internally by BDM server/client
 };
 
 
@@ -45,10 +42,13 @@ struct bionet_node_opaque_t {
 
     char *id;
 
+    uint8_t guid[BDM_UUID_LEN];
+
     char *name;
 
     GSList *resources;
     GSList *streams;
+    GSList *events;
 
     const void *user_data;  // const because the bionet library wont monkey with it
 };
@@ -151,11 +151,22 @@ struct bionet_datapoint_opaque_t {
     struct timeval timestamp;
 
     int dirty;  // 1 if the datapoint has new information that hasnt been reported to Bionet, 0 if the datapoint has nothing new
+    GSList *events; // Events that recorded this datapoint
 };
 
 struct bionet_epsilon_opaque_t {
     bionet_epsilon_value_t content;
 };
+
+
+struct bionet_event_opaque_t {
+    struct timeval timestamp;
+    char * bdm_id;
+    bionet_event_type_t type;
+    int64_t seq;
+};
+
+
 
 /**
  * @brief Parse out the parameters from the querystring
@@ -199,6 +210,7 @@ int bionet_parse_topic_params(
  */
 int bionet_param_to_timeval(GHashTable * params, const char * key, struct timeval * tv);
 
+int bionet_cmp_resource(const void * a_ptr, const void *b_ptr);
 
 #endif /* INTERNAL_H */
 

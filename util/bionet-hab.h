@@ -43,6 +43,7 @@
 
 
 #include "libbionet-util-decl.h"
+#include <stdint.h>
 
 /**
  * @file bionet-hab.h 
@@ -130,6 +131,21 @@ BIONET_UTIL_API_DECL
 bionet_node_t *bionet_hab_get_node_by_id(bionet_hab_t *hab, 
 					 const char *node_id);
 
+/**
+ * @brief Get pointer to a node of a HAB by its ID, and UID
+ *
+ * @param[in] hab Pointer to a HAB
+ * @param[in] node_id ID of the node requested 
+ * @param[in] node_uid ID of the node requested 
+ *
+ * @retval Valid node pointer on success
+ * @retval NULL if node with that ID and UID does not exist
+ */
+bionet_node_t *bionet_hab_get_node_by_id_and_uid(
+        bionet_hab_t *hab,
+        const char *node_id,
+        const uint8_t node_uid[BDM_UUID_LEN]);
+
 
 /**
  * @brief Get the number of nodes in the HAB
@@ -186,6 +202,23 @@ int bionet_hab_add_node(bionet_hab_t *hab, const bionet_node_t *node);
 BIONET_UTIL_API_DECL
 bionet_node_t * bionet_hab_remove_node_by_id(bionet_hab_t *hab, const char *node_id);
 
+/**
+ * @brief Remove a specific node from a HAB
+ * 
+ * @param[in] hab Pointer to a HAB
+ * @param[in] node_id ID of node to remove
+ * @param[in] node_uid UID of node to remove
+ *
+ * @return 0 Success
+ * @return -1 Failure
+ *
+ * @note Node is not free'd. The caller needs to free.
+ */
+BIONET_UTIL_API_DECL
+bionet_node_t * bionet_hab_remove_node_by_id_and_uid(
+        bionet_hab_t *hab,
+        const char *node_id,
+        const uint8_t node_uid[BDM_UUID_LEN]);
 
 /**
  * @brief Remove all nodes from a HAB
@@ -280,113 +313,46 @@ int bionet_hab_is_secure(const bionet_hab_t *hab);
 BIONET_UTIL_API_DECL
 void bionet_hab_set_secure(bionet_hab_t *hab, int is_secure);
 
-/**
- * @brief Get pointer to a bdm of a HAB by its ID
- *
- * @param[in] hab Pointer to a HAB
- * @param[in] bdm_id ID of the bdm requested 
- *
- * @retval Valid bdm pointer on success
- * @retval NULL if bdm with that ID does not exist
- */
-BIONET_UTIL_API_DECL
-bionet_bdm_t *bionet_hab_get_bdm_by_id(bionet_hab_t *hab, 
-					 const char *bdm_id);
-
 
 /**
- * @brief Get the number of bdms in the HAB
+ * @brief Get the number of events in the HAB
  * 
  * @param[in] hab Pointer to a HAB
  * 
  * @retval -1 Invalid HAB pointer
- * @retval Number of bdms in the HAB on success
+ * @retval Number of events in the HAB on success
  */
 BIONET_UTIL_API_DECL
-int bionet_hab_get_num_bdms(const bionet_hab_t *hab);
+int bionet_hab_get_num_events(const bionet_hab_t *hab);
 
 
 /**
- * @brief Get a bdm by its index in the HABs list
+ * @brief Get a event by its index in the HABs list
  * 
- * Useful for iterating over all the bdms in a HAB
+ * Useful for iterating over all the events in a HAB
  *
  * @param[in] hab Pointer to a HAB
- * @param[in] index Index of the bdm desired
+ * @param[in] index Index of the event desired
  *
- * @retval NULL Invalid HAB pointer or index is greater than number of bdms
- * @retval Valid bdm pointer on success
+ * @retval NULL Invalid HAB pointer or index is greater than number of events
+ * @retval Valid event pointer on success
  */
 BIONET_UTIL_API_DECL
-bionet_bdm_t *bionet_hab_get_bdm_by_index(bionet_hab_t *hab, 
+bionet_event_t *bionet_hab_get_event_by_index(const bionet_hab_t *hab, 
 					    unsigned int index);
 
 
 /**
- * @brief Add a bdm to the HAB
+ * @brief Add a event to the HAB
  *
  * @param[in] hab Pointer to a HAB
- * @param[in] bdm Pointer to a bdm
+ * @param[in] event Pointer to a event
  *
  * @retval 0 Success
  * @retval -1 Failure
- *
- * @note The BDM memory is not managed by the hab. The hab only tracks BDMs
- * for cross-linking purposes
  */
 BIONET_UTIL_API_DECL
-int bionet_hab_add_bdm(bionet_hab_t *hab, const bionet_bdm_t *bdm);
-
-
-/**
- * @brief Remove a specific bdm from a HAB
- * 
- * @param[in] hab Pointer to a HAB
- * @param[in] bdm_id ID of bdm to remove
- *
- * @return 0 Success
- * @return -1 Failure
- *
- * @note BDM is not free'd. The memory is mananged in the cache
- */
-BIONET_UTIL_API_DECL
-bionet_bdm_t * bionet_hab_remove_bdm_by_id(bionet_hab_t *hab, const char *bdm_id);
-
-
-/**
- * @brief Remove all bdms from a HAB
- *
- * @param[in] hab Pointer to a HAB
- *
- * @return 0 Success
- * @return -1 Failure
- *
- * @note The BDMs are not freed. The memory is still owed by the cache
- */
-BIONET_UTIL_API_DECL
-int bionet_hab_remove_all_bdms(bionet_hab_t *hab);
-
-
-/**
- * @brief Get the id of the BDM that recorded this hab
- *
- * @param[in] hab Pointer to HAB
- *
- * @return Pointer to string that is valid until the hab is free'd
- */ 
-BIONET_UTIL_API_DECL
-const char * bionet_hab_get_recording_bdm(bionet_hab_t *hab);
-
-/**
- * @brief Set the ID of the BDM that recorded this hab
- *
- * @param[in] hab Pointer to HAB
- * @param[in] bdm_id ID of BDM
- *
- * @return Pointer to string that is valid until the hab is free'd
- */ 
-BIONET_UTIL_API_DECL
-void bionet_hab_set_recording_bdm(bionet_hab_t *hab, const char * bdm_id);
+int bionet_hab_add_event(bionet_hab_t *hab, const bionet_event_t *event);
 
 #ifdef __cplusplus
 }

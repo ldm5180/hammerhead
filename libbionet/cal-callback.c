@@ -8,9 +8,8 @@
 #include "cal-client.h"
 #include "libbionet-internal.h"
 #include "bionet-asn.h"
-
-
-
+#include "protected.h"
+#include <errno.h>
 
 
 static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
@@ -19,8 +18,10 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
 
     bionet_node_t *node;
     bionet_hab_t *hab;
+    bionet_event_t * e;
 
     int r;
+    int ri, di;
 
     r = bionet_split_hab_name(event->peer_name, &hab_type, &hab_id);
     if (r != 0) {
@@ -38,11 +39,34 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
         libbionet_cache_add_hab(hab);
     }
 
-    node = bionet_asn_to_node_21(newNode, hab);
+    node = bionet_asn_to_node(newNode, hab);
     if (node == NULL) {
         // an error has been logged
         return;
     }
+
+    struct timeval event_ts;
+    gettimeofday(&event_ts, NULL);
+
+    e = bionet_event_new(&event_ts, NULL, BIONET_EVENT_PUBLISHED);
+    if (e) {
+        bionet_node_add_event(node, e);
+    }
+
+    // Add an event to each datapoint with the same timestamp as the node
+    for( ri=0; ri<bionet_node_get_num_resources(node); ri++ ) {
+        bionet_resource_t * resource = bionet_node_get_resource_by_index(node, ri);
+
+        for( di=0; di<bionet_resource_get_num_datapoints(resource); di++) {
+            bionet_datapoint_t * datapoint = bionet_resource_get_datapoint_by_index(resource, di);
+
+            e = bionet_event_new(&event_ts, NULL, BIONET_EVENT_PUBLISHED);
+            if (e) {
+                bionet_datapoint_add_event(datapoint, e);
+            }
+        }
+    }
+
 
     // don't log an error message (the hab may already be in the cache)
     bionet_hab_add_node(hab, node);
@@ -143,6 +167,7 @@ static void handle_lost_node(const cal_event_t *event, const PrintableString_t *
 
     bionet_hab_t *hab;
     bionet_node_t *node;
+    bionet_event_t *e;
 
     int r;
 
@@ -164,6 +189,11 @@ static void handle_lost_node(const cal_event_t *event, const PrintableString_t *
         return;
     }
 
+    e = bionet_event_new(NULL, NULL, BIONET_EVENT_LOST);
+    if (e) {
+        bionet_node_add_event(node, e);
+    }
+
     if (libbionet_callback_lost_node != NULL) {
         libbionet_callback_lost_node(node);
     }
@@ -180,6 +210,7 @@ static void handle_resource_datapoints(const cal_event_t *event, ResourceDatapoi
     char *hab_id;
 
     bionet_resource_t *resource;
+    bionet_event_t *e;
 
     int i;
 
@@ -220,8 +251,19 @@ static void handle_resource_datapoints(const cal_event_t *event, ResourceDatapoi
             continue;
         }
 
-        bionet_resource_remove_datapoint_by_index(resource, 0);
-        bionet_resource_add_datapoint(resource, new_d);
+        bionet_datapoint_t * old_d = bionet_resource_get_datapoint_by_index(resource, 0);
+        if(old_d && !bionet_datapoint_iseq(old_d, new_d) ) {
+            bionet_datapoint_free(new_d);
+            new_d = old_d;
+        } else {
+            bionet_resource_remove_datapoint_by_index(resource, 0);
+            bionet_resource_add_datapoint(resource, new_d);
+
+            e = bionet_event_new(NULL, NULL, BIONET_EVENT_PUBLISHED);
+            if (e) {
+                bionet_datapoint_add_event(new_d, e);
+            }
+        }
 
         if (libbionet_callback_datapoint != NULL) {
             libbionet_callback_datapoint(new_d);
@@ -341,6 +383,7 @@ void libbionet_cal_callback(void * cal_handle, const cal_event_t *event) {
     switch (event->type) {
         case CAL_EVENT_JOIN: {
             bionet_hab_t *hab;
+            bionet_event_t *e;
             char *type;
             char *id;
             int r;
@@ -359,6 +402,11 @@ void libbionet_cal_callback(void * cal_handle, const cal_event_t *event) {
 	    }
 
 	    bionet_hab_set_secure(hab, event->is_secure);
+
+            e = bionet_event_new(NULL, NULL, BIONET_EVENT_PUBLISHED);
+	    if (e) {
+                bionet_hab_add_event(hab, e);
+	    }
 
             // add the hab to the bionet library's list of known habs
             libbionet_habs = g_slist_prepend(libbionet_habs, hab);
@@ -385,6 +433,7 @@ void libbionet_cal_callback(void * cal_handle, const cal_event_t *event) {
 
         case CAL_EVENT_LEAVE: {
             bionet_hab_t *hab = NULL;
+            bionet_event_t *e;
             char *type;
             char *id;
             int r;
@@ -408,12 +457,24 @@ void libbionet_cal_callback(void * cal_handle, const cal_event_t *event) {
             if (hab != NULL) {
                 GSList *j;
 
+                struct timeval event_ts;
+                gettimeofday(&event_ts, NULL);
+                e = bionet_event_new(&event_ts, NULL, BIONET_EVENT_LOST);
+                if (e) {
+                    bionet_hab_add_event(hab, e);
+                }
+
                 if (libbionet_callback_lost_node != NULL) {
                     int i;
                     for (i = 0; i < bionet_hab_get_num_nodes(hab); i++) {
                         bionet_node_t *node = bionet_hab_get_node_by_index(hab, i);
                         GSList *j;
                         int found_node_subscription = 0;
+
+                        e = bionet_event_new(&event_ts, NULL, BIONET_EVENT_LOST);
+                        if (e) {
+                            bionet_node_add_event(node, e);
+                        }
                         
                         // only report the node if we are subscribed to it!
                         for (j = libbionet_node_subscriptions; j != NULL; j = j->next) {

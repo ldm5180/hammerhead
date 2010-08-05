@@ -12,6 +12,6 @@ bdm_client_SOURCES = bdm-client.c
 
 bdm_client_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -fno-strict-aliasing
 
-bdm_client_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_BDM)
+bdm_client_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_BDM) $(LDFLAGS_BIONET_UTIL)
 
-bdm_client_LDADD = $(AM_LDADD) $(LIBS_BDM) 
+bdm_client_LDADD = $(AM_LDADD) $(LIBS_BDM) $(LIBS_BIONET_UTIL)

@@ -55,6 +55,15 @@ void bionet_node_free(bionet_node_t *node) {
 	      bionet_hab_get_name(hab));
     }
 
+
+    // free all the events
+    while (node->events != NULL) {
+        bionet_event_t *event = node->events->data;
+
+        node->events = g_slist_remove(node->events, event);
+        bionet_event_free(event);
+    }
+
     free(node);
 }
 

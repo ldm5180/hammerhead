@@ -22,6 +22,14 @@ void bionet_datapoint_free(bionet_datapoint_t *d) {
 	return;
     }
 
+    // free all the events
+    while (d->events != NULL) {
+        bionet_event_t *event = d->events->data;
+
+        d->events = g_slist_remove(d->events, event);
+        bionet_event_free(event);
+    }
+
     if (NULL != d->value) { 
 	bionet_value_free(d->value);
     }

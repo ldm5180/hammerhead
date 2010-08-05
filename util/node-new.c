@@ -65,6 +65,29 @@ const char * bionet_node_get_id(const bionet_node_t *node)
     return node->id;
 } /* bionet_node_get_id() */
 
+const uint8_t * bionet_node_get_uid(const bionet_node_t *node)
+{
+    if (NULL == node)
+    {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_get_uid(): NULL node passed in");
+	errno = EINVAL;
+	return NULL;
+    }
+
+    return node->guid;
+} /* bionet_node_get_id() */
+
+void bionet_node_set_uid(bionet_node_t *node, const uint8_t uuid[BDM_UUID_LEN])
+{
+    if (NULL == node)
+    {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_set_uid(): NULL node passed in");
+	errno = EINVAL;
+	return;
+    }
+
+    memcpy(node->guid, uuid, BDM_UUID_LEN);
+} /* bionet_node_set_uid() */
 
 bionet_hab_t * bionet_node_get_hab(const bionet_node_t *node)
 {

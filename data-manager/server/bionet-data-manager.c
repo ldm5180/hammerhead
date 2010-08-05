@@ -17,6 +17,7 @@
 #include <glib.h>
 
 #include "bionet-data-manager.h"
+#include "bdm-db.h"
 #include "config.h"
 #include "cal-server.h"
 #include "hardware-abstractor.h"
@@ -58,31 +59,19 @@ static struct option long_options[] = {
 };
 
 
-GMainLoop *bdm_main_loop = NULL;
-
-
 #define DB_NAME "bdm.db"
 
 int database_file_set = 0;
+GMainLoop *bdm_main_loop = NULL;
 
-void * libbdm_cal_handle = NULL;
-bionet_bdm_t * this_bdm = NULL;
 
-GSList * sync_config_list = NULL;
+static GSList * sync_config_list = NULL;
 static GSList * sync_thread_list = NULL;
 
 static int hab_fd = -1;
 int start_hab = 0;
 static unsigned int bdm_stats = 300;
 
-int bdm_shutdown_now = 0;
-#ifdef ENABLE_ION
-client_t dtn_thread_data = {0};
-#endif
-
-uint32_t num_sync_datapoints = 0;
-uint32_t num_bionet_datapoints = 0;
-uint32_t num_db_commits = 0;
 
 extern int no_resources;
 
@@ -783,7 +772,6 @@ int main(int argc, char *argv[]) {
 		  "Failed to parse config file %s", sync_sender_config_file_name);
 	}
 	sync_config->last_entry_end_seq = -1;
-	sync_config->last_entry_end_seq_metadata = -1;
 	if (sync_config->method == BDM_SYNC_METHOD_ION) {
 #if ENABLE_ION
             if (!bp_attached) {
@@ -972,7 +960,6 @@ skip:
                 return 1;
 	    }
 	    sync_config->last_entry_end_seq = -1;
-	    sync_config->last_entry_end_seq_metadata = -1;
 
             if(sync_config->method == BDM_SYNC_METHOD_ION) {
 #if ENABLE_ION
@@ -1256,7 +1243,7 @@ skip:
     }
 
     // Add self as bdm to db
-    db_add_bdm(main_db, bionet_bdm_get_id(this_bdm));
+    db_insert_bdm(main_db, bionet_bdm_get_id(this_bdm), NULL);
 
 
    
@@ -1565,12 +1552,9 @@ skip:
 	if (sync_config) {
 	    sync_config->db = db_init(database_file);
 	    sync_config->last_entry_end_seq = 
-                db_get_last_sync_seq_datapoints(sync_config->db, 
+                db_get_last_sync_seq(sync_config->db, 
                     sync_config->sync_recipient);
 
-	    sync_config->last_entry_end_seq_metadata = 
-                db_get_last_sync_seq_metadata(sync_config->db, 
-                    sync_config->sync_recipient);
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Config number %d is not in the list.", i);

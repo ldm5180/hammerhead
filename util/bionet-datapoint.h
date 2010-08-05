@@ -229,7 +229,7 @@ void bionet_datapoint_make_clean(bionet_datapoint_t *datapoint);
  * @brief Check id datapoints are identical
  *
  * @return 0 if datapoint timestamp and value are identical
- * @return 1 otherwise
+ * @return <>0 otherwise
  */
 BIONET_UTIL_API_DECL
 int bionet_datapoint_iseq(const bionet_datapoint_t *dp1, const bionet_datapoint_t *dp2);
@@ -265,6 +265,47 @@ struct timeval bionet_timeval_subtract(const struct timeval * tva, const struct 
  */
 BIONET_UTIL_API_DECL
 bionet_datapoint_t * bionet_datapoint_dup(bionet_datapoint_t * datapoint);
+
+
+/**
+ * @brief Get the number of events in the Datapoint
+ * 
+ * @param[in] datapoint Pointer to a Datapoint
+ * 
+ * @retval -1 Invalid Datapoint pointer
+ * @retval Number of events in the Datapoint on success
+ */
+BIONET_UTIL_API_DECL
+int bionet_datapoint_get_num_events(const bionet_datapoint_t *datapoint);
+
+
+/**
+ * @brief Get a event by its index in the Datapoints list
+ * 
+ * Useful for iterating over all the events in a Datapoint
+ *
+ * @param[in] datapoint Pointer to a Datapoint
+ * @param[in] index Index of the event desired
+ *
+ * @retval NULL Invalid Datapoint pointer or index is greater than number of events
+ * @retval Valid event pointer on success
+ */
+BIONET_UTIL_API_DECL
+bionet_event_t *bionet_datapoint_get_event_by_index(const bionet_datapoint_t *datapoint, 
+					    unsigned int index);
+
+
+/**
+ * @brief Add a event to the Datapoint
+ *
+ * @param[in] datapoint Pointer to a Datapoint
+ * @param[in] event Pointer to a event
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
+BIONET_UTIL_API_DECL
+int bionet_datapoint_add_event(bionet_datapoint_t *datapoint, const bionet_event_t *event);
 
 
 #endif /* __BIONET_DATAPOINT_H */

@@ -6,7 +6,6 @@
 #define	_OCTET_STRING_H_
 
 #include <asn_application.h>
-#include "libbionet-asn-decl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,7 +46,6 @@ per_type_encoder_f OCTET_STRING_encode_uper;
  * current contents of the OCTET STRING.
  * Returns 0 if it was possible to perform operation, -1 otherwise.
  */
-BIONET_ASN_API_DECL
 int OCTET_STRING_fromBuf(OCTET_STRING_t *s, const char *str, int size);
 
 /* Handy conversion from the C string into the OCTET STRING. */

@@ -15,6 +15,7 @@ lib_LTLIBRARIES = libbionet-util.la
 include_HEADERS = \
     libbionet-util-decl.h \
     bionet-bdm.h \
+    bionet-event.h \
     bionet-util.h \
     bionet-node.h \
     bionet-stream.h \
@@ -40,30 +41,31 @@ libbionet_util_la_LIBADD = \
 	$(GLIB_LIBS) 
 
 libbionet_util_la_SOURCES =    \
-    bdm-add-hab.c              \
-    bdm-get-hab.c              \
     bdm-new.c                  \
     bdm-free.c                 \
     bdm-matches.c              \
-    bdm-remove-hab.c           \
+    bdm-hab-list.c             \
+    bdm-node-uid.c             \
+    event-get.c                \
+    event-alloc.c              \
     epsilon-free.c               \
     epsilon-get.c                \
     epsilon-new.c                \
     epsilon-to-string.c          \
-    hab-add-bdm.c              \
     hab-add-node.c             \
-    hab-remove-bdm.c           \
     hab-remove-node.c          \
     hab-matches.c              \
     hab-new.c                  \
+    hab-event.c                \
     hab-free.c                 \
-    hab-get-bdm.c              \
     hab-get-node.c             \
     hab-user-data.c            \
     hab-name.c                 \
     hab-is-secure.c            \
     node-new.c                 \
     node-add-resource.c        \
+    node-sort-resource.c       \
+    node-event.c               \
     node-get-resource.c        \
     node-add-stream.c          \
     node-get-stream.c          \
@@ -92,6 +94,7 @@ libbionet_util_la_SOURCES =    \
     datapoint-dup.c            \
     datapoint-new.c            \
     datapoint-free.c	\
+    datapoint-event.c	       \
     datapoint-value.c          \
     datapoint-timestamp.c      \
     datapoint-is-dirty.c       \

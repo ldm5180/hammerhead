@@ -15,6 +15,7 @@
 #include "bionet-datapoint.h"
 #include "bionet-value.h"
 #include "bionet-asn.h"
+#include "bionet-event.h"
 %}
 
 %newobject bionet_value_to_str;
@@ -38,6 +39,7 @@ typedef struct timeval
 %include "bionet-resource.h"
 %include "bionet-datapoint.h"
 %include "bionet-value.h"
+%include "bionet-event.h"
 
 %include "cpointer.i"
 %pointer_functions(int,      binaryp);

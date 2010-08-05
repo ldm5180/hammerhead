@@ -18,4 +18,4 @@ bdm_watcher_CFLAGS = $(AM_CFLAGS) $(CFLAGS_BDM) -fno-strict-aliasing
 
 bdm_watcher_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_BDM)
 
-bdm_watcher_LDADD = $(AM_LDADD) $(LIBS_BDM) 
+bdm_watcher_LDADD = $(AM_LDADD) $(LIBS_BDM) $(LIBS_BIONET_UTIL)

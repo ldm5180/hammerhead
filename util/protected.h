@@ -6,6 +6,8 @@
 #ifndef BIONET_UTIL_PROTECTED_H
 #define BIONET_UTIL_PROTECTED_H
 
+#include "bionet-util.h"
+
 /**
  * @brief Checks if a Resource has any dirty Datapoints.
  *
@@ -127,7 +129,63 @@ int bionet_value_check_delta(const struct timeval * original_tv,
 			     const struct timeval * new_tv,
 			     const struct timeval * delta);
 
+
+/**
+ * @brief Get the array of habs for this BDM
+ *
+ * Only needed by BDM
+ */
+BIONET_UTIL_API_DECL
+GPtrArray *  bionet_bdm_get_hab_list(bionet_bdm_t * bdm);
+
+/**
+ * @brief Set the UUID of an existing Node 
+ *
+ * @param[in] node Pointer to a Node
+ * @param[in] uuid Pointer to array of BDM_UUID_LEN bytes
+ * 
+ */
+BIONET_UTIL_API_DECL
+void bionet_node_set_uid(const bionet_node_t *node, const uint8_t uuid[BDM_UUID_LEN]);
+
+/**
+ * @brief Sort the resources of the node
+ *
+ * @param[in] node The node with the resorces to sort
+ * @param[in] cmp Comparator function to use. a and b are both void pointers to
+ * a bionet_resource_t. The function should return a negative integer if a
+ * comes before b, 0 if a and b are equal, and a positive value if a sorts
+ * after b. If the pointer is NULL, then a lexagraphic sort is used.
+ */
+BIONET_UTIL_API_DECL
+void bionet_node_sort_resources(bionet_node_t *node,
+        int (*cmp)(void * a, void * b));
+
+/**
+ * @brief Make a uid from the node
+ *
+ * @note After called, the node's resources may be reordered
+ *
+ * @param[in] node The node to calculate the UID from
+ * @param[out] uid Buffer to populate with a uid
+ */
+int db_make_node_guid(
+    bionet_node_t * node,
+    uint8_t uid[BDM_UUID_LEN]);
+
+/**
+ * @brief Compare two datapoints
+ *
+ * @param[in] Pointer a to bionet_datapoint_t
+ * @param[in] Pointer b to bionet_datapoint_t
+ *
+ * @return -1, 0, or 1 if a is less than, equal to or greater than b
+ */ 
+int bionet_datapoint_cmp(const void *a, const void *b);
+
 #endif /* BIONET_UTIL_PROTECTED_H */
+
+
 
 // Emacs cruft
 // Local Variables:

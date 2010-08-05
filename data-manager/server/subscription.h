@@ -11,7 +11,7 @@
 typedef GHashTable bdm_peer_states_t;
 
 typedef struct {
-    int curr_seq; // -1 for unset. This means the subscription is in the pending state..
+    long curr_seq; // -1 for unset. This means the subscription is in the pending state..
 } bdm_subscription_t;
 
 bdm_peer_states_t * bdm_subscriptions_new(void);

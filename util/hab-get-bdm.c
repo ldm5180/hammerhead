@@ -63,31 +63,6 @@ bionet_bdm_t *bionet_hab_get_bdm_by_index(bionet_hab_t *hab, unsigned int index)
     return g_slist_nth_data(hab->bdms, index);
 }
 
-const char * bionet_hab_get_recording_bdm(bionet_hab_t *hab)
-{
-    if (hab == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_get_recording_bdm(): NULL HAB passed in");
-        return NULL;
-    }
-
-    return hab->recording_bdm;
-}
-
-void bionet_hab_set_recording_bdm(bionet_hab_t *hab, const char * bdm_id)
-{
-    if (hab == NULL) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_get_recording_bdm(): NULL HAB passed in");
-        return;
-    }
-
-    if(hab->recording_bdm) {
-        if(!strcmp(hab->recording_bdm, bdm_id)) 
-            return;
-
-        free(hab->recording_bdm);
-    }
-    hab->recording_bdm = strdup(bdm_id);
-}
 
 // Emacs cruft
 // Local Variables:

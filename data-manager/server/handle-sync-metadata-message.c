@@ -9,89 +9,118 @@
 #include <unistd.h>
 
 #include "bionet-data-manager.h"
+#include "bdm-db.h"
+#include "util/protected.h"
 
+#include "asn_SEQUENCE_OF.h"
+typedef A_SEQUENCE_OF(struct BDM_Event) sequence_of_BDM_Event_t;
+
+//struct BDM_HardwareAbstractor__events *events,
+
+static int _dbb_add_asn_event(
+        bdm_db_batch_t *dbb,
+        const char * bdm_id,
+        dbb_bionet_event_data_t bionet_ptr,
+        dbb_event_type_t new_event_type,
+        dbb_event_type_t lost_event_type,
+        sequence_of_BDM_Event_t *event_sequence)
+{
+    int ei;
+    int r = 0;
+    for( ei = 0; ei < event_sequence->count; ei++) {
+        BDM_Event_t * asn_event = event_sequence->array[ei];
+        dbb_event_t * event;
+        struct timeval ts;
+        bionet_GeneralizedTime_to_timeval(&asn_event->timestamp, &ts);
+
+        event = dbb_add_event(dbb, 
+                asn_event->type == BDM_Event_Type_new?new_event_type:lost_event_type,
+                bionet_ptr, 
+                bdm_id, 
+                &ts);
+
+        if(event == NULL) {
+            r = -1;
+            break;
+        }
+    }
+
+    return r;
+}
 
 void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t *message) {
-    GPtrArray *bdm_list;
     int bi;
+    int r;
+
+    bionet_hab_t * hab = NULL;
+
+    bdm_db_batch_t * tmp_dbb = calloc(1, sizeof(bdm_db_batch_t));
+    dbb_bionet_event_data_t bionet_ptr;
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Sync Metadata Message {");
 
-    bdm_list = g_ptr_array_new();
     for (bi = 0; bi < message->list.count; bi ++) {
         DataManager_t *asn_bdm;
-        bionet_bdm_t *bdm;
+        const char * bdm_id;
         int hi;
 
         asn_bdm = message->list.array[bi];
-        bdm = bionet_bdm_new((char*)asn_bdm->id.buf);
-        if ( NULL == bdm ) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                  "Failed to get new BDM: %m");	    
-            return;
-        }
+        bdm_id = (const char*)asn_bdm->id.buf;
 
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "  BDM: %s", bionet_bdm_get_id(bdm));
-
-        g_ptr_array_add(bdm_list, bdm);
-
-        if (db_add_bdm(main_db, bionet_bdm_get_id(bdm))) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                  "handle_sync_metadata_message(): Failed to add BDM %s to DB.",
-                  bionet_bdm_get_id(bdm));
-        }
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "  BDM: %s", bdm_id);
 
         for (hi = 0; hi < asn_bdm->hablist.list.count; hi ++) {
-            HardwareAbstractor_t *asn_hab;
-            bionet_hab_t *hab;
+            BDM_HardwareAbstractor_t *asn_hab;
+            const char * hab_type;
+            const char * hab_id;
             int ni;
 
             asn_hab = asn_bdm->hablist.list.array[hi];
 
-            hab = bionet_hab_new((char *)asn_hab->type.buf, (char *)asn_hab->id.buf);
-            if (hab == NULL) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                      "Failed to get new HAB: %m");	    
-                return;
-            }
-            bionet_hab_set_recording_bdm(hab, bionet_bdm_get_id(bdm));
-            
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "    HAB: %s", bionet_hab_get_name(hab));
+            hab_id = (const char*)asn_hab->id.buf;
+            hab_type = (const char*)asn_hab->type.buf;
 
-            bionet_bdm_add_hab(bdm, hab);
+            hab = bionet_hab_new(hab_type, hab_id);
+            if ( NULL == hab) goto cleanup;
 
-            if (db_add_hab(main_db, hab)) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                      "handle_sync_metadata_message(): Failed to add HAB %s to DB.",
-                      bionet_hab_get_name(hab));
-            }
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "    HAB: %s.%s", hab_type, hab_id);
+
+            bionet_ptr.hab = hab;
+            r = _dbb_add_asn_event(tmp_dbb, bdm_id, bionet_ptr,
+                    DBB_NEW_HAB_EVENT, DBB_LOST_HAB_EVENT,
+                    (sequence_of_BDM_Event_t*)&asn_hab->events.list);
+            if( r != 0 ) goto cleanup;
 
             for (ni = 0; ni < asn_hab->nodes.list.count; ni ++) {
-                Node_t *asn_node;
-                bionet_node_t *node;
                 int ri;
+                const char * node_id;
+                uint8_t node_uuid[BDM_UUID_LEN];
+                BDM_Node_t *asn_node;
+                bionet_node_t * node;
 
                 asn_node = asn_hab->nodes.list.array[ni];
 
-                node = bionet_node_new(hab, (char *)asn_node->id.buf);
-                if (node == NULL) {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                          "Failed to get new node: %m");
-                    return;
+                node_id = (const char*)asn_node->id.buf;
+
+                if(sizeof(node_uuid) != asn_node->uid.size) {
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Unexpected length for node uid");
+                    goto cleanup;
                 }
 
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "        Node: %s", bionet_node_get_id(node));
+                node = bionet_node_new(hab, node_id);
+                if ( NULL == node ) goto cleanup;
 
-                if (bionet_hab_add_node(hab, node)) {
-                    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                          "handle_Resource_Datapoints_Reply(): Failed to add node to hab.");
-                }
+                bionet_node_set_uid(node, asn_node->uid.buf);
+
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "        Node: %s [" UUID_FMTSTR "]", 
+                        node_id, UUID_ARGS(node_uuid));
 
                 for (ri = 0; ri < asn_node->resources.list.count; ri ++) {
-                    Resource_t *asn_resource;
+                    BDM_Resource_t *asn_resource;
                     bionet_resource_data_type_t datatype;
                     bionet_resource_flavor_t flavor;
-                    bionet_resource_t *resource;
+                    bionet_resource_t * resource;
+                    const char * resource_id;
                     int di;
 
                     asn_resource = asn_node->resources.list.array[ri];
@@ -100,59 +129,77 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
                     if (datatype == -1) {
                         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
                               "Unknown datatype.");
+                        bionet_node_free(node);
+                        goto cleanup;
                     }
 
                     flavor = bionet_asn_to_flavor(asn_resource->flavor);
                     if (flavor == -1) {
                         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
                               "Unknown flavor.");
+                        bionet_node_free(node);
+                        goto cleanup;
                     }
 
-                    resource = bionet_resource_new(node, datatype, flavor, (char *)asn_resource->id.buf);
-                    if (resource == NULL) {
-                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                              "Failed to get new resource: %m");
-                    }
+                    resource_id = (const char *)asn_resource->id.buf;
 
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "            Resource: %s", bionet_resource_get_id(resource));
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "            Resource: %s", resource_id);
                     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "                datatype: %s", 
-                          bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)));
+                          bionet_resource_data_type_to_string(datatype));
                     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "                flavor: %s", 
-                          bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)));
+                          bionet_resource_flavor_to_string(flavor));
 
-                    if (bionet_node_add_resource(node, resource)) {
-                        g_log("", G_LOG_LEVEL_WARNING, 
-                              "handle_Resource_Datapoints_Reply(): Failed to add resource to node.");
-                        bionet_resource_free(resource);
-                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                              "Failed to add resource to node: %m");
+                    resource = bionet_resource_new(node, datatype, flavor, resource_id);
+                    if ( NULL == resource ) {
+                        bionet_node_free(node);
+                        goto cleanup;
                     }
+
+                    bionet_node_add_resource(node, resource);
 
                     for (di = 0; di < asn_resource->datapoints.list.count; di++) {
-                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                               "Datapoints should never be in a sync metadata message. %d found.", 
                               asn_resource->datapoints.list.count);
                     }
                 }
 
-                if (db_add_node(main_db, node)) {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                          "handle_sync_metadata_message(): Failed to add node %s to DB.",
-                          bionet_node_get_name(node));
-                }
+                bionet_ptr.node = node;
+                r = _dbb_add_asn_event(tmp_dbb, bdm_id, bionet_ptr,
+                        DBB_NEW_NODE_EVENT, DBB_LOST_NODE_EVENT,
+                        (sequence_of_BDM_Event_t*)&asn_node->events.list);
+                bionet_node_free(node);
 
+                if( r != 0 ) goto cleanup;
             }
+
+            bionet_hab_free(hab);
+            hab = NULL;
         }
     }
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "} Sync Metadata Message");    
-
-    //cleanup
-    for (bi = bdm_list->len - 1; bi >= 0; bi--) {
-	bionet_bdm_free(g_ptr_array_index(bdm_list, bi));
-	g_ptr_array_remove_index(bdm_list, bi);
+    r = dbb_flush_to_db(tmp_dbb);
+    if (r) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "} Sync message discarded due to error");
+        goto cleanup;
     }
-    g_ptr_array_free(bdm_list, TRUE);
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "} Sync Metadata Message [%lld,%lld]",
+        tmp_dbb->first_seq, tmp_dbb->last_seq);
+
+
+    if(tmp_dbb->first_seq >= 0 && tmp_dbb->last_seq >= 0 ) {
+        //TODO: This publishes duplicates in the commmon case. Fix it
+        //db_publish_sync_affected_datapoints(main_db, tmp_dbb->first_seq, tmp_dbb->last_seq);
+    }
+
+cleanup:
+    if(hab) {
+        bionet_hab_free(hab);
+    }
+
+    dbb_free(tmp_dbb);
+
 }
 
 // Emacs cruft

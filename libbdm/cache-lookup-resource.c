@@ -10,16 +10,13 @@
 
 #include "libbdm-internal.h"
 
-
-bionet_resource_t *bdm_cache_lookup_resource(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id) {
+bionet_resource_t *bdm_cache_lookup_resource_uid(const uint8_t node_uid[BDM_UUID_LEN], const char *resource_id) {
     bionet_node_t *node;
 
-    node = bdm_cache_lookup_node(hab_type, hab_id, node_id);
+    node = bdm_cache_lookup_node_uid(node_uid);
     if (node == NULL) {
         return NULL;
     }
 
     return bionet_node_get_resource_by_id(node, resource_id);
 }
-
-

@@ -8,6 +8,8 @@
 
 #include "bionet-data-manager.h"
 #include "bionet-util.h"
+#include "../../util/protected.h"
+#include "bdm-db.h"
 
 
 extern uint32_t num_bionet_datapoints;
@@ -29,9 +31,6 @@ gchar ** resource_name_patterns = NULL;
 char * security_dir = NULL;
 int require_security = 0;
 
-sqlite3 * main_db = NULL;
-bdm_db_batch * dbb = NULL;
-
 int no_resources = 0;
 
 extern bionet_hab_t * bdm_hab;
@@ -48,13 +47,24 @@ struct timeval db_accum = { 0, 0 };
 
 static void cb_datapoint(bionet_datapoint_t *datapoint) {
     struct timeval tv_before_write;
+    int i;
     if (start_hab) {
 	if (gettimeofday(&tv_before_write, NULL)) {
 	    g_warning("cb_datapoint: Failed to get time of day: %m");
 	}
     }
 
-    (void) dbb_add_datapoint(dbb, datapoint, bionet_bdm_get_id(this_bdm));
+    dbb_bionet_event_data_t data;
+    data.datapoint = datapoint;
+
+    for(i=0; i< bionet_datapoint_get_num_events(datapoint); i++) {
+        bionet_event_t * event = bionet_datapoint_get_event_by_index(datapoint, i);
+        if(event) {
+            (void) dbb_add_event(dbb, DBB_DATAPOINT_EVENT, data, 
+                    bionet_bdm_get_id(this_bdm), 
+                    bionet_event_get_timestamp(event));
+        }
+    }
 
     /* do not normally keep stats on yourself, so return */
     if ((ignore_self) && (start_hab)) {
@@ -99,35 +109,132 @@ static void cb_datapoint(bionet_datapoint_t *datapoint) {
 
 
 static void cb_lost_node(bionet_node_t *node) {
-    g_log("", G_LOG_LEVEL_INFO, "lost node: %s.%s.%s", 
+    int i;
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "lost node: %s.%s.%s", 
 	  bionet_hab_get_type(bionet_node_get_hab(node)), 
 	  bionet_hab_get_id(bionet_node_get_hab(node)), 
 	  bionet_node_get_id(node));
+
+    dbb_bionet_event_data_t data;
+    data.node = node;
+
+    for(i=0; i< bionet_node_get_num_events(node); i++) {
+        bionet_event_t * event = bionet_node_get_event_by_index(node, i);
+        if(event && bionet_event_get_type(event) == BIONET_EVENT_LOST) {
+            (void) dbb_add_event(dbb, DBB_LOST_NODE_EVENT, data, 
+                    bionet_bdm_get_id(this_bdm), 
+                    bionet_event_get_timestamp(event));
+        }
+    }
 }
 
 
 static void cb_new_node(bionet_node_t *node) {
-    g_log("", G_LOG_LEVEL_INFO, "new node: %s.%s.%s", 
+    uint8_t guid[BDM_UUID_LEN];
+    int i;
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "new node: %s.%s.%s", 
 	  bionet_hab_get_type(bionet_node_get_hab(node)), 
 	  bionet_hab_get_id(bionet_node_get_hab(node)), 
 	  bionet_node_get_id(node));
-    (void) dbb_add_node(dbb, node);
+
+    if (bionet_node_get_num_resources(node)) {
+        int i;
+        g_message("    Resources:");
+
+        for (i = 0; i < bionet_node_get_num_resources(node); i++) {
+            bionet_resource_t *resource = bionet_node_get_resource_by_index(node, i);
+	    if (NULL == resource) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to get resource at index %d from node", i);
+		continue;
+	    }
+            bionet_datapoint_t *datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
+
+            if (datapoint == NULL) {
+                g_message(
+                    "        %s %s %s (no known value)", 
+                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                    bionet_resource_get_id(resource)
+                );
+            } else {
+                char * value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+
+                g_message(
+                    "        %s %s %s = %s @ %s", 
+                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                    bionet_resource_get_id(resource),
+                    value_str,
+                    bionet_datapoint_timestamp_to_string(datapoint)
+                );
+
+		free(value_str);
+            }
+        }
+    }
+
+    if (db_make_node_guid(node, guid) ) return;
+    bionet_node_set_uid(node, guid);
+
+    dbb_bionet_event_data_t data;
+    data.node = node;
+
+    for(i=0; i< bionet_node_get_num_events(node); i++) {
+        bionet_event_t * event = bionet_node_get_event_by_index(node, i);
+        if(event && bionet_event_get_type(event) == BIONET_EVENT_PUBLISHED) {
+            (void) dbb_add_event(dbb, DBB_NEW_NODE_EVENT, data, 
+                    bionet_bdm_get_id(this_bdm), 
+                    bionet_event_get_timestamp(event));
+        }
+    }
 }
 
 
 static void cb_lost_hab(bionet_hab_t *hab) {
-    g_log("", G_LOG_LEVEL_INFO, "lost hab: %s.%s", 
+    int i;
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "lost hab: %s.%s", 
 	  bionet_hab_get_type(hab), 
 	  bionet_hab_get_id(hab));
+
+    dbb_bionet_event_data_t data;
+    data.hab = hab;
+
+
+    for(i=0; i< bionet_hab_get_num_events(hab); i++) {
+        bionet_event_t * event = bionet_hab_get_event_by_index(hab, i);
+        if(event && bionet_event_get_type(event) == BIONET_EVENT_LOST) {
+            (void) dbb_add_event(dbb, DBB_LOST_HAB_EVENT, data, 
+                    bionet_bdm_get_id(this_bdm), 
+                    bionet_event_get_timestamp(event));
+        }
+    }
+
+    if(i == 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "lost hab with no events: %s.%s", 
+              bionet_hab_get_type(hab), 
+              bionet_hab_get_id(hab));
+    }
 }
 
 
 static void cb_new_hab(bionet_hab_t *hab) {
-    g_log("", G_LOG_LEVEL_INFO, "new hab: %s.%s", 
+    int i;
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "new hab: %s.%s", 
 	  bionet_hab_get_type(hab), 
 	  bionet_hab_get_id(hab));
-    bionet_hab_set_recording_bdm(hab, bionet_bdm_get_id(this_bdm));
-    (void) dbb_add_hab(dbb, hab);
+
+    dbb_bionet_event_data_t data;
+    data.hab = hab;
+
+    for(i=0; i< bionet_hab_get_num_events(hab); i++) {
+        bionet_event_t * event = bionet_hab_get_event_by_index(hab, i);
+        if(event && bionet_event_get_type(event) == BIONET_EVENT_PUBLISHED) {
+            (void) dbb_add_event(dbb, DBB_NEW_HAB_EVENT, data, 
+                    bionet_bdm_get_id(this_bdm), 
+                    bionet_event_get_timestamp(event));
+        }
+    }
 }
 
 
@@ -165,7 +272,7 @@ int try_to_connect_to_bionet(void *unused) {
     //
 
     if (dbb == NULL) {
-        dbb = calloc(1, sizeof(bdm_db_batch));
+        dbb = calloc(1, sizeof(bdm_db_batch_t));
 
     }
 

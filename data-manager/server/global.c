@@ -19,5 +19,5 @@ uint32_t num_bionet_datapoints = 0;
 uint32_t num_db_commits = 0;
 
 sqlite3 * main_db = NULL;
-bdm_db_batch * dbb = NULL;
+bdm_db_batch_t * dbb = NULL;
 

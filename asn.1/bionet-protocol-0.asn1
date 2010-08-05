@@ -4,7 +4,7 @@
 -- NNC07CB47C.
 
 
-BionetProtocol0
+BionetProtocol1
 DEFINITIONS AUTOMATIC TAGS
 ::=
 BEGIN
@@ -81,28 +81,6 @@ BEGIN
 
     
 
-    DataManager ::= SEQUENCE {
-	id       PrintableString,
-	hablist     SEQUENCE OF HardwareAbstractor
-    }
-
-
-    ResourceRecord ::= SEQUENCE {
-        resourceKey            OCTET STRING,
-        resourceDatapoints     SEQUENCE OF Datapoint
-    }
-
-    BDMRecord ::= SEQUENCE {
-        bdmID             PrintableString,
-        entryTimestamp    GeneralizedTime,
-	resourceKey       OCTET STRING,
-        syncDatapoints    SEQUENCE OF Datapoint
-    }
-
-    BDMSyncRecord ::= SEQUENCE {
-        bdmID            PrintableString,
-        syncResources    SEQUENCE OF ResourceRecord
-    }
 
     -- 
     -- Helper structs
@@ -121,39 +99,67 @@ BEGIN
         newDatapoints   SEQUENCE OF Datapoint
     }
 
+    BDMPublishDatapoint ::= SEQUENCE {
+        datapoint       Datapoint,
+        timestamp       GeneralizedTime,
+        entrySeq        INTEGER,
+        bdmId           PrintableString
+    }
+
+
+    --
+    -- Sent to Resource subscribers on new-node events
+    --
     BDMResourceMetadata ::= SEQUENCE {
-        bdmId        PrintableString,
         habType      PrintableString,
         habId        PrintableString,
         nodeId       PrintableString,
+        nodeUid      OCTET STRING, -- 64bit fingerprint of node. 
         resourceId   PrintableString,
         flavor       ResourceFlavor,
-        datatype     ResourceDataType,
-	entrySeq     INTEGER
+        datatype     ResourceDataType
     }
 
+
+    -- 
+    -- sent to Resource subscribers on new datapoints
+    --
     BDMResourceDatapoints ::= SEQUENCE {
-        bdmId           PrintableString,
-        habType         PrintableString,
-        habId           PrintableString,
-        nodeId          PrintableString,
+        nodeUid         OCTET STRING, -- 64bit fingerprint of node. 
         resourceId      PrintableString,
-        newDatapointsBDM   SEQUENCE OF Datapoint,
-	entrySeq     INTEGER
+        newDatapointsBDM   SEQUENCE OF BDMPublishDatapoint
     }
 
     BDMNewNode ::= SEQUENCE {
+        entrySeq  INTEGER,
+	timestamp GeneralizedTime,
         bdmId     PrintableString,
         habType   PrintableString,
         habId     PrintableString,
-	entrySeq  INTEGER,
         node      Node
     }
 
-    BDMNewHab ::= SEQUENCE {
+    BDMLostNode ::= SEQUENCE {
+        entrySeq  INTEGER,
+	timestamp GeneralizedTime,
         bdmId     PrintableString,
-	entrySeq  INTEGER,
-	hab       HardwareAbstractor
+        uid       OCTET STRING  -- 64bit fingerprint of the node
+    }
+
+    BDMNewHab ::= SEQUENCE {
+        entrySeq  INTEGER,
+	timestamp GeneralizedTime,
+        bdmId     PrintableString,
+        habType   PrintableString,
+        habId     PrintableString
+    }
+
+    BDMLostHab ::= SEQUENCE {
+        entrySeq  INTEGER,
+	timestamp GeneralizedTime,
+        bdmId     PrintableString,
+	habType   PrintableString,
+	habId     PrintableString
     }
 
 
@@ -177,7 +183,7 @@ BEGIN
     }
 
     ResourceDatapointsReply ::= SEQUENCE {
-        habs             SEQUENCE OF HardwareAbstractor,
+        bdms             SEQUENCE OF DataManager,
 	lastEntry        INTEGER
     }
 
@@ -231,6 +237,17 @@ BEGIN
         streamData         StreamData
     }
 
+
+
+
+
+
+    --
+    -- BDM Client/Pub/Sub Messages
+    --
+
+
+
     --
     -- BDM Client-to-Server messages
     --
@@ -241,9 +258,9 @@ BEGIN
 
     BDM-C2S-Message ::= CHOICE {
         resourceDatapointsQuery ResourceDatapointsQuery,
-        -- subscribeHab          PrintableString,
-        -- subscribeNode         PrintableString,
-        -- subscribeDatapoints   PrintableString,
+        subscribeHab            PrintableString,
+        subscribeNode           PrintableString,
+        subscribeDatapoints     PrintableString,
 	sendState               BDMSendState
     }
 
@@ -257,21 +274,72 @@ BEGIN
         resourceMetadata        BDMResourceMetadata,
         datapointsUpdate        BDMResourceDatapoints,
         newHab                  BDMNewHab,
-        lostHab                 PrintableString,
+        lostHab                 BDMLostHab,
         newNode                 BDMNewNode,
-        lostNode                PrintableString,
+        lostNode                BDMLostNode,
 	sendState               BDMSendState
     }
 
 
+    --
+    -- BDM Sync Messages
+    -- 
+    
     -- 
     -- BDM Sync Metadata Messages
     -- 
     -- note: there will never be datapoints in a BDM Sync Metadata 
     -- message. They belong in the BDM Sync Update message.
     --
-    BDM-Sync-Metadata-Message ::= SEQUENCE OF DataManager
 
+    -- An event that something happened
+    -- This structure can hang off of any metadata element,
+    --
+    BDM-Event-Type ::= ENUMERATED {
+        new(0),
+        lost
+    }
+    -- NOTE: Logically, the bdm-id should be here, but we 
+    -- Use the BDM as the top of the tree to pack more efficiently
+    BDM-Event ::= SEQUENCE {
+        timestamp       GeneralizedTime,
+        entrySeq        INTEGER,
+        type            BDM-Event-Type
+    }
+
+    BDM-Datapoint ::= SEQUENCE {
+        datapoint   Datapoint,
+        event       BDM-Event
+    }
+
+    BDM-Resource ::= SEQUENCE {
+        id           PrintableString,
+        flavor       ResourceFlavor,
+        datatype     ResourceDataType,
+        datapoints   SEQUENCE OF BDM-Datapoint
+    }
+
+    BDM-Node ::= SEQUENCE {
+        id          PrintableString,
+        uid         OCTET STRING,  -- 64bit fingerprint of the node
+        resources   SEQUENCE OF BDM-Resource, -- There will never be datapoints for sync messages
+        streams     SEQUENCE OF Stream,
+        events      SEQUENCE OF BDM-Event
+    }
+
+    BDM-HardwareAbstractor ::= SEQUENCE {
+        type     PrintableString,
+        id       PrintableString,
+        nodes    SEQUENCE OF BDM-Node,
+        events   SEQUENCE OF BDM-Event
+    }
+
+    DataManager ::= SEQUENCE {
+	id       PrintableString,
+	hablist     SEQUENCE OF BDM-HardwareAbstractor
+    }
+
+    BDM-Sync-Metadata-Message ::= SEQUENCE OF DataManager
 
 
     --
@@ -280,7 +348,25 @@ BEGIN
     -- note: the metadata associated with the datapoints needs to have
     -- already been received and processed before this message.
     --
+    BDMSyncDatapoint ::= SEQUENCE {
+        datapoint       Datapoint,
+        timestamp       GeneralizedTime,
+        entrySeq        INTEGER
+    }
+
+    ResourceRecord ::= SEQUENCE {
+        resourceKey            OCTET STRING, -- The 64bit fingerprint
+        resourceDatapoints     SEQUENCE OF BDMSyncDatapoint
+    }
+
+    BDMSyncRecord ::= SEQUENCE {
+        bdmID            PrintableString,
+        syncResources    SEQUENCE OF ResourceRecord
+    }
     BDM-Sync-Datapoints-Message ::= SEQUENCE OF BDMSyncRecord
+
+
+
 
 
     -- BDM Sync Message

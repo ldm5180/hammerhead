@@ -7,8 +7,6 @@
 
 #include <asn_application.h>
 
-#include "libbionet-asn-decl.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,7 +18,6 @@ struct asn_codec_ctx_s;		/* Forward declaration */
  * The BER decoder of any type.
  * This function may be invoked directly from the application.
  */
-BIONET_ASN_API_DECL
 asn_dec_rval_t ber_decode(struct asn_codec_ctx_s *opt_codec_ctx,
 	struct asn_TYPE_descriptor_s *type_descriptor,
 	void **struct_ptr,	/* Pointer to a target structure's pointer */

@@ -14,8 +14,7 @@ nodist_check_data_manager_SOURCES = \
 	../check-common.c \
 	check-bdm.c \
 	check-bdm-cfg.c \
-	check-bdm-subscription-topic.c \
-	global.c
+	check-bdm-subscription-topic.c
 
 check_data_manager_CFLAGS = $(CHECK_CFLAGS) \
     -I.. \

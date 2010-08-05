@@ -14,6 +14,7 @@
 #include "bionet-resource.h"
 #include "bionet-datapoint.h"
 #include "bionet-value.h"
+#include "bionet-event.h"
 %}
 
 %newobject bionet_value_to_str;
@@ -28,6 +29,7 @@
 %include "bionet-resource.h"
 %include "bionet-datapoint.h"
 %include "bionet-value.h"
+%include "bionet-event.h"
 
 %include "cpointer.i"
 %pointer_functions(int,      binaryp);

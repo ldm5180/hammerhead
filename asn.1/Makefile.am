@@ -83,11 +83,13 @@ if REBUILD_ASN
 $(BUILT_SOURCES): asn1-stamp
 
 
-asn_sources.am: Makefile.am.sample
-	split -p 'lib_LTLIBRARIES' Makefile.am.sample asn_sources.am.
-	sed 's/ASN_MODULE_HEADERS/ASN_MODULE_HEADS/g' < asn_sources.am.aa |\
-	       grep -v ASN_CONVERTER_SOURCES >	$@
-	rm asn_sources.am.*
+# This may work if your asn1c generates Makefile.am.sample
+# Its only needed when you add/remove data structures
+#asn_sources.am: Makefile.am.sample
+#	split -p 'lib_LTLIBRARIES' Makefile.am.sample asn_sources.am.
+#	sed 's/ASN_MODULE_HEADERS/ASN_MODULE_HEADS/g' < asn_sources.am.aa |\
+#	       grep -v ASN_CONVERTER_SOURCES >	$@
+#	rm asn_sources.am.*
 
 endif
 

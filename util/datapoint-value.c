@@ -123,60 +123,56 @@ bionet_hab_t * bionet_datapoint_get_hab(const bionet_datapoint_t * datapoint)
     return datapoint->value->resource->node->hab;
 } /* bionet_datapoint_get_hab() */
 
+int bionet_datapoint_cmp(const void *d_a, const void *d_b) {
+    int r;
+    const bionet_datapoint_t * a = d_a;
+    const bionet_datapoint_t * b = d_b;
 
-int bionet_datapoint_iseq(const bionet_datapoint_t *dp1, const bionet_datapoint_t *dp2) {
-    if(dp1->timestamp.tv_sec != dp2->timestamp.tv_sec) return 1;
-    if(dp1->timestamp.tv_usec != dp2->timestamp.tv_usec) return 1;
+    r = bionet_cmp_resource(a->value->resource, b->value->resource);
+    if(r) return r;
+    
+    r = b->timestamp.tv_sec - a->timestamp.tv_sec;
+    if(r) return r;
 
-    if(dp1->value->resource->data_type != dp2->value->resource->data_type) return 1;
+    r = b->timestamp.tv_usec - a->timestamp.tv_usec;
+    if(r) return r;
 
-    switch(dp1->value->resource->data_type){
+
+    switch(a->value->resource->data_type){
+        case BIONET_RESOURCE_DATA_TYPE_INVALID:
+            return 0;
         case BIONET_RESOURCE_DATA_TYPE_BINARY:
-            if ( dp1->value->content.binary_v != dp2->value->content.binary_v) return 1;
-            break;
-
+            return b->value->content.binary_v - a->value->content.binary_v;
         case BIONET_RESOURCE_DATA_TYPE_UINT8:
-            if ( dp1->value->content.uint8_v != dp2->value->content.uint8_v) return 1;
-            break;
-
+            return b->value->content.uint8_v - a->value->content.uint8_v;
         case BIONET_RESOURCE_DATA_TYPE_INT8:
-            if ( dp1->value->content.int8_v != dp2->value->content.int8_v) return 1;
-            break;
-
+            return b->value->content.int8_v - a->value->content.int8_v;
         case BIONET_RESOURCE_DATA_TYPE_UINT16:
-            if ( dp1->value->content.uint16_v != dp2->value->content.uint16_v) return 1;
-            break;
-
+            return b->value->content.uint16_v - a->value->content.uint16_v;
         case BIONET_RESOURCE_DATA_TYPE_INT16:
-            if ( dp1->value->content.int16_v != dp2->value->content.int16_v) return 1;
-            break;
-
+            return b->value->content.int16_v - a->value->content.int16_v;
         case BIONET_RESOURCE_DATA_TYPE_UINT32:
-            if ( dp1->value->content.uint32_v != dp2->value->content.uint32_v) return 1;
-            break;
-
+            return b->value->content.uint32_v - a->value->content.uint32_v;
         case BIONET_RESOURCE_DATA_TYPE_INT32:
-            if ( dp1->value->content.int32_v != dp2->value->content.int32_v) return 1;
-            break;
-
+            return b->value->content.int32_v - a->value->content.int32_v;
         case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-            if ( dp1->value->content.float_v != dp2->value->content.float_v) return 1;
-            break;
-
-        case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-            if ( dp1->value->content.double_v != dp2->value->content.double_v) return 1;
-            break;
-
-        case BIONET_RESOURCE_DATA_TYPE_STRING:
-            if ( strcmp(dp1->value->content.string_v, dp2->value->content.string_v) ) return 1;
-            break;
-
-        default:
+            if(a->value->content.float_v == b->value->content.float_v) return 0;
+            if(a->value->content.float_v < b->value->content.float_v) return -1;
             return 1;
+        case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+            if(a->value->content.double_v == b->value->content.double_v) return 0;
+            if(a->value->content.double_v < b->value->content.double_v) return -1;
+            return 1;
+        case BIONET_RESOURCE_DATA_TYPE_STRING:
+            return strcmp(a->value->content.string_v, b->value->content.string_v);
     }
 
     return 0;
 
+}
+
+int bionet_datapoint_iseq(const bionet_datapoint_t *dp1, const bionet_datapoint_t *dp2) {
+    return bionet_datapoint_cmp(dp1, dp2);
 }
 
 // Emacs cruft
