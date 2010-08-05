@@ -52,6 +52,9 @@ void usage() {
 	    "                               are used for interval only.\n"
 	    " -e,--require-security         Require security\n"
 	    " -f,--fast                     Publish as fast as possible, ignoring timestamp intervals.\n"
+	    " -t,--type <TYPE>              Use TYPE as the hab-type. Defualts to \n"
+            "                               'test-pattern-hab' if ommitted."
+	    "                               hostname if omitted).\n"
 	    " -i,--id <ID>                  Use ID as the HAB-ID (defaults to\n"
 	    "                               hostname if omitted).\n"
 	    " -l,--loops <NUM>              Number of times to publish the data consecutively.\n"
@@ -73,6 +76,7 @@ int main(int argc, char *argv[]) {
     int bionet_fd, i;
     char file_name[MAX_FILE_NAME_LENGTH];
     char *id = NULL;
+    char *type = "test-pattern-hab";
     //GSList *events = NULL;
     struct timeval *tv;
     struct simulate_updates_args_t simulate_updates_args; 
@@ -92,6 +96,7 @@ int main(int argc, char *argv[]) {
 	    {"require-security", 0, 0, 'e'},
 	    {"fast", 0, 0, 'f'},
             {"id", 1, 0, 'i'},
+            {"type", 1, 0, 't'},
 	    {"loops", 1, 0, 'l'},
 	    {"max-rate", 1, 0, 'm'},
 	    {"no-node-updates", 0, 0, 'n'},
@@ -128,6 +133,10 @@ int main(int argc, char *argv[]) {
 
 	case 'i':
 	    id = optarg;
+	    break;
+
+	case 't':
+	    type = optarg;
 	    break;
 
 	case 'l':
@@ -203,7 +212,7 @@ int main(int argc, char *argv[]) {
     //  Create the HAB & connect to bionet
     // 
 
-    hab = bionet_hab_new("test-pattern-hab", id);
+    hab = bionet_hab_new(type, id);
     if (hab == NULL) {
         g_log("", G_LOG_LEVEL_ERROR, "unable to create new hab: %s", strerror(errno));
     }
