@@ -11,10 +11,11 @@ if [ -z "$ROOT" ]; then
     exit 1
 fi
 
+. ${ROOT}/test/testlib.sh
+
 if [ -z "$TEST_DURATION" ]; then
     TEST_DURATION=30
 fi
-
 
 UNIQUE=$$
 SYNCUNIQUE=${HOSTNAME//\./-}
@@ -29,17 +30,24 @@ NEXT_YEAR=$(($YEAR+1))
 ulimit -Sc unlimited
 
 echo "making DB file"
-rm -f orig-bdm.db sync-bd,.db
+rm -f orig-bdm.db sync-bdm.db
 sqlite3 orig-bdm.db < $ROOT/data-manager/server/schema
 cp orig-bdm.db sync-bdm.db
 
-echo starting TCP sync receiver BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --no-resource --tcp-sync-receiver &
+test_log "Starting test-pattern-hab recorder"
+rm -f testpattern.in
+$ROOT/client/watcher/bionet-watcher --output-mode 'test-pattern' > testpattern.in &
+TPPID=$!
+
+test_log "starting TCP sync receiver BDM"
+rm -f bdm.log.b
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --no-resources --tcp-sync-receiver --debug --log-file=bdm.log.b &
 RECVPID=$!
 echo " -> $ROOT/data-manager/server/bionet-data-manager $RECVPID"
 
-echo starting TCP sync sender BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
+test_log "starting TCP sync sender BDM"
+rm -f bdm.log.a
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 --debug --log-file=bdm.log.a &
 SENDPID=$!
 echo " ->  $ROOT/data-manager/server/bionet-data-manager $SENDPID"
 sleep 6 # let the bdm come up before starting the HAB
@@ -50,23 +58,23 @@ WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-c
 echo "bdm-watcher args: $WATCHCMD"
 
 
-echo "no datapoints generated, starting bdm-watcher.0"
+test_log "no datapoints generated, starting bdm-watcher.0"
 eval "$WATCHCMD >| out.bdm-watcher.0 &"
 WPID0=$!
 
-echo starting random-hab
+test_log "starting random-hab"
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
 HABPID=$!
 
 sleep `expr $TEST_DURATION / 2`
 
-echo "some datapoints generated, starting bdm-watcher.1"
+test_log "some datapoints generated, starting bdm-watcher.1"
 eval "$WATCHCMD >| out.bdm-watcher.1 &"
 WPID1=$!
 
 sleep `expr $TEST_DURATION / 2`
 
-echo "all datapoints generated. Killing random-hab"
+test_log "all datapoints generated. Killing random-hab"
 kill $HABPID
 wait $HABPID
 
@@ -75,17 +83,17 @@ sleep 30
 
 #Use BDM-Client to get the datapoints specifically from the sync-sender
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
-echo "test run complete. killing the TCP sync sender BDM"
+test_log "test run complete. killing the TCP sync sender BDM"
 kill $SENDPID
 wait $SENDPID
 
-echo "all datapoints generated. Killing  bdm-watcher.0 and bdm-watcher.1"
+test_log "all datapoints generated. Killing  bdm-watcher.0 and bdm-watcher.1"
 kill $WPID0
 kill $WPID1
 wait $WPID0
 wait $WPID1
 
-echo "all datapoints generated. Sync-sender stopped. Starting bdm-watcher.2"
+test_log "all datapoints generated. Sync-sender stopped. Starting bdm-watcher.2"
 eval "$WATCHCMD >| out.bdm-watcher.2 & "
 WPID2=$!
 
@@ -93,11 +101,14 @@ sleep 30
 kill $WPID2
 wait $WPID2
 
-echo "Killing  bdm-watcher.2"
+test_log "Killing  bdm-watcher.2"
 
-echo "killing BDM"
+test_log "killing BDM"
 kill $RECVPID
-wait
+wait $RECVPID
+
+kill $TPPID
+wait $TPPID
 
 for i in out.bdm-watcher.0 out.bdm-watcher.1 out.bdm-watcher.2 out.bdm-orig; do
     sort $i > $i.sorted
@@ -105,6 +116,8 @@ for i in out.bdm-watcher.0 out.bdm-watcher.1 out.bdm-watcher.2 out.bdm-orig; do
 	echo "ERROR: $i output differs from random-hab output:"
 	diff -u out.random-hab $i.sorted
 	RETVAL=1
+    else
+	echo "$i output same as random-hab output"
     fi
 done
 

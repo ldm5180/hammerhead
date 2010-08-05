@@ -29,9 +29,9 @@ fi
 skip_if_no_valgrind
 
 VGLEAK=
-if [ -z "$ENABLE_DARWIN" ]; then
-    VGLEAK="--leak-check=full --leak-resolution=high"
-fi
+#if [ -z "$ENABLE_DARWIN" ]; then
+#    VGLEAK="--leak-check=full --leak-resolution=high"
+#fi
 
 WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -r 'random-hab.$UNIQUE.*:*'"
 

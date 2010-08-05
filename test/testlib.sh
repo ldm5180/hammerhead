@@ -46,3 +46,7 @@ skip_if_no_valgrind() {
         exit $SKIP_CODE;
     fi
 }
+
+test_log() {
+	printf "%s: %s\n" "`date +'%F %r'`" "$@"
+}

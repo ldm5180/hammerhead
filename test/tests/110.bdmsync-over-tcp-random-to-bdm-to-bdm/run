@@ -25,6 +25,11 @@ YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
 
+ulimit -Sc unlimited
+rm -f core core.*
+
+GENTESTPATTERN=true
+
 echo "removing old DB file, and allowing bionet-data-manger to create schema"
 rm -f orig-bdm.db sync-bdm.db
 
@@ -39,15 +44,22 @@ $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db
 SENDPID=$!
 sleep 6 # let the bdm come up before starting the HAB
 
-echo starting Test-patern-hab generator
-rm -f test-pattern.in
-$ROOT/client/watcher/bionet-watcher --output-mode test-pattern  >| test-pattern.in &
-WATCHERPID=$!
+if $GENTESTPATTERN; then
+	echo starting Test-patern-hab generator
+	rm -f test-pattern.in
+	$ROOT/client/watcher/bionet-watcher --output-mode test-pattern  >| test-pattern.in &
+	WATCHERPID=$!
 
 
-echo starting random-hab
-$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
-HABPID=$!
+	echo starting random-hab
+	$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+	HABPID=$!
+else
+	echo starting test-pattern-hab
+	$ROOT/hab/test-pattern/test-pattern-hab --id $UNIQUE --output-mode bdm-client test-pattern.in >| out.random-hab &
+	HABPID=$!
+
+fi
 
 sleep 30
 
@@ -68,7 +80,9 @@ $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-0
 
 echo "killing BDM"
 kill $RECVPID
-kill $WATCHERPID
+if $GENTESTPATTERN; then
+	kill $WATCHERPID
+fi
 wait
 
 

@@ -25,10 +25,13 @@ YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
 
+ulimit -Sc unlimited
+
 make_bdm_db "bdm.db"
 
 echo starting BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --id "bdm-$UNIQUE" --filter "random-hab.$UNIQUE.*:*" &
+rm -f bdm.log
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --id "bdm-$UNIQUE" --filter "random-hab.$UNIQUE.*:*" --debug --log-file=bdm.log &
 BDMPID=$!
 sleep 3 # let the bdm come up before starting the HAB
 
@@ -37,36 +40,43 @@ WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-c
 echo "bdm-watcher args: $WATCHCMD"
 
 
-echo "no datapoints generated, starting bdm-watcher.0"
+test_log "no datapoints generated, starting bdm-watcher.0"
 eval "$WATCHCMD >| out.bdm-watcher.0 &"
 WPID0=$!
 
-echo starting random-hab
+
+test_log "Starting test-pattern-hab recorder"
+rm -f testpattern.in
+$ROOT/client/watcher/bionet-watcher --output-mode 'test-pattern' > testpattern.in &
+TPPID=$!
+
+test_log "starting random-hab"
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+#$ROOT/hab/test-pattern/test-pattern-hab --id $UNIQUE --type random-hab --output-mode bdm-client --current-time testpattern.in >| out.random-hab &
 HABPID=$!
 
 sleep `expr $TEST_DURATION / 2`
 
-echo "some datapoints generated, starting bdm-watcher.1"
+test_log "some datapoints generated, starting bdm-watcher.1"
 eval "$WATCHCMD >| out.bdm-watcher.1 &"
 WPID1=$!
 
 sleep `expr $TEST_DURATION / 2`
 
-echo "all datapoints generated. Killing random-hab"
+test_log "all datapoints generated. Killing random-hab"
 kill $HABPID
 wait $HABPID
 
 # Let the BDM commit the last info to disk
 sleep 10
 
-echo "all datapoints generated. Killing  bdm-watcher.0 and bdm-watcher.1"
+test_log "all datapoints generated. Killing  bdm-watcher.0 and bdm-watcher.1"
 kill $WPID0
 kill $WPID1
 wait $WPID0
 wait $WPID1
 
-echo "all datapoints generated. Starting bdm-watcher.2"
+test_log "all datapoints generated. Starting bdm-watcher.2"
 eval "$WATCHCMD >| out.bdm-watcher.2 & "
 WPID2=$!
 
@@ -74,11 +84,15 @@ sleep 15
 kill $WPID2
 wait $WPID2
 
-echo "Killing  bdm-watcher.2"
 
-echo "killing BDM"
+test_log "Killing  bdm-watcher.2"
+
+test_log "killing BDM"
 kill $BDMPID
-wait
+wait $BDMPID
+
+kill $TPPID
+wait $TPPID
 
 for i in 0 1 2; do
     sort out.bdm-watcher.$i > sorted.bdm-watcher.$i
@@ -86,6 +100,8 @@ for i in 0 1 2; do
 	echo "ERROR: bdm-watcher.$i output differs from random-hab output:"
 	diff -u out.random-hab sorted.bdm-watcher.$i
 	RETVAL=1
+    else
+	echo "bdm-watcher.$i same as random-hab output:"
     fi
 done
 
