@@ -40,6 +40,7 @@ static struct option long_options[] = {
     {"node",               1, 0, 'n'},
     {"resources",          1, 0, 'r'},
     {"resource",           1, 0, 'r'},
+    {"filter",             1, 0, 'l'},
     {"require-security",   0, 0, 'e'},
     {"security-dir",       1, 0, 's'},
     {"tcp-sync-receiver",  2, 0, 't'},
@@ -569,6 +570,76 @@ void bdm_glib_log_handler(
 
 
 
+// TODO: This should adds '*' subscriptions to all parts that are not specified
+static int _add_filter_subscription(char * resource_pattern) {
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    int r;
+
+    r = bionet_split_resource_name_r(resource_pattern, hab_type, hab_id, node_id, resource_id);
+    if (r != 0) {
+        // a helpful error message has already been logged
+        return -1;
+    }
+
+    // Add hab subscription
+    int hab_name_size = strlen(hab_type) + strlen(hab_type) + 2;
+    char *hab_name = malloc(hab_name_size);
+    snprintf(hab_name, hab_name_size, "%s.%s", hab_type, hab_id);
+
+    if(hab_list_index < MAX_SUBSCRIPTIONS ) {
+        hab_list_name_patterns = realloc(hab_list_name_patterns, sizeof(gchar *) * (hab_list_index + 1));
+        if (NULL == hab_list_name_patterns) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate hab_list_name_patterns");
+            return 1;
+        }
+        hab_list_name_patterns[hab_list_index] = hab_name;
+        hab_list_index++;
+    } else {
+        g_warning("skipping Hab subscription %s, only %d are handled", 
+                  hab_name, MAX_SUBSCRIPTIONS);
+    }
+
+
+    // Add node subscription
+    int node_name_size = strlen(hab_type) + strlen(hab_type) + strlen(node_id) + 3;
+    char *node_name = malloc(node_name_size);
+    snprintf(node_name, node_name_size, "%s.%s.%s", hab_type, hab_id, node_id);
+
+    if(node_list_index < MAX_SUBSCRIPTIONS ) {
+        node_list_name_patterns = realloc(node_list_name_patterns, sizeof(gchar *) * (node_list_index + 1));
+        if (NULL == node_list_name_patterns) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate node_list_name_patterns");
+            return 1;
+        }
+        node_list_name_patterns[node_list_index] = node_name;
+        node_list_index++;
+    } else {
+        g_warning("skipping Node subscription %s, only %d are handled", 
+                  node_name, MAX_SUBSCRIPTIONS);
+    }
+
+
+    // Add resource subscription
+    if(node_list_index < MAX_SUBSCRIPTIONS ) {
+        resource_name_patterns = realloc(resource_name_patterns, sizeof(gchar *) * (resource_index + 1));
+        if (NULL == resource_name_patterns) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate resource_name_patterns");
+            return 1;
+        }
+        resource_name_patterns[resource_index] = resource_pattern;
+        resource_index++;
+    } else {
+        g_warning("skipping Resource subscription %s, only %d are handled", 
+                  resource_pattern, MAX_SUBSCRIPTIONS);
+    }
+
+    return 0;
+}
+
+
 int main(int argc, char *argv[]) {
     //
     // we'll be using glib, so capture its log messages
@@ -1038,6 +1109,12 @@ skip:
 		g_warning("skipping Resource subscription %s, only %d are handled", 
 			  *argv, MAX_SUBSCRIPTIONS);
 	    }
+	    break;
+
+	case 'l':
+            if(_add_filter_subscription(optarg)){
+                return 1;
+            }
 	    break;
 
 	case 's':

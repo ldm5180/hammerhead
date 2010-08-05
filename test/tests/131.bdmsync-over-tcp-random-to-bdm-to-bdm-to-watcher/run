@@ -34,12 +34,12 @@ sqlite3 orig-bdm.db < $ROOT/data-manager/server/schema
 cp orig-bdm.db sync-bdm.db
 
 echo starting TCP sync receiver BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --resources "a.a.a:a" --tcp-sync-receiver &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --no-resource --tcp-sync-receiver &
 RECVPID=$!
 echo " -> $ROOT/data-manager/server/bionet-data-manager $RECVPID"
 
 echo starting TCP sync sender BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
 SENDPID=$!
 echo " ->  $ROOT/data-manager/server/bionet-data-manager $SENDPID"
 sleep 6 # let the bdm come up before starting the HAB

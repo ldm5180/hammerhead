@@ -40,7 +40,7 @@ popd > /dev/null
 mv $ROOT/data-manager/server/bdm.db .
 
 echo starting BDM under valgrind memcheck
-G_SLICE=always-malloc G_DEBUG=gc-friendly,resident-modules $LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.bdm --tool=memcheck --trace-children=yes $VGLEAK $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --habs "random-hab.$UNIQUE" --nodes "random-hab.$UNIQUE.*" --resources "random-hab.$UNIQUE.*:*" &
+G_SLICE=always-malloc G_DEBUG=gc-friendly,resident-modules $LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --log-file=out.valgrind.bdm --tool=memcheck --trace-children=yes $VGLEAK $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --filter "random-hab.$UNIQUE.*:*" &
 sleep 3 # let the bdm come up before starting the HAB
 
 echo starting random-hab
