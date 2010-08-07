@@ -44,9 +44,7 @@ int hab_report_lost_node(const bionet_node_t * node) {
     for (i = 0; i < bionet_node_get_num_resources(node); i++) {
 	bionet_resource_t * resource = bionet_node_get_resource_by_index(node, i);
 	if (resource) {
-	    bionet_pthread_mutex_lock(&published_hash_mutex);
 	    g_hash_table_remove(libhab_most_recently_published, resource);
-	    bionet_pthread_mutex_unlock(&published_hash_mutex);
 	}
     }
 

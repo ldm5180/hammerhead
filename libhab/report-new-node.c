@@ -100,7 +100,7 @@ int hab_report_new_node(const bionet_node_t *node) {
             free(buf.buf);
 
             // send all datapoints
-            r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 0, libhab_most_recently_published, &published_hash_mutex);
+            r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 0, libhab_most_recently_published);
             if (r != 0) continue;
 
 	    if (bionet_resource_is_persisted(resource)) {

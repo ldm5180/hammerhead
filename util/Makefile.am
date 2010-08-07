@@ -62,11 +62,9 @@ libbionet_util_la_SOURCES =    \
     hab-matches.c              \
     hab-name.c                 \
     hab-new.c                  \
-    hab-remove-bdm.c           \
     hab-remove-node.c          \
     hab-user-data.c            \
     hab-is-secure.c            \
-    mutex.c                    \
     node-new.c                 \
     node-add-resource.c        \
     node-sort-resource.c       \

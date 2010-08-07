@@ -122,8 +122,7 @@ BIONET_ASN_API_DECL
 int bionet_resource_datapoints_to_asnbuf(bionet_resource_t *resource, 
 					 bionet_asn_buffer_t *buf, 
 					 int dirty_only, 
-					 GHashTable * recent_dp,
-					 pthread_mutex_t * published_hash_mutex);
+					 GHashTable * recent_dp);
 
 
 //!

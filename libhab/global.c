@@ -29,5 +29,4 @@ void (*libhab_callback_stream_unsubscription)(const char *client_id, const bione
 
 char * persist_dir = "/var/lib/bionet";
 
-pthread_mutex_t published_hash_mutex = PTHREAD_MUTEX_INITIALIZER;
 

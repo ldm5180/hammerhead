@@ -194,7 +194,7 @@ static void libhab_handle_datapoint_subscription_request(const char *peer_name, 
             // then send the datapoints (if there are any)
             //
 
-            r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 0, libhab_most_recently_published, &published_hash_mutex);
+            r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 0, libhab_most_recently_published);
             if (r != 0) {
                 // an error has already been logged, and the buffer has been freed
                 continue;

@@ -28,10 +28,6 @@ void bionet_hab_free(bionet_hab_t *hab) {
         bionet_event_free(event);
     }
 
-    if (hab->recording_bdm != NULL) {
-        free(hab->recording_bdm);
-    }
-
     g_slist_foreach(hab->destructors, bionet_hab_destruct, hab);
 
     if (hab->user_data != NULL) {

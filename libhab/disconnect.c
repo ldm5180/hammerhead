@@ -33,9 +33,7 @@
 
 
 void hab_disconnect(void) {
-    bionet_pthread_mutex_lock(&published_hash_mutex);
     g_hash_table_destroy(libhab_most_recently_published);
-    bionet_pthread_mutex_unlock(&published_hash_mutex);
 
     cal_server.shutdown(libhab_cal_handle);
     libhab_cal_handle = NULL;

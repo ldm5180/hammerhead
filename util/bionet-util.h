@@ -73,9 +73,8 @@ typedef struct bionet_event_opaque_t     bionet_event_t;
 #include "bionet-datapoint.h"
 #include "bionet-value.h"
 #include "bionet-epsilon.h"
-#include "bionet-version.h"
 #include "bionet-event.h"
-#include "bionet-mutex.h"
+#include "bionet-version.h"
 
 /**
  * The bionet code uses glib's logging facility to log internal messages,

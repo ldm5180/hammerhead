@@ -101,9 +101,7 @@ publish:
 	if (new_dp) {
 	    bionet_datapoint_t * recent_dp = bionet_datapoint_dup(new_dp);
 	    if (recent_dp) {
-		bionet_pthread_mutex_lock(&published_hash_mutex);
 		g_hash_table_insert(libhab_most_recently_published, resource, recent_dp);
-		bionet_pthread_mutex_unlock(&published_hash_mutex);	
 	    } else {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to dup a datapoint.");
 		return 1;
@@ -111,7 +109,7 @@ publish:
 	}
 
         // send dirty datapoints only
-        r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 1, libhab_most_recently_published, &published_hash_mutex);
+        r = bionet_resource_datapoints_to_asnbuf(resource, &buf, 1, libhab_most_recently_published);
         if (r != 0) continue;
 	
         bionet_resource_make_clean(resource);

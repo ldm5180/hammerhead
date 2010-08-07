@@ -846,8 +846,7 @@ cleanup:
 int bionet_resource_datapoints_to_asnbuf(bionet_resource_t *resource, 
 					 bionet_asn_buffer_t *buf, 
 					 int dirty_only, 
-					 GHashTable * recent_dps,
-					 pthread_mutex_t * published_hash_mutex) {
+					 GHashTable * recent_dps) {
     H2C_Message_t m;
     ResourceDatapoints_t *rd;
     asn_enc_rval_t asn_r;
@@ -890,7 +889,6 @@ int bionet_resource_datapoints_to_asnbuf(bionet_resource_t *resource,
 
         if (dirty_only && (!bionet_datapoint_is_dirty(d))) continue;
 
-	bionet_pthread_mutex_lock(published_hash_mutex);
 	if (recent_dps) {
 	    bionet_datapoint_t * temp_dp = g_hash_table_lookup(recent_dps, resource);
 	    if (temp_dp) {
@@ -899,7 +897,6 @@ int bionet_resource_datapoints_to_asnbuf(bionet_resource_t *resource,
 	}
 
         asn_d = bionet_datapoint_to_asn(d);
-	bionet_pthread_mutex_unlock(published_hash_mutex);
 
         r = asn_sequence_add(&rd->newDatapoints.list, asn_d);
         if (r != 0) {
