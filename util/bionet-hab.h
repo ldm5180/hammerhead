@@ -354,6 +354,26 @@ bionet_event_t *bionet_hab_get_event_by_index(const bionet_hab_t *hab,
 BIONET_UTIL_API_DECL
 int bionet_hab_add_event(bionet_hab_t *hab, const bionet_event_t *event);
 
+
+/**
+ * @brief Add a destruction notifier
+ *
+ * Each destruction notifier will be called in the order they
+ * were added when bionet_hab_free() is called.
+ *
+ * @param[in] hab HAB to add the destructor for
+ * @param[in] destructor The destructor to run.
+ * @param[in] user_data User data to pass into the destructor.
+ *
+ * @retval 0 Successfully added.
+ * @retval 1 Failed to add.
+ */
+BIONET_UTIL_API_DECL
+int bionet_hab_add_destructor(bionet_hab_t * hab, 
+			      void (*destructor)(bionet_hab_t * hab, void * user_data),
+			      void * user_data);
+
+
 #ifdef __cplusplus
 }
 #endif

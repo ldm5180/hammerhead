@@ -34,6 +34,8 @@ struct bionet_hab_opaque_t {
     int is_secure;
 
     bionet_bdm_t *bdm; // Used only internally by BDM server/client
+
+    GSList * destructors;
 };
 
 
@@ -51,6 +53,8 @@ struct bionet_node_opaque_t {
     GSList *events;
 
     const void *user_data;  // const because the bionet library wont monkey with it
+
+    GSList * destructors;
 };
 
 
@@ -136,6 +140,8 @@ struct bionet_resource_opaque_t {
     struct timeval delta;
 
     int persist;
+
+    GSList * destructors;
 };
 
 struct bionet_value_opaque_t {
@@ -166,6 +172,24 @@ struct bionet_event_opaque_t {
     int64_t seq;
 };
 
+
+
+
+typedef struct {
+    void (*destructor)(bionet_hab_t * hab, void * user_data);
+    void * user_data;
+} bionet_hab_destructor_t;
+void bionet_hab_destruct (gpointer des, gpointer hab);
+
+typedef struct {
+    void (*destructor)(bionet_node_t * node, void * user_data);
+    void * user_data;
+} bionet_node_destructor_t;
+
+typedef struct {
+    void (*destructor)(bionet_resource_t * resource, void * user_data);
+    void * user_data;
+} bionet_resource_destructor_t;
 
 
 /**

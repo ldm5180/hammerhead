@@ -55,14 +55,16 @@ libbionet_util_la_SOURCES =    \
     epsilon-new.c                \
     epsilon-to-string.c          \
     hab-add-node.c             \
-    hab-remove-node.c          \
-    hab-matches.c              \
-    hab-new.c                  \
+    hab-destructor.c           \
     hab-event.c                \
     hab-free.c                 \
     hab-get-node.c             \
-    hab-user-data.c            \
+    hab-matches.c              \
     hab-name.c                 \
+    hab-new.c                  \
+    hab-remove-bdm.c           \
+    hab-remove-node.c          \
+    hab-user-data.c            \
     hab-is-secure.c            \
     mutex.c                    \
     node-new.c                 \

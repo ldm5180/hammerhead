@@ -18,6 +18,22 @@ void bionet_hab_free(bionet_hab_t *hab) {
         return;
     }
 
+    bionet_hab_remove_all_nodes(hab);
+
+    // free all the events
+    while (hab->events != NULL) {
+        bionet_event_t *event = hab->events->data;
+
+        hab->events = g_slist_remove(hab->events, event);
+        bionet_event_free(event);
+    }
+
+    if (hab->recording_bdm != NULL) {
+        free(hab->recording_bdm);
+    }
+
+    g_slist_foreach(hab->destructors, bionet_hab_destruct, hab);
+
     if (hab->user_data != NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_free(): passed-in HAB has non-NULL user_data pointer, ignoring");
     }
@@ -32,16 +48,6 @@ void bionet_hab_free(bionet_hab_t *hab) {
 
     if (hab->name != NULL) {
         free(hab->name);
-    }
-
-    bionet_hab_remove_all_nodes(hab);
-
-    // free all the events
-    while (hab->events != NULL) {
-        bionet_event_t *event = hab->events->data;
-
-        hab->events = g_slist_remove(hab->events, event);
-        bionet_event_free(event);
     }
 
     free(hab);
