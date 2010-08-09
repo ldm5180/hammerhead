@@ -666,6 +666,7 @@ AC_CONFIG_FILES([Makefile
                  client/realtime-watcher/Makefile
                  client/stream/Makefile
 		 client/stream-manager/Makefile
+         client/translator/Makefile
 		 client/twisted/Makefile
                  client/watcher/Makefile
                  hab/Makefile
