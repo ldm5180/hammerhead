@@ -280,10 +280,13 @@ sqlite3 *db_init(const char * database_file) {
 
     sqlite3 * db = NULL;
 
+    // The version of sqlite3 on hardy doesn't provide this function
+#if 0
     if (! sqlite3_threadsafe() ) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ERROR: sqlite3 was not compiled threadsafe");
         return NULL;
     }
+#endif
 
 
     r = sqlite3_open(database_file, &db);
