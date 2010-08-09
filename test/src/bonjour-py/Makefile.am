@@ -15,7 +15,7 @@ BUILT_SOURCES = bonjour_wrap.c
 _bonjour_la_SOURCES = bonjour_wrap.c
 
 _bonjour_la_CFLAGS = $(AM_CFLAGS) $(SWIG_PYTHON_CPPFLAGS) $(SWIG_INCDIR) -fno-strict-aliasing
-_bonjour_la_LDFLAGS = -module -version-info $(BIONET_INTERFACE_VERSION)
+_bonjour_la_LDFLAGS = -module 
 _bonjour_la_LIBADD = $(AVAHI_COMPAT_LIBDNS_SD_LIBS) -lpthread -lm
 
 #_bonjour_la_DEPENDENCIES = $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_UTIL)
