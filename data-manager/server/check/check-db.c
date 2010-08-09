@@ -141,7 +141,7 @@ END_TEST
 
 
 void db_insert_setup() {
-#if 0
+#if 1
     db = db_init(":memory:");
 #else
     unlink("/tmp/check.db");
