@@ -3,19 +3,35 @@
 
 double find_voltage(int adc, double ev)
 {
-/*    if(ev >= table[adc][255][ENG_VAL])
-        return table[adc][255][VOLTAGE];
+    // two types of cooked values are generated in the table
+    // type one increases as voltage increases and type to decreases as voltage increases
+    // must use different comparison for the two types
 
-    if(ev <= table[adc][0][ENG_VAL])
-        return table[adc][0][VOLTAGE];
-*/
-    for(int i=0; i<256; i++)
+    // determine type
+    double type = table[adc][0][ENG_VAL] - table[adc][1][ENG_VAL];
+
+    // type one
+    if(type < 0)
     {
-        // if desired ev is between ev of last and current voltage use it
-        if( (ev <= table[adc][i][ENG_VAL]) && (ev >= table[adc][i-1][ENG_VAL]) )
+        for(int i=1; i<256; i++)
         {
-           // printf("Eng val = %f\n", table[adc][i][ENG_VAL]);
-            return table[adc][i][VOLTAGE];
+            // if desired ev is between ev of last and current voltage use it
+            if( (ev <= table[adc][i][ENG_VAL]) && (ev >= table[adc][i-1][ENG_VAL]) )
+            {
+                return table[adc][i][VOLTAGE];
+            }
+        }
+    }
+    // type two
+    else if(type > 0)
+    {
+        for(int i=1; i<256; i++)
+        {
+            // if desired ev is between ev of last and current voltage use it
+            if( (ev >= table[adc][i][ENG_VAL]) && (ev <= table[adc][i-1][ENG_VAL]) )
+            {
+                return table[adc][i][VOLTAGE];
+            }
         }
     }
 
