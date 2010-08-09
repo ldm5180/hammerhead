@@ -496,8 +496,8 @@ static void _flush_foreach_event(void *data, void *user_data) {
     dbb_foreach_t * dat = (dbb_foreach_t*)user_data;
     dbb_event_t * event = (dbb_event_t*)data;
 
-    sqlite3_int64 rowid;
-    sqlite3_int64 data_rowid;
+    sqlite_int64 rowid;
+    sqlite_int64 data_rowid;
 
     dbb_hab_t * hab = NULL;
     dbb_node_t * node = NULL;

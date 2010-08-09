@@ -203,15 +203,15 @@ GPtrArray *db_get_nodes(
 int db_insert_bdm(
         sqlite3* db,
         const char *bdm_id,
-        sqlite3_int64 *rowid) ;
-int db_insert_hab(sqlite3* db, const char * hab_type, const char * hab_id, sqlite3_int64 *rowid);
+        sqlite_int64 *rowid) ;
+int db_insert_hab(sqlite3* db, const char * hab_type, const char * hab_id, sqlite_int64 *rowid);
 int db_insert_node(
         sqlite3* db,
         const char * node_id,
         const char * hab_type,
         const char * hab_id,
         uint8_t guid[BDM_UUID_LEN],
-        sqlite3_int64 *rowid);
+        sqlite_int64 *rowid);
 
 int db_insert_resource(
         sqlite3* db,
@@ -226,15 +226,15 @@ int db_insert_resource(
 int db_insert_datapoint(sqlite3* db, 
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
     bdm_datapoint_t *dp,
-    sqlite3_int64 *rowid);
+    sqlite_int64 *rowid);
 
 int db_insert_event(
     sqlite3 * db,
     const struct timeval *timestamp,
-    sqlite3_int64 bdm_row,
+    sqlite_int64 bdm_row,
     dbb_event_type_t event_type,
-    sqlite3_int64 data_row,
-    sqlite3_int64 *rowid);
+    sqlite_int64 data_row,
+    sqlite_int64 *rowid);
 
 
 #endif /* BIONET_DATA_MANAGER_DB_H */

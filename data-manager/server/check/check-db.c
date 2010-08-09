@@ -35,7 +35,7 @@ static int timeval_cmp(const struct timeval * a, const struct timeval *b) {
 
 static void insert_test_bdms(sqlite3 *db) {
     int r;
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
 
     r = db_insert_bdm(db, "bdm-id", &rowid);
     fail_unless(r == 0, "Failed to insert BDM");
@@ -44,7 +44,7 @@ static void insert_test_bdms(sqlite3 *db) {
 
 static void insert_test_habs(sqlite3 *db) {
     int r;
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
 
     insert_test_bdms(db);
 
@@ -57,7 +57,7 @@ static void insert_test_nodes(sqlite3 *db,
         uint8_t guid1[BDM_RESOURCE_KEY_LENGTH],
         uint8_t guid2[BDM_RESOURCE_KEY_LENGTH]) {
     int r;
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
 
     insert_test_habs(db);
 
@@ -104,7 +104,7 @@ static void insert_test_nodes(sqlite3 *db,
 /*
 static void insert_test_resources(sqlite3 *db) {
     int r;
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
 
     uint8_t guid1[BDM_RESOURCE_KEY_LENGTH];
     uint8_t guid2[BDM_RESOURCE_KEY_LENGTH];
@@ -124,7 +124,7 @@ static void insert_test_resources(sqlite3 *db) {
 START_TEST (check_db_schema)
 {
     int r;
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
 
     sqlite3 * db = db_init(":memory:");
 
@@ -158,7 +158,7 @@ void db_insert_teardown() {
 START_TEST (check_db_insert_bdm)
 {
     int r;
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
 
     r = db_insert_bdm(db, "bdm", &rowid);
     fail_unless(r == 0, "Failed to insert BDM");
@@ -183,7 +183,7 @@ END_TEST
 START_TEST (check_db_insert_hab)
 {
     int r;
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
 
     insert_test_bdms(db);
 
@@ -209,7 +209,7 @@ END_TEST
 START_TEST (check_db_insert_node)
 {
     int r;
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
     uint8_t guid1[BDM_RESOURCE_KEY_LENGTH];
     uint8_t guid2[BDM_RESOURCE_KEY_LENGTH];
 
@@ -294,9 +294,9 @@ END_TEST
 START_TEST (check_db_insert_hab_event)
 {
     int r;
-    sqlite3_int64 bdmrow;
-    sqlite3_int64 habrow;
-    sqlite3_int64 eventrow;
+    sqlite_int64 bdmrow;
+    sqlite_int64 habrow;
+    sqlite_int64 eventrow;
 
 
     r = db_insert_bdm(db, "bdm-id", &bdmrow);
@@ -363,8 +363,8 @@ static void _insert_node(
         sqlite_int64 * node_eventrow,
         sqlite_int64 * dp_eventrow)
 {
-    sqlite3_int64 noderow;
-    sqlite3_int64 dprow;
+    sqlite_int64 noderow;
+    sqlite_int64 dprow;
     int r;
 
     bionet_hab_t * hab = bionet_hab_new("hab-type", "hab-id");
@@ -417,9 +417,9 @@ static void _insert_node(
 START_TEST (check_db_insert_node_event)
 {
     int r;
-    sqlite3_int64 bdmrow;
-    sqlite3_int64 habrow;
-    sqlite3_int64 eventrow;
+    sqlite_int64 bdmrow;
+    sqlite_int64 habrow;
+    sqlite_int64 eventrow;
 
 
     r = db_insert_bdm(db, "bdm-id", &bdmrow);
@@ -501,9 +501,9 @@ END_TEST
 START_TEST (check_db_insert_datapoint_event)
 {
     int r;
-    sqlite3_int64 bdmrow;
-    sqlite3_int64 habrow;
-    sqlite3_int64 eventrow;
+    sqlite_int64 bdmrow;
+    sqlite_int64 habrow;
+    sqlite_int64 eventrow;
 
 
     r = db_insert_bdm(db, "bdm-id", &bdmrow);
@@ -605,9 +605,9 @@ END_TEST
 START_TEST (check_db_insert_all_events)
 {
     int r;
-    sqlite3_int64 bdmrow;
-    sqlite3_int64 habrow;
-    sqlite3_int64 eventrow;
+    sqlite_int64 bdmrow;
+    sqlite_int64 habrow;
+    sqlite_int64 eventrow;
 
 
     r = db_insert_bdm(db, "bdm-id", &bdmrow);

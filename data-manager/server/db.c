@@ -32,7 +32,7 @@ int db_get_hab_rowid(
         sqlite3* db,
         const char * hab_type,
         const char * hab_id,
-        sqlite3_int64 *rowid);
+        sqlite_int64 *rowid);
 
 int db_get_node_rowid(
         sqlite3* db,
@@ -40,18 +40,18 @@ int db_get_node_rowid(
         const char * hab_type,
         const char * hab_id,
         uint8_t guid[BDM_RESOURCE_KEY_LENGTH],
-        sqlite3_int64 *rowid);
+        sqlite_int64 *rowid);
 
 int db_get_bdm_rowid(
         sqlite3* db,
         const char *bdm_id,
-        sqlite3_int64 *rowid) ;
+        sqlite_int64 *rowid) ;
 
 int db_get_datapoint_rowid(
         sqlite3* db,
         uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
         bdm_datapoint_t * dp,
-        sqlite3_int64 *rowid);
+        sqlite_int64 *rowid);
 
 
 /*
@@ -436,7 +436,7 @@ int db_insert_hab(
         sqlite3* db,
         const char * hab_type,
         const char * hab_id,
-        sqlite3_int64 *rowid) 
+        sqlite_int64 *rowid) 
 {
     int r;
 
@@ -512,7 +512,7 @@ int db_get_hab_rowid(
         sqlite3* db,
         const char * hab_type,
         const char * hab_id,
-        sqlite3_int64 *rowid) 
+        sqlite_int64 *rowid) 
 {
     int ret = 0;
     int r;
@@ -576,7 +576,7 @@ int db_insert_node(
         const char * hab_type,
         const char * hab_id,
         uint8_t guid[BDM_RESOURCE_KEY_LENGTH],
-        sqlite3_int64 *rowid)
+        sqlite_int64 *rowid)
 {
     int r;
 
@@ -675,7 +675,7 @@ int db_get_node_rowid(
         const char * hab_type,
         const char * hab_id,
         uint8_t guid[BDM_RESOURCE_KEY_LENGTH],
-        sqlite3_int64 *rowid)
+        sqlite_int64 *rowid)
 {
     int r;
 
@@ -967,7 +967,7 @@ int db_insert_resource(
 int db_insert_bdm(
         sqlite3* db,
         const char *bdm_id,
-        sqlite3_int64 *rowid) 
+        sqlite_int64 *rowid) 
 {
     int r;
 
@@ -1030,7 +1030,7 @@ int db_insert_bdm(
 int db_get_bdm_rowid(
         sqlite3* db,
         const char *bdm_id,
-        sqlite3_int64 *rowid) 
+        sqlite_int64 *rowid) 
 {
     int r;
 
@@ -1125,7 +1125,7 @@ static int bind_dp_value(sqlite3_stmt* this_stmt, int param, bdm_datapoint_t *dp
 int db_insert_datapoint(sqlite3* db, 
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
     bdm_datapoint_t *dp,
-    sqlite3_int64 *rowid)
+    sqlite_int64 *rowid)
 {
     int r;
 
@@ -1220,7 +1220,7 @@ int db_insert_datapoint(sqlite3* db,
 int db_get_datapoint_rowid(sqlite3* db, 
     uint8_t resource_key[BDM_RESOURCE_KEY_LENGTH],
     bdm_datapoint_t *dp,
-    sqlite3_int64 *rowid)
+    sqlite_int64 *rowid)
 {
     int r;
 
@@ -1308,10 +1308,10 @@ int db_get_datapoint_rowid(sqlite3* db,
 int db_insert_event(
     sqlite3 * db,
     const struct timeval * timestamp,
-    sqlite3_int64 bdm_row,
+    sqlite_int64 bdm_row,
     dbb_event_type_t event_type,
-    sqlite3_int64 data_row,
-    sqlite3_int64 *rowid)
+    sqlite_int64 data_row,
+    sqlite_int64 *rowid)
 {
     int r;
     struct timeval ts_dat;
@@ -2261,7 +2261,7 @@ int db_get_events(sqlite3* db,
             dp_timestamp.tv_usec     =               sqlite3_column_int (stmt, 9);
             event_timestamp.tv_sec   =               sqlite3_column_int(stmt, 10);
             event_timestamp.tv_usec  =               sqlite3_column_int(stmt, 11);
-            sqlite3_int64 event_seq  =               sqlite3_column_int64(stmt, 12);
+            sqlite_int64 event_seq  =               sqlite3_column_int64(stmt, 12);
             const char * bdm_id      = (const char *)sqlite3_column_text(stmt, 13); 
             int islost               =               sqlite3_column_int(stmt, 14); 
 
@@ -3162,7 +3162,7 @@ int db_publish_sync_affected_datapoints(
             dp_timestamp.tv_usec     =               sqlite3_column_int (stmt, 9);
             event_timestamp.tv_sec   =               sqlite3_column_double(stmt, 10);
             event_timestamp.tv_usec  =               sqlite3_column_double(stmt, 11);
-            sqlite3_int64 event_seq  =               sqlite3_column_int64(stmt, 12);
+            sqlite_int64 event_seq  =               sqlite3_column_int64(stmt, 12);
             const char * bdm_id      = (const char *)sqlite3_column_text(stmt, 13); 
             int islost               =               sqlite3_column_int(stmt, 14); 
 

@@ -142,7 +142,7 @@ typedef struct {
     struct timeval timestamp;
     db_type_t type;
     db_value_t value;
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
 
     uint8_t node_uid[BDM_RESOURCE_KEY_LENGTH];
     uint8_t res_uid[BDM_RESOURCE_KEY_LENGTH];
@@ -254,20 +254,20 @@ struct dbb_event {
 };
 
 struct dbb_bdm {
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
     char * bdm_id;
     GData * hab_list;
 };
 
 struct dbb_hab {
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
     char * hab_id;
     char * hab_type;
     GData * node_list;
 };
 
 struct dbb_node {
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
     struct dbb_hab * hab;
     char * node_id;
     uint8_t guid[BDM_RESOURCE_KEY_LENGTH];
@@ -275,7 +275,7 @@ struct dbb_node {
 };
 
 struct dbb_resource {
-    sqlite3_int64 rowid;
+    sqlite_int64 rowid;
     struct dbb_node * node;
     char * resource_id;
     bionet_resource_data_type_t data_type;

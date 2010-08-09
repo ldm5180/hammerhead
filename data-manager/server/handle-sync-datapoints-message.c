@@ -160,7 +160,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		    return;  // FIXME: return an error message to the client
 		}
 
-                sqlite3_int64 dprow, eventrow;
+                sqlite_int64 dprow, eventrow;
                 r = db_insert_datapoint(main_db, resource_key, &bdmdp, &dprow);
                 if (r < 0) goto fail;
 
