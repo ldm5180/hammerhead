@@ -52,5 +52,5 @@ test_log() {
 }
 
 normalize_bdm_client() {
-  sort $1 | sed -r 's/^[^,]*,//' 
+  sort $1 | sed 's/^[^,]*,//' 
 }
