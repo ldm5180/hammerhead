@@ -2084,10 +2084,10 @@ int db_get_events(sqlite3* db,
         return -1;
     }
 
-    const char * fields;
-    const char * tables;
-    const char * where;
-    const char * event_where;
+    const char * fields = NULL;
+    const char * tables = NULL;
+    const char * where = NULL;
+    const char * event_where = NULL;
 
     switch(event_class) {
         case _DB_GET_HAB_EVENTS:
