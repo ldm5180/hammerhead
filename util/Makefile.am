@@ -38,7 +38,8 @@ libbionet_util_la_CFLAGS = \
 
 libbionet_util_la_LIBADD = \
 	$(AM_LDADD) \
-	$(GLIB_LIBS) 
+	$(GLIB_LIBS) \
+	$(OPENSSL_LIBS)
 
 libbionet_util_la_SOURCES =    \
     bdm-new.c                  \
