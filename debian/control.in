@@ -16,6 +16,7 @@ Build-Depends: debhelper (>= 6), @ALSA_BUILD_DEP@ @ION_BUILD_DEP@
  xsltproc,
  libbluetooth-dev,
  libsqlite3-dev,
+ sqlite3,
  bison,
  flex,
  libexpat1-dev
