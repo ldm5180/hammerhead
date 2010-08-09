@@ -268,7 +268,7 @@ restart_poll:
 
                 node = bionet_hab_get_node_by_index(hab, ni);
 
-                for(ei=0; ei<bionet_hab_get_num_events(hab); ei++) {
+                for(ei=0; ei<bionet_node_get_num_events(node); ei++) {
                     bionet_event_t * event = bionet_node_get_event_by_index(node, ei);
                     const char * type;
                     if(bionet_event_get_type(event) == BIONET_EVENT_PUBLISHED) {
