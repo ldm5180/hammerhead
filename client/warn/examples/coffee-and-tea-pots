@@ -3,7 +3,7 @@
 # To use coffeepot client:
 # First, change resource to appropriate address. Use correct Kill-A-Watt ID.
 # Change sender and receiver emails if desired ('command', -s and -r)
-# To run, use bionet-warn client with command ./bionet-warn -c "examples/coffeepot"
+# To run, use bionet-warn client with command ./bionet-warn -c "examples/coffee-and-tea-pots"
 
 on = { 'coffeepot' : False, 'teapot' : False }
 
