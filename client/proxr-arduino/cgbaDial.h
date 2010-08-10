@@ -24,7 +24,7 @@ public:
     ~cgbaDial();
 
 public slots:
-    void setValue(int value);
+    void set_display(int value);
     void setPotentiometer();
     void setResource(bionet_node_t *node);
 

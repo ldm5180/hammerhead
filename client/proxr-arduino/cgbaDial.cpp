@@ -18,7 +18,6 @@ cgbaDial::cgbaDial(QString toolTip, QString label, int pot, QWidget *parent)
     dialDisplay = new QLineEdit();
     dialDisplay->setAlignment(Qt::AlignHCenter);
     dialDisplay->setReadOnly(true);
-    setValue(0);
 
     dialLabel = new QLabel(label, this);
     dialLabel->setAlignment(Qt::AlignHCenter);
@@ -30,11 +29,11 @@ cgbaDial::cgbaDial(QString toolTip, QString label, int pot, QWidget *parent)
     setLayout(dialLayout);
 
     //Slot Connections
-    connect(dial, SIGNAL(valueChanged(int)), this, SLOT(setValue(int)));
+    connect(dial, SIGNAL(valueChanged(int)), this, SLOT(set_display(int)));
     connect(dial, SIGNAL(sliderReleased()), this, SLOT(setPotentiometer()));
 }
 
-void cgbaDial::setValue(int dialValue)
+void cgbaDial::set_display(int dialValue)
 {
     QString s;
     //set dials value to new value
@@ -72,7 +71,7 @@ void cgbaDial::setResource(bionet_node_t *node)
     double content;
     bionet_resource_get_double(potResource, &content, NULL);
     content = content/VOLTAGE_INCREMENT;
-    setValue(int(content));
+    set_display(int(content));
 }
 
 cgbaDial::~cgbaDial()
