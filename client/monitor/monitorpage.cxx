@@ -115,15 +115,15 @@ void MonitorPage::connectObjects() {
     view->show();
 
     // Connects the io to the model
-    connect(io, SIGNAL(newHab(bionet_hab_t*, void*)), 
+    connect(io, SIGNAL(newHab(bionet_hab_t*, bionet_event_t*, void*)), 
         model, SLOT(newHab(bionet_hab_t*)));
-    connect(io, SIGNAL(lostHab(bionet_hab_t*, void*)), 
+    connect(io, SIGNAL(lostHab(bionet_hab_t*, bionet_event_t*, void*)), 
         model, SLOT(lostHab(bionet_hab_t*)));
-    connect(io, SIGNAL(newNode(bionet_node_t*, void*)), 
+    connect(io, SIGNAL(newNode(bionet_node_t*, bionet_event_t*, void*)), 
         model, SLOT(newNode(bionet_node_t*)));
-    connect(io, SIGNAL(lostNode(bionet_node_t*, void*)), 
+    connect(io, SIGNAL(lostNode(bionet_node_t*, bionet_event_t*, void*)), 
         model, SLOT(lostNode(bionet_node_t*)));
-    connect(io, SIGNAL(datapointUpdate(bionet_datapoint_t*, void*)), 
+    connect(io, SIGNAL(datapointUpdate(bionet_datapoint_t*, bionet_event_t*, void*)), 
         model, SLOT(gotDatapoint(bionet_datapoint_t*)));
 
     connect(model, SIGNAL(lostResource(QString)), 
@@ -136,9 +136,9 @@ void MonitorPage::connectObjects() {
     // (for losing habs & updating the pane)
     connect(model, SIGNAL(newDatapoint(bionet_datapoint_t*)), 
         rv, SLOT(resourceValueChanged(bionet_datapoint_t*)));
-    connect(io, SIGNAL(lostHab(bionet_hab_t*, void*)), 
+    connect(io, SIGNAL(lostHab(bionet_hab_t*, bionet_event_t*, void*)), 
         rv, SLOT(lostHab(bionet_hab_t*)));
-    connect(io, SIGNAL(lostNode(bionet_node_t*, void*)), 
+    connect(io, SIGNAL(lostNode(bionet_node_t*, bionet_event_t*, void*)), 
         rv, SLOT(lostNode(bionet_node_t*)));
 
     // Connecting everything to the sample archive
@@ -146,7 +146,7 @@ void MonitorPage::connectObjects() {
         archive, SLOT(addResource(QString)));
     connect(model, SIGNAL(lostResource(QString)), 
         archive, SLOT(removeResource(QString)));
-    connect(io, SIGNAL(datapointUpdate(bionet_datapoint_t*, void*)), 
+    connect(io, SIGNAL(datapointUpdate(bionet_datapoint_t*, bionet_event_t*, void*)), 
         archive, SLOT(recordSample(bionet_datapoint_t*)));
 
     // connect the view to the model
@@ -161,7 +161,7 @@ void MonitorPage::connectObjects() {
     connect(model, SIGNAL(streamSelected(bionet_stream_t*)), 
         rv, SLOT(newStreamSelected(bionet_stream_t*)));
 
-    connect(io, SIGNAL(datapointUpdate(bionet_datapoint_t*, void*)), 
+    connect(io, SIGNAL(datapointUpdate(bionet_datapoint_t*, bionet_event_t*, void*)), 
         this, SLOT(updatePlot(bionet_datapoint_t*)));
     
     connect(rv, SIGNAL(plotResource(QString)), 
