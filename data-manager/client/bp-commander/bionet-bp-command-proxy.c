@@ -82,10 +82,12 @@ void handle_bundle(Sdr *sdr, BpDelivery *dlv) {
         syslog(LOG_ERR, "out of memory!");
         zco_stop_receiving(*sdr, &reader);
         sdr_end_xn(*sdr);
+        return;
     }
 
     do {
         if ((resource_name_strlen + 1) > resource_name_buflen) {
+            // need to grow the resource name buffer
             char *new_resource_name;
             resource_name_buflen *= 2;
             new_resource_name = (char *)realloc(resource_name, resource_name_buflen);
@@ -94,6 +96,7 @@ void handle_bundle(Sdr *sdr, BpDelivery *dlv) {
                 free(resource_name);
                 zco_stop_receiving(*sdr, &reader);
                 sdr_end_xn(*sdr);
+                return;
             }
             resource_name = new_resource_name;
         }
@@ -104,12 +107,14 @@ void handle_bundle(Sdr *sdr, BpDelivery *dlv) {
             free(resource_name);
             zco_stop_receiving(*sdr, &reader);
             sdr_end_xn(*sdr);
+            return;
         }
         if (r != 1) {
             syslog(LOG_ERR, "failed to read next byte of resource name, dropping bundle!\n");
             free(resource_name);
             zco_stop_receiving(*sdr, &reader);
             sdr_end_xn(*sdr);
+            return;
         }
         resource_name_strlen ++;
     } while(resource_name[resource_name_strlen-1] != (char)0);
@@ -128,10 +133,12 @@ void handle_bundle(Sdr *sdr, BpDelivery *dlv) {
         free(resource_name);
         zco_stop_receiving(*sdr, &reader);
         sdr_end_xn(*sdr);
+        return;
     }
 
     do {
         if ((value_strlen + 1) > value_buflen) {
+            // need to grow the value string buffer
             char *new_value;
             value_buflen *= 2;
             new_value = (char *)realloc(value, value_buflen);
@@ -141,6 +148,7 @@ void handle_bundle(Sdr *sdr, BpDelivery *dlv) {
                 free(value);
                 zco_stop_receiving(*sdr, &reader);
                 sdr_end_xn(*sdr);
+                return;
             }
             value = new_value;
         }
@@ -152,6 +160,7 @@ void handle_bundle(Sdr *sdr, BpDelivery *dlv) {
             free(value);
             zco_stop_receiving(*sdr, &reader);
             sdr_end_xn(*sdr);
+            return;
         }
         if (r != 1) {
             syslog(LOG_ERR, "failed to read next byte of value, dropping bundle!\n");
@@ -159,6 +168,7 @@ void handle_bundle(Sdr *sdr, BpDelivery *dlv) {
             free(value);
             zco_stop_receiving(*sdr, &reader);
             sdr_end_xn(*sdr);
+            return;
         }
         value_strlen ++;
     } while(value[value_strlen-1] != (char)0);
