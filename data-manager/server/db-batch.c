@@ -504,23 +504,28 @@ static void _flush_foreach_event(void *data, void *user_data) {
     bdm_datapoint_t * dp = NULL;
 
     switch(event->type) {
-        case DBB_NEW_HAB_EVENT:
-        case DBB_LOST_HAB_EVENT:
-            hab = event->data.hab;
-            data_rowid = hab->rowid;
-            break;
+    case DBB_NEW_HAB_EVENT:
+    case DBB_LOST_HAB_EVENT:
+	hab = event->data.hab;
+	data_rowid = hab->rowid;
+	break;
+	
+    case DBB_NEW_NODE_EVENT:
+    case DBB_LOST_NODE_EVENT:
+	node = event->data.node;
+	hab = node->hab;
+	data_rowid = node->rowid;
+	break;
+	
+    case DBB_DATAPOINT_EVENT:
+	dp = event->data.datapoint.dp;
+	data_rowid = dp->rowid;
+	break;
 
-        case DBB_NEW_NODE_EVENT:
-        case DBB_LOST_NODE_EVENT:
-            node = event->data.node;
-            hab = node->hab;
-            data_rowid = node->rowid;
-            break;
-
-        case DBB_DATAPOINT_EVENT:
-            dp = event->data.datapoint.dp;
-            data_rowid = dp->rowid;
-            break;
+    default:
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "_flush_foreach_event: Unknown event type.");
+	return;
     }
 
     if (db_insert_event(main_db, 
@@ -551,17 +556,23 @@ static void _publish_foreach_event(void *data, void *user_data) {
 
 
     switch(event->type) {
-        case DBB_LOST_HAB_EVENT:
-        case DBB_LOST_NODE_EVENT:
-            event_type = BIONET_EVENT_LOST;
-            break;
-
-        case DBB_NEW_HAB_EVENT: 
-        case DBB_NEW_NODE_EVENT: 
-        case DBB_DATAPOINT_EVENT:
-            event_type = BIONET_EVENT_PUBLISHED;
-            break;
+    case DBB_LOST_HAB_EVENT:
+    case DBB_LOST_NODE_EVENT:
+	event_type = BIONET_EVENT_LOST;
+	break;
+	
+    case DBB_NEW_HAB_EVENT: 
+    case DBB_NEW_NODE_EVENT: 
+    case DBB_DATAPOINT_EVENT:
+	event_type = BIONET_EVENT_PUBLISHED;
+	break;
+	
+    default:
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "_publish_foreach_event: Unknown event type");
+	return;
     }
+
     bionet_event_t * bionet_event = bionet_event_new(
             &event->timestamp,
             bdm_id,
