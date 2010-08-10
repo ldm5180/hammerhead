@@ -1066,8 +1066,13 @@ shutdown_thread:
     //
     bip_msg_queue_close(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER);
 
+#ifdef HAVE_EMBEDDED_MDNSSD
+    // if we don't have embedded mDNS-SD, then timeout is always NULL
+    // (it's initialized at the top of this function and never changed),
+    // and Prevent complains about this code
     if (timeout != NULL) 
         free(timeout);
+#endif
 
     return 0;
 }
