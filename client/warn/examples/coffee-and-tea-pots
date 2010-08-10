@@ -27,13 +27,13 @@ warn = [
     {
     'resource': "Kill-A-Watt.quick.1:Watts", 
     'compare': lambda x: turn_off(x, 'coffeepot') > 0,
-    'command': "./examples/teapotmail -s coffeepot-mouseroom@bioserve.colorado.edu -r ilana.bellowe@colorado.edu \"Coffeepot is now ready. Come get some delicious coffee while it's nice and warm :) !\""
+    'command': "./examples/teapotmail -s coffeepot-mouseroom@bioserve.colorado.edu -r coffeepot@bioserve.colorado.edu \"Coffeepot is now ready. Come get some delicious coffee while it's nice and warm :) !\""
     },
 
     {
     'resource': "Kill-A-Watt.quick.1:Watts", 
     'compare': lambda x: turn_on(x, 'coffeepot') > 0,
-    'command': "./examples/teapotmail -s coffeepot-mouseroom@bioserve.colorado.edu -r ilana.bellowe@colorado.edu \"Coffeepot was just started. Coffee coming soon. :) !\""
+    'command': "./examples/teapotmail -s coffeepot-mouseroom@bioserve.colorado.edu -r coffeepot@bioserve.colorado.edu \"Coffeepot was just started. Coffee coming soon. :) !\""
     },
 
     {
