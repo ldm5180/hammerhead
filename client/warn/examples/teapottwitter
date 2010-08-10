@@ -1,0 +1,30 @@
+#!/usr/bin/python
+import twitter
+
+import optparse
+
+parser = optparse.OptionParser()
+parser.add_option("-u", "--user", dest="user", default="bioserve",help="Choose the username of the twitter account", metavar = "USER")
+parser.add_option("-p", "--password", dest="password", default="fakepassword",help="Type the password for the twitter account", metavar = "PASS")
+parser.add_option("-m", "--message", dest="message", default="Warn client is sending a message", help="Type the message you want twitter to read", metavar="MESSAGE")
+
+(options, args) = parser.parse_args()
+
+
+def TwitterIt(u, p, message):
+    print u
+    print p
+    print message
+    api = twitter.Api(username=u, password=p)
+    print u
+    print p
+    print message
+    try:
+        status = api.PostUpdate(message)
+        print "%s just posted %s" % (status.user.name, status.text)
+    except UnicodeDecodeError:
+        print "Your message could not be encoded. Perhaps it contains non-ASCII characters? Try explicitly specifying the encoding with the --encoding flag."
+    except:
+        print "Couldn't connect, check network, username and password."
+
+TwitterIt(options.user, options.password, options.message)
