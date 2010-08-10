@@ -27,25 +27,25 @@ warn = [
     {
     'resource': "Kill-A-Watt.quick.1:Watts", 
     'compare': lambda x: turn_off(x, 'coffeepot') > 0,
-    'command': "./examples/teapotmail -s coffeepot-mouseroom@bioserve.colorado.edu -r ilana.bellowe@colorado.edu \"Coffeepot is now ready. Come get some delicious coffee while it's nice and warm :) !\""
+    'command': "./examples/teapottwitter -u \"Killawatt1217\" -p \"killawatt1\" -m \"Coffeepot is now ready. $(fortune -n 100)\""
     },
 
     {
     'resource': "Kill-A-Watt.quick.1:Watts", 
     'compare': lambda x: turn_on(x, 'coffeepot') > 0,
-    'command': "./examples/teapotmail -s coffeepot-mouseroom@bioserve.colorado.edu -r ilana.bellowe@colorado.edu \"Coffeepot was just started. Coffee coming soon. :) !\""
+    'command': "./examples/teapottwitter -u \"Killawatt1217\" -p \"killawatt1\" -m \"Coffeepot is now ready. Coffeepot was just started. $(fortune -n 100)\""
     },
 
     {
     'resource': "Kill-A-Watt.quick.4:Watts", 
     'compare': lambda x: turn_off(x, 'teapot') > 0,
-    'command': "./examples/teapotmail -s teapot-mouseroom@bioserve.colorado.edu -r teapot@bioserve.colorado.edu \"Teapot is now ready. Come get a cup of tea, while it's still hot!\""
+    'command': "./examples/teapottwitter -u \"Killawatt1217\" -p \"killawatt1\" -m \"Teapot is now ready. $(fortune -n 100)\""
     },
 
     {
     'resource': "Kill-A-Watt.quick.4:Watts", 
     'compare': lambda x: turn_on(x, 'teapot') > 0,
-    'command': "./examples/teapotmail -s teapot-mouseroom@bioserve.colorado.edu -r teapot@bioserve.colorado.edu \"Teapot was just started. Water is warming up!\""
+    'command': "./examples/teapottwitter -u \"Killawatt1217\" -p \"killawatt1\" -m \"Teapot was just started. $(fortune -n 100)\""
     }
 ]
 
