@@ -57,13 +57,6 @@ void handle_bundle(Sdr *sdr, BpDelivery *dlv) {
     int value_strlen;
     int value_buflen;
 
-    // int filename_size;
-    // int bytes_remaining;
-    // int i;
-    // int fd;
-    // uint32_t tmp32;
-    // uint64_t tmp64;
-
     int r;
 
     int payload_length;
