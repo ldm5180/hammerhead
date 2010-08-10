@@ -118,7 +118,7 @@ for i in 0 1 2; do
 
     if ! diff -q norm.random-hab norm.bdm-watcher.$i; then
 	echo "ERROR: bdm-watcher.$i output differs from random-hab output:"
-	#diff -u norm.random-hab norm.bdm-watcher.$i
+	diff -u norm.random-hab norm.bdm-watcher.$i
 	RETVAL=1
     else
 	echo "bdm-watcher.$i same as random-hab output"
@@ -129,7 +129,7 @@ done
 for i in 1 2; do
     if ! diff -q sorted.bdm-watcher.0 sorted.bdm-watcher.$i; then
 	echo "ERROR: bdm-watcher.$i output differs from bdm-watcher.0 output:"
-	#diff -u norm.random-hab norm.bdm-watcher.$i
+	diff -u norm.random-hab norm.bdm-watcher.$i
 	RETVAL=1
     else
 	echo "bdm-watcher.$i same as bdm-watcher.0 output"
