@@ -54,8 +54,12 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
 
     bionet_hab_t * hab = NULL;
 
-    bdm_db_batch_t * tmp_dbb = calloc(1, sizeof(bdm_db_batch_t));
     dbb_bionet_event_data_t bionet_ptr;
+    bdm_db_batch_t * tmp_dbb = calloc(1, sizeof(bdm_db_batch_t));
+    if(tmp_dbb == NULL) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): Out of Memory!", __FUNCTION__);
+        return;
+    }
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Sync Metadata Message {");
 
