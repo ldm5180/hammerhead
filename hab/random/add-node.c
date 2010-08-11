@@ -49,7 +49,7 @@ void add_resources(bionet_node_t *node, int num_resources) {
     unsigned int rnd;
     int i;
 
-    bionet_resource_t ** resources = malloc(sizeof(bionet_resource_t*) * num_resources);
+    bionet_resource_t ** resources = calloc(num_resources, sizeof(bionet_resource_t*));
     if (NULL == resources ) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Out of memory!");
         return;
@@ -76,13 +76,13 @@ void add_resources(bionet_node_t *node, int num_resources) {
         
         if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
-            return;
+            goto cleanup;
         }
         flavor = rnd % (BIONET_RESOURCE_FLAVOR_MAX + 1);
 
         if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
-            return;
+            goto cleanup;
         }
         data_type = rnd % (BIONET_RESOURCE_DATA_TYPE_MAX + 1);
 
@@ -94,7 +94,7 @@ void add_resources(bionet_node_t *node, int num_resources) {
         );
         if (resources[i] == NULL) {
             fprintf(stderr, "Error creating Resource\n");
-            return;
+            goto cleanup;
         }
     }
 
@@ -122,6 +122,7 @@ void add_resources(bionet_node_t *node, int num_resources) {
             fprintf(stderr, "Error adding Resource\n");
             continue;
         }
+        resources[i] = NULL;
 
         //
         // half of the resources start out without a datapoint
@@ -129,7 +130,7 @@ void add_resources(bionet_node_t *node, int num_resources) {
         //
         if (sizeof(rnd) != read(urandom_fd, &rnd, sizeof(rnd))) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error reading from /dev/urandom: %m");
-            return;
+            goto cleanup;
         }
         if ((rnd % 2) == 0) {
             if (output_mode == OM_NORMAL) {
@@ -188,6 +189,17 @@ void add_resources(bionet_node_t *node, int num_resources) {
         }
     }
 
+
+cleanup:
+    // free the resources we've made so far
+    {
+        int j;
+        for (j = 0; j < num_resources; j ++) {
+            if (resources[j] != NULL) bionet_resource_free(resources[j]);
+        }
+    }
+
+    // free the temporary resources array
     free(resources);
 }
 
