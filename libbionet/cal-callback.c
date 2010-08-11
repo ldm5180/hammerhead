@@ -46,7 +46,10 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
     }
 
     struct timeval event_ts;
-    gettimeofday(&event_ts, NULL);
+    if (gettimeofday(&event_ts, NULL)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "handle_new_node: Failed to get time of day.");
+    }
 
     e = bionet_event_new(&event_ts, NULL, BIONET_EVENT_PUBLISHED);
     if (e) {
@@ -458,7 +461,10 @@ void libbionet_cal_callback(void * cal_handle, const cal_event_t *event) {
                 GSList *j;
 
                 struct timeval event_ts;
-                gettimeofday(&event_ts, NULL);
+		if (gettimeofday(&event_ts, NULL)) {
+		    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+			  "libbionet_cal_callback: Failed to get time of day.");
+		}
                 e = bionet_event_new(&event_ts, NULL, BIONET_EVENT_LOST);
                 if (e) {
                     bionet_hab_add_event(hab, e);

@@ -35,7 +35,10 @@ bionet_event_t * bionet_event_new(const struct timeval *timestamp, const char * 
     }
 
     if(NULL == timestamp) {
-        gettimeofday(&event->timestamp, NULL);
+	if (gettimeofday(&event->timestamp, NULL)) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "bionet_event_new: Failed to get time of day.");
+	}
     } else {
         event->timestamp.tv_sec = timestamp->tv_sec;
         event->timestamp.tv_usec = timestamp->tv_usec;
@@ -58,3 +61,10 @@ void bionet_event_free(bionet_event_t *event) {
     free(event->bdm_id);
     free(event);
 }
+
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

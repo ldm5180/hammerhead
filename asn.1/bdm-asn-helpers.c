@@ -855,6 +855,7 @@ DataManager_t * bionet_bdm_to_asn(bionet_bdm_t * bdm) {
     DataManager_t * asn_bdm = NULL;
     int r;
     int hi;
+    GPtrArray * hab_list = NULL;
 
     asn_bdm = (DataManager_t *)calloc(1, sizeof(DataManager_t));
     if (asn_bdm == NULL) {
@@ -870,7 +871,7 @@ DataManager_t * bionet_bdm_to_asn(bionet_bdm_t * bdm) {
         goto cleanup;
     }
         
-    GPtrArray * hab_list = bionet_bdm_get_hab_list(bdm);
+    hab_list = bionet_bdm_get_hab_list(bdm);
     for (hi = 0; hi < hab_list->len; hi++) {
         BDM_HardwareAbstractor_t * asn_hab;
         bionet_hab_t * hab = g_ptr_array_index(hab_list, hi);

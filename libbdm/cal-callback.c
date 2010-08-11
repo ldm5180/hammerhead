@@ -249,11 +249,16 @@ static void bdm_handle_resource_metadata(const cal_event_t *event, const BDMReso
             // an error has been logged already
             return;
         }
-        bionet_node_add_resource(node, resource);
+        if (bionet_node_add_resource(node, resource)) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+		  "bdm_handle_resource_metadata: Failed to add resource %s to node %s",
+		  bionet_resource_get_id(resource), bionet_node_get_name(node));
+	    return;
+	}
 
         libbdm_cache_add_resource(resource);
     }
-}
+} /* bdm_handle_resource_metadata() */
 
 static void bdm_handle_resource_datapoints(const cal_event_t *event, BDMResourceDatapoints_t *rd) {
     bionet_resource_t *resource;
