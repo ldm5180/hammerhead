@@ -21,6 +21,8 @@
 #include "bionet-util.h"
 
 
+// this function does not mind tainted data, it defensively sanity-checks what you pass in
+// coverity[ -tainted_data_sink : arg-0 ]
 int bionet_split_resource_name(
     const char *resource_name,
     char **hab_type,
