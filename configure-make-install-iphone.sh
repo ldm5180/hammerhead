@@ -75,6 +75,7 @@ export GLIB_LIBS=`$PKG_CONFIG --libs glib-2.0 gthread-2.0`
 	--disable-check \
         --disable-clients \
         --disable-habs \
+        --disable-bdm \
         --without-ion \
 	"$XCACHEFILE" \
 	CFLAGS="$XCFLAGS" \
