@@ -1790,6 +1790,7 @@ get_events_make_hab_list(
     hab = find_hab(hab_list, hab_type, hab_id);
     if (hab == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding hab %s.%s", hab_type, hab_id);
+	bionet_event_free(event);
         return -1;
     }
     if(event_class == _DB_GET_HAB_EVENTS) {
