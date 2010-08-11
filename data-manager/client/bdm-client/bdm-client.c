@@ -334,8 +334,6 @@ restart_poll:
                 }
             }
         }
-
-	bdm_hab_list_free(hab_list);
     }
 
     if (frequency) {
@@ -346,6 +344,8 @@ restart_poll:
 	}
 	goto restart_poll;
     }
+
+    bdm_hab_list_free(hab_list);
 
     bdm_disconnect();
 
