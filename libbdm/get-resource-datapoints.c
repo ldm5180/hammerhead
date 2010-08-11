@@ -136,7 +136,10 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
                         (asn_event->type == BDM_Event_Type_new)?
                              BIONET_EVENT_PUBLISHED:BIONET_EVENT_LOST);
 
-                    if(event == NULL) goto cleanup;
+                    if(event == NULL) {
+                        bionet_node_free(node);
+                        goto cleanup;
+                    }
 
                     bionet_node_add_event(node, event);
                 }
@@ -151,18 +154,28 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
                     asn_resource = asn_node->resources.list.array[ri];
 
                     datatype = bionet_asn_to_datatype(asn_resource->datatype);
-                    if (datatype == -1) goto cleanup;
+                    if (datatype == -1) {
+                        bionet_node_free(node);
+                        goto cleanup;
+                    }
 
                     flavor = bionet_asn_to_flavor(asn_resource->flavor);
-                    if (flavor == -1) goto cleanup;
+                    if (flavor == -1) {
+                        bionet_node_free(node);
+                        goto cleanup;
+                    }
 
                     resource = bionet_resource_new(node, datatype, flavor, (char *)asn_resource->id.buf);
-                    if (resource == NULL) goto cleanup;
+                    if (resource == NULL) {
+                        bionet_node_free(node);
+                        goto cleanup;
+                    }
 
                     if (bionet_node_add_resource(node, resource)) {
                         g_log("", G_LOG_LEVEL_WARNING, 
                               "handle_Resource_Datapoints_Reply(): Failed to add resource to node.");
                         bionet_resource_free(resource);
+                        bionet_node_free(node);
                         goto cleanup;
                     }
 
