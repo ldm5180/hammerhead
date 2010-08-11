@@ -93,6 +93,9 @@ fail0:
 
 
 
+// this function does not mind tainted data, it calls
+// bionet_split_resource_name() to check the input before using it
+// coverity[ -tainted_data_sink : arg-0 ]
 int bionet_subscribe_datapoints_by_name(const char *resource_name) {
     char *hab_type;
     char *hab_id;
