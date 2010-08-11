@@ -15,6 +15,15 @@
 
 
 
+
+// coverity[ -tainted_data_sink : arg-0 ]
+// coverity[ +tainted_string_sanitize_content : arg-0 ]
+static void bionet_coverity_untaint_string(const char *string) { };
+
+
+
+
+// coverity[ -tainted_data_sink : arg-0 ]
 int bionet_is_valid_name_component(const char *str) {
     if (str == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_is_valid_name_component(): NULL string passed in!");
@@ -32,6 +41,7 @@ int bionet_is_valid_name_component(const char *str) {
         str ++;
     }
 
+    bionet_coverity_untaint_string(str);
     return 1;
 }
 
@@ -49,7 +59,7 @@ int bionet_is_valid_name_component_or_wildcard(const char *str) {
     if (strlen(str) > BIONET_NAME_COMPONENT_MAX_LEN) return 0;
 
     if (strcmp(str, "*") == 0) {
-        return 1;
+        goto ok;
     }
 
     while (*str != '\0') {
@@ -57,6 +67,8 @@ int bionet_is_valid_name_component_or_wildcard(const char *str) {
         str ++;
     }
 
+ok:
+    bionet_coverity_untaint_string(str);
     return 1;
 }
 
