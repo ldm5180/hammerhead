@@ -2895,16 +2895,17 @@ static bionet_datapoint_t * _dbrow_to_bionet_dp(
     }
 
     event = bionet_event_new(event_timestamp, bdm_id, event_type);
+    if (event == NULL) goto fail0;
 
     hab = bionet_hab_new(hab_type, hab_id);
-    if (hab == NULL) return NULL;
+    if (hab == NULL) goto fail1;
 
     node = find_node(hab, node_id, node_uid);
     if (node == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
               "db_get_resource_datapoints_callback(): error finding node %s.%s.%s", 
               bionet_hab_get_type(hab), bionet_hab_get_id(hab), node_id);
-        goto fail;
+        goto fail2;
     }
 
     resource = find_resource(node, datatype, flavor, resource_id);
@@ -2915,27 +2916,32 @@ static bionet_datapoint_t * _dbrow_to_bionet_dp(
               bionet_resource_flavor_to_string(flavor),
               bionet_hab_get_type(hab), bionet_hab_get_id(hab), 
               bionet_node_get_id(node), resource_id);
-        goto fail;
+        goto fail2;
     }
 
     value = _sql_value_to_bionet(stmt, column_idx, resource);
-    if( NULL == value) goto fail;
+    if( NULL == value) goto fail2;
 
     datapoint = bionet_datapoint_new(resource, value, dp_timestamp);
-    if( NULL == datapoint) goto fail;
+    if( NULL == datapoint) goto fail2;
 
     bionet_resource_add_datapoint(resource, datapoint);
     bionet_datapoint_add_event(datapoint, event);
 
     return datapoint;
 
-fail:
+fail2:
+    bionet_hab_free(hab);
+
+fail1:
+    bionet_event_free(event);
+
+fail0:
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
           "%s(): error making datapoint: %s.%s.%s:%s",
           __FUNCTION__,
           hab_type, hab_id, node_id, resource_id);
 
-    bionet_hab_free(hab);
     return NULL;
 }
 
