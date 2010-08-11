@@ -105,6 +105,14 @@ Conflicts: bionet2 (<= 2.5.0+bzr1602)
 Description: Controls the proxr-hab potentiometers by moving the dials.
  Graphically displays the state of the digital inputs from arduino-hab.
 
+Package: bionet2-translator
+Section: net
+Architecture: any
+Depends: ${shlibs:Depends}
+Conflicts: bionet2 (<= 2.5.0+bzr1602)
+Description: Takes a cooked value from the proxr-arduino-client,
+ translates it to a voltage, and then sets the proxr-hab to the voltage.
+
 Package: libbionet2
 Section: devel
 Architecture: any
