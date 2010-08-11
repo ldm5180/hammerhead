@@ -3137,6 +3137,7 @@ int db_publish_sync_affected_datapoints(
                 "%s(): SQL prepare error: %s", __FUNCTION__, sqlite3_errmsg(db));
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
                 "SQL is \n%s", sql);
+            dbb_free(tmp_dbb);
             return -1;
 	}
 
@@ -3149,12 +3150,14 @@ int db_publish_sync_affected_datapoints(
     r = sqlite3_bind_int64(stmt, param++, first_seq);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-hab SQL bind error");
+        dbb_free(tmp_dbb);
 	return -1;
     }
 
     r = sqlite3_bind_int64(stmt, param++, last_seq);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-hab SQL bind error");
+        dbb_free(tmp_dbb);
 	return -1;
     }
 
