@@ -23,6 +23,15 @@
 #include <winbase.h> // needed for GetModuleFileName
 #endif
 
+
+//
+// Normally you'd just #include <ctype.h> to get the isalnum() declaration,
+// but by doing it ourselves here we can annotate the function for Prevent:
+//
+// coverity[ -tainted_data_sink : arg-0 ]
+extern int isalnum(int);
+
+
 static char *hab_get_program_name(void);
 static int bionet_hab_set_type(bionet_hab_t *hab, const char *type);
 static int bionet_hab_set_id(bionet_hab_t *hab, const char *id);
