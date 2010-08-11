@@ -48,36 +48,38 @@ typedef int (*zco_append_extent_t)(Sdr sdr, Object zcoRef, ZcoMedium sourceMediu
 typedef void (*zco_start_receiving_t)(Sdr sdr, Object zcoRef, ZcoReader *reader);
 typedef int (*zco_receive_source_t)(Sdr sdr, ZcoReader *reader, unsigned int length, char *buffer);
 typedef void (*zco_stop_receiving_t)(Sdr sdr, ZcoReader *reader);
+typedef unsigned int (*zco_source_data_length_t)(Sdr sdr, Object zcoRef);
 
 typedef void (*writeErrMemo_t)(char *);
 typedef void (*writeErrmsgMemos_t)(void);
 
 typedef struct {
-    void (*sm_set_basekey)(unsigned int key);
-    int (*bp_attach)(void);
-    void (*bp_interrupt)(BpSAP sap);
-    int (*bp_open)(char *eid, BpSAP *ionsapPtr);
-    void (*bp_close)(BpSAP sap);
-    Sdr (*bp_get_sdr)(void);
-    int (*bp_send)(BpSAP sap, int mode, char *destEid, char *reportToEid, int lifespan, int classOfService, BpCustodySwitch custodySwitch, unsigned char srrFlags, int ackRequested, BpExtendedCOS *extendedCOS, Object adu, Object *newBundle);
-    int (*bp_receive)(BpSAP sap, BpDelivery *dlvBuffer, int timeoutSeconds);
-    int (*bp_add_endpoint)(char *eid, char *script);
-    void (*bp_release_delivery)(BpDelivery *dlvBuffer, int releaseAdu);
+    sm_set_basekey_t sm_set_basekey;
+    bp_attach_t bp_attach;
+    bp_interrupt_t bp_interrupt;
+    bp_open_t bp_open;
+    bp_close_t bp_close;
+    bp_get_sdr_t bp_get_sdr;
+    bp_send_t bp_send;
+    bp_receive_t bp_receive;
+    bp_add_endpoint_t bp_add_endpoint;
+    bp_release_delivery_t bp_release_delivery;
 
-    Object (*Sdr_malloc)(char *file, int line, Sdr sdr, unsigned long size);
-    void (*sdr_begin_xn)(Sdr sdr);
-    void (*sdr_cancel_xn)(Sdr sdr);
-    int (*sdr_end_xn)(Sdr sdr);
-    void (*Sdr_write)(char *file, int line, Sdr sdr, Address into, char *from, int length);
+    Sdr_malloc_t Sdr_malloc;
+    sdr_begin_xn_t sdr_begin_xn;
+    sdr_cancel_xn_t sdr_cancel_xn;
+    sdr_end_xn_t sdr_end_xn;
+    Sdr_write_t Sdr_write;
 
-    Object (*zco_create)(Sdr sdr, ZcoMedium firstExtentSourceMedium, Object firstExtentLocation, unsigned int firstExtentOffset, unsigned int firstExtentLength);
-    int (*zco_append_extent)(Sdr sdr, Object zcoRef, ZcoMedium sourceMedium, Object location, unsigned int offset, unsigned int length);
-    void (*zco_start_receiving)(Sdr sdr, Object zcoRef, ZcoReader *reader);
-    int (*zco_receive_source)(Sdr sdr, ZcoReader *reader, unsigned int length, char *buffer);
-    void (*zco_stop_receiving)(Sdr sdr, ZcoReader *reader);
+    zco_create_t zco_create;
+    zco_append_extent_t zco_append_extent;
+    zco_start_receiving_t zco_start_receiving;
+    zco_receive_source_t zco_receive_source;
+    zco_stop_receiving_t zco_stop_receiving;
+    zco_source_data_length_t zco_source_data_length;
 
-    void (*writeErrMemo)(char *);
-    void (*writeErrmsgMemos)(void);
+    writeErrMemo_t writeErrMemo;
+    writeErrmsgMemos_t writeErrmsgMemos;
 } bdm_bp_funcs_t;
 
 #define bdm_sdr_malloc(sdr, size)            (*bdm_bp_funcs.Sdr_malloc)(__FILE__, __LINE__, sdr, size)
@@ -415,8 +417,8 @@ void disconnect_sync_sender(client_t *client);
 
 int sync_receive_connecting_handler(GIOChannel *ch, GIOCondition condition, gpointer listening_fd_as_pointer);
 int sync_receive_readable_handler(GIOChannel *unused, GIOCondition unused2, client_t *client);
-void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Message_t *message);
-void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t *message);
+void handle_sync_datapoints_message(BDM_Sync_Datapoints_Message_t *message);
+void handle_sync_metadata_message(BDM_Sync_Metadata_Message_t *message);
 
 
 

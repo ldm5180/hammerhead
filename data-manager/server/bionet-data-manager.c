@@ -252,6 +252,14 @@ int load_ion(void) {
         return -1;
     }
 
+    bdm_bp_funcs.zco_source_data_length = (zco_source_data_length_t)dlsym(libbp_handle, "zco_source_data_length");
+    error = dlerror();
+    if (error != NULL)  {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_source_data_length() in libbp.so: %s", error);
+        return -1;
+    }
+
+
     bdm_bp_funcs.writeErrMemo = (writeErrMemo_t)dlsym(libbp_handle, "writeErrMemo");
     error = dlerror();
     if (error != NULL)  {
@@ -552,7 +560,7 @@ void bdm_glib_log_handler(
         } else {
             fprintf(lc->log_to, "%s: %s\n", log_domain, message);
         }
-        fflush(stdout);
+        fflush(lc->log_to);
         return;
     }
 }

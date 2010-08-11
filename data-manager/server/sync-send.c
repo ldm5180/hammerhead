@@ -142,6 +142,23 @@ static int sync_send_metadata(
 } /* sync_send_metadata() */
 
 
+static int count_sync_datapoints(BDM_Sync_Message_t * msg) {
+
+    int n = 0;
+
+    int i;
+    for(i=0; i<msg->choice.datapointsMessage.list.count; i++) {
+        int j;
+        BDMSyncRecord_t * syncRecord = msg->choice.datapointsMessage.list.array[i]; 
+
+        for(j=0; j<syncRecord->syncResources.list.count; j++) {
+            n += syncRecord->syncResources.list.array[j]->resourceDatapoints.list.count;
+        }
+    }
+
+    return n;
+}
+
 static int sync_send_datapoints(
     sync_sender_config_t * config,
     int from_seq, 
@@ -199,12 +216,18 @@ static int sync_send_datapoints(
             goto cleanup;
 	}
 
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+              "Syncd %d datapoints to %s for seqs [%d,%d]",
+              count_sync_datapoints(sync_message),
+              config->sync_recipient,
+              from_seq, to_seq);
     }
 
     r = sync_finish_connection(config);
     if( r != 0 ) {
         goto cleanup;
     }
+
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
           "    Sync datapoints finished");
@@ -369,13 +392,15 @@ static gboolean sync_check(gpointer data) {
     sync_sender_config_t * cfg = (sync_sender_config_t *)data;
     int curr_seq = 0;
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Syncing to %s", cfg->sync_recipient);
 
     curr_seq = db_get_latest_entry_seq(cfg->db);
     
     if (curr_seq > cfg->last_entry_end_seq) {
         int start_seq = cfg->last_entry_end_seq + 1;
         int r;
+
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Syncing to %s seq [%d,%d]", 
+                cfg->sync_recipient, start_seq, curr_seq);
 	r = sync_send_metadata(cfg, start_seq, curr_seq);
         if ( r ) return TRUE;
 	
@@ -383,10 +408,6 @@ static gboolean sync_check(gpointer data) {
         if ( r ) return TRUE;
 
         cfg->last_entry_end_seq = curr_seq;
-
-    } else {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-	      "    No data to sync. Sleeping %u seconds...", cfg->frequency);
     }
 
     return TRUE;

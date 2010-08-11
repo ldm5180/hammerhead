@@ -13,7 +13,7 @@
 
 extern uint32_t num_sync_datapoints;
 
-void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Message_t *message) {
+void handle_sync_datapoints_message(BDM_Sync_Datapoints_Message_t *message) {
     int sri;
     int r;
     int counter = 0;
@@ -157,7 +157,7 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 		    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 			  "error converting GeneralizedTime '%s' to struct timeval: %m",
 			  dp->timestamp.buf);
-		    return;  // FIXME: return an error message to the client
+                    goto fail;
 		}
 
                 sqlite_int64 dprow, eventrow;
@@ -177,6 +177,9 @@ void handle_sync_datapoints_message(client_t *client, BDM_Sync_Datapoints_Messag
 	    }
 	}
     }
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+          "Sync-Received %d datapoints", counter);
 
     r = db_commit(main_db);
     if (r != 0) goto fail;

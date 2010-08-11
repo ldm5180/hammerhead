@@ -48,7 +48,7 @@ static int _dbb_add_asn_event(
     return r;
 }
 
-void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t *message) {
+void handle_sync_metadata_message(BDM_Sync_Metadata_Message_t *message) {
     int bi;
     int r;
 

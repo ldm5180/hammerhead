@@ -80,13 +80,13 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
 	    if (client->message.sync_message->present == BDM_Sync_Message_PR_metadataMessage) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 		      "sync_receive_readable_handler(): receive Sync Metadata Message");
-		handle_sync_metadata_message(client, &client->message.sync_message->choice.metadataMessage);
+		handle_sync_metadata_message(&client->message.sync_message->choice.metadataMessage);
 
                 send_ack(client, BDM_Sync_Ack_metadataAck);
 	    } else if (client->message.sync_message->present == BDM_Sync_Message_PR_datapointsMessage) {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 		      "sync_receive_readable_handler(): receive Sync Datapoints Message");
-		handle_sync_datapoints_message(client, &client->message.sync_message->choice.datapointsMessage);
+		handle_sync_datapoints_message(&client->message.sync_message->choice.datapointsMessage);
                 send_ack(client, BDM_Sync_Ack_datapointAck);
 	    } else {
 		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
