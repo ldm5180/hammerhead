@@ -582,6 +582,7 @@ static int _add_filter_subscription(char * resource_pattern) {
         hab_list_name_patterns = realloc(hab_list_name_patterns, sizeof(gchar *) * (hab_list_index + 1));
         if (NULL == hab_list_name_patterns) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate hab_list_name_patterns");
+            free(hab_name);
             return 1;
         }
         hab_list_name_patterns[hab_list_index] = hab_name;
@@ -601,6 +602,7 @@ static int _add_filter_subscription(char * resource_pattern) {
         node_list_name_patterns = realloc(node_list_name_patterns, sizeof(gchar *) * (node_list_index + 1));
         if (NULL == node_list_name_patterns) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate node_list_name_patterns");
+            free(node_name);
             return 1;
         }
         node_list_name_patterns[node_list_index] = node_name;
