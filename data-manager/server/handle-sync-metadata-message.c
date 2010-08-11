@@ -158,7 +158,11 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
                         goto cleanup;
                     }
 
-                    bionet_node_add_resource(node, resource);
+                    if(NULL == bionet_node_add_resource(node, resource)) {
+                        bionet_node_free(node);
+                        bionet_resource_free(resource);
+                        goto cleanup;
+                    }
 
                     for (di = 0; di < asn_resource->datapoints.list.count; di++) {
                         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
