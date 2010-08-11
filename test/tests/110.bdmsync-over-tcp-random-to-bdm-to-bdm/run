@@ -19,7 +19,6 @@ fi
 . ../../testlib.sh
 
 UNIQUE=$$
-SYNCUNIQUE=${HOSTNAME//\./-}
 RETVAL=0
 
 
@@ -37,12 +36,12 @@ rm -f orig-bdm.db sync-bdm.db
 
 echo starting TCP sync receiver BDM
 rm -f sync-recv.log
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --no-resources --tcp-sync-receiver --debug --log-file=sync-recv.log &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$UNIQUE --no-resources --tcp-sync-receiver --debug --log-file=sync-recv.log &
 RECVPID=$!
 
 echo starting TCP sync sender BDM
 rm -f sync-send.log
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 --debug --log-file=sync-send.log &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 --debug --log-file=sync-send.log &
 SENDPID=$!
 sleep 6 # let the bdm come up before starting the HAB
 

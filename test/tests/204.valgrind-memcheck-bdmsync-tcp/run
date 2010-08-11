@@ -7,7 +7,6 @@
 
 
 UNIQUE=$$
-SYNCUNIQUE=${HOSTNAME//\./-}
 RETVAL=0
 
 YEAR=`date +%Y`
@@ -52,11 +51,11 @@ fi
 DOVALGRIND="$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --tool=memcheck --trace-children=yes $TRACK_ORIGINS $VGLEAK"
 
 echo starting TCP sync receiver BDM
-$DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --no-resources --tcp-sync-receiver &
+$DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$UNIQUE --no-resources --tcp-sync-receiver &
 RECVPID=$!
 
 echo starting TCP sync sender BDM
-$DOVALGRIND --log-file=log.vg.send $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
+$DOVALGRIND --log-file=log.vg.send $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
 SENDPID=$!
 sleep 15 # let the bdm come up before starting the HAB
 

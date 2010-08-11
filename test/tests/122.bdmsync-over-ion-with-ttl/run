@@ -29,7 +29,6 @@ if [ -z "$ENABLE_ION" ]; then
 fi
 
 UNIQUE=$$
-SYNCUNIQUE=${HOSTNAME//\./-}
 RETVAL=0
 
 # We REALLY need to cleanup if we can
@@ -85,10 +84,10 @@ EOF
 
 # receive the message and store it in a file via test bundle sink
 echo "Starting ION sync receiver BDM"
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver & SYNCRECEIVERPID=$!
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver & SYNCRECEIVERPID=$!
 
 echo starting ION sync sender BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  sync-send.cfg --port 11111 & SYNCSENDERPID=$!
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  sync-send.cfg --port 11111 & SYNCSENDERPID=$!
 sleep 12 # let the bdm come up before starting the HAB
 
 echo starting random-hab
@@ -165,10 +164,10 @@ EOF
 
 # receive the message and store it in a file via test bundle sink
 echo "Starting ION sync receiver BDM"
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver & SYNCRECEIVERPID=$!
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver & SYNCRECEIVERPID=$!
 
 echo starting ION sync sender BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  sync-send.cfg --port 11111 & SYNCSENDERPID=$!
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  sync-send.cfg --port 11111 & SYNCSENDERPID=$!
 sleep 12 # let the bdm come up before starting the HAB
 
 echo starting random-hab

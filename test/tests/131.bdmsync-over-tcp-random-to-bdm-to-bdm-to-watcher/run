@@ -18,7 +18,6 @@ if [ -z "$TEST_DURATION" ]; then
 fi
 
 UNIQUE=$$
-SYNCUNIQUE=${HOSTNAME//\./-}
 RETVAL=0
 
 
@@ -42,19 +41,19 @@ TPPID=$!
 
 test_log "starting TCP sync receiver BDM"
 rm -f bdm.log.b
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --no-resources --tcp-sync-receiver --debug --log-file=bdm.log.b &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --tcp-sync-receiver --debug --log-file=bdm.log.b &
 RECVPID=$!
 echo " -> $ROOT/data-manager/server/bionet-data-manager $RECVPID"
 
 test_log "starting TCP sync sender BDM"
 rm -f bdm.log.a
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 --debug --log-file=bdm.log.a &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 --debug --log-file=bdm.log.a &
 SENDPID=$!
 echo " ->  $ROOT/data-manager/server/bionet-data-manager $SENDPID"
 sleep 6 # let the bdm come up before starting the HAB
 
 
-WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -h 'sync-recv-$SYNCUNIQUE,sync-send-$SYNCUNIQUE/random-hab.$UNIQUE' -n 'sync-recv-$SYNCUNIQUE,sync-send-$SYNCUNIQUE/random-hab.$UNIQUE.*'  -r 'sync-recv-$SYNCUNIQUE,sync-send-$SYNCUNIQUE/random-hab.$UNIQUE.*:*'"
+WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$PREV_YEAR-01-01 00:00:00' -t '$NEXT_YEAR-12-31 12:59:59' -h 'sync-recv-$UNIQUE,sync-send-$UNIQUE/random-hab.$UNIQUE' -n 'sync-recv-$UNIQUE,sync-send-$UNIQUE/random-hab.$UNIQUE.*'  -r 'sync-recv-$UNIQUE,sync-send-$UNIQUE/random-hab.$UNIQUE.*:*'"
 
 echo "bdm-watcher args: $WATCHCMD"
 

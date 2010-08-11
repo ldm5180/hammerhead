@@ -19,7 +19,6 @@ fi
 . $ROOT/test/testlib.sh
 
 UNIQUE=$$
-SYNCUNIQUE=${HOSTNAME//\./-}
 
 RETVAL=0
 
@@ -50,20 +49,20 @@ else
 fi
 
 echo "starting BDM 1 (TCP Sync sender)"
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm0.db --id bdm0-$SYNCUNIQUE --filter "$HABTYPE.A-$UNIQUE.*:*" --sync-sender-config bdm0.cfg --port 11111 &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm0.db --id bdm0-$UNIQUE --filter "$HABTYPE.A-$UNIQUE.*:*" --sync-sender-config bdm0.cfg --port 11111 &
 BDM0PID=$!
-echo " [$BDM0PID] ->  bionet-data-manager bdm0-$SYNCUNIQUE"
+echo " [$BDM0PID] ->  bionet-data-manager bdm0-$UNIQUE"
 
 echo "starting BDM 2 (TCP Sync sender/receiver)"
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm1.db --id bdm1-$SYNCUNIQUE --filter "$HABTYPE.B-$UNIQUE.*:*" --sync-sender-config bdm1.cfg --port 22222 --tcp-sync-receiver=22220 &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm1.db --id bdm1-$UNIQUE --filter "$HABTYPE.B-$UNIQUE.*:*" --sync-sender-config bdm1.cfg --port 22222 --tcp-sync-receiver=22220 &
 BDM1PID=$!
-echo " [$BDM1PID] ->  bionet-data-manager bdm1-$SYNCUNIQUE"
+echo " [$BDM1PID] ->  bionet-data-manager bdm1-$UNIQUE"
 
 if $DOHOP2; then
 echo "starting BDM 3 (TCP Sync sender)"
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm2.db --id bdm2-$SYNCUNIQUE --no-resources --tcp-sync-receiver=33330 --port 33333 &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file bdm2.db --id bdm2-$UNIQUE --no-resources --tcp-sync-receiver=33330 --port 33333 &
 BDM2PID=$!
-echo " [$BDM2PID] ->  bionet-data-manager bdm2-$SYNCUNIQUE"
+echo " [$BDM2PID] ->  bionet-data-manager bdm2-$UNIQUE"
 fi
 
 
@@ -75,8 +74,8 @@ WATCHID=0
 WATCHERPIDS=""
 WATCHID=0
 start_watcher() {
-    BDM=bdm$1-$SYNCUNIQUE
-    BDM_SRC=bdm$2-$SYNCUNIQUE
+    BDM=bdm$1-$UNIQUE
+    BDM_SRC=bdm$2-$UNIQUE
     HABNAME=$HABTYPE.$3-$UNIQUE
 
     WATCHCMD="$ROOT/data-manager/client/bdm-watcher/bdm-watcher --output-mode 'bdm-client' -T '$START_TIME' -h '$BDM,$BDM_SRC/$HABNAME' -n '$BDM,$BDM_SRC/$HABNAME.*' -r '$BDM,$BDM_SRC/$HABNAME.*:*'"
