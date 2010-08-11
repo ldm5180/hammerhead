@@ -50,7 +50,6 @@ static void handle_new_node(const cal_event_t *event, const Node_t *newNode) {
     if ( r != 0 ) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): gettimeofday() returned error: %s",
                 __FUNCTION__, strerror(errno));
-        return;
     }
 
     e = bionet_event_new(&event_ts, NULL, BIONET_EVENT_PUBLISHED);
