@@ -214,7 +214,7 @@ static char *hab_get_program_name(void) {
         g_log(
             BIONET_LOG_DOMAIN,
             G_LOG_LEVEL_WARNING,
-            "hab_connect_to_nag(): error reading /proc/self/cmdline (%s), oh well",
+            "hab_get_program_name(): error reading /proc/self/cmdline (%s), oh well",
             strerror(errno)
         );
         return "unknown";
@@ -260,6 +260,12 @@ static char *hab_get_program_name(void) {
     }
 
 #endif
+
+    if (!bionet_is_valid_name_component(program_name)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "hab_get_program_name(): error getting a valid name component from program name");
+        return "unknown";
+    }
+
     return program_name;
 }
 
