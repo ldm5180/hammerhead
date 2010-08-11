@@ -35,6 +35,7 @@ int libhab_cal_topic_matches(const char *topic, const char *subscription);
 
 void libhab_cal_callback(void * cal_handle, const cal_event_t *event);
 
+void libhab_datapoint_destructor(bionet_datapoint_t * dp, void * hash_table);
 
 extern void (*libhab_callback_set_resource)(bionet_resource_t *resource, bionet_value_t *value);
 extern void (*libhab_callback_stream_data)(const char *client_id, bionet_stream_t *stream, const void *buf, unsigned int size);

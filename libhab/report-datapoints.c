@@ -71,7 +71,6 @@ int hab_report_datapoints(const bionet_node_t *node) {
 						    bionet_datapoint_get_value(BIONET_RESOURCE_GET_DATAPOINT(resource)), 
 						    epsilon, 
 						    bionet_resource_get_data_type(resource))) {
-		g_warning("Epsilon triggered");
 		goto publish;
 	    }
 	}
@@ -86,7 +85,6 @@ int hab_report_datapoints(const bionet_node_t *node) {
 	    if (recent_tv && bionet_value_check_delta(recent_tv,
 					 bionet_datapoint_get_timestamp(BIONET_RESOURCE_GET_DATAPOINT(resource)), 
 					 delta)) {
-		g_warning("Delta triggered");
 		goto publish;
 	    }
 	}
@@ -101,6 +99,13 @@ publish:
 	if (new_dp) {
 	    bionet_datapoint_t * recent_dp = bionet_datapoint_dup(new_dp);
 	    if (recent_dp) {
+		bionet_datapoint_add_destructor(recent_dp, libhab_datapoint_destructor, libhab_most_recently_published);
+//		bionet_datapoint_t * old_dp = 
+//		    (bionet_datapoint_t *)g_hash_table_lookup(libhab_most_recently_published, resource);
+//		if (old_dp) {
+//		    g_hash_table_remove(libhab_most_recently_published, resource);
+//		    bionet_datapoint_free(old_dp);
+//		}
 		g_hash_table_insert(libhab_most_recently_published, resource, recent_dp);
 	    } else {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to dup a datapoint.");

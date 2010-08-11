@@ -158,6 +158,8 @@ struct bionet_datapoint_opaque_t {
 
     int dirty;  // 1 if the datapoint has new information that hasnt been reported to Bionet, 0 if the datapoint has nothing new
     GSList *events; // Events that recorded this datapoint
+
+    GSList * destructors;
 };
 
 struct bionet_epsilon_opaque_t {
@@ -190,6 +192,11 @@ typedef struct {
     void (*destructor)(bionet_resource_t * resource, void * user_data);
     void * user_data;
 } bionet_resource_destructor_t;
+
+typedef struct {
+    void (*destructor)(bionet_datapoint_t * datapoint, void * user_data);
+    void * user_data;
+} bionet_datapoint_destructor_t;
 
 
 /**
@@ -235,6 +242,10 @@ int bionet_parse_topic_params(
 int bionet_param_to_timeval(GHashTable * params, const char * key, struct timeval * tv);
 
 int bionet_cmp_resource(const void * a_ptr, const void *b_ptr);
+
+
+void bionet_resource_destruct(gpointer des, gpointer resource);
+void bionet_datapoint_destruct(gpointer des, gpointer datapoint);
 
 #endif /* INTERNAL_H */
 

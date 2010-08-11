@@ -12,6 +12,7 @@ include_HEADERS = hardware-abstractor.h libhab-decl.h
 
 libhab_la_SOURCES =      \
     connect.c            \
+    datapoint-destructor.c \
     disconnect.c         \
     report-new-node.c    \
     report-lost-node.c   \

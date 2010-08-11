@@ -17,7 +17,6 @@
 
 extern char * persist_dir;
 
-
 int hab_report_new_node(const bionet_node_t *node) {
     bionet_asn_buffer_t buf;
     int r;

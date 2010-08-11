@@ -308,6 +308,25 @@ BIONET_UTIL_API_DECL
 int bionet_datapoint_add_event(bionet_datapoint_t *datapoint, const bionet_event_t *event);
 
 
+/**
+ * @brief Add a destruction notifier
+ *
+ * Each destruction notifier will be called in the order they
+ * were added when bionet_datapoint_free() is called.
+ *
+ * @param[in] datapoint Resource to add the destructor for
+ * @param[in] destructor The destructor to run.
+ * @param[in] user_data User data to pass into the destructor.
+ *
+ * @retval 0 Successfully added.
+ * @retval 1 Failed to add.
+ */
+BIONET_UTIL_API_DECL
+int bionet_datapoint_add_destructor(bionet_datapoint_t * resource, 
+				    void (*destructor)(bionet_datapoint_t * datapoint, void * user_data),
+				    void * user_data);
+
+
 #endif /* __BIONET_DATAPOINT_H */
 
 // Emacs cruft

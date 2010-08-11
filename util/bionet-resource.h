@@ -1059,6 +1059,26 @@ BIONET_UTIL_API_DECL
 int bionet_resource_set_delta(bionet_resource_t * resource,
 			      struct timeval delta);
 
+
+/**
+ * @brief Add a destruction notifier
+ *
+ * Each destruction notifier will be called in the order they
+ * were added when bionet_resource_free() is called.
+ *
+ * @param[in] resource Resource to add the destructor for
+ * @param[in] destructor The destructor to run.
+ * @param[in] user_data User data to pass into the destructor.
+ *
+ * @retval 0 Successfully added.
+ * @retval 1 Failed to add.
+ */
+BIONET_UTIL_API_DECL
+int bionet_resource_add_destructor(bionet_resource_t * resource, 
+				   void (*destructor)(bionet_resource_t * resource, void * user_data),
+				   void * user_data);
+
+
 #ifdef __cplusplus
 }
 #endif

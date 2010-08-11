@@ -76,24 +76,26 @@ libbionet_util_la_SOURCES =    \
     node-free.c                \
     node-user-data.c           \
     node-name.c                \
-    resource-new.c             \
+    resource-data-type.c       \
+    resource-datapoint.c       \
+    resource-destructor.c      \
+    resource-flavor.c          \
     resource-free.c            \
     resource-get.c             \
-    resource-get-value.c       \
-    resource-data-type.c       \
-    resource-flavor.c          \
-    resource-datapoint.c       \
-    resource-matches.c         \
-    resource-is-dirty.c        \
-    resource-persist.c         \
-    resource-make-clean.c      \
     resource-get-datapoint.c   \
-    resource-get-epsilon.c       \
-    resource-get-delta.c     \
+    resource-get-delta.c       \
+    resource-get-epsilon.c     \
+    resource-get-value.c       \
+    resource-is-dirty.c        \
+    resource-make-clean.c      \
+    resource-matches.c         \
+    resource-name.c            \
+    resource-new.c             \
+    resource-persist.c         \
     resource-set.c             \
     resource-set-epsilon-delta.c \
-    resource-name.c            \
     resource-user-data.c       \
+    datapoint-destructor.c     \
     datapoint-dup.c            \
     datapoint-new.c            \
     datapoint-free.c	\
