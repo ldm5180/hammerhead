@@ -98,7 +98,6 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
             for (ni = 0; ni < asn_hab->nodes.list.count; ni ++) {
                 int ri;
                 const char * node_id;
-                uint8_t node_uuid[BDM_UUID_LEN];
                 BDM_Node_t *asn_node;
                 bionet_node_t * node;
 
@@ -106,7 +105,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
 
                 node_id = (const char*)asn_node->id.buf;
 
-                if(sizeof(node_uuid) != asn_node->uid.size) {
+                if(BDM_UUID_LEN != asn_node->uid.size) {
                     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Unexpected length for node uid");
                     goto cleanup;
                 }
@@ -117,7 +116,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
                 bionet_node_set_uid(node, asn_node->uid.buf);
 
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "        Node: %s [" UUID_FMTSTR "]", 
-                        node_id, UUID_ARGS(node_uuid));
+                        node_id, UUID_ARGS(asn_node->uid.buf));
 
                 for (ri = 0; ri < asn_node->resources.list.count; ri ++) {
                     BDM_Resource_t *asn_resource;
