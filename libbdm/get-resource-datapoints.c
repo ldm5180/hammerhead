@@ -57,23 +57,16 @@ int bdm_get_hab_list_last_entry_seq(bdm_hab_list_t * hab_list) {
 void bdm_hab_list_free(bdm_hab_list_t * hab_list) {
     if (hab_list) {
 	if (hab_list->hab_list) {
+	    int i;
+	    for (i = 0; i < hab_list->hab_list->len; i++) {
+		bionet_hab_free((bionet_hab_t *)g_ptr_array_remove_index(hab_list->hab_list, i));
+	    }
 	    g_ptr_array_free(hab_list->hab_list, TRUE);
 	}
 	free(hab_list);
     }
 }
 
-static void hab_list_remove_handler (gpointer data) {
-    bionet_hab_t * hab = (bionet_hab_t *)data;
-
-    if (NULL == hab) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "hab_list_remove_handler: NULL hab passed in.");
-	return;
-    }
-
-    bionet_hab_free(hab);
-}
 
 static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
     bdm_hab_list_t *hab_list;
@@ -90,7 +83,7 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
     hab_list->bdm_last_entry = -1;
 
 
-    hab_list->hab_list = g_ptr_array_new_with_free_func(hab_list_remove_handler);
+    hab_list->hab_list = g_ptr_array_new();
 
     if ((rdr->bdms.list.count) && (rdr->lastEntry)) {
 	hab_list->bdm_last_entry = rdr->lastEntry;

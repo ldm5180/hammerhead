@@ -247,6 +247,8 @@ int bdm_get_hab_list_last_entry_seq(bdm_hab_list_t * hab_list);
  * @brief Free the HAB List
  * 
  * @param[in] hab_list The HAB List to free.
+ *
+ * @note This causes bionet_hab_free() to be called for each item in the list.
  */
 void bdm_hab_list_free(bdm_hab_list_t * hab_list);
 
