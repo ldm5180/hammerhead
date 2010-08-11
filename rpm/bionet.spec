@@ -1,5 +1,5 @@
 Name:		bionet
-Version:	2.5.1
+Version:	2.5.3
 Release:	1%{?dist}
 Summary:	Bionet Middleware
 

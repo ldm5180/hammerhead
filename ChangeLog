@@ -1,3 +1,8 @@
+Bionet 2.5.2, 2010 August 9
+
+    * Updated licensing to contain the open source licenses and agreements.
+
+
 Bionet 2.5.1, 2010 May 5
 
     * Bdmplot is now a server with true regular expression subscriptions strings.
