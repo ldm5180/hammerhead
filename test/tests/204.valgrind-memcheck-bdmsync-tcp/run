@@ -42,7 +42,14 @@ cp orig-bdm.db sync-bdm.db
 export G_SLICE=always-malloc 
 export G_DEBUG=gc-friendly,resident-modules
 
-DOVALGRIND="$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --tool=memcheck --trace-children=yes --track-origins=yes $VGLEAK"
+if valgrind --help | grep -q -- --track-origins; then
+    TRACK_ORIGINS="--track-origins=yes"
+else
+    echo "valgrind is so old it doesnt support --track-origins, running without"
+    TRACK_ORIGINS=""
+fi
+
+DOVALGRIND="$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --tool=memcheck --trace-children=yes $TRACK_ORIGINS $VGLEAK"
 
 echo starting TCP sync receiver BDM
 $DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$SYNCUNIQUE --no-resources --tcp-sync-receiver &
