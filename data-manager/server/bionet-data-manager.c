@@ -755,7 +755,7 @@ int main(int argc, char *argv[]) {
 	start_hab = 1;
     } else {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "BdmStats key not found in %s so not starting the BDM Stats HAB. %s", 
-	      bdm_config_file, error->message);
+	      bdm_config_file, error?error->message:"No Message");
     }
     g_clear_error(&error);
 
@@ -770,6 +770,7 @@ int main(int argc, char *argv[]) {
 	if (NULL == sync_config) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "Failed to parse config file %s", sync_sender_config_file_name);
+            return 1;
 	}
 	sync_config->last_entry_end_seq = -1;
 	if (sync_config->method == BDM_SYNC_METHOD_ION) {
@@ -860,12 +861,14 @@ int main(int argc, char *argv[]) {
 
     /* Keep Stats for BDM HAB too */
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Collecting Keep Stats from %s", bdm_config_file);
-    int keep_stats = (int)g_key_file_get_boolean(keyfile, "BDM", "KeepStats", &error);
-    if (error) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading KeepStats key in %s. %s", 
-	      bdm_config_file, error->message);
-    } else if (keep_stats) {
-	ignore_self = 0;
+    {
+        int keep_stats = (int)g_key_file_get_boolean(keyfile, "BDM", "KeepStats", &error);
+        if (error) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Error reading KeepStats key in %s. %s", 
+                  bdm_config_file, error->message);
+        } else if (keep_stats) {
+            ignore_self = 0;
+        }
     }
     g_clear_error(&error);
 

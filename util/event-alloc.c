@@ -38,6 +38,8 @@ bionet_event_t * bionet_event_new(const struct timeval *timestamp, const char * 
 	if (gettimeofday(&event->timestamp, NULL)) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 		  "bionet_event_new: Failed to get time of day.");
+            bionet_event_free(event);
+            return NULL;
 	}
     } else {
         event->timestamp.tv_sec = timestamp->tv_sec;

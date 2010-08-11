@@ -742,7 +742,9 @@ static void _foreach_add_resource(GQuark key_id, void* data, void* user_data) {
             resource->flavor,
             resource->resource_id);
 
-    bionet_node_add_resource(bionet_node, bionet_resource);
+    // There is nothing to do if this fails.
+    // Any error will get logged
+    (void)bionet_node_add_resource(bionet_node, bionet_resource);
     resource->bionet_resource = bionet_resource;
 
 }

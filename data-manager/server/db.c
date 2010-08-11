@@ -1326,7 +1326,13 @@ int db_insert_event(
     }
 
     if(timestamp == NULL) {
-        gettimeofday(&ts_dat, NULL);
+        r = gettimeofday(&ts_dat, NULL);
+        if ( r != 0 ) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): gettimeofday() returned error: %s", 
+                    __FUNCTION__, strerror(errno));
+            return -1;
+
+        }
         timestamp = &ts_dat;
     }
 
@@ -2246,45 +2252,45 @@ int db_get_events(sqlite3* db,
             continue;
         }
         if(r == SQLITE_ROW) {
-            struct timeval dp_timestamp = {0,0};
-            struct timeval event_timestamp = {0,0};
+            struct timeval row_dp_timestamp = {0,0};
+            struct timeval row_event_timestamp = {0,0};
             bdm_handle_row_status_t status;
             row_count++;
 
-            const char * habtype_id  = (const char *)sqlite3_column_text(stmt, 0); 
-            const char * habname_id  = (const char *)sqlite3_column_text(stmt, 1); 
-            const char * node_id     = (const char *)sqlite3_column_text(stmt, 2); 
-            const uint8_t * node_uid   = (const uint8_t *)sqlite3_column_blob(stmt, 3); 
-            int node_guid_len        = sqlite3_column_bytes(stmt, 3); 
-            const char * datatype    = (const char *)sqlite3_column_text(stmt, 4); 
-            const char * flavor      = (const char *)sqlite3_column_text(stmt, 5); 
-            const char * resource_id = (const char *)sqlite3_column_text(stmt, 6); 
-            static const int i_value =                                         7; 
-            dp_timestamp.tv_sec      =               sqlite3_column_int (stmt, 8);
-            dp_timestamp.tv_usec     =               sqlite3_column_int (stmt, 9);
-            event_timestamp.tv_sec   =               sqlite3_column_int(stmt, 10);
-            event_timestamp.tv_usec  =               sqlite3_column_int(stmt, 11);
-            sqlite_int64 event_seq  =               sqlite3_column_int64(stmt, 12);
-            const char * bdm_id      = (const char *)sqlite3_column_text(stmt, 13); 
-            int islost               =               sqlite3_column_int(stmt, 14); 
+            const char * row_habtype_id  = (const char *)sqlite3_column_text(stmt, 0); 
+            const char * row_habname_id  = (const char *)sqlite3_column_text(stmt, 1); 
+            const char * row_node_id     = (const char *)sqlite3_column_text(stmt, 2); 
+            const uint8_t * row_node_uid   = (const uint8_t *)sqlite3_column_blob(stmt, 3); 
+            int row_node_guid_len        = sqlite3_column_bytes(stmt, 3); 
+            const char * row_datatype    = (const char *)sqlite3_column_text(stmt, 4); 
+            const char * row_flavor      = (const char *)sqlite3_column_text(stmt, 5); 
+            const char * row_resource_id = (const char *)sqlite3_column_text(stmt, 6); 
+            static const int row_i_value =                                         7; 
+            row_dp_timestamp.tv_sec      =               sqlite3_column_int (stmt, 8);
+            row_dp_timestamp.tv_usec     =               sqlite3_column_int (stmt, 9);
+            row_event_timestamp.tv_sec   =               sqlite3_column_int(stmt, 10);
+            row_event_timestamp.tv_usec  =               sqlite3_column_int(stmt, 11);
+            sqlite_int64 row_event_seq  =               sqlite3_column_int64(stmt, 12);
+            const char * row_bdm_id      = (const char *)sqlite3_column_text(stmt, 13); 
+            int row_islost               =               sqlite3_column_int(stmt, 14); 
 
-            bionet_event_type_t event_type = islost?BIONET_EVENT_LOST:BIONET_EVENT_PUBLISHED;
+            bionet_event_type_t event_type = row_islost?BIONET_EVENT_LOST:BIONET_EVENT_PUBLISHED;
 
-            if(node_uid && node_guid_len != BDM_UUID_LEN) {
+            if(row_node_uid && row_node_guid_len != BDM_UUID_LEN) {
                 break;
             }
 
             status = row_handler(
-                    bdm_id,
-                    habtype_id,
-                    habname_id,
-                    node_id, node_uid,
-                    datatype?bionet_resource_data_type_from_string(datatype):-1, 
-                    flavor?bionet_resource_flavor_from_string(flavor):-1, 
-                    resource_id,
-                    &dp_timestamp,
-                    event_class, event_type, &event_timestamp, event_seq,
-                    i_value, stmt, user_data);
+                    row_bdm_id,
+                    row_habtype_id,
+                    row_habname_id,
+                    row_node_id, row_node_uid,
+                    row_datatype?bionet_resource_data_type_from_string(row_datatype):-1, 
+                    row_flavor?bionet_resource_flavor_from_string(row_flavor):-1, 
+                    row_resource_id,
+                    &row_dp_timestamp,
+                    event_class, event_type, &row_event_timestamp, row_event_seq,
+                    row_i_value, stmt, user_data);
 
             if(BDM_HANDLE_OK == status) {
                 continue;
@@ -3010,6 +3016,10 @@ int db_publish_synced_datapoints(
     int r;
 
     bdm_db_batch_t * tmp_dbb = calloc(1, sizeof(bdm_db_batch_t));
+    if(tmp_dbb == NULL) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): Out of Memory!", __FUNCTION__);
+        return -1;
+    }
 
     r = db_get_events(db, 
             NULL,
@@ -3053,6 +3063,10 @@ int db_publish_sync_affected_datapoints(
 {
     int r;
     bdm_db_batch_t * tmp_dbb = calloc(1, sizeof(bdm_db_batch_t));
+    if(tmp_dbb == NULL) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): Out of Memory!", __FUNCTION__);
+        return -1;
+    }
 
     // We call this callback same as db_get_events()
     db_get_events_cb_t row_handler = get_events_publish_dp;
@@ -3147,45 +3161,45 @@ int db_publish_sync_affected_datapoints(
             continue;
         }
         if(r == SQLITE_ROW) {
-            struct timeval dp_timestamp = {0,0};
-            struct timeval event_timestamp = {0,0};
+            struct timeval row_dp_timestamp = {0,0};
+            struct timeval row_event_timestamp = {0,0};
             bdm_handle_row_status_t status;
             row_count++;
 
-            const char * habtype_id  = (const char *)sqlite3_column_text(stmt, 0); 
-            const char * habname_id  = (const char *)sqlite3_column_text(stmt, 1); 
-            const char * node_id     = (const char *)sqlite3_column_text(stmt, 2); 
-            const uint8_t * node_uid   = (const uint8_t *)sqlite3_column_blob(stmt, 3); 
-            int node_guid_len        = sqlite3_column_bytes(stmt, 3); 
-            const char * datatype    = (const char *)sqlite3_column_text(stmt, 4); 
-            const char * flavor      = (const char *)sqlite3_column_text(stmt, 5); 
-            const char * resource_id = (const char *)sqlite3_column_text(stmt, 6); 
-            static const int i_value =                                         7; 
-            dp_timestamp.tv_sec      =               sqlite3_column_int (stmt, 8);
-            dp_timestamp.tv_usec     =               sqlite3_column_int (stmt, 9);
-            event_timestamp.tv_sec   =               sqlite3_column_double(stmt, 10);
-            event_timestamp.tv_usec  =               sqlite3_column_double(stmt, 11);
-            sqlite_int64 event_seq  =               sqlite3_column_int64(stmt, 12);
-            const char * bdm_id      = (const char *)sqlite3_column_text(stmt, 13); 
-            int islost               =               sqlite3_column_int(stmt, 14); 
+            const char * row_habtype_id  = (const char *)sqlite3_column_text(stmt, 0); 
+            const char * row_habname_id  = (const char *)sqlite3_column_text(stmt, 1); 
+            const char * row_node_id     = (const char *)sqlite3_column_text(stmt, 2); 
+            const uint8_t * row_node_uid   = (const uint8_t *)sqlite3_column_blob(stmt, 3); 
+            int row_node_guid_len        = sqlite3_column_bytes(stmt, 3); 
+            const char * row_datatype    = (const char *)sqlite3_column_text(stmt, 4); 
+            const char * row_flavor      = (const char *)sqlite3_column_text(stmt, 5); 
+            const char * row_resource_id = (const char *)sqlite3_column_text(stmt, 6); 
+            static const int row_i_value =                                         7; 
+            row_dp_timestamp.tv_sec      =               sqlite3_column_int (stmt, 8);
+            row_dp_timestamp.tv_usec     =               sqlite3_column_int (stmt, 9);
+            row_event_timestamp.tv_sec   =               sqlite3_column_double(stmt, 10);
+            row_event_timestamp.tv_usec  =               sqlite3_column_double(stmt, 11);
+            sqlite_int64 row_event_seq  =               sqlite3_column_int64(stmt, 12);
+            const char * row_bdm_id      = (const char *)sqlite3_column_text(stmt, 13); 
+            int row_islost               =               sqlite3_column_int(stmt, 14); 
 
-            bionet_event_type_t event_type = islost?BIONET_EVENT_LOST:BIONET_EVENT_PUBLISHED;
+            bionet_event_type_t event_type = row_islost?BIONET_EVENT_LOST:BIONET_EVENT_PUBLISHED;
 
-            if(node_uid && node_guid_len != BDM_UUID_LEN) {
+            if(row_node_uid && row_node_guid_len != BDM_UUID_LEN) {
                 break;
             }
 
             status = row_handler(
-                    bdm_id,
-                    habtype_id,
-                    habname_id,
-                    node_id, node_uid,
-                    datatype?bionet_resource_data_type_from_string(datatype):-1, 
-                    flavor?bionet_resource_flavor_from_string(flavor):-1, 
-                    resource_id,
-                    &dp_timestamp,
-                    event_class, event_type, &event_timestamp, event_seq,
-                    i_value, stmt, user_data);
+                    row_bdm_id,
+                    row_habtype_id,
+                    row_habname_id,
+                    row_node_id, row_node_uid,
+                    row_datatype?bionet_resource_data_type_from_string(row_datatype):-1, 
+                    row_flavor?bionet_resource_flavor_from_string(row_flavor):-1, 
+                    row_resource_id,
+                    &row_dp_timestamp,
+                    event_class, event_type, &row_event_timestamp, row_event_seq,
+                    row_i_value, stmt, user_data);
 
             if(BDM_HANDLE_OK == status) {
                 continue;

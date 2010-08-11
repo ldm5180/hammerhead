@@ -832,6 +832,7 @@ bionet_datapoint_t *bdm_publish_asn_to_datapoint(
     if (r != 0) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error setting timestamp: %s", 
                 __FUNCTION__, strerror(errno));
+        bionet_datapoint_free(datapoint);
         return NULL;
     }
 
