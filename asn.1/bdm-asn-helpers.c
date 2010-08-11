@@ -690,6 +690,7 @@ int bdm_resource_datapoints_to_asnbuf(
     int di;
     bionet_hab_t * hab;
     bionet_node_t * node;
+    BDMPublishDatapoint_t * asn_pd = NULL;
 
 
     buf->buf = NULL;
@@ -743,7 +744,7 @@ int bdm_resource_datapoints_to_asnbuf(
         //
         // Instead, if that ever happens, we'll generate a duplicate datapoint for each duplicate event
         for (ei = 0; ei < bionet_datapoint_get_num_events(d); ei++) {
-            BDMPublishDatapoint_t * asn_pd = calloc(1, sizeof(BDMPublishDatapoint_t));
+            asn_pd = calloc(1, sizeof(BDMPublishDatapoint_t));
             if(NULL == asn_pd) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                       "%s(): out of memory!", __FUNCTION__);
@@ -808,6 +809,9 @@ int bdm_resource_datapoints_to_asnbuf(
 
 
 cleanup:
+    if (asn_pd) {
+	free(asn_pd);
+    }
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_S2C_Message, &m);
     return -1;
 }
@@ -916,3 +920,9 @@ cleanup:
 
 }
 
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

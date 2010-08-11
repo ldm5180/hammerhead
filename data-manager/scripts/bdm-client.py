@@ -190,9 +190,6 @@ while 1:
                                 print "Unknown format"
                                 parser.usage()
                             
-        bionet_hab_free(hab)
-
-
     if (need_print):
         sorted_list = sorted(li)
         for i in range(len(sorted_list)):

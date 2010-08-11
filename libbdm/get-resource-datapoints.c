@@ -63,12 +63,26 @@ void bdm_hab_list_free(bdm_hab_list_t * hab_list) {
     }
 }
 
+static void hab_list_remove_handler (gpointer data) {
+    bionet_hab_t * hab = (bionet_hab_t *)data;
+
+    if (NULL == hab) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "hab_list_remove_handler: NULL hab passed in.");
+	return;
+    }
+
+    bionet_hab_free(hab);
+}
 
 static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_t *rdr) {
     bdm_hab_list_t *hab_list;
     int bi;
     int ei;
-
+    bionet_hab_t * hab = NULL;
+    bionet_node_t * node = NULL;
+    bionet_resource_t * resource = NULL;
+	    
     hab_list = calloc(1, sizeof(bdm_hab_list_t));
     if (NULL == hab_list) {
 	return NULL;
@@ -76,7 +90,7 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
     hab_list->bdm_last_entry = -1;
 
 
-    hab_list->hab_list = g_ptr_array_new();
+    hab_list->hab_list = g_ptr_array_new_with_free_func(hab_list_remove_handler);
 
     if ((rdr->bdms.list.count) && (rdr->lastEntry)) {
 	hab_list->bdm_last_entry = rdr->lastEntry;
@@ -89,13 +103,14 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
 
         for (hi = 0; hi < asn_bdm->hablist.list.count; hi ++) {
             BDM_HardwareAbstractor_t *asn_hab;
-            bionet_hab_t *hab;
             int ni;
 
             asn_hab = asn_bdm->hablist.list.array[hi];
 
             hab = bionet_hab_new((char *)asn_hab->type.buf, (char *)asn_hab->id.buf);
             if (hab == NULL) goto cleanup;
+
+            g_ptr_array_add(hab_list->hab_list, hab);
 
             for( ei = 0; ei < asn_hab->events.list.count; ei++) {
                 BDM_Event_t * asn_event = asn_hab->events.list.array[ei];
@@ -113,11 +128,8 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
                 bionet_hab_add_event(hab, event);
             }
 
-            g_ptr_array_add(hab_list->hab_list, hab);
-
             for (ni = 0; ni < asn_hab->nodes.list.count; ni ++) {
                 BDM_Node_t *asn_node;
-                bionet_node_t *node;
                 int ri;
 
                 asn_node = asn_hab->nodes.list.array[ni];
@@ -148,7 +160,6 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
                     BDM_Resource_t *asn_resource;
                     bionet_resource_data_type_t datatype;
                     bionet_resource_flavor_t flavor;
-                    bionet_resource_t *resource;
                     int di;
 
                     asn_resource = asn_node->resources.list.array[ri];
@@ -191,6 +202,9 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
                         struct timeval ts = {0,0};
                         bionet_GeneralizedTime_to_timeval(&asn_datapoint->event.timestamp, &ts);
                         bionet_event_t * event = bionet_event_new(&ts, bdm_id, BIONET_EVENT_PUBLISHED);
+			if (NULL == event) {
+			    goto cleanup;
+			}
 
                         bionet_datapoint_add_event(d, event);
 
@@ -213,6 +227,7 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
     return hab_list;
 
 cleanup:
+    
     bdm_hab_list_free(hab_list);
     return NULL;
 }

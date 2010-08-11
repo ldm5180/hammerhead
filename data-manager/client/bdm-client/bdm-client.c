@@ -333,8 +333,9 @@ restart_poll:
                     }
                 }
             }
-	    bionet_hab_free(hab);
         }
+
+	bdm_hab_list_free(hab_list);
     }
 
     if (frequency) {
