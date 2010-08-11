@@ -1,0 +1,43 @@
+## File created by /opt/ion-inb-1.1.0/bin/ionscript
+## Sun Feb  7 17:13:01 CST 2010
+## Run the following command to start ION node:
+##	% ionstart -I "node5.rc"
+
+## begin ionadmin 
+1 1 ionconfig/settings.ionconfig
+s
+a contact +0 +3600 1 1 100000
+a contact +0 +3600 1 2 100000
+a contact +0 +3600 2 1 100000
+
+a range   +0 +3600 1 1 1
+a range   +0 +3600 1 2 1
+a range   +0 +3600 2 1 1
+
+m production 1000000
+m consumption 1000000
+## end ionadmin 
+
+## begin bpadmin 
+1
+
+a scheme ipn 'ipnfw' 'ipnadminep'
+
+a endpoint ipn:1.1 q
+a endpoint ipn:1.2 q
+
+a protocol udp 1400 100
+a induct udp 127.0.0.1:4556 udpcli
+a outduct udp * udpclo
+## end bpadmin 
+
+## begin ipnadmin 
+# Node 2 has a BRSC loopback route (i.e., it sends bundles to itself via
+# the BRS server at node 1).  It also talks to node 1 by BRSC to
+# the BRS server at node 1.
+# It talks to node 7 by LTP/UDP/IP.
+# For all other nodes it uses a default route: via node 7.  There is no
+# dynamic route computation.
+#
+a plan 1 udp/*,127.0.0.1:4556
+## end ipnadmin 

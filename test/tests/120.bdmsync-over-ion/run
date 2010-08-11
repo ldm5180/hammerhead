@@ -25,7 +25,6 @@ if [ -z "$ENABLE_ION" ]; then
 fi
 
 UNIQUE=$$
-SYNCUNIQUE=${HOSTNAME//\./-}
 RETVAL=0
 
 # We REALLY need to cleanup if we can
@@ -54,22 +53,25 @@ rm -f orig-bdm.db sync-bdm.db
 
 echo starting ION Loopback interface
 CONFIGDIR="./ionconfig"
-ionstart                           \
-    -i ${CONFIGDIR}/loopback.ionrc \
-    -l ${CONFIGDIR}/loopback.ltprc \
-    -b ${CONFIGDIR}/loopback.bprc  \
-    -p ${CONFIGDIR}/loopback.ipnrc
+
+cat > ${CONFIGDIR}/settings.ionconfig <<ENDCFG
+configFlags 5
+pathName ${PWD}
+ENDCFG
+
+
+ionstart -I ${CONFIGDIR}/ion.rc
 
 
 # receive the message and store it in a file via test bundle sink
 echo "Starting ION sync receiver BDM"
 rm -f sync-recv.log
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$SYNCUNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver  --debug --log-file=sync-recv.log &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver  --debug --log-file=sync-recv.log &
 RECVPID=$!
 
 echo starting ION sync sender BDM
 rm -f sync-send.log
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$SYNCUNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  bdm-sync-send.cfg --port 11111  --debug --log-file=sync-send.log &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  bdm-sync-send.cfg --port 11111  --debug --log-file=sync-send.log &
 SENDPID=$!
 sleep 12 # let the bdm come up before starting the HAB
 
@@ -87,6 +89,17 @@ wait $HABPID
 
 echo "Waiting for all data to sync"
 sleep 30
+if [ `bplist | wc -l` -gt 0 ]; then
+    echo "Waiting for no bundles in ION..."
+     ~/bin/growlnotify -m "ION is waiting" --sticky -H bender.local -p 'piddle party'
+    for i in `seq 6`; do
+	sleep 10
+    	if [ `bplist | wc -l` -le 0 ]; then
+	    break
+        fi
+    done
+fi
+
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
 echo "killing the ION sync sender BDM"
 kill $SENDPID
@@ -94,13 +107,17 @@ wait $SENDPID
 
 echo "getting data from TCP sync receiver BDM"
 
-
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
+
+echo "SDR contents:"
+bplist
 
 echo "killing ION Sync Receive BDM"
 kill $RECVPID
 wait $RECVPID
 
+echo "SDR contents:"
+bplist
 
 normalize_bdm_client out.random-hab > norm.random-hab
 
