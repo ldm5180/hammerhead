@@ -158,7 +158,7 @@ void handle_sync_metadata_message(client_t *client, BDM_Sync_Metadata_Message_t 
                         goto cleanup;
                     }
 
-                    if(NULL == bionet_node_add_resource(node, resource)) {
+                    if(bionet_node_add_resource(node, resource)) {
                         bionet_node_free(node);
                         bionet_resource_free(resource);
                         goto cleanup;
