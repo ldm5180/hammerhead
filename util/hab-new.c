@@ -12,7 +12,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
-#include <ctype.h>
 #include <wchar.h>
 
 #include "internal.h"
