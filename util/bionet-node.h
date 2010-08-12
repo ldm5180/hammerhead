@@ -371,7 +371,7 @@ int bionet_node_add_event(bionet_node_t *node, const bionet_event_t *event);
  * @retval 1 Failed to add.
  */
 BIONET_UTIL_API_DECL
-int bionet_node_add_destructor(bionet_node_t * resource, 
+int bionet_node_add_destructor(bionet_node_t * node, 
 			       void (*destructor)(bionet_node_t * node, void * user_data),
 			       void * user_data);
 

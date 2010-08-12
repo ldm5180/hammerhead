@@ -8,8 +8,8 @@
 #include "internal.h"
 
 int bionet_node_add_destructor(bionet_node_t * node, 
-			      void (*destructor)(bionet_node_t * node, void * user_data),
-			      void * user_data) {
+			       void (*destructor)(bionet_node_t * node, void * user_data),
+			       void * user_data) {
     if (NULL == node) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_node_add_destructor: NULL NODE passed in.");

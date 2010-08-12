@@ -8,8 +8,8 @@
 #include "internal.h"
 
 int bionet_datapoint_add_destructor(bionet_datapoint_t * datapoint, 
-			      void (*destructor)(bionet_datapoint_t * datapoint, void * user_data),
-			      void * user_data) {
+				    void (*destructor)(bionet_datapoint_t * datapoint, void * user_data),
+				    void * user_data) {
     if (NULL == datapoint) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_datapoint_add_destructor: NULL DATAPOINT passed in.");

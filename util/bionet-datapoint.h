@@ -322,7 +322,7 @@ int bionet_datapoint_add_event(bionet_datapoint_t *datapoint, const bionet_event
  * @retval 1 Failed to add.
  */
 BIONET_UTIL_API_DECL
-int bionet_datapoint_add_destructor(bionet_datapoint_t * resource, 
+int bionet_datapoint_add_destructor(bionet_datapoint_t * datapoint, 
 				    void (*destructor)(bionet_datapoint_t * datapoint, void * user_data),
 				    void * user_data);
 
