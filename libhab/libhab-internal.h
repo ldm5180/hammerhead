@@ -29,8 +29,6 @@ extern int libhab_require_security;
 
 extern char * persist_dir;
 
-extern pthread_mutex_t published_hash_mutex;
-
 int libhab_cal_topic_matches(const char *topic, const char *subscription);
 
 void libhab_cal_callback(void * cal_handle, const cal_event_t *event);
