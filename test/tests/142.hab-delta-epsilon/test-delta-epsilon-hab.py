@@ -174,8 +174,8 @@ i = 0
 next_pub = 0
 starttime = time.time()
 while(time.time() - starttime < 300):
-#    (rr, wr, er) = select.select([hab_fd], [], [], 1.0)
-    (rr, wr, er) = select.select([hab_fd], [], [], 0.00001)
+    (rr, wr, er) = select.select([hab_fd], [], [], 1.0)
+#    (rr, wr, er) = select.select([hab_fd], [], [], 0.00001)
     if (rr):
         hab_read()
 
@@ -183,15 +183,15 @@ while(time.time() - starttime < 300):
     if (5 > time.time() - starttime):
         continue;
 
-#    if (next_pub <= time.time()):
-#        next_pub = time.time() + 1
-#    else: 
-#        continue
+    if (next_pub <= time.time()):
+        next_pub = time.time() + 1
+    else: 
+        continue
 
     resource = bionet_node_get_resource_by_id(node_d1, "uint32-count")
     bionet_resource_set_uint32(resource, int(time.time()), None)
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
+    val = bionet_value_as_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+    value_str = bionet_value_as_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
     print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
                                     bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
                                     bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
@@ -204,8 +204,8 @@ while(time.time() - starttime < 300):
 
     resource = bionet_node_get_resource_by_id(node_d5, "uint32-count")
     bionet_resource_set_uint32(resource, int(time.time()), None)
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
+    val = bionet_value_as_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+    value_str = bionet_value_as_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
     print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
                                     bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
                                     bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
@@ -218,8 +218,8 @@ while(time.time() - starttime < 300):
 
     resource = bionet_node_get_resource_by_id(node_e1, "uint32-count")
     bionet_resource_set_uint32(resource, int(time.time()), None)
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
+    val = bionet_value_as_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+    value_str = bionet_value_as_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
     print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
                                     bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
                                     bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
@@ -232,8 +232,8 @@ while(time.time() - starttime < 300):
 
     resource = bionet_node_get_resource_by_id(node_e5, "uint32-count")
     bionet_resource_set_uint32(resource, int(time.time()), None)
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
+    val = bionet_value_as_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+    value_str = bionet_value_as_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
     print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
                                     bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
                                     bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
@@ -246,8 +246,8 @@ while(time.time() - starttime < 300):
 
     resource = bionet_node_get_resource_by_id(generic, "generic-count")
     bionet_resource_set_uint32(resource, int(time.time()), None)
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
+    val = bionet_value_as_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
+    value_str = bionet_value_as_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
     print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
                                     bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
                                     bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),

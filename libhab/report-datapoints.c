@@ -100,12 +100,6 @@ publish:
 	    bionet_datapoint_t * recent_dp = bionet_datapoint_dup(new_dp);
 	    if (recent_dp) {
 		bionet_datapoint_add_destructor(recent_dp, libhab_datapoint_destructor, libhab_most_recently_published);
-//		bionet_datapoint_t * old_dp = 
-//		    (bionet_datapoint_t *)g_hash_table_lookup(libhab_most_recently_published, resource);
-//		if (old_dp) {
-//		    g_hash_table_remove(libhab_most_recently_published, resource);
-//		    bionet_datapoint_free(old_dp);
-//		}
 		g_hash_table_insert(libhab_most_recently_published, resource, recent_dp);
 	    } else {
 		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to dup a datapoint.");

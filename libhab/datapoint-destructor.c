@@ -33,8 +33,6 @@ void libhab_datapoint_destructor(bionet_datapoint_t * dp, void * hash_table) {
     g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "libhab_datapoint_destructor: Removing key %s from recent datapoint hash", 
 	  bionet_resource_get_name(resource));
-    
-    g_hash_table_steal(hash, resource);
 } /* libhab_datapoint_destructor() */
 
 // Emacs cruft

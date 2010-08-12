@@ -120,3 +120,8 @@ int hab_is_connected(void) {
 
 #endif
 
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

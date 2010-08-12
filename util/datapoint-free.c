@@ -29,6 +29,11 @@ void bionet_datapoint_free(bionet_datapoint_t *d) {
 		    datapoint_destroy,
 		    d);
 
+    while (d->destructors) {
+	bionet_datapoint_destructor_t * des = d->destructors->data;
+	d->destructors = g_slist_remove(d->destructors, des);
+	free(des);
+    }
 
     // free all the events
     while (d->events != NULL) {
