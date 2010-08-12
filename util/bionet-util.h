@@ -189,7 +189,8 @@ int bionet_resource_name_matches(const char *resource_name, const char *pattern)
 typedef struct {
     enum {
 	BIONET_LOG_TO_STDOUT = 0, /**< log msgs to STDOUT */
-        BIONET_LOG_TO_SYSLOG = 1  /**< log msgs to SYSLOG */
+        BIONET_LOG_TO_SYSLOG = 1, /**< log msgs to SYSLOG */
+	BIONET_LOG_TO_STDERR = 2, /**< log msgs to STDOUT */
     } destination;
 
     // messages with log_level *below* log_limit are logged, all others are dropped

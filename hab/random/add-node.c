@@ -134,15 +134,15 @@ void add_resources(bionet_node_t *node, int num_resources) {
         }
         if ((rnd % 2) == 0) {
             if (output_mode == OM_NORMAL) {
-                g_message(
-                    "    %s %s %s = (starts with no value)",
+                printf(
+                    "    %s %s %s = (starts with no value)\n",
                     resource_id,
                     bionet_resource_data_type_to_string(data_type),
                     bionet_resource_flavor_to_string(flavor)
                 );
             } else if (output_mode == OM_BIONET_WATCHER) {
-                g_message(
-                    "        %s %s %s (no known value)",
+                printf(
+                    "        %s %s %s (no known value)\n",
                     bionet_resource_data_type_to_string(data_type),
                     bionet_resource_flavor_to_string(flavor),
                     resource_id
@@ -157,8 +157,8 @@ void add_resources(bionet_node_t *node, int num_resources) {
             val_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
 
             if (output_mode == OM_NORMAL) {
-                g_message(
-                    "    %s %s %s = %s @ %s",
+                printf(
+                    "    %s %s %s = %s @ %s\n",
                     resource_id,
                     bionet_resource_data_type_to_string(data_type),
                     bionet_resource_flavor_to_string(flavor),
@@ -166,8 +166,8 @@ void add_resources(bionet_node_t *node, int num_resources) {
                     bionet_datapoint_timestamp_to_string(datapoint)
                 );
             } else if (output_mode == OM_BIONET_WATCHER) {
-                g_message(
-                    "        %s %s %s = %s @ %s",
+                printf(
+                    "        %s %s %s = %s @ %s\n",
                     bionet_resource_data_type_to_string(data_type),
                     bionet_resource_flavor_to_string(flavor),
                     resource_id,
@@ -179,8 +179,8 @@ void add_resources(bionet_node_t *node, int num_resources) {
             free(val_str);
         }
         if (output_mode == OM_BDM_CLIENT) {
-            g_message(
-                "%s,+N,%s,%s %s",
+            printf(
+                "%s,+N,%s,%s %s\n",
                 time_str,
                 bionet_resource_get_name(resource),
                 bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
@@ -232,11 +232,11 @@ void add_node(bionet_hab_t* random_hab) {
 
     node = bionet_node_new(random_hab, node_id);
 
-    if (output_mode == OM_BIONET_WATCHER) g_message("new node: %s", bionet_node_get_name(node));
+    if (output_mode == OM_BIONET_WATCHER) printf("new node: %s\n", bionet_node_get_name(node));
     if (output_mode == OM_BDM_CLIENT) {
         timeval_as_str(NULL, time_str, sizeof(time_str));
-        g_message(
-            "%s,+N,%s",
+        printf(
+            "%s,+N,%s\n",
             time_str,
             bionet_node_get_name(node)
         );
@@ -248,7 +248,7 @@ void add_node(bionet_hab_t* random_hab) {
     } else {
 	num_resources = rnd % 30;
 	if (num_resources > 0) {
-	    if (output_mode == OM_BIONET_WATCHER) g_message("    Resources:");
+	    if (output_mode == OM_BIONET_WATCHER) printf("    Resources:\n");
             add_resources(node, num_resources);
 	}
     }
@@ -277,8 +277,8 @@ void add_node(bionet_hab_t* random_hab) {
                 value_str = bionet_value_to_str(bionet_datapoint_get_value(dp));
 
                 if (output_mode == OM_BIONET_WATCHER) {
-                    g_message(
-                        "%s = %s %s %s @ %s",
+                    printf(
+                        "%s = %s %s %s @ %s\n",
                         bionet_resource_get_name(resource),
                         bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
                         bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
@@ -286,8 +286,8 @@ void add_node(bionet_hab_t* random_hab) {
                         bionet_datapoint_timestamp_to_string(dp)
                     );
                 } else if (output_mode == OM_BDM_CLIENT) {
-                    g_message(
-                        "%s,+D,%s,%s %s %s @ %s",
+                    printf(
+                        "%s,+D,%s,%s %s %s @ %s\n",
                         time_str,
                         bionet_resource_get_name(resource),
                         bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),

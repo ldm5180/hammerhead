@@ -26,6 +26,8 @@ void bionet_glib_log_handler(
     const gchar *message,
     gpointer log_context
 ) {
+    FILE* log_file = stdout;
+
     static bionet_log_context_t default_log_context = {
         destination: BIONET_LOG_TO_STDOUT,
         log_limit: G_LOG_LEVEL_INFO
@@ -55,13 +57,16 @@ void bionet_glib_log_handler(
             return;
         }
 
+        case BIONET_LOG_TO_STDERR:
+            log_file = stderr;
+            // Fall through to next case
         case BIONET_LOG_TO_STDOUT: {
             if ((log_domain == NULL) || (log_domain[0] == '\0')) {
-                printf("%s\n", message);
+                fprintf(log_file, "%s\n", message);
             } else {
-                printf("%s: %s\n", log_domain, message);
+                fprintf(log_file, "%s: %s\n", log_domain, message);
             }
-            fflush(stdout);
+            fflush(log_file);
             return;
         }
 

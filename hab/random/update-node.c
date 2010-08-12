@@ -57,8 +57,8 @@ void update_node(bionet_hab_t* random_hab) {
 	    continue;
 	} else if ((rnd % 2) == 0) {
 	    if (output_mode == OM_NORMAL) {
-		g_message(
-		    "    %s %s %s = *** skipped!",
+		printf(
+		    "    %s %s %s = *** skipped!\n",
 		    bionet_resource_get_id(resource),
 		    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
 		    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
@@ -73,8 +73,8 @@ void update_node(bionet_hab_t* random_hab) {
         val_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
 
         if (output_mode == OM_NORMAL) {
-            g_message(
-                "    %s %s %s = %s @ %s",
+            printf(
+                "    %s %s %s = %s @ %s\n",
                 bionet_resource_get_id(resource),
                 bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
                 bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
@@ -82,8 +82,8 @@ void update_node(bionet_hab_t* random_hab) {
                 bionet_datapoint_timestamp_to_string(datapoint)
             );
         } else if (output_mode == OM_BIONET_WATCHER) {
-            g_message(
-                "%s = %s %s %s @ %s",
+            printf(
+                "%s = %s %s %s @ %s\n",
                 bionet_resource_get_name(resource),
                 bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
                 bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
@@ -92,8 +92,8 @@ void update_node(bionet_hab_t* random_hab) {
             );
         } else if (output_mode == OM_BDM_CLIENT) {
             char time_str[64];
-            g_message(
-                "%s,+D,%s,%s %s %s @ %s",
+            printf(
+                "%s,+D,%s,%s %s %s @ %s\n",
                 timeval_as_str(NULL, time_str, sizeof(time_str)),
                 bionet_resource_get_name(resource),
                 bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),

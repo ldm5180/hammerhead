@@ -56,10 +56,10 @@ void show_stuff_going_away(void) {
         bionet_node_t *node = bionet_hab_get_node_by_index(hab, i);
         switch(output_mode) {
             case OM_BIONET_WATCHER: 
-                g_message("lost node: %s", bionet_node_get_name(node));
+                printf("lost node: %s\n", bionet_node_get_name(node));
                 break;
             case OM_BDM_CLIENT: 
-                g_message("%s,-N,%s", 
+                printf("%s,-N,%s\n", 
                         time_str,
                         bionet_node_get_name(node));
                 break;
@@ -70,10 +70,10 @@ void show_stuff_going_away(void) {
 
     switch(output_mode) {
         case OM_BIONET_WATCHER: 
-            g_message("lost hab: %s", bionet_hab_get_name(hab));
+            printf("lost hab: %s\n", bionet_hab_get_name(hab));
             break;
         case OM_BDM_CLIENT: 
-            g_message("%s,-H,%s", 
+            printf("%s,-H,%s\n", 
                     time_str,
                     bionet_hab_get_name(hab));
             break;
@@ -119,7 +119,7 @@ int main (int argc, char *argv[]) {
     int require_security = 0;
 
     bionet_log_context_t log_context = {
-        destination: BIONET_LOG_TO_STDOUT,
+        destination: BIONET_LOG_TO_STDERR,
         log_limit: G_LOG_LEVEL_INFO
     };
 
@@ -236,9 +236,9 @@ int main (int argc, char *argv[]) {
     switch(output_mode) {
         case OM_BIONET_WATCHER: 
         {
-            g_message("new hab: %s", bionet_hab_get_name(hab));
+            printf("new hab: %s\n", bionet_hab_get_name(hab));
             if (security_dir) {
-                g_message("    %s: security enabled", bionet_hab_get_name(hab));
+                printf("    %s: security enabled\n", bionet_hab_get_name(hab));
             }
         }
         break;
@@ -246,8 +246,8 @@ int main (int argc, char *argv[]) {
         case OM_BDM_CLIENT: 
         {
             char time_str[48];
-            g_message(
-                "%s,+H,%s",
+            printf(
+                "%s,+H,%s\n",
                 timeval_as_str(NULL, time_str, sizeof(time_str)),
                 bionet_hab_get_name(hab)
             );
