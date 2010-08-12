@@ -22,6 +22,12 @@ int bionet_hab_add_destructor(bionet_hab_t * hab,
 	return 1;
     }
 
+    if (g_slist_find(hab->destructors, destructor)) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, 
+	      "bionet_hab_add_destructor: trying to add a destructor which is already registered.");
+	return 0;
+    }
+
     bionet_hab_destructor_t * des = calloc(1, sizeof(bionet_hab_destructor_t));
     if (NULL == des) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -41,22 +47,6 @@ int bionet_hab_add_destructor(bionet_hab_t * hab,
 
     return 0;
 } /* bionet_hab_add_destructor() */
-
-
-void bionet_hab_destruct (gpointer des, gpointer hab) {
-    bionet_hab_destructor_t * destructor = (bionet_hab_destructor_t *)des;
-    if (NULL == destructor) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "bionet_hab_destruct: NULL destructor func passed in.");
-	return;
-    }
-
-    if (destructor) {
-	destructor->destructor((bionet_hab_t *)hab, (void *)destructor->user_data);
-    }
-
-    return;
-} /* bionet_hab_destruct() */
 
 
 // Emacs cruft

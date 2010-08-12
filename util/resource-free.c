@@ -22,9 +22,18 @@ void bionet_resource_free(bionet_resource_t *resource) {
         return;
     }
 
+    /* run all the destructors */
     g_slist_foreach(resource->destructors,
 		    resource_destroy,
 		    resource);
+
+
+    /* free all the destructors */
+    while (resource->destructors) {
+	bionet_resource_destructor_t * des = resource->destructors->data;
+	resource->destructors = g_slist_remove(resource->destructors, des);
+	free(des);
+    }
 
     if (resource->user_data != NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_free() called with Resource %s, user_data is not NULL, leaking memory now", resource->id);

@@ -12,10 +12,26 @@
 #include "bionet-util.h"
 
 
+static void node_destroy (gpointer data, gpointer user_data);
+
+
 void bionet_node_free(bionet_node_t *node) {
     if (node == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "NULL Node passed to bionet_node_free()!");
         return;
+    }
+
+    /* run all the destructors */
+    g_slist_foreach(node->destructors,
+		    node_destroy,
+		    node);
+
+
+    /* free all the destructors */
+    while (node->destructors) {
+	bionet_node_destructor_t * des = node->destructors->data;
+	node->destructors = g_slist_remove(node->destructors, des);
+	free(des);
     }
 
     if (node->user_data != NULL) {
@@ -29,15 +45,6 @@ void bionet_node_free(bionet_node_t *node) {
 	      "bionet_free_node(): Node is still in %s HAB list. It should have been removed before calling bionet_free_node().",
 	      bionet_hab_get_name(hab));
     }
-
-    if (node->id != NULL) {
-        free(node->id);
-    }
-
-    if (node->name != NULL) {
-        free(node->name);
-    }
-
 
     // free all the resources
     while (node->resources != NULL) {
@@ -65,7 +72,40 @@ void bionet_node_free(bionet_node_t *node) {
         bionet_event_free(event);
     }
 
+    if (node->id != NULL) {
+        free(node->id);
+    }
+
+    if (node->name != NULL) {
+        free(node->name);
+    }
+
     free(node);
-}
+} /* bionet_node_free() */
 
 
+static void node_destroy (gpointer data, gpointer user_data) {
+    bionet_node_destructor_t * des = (bionet_node_destructor_t *)data;
+    bionet_node_t * node = (bionet_node_t *)user_data;
+
+    if (NULL == des) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "node_destroy: NULL destructor passed in.");
+	return;
+    }
+
+    if (NULL == node) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "node_destroy: NULL resource passed in.");
+	return;
+    }
+
+    des->destructor(node, des->user_data);
+} /* node_destroy() */
+
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

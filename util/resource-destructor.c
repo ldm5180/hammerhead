@@ -49,22 +49,6 @@ int bionet_resource_add_destructor(bionet_resource_t * resource,
 } /* bionet_resource_add_destructor() */
 
 
-void bionet_resource_destruct(gpointer des, gpointer resource) {
-    bionet_resource_destructor_t * destructor = (bionet_resource_destructor_t *)des;
-    if (NULL == destructor) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "bionet_resource_destruct: NULL destructor func passed in.");
-	return;
-    }
-
-    if (destructor) {
-	destructor->destructor((bionet_resource_t *)resource, (void *)destructor->user_data);
-    }
-
-    return;
-} /* bionet_resource_destruct() */
-
-
 // Emacs cruft
 // Local Variables:
 // mode: C

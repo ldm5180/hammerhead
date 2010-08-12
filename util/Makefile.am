@@ -65,17 +65,18 @@ libbionet_util_la_SOURCES =    \
     hab-remove-node.c          \
     hab-user-data.c            \
     hab-is-secure.c            \
-    node-new.c                 \
     node-add-resource.c        \
-    node-sort-resource.c       \
-    node-event.c               \
-    node-get-resource.c        \
     node-add-stream.c          \
+    node-destructor.c          \
+    node-event.c               \
+    node-free.c                \
+    node-get-resource.c        \
     node-get-stream.c          \
     node-matches.c             \
-    node-free.c                \
-    node-user-data.c           \
     node-name.c                \
+    node-new.c                 \
+    node-sort-resource.c       \
+    node-user-data.c           \
     resource-data-type.c       \
     resource-datapoint.c       \
     resource-destructor.c      \

@@ -244,9 +244,6 @@ int bionet_param_to_timeval(GHashTable * params, const char * key, struct timeva
 int bionet_cmp_resource(const void * a_ptr, const void *b_ptr);
 
 
-void bionet_resource_destruct(gpointer des, gpointer resource);
-void bionet_datapoint_destruct(gpointer des, gpointer datapoint);
-
 #endif /* INTERNAL_H */
 
 // Emacs cruft

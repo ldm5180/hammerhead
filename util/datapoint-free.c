@@ -25,10 +25,12 @@ void bionet_datapoint_free(bionet_datapoint_t *d) {
 	return;
     }
 
+    /* run all the destructors */
     g_slist_foreach(d->destructors,
 		    datapoint_destroy,
 		    d);
 
+    /* free all the destructors */
     while (d->destructors) {
 	bionet_datapoint_destructor_t * des = d->destructors->data;
 	d->destructors = g_slist_remove(d->destructors, des);

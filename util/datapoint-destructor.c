@@ -49,22 +49,6 @@ int bionet_datapoint_add_destructor(bionet_datapoint_t * datapoint,
 } /* bionet_datapoint_add_destructor() */
 
 
-void bionet_datapoint_destruct(gpointer des, gpointer datapoint) {
-    bionet_datapoint_destructor_t * destructor = (bionet_datapoint_destructor_t *)des;
-    if (NULL == destructor) {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "bionet_datapoint_destruct: NULL destructor func passed in.");
-	return;
-    }
-
-    if (destructor) {
-	destructor->destructor((bionet_datapoint_t *)datapoint, (void *)destructor->user_data);
-    }
-
-    return;
-} /* bionet_datapoint_destruct() */
-
-
 // Emacs cruft
 // Local Variables:
 // mode: C

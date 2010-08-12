@@ -12,6 +12,9 @@
 #include "bionet-util.h"
 
 
+static void hab_destroy (gpointer data, gpointer user_data);
+
+
 void bionet_hab_free(bionet_hab_t *hab) {
     if (hab == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_free(): NULL HAB passed in");
@@ -20,6 +23,19 @@ void bionet_hab_free(bionet_hab_t *hab) {
 
     bionet_hab_remove_all_nodes(hab);
 
+    /* run all the destructors */
+    g_slist_foreach(hab->destructors,
+		    hab_destroy,
+		    hab);
+
+
+    /* free all the destructors */
+    while (hab->destructors) {
+	bionet_hab_destructor_t * des = hab->destructors->data;
+	hab->destructors = g_slist_remove(hab->destructors, des);
+	free(des);
+    }
+
     // free all the events
     while (hab->events != NULL) {
         bionet_event_t *event = hab->events->data;
@@ -27,8 +43,6 @@ void bionet_hab_free(bionet_hab_t *hab) {
         hab->events = g_slist_remove(hab->events, event);
         bionet_event_free(event);
     }
-
-    g_slist_foreach(hab->destructors, bionet_hab_destruct, hab);
 
     if (hab->user_data != NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_hab_free(): passed-in HAB has non-NULL user_data pointer, ignoring");
@@ -47,7 +61,27 @@ void bionet_hab_free(bionet_hab_t *hab) {
     }
 
     free(hab);
-}
+} /* bionet_hab_free() */
+
+
+static void hab_destroy (gpointer data, gpointer user_data) {
+    bionet_hab_destructor_t * des = (bionet_hab_destructor_t *)data;
+    bionet_hab_t * hab = (bionet_hab_t *)user_data;
+
+    if (NULL == des) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "hab_destroy: NULL destructor passed in.");
+	return;
+    }
+
+    if (NULL == hab) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "hab_destroy: NULL resource passed in.");
+	return;
+    }
+
+    des->destructor(hab, des->user_data);
+} /* hab_destroy() */
 
 
 // Emacs cruft
