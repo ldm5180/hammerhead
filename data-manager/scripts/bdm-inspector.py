@@ -406,7 +406,7 @@ instance
     def list_missing_metadata(self):
 
         sql = '''
-        SELECT d.Resource_key
+        SELECT hex(d.Resource_key)
         FROM Datapoints d
         WHERE d.Resource_key NOT IN
             (SELECT distinct key from Resources)
@@ -414,7 +414,7 @@ instance
 
         print "Missing metadata for resources:"
 
-        def fmt(cur,row): return "  Resource with key %08x" % (row[0])
+        def fmt(cur,row): return "  Resource with key 0x%s " % row[0]
         self.print_query(sql,fmt)
 
 
