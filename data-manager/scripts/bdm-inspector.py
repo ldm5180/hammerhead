@@ -1,5 +1,7 @@
 #!/usr/bin/python
 #
+# vim: sw=4 sta expandtab
+#
 # Copyright (c) 2008-2010, Regents of the University of Colorado.
 # This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 # NNC07CB47C.
@@ -11,6 +13,19 @@ import os.path
 
 from time import gmtime, strftime
 
+def val_to_str(val,type_str):
+    if(type_str == 'float'):
+        str = "%.7g" % val
+    if(type_str == 'double'):
+        str = "%.14g" % val
+    elif(type_str.startswith('uint')):
+        str = "%u" % val
+    elif(type_str.startswith('int')):
+        str = "%d" % val
+    else:
+        str = val
+
+    return str
 
 class BdmInspector:
     dbpath = "bdm.db"
@@ -71,18 +86,27 @@ instance
             help="List the resource keys that are present",
             default=0)
 
-        parser.add_option("--sync-info", 
-	    dest="sync_info", 
-            action="store_true",
-            help="Display the sync info",
-            default=0)
-
 
         parser.add_option("--dump-debug", 
 	    dest="dump_debug", 
             action="store_true",
             help="Dump debug output",
             default=0)
+
+        parser.add_option("--start-seq", 
+	    dest="start_seq", 
+            type="int",
+            help="Only return events after this sequence number")
+
+        parser.add_option("--end-seq", 
+	    dest="end_seq", 
+            type="int",
+            help="Only return events after this sequence number")
+
+        parser.add_option("--filter", 
+	    dest="filter", 
+            help="Apply this resource name filter",
+            default=None)
 
 
 
@@ -127,41 +151,119 @@ instance
 
 
     def client_output_formatter(self, cursor, row):
-        str = "%s.%06d,%s.%s.%s:%s,%s" % ( \
-                strftime("%Y-%m-%d %H:%M:%S", gmtime(int(row[0]))),
-                row[1], 
-                row[3],
-                row[4],
-                row[5],
-                row[6],
-                row[7])
+	time_str = strftime("%Y-%m-%d %H:%M:%S", gmtime(int(row[10])))
+	if(row[14]):
+		islost = "-"
+	else:
+		islost = "+"
+	if(row[8]):
+		# Has datapoint time
+		dp_time_str = strftime("%Y-%m-%d %H:%M:%S", gmtime(int(row[8])))
+		id_str = "%s.%s.%s:%s,%s %s %s @ %s" % \
+                        (row[0], row[1], row[2], row[6], row[4], row[5], val_to_str(row[7], row[4]), dp_time_str)
+
+		str = "%s.%06d,+D,%s" % ( \
+			time_str, row[11],
+			id_str)
+	elif(row[2]):
+		# Has node-id
+		if(row[6]):
+			id_str = "%s.%s.%s:%s,%s %s" % (row[0], row[1], row[2], row[6], row[4], row[5])
+		else:
+			id_str = "%s.%s.%s" % (row[0], row[1], row[2])
+
+		str = "%s.%06d,%sN,%s" % ( \
+			time_str, row[11],
+			islost, 
+			id_str)
+	else:
+		# Must be  new/lost HAB
+		id_str = "%s.%s" % (row[0], row[1])
+
+		str = "%s.%06d,%sH,%s" % ( \
+			time_str, row[11],
+			islost, 
+			id_str)
         return str
 
     def watcher_output_formatter(self, cursor, row):
-        str = "%s.%06d,%s/%s.%s.%s:%s,%s" % ( \
-                strftime("%Y-%m-%d %H:%M:%S", gmtime(int(row[0]))),
-                row[1], 
-                row[2], #BDM-id
-                row[3],
-                row[4],
-                row[5],
-                row[6],
-                row[7])
+	time_str = strftime("%Y-%m-%d %H:%M:%S", gmtime(int(row[10])))
+	if(row[14]):
+		islost = "-"
+	else:
+		islost = "+"
+	if(row[8]):
+		# Has datapoint time
+		dp_time_str = strftime("%Y-%m-%d %H:%M:%S", gmtime(int(row[8])))
+		id_str = "%s.%s.%s:%s,%s %s %s @ %s" % \
+                        (row[0], row[1], row[2], row[6], row[4], row[5], val_to_str(row[7], row[4]), dp_time_str)
+
+		str = "%s.%06d,+D,%s,%s" % ( \
+			time_str, row[11],
+			id_str, 
+                        row[13])
+	elif(row[2]):
+		# Has node-id
+		if(row[6]):
+			id_str = "%s.%s.%s:%s,%s %s" % (row[0], row[1], row[2], row[6], row[4], row[5])
+		else:
+			id_str = "%s.%s.%s," % (row[0], row[1], row[2])
+
+		str = "%s.%06d,%sN,%s,%s" % ( \
+			time_str, row[11],
+			islost, 
+			id_str,
+                        row[13])
+	else:
+		# Must be  new/lost HAB
+		id_str = "%s.%s" % (row[0], row[1])
+
+		str = "%s.%06d,%sH,%s,,%s" % ( \
+			time_str, row[11],
+			islost, 
+			id_str,
+                        row[13])
         return str
-        
 
     def debug_output_formatter(self, cursor, row):
-        str = "[%04d] %s.%06d,%s/%s.%s.%s:%s,%s" % ( \
-		row[8],
-                strftime("%Y-%m-%d %H:%M:%S", gmtime(int(row[0]))),
-                row[1], 
-                row[2], #BDM-id
-                row[3],
-                row[4],
-                row[5],
-                row[6],
-                row[7])
-        return str
+	time_str = strftime("%Y-%m-%d %H:%M:%S", gmtime(int(row[10])))
+	if(row[14]):
+		islost = "-"
+	else:
+		islost = "+"
+	if(row[8]):
+		# Has datapoint time
+		dp_time_str = strftime("%Y-%m-%d %H:%M:%S", gmtime(int(row[8])))
+		id_str = "%s.%s.%s:%s,%s %s %s @ %s" % \
+                        (row[0], row[1], row[2], row[6], row[4], row[5], val_to_str(row[7], row[4]), dp_time_str)
+
+		str = "%s.%06d,+D,%s,%s" % ( \
+			time_str, row[11],
+			id_str, 
+                        row[13])
+	elif(row[2]):
+		# Has node-id
+		if(row[6]):
+			id_str = "%s.%s.%s:%s,%s %s" % (row[0], row[1], row[2], row[6], row[4], row[5])
+		else:
+			id_str = "%s.%s.%s," % (row[0], row[1], row[2])
+
+		str = "%s.%06d,%sN,%s,%s" % ( \
+			time_str, row[11],
+			islost, 
+			id_str,
+                        row[13])
+	else:
+		# Must be  new/lost HAB
+		id_str = "%s.%s" % (row[0], row[1])
+
+		str = "%s.%06d,%sH,%s,,%s" % ( \
+			time_str, row[11],
+			islost, 
+			id_str,
+                        row[13])
+        return "[%04d] %s" % (row[12], str)
+        
 
     def print_query(self,sql,formatter):
 
@@ -180,20 +282,123 @@ instance
 
     def simulate_client_output(self, formatter):
 
-        sql = '''
-        SELECT d.Timestamp_Sec, d.Timestamp_Usec, b.BDM_ID, 
-                  h.HAB_Type, h.HAB_ID, n.Node_ID, r.Resource_ID, d.value, 
-		  e.seq
-        FROM BDMs b, Datapoints d, Resources r , Nodes n, Hardware_Abstractors h, 
-             Resource_Data_types t, Resource_Flavors f, Events e
-        WHERE d.Resource_key = r.Key
-          AND e.recording_bdm = b.Key
-	  AND e.datapoint = d.key
-          AND r.Node_Key = n.Key
-          AND r.Flavor_Key = f.Key
-          AND r.Data_Type_Key = t.Key
-        ORDER BY d.Timestamp_Sec asc, d.Timestamp_usec asc 
+        habs_sql = '''
+	  SELECT h.hab_type, h.hab_id, 
+                 NULL, NULL,
+                 NULL, NULL, NULL,
+                 NULL, NULL, NULL,
+		 e.timestamp_sec, e.timestamp_usec, e.seq, b.BDM_ID, e.isLost 
+	  FROM   Events e, BDMs b, Hardware_Abstractors h
+          WHERE  e.recording_bdm=b.key
+		 AND e.hab = h.key
           '''
+
+        nodes_sql = '''
+	  SELECT h.hab_type, h.hab_id, 
+                 n.Node_ID, n.GUID,
+                 t.Data_Type, f.Flavor, r.Resource_ID,
+                 NULL, NULL, NULL,
+		 e.timestamp_sec, e.timestamp_usec, e.seq, b.BDM_ID, e.isLost 
+	  FROM   Events e, BDMs b, Hardware_Abstractors h,
+                 Nodes n
+                  LEFT OUTER JOIN Resources r
+                   ON r.Node_Key=n.Key
+                  LEFT OUTER JOIN Resource_Data_Types t
+                   ON t.Key=r.Data_Type_Key
+                  LEFT OUTER JOIN Resource_Flavors f
+                   ON f.Key=r.Flavor_Key
+          WHERE  e.recording_bdm=b.key
+                 AND n.HAB_Key=h.Key
+		 AND e.node = n.key
+          '''
+
+        dp_sql = '''
+	  SELECT h.hab_type, h.hab_id, 
+                 n.Node_ID, n.GUID,
+                 t.Data_Type, f.Flavor, r.Resource_ID,
+                 d.Value, d.Timestamp_Sec, d.Timestamp_USec,
+		 e.timestamp_sec, e.timestamp_usec, e.seq, b.BDM_ID, e.isLost 
+	  FROM   Events e, BDMs b, Hardware_Abstractors h, 
+                 Datapoints d
+                  JOIN Resources r
+                   ON r.key=d.Resource_Key
+                  JOIN Resource_Data_Types t
+                   ON t.Key=r.Data_Type_Key
+                  JOIN Resource_Flavors f
+                   ON f.Key=r.Flavor_Key
+                  JOIN Nodes n
+                   ON n.key=r.node_key
+          WHERE  e.recording_bdm=b.key
+                 AND n.HAB_Key=h.Key
+		 AND e.datapoint = d.key
+          '''
+
+        dp_sql_old = '''
+	  SELECT h.hab_type, h.hab_id, 
+                 n.Node_ID, n.GUID,
+                 t.Data_Type, f.Flavor, r.Resource_ID,
+                 d.Value, d.Timestamp_Sec, d.Timestamp_USec,
+		 e.timestamp_sec, e.timestamp_usec, e.seq, b.BDM_ID, e.isLost 
+	  FROM   Events e, BDMs b, 
+                  Hardware_Abstractors h, 
+                  Nodes n,
+                  Resources r,
+                  Resource_Data_Types t,
+                  Resource_Flavors f,
+                  Datapoints d
+          WHERE  e.recording_bdm=b.key
+                 AND n.HAB_Key=h.Key
+                 AND r.Node_Key=n.key
+                 AND t.Key=r.Data_Type_Key
+                 AND f.Key=r.Flavor_Key
+                 AND d.Resource_Key=r.Key
+		 AND e.datapoint = d.key
+                 AND (e.seq <= 196 and e.seq >= 133)
+          '''
+
+        filter_all = ""
+
+        #Decompose filter, and add WHERE clauses
+        if( self.options.filter ):
+            parts = self.options.filter.split('/')
+            if len(parts) > 1:
+                bdm = parts[0]
+                pattern = parts[1]
+                filter_all = filter_all + ("AND b.BDM_ID = '%s' " % bdm)
+            else:
+                pattern = parts[0]
+
+            pats = pattern.split('.')
+            hab_filter = ""
+            node_filter = ""
+            dp_filter = ""
+            if len(pats) >= 1 and pats[0] != '*':
+                hab_filter = "AND h.hab_type = '%s' " % pats[0]
+            if len(pats) >= 2 and pats[1] != '*':
+                hab_filter = hab_filter + "AND h.hab_id = '%s' " % pats[1]
+
+            if len(pats) >= 3 and pats[2] != '*':
+                node_filter = "AND n.node_id = '%s'" % pats[2]
+
+            if len(pats) >= 4 and pats[3] != '*':
+                db_filter = "AND r.Resource_ID = '%s' " % pats[3]
+
+            habs_sql = habs_sql + hab_filter
+            nodes_sql = nodes_sql + hab_filter + node_filter
+            dp_sql = dp_sql + hab_filter + node_filter + dp_filter
+
+        # Add sequence filter to all
+        if( self.options.start_seq and self.options.end_seq ):
+            filter_all = filter_all + "AND (e.seq <= %d and e.seq >= %d) " % (self.options.end_seq, self.options.start_seq)
+        elif( self.options.start_seq ):
+            filter_all = filter_all + "AND e.seq >= %d " % (self.options.start_seq)
+        elif( self.options.end_seq ):
+            filter_all = filter_all + "AND e.seq <= %d " % (self.options.end_seq)
+
+
+
+        #sql = "%s ORDER BY e.seq" % (dp_sql)
+        sql = "%s %s \nUNION %s %s \nUNION %s %s \nORDER BY e.seq" % (habs_sql, filter_all, nodes_sql, filter_all, dp_sql, filter_all)
 
         self.print_query(sql, formatter)
 
@@ -229,18 +434,6 @@ instance
         self.print_query(sql, fmt)
 
 
-    def sync_info(self):
-
-        sql = '''
-        SELECT BDM_ID,Last_Sync_Metadata,Last_Sync_Datapoints from BDMs
-          '''
-
-        def fmt(cur,row): 
-            return "%s %d %d" % (row[0], row[1] or -1, row[2] or -1)
-
-        self.print_query(sql, fmt)
-
-
 def main():
 
     inspector = BdmInspector()
@@ -257,9 +450,6 @@ def main():
     if inspector.options.list_resources:
         inspector.list_resources()
 
-    if inspector.options.sync_info:
-        inspector.sync_info()
-
     if inspector.options.dump_debug:
         inspector.simulate_client_output(inspector.debug_output_formatter)
 
@@ -270,6 +460,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
