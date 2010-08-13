@@ -971,8 +971,8 @@ START_TEST (test_libutil_hab_is_secure_0) {
  * bionet_hab_is_secure(NULL)
  */
 START_TEST (test_libutil_hab_is_secure_1) {
-    fail_if(bionet_hab_is_secure(NULL),
-	    "HAB should not be secure. There is no HAB");
+    fail_unless(-1 == bionet_hab_is_secure(NULL),
+		"NULL HAB pointer not detected.");
 } END_TEST /* test_libutil_hab_is_secure_1 */
 
 
@@ -1027,6 +1027,82 @@ START_TEST (test_libutil_hab_is_secure_4) {
     fail_if(bionet_hab_is_secure(hab),
 		"HAB should not be secure. It has been secured then unsecured");
 } END_TEST /* test_libutil_hab_is_secure_4 */
+
+
+/*
+ * bionet_hab_get_num_events(hab)
+ */
+START_TEST (test_libutil_hab_get_num_events_0) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(0 == bionet_hab_get_num_events(hab),
+		"Nothing has happened. There should be 0 events.");
+} END_TEST /* test_libutil_hab_get_num_events_0 */
+
+
+/*
+ * bionet_hab_get_num_events(hab)
+ */
+START_TEST (test_libutil_hab_get_num_events_1) {
+    fail_unless(-1 == bionet_hab_get_num_events(NULL),
+		"NULL HAB pointer not detected.");
+} END_TEST /* test_libutil_hab_get_num_events_1 */
+
+
+/*
+ * bionet_hab_get_num_events(hab)
+ */
+START_TEST (test_libutil_hab_get_num_events_2) {
+    bionet_hab_t * hab;
+    struct timeval tv;
+    int num_events;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_if(NULL == hab, "Failed to get a new HAB: %m\n");
+
+    gettimeofday(&tv, NULL);
+    bionet_event_t * event = bionet_event_new(&tv, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_hab_add_event(hab, event), "Failed to add event to HAB.");
+
+    num_events = bionet_hab_get_num_events(hab);
+    fail_unless(1 == num_events,
+		"%d is the wrong number of events. There should be 1 events.", num_events);
+} END_TEST /* test_libutil_hab_get_num_events_2 */
+
+
+/*
+ * bionet_hab_get_num_events(hab)
+ */
+START_TEST (test_libutil_hab_get_num_events_3) {
+    bionet_hab_t * hab;
+    int num_events;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_if(NULL == hab, "Failed to get a new HAB: %m\n");
+
+    bionet_event_t * event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_hab_add_event(hab, event), "Failed to add event to HAB.");
+
+    num_events = bionet_hab_get_num_events(hab);
+    fail_unless(1 == num_events,
+		"%d is the wrong number of events. There should be 1 events.", num_events);
+
+    event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_hab_add_event(hab, event), "Failed to add event to HAB.");
+
+    num_events = bionet_hab_get_num_events(hab);
+    fail_unless(2 == num_events,
+		"%d is the wrong number of events. There should be 2 events.", num_events);
+} END_TEST /* test_libutil_hab_get_num_events_3 */
 
 
 void libutil_hab_tests_suite(Suite *s)
@@ -1109,6 +1185,11 @@ void libutil_hab_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_hab_is_secure_3);
     tcase_add_test(tc, test_libutil_hab_is_secure_4);
 
+    /* bionet_hab_get_num_events() */
+    tcase_add_test(tc, test_libutil_hab_get_num_events_0);
+    tcase_add_test(tc, test_libutil_hab_get_num_events_1);
+    tcase_add_test(tc, test_libutil_hab_get_num_events_2);
+    tcase_add_test(tc, test_libutil_hab_get_num_events_3);
 
     return;
 } /* libutil_hab_tests_suite() */
