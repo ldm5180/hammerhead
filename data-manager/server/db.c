@@ -1900,6 +1900,9 @@ get_events_make_bdm_list(
     bdm = find_bdm(bdm_list, bdm_id);
     if (bdm == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding bdm %s", bdm_id);
+	if (event) {
+	    bionet_event_free(event);
+	}
         return -1;
     }
 
@@ -1908,6 +1911,9 @@ get_events_make_bdm_list(
     hab = find_hab(hab_list, hab_type, hab_id);
     if (hab == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "db_get_resource_datapoints_callback(): error finding hab %s.%s", hab_type, hab_id);
+	if (event) {
+	    bionet_event_free(event);
+	}
         return -1;
     }
     if(event_class == _DB_GET_HAB_EVENTS) {
@@ -1922,6 +1928,9 @@ get_events_make_bdm_list(
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
                   "db_get_resource_datapoints_callback(): error finding node %s.%s.%s", 
                   bionet_hab_get_type(hab), bionet_hab_get_id(hab), node_id);
+	    if (event) {
+		bionet_event_free(event);
+	    }
             return -1;
         }
         if(event_class == _DB_GET_NODE_EVENTS
@@ -1942,6 +1951,9 @@ get_events_make_bdm_list(
                   bionet_resource_flavor_to_string(flavor),
                   bionet_hab_get_type(hab), bionet_hab_get_id(hab), 
                   bionet_node_get_id(node), resource_id);
+	    if (event) {
+		bionet_event_free(event);
+	    }
             return -1;
         }
 
