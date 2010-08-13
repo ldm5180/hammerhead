@@ -1206,6 +1206,59 @@ START_TEST (test_libutil_hab_get_event_by_index_4) {
 } END_TEST /* test_libutil_hab_get_event_by_index_4 */
 
 
+/*
+ * bionet_hab_add_event(hab)
+ */
+START_TEST (test_libutil_hab_add_event_0) {
+    bionet_hab_t * hab;
+    bionet_event_t * event;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_hab_add_event(hab, event), "Failed to add event to HAB.");
+
+    int num_events = bionet_hab_get_num_events(hab);
+    fail_unless(1 == num_events,
+		"1 event added, but HAB is reporting %d", num_events);
+} END_TEST /* test_libutil_hab_add_event_0 */
+
+
+/*
+ * bionet_hab_add_event(hab)
+ */
+START_TEST (test_libutil_hab_add_event_1) {
+    bionet_event_t * event;
+    
+    event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_unless(bionet_hab_add_event(NULL, event), 
+		"Failed to detect NULL HAB passed in.");
+} END_TEST /* test_libutil_hab_add_event_1 */
+
+
+/*
+ * bionet_hab_add_event(hab)
+ */
+START_TEST (test_libutil_hab_add_event_2) {
+    bionet_hab_t * hab;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(bionet_hab_add_event(hab, NULL), 
+		"Failed to detect NULL event passed in.");
+
+    int num_events = bionet_hab_get_num_events(hab);
+    fail_unless(0 == num_events,
+		"No event added, but HAB is reporting %d", num_events);
+} END_TEST /* test_libutil_hab_add_event_2 */
+
+
 void libutil_hab_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet HAB");
@@ -1298,6 +1351,12 @@ void libutil_hab_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_hab_get_event_by_index_2);
     tcase_add_test(tc, test_libutil_hab_get_event_by_index_3);
     tcase_add_test(tc, test_libutil_hab_get_event_by_index_4);
+
+    /* bionet_hab_add_event() */
+    tcase_add_test(tc, test_libutil_hab_add_event_0);
+    tcase_add_test(tc, test_libutil_hab_add_event_1);
+    tcase_add_test(tc, test_libutil_hab_add_event_2);
+
 
     return;
 } /* libutil_hab_tests_suite() */
