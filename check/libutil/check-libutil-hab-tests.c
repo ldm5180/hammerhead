@@ -17,6 +17,7 @@
 
 #include "check-common.h"
 #include "bionet-util.h"
+#include "protected.h"
 #include "check-libutil-hab-tests.h"
 
 /*
@@ -952,6 +953,82 @@ START_TEST (test_libutil_hab_set_get_user_data_3) {
 } END_TEST /* test_libutil_hab_set_get_user_data_3 */
 
 
+/*
+ * bionet_hab_is_secure(hab)
+ */
+START_TEST (test_libutil_hab_is_secure_0) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_if(bionet_hab_is_secure(hab),
+	    "HAB should not be secure. It hasn't been secured");
+} END_TEST /* test_libutil_hab_is_secure_0 */
+
+
+/*
+ * bionet_hab_is_secure(NULL)
+ */
+START_TEST (test_libutil_hab_is_secure_1) {
+    fail_if(bionet_hab_is_secure(NULL),
+	    "HAB should not be secure. There is no HAB");
+} END_TEST /* test_libutil_hab_is_secure_1 */
+
+
+/*
+ * bionet_hab_is_secure(hab)
+ */
+START_TEST (test_libutil_hab_is_secure_2) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    bionet_hab_set_secure(hab, 1);
+
+    fail_unless(bionet_hab_is_secure(hab),
+		"HAB should not be secure. It has been secured");
+} END_TEST /* test_libutil_hab_is_secure_2 */
+
+
+/*
+ * bionet_hab_is_secure(hab)
+ */
+START_TEST (test_libutil_hab_is_secure_3) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    bionet_hab_set_secure(hab, 0);
+
+    fail_if(bionet_hab_is_secure(hab),
+		"HAB should not be secure. It has been unsecured");
+} END_TEST /* test_libutil_hab_is_secure_3 */
+
+
+/*
+ * bionet_hab_is_secure(hab)
+ */
+START_TEST (test_libutil_hab_is_secure_4) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    bionet_hab_set_secure(hab, 1);
+
+    fail_unless(bionet_hab_is_secure(hab),
+		"HAB should not be secure. It has been secured");
+
+    bionet_hab_set_secure(hab, 0);
+
+    fail_if(bionet_hab_is_secure(hab),
+		"HAB should not be secure. It has been secured then unsecured");
+} END_TEST /* test_libutil_hab_is_secure_4 */
+
+
 void libutil_hab_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet HAB");
@@ -1019,10 +1096,19 @@ void libutil_hab_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_hab_matches_type_and_id_7);
 
     /* bionet_hab_set_user_data() */
+    /* bionet_hab_get_user_data() */
     tcase_add_test(tc, test_libutil_hab_set_get_user_data_0);
     tcase_add_test(tc, test_libutil_hab_set_get_user_data_1);
     tcase_add_test(tc, test_libutil_hab_set_get_user_data_2);
     tcase_add_test(tc, test_libutil_hab_set_get_user_data_3);
+
+    /* bionet_hab_is_secure() */
+    tcase_add_test(tc, test_libutil_hab_is_secure_0);
+    tcase_add_test(tc, test_libutil_hab_is_secure_1);
+    tcase_add_test(tc, test_libutil_hab_is_secure_2);
+    tcase_add_test(tc, test_libutil_hab_is_secure_3);
+    tcase_add_test(tc, test_libutil_hab_is_secure_4);
+
 
     return;
 } /* libutil_hab_tests_suite() */
