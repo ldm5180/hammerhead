@@ -20,6 +20,8 @@
 #include "protected.h"
 #include "check-libutil-hab-tests.h"
 
+static void hab_destructor(bionet_hab_t * hab, void * user_data);
+
 /*
  * bionet_hab_new(type, NULL)
  * bionet_hab_get_name(hab)
@@ -1259,6 +1261,72 @@ START_TEST (test_libutil_hab_add_event_2) {
 } END_TEST /* test_libutil_hab_add_event_2 */
 
 
+/*
+ * bionet_hab_add_destructor(hab)
+ */
+START_TEST (test_libutil_hab_add_destructor_0) {
+    bionet_hab_t * hab;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_if(bionet_hab_add_destructor(hab, hab_destructor, &called), "Failed to add event to HAB.");
+
+    bionet_hab_free(hab);
+    
+    fail_unless(1 == called, 
+		"HAB free'd. Destructor should have been called and counter incremented.");
+} END_TEST /* test_libutil_hab_add_destructor_0 */
+
+
+/*
+ * bionet_hab_add_destructor(hab)
+ */
+START_TEST (test_libutil_hab_add_destructor_1) {
+    bionet_hab_t * hab;
+    bionet_event_t * event;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_if(bionet_hab_add_destructor(hab, hab_destructor, &called), "Failed to add event to HAB.");
+    fail_if(bionet_hab_add_destructor(hab, hab_destructor, &called), "Failed to add event to HAB.");
+
+    bionet_hab_free(hab);
+    
+    fail_unless(2 == called, 
+		"HAB free'd. Destructor added twice so should have been called and counter incremented twice.");
+} END_TEST /* test_libutil_hab_add_destructor_1 */
+
+
+/*
+ * bionet_hab_add_destructor(hab)
+ */
+START_TEST (test_libutil_hab_add_destructor_2) {
+    int called = 0;
+    
+    fail_unless(bionet_hab_add_destructor(NULL, hab_destructor, &called), 
+		"Failed to detect NULL HAB passed in.");
+} END_TEST /* test_libutil_hab_add_destructor_2 */
+
+
+/*
+ * bionet_hab_add_destructor(hab)
+ */
+START_TEST (test_libutil_hab_add_destructor_3) {
+    bionet_hab_t * hab;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(bionet_hab_add_destructor(hab, NULL, &called), 
+		"Failed to detect NULL destructor passed in.");
+} END_TEST /* test_libutil_hab_add_destructor_3 */
+
+
 void libutil_hab_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet HAB");
@@ -1357,9 +1425,21 @@ void libutil_hab_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_hab_add_event_1);
     tcase_add_test(tc, test_libutil_hab_add_event_2);
 
+    /* bionet_hab_add_destructor*/
+    tcase_add_test(tc, test_libutil_hab_add_destructor_0);
+    tcase_add_test(tc, test_libutil_hab_add_destructor_1);
+    tcase_add_test(tc, test_libutil_hab_add_destructor_2);
+    tcase_add_test(tc, test_libutil_hab_add_destructor_3);
+
 
     return;
 } /* libutil_hab_tests_suite() */
+
+
+static void hab_destructor(bionet_hab_t * hab, void * user_data) {
+    int * called = (int *)user_data;
+    *called = *called + 1;
+}
 
 // Emacs cruft
 // Local Variables:
