@@ -293,6 +293,7 @@ void *bionet_hab_get_user_data(const bionet_hab_t *hab);
  * 
  * @param[in] hab The HAB
  * 
+ * @retval -1 Invalid HAB pointer
  * @retval 0 Insecure
  * @retval 1 Secure
  *

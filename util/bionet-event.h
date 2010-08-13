@@ -35,8 +35,9 @@ typedef enum {
 /**
  * @brief Obtain a pointer to a new bionet_event_t
  *
- * @param[in] timestamp Timestamp of this new event
+ * @param[in] timestamp Timestamp of this new event or NULL to use the current time
  * @param[in] bdm_id BDM ID That recorded this event. Memory will be copied
+ * @param[in] event Type of event.
  *
  * @return Valid pointer on success
  * @return NULL on failure

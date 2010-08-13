@@ -15,7 +15,7 @@ int bionet_hab_is_secure(const bionet_hab_t *hab) {
     if (NULL == hab) {
 	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_hab_is_secure(): NULL hab passed in.");
-	return 0;
+	return -1;
     }
     return hab->is_secure;
 } /* bionet_hab_is_secure() */
