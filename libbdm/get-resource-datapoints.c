@@ -205,7 +205,10 @@ static bdm_hab_list_t *handle_Resource_Datapoints_Reply(ResourceDatapointsReply_
                 }
 
                 uint8_t node_uid[BDM_UUID_LEN];
-                if (db_make_node_guid(node, node_uid) ) goto cleanup;
+                if (db_make_node_guid(node, node_uid) ) {
+		    bionet_node_free(node);
+		    goto cleanup;
+		}
                 bionet_node_set_uid(node, node_uid);
 
                 if (bionet_hab_add_node(hab, node)) {
