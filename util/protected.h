@@ -183,6 +183,19 @@ int db_make_node_guid(
  */ 
 int bionet_datapoint_cmp(const void *a, const void *b);
 
+
+/**
+ * @brief Set the security flag on a HAB
+ * 
+ * @param[in] hab The HAB
+ * @param[in] is_secure 0 = Insecure, 1 = Secure
+ * 
+ * @note This function is used exclusively by the Bionet Client library.
+ */
+BIONET_UTIL_API_DECL
+void bionet_hab_set_secure(bionet_hab_t *hab, int is_secure);
+
+
 #endif /* BIONET_UTIL_PROTECTED_H */
 
 

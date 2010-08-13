@@ -303,18 +303,6 @@ int bionet_hab_is_secure(const bionet_hab_t *hab);
 
 
 /**
- * @brief Set the security flag on a HAB
- * 
- * @param[in] hab The HAB
- * @param[in] is_secure 0 = Insecure, 1 = Secure
- * 
- * @note This function is used exclusively by the Bionet Client library.
- */
-BIONET_UTIL_API_DECL
-void bionet_hab_set_secure(bionet_hab_t *hab, int is_secure);
-
-
-/**
  * @brief Get the number of events in the HAB
  * 
  * @param[in] hab Pointer to a HAB
