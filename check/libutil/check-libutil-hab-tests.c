@@ -1105,6 +1105,107 @@ START_TEST (test_libutil_hab_get_num_events_3) {
 } END_TEST /* test_libutil_hab_get_num_events_3 */
 
 
+/*
+ * bionet_hab_get_event_by_index(hab)
+ */
+START_TEST (test_libutil_hab_get_event_by_index_0) {
+    bionet_hab_t * hab;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(NULL == bionet_hab_get_event_by_index(hab, 0),
+		"Nothing has happened. There should be 0 events.");
+} END_TEST /* test_libutil_hab_get_event_by_index_0 */
+
+
+/*
+ * bionet_hab_get_event_by_index(hab)
+ */
+START_TEST (test_libutil_hab_get_event_by_index_1) {
+    bionet_hab_t * hab;
+    bionet_event_t * event;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(NULL == bionet_hab_get_event_by_index(hab, 0),
+		"Nothing has happened. There should be 0 events.");
+
+    event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_hab_add_event(hab, event), "Failed to add event to HAB.");
+
+    fail_unless(event == bionet_hab_get_event_by_index(hab, 0),
+		"Got a different event than the one added.");
+} END_TEST /* test_libutil_hab_get_event_by_index_1 */
+
+
+/*
+ * bionet_hab_get_event_by_index(hab)
+ */
+START_TEST (test_libutil_hab_get_event_by_index_2) {
+    bionet_hab_t * hab;
+    bionet_event_t * event0;
+    bionet_event_t * event1;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(NULL == bionet_hab_get_event_by_index(hab, 0),
+		"Nothing has happened. There should be 0 events.");
+
+    event0 = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event0, "Failed to create new event.");
+
+    fail_if(bionet_hab_add_event(hab, event0), "Failed to add event to HAB.");
+
+    event1 = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event1, "Failed to create new event.");
+
+    fail_if(bionet_hab_add_event(hab, event1), "Failed to add event to HAB.");
+
+    fail_unless(event1 == bionet_hab_get_event_by_index(hab, 1),
+		"Got a different event than the second added.");
+
+    fail_unless(event0 == bionet_hab_get_event_by_index(hab, 0),
+		"Got a different event than the first added.");
+} END_TEST /* test_libutil_hab_get_event_by_index_2 */
+
+
+/*
+ * bionet_hab_get_event_by_index(hab)
+ */
+START_TEST (test_libutil_hab_get_event_by_index_3) {
+    fail_unless(NULL == bionet_hab_get_event_by_index(NULL, 0),
+		"Failed to detect NULL HAB passed in.");
+} END_TEST /* test_libutil_hab_get_event_by_index_3 */
+
+
+/*
+ * bionet_hab_get_event_by_index(hab)
+ */
+START_TEST (test_libutil_hab_get_event_by_index_4) {
+    bionet_hab_t * hab;
+    bionet_event_t * event;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    fail_unless(NULL == bionet_hab_get_event_by_index(hab, 0),
+		"Nothing has happened. There should be 0 events.");
+
+    event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_hab_add_event(hab, event), "Failed to add event to HAB.");
+
+    fail_unless(NULL == bionet_hab_get_event_by_index(hab, 1),
+		"There should be 1 events so index 1 is too big.");
+} END_TEST /* test_libutil_hab_get_event_by_index_4 */
+
+
 void libutil_hab_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet HAB");
@@ -1190,6 +1291,13 @@ void libutil_hab_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_hab_get_num_events_1);
     tcase_add_test(tc, test_libutil_hab_get_num_events_2);
     tcase_add_test(tc, test_libutil_hab_get_num_events_3);
+
+    /* bionet_hab_get_event_by_index() */
+    tcase_add_test(tc, test_libutil_hab_get_event_by_index_0);
+    tcase_add_test(tc, test_libutil_hab_get_event_by_index_1);
+    tcase_add_test(tc, test_libutil_hab_get_event_by_index_2);
+    tcase_add_test(tc, test_libutil_hab_get_event_by_index_3);
+    tcase_add_test(tc, test_libutil_hab_get_event_by_index_4);
 
     return;
 } /* libutil_hab_tests_suite() */
