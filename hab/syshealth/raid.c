@@ -43,6 +43,11 @@ int raid_init(bionet_node_t *node) {
 
 	mdname[strlen(mdname)-1] = '\0';
 
+	if (0 == bionet_is_valid_name_component(mdname)) {
+	    g_warning("%s is not a valid Bionet name component.", mdname);
+	    continue;
+	}
+
 	if (BIONET_NAME_COMPONENT_MAX_LEN <= snprintf(resname, BIONET_NAME_COMPONENT_MAX_LEN, "dev-%s", mdname)) {
 	    g_log("", G_LOG_LEVEL_WARNING, "%s is too long", mdname);
 	    continue;
@@ -110,3 +115,10 @@ void raid_update(bionet_node_t *node) {
 	}	
     }
 } /* raid_update() */
+
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
