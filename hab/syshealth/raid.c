@@ -43,7 +43,7 @@ int raid_init(bionet_node_t *node) {
 
 	mdname[strlen(mdname)-1] = '\0';
 
-	if (0 == bionet_is_valid_name_component(mdname)) {
+	if (1 != bionet_is_valid_name_component(mdname)) {
 	    g_warning("%s is not a valid Bionet name component.", mdname);
 	    continue;
 	}
