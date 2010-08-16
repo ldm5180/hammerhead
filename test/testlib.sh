@@ -33,18 +33,17 @@ time_wait() {
 time_watch() {
     TIME="$1"
     shift
-    CMD=$@
 
     echo "Waiting up to $TIME seconds for '$@' to succeed"
 
     for i in `seq $TIME`; do
-	if $CMD >/dev/null 2>&1; then
+	if "$@" >/dev/null 2>&1; then
 	    break
 	fi
 	sleep 1
     done
 
-    if $CMD >/dev/null 2>&1; then
+    if "$@" >/dev/null 2>&1; then
 	echo "...Success"
         return 0;
     else 

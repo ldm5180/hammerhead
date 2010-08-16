@@ -37,8 +37,11 @@ if [ -z "$ENABLE_DARWIN" ]; then
 fi
 
 
-test_log "Removing old database files"
+# Create the database files now, so they aren't created under valgrind
+test_log "Creating empty database files"
 rm -f orig-bdm.db sync-bdm.db
+sqlite3 orig-bdm.db < $ROOT/data-manager/server/schema
+sqlite3 sync-bdm.db < $ROOT/data-manager/server/schema
 
 export G_SLICE=always-malloc 
 export G_DEBUG=gc-friendly,resident-modules
