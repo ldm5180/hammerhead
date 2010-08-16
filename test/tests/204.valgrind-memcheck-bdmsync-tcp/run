@@ -76,6 +76,8 @@ if [ "$TEST_PATTERN" != "testpattern.in" ]; then
   TPPID=$!
 fi
 
+sleep 5
+
 test_log "starting random-hab"
 if [ -z "$TEST_PATTERN" ]; then
   $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &

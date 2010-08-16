@@ -44,7 +44,7 @@ time_watch() {
     done
 
     if "$@" >/dev/null 2>&1; then
-	echo "...Success"
+	echo "...Success in $i seconds"
         return 0;
     else 
 	echo "...Timeout Expired"
