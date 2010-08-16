@@ -60,8 +60,6 @@ typedef struct {
 
     GList *accept_pending_list; // List of bip_peer_t
 
-    int running;
-
     char *cal_server_mdnssd_bip_network_type;
 
     SSL_CTX * ssl_ctx_server;

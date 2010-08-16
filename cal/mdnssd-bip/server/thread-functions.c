@@ -109,7 +109,6 @@ static int read_from_user(cal_server_mdnssd_bip_t * this) {
 
     r = bip_msg_queue_pop(&this->bip_server_msgq, BIP_MSG_QUEUE_FROM_USER, &event);
     if (r != 0) {
-        this->running = 0;
         return -1;
     }
 
@@ -290,7 +289,6 @@ static int read_from_user(cal_server_mdnssd_bip_t * this) {
  
         case CAL_EVENT_SHUTDOWN: {
             ret_val = -1;
-            this->running = 0;
             break;
         }
 
@@ -903,9 +901,7 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
         return (void*)1;
     }
 
-    this->running = 1;
-
-    while (this->running) {
+    for(;;) {
         fd_set readers;
         fd_set writers;
         int max_fd;
@@ -977,7 +973,7 @@ SELECT_LOOP_CONTINUE:
         cal_pthread_mutex_unlock(&avahi_mutex);
 
         // block until there's something to do
-        r = select(max_fd + 1, &readers, NULL, NULL, timeout);
+        r = select(max_fd + 1, &readers, &writers, NULL, timeout);
 
         cal_pthread_mutex_lock(&avahi_mutex);
         mDNSProcessFDSetServer(&readers);
@@ -1065,6 +1061,75 @@ shutdown_thread:
     // User asked we shutdown
     //
     bip_msg_queue_close(&this->bip_server_msgq, BIP_MSG_QUEUE_TO_USER);
+
+    // TODO: Un-register service with dns-sd
+
+    // TODO: Cancel all pending connections
+    // TODO: Flush all buffered messages to peers
+    int writes_pending = -1;
+    while(writes_pending) {
+        fd_set writers;
+        int max_fd;
+        int r;
+
+
+SHUTDOWN_SELECT_LOOP_CONTINUE:
+
+        FD_ZERO(&writers);
+        max_fd = -1;
+        writes_pending = 0;
+
+
+        //
+        // each client that's connected to us might want to say something
+        // 
+        {
+            GHashTableIter iter;
+            const char *name;
+            bip_peer_t *peer;
+
+            g_hash_table_iter_init (&iter, this->clients);
+            while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
+                bip_peer_network_info_t *net = bip_peer_get_connected_net(peer);
+                if (net == NULL) continue;
+                if (net->write_pending) {
+                    writes_pending++;
+                    FD_SET(net->socket, &writers);
+                }
+                max_fd = Max(max_fd, net->socket);
+            }
+        }
+        if(writes_pending <= 0) {
+            break;
+        }
+
+        // block until there's something to do
+        r = select(max_fd + 1, NULL, &writers, NULL, timeout);
+
+        // See if we can write to our peers
+        {
+            GHashTableIter iter;
+            const char *name;
+            bip_peer_t *peer;
+
+            g_hash_table_iter_init (&iter, this->clients);
+            while (g_hash_table_iter_next(&iter, (gpointer)&name, (gpointer)&peer)) {
+                bip_peer_network_info_t *net;
+
+                net = bip_peer_get_connected_net(peer);
+                if (net == NULL) continue;
+
+                if (FD_ISSET(net->socket, &writers)) {
+                    r = bip_drain_pending_msgs(net);
+                    if ( r < 0 ) {
+                        handle_client_disconnect(this, name);
+                        g_hash_table_remove(this->clients, name);  // close the network connection, free all allocated memory for key & value
+                        goto SHUTDOWN_SELECT_LOOP_CONTINUE;
+                    }
+                }
+            }
+        }
+    } 
 
 #ifdef HAVE_EMBEDDED_MDNSSD
     // if we don't have embedded mDNS-SD, then timeout is always NULL
