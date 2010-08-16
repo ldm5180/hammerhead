@@ -489,7 +489,7 @@ AC_ARG_ENABLE(qt4, AC_HELP_STRING([--disable-qt4],
 #            [[$ac_path_QMAKE -version | grep -iq 'qt version 4' && ac_cv_path_QMAKE=$ac_path_QMAKE ac_path_QMAKE_found=:]],
 #            [AC_MSG_ERROR([could not find qmake for QT4 ])])])
 if test "x$ENABLE_QT4" = "xyes" ; then
-    AT_WITH_QT
+    AT_WITH_QT([svg])
 
     qt_ok=yes
     AC_PATH_PROGS([QMAKE], 
@@ -503,7 +503,7 @@ if test "x$ENABLE_QT4" = "xyes" ; then
 
         AC_FIND_QWT(5.0.0,4,
             [qwt-qt4 qwt], 
-            [/usr/include/qwt5 /usr/include/qwt-qt4 /opt/local/include],
+            [/usr/include/qwt5 /usr/include/qwt-qt4 /opt/local/include /opt/local/include/qwt],
             [/opt/local/lib],
             [qt_ok=no])
     fi
