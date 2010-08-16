@@ -30,6 +30,29 @@ time_wait() {
     fi
 }
 
+time_watch() {
+    TIME="$1"
+    shift
+    CMD=$@
+
+    echo "Waiting up to $TIME seconds for '$@' to succeed"
+
+    for i in `seq $TIME`; do
+	if $CMD >/dev/null 2>&1; then
+	    break
+	fi
+	sleep 1
+    done
+
+    if $CMD >/dev/null 2>&1; then
+	echo "...Success"
+        return 0;
+    else 
+	echo "...Timeout Expired"
+        return 1;
+    fi
+}
+
 
 file_size() {
     if [ -n "$ENABLE_DARWIN" ]; then

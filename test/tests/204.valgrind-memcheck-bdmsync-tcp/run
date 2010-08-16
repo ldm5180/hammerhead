@@ -1,10 +1,12 @@
-#!/bin/bash -x
+#!/bin/bash
 #
 # Copyright (c) 2008-2010, Regents of the University of Colorado.
 # This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 # NNC07CB47C.
 #
 
+#Define to run with a test-pattern file, instead of random
+#TEST_PATTERN=testpattern.in
 
 UNIQUE=$$
 RETVAL=0
@@ -27,16 +29,16 @@ fi
 . $ROOT/test/testlib.sh
 skip_if_no_valgrind
 
+rm -f log.vg.*.core.*
+
 VGLEAK=
 if [ -z "$ENABLE_DARWIN" ]; then
     VGLEAK="--leak-check=full --leak-resolution=high"
 fi
 
 
-echo "making DB file"
+test_log "Removing old database files"
 rm -f orig-bdm.db sync-bdm.db
-sqlite3 orig-bdm.db < $ROOT/data-manager/server/schema
-cp orig-bdm.db sync-bdm.db
 
 export G_SLICE=always-malloc 
 export G_DEBUG=gc-friendly,resident-modules
@@ -50,39 +52,60 @@ fi
 
 DOVALGRIND="$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppressions$VGSUPPRESSIONS_SUFFIX --quiet --tool=memcheck --trace-children=yes $TRACK_ORIGINS $VGLEAK"
 
-echo starting TCP sync receiver BDM
-$DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$UNIQUE --no-resources --tcp-sync-receiver &
+test_log "starting TCP sync receiver BDM"
+rm -f bdm-recv.log
+$DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$UNIQUE --no-resources --tcp-sync-receiver --log-file bdm-recv.log --debug &
 RECVPID=$!
 
-echo starting TCP sync sender BDM
-$DOVALGRIND --log-file=log.vg.send $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 &
+test_log "starting TCP sync sender BDM"
+rm -f bdm-send.log
+$DOVALGRIND --log-file=log.vg.send $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 --log-file bdm-send.log --debug &
 SENDPID=$!
-sleep 15 # let the bdm come up before starting the HAB
 
-echo starting random-hab
-$ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+#Wait for BDM to start before starting hab
+time_watch 120 grep -i "connected to bionet" bdm-send.log
+
+
+if [ "$TEST_PATTERN" != "testpattern.in" ]; then
+  test_log "Starting test-pattern-hab recorder"
+  rm -f testpattern.in
+  $ROOT/client/watcher/bionet-watcher --output-mode 'test-pattern' > testpattern.in &
+  TPPID=$!
+fi
+
+test_log "starting random-hab"
+if [ -z "$TEST_PATTERN" ]; then
+  $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
+else
+  $ROOT/hab/test-pattern/test-pattern-hab --id $UNIQUE --type random-hab --output-mode bdm-client --current-time "$TEST_PATTERN" >| out.random-hab &
+fi
 HABPID=$!
 
 sleep 30
 
-echo "killing random-hab"
+test_log "killing random-hab"
 kill $HABPID
 wait $HABPID
 
 sleep 25
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
-echo "test run complete. killing the TCP sync sender BDM"
+test_log "test run complete. killing the TCP sync sender BDM"
 kill $SENDPID
 wait $SENDPID
 
-echo "getting data from TCP sync receiver BDM"
+test_log "getting data from TCP sync receiver BDM"
 
 
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
 
-echo "killing BDM"
+test_log "killing BDM"
 kill $RECVPID
 wait $RECVPID
+
+if [ -n "$TPPID" ]; then
+  kill $TPPID
+  wait $TPPID
+fi
 
 normalize_bdm_client out.random-hab  > norm.random-hab
 
