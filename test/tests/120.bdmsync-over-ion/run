@@ -91,7 +91,6 @@ echo "Waiting for all data to sync"
 sleep 30
 if [ `bplist | wc -l` -gt 0 ]; then
     echo "Waiting for no bundles in ION..."
-     ~/bin/growlnotify -m "ION is waiting" --sticky -H bender.local -p 'piddle party'
     for i in `seq 6`; do
 	sleep 10
     	if [ `bplist | wc -l` -le 0 ]; then
