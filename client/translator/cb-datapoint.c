@@ -31,6 +31,14 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
 
         // set calibration constant and update engineering value table
         set_calibration_const(adc_id, calib_id, constant);
+
+        // update min and max resource value
+        //convert double value to char*
+        char *buff = NULL;
+        sprintf(buff, "%f", table[adc_id][0][ENG_VAL]);
+        bionet_set_resource(adc_range_resource[adc_id][ZERO_VOLT], buff);
+        sprintf(buff, "%f", table[adc_id][255][ENG_VAL]);
+        bionet_set_resource(adc_range_resource[adc_id][FIVE_VOLT], buff);
     }
     else if(res_name[0] == 'p')
     {
