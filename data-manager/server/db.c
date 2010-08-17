@@ -53,6 +53,13 @@ int db_get_datapoint_rowid(
         bdm_datapoint_t * dp,
         sqlite_int64 *rowid);
 
+int db_get_event_rowid(
+        sqlite3* db,
+        const struct timeval * timestamp,
+        sqlite_int64 bdm_row,
+        dbb_event_type_t event_type,
+        sqlite_int64 data_row,
+        sqlite_int64 *rowid);
 
 /*
  * There are a lot of statements
@@ -71,6 +78,7 @@ enum prepared_stmt_idx {
     ROWFOR_HAB_STMT,
     ROWFOR_NODE_STMT,
     ROWFOR_DATAPOINT_STMT,
+    ROWFOR_EVENT_STMT,
 
     GET_LAST_SYNC_BDM_STMT,
     SET_LAST_SYNC_BDM_STMT,
@@ -1308,53 +1316,18 @@ int db_get_datapoint_rowid(sqlite3* db,
 
 }
 
-int db_insert_event(
-    sqlite3 * db,
-    const struct timeval * timestamp,
-    sqlite_int64 bdm_row,
-    dbb_event_type_t event_type,
-    sqlite_int64 data_row,
-    sqlite_int64 *rowid)
+static int bind_event_params(
+        sqlite3_stmt* this_stmt,
+        const struct timeval * timestamp,
+        sqlite_int64 bdm_row,
+        dbb_event_type_t event_type,
+        sqlite_int64 data_row)
 {
-    int r;
-    struct timeval ts_dat;
-
-    if(data_row < 0) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "%s() Bad data row passed in: %lld", 
-                __FUNCTION__, data_row);
-
-    }
-
-    if(timestamp == NULL) {
-        r = gettimeofday(&ts_dat, NULL);
-        if ( r != 0 ) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): gettimeofday() returned error: %s", 
-                    __FUNCTION__, strerror(errno));
-            return -1;
-
-        }
-        timestamp = &ts_dat;
-    }
-
-    if(all_stmts[INSERT_EVENT_STMT] == NULL) {
-	r = sqlite3_prepare_v2(db, 
-	    "INSERT"
-	    " INTO Events (timestamp_sec,timestamp_usec,recording_bdm, islost, hab, node, datapoint)"
-	    " VALUES (?, ?, ?, ?, ?, ?, ?)",
-	    -1, &all_stmts[INSERT_EVENT_STMT], NULL);
-
-	if (r != SQLITE_OK) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "insert_event SQL error: %s", sqlite3_errmsg(db));
-	    return -1;
-	}
-    }
-    sqlite3_stmt * this_stmt = all_stmts[INSERT_EVENT_STMT];
-
     // Bind host variables to the prepared statement 
     // -- This eliminates the need to escape strings
     // Bind in order of the placeholders (?) in the SQL
     int param = 1;
+    int r;
     r = sqlite3_bind_int(this_stmt, param++, timestamp->tv_sec);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s SQL bind error: %d", 
@@ -1418,7 +1391,7 @@ int db_insert_event(
         if(i == idx) {
             r = sqlite3_bind_int64(this_stmt, param++, data_row);
         } else {
-            r = sqlite3_bind_null(this_stmt, param++);
+            r = sqlite3_bind_int64(this_stmt, param++, 0);
         }
         if(r != SQLITE_OK){
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s SQL bind error: %d", 
@@ -1427,6 +1400,117 @@ int db_insert_event(
         }
     }
 
+    return 0;
+}
+
+int db_get_event_rowid(
+        sqlite3* db,
+        const struct timeval * timestamp,
+        sqlite_int64 bdm_row,
+        dbb_event_type_t event_type,
+        sqlite_int64 data_row,
+        sqlite_int64 *rowid)
+{
+    int r;
+
+    if(all_stmts[ROWFOR_EVENT_STMT] == NULL) {
+	r = sqlite3_prepare_v2(db, 
+	    "SELECT Key"
+	    " FROM Events"
+	    " WHERE timestamp_sec  = ?"
+            "   AND timestamp_usec = ?"
+            "   AND recording_bdm  = ?"
+            "   AND islost         = ?"
+            "   AND hab            = ?"
+            "   AND node           = ?"
+            "   AND datapoint      = ?",
+	    -1, &all_stmts[ROWFOR_EVENT_STMT], NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s SQL error: %s", 
+                    __FUNCTION__, sqlite3_errmsg(db));
+	    return -1;
+	}
+    }
+    sqlite3_stmt * this_stmt = all_stmts[ROWFOR_EVENT_STMT];
+
+    r = bind_event_params(this_stmt, timestamp, bdm_row, event_type, data_row);
+    if ( r != 0 ) return r;
+
+
+    while(SQLITE_BUSY == (r = sqlite3_step(this_stmt))){
+        g_usleep(20 * 1000);
+    }
+
+    int ret = 0;
+    switch (r) {
+        case SQLITE_DONE:
+        case SQLITE_ROW:
+            // Success!
+            if(rowid) {
+                *rowid = sqlite3_column_int64(this_stmt, 0);
+            }
+            break;
+
+        default:
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s SQL error: %s", 
+                    __FUNCTION__, sqlite3_errmsg(db));
+            ret = -1;
+    }
+
+    sqlite3_reset(this_stmt);
+    sqlite3_clear_bindings(this_stmt);
+
+
+    return ret;
+
+}
+
+int db_insert_event(
+    sqlite3 * db,
+    const struct timeval * timestamp,
+    sqlite_int64 bdm_row,
+    dbb_event_type_t event_type,
+    sqlite_int64 data_row,
+    sqlite_int64 *rowid)
+{
+    int r;
+    struct timeval ts_dat;
+
+    if(data_row < 0) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "%s() Bad data row passed in: %lld", 
+                __FUNCTION__, data_row);
+
+    }
+
+    if(timestamp == NULL) {
+        r = gettimeofday(&ts_dat, NULL);
+        if ( r != 0 ) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): gettimeofday() returned error: %s", 
+                    __FUNCTION__, strerror(errno));
+            return -1;
+
+        }
+        timestamp = &ts_dat;
+    }
+
+    if(all_stmts[INSERT_EVENT_STMT] == NULL) {
+	r = sqlite3_prepare_v2(db, 
+	    "INSERT"
+	    " INTO Events (timestamp_sec,timestamp_usec,recording_bdm, islost, hab, node, datapoint)"
+	    " VALUES (?, ?, ?, ?, ?, ?, ?)",
+	    -1, &all_stmts[INSERT_EVENT_STMT], NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "insert_event SQL error: %s", sqlite3_errmsg(db));
+	    return -1;
+	}
+    }
+    sqlite3_stmt * this_stmt = all_stmts[INSERT_EVENT_STMT];
+
+    r = bind_event_params(this_stmt, timestamp, bdm_row, event_type, data_row);
+    if ( r != 0 ) return r;
 
     while(SQLITE_BUSY == (r = sqlite3_step(this_stmt))){
         g_usleep(20 * 1000);
@@ -1444,8 +1528,19 @@ int db_insert_event(
             }
             break;
 
+        case SQLITE_CONSTRAINT:
+            // Row already exists. That's cool...
+            if(rowid) {
+                ret = db_get_event_rowid(db, timestamp, bdm_row, event_type, data_row, rowid);
+                if(0 == ret) {
+                    ret = 1; // Row already existed
+                }
+            }
+            break;
+
         default:
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db SQL error: %s", sqlite3_errmsg(db));
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s() SQL error: %s", 
+                    __FUNCTION__, sqlite3_errmsg(db));
             ret = -1;
     }
 

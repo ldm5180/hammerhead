@@ -124,7 +124,8 @@ CREATE TABLE Events (
     -- One of the following will be not null
     hab        INTEGER REFERENCES Hardware_Abstractors(Key), 
     node       INTEGER REFERENCES Nodes(Key),
-    datapoint  INTEGER REFERENCES Datapoints(Key)
+    datapoint  INTEGER REFERENCES Datapoints(Key),
+    UNIQUE (timestamp_sec,timestamp_usec,recording_bdm,islost,hab,node,datapoint)
 );
 CREATE INDEX time_Index ON Events(timestamp_sec, timestamp_usec);
 CREATE INDEX bdm_Index ON Events(recording_bdm);
