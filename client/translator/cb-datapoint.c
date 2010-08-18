@@ -1,4 +1,5 @@
 #include "translator.h"
+#include <string.h>
 #include <stdlib.h>
 
 void cb_datapoint(bionet_datapoint_t *datapoint)
@@ -33,12 +34,12 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
         set_calibration_const(adc_id, calib_id, constant);
 
         // update min and max resource value
-        //convert double value to char*
-        char *buff = NULL;
-        sprintf(buff, "%f", table[adc_id][0][ENG_VAL]);
-        bionet_set_resource(adc_range_resource[adc_id][ZERO_VOLT], buff);
-        sprintf(buff, "%f", table[adc_id][255][ENG_VAL]);
-        bionet_set_resource(adc_range_resource[adc_id][FIVE_VOLT], buff);
+        double buff = table[adc_id][0][ENG_VAL];
+        bionet_resource_set_double(adc_range_resource[adc_id][ZERO_VOLT], buff, NULL);
+        buff = table[adc_id][255][ENG_VAL];
+        bionet_resource_set_double(adc_range_resource[adc_id][FIVE_VOLT], buff, NULL);
+
+        hab_report_datapoints(bionet_resource_get_node(resource));
     }
     else if(res_name[0] == 'p')
     {
