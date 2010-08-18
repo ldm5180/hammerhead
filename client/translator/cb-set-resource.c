@@ -6,7 +6,7 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
     double content, voltage;
     long int adc;
     char *res_name = NULL;
-    char id[3];
+    char id[9];
     bionet_node_t *node;
 
     node = bionet_resource_get_node(resource);
@@ -32,8 +32,8 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
 
     // command proxr hab to voltage
     // proxr hab works with 8 bit resolution
-    int v = voltage/VOLT_INC/1000;
-    sprintf(id, "%d", v);
+    double v = voltage/1000;
+    sprintf(id, "%f", v);
     bionet_set_resource(proxr_resource[adc], id);
 
     bionet_resource_set_double(resource, content, NULL);
