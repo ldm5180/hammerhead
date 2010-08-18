@@ -2,7 +2,7 @@ Source: bionet2
 Priority: extra
 Maintainer: Sebastian Kuzminsky <seb@highlab.com>
 Build-Depends: debhelper (>= 6), @ALSA_BUILD_DEP@ @ION_BUILD_DEP@
- @MDNSSD_BUILD_DEP@
+ @EMDNSSD_BUILD_DEP@
  autoconf,
  check,
  libglib2.0-dev,

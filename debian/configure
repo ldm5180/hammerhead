@@ -9,8 +9,8 @@ function subst () {
         -e "s|@RECOMMENDS_ION@|$RECOMMENDS_ION|g"  \
         -e "s|@ION_BUILD_DEP@|$ION_BUILD_DEP|g"  \
         -e "s|@CONFIGURE_WITH_ION@|$CONFIGURE_WITH_ION|g"  \
-        -e "s|@MDNSSD_BUILD_DEP@|$MDNSSD_BUILD_DEP|g"  \
-        -e "s|@CONFIGURE_WITH_MDNSSD@|$CONFIGURE_WITH_MDNSSD|g"  \
+        -e "s|@EMDNSSD_BUILD_DEP@|$EMDNSSD_BUILD_DEP|g"  \
+        -e "s|@CONFIGURE_WITH_EMDNSSD@|$CONFIGURE_WITH_EMDNSSD|g"  \
         -e "s|@ALSA_BUILD_DEP@|$ALSA_BUILD_DEP|g"  \
         -e "s|@ALSA_HAB@|$ALSA_HAB|g"              \
         -e "s|@BPSTATS2_HAB@|$BPSTATS2_HAB|g"  \
@@ -31,7 +31,7 @@ OPTIONS:
     --with-ion    Enable a build-dependency on ion-dev.  Without this
                   argument, the dsc will not build-depend on ION.
 
-    --with-mdnssd Enable a build-dependency on embedded mdnssd. Without
+    --with-emdnssd Enable a build-dependency on embedded mdnssd. Without
                   this argument, libavahi-compat-libdnssd-dev will be 
                   used instead.
 
@@ -49,7 +49,7 @@ END
 #
 
 CONFIGURE_WITH_ION="--without-ion"
-MDNSSD_BUILD_DEP="libavahi-compat-libdnssd-dev, "
+EMDNSSD_BUILD_DEP="libavahi-compat-libdnssd-dev, "
 
 
 
@@ -61,7 +61,7 @@ MDNSSD_BUILD_DEP="libavahi-compat-libdnssd-dev, "
 # Note that we use `"$@"' to let each command-line parameter expand to a
 # separate word. The quotes around `$@' are essential!
 # We need TEMP as the `eval set --' would nuke the return value of getopt.
-TEMP=`getopt -o h --long help,with-ion,with-mdnssd -n "$0" -- "$@"`
+TEMP=`getopt -o h --long help,with-ion,with-emdnssd -n "$0" -- "$@"`
 if [ $? != 0 ] ; then
     echo "Terminating..." >&2
     exit 1
@@ -82,10 +82,10 @@ while true ; do
             BP_COMMAND_PROXY="usr/bin/bionet-bp-command-proxy"
             shift 1
             ;;
-        --with-mdnssd)
-            echo "build-depending on embedded mdnssd"
-            MDNSSD_BUILD_DEP="mdnssd, "
-            CONFIGURE_WITH_MDNSSD="--with-mdnssd"
+        --with-emdnssd)
+            echo "build-depending on embedded emdnssd"
+            EMDNSSD_BUILD_DEP="emdnssd, "
+            CONFIGURE_WITH_EMDNSSD="--with-emdnssd"
             shift 1
             ;;
         -h|--help) usage 0 ;;

@@ -179,13 +179,13 @@ AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
 
 AC_ARG_WITH(
-    [mdnssd],
-    AC_HELP_STRING([--with-mdnssd], [Use mdnssd library @<:@default=check@:>@]),
-        [with_mndssd=$withval],
-        [with_mndssd=check]
+    [emdnssd],
+    AC_HELP_STRING([--with-emdnssd], [Use embedded mdnssd library @<:@default=check@:>@]),
+        [with_emdnssd=$withval],
+        [with_emdnssd=no]
     )
 
-if test "x$with_mdnssd" = "x" || test "x$with_mdnssd" = "xno"; then
+if test "x$with_emdnssd" = "x" || test "x$with_emdnssd" = "xno"; then
     if test "$cross_compiling" != "yes"; then
         if test "x$HAVE_LINUX" = "xyes"; then
             PKG_CHECK_MODULES(AVAHI_COMPAT_LIBDNS_SD, [ avahi-compat-libdns_sd >= 0.6.16 ])
@@ -194,16 +194,16 @@ if test "x$with_mdnssd" = "x" || test "x$with_mdnssd" = "xno"; then
         else 
             if test "x$SYSAPI" != "xposix"; then
                 # Look for bonjour library elsewhere
-                AC_MSG_ERROR([unable to find mdnssd library])
+                AC_MSG_ERROR([unable to find emdnssd library])
             fi
         fi
     fi
-elif test "x$with_mdnssd" = "xyes" ; then
+elif test "x$with_emdnssd" = "xyes" ; then
     AVAHI_COMPAT_LIBDNS_SD_LIBS="-lembeddeddns_sd"
     AC_DEFINE([HAVE_EMBEDDED_MDNSSD], [1], ["Define if embedded mdns is being used"])
 else
-    AVAHI_COMPAT_LIBDNS_SD_CFLAGS="-I$with_mdnssd/mDNSPosix/ -I$with_mdnssd/mDNSShared/ -I$with_mdnssd/mDNSCore/"
-    AVAHI_COMPAT_LIBDNS_SD_LIBS="-L$with_mdnssd/mDNSPosix/build/prod -lembeddeddns_sd"
+    AVAHI_COMPAT_LIBDNS_SD_CFLAGS="-I$with_emdnssd/mDNSPosix/ -I$with_emdnssd/mDNSShared/ -I$with_emdnssd/mDNSCore/"
+    AVAHI_COMPAT_LIBDNS_SD_LIBS="-L$with_emdnssd/mDNSPosix/build/prod -lembeddeddns_sd"
     AC_DEFINE([HAVE_EMBEDDED_MDNSSD], [1], ["Define if embedded mdns is being used"])
 fi
 AC_SUBST(AVAHI_COMPAT_LIBDNS_SD_CFLAGS)
