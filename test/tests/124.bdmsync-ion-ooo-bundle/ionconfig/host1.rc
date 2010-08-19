@@ -24,19 +24,15 @@ a endpoint ipn:1.0 x
 a endpoint ipn:1.1 x
 a endpoint ipn:1.2 x
 
-a protocol udp 1400 16
-a induct udp 127.0.0.1:4556 udpcli
-a outduct udp '*' udpclo
+a protocol file 1400 4
+a induct file filecla/host1 filecli
+a outduct file '*' fileclo
 
-# Set simple custody transfer countdown timer (seconds)
-t 10
-
-w 1
 ## end bpadmin 
 
 ## begin ipnadmin 
-a plan 1 udp/*,127.0.0.1:4556
-a plan 2 udp/*,127.0.0.1:4557
+a plan 1 file/*,filecla/host1
+a plan 2 file/*,filecla/host2-delay
 ## end ipnadmin 
 
 ## begin ionsecadmin

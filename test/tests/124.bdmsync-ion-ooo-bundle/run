@@ -32,21 +32,56 @@ fi
 UNIQUE=$$
 RETVAL=0
 
+function dirempty() {
+    RC=0
+    for dir in "$@"; do
+        if [ `ls "$dir" | wc -l` -gt 0 ]; then
+            RC=1
+        fi
+    done
+
+    return $RC
+}
+
+function dir_not_empty() {
+    ! dirempty "$@"
+}
+
 # We REALLY need to cleanup if we can
 on_die()
 {
-    kill %1
-    kill %3
-    kill %4
-    kill %5
+    echo "Killing jobs: " `jobs -p`
+    kill `jobs -p`
     killm
     exit 2
 }
 trap 'on_die' TERM INT
 
+test_error()
+{
+    echo "Error running test: $@"
+
+    echo "Killing jobs: " `jobs -p`
+    kill `jobs -p`
+
+    echo "Stopping ION Node 1..."
+    ionstop -k 0x100
+    echo "Stopping ION Node 2..."
+    ionstop -k 0x200
+
+    echo "Running killm"
+    killm > /dev/null
+
+    exit 1
+
+}
+
 YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
 NEXT_YEAR=$(($YEAR+1))
+
+### Setup
+##################################################
 
 ulimit -Sc unlimited
 rm -f core core.*
@@ -56,6 +91,8 @@ rm -f ion.log
 test_log "removing old DB file, and allowing bionet-data-manger to create schema"
 rm -f orig-bdm.db sync-bdm.db
 
+### Start ION instances
+##################################################
 CONFIGDIR="./ionconfig"
 
 rm -rf sdr1 sdr2
@@ -71,23 +108,31 @@ pathName ${PWD}/sdr2
 ENDCFG
 
 
+rm -rf filecla
+mkdir filecla
+mkdir filecla/host1 filecla/host2 filecla/host2-delay
+
 test_log "Starting ION node 1..."
 ionstart -I ${CONFIGDIR}/host1.rc -k 0x100
 test_log "Starting ION node 2..."
 ionstart -I ${CONFIGDIR}/host2.rc -k 0x200
 
+### Start Sync Receiver
+##################################################
 
 test_log "Starting ION sync receiver BDM"
 rm -f sync-recv.log
 $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --ion-key 512 --no-resources --dtn-endpoint-id 'ipn:2.1' --dtn-sync-receiver  --debug --log-file=sync-recv.log &
 RECVPID=$!
 
+### Start Sync Sender
+##################################################
 test_log "starting ION sync sender BDM"
 rm -f sync-send.log
 $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --ion-key 256 --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.1' --sync-sender-config  bdm-sync-send.cfg --port 11111  --debug --log-file=sync-send.log &
 SENDPID=$!
 
-time_watch 60 grep -i "connected to bionet" sync-send.log
+time_watch 60 grep -i "connected to bionet" sync-send.log || test_error "bdm didn't start"
 sleep 5 # let the bdm come up before starting the HAB
 
 $ROOT/data-manager/client/bdm-watcher/bdm-watcher -o bdm-client -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" \
@@ -101,60 +146,33 @@ test_log "starting random-hab"
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
 HABPID=$!
 
-test_log "Generating data until first sync..."
-time_watch 20 grep -i 'Syncd ' sync-send.log 
+test_log "Generating data. Waiting for first bundle...."
+time_watch 20 dir_not_empty filecla/host2-delay || test_error "First bundle never generated"
 
-if true; then
-test_log "Disconnecting node 1->node 2..."
-ipnadmin 0x100 <<ENDOFBPADMINCOMMANDS
-d plan 1
-q
-ENDOFBPADMINCOMMANDS
-
-test_log "Disconnecting node 2->node 1..."
-ipnadmin 0x200 <<ENDOFBPADMINCOMMANDS
-d plan 1
-q
-ENDOFBPADMINCOMMANDS
-
+### SyncBundles are being generated.
+test_log "Sync bundles being generated. Waiting a bit..."
 sleep 10
 
-test_log "Resuming bundle delivery"
-echo `bplist 0x100 | grep -c '**** Bundle'` bundles in bplist 0x100...
-echo `bplist 0x200 | grep -c '**** Bundle'` bundles in bplist 0x200...
-
-test_log "Connecting node 2->node 1..."
-ipnadmin 0x200 <<ENDOFBPADMINCOMMANDS
-a plan 1 udp/*,127.0.0.1:4556
-q
-ENDOFBPADMINCOMMANDS
-test_log "Connecting node 1->node 2..."
-ipnadmin 0x100 <<ENDOFBPADMINCOMMANDS
-a plan 1 udp/*,127.0.0.1:4556
-q
-ENDOFBPADMINCOMMANDS
-
-sleep 10
-
-else 
-sleep 20
-fi
 
 test_log "killing random-hab"
 kill $HABPID
 wait $HABPID
 
-test_log "Waiting for all data to sync"
-sleep 30
-if [ `bplist 0x100 | wc -l` -gt 0 ] || [ `bplist 0x200 | wc -l` -gt 0 ]; then
-    test_log "Waiting for no bundles in ION..."
-    for i in `seq 6`; do
-	sleep 10
-    	if [ `bplist | wc -l` -le 0 ]; then
-	    break
-        fi
+test_log "Waiting for most data to sync"
+sleep 10
+
+test_log "Manually delivering bundles in (mostly) reverse order..."
+while dir_not_empty filecla/host2-delay; do
+    for bdl in `ls -t filecla/host2-delay`; do
+        mv filecla/host2-delay/$bdl filecla/host2
+        touch filecla/host2/$bdl
+        sleep 1
     done
-fi
+done
+
+test_log "Waiting for all data to sync"
+time_watch 60 dirempty filecla/host2 || test_error "Data didn't sync in time"
+sleep 5
 
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
 test_log "killing the ION sync sender BDM"
@@ -165,8 +183,10 @@ test_log "getting data from TCP sync receiver BDM"
 
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-sync
 
-test_log "SDR contents:"
-bplist
+test_log "bplist, Node 1:"
+bplist 0x100
+test_log "bplist, Node 2:"
+bplist 0x200
 
 test_log "killing ION Sync Receive BDM"
 kill $RECVPID
@@ -175,9 +195,26 @@ wait $RECVPID
 kill $WATCHPID
 wait $WATCHPID
 
-test_log "SDR contents:"
-bplist
+test_log "bplist, Node 1:"
+bplist 0x100
+test_log "bplist, Node 2:"
+bplist 0x200
 
+
+# see what we got
+bpstats 0x100
+bpstats 0x200
+
+# shut down ion processes
+echo "Stopping ION Node 1..."
+ionstop -k 0x100
+echo "Stopping ION Node 2..."
+ionstop -k 0x200
+echo "Running killm"
+killm > /dev/null
+
+### Compare output files
+##################################################
 normalize_bdm_client out.random-hab > norm.random-hab
 
 for x in bdm-orig bdm-sync watch.bdm-sync; do
@@ -198,16 +235,6 @@ if ! diff -q out.bdm-orig out.bdm-sync; then
 else
     echo "Sync'd BDM output is identical to original, yay"
 fi
-
-# see what we got
-bpstats
-
-# shut down ion processes
-echo "Stopping ION Node 1..."
-ionstop -k 0x100
-echo "Stopping ION Node 2..."
-ionstop -k 0x200
-killm
 
 exit $RETVAL
 

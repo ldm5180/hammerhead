@@ -37,7 +37,7 @@ time_watch() {
     echo "Waiting up to $TIME seconds for '$@' to succeed"
 
     for i in `seq $TIME`; do
-	if "$@" >/dev/null 2>&1; then
+	if "$@" 2>/dev/null; then
 	    break
 	fi
 	sleep 1
@@ -70,7 +70,9 @@ skip_if_no_valgrind() {
 }
 
 test_log() {
-	printf "%s: %s\n" "`date +'%F %r'`" "$@"
+	#printf "%s: %s\n" "`date +'%F %r'`" "$@"
+	datestr=`date +'%F %r'`
+	echo "$datestr: $@"
 }
 
 normalize_bdm_client() {
