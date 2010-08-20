@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
     }
 
     // add node and resources to hab
-    create_node(hab, "0");
+    create_node(hab, "translator");
 
     g_message("%s connected to Bionet!", bionet_hab_get_name(hab));
     printf("2 ^ 3 = %f\n", pow(2, 3));
