@@ -24,9 +24,10 @@ public:
     ~cgbaSim();
 
 public slots:
-    void setNode(bionet_node_t *node);
-    void setDO(bionet_datapoint_t *data);
+    void use_node_set_resources(bionet_node_t *node);
+    void datapoint_update(bionet_datapoint_t *data);
     void lostHab();
+    void cookedValueMode();
 protected:
     void bionetSetup();
 private:

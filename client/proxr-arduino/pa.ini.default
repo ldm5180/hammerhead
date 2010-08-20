@@ -2,12 +2,13 @@
 
 [PA]
 
-Name=CGBA Simulator Interface
+Name=CGBA Interface Simulator
 
 #how these are set:
-#qt's dials only work in integer values. 
+#reason: qt's dials only work in integer values. 
 #example: I want range to be from -15 to +103 with increment of .1 
 #then the minimum would be -15/.1 = -150 and max would be 103/.1 = 1030
-Minimums=-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;
-Maximums=1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;
-Increments=.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;v
+
+Minimums=-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150;-150
+Maximums=1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030;1030
+Increments=.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1;.1

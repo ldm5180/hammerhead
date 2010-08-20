@@ -13,6 +13,7 @@ public:
 public slots:
     void quit();
     void about();
+    void triggerMode();
 protected:
     void setupWindow();
     void createActions();
@@ -22,6 +23,7 @@ private:
     QMenu *helpMenu;
     QAction *exitAction;
     QAction *aboutAction;
+    QAction *cookedValAction;
 
     cgbaSim *mainWidget;
 };

@@ -25,15 +25,24 @@ void CgbaSimMainWindow::createActions()
 
     exitAction = new QAction(tr("&Quit"), this);
     connect(exitAction, SIGNAL(triggered()), this, SLOT(quit()));
+
+    cookedValAction = new QAction(tr("Cooked Values"), this);
+    connect(cookedValAction, SIGNAL(triggered()), this, SLOT(triggerMode()));
 }
 
 void CgbaSimMainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(cookedValAction);
     fileMenu->addAction(exitAction);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAction);
+}
+
+void CgbaSimMainWindow::triggerMode()
+{
+    mainWidget->cookedValueMode();
 }
 
 void CgbaSimMainWindow::quit()
