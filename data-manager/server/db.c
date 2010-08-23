@@ -85,6 +85,8 @@ enum prepared_stmt_idx {
     SET_NEXT_ENTRY_SEQ_STMT,
 
     GET_SYNC_AFFECTED_DATAPOINTS,
+    SAVE_DANGLING_DATAPOINTS,
+    CLEAN_DANGLING_STMT,
 
 
     NUM_PREPARED_STMTS
@@ -3159,17 +3161,139 @@ int db_publish_synced_datapoints(
         return -1;
     }
 
+    db_save_dangling_datapoints(db, first_seq, last_seq);
+
     return 0;
+}
+
+int db_save_dangling_datapoints(
+        sqlite3 *db,
+        sqlite_int64 first_seq, 
+        sqlite_int64 last_seq)
+{
+    int r;
+
+    const char * sql = 
+        "INSERT INTO DanglingDatapoints (datapoint)"
+          "SELECT d.key "
+          "FROM events e "
+          "JOIN Datapoints d "
+             " ON e.datapoint=d.Key "
+          "WHERE "
+            "e.seq >= ? AND e.seq <= ? "
+            "AND d.resource_key NOT IN "
+               "(SELECT r.key from Resources) ";
+
+#ifdef _DUMP_SQL
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+        "%s(): SQL is %s", __FUNCTION__, sql);
+#endif
+
+    if(all_stmts[SAVE_DANGLING_DATAPOINTS]  == NULL) {
+	r = sqlite3_prepare_v2(db, sql,
+	    -1, &all_stmts[SAVE_DANGLING_DATAPOINTS] , NULL);
+
+	if (r != SQLITE_OK) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s(): SQL prepare error: %s", __FUNCTION__, sqlite3_errmsg(db));
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                "SQL is \n%s", sql);
+            return -1;
+	}
+
+    }
+
+    sqlite3_stmt * this_stmt = all_stmts[SAVE_DANGLING_DATAPOINTS];
+
+    int param = 1;
+    r = sqlite3_bind_int64(this_stmt, param++, first_seq);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s() SQL bind error", __FUNCTION__);
+	return -1;
+    }
+
+    r = sqlite3_bind_int64(this_stmt, param++, last_seq);
+    if(r != SQLITE_OK){
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s() SQL bind error", __FUNCTION__);
+	return -1;
+    }
+
+    while(SQLITE_BUSY == (r = sqlite3_step(this_stmt))){
+        g_usleep(20 * 1000);
+    }
+        
+    int ret = 0;
+    switch (r) {
+        case SQLITE_DONE:
+        case SQLITE_ROW:
+            // Success!
+            break;
+
+        default:
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s() SQL error: %s", 
+                    __FUNCTION__, sqlite3_errmsg(db));
+            ret = -1;
+    }
+
+    sqlite3_reset(this_stmt);
+    sqlite3_clear_bindings(this_stmt);
+
+    return ret;
+}
+
+static void delete_dangling_datapoints(
+        sqlite3 *db,
+        sqlite_int64 * keys, 
+        int count)
+{
+    int r;
+    int i;
+
+    if(all_stmts[CLEAN_DANGLING_STMT] == NULL) {
+	r = sqlite3_prepare_v2(db, 
+            "DELETE "
+            "FROM DanglingDatapoints "
+            "WHERE datapoint = ? ",
+	    -1, &all_stmts[CLEAN_DANGLING_STMT], NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s() SQL error: %s", 
+                    __FUNCTION__, sqlite3_errmsg(db));
+	    return;
+	}
+    }
+    sqlite3_stmt * this_stmt = all_stmts[CLEAN_DANGLING_STMT];
+
+    for(i=0; i<count; i++) {
+        r = sqlite3_bind_int64(this_stmt, 1, keys[i]);
+        if(r != SQLITE_OK){
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s() SQL bind error", __FUNCTION__);
+            return;
+        }
+
+
+        while(SQLITE_BUSY == (r = sqlite3_step(this_stmt))){
+            g_usleep(20 * 1000);
+        }
+            
+        switch (r) {
+            case SQLITE_DONE:
+            case SQLITE_ROW:
+                // Success!
+                break;
+
+            default:
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s() SQL error: %s", 
+                        __FUNCTION__, sqlite3_errmsg(db));
+        }
+
+        sqlite3_reset(this_stmt);
+    }
+
 }
 
 // This publishs datapoints that can be parsed
 // with the new metadata
-//
-// TODO: FIXME. This currently will republish datapoints for each duplicate new-node
-// event there is in the database (Which can happen for several legitimate reasons)
-// Either make this query more complex to weed those out, or somehow track which nodes
-// need to be re-published when the metadata comes in (With a dedicated table, purhaps?)
-//
 int db_publish_sync_affected_datapoints(
         sqlite3 *db,
         sqlite_int64 first_seq, 
@@ -3203,31 +3327,18 @@ int db_publish_sync_affected_datapoints(
             " e.timestamp_usec,"
             " e.seq,"
             " b.BDM_ID,"
-            " e.islost"
+            " e.islost,"
+            " d.key"
         " FROM"
-            " Events e,"
-            " Hardware_Abstractors h,"
-            " Nodes n,"
-            " Resources r,"
-            " Resource_Data_Types t,"
-            " Resource_Flavors f,"
-            " Datapoints d,"
-            " BDMs b,"
-            " ("
-                " SELECT DISTINCT node from events"
-                " WHERE events.isLost = 0"
-                  " AND events.seq >= ?"
-                  " AND events.seq <= ?"
-            " ) new"
-        " WHERE"
-            " new.node=n.Key"
-            " AND e.node=n.Key"
-            " AND e.recording_bdm=b.Key"
-            " AND n.HAB_Key=h.Key"
-            " AND r.Node_Key=n.Key"
-            " AND t.Key=r.Data_Type_Key"
-            " AND f.Key=r.Flavor_Key"
-            " AND d.Resource_Key=r.Key"
+            " Datapoints d"
+            " JOIN DanglingDatapoints dd ON d.key=dd.datapoint "
+            " JOIN Events e ON e.datapoint=d.key "
+            " JOIN Resources r ON r.key=d.Resource_key"
+            " JOIN Resource_Data_Types t ON t.Key=r.Data_Type_Key"
+            " JOIN Resource_Flavors f ON f.key=r.Flavor_key"
+            " JOIN Nodes n ON n.key=r.Node_Key "
+            " JOIN Hardware_Abstractors h ON h.key = n.HAB_Key "
+            " JOIN BDMs b ON b.key=e.recording_bdm "
         " ORDER BY"
         "     e.seq ASC";
 
@@ -3252,27 +3363,34 @@ int db_publish_sync_affected_datapoints(
     }
 
 
-    sqlite3_stmt * stmt = all_stmts[GET_SYNC_AFFECTED_DATAPOINTS];
+    sqlite3_stmt * this_stmt = all_stmts[GET_SYNC_AFFECTED_DATAPOINTS];
 
+    /*
     int param = 1;
-    r = sqlite3_bind_int64(stmt, param++, first_seq);
+    r = sqlite3_bind_int64(this_stmt, param++, first_seq);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-hab SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s() SQL bind error (%d)", __FUNCTION__, param);
         dbb_free(tmp_dbb);
 	return -1;
     }
 
-    r = sqlite3_bind_int64(stmt, param++, last_seq);
+    r = sqlite3_bind_int64(this_stmt, param++, last_seq);
     if(r != SQLITE_OK){
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-hab SQL bind error");
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s() SQL bind error (%d)", __FUNCTION__, param);
         dbb_free(tmp_dbb);
 	return -1;
     }
+    */
 
     int row_count = 0;
+    sqlite_int64 *published_keys = NULL;
+    int num_published_keys = 0;
+    int published_keys_size = 0;
 
     for(;;) {
-        r = sqlite3_step(stmt);
+        r = sqlite3_step(this_stmt);
         if(r == SQLITE_BUSY) {
             g_usleep(20 * 1000);
             continue;
@@ -3283,22 +3401,23 @@ int db_publish_sync_affected_datapoints(
             bdm_handle_row_status_t status;
             row_count++;
 
-            const char * row_habtype_id  = (const char *)sqlite3_column_text(stmt, 0); 
-            const char * row_habname_id  = (const char *)sqlite3_column_text(stmt, 1); 
-            const char * row_node_id     = (const char *)sqlite3_column_text(stmt, 2); 
-            const uint8_t * row_node_uid   = (const uint8_t *)sqlite3_column_blob(stmt, 3); 
-            int row_node_guid_len        = sqlite3_column_bytes(stmt, 3); 
-            const char * row_datatype    = (const char *)sqlite3_column_text(stmt, 4); 
-            const char * row_flavor      = (const char *)sqlite3_column_text(stmt, 5); 
-            const char * row_resource_id = (const char *)sqlite3_column_text(stmt, 6); 
+            const char * row_habtype_id  = (const char *)sqlite3_column_text(this_stmt, 0); 
+            const char * row_habname_id  = (const char *)sqlite3_column_text(this_stmt, 1); 
+            const char * row_node_id     = (const char *)sqlite3_column_text(this_stmt, 2); 
+            const uint8_t * row_node_uid   = (const uint8_t *)sqlite3_column_blob(this_stmt, 3); 
+            int row_node_guid_len        = sqlite3_column_bytes(this_stmt, 3); 
+            const char * row_datatype    = (const char *)sqlite3_column_text(this_stmt, 4); 
+            const char * row_flavor      = (const char *)sqlite3_column_text(this_stmt, 5); 
+            const char * row_resource_id = (const char *)sqlite3_column_text(this_stmt, 6); 
             static const int row_i_value =                                         7; 
-            row_dp_timestamp.tv_sec      =               sqlite3_column_int (stmt, 8);
-            row_dp_timestamp.tv_usec     =               sqlite3_column_int (stmt, 9);
-            row_event_timestamp.tv_sec   =               sqlite3_column_double(stmt, 10);
-            row_event_timestamp.tv_usec  =               sqlite3_column_double(stmt, 11);
-            sqlite_int64 row_event_seq  =               sqlite3_column_int64(stmt, 12);
-            const char * row_bdm_id      = (const char *)sqlite3_column_text(stmt, 13); 
-            int row_islost               =               sqlite3_column_int(stmt, 14); 
+            row_dp_timestamp.tv_sec      =               sqlite3_column_int (this_stmt, 8);
+            row_dp_timestamp.tv_usec     =               sqlite3_column_int (this_stmt, 9);
+            row_event_timestamp.tv_sec   =               sqlite3_column_double(this_stmt, 10);
+            row_event_timestamp.tv_usec  =               sqlite3_column_double(this_stmt, 11);
+            sqlite_int64 row_event_seq  =               sqlite3_column_int64(this_stmt, 12);
+            const char * row_bdm_id      = (const char *)sqlite3_column_text(this_stmt, 13); 
+            int row_islost               =               sqlite3_column_int(this_stmt, 14); 
+            sqlite_int64 dp_key          =               sqlite3_column_int64(this_stmt, 15); 
 
             bionet_event_type_t event_type = row_islost?BIONET_EVENT_LOST:BIONET_EVENT_PUBLISHED;
 
@@ -3316,9 +3435,22 @@ int db_publish_sync_affected_datapoints(
                     row_resource_id,
                     &row_dp_timestamp,
                     event_class, event_type, &row_event_timestamp, row_event_seq,
-                    row_i_value, stmt, user_data);
+                    row_i_value, this_stmt, user_data);
 
             if(BDM_HANDLE_OK == status) {
+                if(num_published_keys >= published_keys_size) {
+                    published_keys_size += 32;
+                    published_keys = realloc(published_keys, published_keys_size * sizeof(sqlite_int64));
+                    if( NULL == published_keys) {
+                        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "out of memory");
+                        published_keys_size = 0;
+                        num_published_keys = 0;
+                        continue;
+                    }
+                }
+
+                published_keys[num_published_keys] = dp_key;
+                num_published_keys++;
                 continue;
             }
         }
@@ -3326,22 +3458,28 @@ int db_publish_sync_affected_datapoints(
     }
     if (r != SQLITE_DONE) goto db_fail;
 
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
+    sqlite3_reset(this_stmt);
+    sqlite3_clear_bindings(this_stmt);
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-            "%s(): Found %d datapoints affected by sync [%lld,%lld]", 
-            __FUNCTION__, row_count, first_seq, last_seq);
+            "%s(): Published %d/%d datapoints affected by sync [%lld,%lld]", 
+            __FUNCTION__, row_count, num_published_keys, first_seq, last_seq);
 
     dbb_free(tmp_dbb);
+
+    if(row_count) {
+        delete_dangling_datapoints(db, published_keys, num_published_keys);
+    }
+    free(published_keys);
+
     return 0;
 
     db_fail:
 
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             "%s(): SQL error: %s", __FUNCTION__, sqlite3_errmsg(db));
-        sqlite3_reset(stmt);
-        sqlite3_clear_bindings(stmt);
+        sqlite3_reset(this_stmt);
+        sqlite3_clear_bindings(this_stmt);
         dbb_free(tmp_dbb);
         return -1;
 }

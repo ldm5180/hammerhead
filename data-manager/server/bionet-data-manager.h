@@ -345,6 +345,11 @@ int db_publish_synced_datapoints(
         sqlite_int64 first_seq, 
         sqlite_int64 last_seq);
 
+int db_save_dangling_datapoints(
+        sqlite3 *db,
+        sqlite_int64 first_seq, 
+        sqlite_int64 last_seq);
+
 int db_publish_sync_affected_datapoints(
         sqlite3 *db,
         sqlite_int64 first_seq, 

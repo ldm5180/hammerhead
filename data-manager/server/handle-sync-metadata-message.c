@@ -196,8 +196,7 @@ void handle_sync_metadata_message(BDM_Sync_Metadata_Message_t *message) {
 
 
     if(tmp_dbb->first_seq >= 0 && tmp_dbb->last_seq >= 0 ) {
-        //TODO: This publishes duplicates in the commmon case. Fix it
-        //db_publish_sync_affected_datapoints(main_db, tmp_dbb->first_seq, tmp_dbb->last_seq);
+        db_publish_sync_affected_datapoints(main_db, tmp_dbb->first_seq, tmp_dbb->last_seq);
     }
 
 cleanup:

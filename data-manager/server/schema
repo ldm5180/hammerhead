@@ -133,3 +133,13 @@ CREATE INDEX hab_Index ON Events(hab);
 CREATE INDEX node_Index ON Events(node);
 CREATE INDEX datapoint_Index ON Events(datapoint);
 
+-- Dangling Datapoints table
+--
+-- This table records all datapoints that are 'dangling', i.e. they were inserted
+-- from a sync before the metadata was synced
+CREATE TABLE DanglingDatapoints (
+    datapoint   INTEGER NOT NULL REFERENCES Datapoints(Key),
+    UNIQUE (datapoint)
+);
+CREATE INDEX dangling_datapoint_Index ON DanglingDatapoints(datapoint);
+
