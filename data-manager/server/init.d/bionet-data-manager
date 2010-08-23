@@ -4,8 +4,8 @@
 # Provides:          bionet-data-manager
 # Required-Start:    $local_fs $network $syslog $time avahi-daemon
 # Required-Stop:     $local_fs $network $syslog $time avahi-daemon
-# Default-Start:     S
-# Default-Stop:      
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
 # Short-Description: Start or stop the Bionet Data Manager (BDM)
 # Description:       Starts or stops the Bionet Data Manager (BDM).  BDM records the data that
 #                    flows across a Bionet network.  It makes this historical data available to
