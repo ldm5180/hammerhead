@@ -15,6 +15,7 @@ double table[16][256][2];
 double calibration_const[16][7];
 double adc_increment[16][1];
 bionet_resource_t *adc_range_resource[16][2];
+bionet_resource_t *translator_resource[16];
 bionet_resource_t *proxr_resource[16];
 
 // bionet stuff

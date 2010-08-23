@@ -6,23 +6,23 @@ void create_node(bionet_hab_t *hab, char *name)
     
     node = bionet_node_new(hab, name);
 
-    // Create 16 adc resources 
-    create_adc_resource(node, "adc-00\0");
-    create_adc_resource(node, "adc-01\0");
-    create_adc_resource(node, "adc-02\0");
-    create_adc_resource(node, "adc-03\0");
-    create_adc_resource(node, "adc-04\0");
-    create_adc_resource(node, "adc-05\0");
-    create_adc_resource(node, "adc-06\0");
-    create_adc_resource(node, "adc-07\0");
-    create_adc_resource(node, "adc-08\0");
-    create_adc_resource(node, "adc-09\0");
-    create_adc_resource(node, "adc-10\0");
-    create_adc_resource(node, "adc-11\0");
-    create_adc_resource(node, "adc-12\0");
-    create_adc_resource(node, "adc-13\0");
-    create_adc_resource(node, "adc-14\0");
-    create_adc_resource(node, "adc-15\0");
+    // Create 16 adc resources and store for easy access later 
+    translator_resource[0] = create_adc_resource(node, "adc-00\0");
+    translator_resource[1] = create_adc_resource(node, "adc-01\0");
+    translator_resource[2] = create_adc_resource(node, "adc-02\0");
+    translator_resource[3] = create_adc_resource(node, "adc-03\0");
+    translator_resource[4] = create_adc_resource(node, "adc-04\0");
+    translator_resource[5] = create_adc_resource(node, "adc-05\0");
+    translator_resource[6] = create_adc_resource(node, "adc-06\0");
+    translator_resource[7] = create_adc_resource(node, "adc-07\0");
+    translator_resource[8] = create_adc_resource(node, "adc-08\0");
+    translator_resource[9] = create_adc_resource(node, "adc-09\0");
+    translator_resource[10] = create_adc_resource(node, "adc-10\0");
+    translator_resource[11] = create_adc_resource(node, "adc-11\0");
+    translator_resource[12] = create_adc_resource(node, "adc-12\0");
+    translator_resource[13] = create_adc_resource(node, "adc-13\0");
+    translator_resource[14] = create_adc_resource(node, "adc-14\0");
+    translator_resource[15] = create_adc_resource(node, "adc-15\0");
 
 
     // Create min max resources used by pa client to set dials range

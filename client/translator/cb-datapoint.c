@@ -6,15 +6,16 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
 {
     bionet_resource_t *resource = NULL;
     char *res_name = NULL;
+    char *node_name = NULL;
     char id[3];
     long int adc_id, calib_id, pot_id;
     double constant;
     
     resource = bionet_datapoint_get_resource(datapoint);
-    bionet_split_resource_name(bionet_resource_get_name(resource), NULL, NULL, NULL, &res_name);
+    bionet_split_resource_name(bionet_resource_get_name(resource), NULL, NULL, &node_name, &res_name);
 
-    // if the resource name begins with 'a' it is from DMM hab if 'p' it is from proxr hab.
-    if(res_name[0] == 'a')
+    // determine where the resource is coming from
+    if(strcmp(node_name, "0") == 0)
     {
         // use resource name to find adc number (0-15)
         id[0] = res_name[3];
@@ -38,10 +39,8 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
         bionet_resource_set_double(adc_range_resource[adc_id][ZERO_VOLT], buff, NULL);
         buff = table[adc_id][255][ENG_VAL];
         bionet_resource_set_double(adc_range_resource[adc_id][FIVE_VOLT], buff, NULL);
-
-        hab_report_datapoints(bionet_resource_get_node(resource));
     }
-    else if(res_name[0] == 'p')
+    else if(strcmp(node_name, "potentiometers") == 0)
     {
         // extract pot number from resource name (0-15)
         id[0] = res_name[4];
@@ -49,6 +48,15 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
         id[2] = '\0';
         pot_id = strtol(id, NULL, 10); 
 
+        // store the resource
         proxr_resource[pot_id] = resource;
+
+        // pot value change? update translator hab to reflect it
+        bionet_resource_get_double(resource, &constant, NULL);
+        // have double of voltage find the corresponding cooked val and report it
+        int volt_index = constant/VOLT_INC;
+        bionet_resource_set_double(translator_resource[pot_id], table[pot_id][volt_index][ENG_VAL], NULL);
     }
+
+    hab_report_datapoints(bionet_resource_get_node(resource));
 }
