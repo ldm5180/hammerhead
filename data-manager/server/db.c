@@ -3174,7 +3174,7 @@ int db_save_dangling_datapoints(
     int r;
 
     const char * sql = 
-        "INSERT INTO DanglingDatapoints (datapoint)"
+        "INSERT INTO DanglingDatapoints (datapoint) "
           "SELECT d.key "
           "FROM events e "
           "JOIN Datapoints d "
@@ -3182,7 +3182,7 @@ int db_save_dangling_datapoints(
           "WHERE "
             "e.seq >= ? AND e.seq <= ? "
             "AND d.resource_key NOT IN "
-               "(SELECT r.key from Resources) ";
+               "(SELECT r.key from Resources r) ";
 
 #ifdef _DUMP_SQL
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
