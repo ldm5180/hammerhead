@@ -108,6 +108,17 @@ instance
             help="Apply this resource name filter",
             default=None)
 
+        parser.add_option("--lookup-resource", 
+	    dest="lookup_resource", 
+            type="string",
+            help="Lookup resource with key in hex",
+            default=None)
+
+        parser.add_option("--lookup-node", 
+	    dest="lookup_node", 
+            type="string",
+            help="Lookup node with key in hex",
+            default=None)
 
 
         (options, args) = parser.parse_args()
@@ -433,6 +444,32 @@ instance
         def fmt(cur,row): return "%s.%s.%s:%s (%s,%s)" % row
         self.print_query(sql, fmt)
 
+    def lookup_resource(self, key):
+        sql = '''
+        SELECT h.HAB_Type, h.HAB_ID, n.Node_ID, r.Resource_ID, t.Data_Type, f.Flavor
+        FROM Resources r, Nodes n, Hardware_Abstractors h, 
+             Resource_Data_types t, Resource_Flavors f
+        WHERE r.Node_Key = n.Key
+          AND r.Flavor_Key = f.Key
+          AND r.Data_Type_Key = t.Key
+          AND r.key = x'%s'
+        ORDER BY  h.HAB_Type, h.HAB_ID, n.Node_ID, r.Resource_ID
+          ''' % (key)
+
+        def fmt(cur,row): return "%s.%s.%s:%s (%s,%s)" % row
+        self.print_query(sql, fmt)
+
+    def lookup_node(self, key):
+        sql = '''
+        SELECT h.HAB_Type, h.HAB_ID, n.Node_ID
+        FROM Nodes n, Hardware_Abstractors h
+        WHERE n.Hab_Key = h.Key
+        AND   n.GUID = x'%s'
+        ORDER BY  h.HAB_Type, h.HAB_ID, n.Node_ID
+          ''' % (key)
+
+        def fmt(cur,row): return "%s.%s.%s" % row
+        self.print_query(sql, fmt)
 
 def main():
 
@@ -453,6 +490,11 @@ def main():
     if inspector.options.dump_debug:
         inspector.simulate_client_output(inspector.debug_output_formatter)
 
+    if inspector.options.lookup_node:
+        inspector.lookup_node(inspector.options.lookup_node)
+
+    if inspector.options.lookup_resource:
+        inspector.lookup_resource(inspector.options.lookup_resource)
 
 
     #inspector.sql_shell()
