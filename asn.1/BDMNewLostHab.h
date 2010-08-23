@@ -5,8 +5,8 @@
  * 	`asn1c -Werror -fnative-types -fskeletons-copy -pdu=auto -gen-PER`
  */
 
-#ifndef	_BDMLostHab_H_
-#define	_BDMLostHab_H_
+#ifndef	_BDMNewLostHab_H_
+#define	_BDMNewLostHab_H_
 
 
 #include <asn_application.h>
@@ -21,8 +21,8 @@
 extern "C" {
 #endif
 
-/* BDMLostHab */
-typedef struct BDMLostHab {
+/* BDMNewLostHab */
+typedef struct BDMNewLostHab {
 	long	 entrySeq;
 	GeneralizedTime_t	 timestamp;
 	PrintableString_t	 bdmId;
@@ -31,13 +31,13 @@ typedef struct BDMLostHab {
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} BDMLostHab_t;
+} BDMNewLostHab_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_BDMLostHab;
+extern asn_TYPE_descriptor_t asn_DEF_BDMNewLostHab;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _BDMLostHab_H_ */
+#endif	/* _BDMNewLostHab_H_ */

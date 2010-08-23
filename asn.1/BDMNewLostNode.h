@@ -5,8 +5,8 @@
  * 	`asn1c -Werror -fnative-types -fskeletons-copy -pdu=auto -gen-PER`
  */
 
-#ifndef	_BDMNewHab_H_
-#define	_BDMNewHab_H_
+#ifndef	_BDMNewLostNode_H_
+#define	_BDMNewLostNode_H_
 
 
 #include <asn_application.h>
@@ -15,29 +15,33 @@
 #include <NativeInteger.h>
 #include <GeneralizedTime.h>
 #include <PrintableString.h>
+#include <OCTET_STRING.h>
+#include "Node.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* BDMNewHab */
-typedef struct BDMNewHab {
+/* BDMNewLostNode */
+typedef struct BDMNewLostNode {
 	long	 entrySeq;
 	GeneralizedTime_t	 timestamp;
 	PrintableString_t	 bdmId;
+	OCTET_STRING_t	 uid;
 	PrintableString_t	 habType;
 	PrintableString_t	 habId;
+	Node_t	 node;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} BDMNewHab_t;
+} BDMNewLostNode_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_BDMNewHab;
+extern asn_TYPE_descriptor_t asn_DEF_BDMNewLostNode;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _BDMNewHab_H_ */
+#endif	/* _BDMNewLostNode_H_ */

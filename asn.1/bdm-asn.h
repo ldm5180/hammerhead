@@ -43,11 +43,10 @@ int bdm_new_node_to_asnbuf(
 
 BIONET_ASN_API_DECL
 int bdm_lost_node_to_asnbuf(
-        const uint8_t guid[BDM_UUID_LEN],
+        bionet_node_t * node,
+        bionet_event_t * event,
         long entry_seq, 
-        const struct timeval *timestamp, 
-        const char * bdm_id,
-        bionet_asn_buffer_t *buf) ;
+        bionet_asn_buffer_t *buf);
 
 BIONET_ASN_API_DECL
 int bdm_resource_metadata_to_asnbuf(

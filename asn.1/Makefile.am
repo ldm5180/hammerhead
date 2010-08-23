@@ -85,16 +85,16 @@ $(BUILT_SOURCES): asn1-stamp
 
 # This may work if your asn1c generates Makefile.am.sample
 # Its only needed when you add/remove data structures
-#asn_sources.am: Makefile.am.sample
-#	split -p 'lib_LTLIBRARIES' Makefile.am.sample asn_sources.am.
-#	sed 's/ASN_MODULE_HEADERS/ASN_MODULE_HEADS/g' < asn_sources.am.aa |\
-#	       grep -v ASN_CONVERTER_SOURCES >	$@
-#	rm asn_sources.am.*
+asn_sources.am: Makefile.am.sample
+	csplit -f asn_sources.am. Makefile.am.sample '/lib_LTLIBRARIES/'
+	sed 's/ASN_MODULE_HEADERS/ASN_MODULE_HEADS/g' < asn_sources.am.00 |\
+	       grep -v ASN_CONVERTER_SOURCES >	$@
+	rm asn_sources.am.*
 
 endif
 
 rebuild-asn1: asn1-stamp
-asn1-stamp: $(ASN_SOURCE) asn_sources.am
+asn1-stamp: $(ASN_SOURCE) asn_sources.am 
 	asn1c -Werror -fnative-types -fskeletons-copy -pdu=auto -gen-PER -fcompound-names $(ASN_SOURCE)
 	patch --quiet -p1 < local-patch
 	touch $@

@@ -14,7 +14,7 @@
 #include "bdm-asn.h"
 #include "../util/protected.h"
 
-static void bdm_handle_new_hab(const cal_event_t *event, const BDMNewHab_t *newHab) {
+static void bdm_handle_new_hab(const cal_event_t *event, const BDMNewLostHab_t *newHab) {
     bionet_hab_t *hab;
     bionet_event_t * bionet_event;
     int i;
@@ -62,58 +62,79 @@ static void bdm_handle_new_hab(const cal_event_t *event, const BDMNewHab_t *newH
     }
 }
 
-static void bdm_handle_new_node(const cal_event_t *event, const BDMNewNode_t *newNode) {
-    bionet_hab_t *hab;
-    bionet_node_t *node, *tmp_node;
-    bionet_event_t * bionet_event;
-    uint8_t node_uid[BDM_UUID_LEN];
 
-    hab = bdm_cache_lookup_hab((const char*)newNode->habType.buf, (const char*)newNode->habId.buf);
-    if (hab == NULL) {
-        hab = bionet_hab_new((const char*)newNode->habType.buf, (const char*)newNode->habId.buf);
+
+
+static bionet_node_t * bdm_asn_new_lost_to_node(const BDMNewLostNode_t *asnNode)
+{
+    bionet_node_t *node;
+
+    if(asnNode->uid.size != BDM_UUID_LEN){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s(): asn syntax error: bad uuid length", __FUNCTION__);
+        return NULL;
+    }
+
+    node = bdm_cache_lookup_node_uid(asnNode->uid.buf);
+    if (node == NULL) {
+        bionet_hab_t *hab;
+        bionet_node_t *tmp_node;
+
+        hab = bdm_cache_lookup_hab((const char*)asnNode->habType.buf, (const char*)asnNode->habId.buf);
         if (hab == NULL) {
+            hab = bionet_hab_new((const char*)asnNode->habType.buf, (const char*)asnNode->habId.buf);
+            if (hab == NULL) {
+                // an error has been logged already
+                return NULL;
+            }
+            libbdm_cache_add_hab(hab);
+        }
+
+        // There is no UID in BDMNewNode, so calculate it
+        tmp_node = bionet_asn_to_node(&asnNode->node, hab);
+        if (tmp_node == NULL) {
+            // an error has been logged
+            return NULL;
+        }
+
+        // Get and use existing node, or add the tmp_node
+        node = bionet_hab_get_node_by_id_and_uid(hab, bionet_node_get_id(tmp_node), asnNode->uid.buf);
+        if( NULL == node ) {
+            bionet_node_set_uid(tmp_node, asnNode->uid.buf);
+            bionet_hab_add_node(hab, tmp_node);
+            node = tmp_node;
+            libbdm_cache_add_node(node);
+        } else {
+            bionet_node_free(tmp_node);
+        }
+    }
+
+    return node;
+}
+
+static void bdm_handle_new_node(const cal_event_t *event, const BDMNewLostNode_t *newNode) {
+    bionet_node_t *node;
+    bionet_event_t * bionet_event;
+
+    node = bdm_asn_new_lost_to_node(newNode);
+    if(node) {
+        struct timeval timestamp;
+        bionet_GeneralizedTime_to_timeval(&newNode->timestamp, &timestamp);
+        bionet_event = bionet_event_new(&timestamp, (const char*)newNode->bdmId.buf, BIONET_EVENT_PUBLISHED);
+        if (bionet_event == NULL) {
             // an error has been logged already
             return;
         }
-        libbdm_cache_add_hab(hab);
-    }
+        bionet_node_add_event(node, bionet_event);
 
-    // There is no UID in BDMNewNode, so calculate it
-    tmp_node = bionet_asn_to_node(&newNode->node, hab);
-    if (tmp_node == NULL) {
-        // an error has been logged
-        return;
-    }
-    db_make_node_guid(tmp_node, node_uid);
-
-
-    // Get and use existing node, or add the tmp_node
-    node = bionet_hab_get_node_by_id_and_uid(hab, bionet_node_get_id(tmp_node), node_uid);
-    if( NULL == node ) {
-        bionet_node_set_uid(tmp_node, node_uid);
-        bionet_hab_add_node(hab, tmp_node);
-        node = tmp_node;
-        libbdm_cache_add_node(node);
-    } else {
-        bionet_node_free(tmp_node);
-    }
-
-    struct timeval timestamp;
-    bionet_GeneralizedTime_to_timeval(&newNode->timestamp, &timestamp);
-    bionet_event = bionet_event_new(&timestamp, (const char*)newNode->bdmId.buf, BIONET_EVENT_PUBLISHED);
-    if (bionet_event == NULL) {
-        // an error has been logged already
-        return;
-    }
-    bionet_node_add_event(node, bionet_event);
-
-    if (libbdm_callback_new_node != NULL) {
-        libbdm_callback_new_node(node, bionet_event, libbdm_callback_new_node_usr_data);
+        if (libbdm_callback_new_node != NULL) {
+            libbdm_callback_new_node(node, bionet_event, libbdm_callback_new_node_usr_data);
+        }
     }
 }
 
 
-static void bdm_handle_lost_hab(const cal_event_t *event, const BDMLostHab_t *lostHab) {
+static void bdm_handle_lost_hab(const cal_event_t *event, const BDMNewLostHab_t *lostHab) {
     bionet_hab_t *hab;
     bionet_event_t * bionet_event;
 
@@ -141,35 +162,24 @@ static void bdm_handle_lost_hab(const cal_event_t *event, const BDMLostHab_t *lo
     }
 }
 
-static void bdm_handle_lost_node(const cal_event_t *event, const BDMLostNode_t *lostNode) {
+static void bdm_handle_lost_node(const cal_event_t *event, const BDMNewLostNode_t *lostNode) {
     bionet_node_t *node;
     bionet_event_t * bionet_event;
 
-    if(lostNode->uid.size != BDM_UUID_LEN){
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "%s(): asn syntax error: bad uuid length", __FUNCTION__);
-        return;
-    }
+    node = bdm_asn_new_lost_to_node(lostNode);
+    if(node) {
+        struct timeval timestamp;
+        bionet_GeneralizedTime_to_timeval(&lostNode->timestamp, &timestamp);
+        bionet_event = bionet_event_new(&timestamp, (const char*)lostNode->bdmId.buf, BIONET_EVENT_LOST);
+        if (bionet_event == NULL) {
+            // an error has been logged already
+            return;
+        }
+        bionet_node_add_event(node, bionet_event);
 
-    node = bdm_cache_lookup_node_uid(lostNode->uid.buf);
-    if (node == NULL) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "%s(): Cannot find node by uuid " UUID_FMTSTR, __FUNCTION__,
-                UUID_ARGS(lostNode->uid.buf));
-        return;
-    }
-
-    struct timeval timestamp;
-    bionet_GeneralizedTime_to_timeval(&lostNode->timestamp, &timestamp);
-    bionet_event = bionet_event_new(&timestamp, (const char*)lostNode->bdmId.buf, BIONET_EVENT_LOST);
-    if (bionet_event == NULL) {
-        // an error has been logged already
-        return;
-    }
-    bionet_node_add_event(node, bionet_event);
-
-    if (libbdm_callback_lost_node != NULL) {
-        libbdm_callback_lost_node(node, bionet_event, libbdm_callback_lost_node_usr_data);
+        if (libbdm_callback_lost_node != NULL) {
+            libbdm_callback_lost_node(node, bionet_event, libbdm_callback_lost_node_usr_data);
+        }
     }
 }
 

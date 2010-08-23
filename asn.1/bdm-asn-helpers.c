@@ -275,6 +275,50 @@ cleanup:
     return -1;
 }
 
+/* Populate the new/lost hab structure.
+ * on error, the caller must cleanup the buffer */
+static int bdm_new_lost_hab_to_asn_r(
+        const char * hab_type, 
+        const char * hab_id,
+        long entry_seq, 
+        const struct timeval *timestamp, 
+        const char * bdm_id,
+        BDMNewLostHab_t *nh)
+{
+    int r;
+    r = OCTET_STRING_fromBuf(&nh->habId, hab_id, -1);
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+              "%s(): Failed to set hab id", __FUNCTION__);
+        return -1;
+    }
+
+    r = OCTET_STRING_fromBuf(&nh->habType, hab_type, -1);
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+              "%s(): Failed to set hab type", __FUNCTION__);
+        return -1;
+    }
+
+    r = OCTET_STRING_fromBuf(&nh->bdmId, bdm_id, -1);
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+              "%s(): Failed to set bdm id", __FUNCTION__);
+        return -1;
+    }
+
+    r = bionet_timeval_to_GeneralizedTime(timestamp, &nh->timestamp);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error setting timestamp of Event: %s", 
+                __FUNCTION__, strerror(errno));
+        return -1;
+    }
+
+    nh->entrySeq = entry_seq;
+
+    return 0;
+}
+
 int bdm_new_hab_to_asnbuf(
         const char * hab_type, 
         const char * hab_id,
@@ -284,7 +328,7 @@ int bdm_new_hab_to_asnbuf(
         bionet_asn_buffer_t *buf)
 {
     BDM_S2C_Message_t m;
-    BDMNewHab_t *nh;
+    BDMNewLostHab_t *nh;
     asn_enc_rval_t asn_r;
 
     int r;
@@ -295,36 +339,10 @@ int bdm_new_hab_to_asnbuf(
     m.present = BDM_S2C_Message_PR_newHab;
     nh = &m.choice.newHab;
 
-
-    r = OCTET_STRING_fromBuf(&nh->habId, hab_id, -1);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set hab id", __FUNCTION__);
+    r = bdm_new_lost_hab_to_asn_r(hab_type, hab_id, entry_seq, timestamp, bdm_id, nh);
+    if( r ) {
         goto cleanup;
     }
-
-    r = OCTET_STRING_fromBuf(&nh->habType, hab_type, -1);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set hab type", __FUNCTION__);
-        goto cleanup;
-    }
-
-    r = OCTET_STRING_fromBuf(&nh->bdmId, bdm_id, -1);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set bdm id", __FUNCTION__);
-        goto cleanup;
-    }
-
-    r = bionet_timeval_to_GeneralizedTime(timestamp, &nh->timestamp);
-    if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error setting timestamp of Event: %s", 
-                __FUNCTION__, strerror(errno));
-        goto cleanup;
-    }
-
-    nh->entrySeq = entry_seq;
 
     // 
     // serialize the S2C-Message
@@ -359,7 +377,7 @@ int bdm_lost_hab_to_asnbuf(
         bionet_asn_buffer_t *buf)
 {
     BDM_S2C_Message_t m;
-    BDMLostHab_t *lh;
+    BDMNewLostHab_t *lh;
     asn_enc_rval_t asn_r;
 
     int r;
@@ -370,33 +388,8 @@ int bdm_lost_hab_to_asnbuf(
     m.present = BDM_S2C_Message_PR_lostHab;
     lh = &m.choice.lostHab;
 
-    r = OCTET_STRING_fromBuf(&lh->bdmId, bdm_id, -1);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set bdm id", __FUNCTION__);
-        goto cleanup;
-    }
-
-    r = bionet_timeval_to_GeneralizedTime(timestamp, &lh->timestamp);
-    if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error setting timestamp of Event: %s", 
-                __FUNCTION__, strerror(errno));
-        goto cleanup;
-    }
-
-    lh->entrySeq = entry_seq;
-
-    r = OCTET_STRING_fromBuf(&lh->habType, hab_type, -1);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set hab type", __FUNCTION__);
-        goto cleanup;
-    }
-
-    r = OCTET_STRING_fromBuf(&lh->habId, hab_id, -1);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set hab id", __FUNCTION__);
+    r = bdm_new_lost_hab_to_asn_r(hab_type, hab_id, entry_seq, timestamp, bdm_id, lh);
+    if( r ) {
         goto cleanup;
     }
 
@@ -424,6 +417,60 @@ cleanup:
     return -1;
 }
 
+int bdm_new_lost_node_to_asn_r(
+        bionet_node_t *node,
+        bionet_event_t * event,
+        long entry_seq,
+        BDMNewLostNode_t *nn) 
+{
+    bionet_hab_t * hab;
+
+    int r;
+    hab = bionet_node_get_hab(node);
+
+    r = OCTET_STRING_fromBuf(&nn->bdmId, bionet_event_get_bdm_id(event), -1);
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+              "%s(): Failed to set bdm id", __FUNCTION__);
+        return -1;
+    }
+
+    r = bionet_timeval_to_GeneralizedTime(bionet_event_get_timestamp(event), &nn->timestamp);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error setting timestamp: %s", 
+                __FUNCTION__, strerror(errno));
+        return -1;
+    }
+
+    r = OCTET_STRING_fromBuf(&nn->habType, bionet_hab_get_type(hab), -1);
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+              "%s(): Failed to set hab type", __FUNCTION__);
+        return -1;
+    }
+
+    r = OCTET_STRING_fromBuf(&nn->habId, bionet_hab_get_id(hab), -1);
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+              "%s(): Failed to set hab id", __FUNCTION__);
+        return -1;
+    }
+
+    r = OCTET_STRING_fromBuf(&nn->uid, (const char *)bionet_node_get_uid(node), BDM_UUID_LEN);
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+              "%s(): Failed to set hab id", __FUNCTION__);
+        return -1;
+    }
+
+
+    nn->entrySeq = entry_seq;
+
+    bionet_node_to_asn(node, &nn->node);
+
+    return 0;
+}
+
 int bdm_new_node_to_asnbuf(
         bionet_node_t *node,
         bionet_event_t * event,
@@ -431,52 +478,21 @@ int bdm_new_node_to_asnbuf(
         bionet_asn_buffer_t *buf) 
 {
     BDM_S2C_Message_t m;
-    BDMNewNode_t *nn;
+    BDMNewLostNode_t *nn;
     asn_enc_rval_t asn_r;
-    bionet_hab_t * hab;
 
     int r;
     buf->buf = NULL;
     buf->size = 0;
 
-    hab = bionet_node_get_hab(node);
-
     memset(&m, 0x00, sizeof(m));
     m.present = BDM_S2C_Message_PR_newNode;
     nn = &m.choice.newNode;
 
-
-    r = OCTET_STRING_fromBuf(&nn->bdmId, bionet_event_get_bdm_id(event), -1);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set bdm id", __FUNCTION__);
+    r = bdm_new_lost_node_to_asn_r(node, event, entry_seq, nn);
+    if ( r ) {
         goto cleanup;
     }
-
-    r = bionet_timeval_to_GeneralizedTime(bionet_event_get_timestamp(event), &nn->timestamp);
-    if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error setting timestamp: %s", 
-                __FUNCTION__, strerror(errno));
-        goto cleanup;
-    }
-
-    r = OCTET_STRING_fromBuf(&nn->habType, bionet_hab_get_type(hab), -1);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set hab type", __FUNCTION__);
-        goto cleanup;
-    }
-
-    r = OCTET_STRING_fromBuf(&nn->habId, bionet_hab_get_id(hab), -1);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set hab id", __FUNCTION__);
-        goto cleanup;
-    }
-
-    nn->entrySeq = entry_seq;
-
-    bionet_node_to_asn(node, &nn->node);
 
 
     // 
@@ -504,14 +520,13 @@ cleanup:
 }
 
 int bdm_lost_node_to_asnbuf(
-        const uint8_t guid[BDM_UUID_LEN],
+        bionet_node_t * node,
+        bionet_event_t * event,
         long entry_seq, 
-        const struct timeval *timestamp, 
-        const char * bdm_id,
         bionet_asn_buffer_t *buf)
 {
     BDM_S2C_Message_t m;
-    BDMLostNode_t *ln;
+    BDMNewLostNode_t *ln;
     asn_enc_rval_t asn_r;
 
     int r;
@@ -522,31 +537,10 @@ int bdm_lost_node_to_asnbuf(
     m.present = BDM_S2C_Message_PR_lostNode;
     ln = &m.choice.lostNode;
 
-
-    r = OCTET_STRING_fromBuf(&ln->bdmId, bdm_id, -1);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set bdm id", __FUNCTION__);
+    r = bdm_new_lost_node_to_asn_r(node, event, entry_seq, ln);
+    if ( r ) {
         goto cleanup;
     }
-
-    r = bionet_timeval_to_GeneralizedTime(timestamp, &ln->timestamp);
-    if (r != 0) {
-        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error setting timestamp: %s", 
-                __FUNCTION__, strerror(errno));
-        goto cleanup;
-    }
-
-    r = OCTET_STRING_fromBuf(&ln->uid, (const char *)guid, BDM_UUID_LEN);
-    if (r != 0) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-              "%s(): Failed to set node uid", __FUNCTION__);
-        goto cleanup;
-    }
-
-
-    ln->entrySeq = entry_seq;
-
 
     // 
     // serialize the S2C-Message

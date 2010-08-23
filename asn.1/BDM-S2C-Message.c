@@ -40,7 +40,7 @@ static asn_TYPE_member_t asn_MBR_BDM_S2C_Message_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct BDM_S2C_Message, choice.newHab),
 		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_BDMNewHab,
+		&asn_DEF_BDMNewLostHab,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
@@ -49,7 +49,7 @@ static asn_TYPE_member_t asn_MBR_BDM_S2C_Message_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct BDM_S2C_Message, choice.lostHab),
 		(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_BDMLostHab,
+		&asn_DEF_BDMNewLostHab,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
@@ -58,7 +58,7 @@ static asn_TYPE_member_t asn_MBR_BDM_S2C_Message_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct BDM_S2C_Message, choice.newNode),
 		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_BDMNewNode,
+		&asn_DEF_BDMNewLostNode,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
@@ -67,7 +67,7 @@ static asn_TYPE_member_t asn_MBR_BDM_S2C_Message_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct BDM_S2C_Message, choice.lostNode),
 		(ASN_TAG_CLASS_CONTEXT | (6 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_BDMLostNode,
+		&asn_DEF_BDMNewLostNode,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
@@ -84,14 +84,14 @@ static asn_TYPE_member_t asn_MBR_BDM_S2C_Message_1[] = {
 		},
 };
 static asn_TYPE_tag2member_t asn_MAP_BDM_S2C_Message_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* resourceDatapointsReply at 273 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* resourceMetadata at 274 */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* datapointsUpdate at 275 */
-    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* newHab at 276 */
-    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* lostHab at 277 */
-    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 }, /* newNode at 278 */
-    { (ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0 }, /* lostNode at 279 */
-    { (ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0 } /* sendState at 281 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* resourceDatapointsReply at 258 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* resourceMetadata at 259 */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* datapointsUpdate at 260 */
+    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* newHab at 261 */
+    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* lostHab at 262 */
+    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 }, /* newNode at 263 */
+    { (ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0 }, /* lostNode at 264 */
+    { (ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0 } /* sendState at 266 */
 };
 static asn_CHOICE_specifics_t asn_SPC_BDM_S2C_Message_specs_1 = {
 	sizeof(struct BDM_S2C_Message),

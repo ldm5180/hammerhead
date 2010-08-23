@@ -57,11 +57,11 @@ static asn_TYPE_member_t asn_MBR_BDM_C2S_Message_1[] = {
 		},
 };
 static asn_TYPE_tag2member_t asn_MAP_BDM_C2S_Message_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* resourceDatapointsQuery at 260 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* subscribeHab at 261 */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* subscribeNode at 262 */
-    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* subscribeDatapoints at 263 */
-    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 } /* sendState at 265 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* resourceDatapointsQuery at 245 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* subscribeHab at 246 */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* subscribeNode at 247 */
+    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* subscribeDatapoints at 248 */
+    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 } /* sendState at 250 */
 };
 static asn_CHOICE_specifics_t asn_SPC_BDM_C2S_Message_specs_1 = {
 	sizeof(struct BDM_C2S_Message),

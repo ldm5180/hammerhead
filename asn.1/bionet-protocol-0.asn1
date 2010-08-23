@@ -130,38 +130,23 @@ BEGIN
         newDatapointsBDM   SEQUENCE OF BDMPublishDatapoint
     }
 
-    BDMNewNode ::= SEQUENCE {
+    BDMNewLostNode ::= SEQUENCE {
         entrySeq  INTEGER,
 	timestamp GeneralizedTime,
         bdmId     PrintableString,
+        uid       OCTET STRING,  -- 64bit fingerprint of the node
         habType   PrintableString,
         habId     PrintableString,
         node      Node
     }
 
-    BDMLostNode ::= SEQUENCE {
-        entrySeq  INTEGER,
-	timestamp GeneralizedTime,
-        bdmId     PrintableString,
-        uid       OCTET STRING  -- 64bit fingerprint of the node
-    }
-
-    BDMNewHab ::= SEQUENCE {
+    BDMNewLostHab ::= SEQUENCE {
         entrySeq  INTEGER,
 	timestamp GeneralizedTime,
         bdmId     PrintableString,
         habType   PrintableString,
         habId     PrintableString
     }
-
-    BDMLostHab ::= SEQUENCE {
-        entrySeq  INTEGER,
-	timestamp GeneralizedTime,
-        bdmId     PrintableString,
-	habType   PrintableString,
-	habId     PrintableString
-    }
-
 
     -- 
     -- ResourceDatapointsQuery: request from a client to the bdm server to
@@ -273,10 +258,10 @@ BEGIN
         resourceDatapointsReply ResourceDatapointsReply,
         resourceMetadata        BDMResourceMetadata,
         datapointsUpdate        BDMResourceDatapoints,
-        newHab                  BDMNewHab,
-        lostHab                 BDMLostHab,
-        newNode                 BDMNewNode,
-        lostNode                BDMLostNode,
+        newHab                  BDMNewLostHab,
+        lostHab                 BDMNewLostHab,
+        newNode                 BDMNewLostNode,
+        lostNode                BDMNewLostNode,
 	sendState               BDMSendState
     }
 

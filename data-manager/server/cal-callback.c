@@ -118,11 +118,10 @@ static void bdm_sendto_each_node(
             long entry_seq,
             bionet_asn_buffer_t *buf) ,
         int (*encode_lost_node)(
-            const uint8_t guid[BDM_UUID_LEN],
-            long entry_seq, 
-            const struct timeval *timestamp, 
-            const char * bdm_id,
-            bionet_asn_buffer_t *buf)
+            bionet_node_t *node,
+            bionet_event_t *event,
+            long entry_seq,
+            bionet_asn_buffer_t *buf) 
         ) 
 {
     int hi, r;
@@ -174,12 +173,7 @@ static void bdm_sendto_each_node(
                 } else if ( type == BIONET_EVENT_LOST && encode_lost_node) {
                     //
                     // Encode the node with the supplied function
-                    r = encode_lost_node(
-                            bionet_node_get_uid(node), 
-                            this_seq, 
-                            bionet_event_get_timestamp(event),
-                            bionet_event_get_bdm_id(event),
-                            &buf);
+                    r = encode_lost_node(node, event, this_seq, &buf);
                     if (r != 0) {
                         // an error has already been logged, and the buffer has been freed
                         continue;

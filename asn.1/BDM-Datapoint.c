@@ -33,8 +33,8 @@ static ber_tlv_tag_t asn_DEF_BDM_Datapoint_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
 static asn_TYPE_tag2member_t asn_MAP_BDM_Datapoint_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* datapoint at 311 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* event at 313 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* datapoint at 296 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* event at 298 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_BDM_Datapoint_specs_1 = {
 	sizeof(struct BDM_Datapoint),

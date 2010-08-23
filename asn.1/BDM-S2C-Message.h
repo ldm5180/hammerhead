@@ -15,10 +15,8 @@
 #include "ResourceDatapointsReply.h"
 #include "BDMResourceMetadata.h"
 #include "BDMResourceDatapoints.h"
-#include "BDMNewHab.h"
-#include "BDMLostHab.h"
-#include "BDMNewNode.h"
-#include "BDMLostNode.h"
+#include "BDMNewLostHab.h"
+#include "BDMNewLostNode.h"
 #include "BDMSendState.h"
 #include <constr_CHOICE.h>
 
@@ -46,10 +44,10 @@ typedef struct BDM_S2C_Message {
 		ResourceDatapointsReply_t	 resourceDatapointsReply;
 		BDMResourceMetadata_t	 resourceMetadata;
 		BDMResourceDatapoints_t	 datapointsUpdate;
-		BDMNewHab_t	 newHab;
-		BDMLostHab_t	 lostHab;
-		BDMNewNode_t	 newNode;
-		BDMLostNode_t	 lostNode;
+		BDMNewLostHab_t	 newHab;
+		BDMNewLostHab_t	 lostHab;
+		BDMNewLostNode_t	 newNode;
+		BDMNewLostNode_t	 lostNode;
 		BDMSendState_t	 sendState;
 	} choice;
 	

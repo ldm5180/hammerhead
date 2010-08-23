@@ -13,10 +13,8 @@ ASN_MODULE_SOURCES=	\
 	BDMPublishDatapoint.c	\
 	BDMResourceMetadata.c	\
 	BDMResourceDatapoints.c	\
-	BDMNewNode.c	\
-	BDMLostNode.c	\
-	BDMNewHab.c	\
-	BDMLostHab.c	\
+	BDMNewLostNode.c	\
+	BDMNewLostHab.c	\
 	ResourceDatapointsQuery.c	\
 	ResourceDatapointsReply.c	\
 	SetResourceValue.c	\
@@ -56,10 +54,8 @@ ASN_MODULE_HEADS=	\
 	BDMPublishDatapoint.h	\
 	BDMResourceMetadata.h	\
 	BDMResourceDatapoints.h	\
-	BDMNewNode.h	\
-	BDMLostNode.h	\
-	BDMNewHab.h	\
-	BDMLostHab.h	\
+	BDMNewLostNode.h	\
+	BDMNewLostHab.h	\
 	ResourceDatapointsQuery.h	\
 	ResourceDatapointsReply.h	\
 	SetResourceValue.h	\
@@ -71,6 +67,8 @@ ASN_MODULE_HEADS=	\
 	BDM-S2C-Message.h	\
 	BDM-Event-Type.h	\
 	BDM-Event.h	\
+	BDM-Datapoint.h	\
+	BDM-Resource.h	\
 	BDM-Node.h	\
 	BDM-HardwareAbstractor.h	\
 	DataManager.h	\

@@ -7,10 +7,10 @@
 
 #include <asn_internal.h>
 
-#include "BDMNewNode.h"
+#include "BDMNewLostNode.h"
 
-static asn_TYPE_member_t asn_MBR_BDMNewNode_1[] = {
-	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewNode, entrySeq),
+static asn_TYPE_member_t asn_MBR_BDMNewLostNode_1[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewLostNode, entrySeq),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
@@ -19,7 +19,7 @@ static asn_TYPE_member_t asn_MBR_BDMNewNode_1[] = {
 		0,
 		"entrySeq"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewNode, timestamp),
+	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewLostNode, timestamp),
 		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_GeneralizedTime,
@@ -28,7 +28,7 @@ static asn_TYPE_member_t asn_MBR_BDMNewNode_1[] = {
 		0,
 		"timestamp"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewNode, bdmId),
+	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewLostNode, bdmId),
 		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_PrintableString,
@@ -37,8 +37,17 @@ static asn_TYPE_member_t asn_MBR_BDMNewNode_1[] = {
 		0,
 		"bdmId"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewNode, habType),
+	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewLostNode, uid),
 		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_OCTET_STRING,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		"uid"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewLostNode, habType),
+		(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_PrintableString,
 		0,	/* Defer constraints checking to the member type */
@@ -46,8 +55,8 @@ static asn_TYPE_member_t asn_MBR_BDMNewNode_1[] = {
 		0,
 		"habType"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewNode, habId),
-		(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
+	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewLostNode, habId),
+		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_PrintableString,
 		0,	/* Defer constraints checking to the member type */
@@ -55,8 +64,8 @@ static asn_TYPE_member_t asn_MBR_BDMNewNode_1[] = {
 		0,
 		"habId"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewNode, node),
-		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
+	{ ATF_NOFLAGS, 0, offsetof(struct BDMNewLostNode, node),
+		(ASN_TAG_CLASS_CONTEXT | (6 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_Node,
 		0,	/* Defer constraints checking to the member type */
@@ -65,29 +74,30 @@ static asn_TYPE_member_t asn_MBR_BDMNewNode_1[] = {
 		"node"
 		},
 };
-static ber_tlv_tag_t asn_DEF_BDMNewNode_tags_1[] = {
+static ber_tlv_tag_t asn_DEF_BDMNewLostNode_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static asn_TYPE_tag2member_t asn_MAP_BDMNewNode_tag2el_1[] = {
+static asn_TYPE_tag2member_t asn_MAP_BDMNewLostNode_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* entrySeq at 134 */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* timestamp at 135 */
     { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* bdmId at 136 */
-    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* habType at 137 */
-    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* habId at 138 */
-    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 } /* node at 140 */
+    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* uid at 137 */
+    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* habType at 138 */
+    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 }, /* habId at 139 */
+    { (ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0 } /* node at 141 */
 };
-static asn_SEQUENCE_specifics_t asn_SPC_BDMNewNode_specs_1 = {
-	sizeof(struct BDMNewNode),
-	offsetof(struct BDMNewNode, _asn_ctx),
-	asn_MAP_BDMNewNode_tag2el_1,
-	6,	/* Count of tags in the map */
+static asn_SEQUENCE_specifics_t asn_SPC_BDMNewLostNode_specs_1 = {
+	sizeof(struct BDMNewLostNode),
+	offsetof(struct BDMNewLostNode, _asn_ctx),
+	asn_MAP_BDMNewLostNode_tag2el_1,
+	7,	/* Count of tags in the map */
 	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* Start extensions */
 	-1	/* Stop extensions */
 };
-asn_TYPE_descriptor_t asn_DEF_BDMNewNode = {
-	"BDMNewNode",
-	"BDMNewNode",
+asn_TYPE_descriptor_t asn_DEF_BDMNewLostNode = {
+	"BDMNewLostNode",
+	"BDMNewLostNode",
 	SEQUENCE_free,
 	SEQUENCE_print,
 	SEQUENCE_constraint,
@@ -98,15 +108,15 @@ asn_TYPE_descriptor_t asn_DEF_BDMNewNode = {
 	SEQUENCE_decode_uper,
 	SEQUENCE_encode_uper,
 	0,	/* Use generic outmost tag fetcher */
-	asn_DEF_BDMNewNode_tags_1,
-	sizeof(asn_DEF_BDMNewNode_tags_1)
-		/sizeof(asn_DEF_BDMNewNode_tags_1[0]), /* 1 */
-	asn_DEF_BDMNewNode_tags_1,	/* Same as above */
-	sizeof(asn_DEF_BDMNewNode_tags_1)
-		/sizeof(asn_DEF_BDMNewNode_tags_1[0]), /* 1 */
+	asn_DEF_BDMNewLostNode_tags_1,
+	sizeof(asn_DEF_BDMNewLostNode_tags_1)
+		/sizeof(asn_DEF_BDMNewLostNode_tags_1[0]), /* 1 */
+	asn_DEF_BDMNewLostNode_tags_1,	/* Same as above */
+	sizeof(asn_DEF_BDMNewLostNode_tags_1)
+		/sizeof(asn_DEF_BDMNewLostNode_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
-	asn_MBR_BDMNewNode_1,
-	6,	/* Elements count */
-	&asn_SPC_BDMNewNode_specs_1	/* Additional specs */
+	asn_MBR_BDMNewLostNode_1,
+	7,	/* Elements count */
+	&asn_SPC_BDMNewLostNode_specs_1	/* Additional specs */
 };
 

@@ -184,13 +184,18 @@ int bdm_report_lost_node(
     dbb_node_t * dbb_node = event->data.node;
     dbb_hab_t * dbb_hab = dbb_node->hab;
 
+    bionet_hab_t * hab = bionet_hab_new(dbb_hab->hab_type, dbb_hab->hab_id);
+    bionet_node_t * node = node_bdm_to_bionet(dbb_node, hab);
+    bionet_hab_add_node(hab, node);
+    bionet_node_add_event(node, bionet_event);
+
     snprintf(topic, sizeof(topic), "N %s/%s.%s.%s", 
         bdm_id, dbb_hab->hab_type, dbb_hab->hab_id,
         dbb_node->node_id);
 
-    r = bdm_lost_node_to_asnbuf(
-            dbb_node->guid,
-            event->rowid, &event->timestamp, bdm_id,
+    r = bdm_lost_node_to_asnbuf(node, 
+            bionet_node_get_event_by_index(node, 0),
+            event->rowid, 
             &buf);
     if ( r != 0 ) {
         // An error has already been logged
