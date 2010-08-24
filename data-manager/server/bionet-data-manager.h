@@ -20,6 +20,7 @@
 
 // Default bundle lifetime in seconds.
 #define BDM_BUNDLE_LIFETIME (300)
+#define BP_SEND_BUF_SIZE 4048
 
 #if ENABLE_ION
 #include "zco.h"
@@ -169,10 +170,15 @@ typedef struct {
     char * sync_recipient;
     int remote_port;
     int bundle_lifetime; // Sync bundles have this rfc5050 lifetime (seconds)
+    int bundle_mtu; // Sync bundles have this MTU. -1 means no limit
 
     //State vars
     sqlite3 *db;
     int last_entry_end_seq;    
+    char send_buf[BP_SEND_BUF_SIZE]; // Buffer for building bundles
+    size_t buf_len;           // Number of bytes valid in send_buf
+
+
     // TCP Specific
     int fd;
     int bytes_sent;

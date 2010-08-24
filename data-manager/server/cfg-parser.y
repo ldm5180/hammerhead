@@ -33,6 +33,7 @@ static sync_sender_config_t * bdmcfg;
 %token SET_RECPT
 %token SET_PORT
 %token SET_BUNDLE_LIFETIME
+%token SET_BUNDLE_MTU
 %token ASSIGN
 %token OPTWHITE
 %token STRINGVAL
@@ -64,6 +65,7 @@ opt     :       set_method
         |       set_recpt
         |       set_freq
         |       set_bundle_lifetime
+        |       set_bundle_mtu
         |       set_unknown
         ;
 
@@ -112,6 +114,10 @@ set_bundle_lifetime :   SET_BUNDLE_LIFETIME ASSIGN INTVAL {
                             bdmcfg->bundle_lifetime = $<intval>3;
                         }
 
+set_bundle_mtu :   SET_BUNDLE_MTU ASSIGN INTVAL {
+                            bdmcfg->bundle_mtu = $<intval>3;
+                        }
+
 set_unknown     :       SET_UNKNOWN ASSIGN STRINGVAL {
                             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                                 "Unknown setting '%s'. Ignoring\n",
@@ -142,6 +148,7 @@ sync_sender_config_t * read_config_file(const char * fname) {
         // Set default config values first
         cfg->remote_port = BDM_SYNC_PORT;
         cfg->bundle_lifetime = BDM_BUNDLE_LIFETIME;
+        cfg->bundle_mtu = -1;
 
         if(strlen(cfg->resource_name_pattern) == 0){
             strncpy(cfg->resource_name_pattern, "*.*.*:*", 

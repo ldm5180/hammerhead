@@ -28,6 +28,8 @@
 #include "bionet-data-manager.h"
 #include "bdm-db.h"
 
+#define _Min(x,y) ((x)<(y)?(x):(y))
+
 #if ENABLE_ION
 char * dtn_endpoint_id = NULL;
 
@@ -268,6 +270,8 @@ static int write_data_to_socket(const void *buffer, size_t size, void * config_v
 
 #if ENABLE_ION
 static int write_data_to_ion(const void *buffer, size_t size, void * config_void) {
+    sync_sender_config_t * config = (sync_sender_config_t *)config_void;
+
     Object	extent;
     Sdr sdr = ion.sdr;
     Object bundleZco = ion.bundleZco;
@@ -282,20 +286,35 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
         return 0;
     }
 
-    extent = bdm_sdr_malloc(sdr, size);
-    if (extent == 0)
-    {
-        (*bdm_bp_funcs.sdr_cancel_xn)(sdr);
+    if(config->bundle_mtu > 0 && config->buf_len + size > config->bundle_mtu) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-            "No space for ZCO extent.");
-
-        ion.sdr = NULL;
+            "Bundle would exceed MTU of %d", config->bundle_mtu);
         return -1;
     }
 
-    bdm_sdr_write(sdr, extent, (void*)buffer, size);
-    (*bdm_bp_funcs.zco_append_extent)(sdr, bundleZco, ZcoSdrSource, extent, 0, size);
-    ion.bundle_size += size;
+    int bytes_to_copy = _Min(size,BP_SEND_BUF_SIZE - config->buf_len);
+    char * dst = config->send_buf + config->buf_len;
+    memcpy(dst, buffer, bytes_to_copy);
+    config->buf_len += bytes_to_copy;
+
+    if(config->buf_len >= BP_SEND_BUF_SIZE) {
+        extent = bdm_sdr_malloc(sdr, BP_SEND_BUF_SIZE);
+        if (extent == 0)
+        {
+            (*bdm_bp_funcs.sdr_cancel_xn)(sdr);
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                "No space for ZCO extent.");
+
+            ion.sdr = NULL;
+            return -1;
+        }
+
+        bdm_sdr_write(sdr, extent, (void*)config->send_buf, BP_SEND_BUF_SIZE);
+        (*bdm_bp_funcs.zco_append_extent)(sdr, bundleZco, ZcoSdrSource, extent, 0, BP_SEND_BUF_SIZE);
+        ion.bundle_size += BP_SEND_BUF_SIZE;
+
+        config->buf_len = 0;
+    }
 
     return size;
 }
@@ -564,6 +583,29 @@ static int sync_finish_connection_tcp(sync_sender_config_t * config) {
 
 #if ENABLE_ION
 static int sync_finish_connection_ion(sync_sender_config_t * config) {
+
+    // Append any bytes in buffer to zco
+    if(config->buf_len > 0) {
+        Object	extent;
+        Object bundleZco = ion.bundleZco;
+
+        extent = bdm_sdr_malloc(ion.sdr, config->buf_len);
+        if (extent == 0)
+        {
+            (*bdm_bp_funcs.sdr_cancel_xn)(ion.sdr);
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                "No space for ZCO extent.");
+
+            ion.sdr = NULL;
+            return -1;
+        }
+
+        bdm_sdr_write(ion.sdr, extent, (void*)config->send_buf, config->buf_len);
+        (*bdm_bp_funcs.zco_append_extent)(ion.sdr, bundleZco, ZcoSdrSource, extent, 0, config->buf_len);
+        ion.bundle_size += config->buf_len;
+
+        config->buf_len = 0;
+    }
 
     if ((*bdm_bp_funcs.sdr_end_xn)(ion.sdr) < 0 || ion.bundleZco == 0)
     {
