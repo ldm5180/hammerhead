@@ -58,5 +58,5 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
         bionet_resource_set_double(translator_resource[pot_id], table[pot_id][volt_index][ENG_VAL], NULL);
     }
 
-    hab_report_datapoints(bionet_resource_get_node(resource));
+    hab_report_datapoints(bionet_resource_get_node(translator_resource[0]));
 }
