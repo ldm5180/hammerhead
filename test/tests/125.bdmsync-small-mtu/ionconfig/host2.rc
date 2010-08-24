@@ -1,0 +1,41 @@
+# 2000.ctct-ctfails/config/host1.rc
+## begin ionadmin 
+1 2 ionconfig/settings2.ionconfig
+s
+
+a contact +1 +3600 1 1 100000
+a contact +1 +3600 1 2 100000
+a contact +1 +3600 2 1 100000
+a contact +1 +3600 2 2 100000
+
+a range +1 +3600 1 1 1
+a range +1 +3600 2 2 1
+a range +1 +3600 2 1 1
+
+m production 1000000
+m consumption 1000000
+## end ionadmin 
+
+## begin bpadmin 
+1
+
+a scheme ipn 'ipnfw' 'ipnadminep'
+a endpoint ipn:2.0 x
+a endpoint ipn:2.1 x
+a endpoint ipn:2.2 x
+
+a protocol udp 1400 100
+a induct udp 127.0.0.1:4557 udpcli
+a outduct udp '*' udpclo
+
+## end bpadmin 
+
+## begin ipnadmin 
+a plan 1 udp/*,127.0.0.1:4556
+a plan 2 udp/*,127.0.0.1:4557
+## end ipnadmin 
+
+## begin ionsecadmin
+1
+e 1
+## end ionsecadmin
