@@ -1651,10 +1651,12 @@ skip:
     //
 
     g_main_loop_unref(bdm_main_loop);
-    db_shutdown(main_db);
 
     disconnect_from_bionet(NULL);
     cal_server.shutdown(libbdm_cal_handle);
+
+    // shutdown the database after processing all requests
+    db_shutdown(main_db);
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
         "Bionet Data Manager shut down cleanly");
