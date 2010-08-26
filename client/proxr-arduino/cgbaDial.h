@@ -44,6 +44,7 @@ private:
     QLineEdit *dialDisplay;
 
     double voltage;
+    double cooked_val;
     double max_range;
     double min_range;
     double increment;

@@ -40,8 +40,8 @@ void cgbaDial::set_display(int dialValue)
     QString s;
     //set dials value to new value
     this->dial->setValue(dialValue);
+    this->voltage = dialValue*VOLTAGE_INCREMENT;
 
-    voltage = dialValue*VOLTAGE_INCREMENT;
     if(OFF == cookedMode)
     {
         s.setNum(voltage, 'f', 3);
@@ -49,7 +49,7 @@ void cgbaDial::set_display(int dialValue)
     }
     else if(ON == cookedMode)
     {
-        double cookedVal = dialValue*increment;
+        this->cookedVal = dialValue*increment;
         s.setNum(cookedVal, 'f', 3);
         this->dialDisplay->setText(s);
     }
