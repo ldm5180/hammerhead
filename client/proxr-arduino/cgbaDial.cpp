@@ -1,12 +1,13 @@
 #include "cgbaDial.h"
-#include <math.h>
+#include <cmath>
+#include <QDebug>
 
 #define VOLTAGE_INCREMENT 0.019607843
 
 cgbaDial::cgbaDial(QString label, int pot, QWidget *parent)
     :QWidget(parent)
 {
-    potResource = NULL;
+    proxr_pot_resource = NULL;
     potNum = pot;
     dialToolTip = default_settings->dial_names[potNum];
 
@@ -31,7 +32,7 @@ cgbaDial::cgbaDial(QString label, int pot, QWidget *parent)
 
     //Slot Connections
     connect(dial, SIGNAL(valueChanged(int)), this, SLOT(set_display(int)));
-    connect(dial, SIGNAL(sliderReleased()), this, SLOT(setPotentiometer()));
+    connect(dial, SIGNAL(sliderReleased()), this, SLOT(command_potentiometer()));
 }
 
 void cgbaDial::set_display(int dialValue)
@@ -48,27 +49,16 @@ void cgbaDial::set_display(int dialValue)
     }
     else if(ON == cookedMode)
     {
-        double cookedVal = dialValue;
+        double cookedVal = dialValue*increment;
         s.setNum(cookedVal, 'f', 3);
         this->dialDisplay->setText(s);
     }
-   /* else if(O(iiN == cookedMode)
-    {
-        double cookedVal = calibration_const[0] + calibration_const[1]*voltage*1000 +
-                           calibration_const[2]*pow(voltage*1000, 2) +
-                           calibration_const[3]*pow(voltage*1000, 3) +
-                           calibration_const[4]*pow(voltage*1000, 4) +
-                           calibration_const[5]*pow(voltage*1000, 5) +
-                           calibration_const[6]*pow(voltage*1000, 6);
-        s.setNum(cookedVal, 'f', 3);
-        this->dialDisplay->setText(s);
-    }*/
-}
+} 
 
-void cgbaDial::setPotentiometer()
+void cgbaDial::command_potentiometer()
 {
     // check if the resource the dial controls is null
-    if(potResource == NULL)
+    if(proxr_pot_resource == NULL)
     {
         QMessageBox::critical(this, tr("null resource"), tr("The bionet resource this dial controlls is null. Exiting..."),
                               QMessageBox::Ok);
@@ -78,45 +68,89 @@ void cgbaDial::setPotentiometer()
     int value;
     QString s;
     value = dial->value();
-    double new_voltage = value*VOLTAGE_INCREMENT;
 
-    // convert int to char*
-    s.setNum(new_voltage, 'f', 3);
-    QByteArray ba = s.toLatin1();
-    char *newVal = ba.data();
+    // command translator hab or proxr hab based on mode cooked or voltage
+    if(OFF == cookedMode)
+    {
+        double new_voltage = value*VOLTAGE_INCREMENT;
 
-    //send set resource command to proxr hab
-    bionet_set_resource(potResource, newVal);
+        // convert double to char*
+        s.setNum(new_voltage, 'f', 3);
+        QByteArray ba = s.toLatin1();
+        char *newVal = ba.data();
+
+        //send set resource command to proxr hab
+        bionet_set_resource(proxr_pot_resource, newVal);
+    }
+    else if(ON == cookedMode)
+    {
+        // dance
+    }
 }
 
-void cgbaDial::setResource(bionet_node_t *node)
+void cgbaDial::set_proxr_resource(bionet_node_t *node)
 {
-    potResource = bionet_node_get_resource_by_index(node, potNum);
+    proxr_pot_resource = bionet_node_get_resource_by_index(node, potNum);
+
     // set the start up values of the dials to reflect the proxr-hab's values
     double content;
-    bionet_resource_get_double(potResource, &content, NULL);
+    bionet_resource_get_double(proxr_pot_resource, &content, NULL);
     content = content/VOLTAGE_INCREMENT;
     set_display(int(content));
 }
 
+void cgbaDial::set_translator_resource(bionet_node_t *node)
+{
+    translator_pot_resource = bionet_node_get_resource_by_index(node, potNum);
+}
+
 void cgbaDial::store_max_range(double max)
 {
-    max_range = round(max);
+    // make sure to always round up
+    if(max > 0)
+        max_range = ceil(max);
+    if(max < 0)
+        max_range = floor(max);
+
+    qDebug() << "max " << potNum << " = " << max_range;
 }
 
 void cgbaDial::store_min_range(double min)
 {
-    min_range = round(min);
+    // make sure to always round up
+    if(min > 0)
+        min_range = ceil(min);
+    if(min < 0)
+        min_range = floor(min);
+
+    qDebug() << "min " << potNum << " = " << min_range;
 }
 
 void cgbaDial::switch_cooked_mode()
 {
-    dial->setRange(min_range, max_range);
+    if(min_range > max_range)
+    {
+        dial->setRange(max_range/increment, min_range/increment);
+    }
+    else if(min_range < max_range)
+    {
+        dial->setRange(min_range/increment, max_range/increment);
+    }
 }
 
 void cgbaDial::switch_voltage_mode()
 {
     dial->setRange(0, 255);
+}
+
+void cgbaDial::update_increment()
+{
+    double abs_min = qAbs(min_range);
+    double abs_max = qAbs(max_range);
+    double sum = abs_min + abs_max;
+
+    // the 256 is because proxr is 8 bit resolution;
+    increment = sum/256;
 }
 
 cgbaDial::~cgbaDial()

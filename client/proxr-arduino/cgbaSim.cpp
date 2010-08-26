@@ -134,16 +134,17 @@ void cgbaSim::bionetSetup()
         // convert Qstring to char *
         QByteArray ba = sub.toLatin1();
         char *id = ba.data(); 
-        qDebug() << id;
         bionet_subscribe_datapoints_by_name(id);
     }
 
     // Subscribe to translator resources
     QString translator = "translator.";
-    translator += habId + ".0"; 
+    translator += habId + ".translator"; 
     ba = translator.toLatin1();
     id = ba.data();
     bionet_subscribe_node_list_by_name(id);
+    bionet_subscribe_datapoints_by_name(strcat(id, ":*"));
+
 }
 
 void cgbaSim::cookedValueMode()
@@ -158,7 +159,7 @@ void cgbaSim::cookedValueMode()
    {
        cookedMode = ON;
        for(int i=0; i<16; i++)
-            dial[1]->switch_cooked_mode();
+            dial[i]->switch_cooked_mode();
    }
 }
 
@@ -166,13 +167,22 @@ void cgbaSim::cookedValueMode()
 // each dial to correspond with a proxr resource
 void cgbaSim::use_node_set_resources(bionet_node_t *node)
 {
-    int n = bionet_node_get_num_resources(node);
-    // n is an extra check to make sure this is a proxr-hab node
-    if(n == 16)
+    char *node_id = NULL;
+    const char *node_name = bionet_node_get_name(node);
+    bionet_split_node_name(node_name, NULL, NULL, &node_id);
+    
+    if(strcmp(node_id, "potentiometers") == 0)
     {
         for(int i=0; i<16; i++)
         {
-            dial[i]->setResource(node);
+            dial[i]->set_proxr_resource(node);
+        }
+    }
+    else if(strcmp(node_id, "translator") == 0)
+    {
+        for(int i=0; i<16; i++)
+        {
+            dial[i]->set_translator_resource(node);
         }
     }
 }
@@ -186,7 +196,6 @@ void cgbaSim::datapoint_update(bionet_datapoint_t *data)
 
     resource = bionet_datapoint_get_resource(data);
     bionet_split_resource_name(bionet_resource_get_name(resource), NULL, NULL, NULL, &name);
-    qDebug() << name;
 
     // huge if else ball. checks to see if the updated datapoint is one we care about
     // if it is check the value it changed to and update led light accordingly
@@ -264,7 +273,10 @@ void cgbaSim::datapoint_update(bionet_datapoint_t *data)
         if(strcmp(default_settings->mins_names[i], name) == 0)
         {
             bionet_resource_get_double(resource, &cont, NULL);
-            dial[i]->store_max_range(cont);
+            // store range
+            dial[i]->store_min_range(cont);
+            // set increment with new range
+            dial[i]->update_increment();
             return;
         }
     }
@@ -275,7 +287,10 @@ void cgbaSim::datapoint_update(bionet_datapoint_t *data)
         if(strcmp(default_settings->maxs_names[i], name) == 0)
         {
             bionet_resource_get_double(resource, &cont, NULL);
+            // store range
             dial[i]->store_max_range(cont);
+            // set increment with new range
+            dial[i]->update_increment();
             return;
         }
     }

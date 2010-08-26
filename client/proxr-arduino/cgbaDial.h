@@ -26,13 +26,15 @@ public:
 
 public slots:
     void set_display(int value);
-    void setPotentiometer();
-    void setResource(bionet_node_t *node);
+    void command_potentiometer();
+    void set_proxr_resource(bionet_node_t *node);
+    void set_translator_resource(bionet_node_t *node);
     void store_max_range(double max);
     void store_min_range(double min);
 
     void switch_cooked_mode();
     void switch_voltage_mode();
+    void update_increment();
 
 private:
     Dial *dial;
@@ -44,7 +46,9 @@ private:
     double voltage;
     double max_range;
     double min_range;
+    double increment;
     int potNum;
-    bionet_resource_t *potResource;
+    bionet_resource_t *proxr_pot_resource;
+    bionet_resource_t *translator_pot_resource;
 };
 #endif // CGBADIAL_H
