@@ -57,6 +57,13 @@ BIONET_ASN_API_DECL
 int bionet_accumulate_asn_buffer(const void *new_buffer, size_t new_size, void *buffer_as_voidp);
 
 
+/**
+ * Calculate the size of this ASN structure as it would be der encoded
+ */
+BIONET_ASN_API_DECL 
+ssize_t der_encoded_size(
+        asn_TYPE_descriptor_t *type_descriptor,
+        void *struct_ptr);
 
 
 // 

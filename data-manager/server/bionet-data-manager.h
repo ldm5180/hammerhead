@@ -17,6 +17,8 @@
 #include "bionet-util.h"
 #include "cal-event.h"
 
+#include "bdm-list-iterator.h"
+
 
 // Default bundle lifetime in seconds.
 #define BDM_BUNDLE_LIFETIME (300)
@@ -170,7 +172,7 @@ typedef struct {
     char * sync_recipient;
     int remote_port;
     int bundle_lifetime; // Sync bundles have this rfc5050 lifetime (seconds)
-    int bundle_mtu; // Sync bundles have this MTU. -1 means no limit
+    int sync_mtu; // Sync messages have this MTU. <= 0 means no limit
 
     //State vars
     sqlite3 *db;
@@ -322,10 +324,6 @@ void libbdm_handle_resourceDatapointsQuery(
         const char * peer_name, 
         ResourceDatapointsQuery_t *rdpq);
 
-BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray *hab_list);
-BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(GPtrArray *hab_list);
-
-
 int bdm_report_datapoint(
         dbb_event_t * event,
         bionet_event_t * bionet_event);
@@ -439,6 +437,24 @@ void make_shutdowns_clean(int withThreads);
 
 
 // BDM sync'ing
+typedef struct {
+    // This is build up during traversal
+    BDM_Sync_Datapoints_Message_t * asn_message;
+
+    // These are pointers intp message, as placeholders...
+    BDMSyncRecord_t * asn_sync_record;
+    ResourceRecord_t * asn_resource_rec;
+} dp_iter_state_t;
+
+
+BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray *hab_list);
+
+void bdm_sync_datapoints_to_asn_setup(
+        GPtrArray * bdm_list,
+        dp_iter_state_t * state_buf,
+        bdm_list_iterator_t * iter_buf);
+BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_iter_state_t * state);
+
 gpointer sync_thread(gpointer config_list);
 gpointer dtn_receive_thread(gpointer config);
 

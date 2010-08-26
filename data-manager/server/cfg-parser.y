@@ -115,7 +115,7 @@ set_bundle_lifetime :   SET_BUNDLE_LIFETIME ASSIGN INTVAL {
                         }
 
 set_bundle_mtu :   SET_BUNDLE_MTU ASSIGN INTVAL {
-                            bdmcfg->bundle_mtu = $<intval>3;
+                            bdmcfg->sync_mtu = $<intval>3;
                         }
 
 set_unknown     :       SET_UNKNOWN ASSIGN STRINGVAL {
@@ -148,7 +148,7 @@ sync_sender_config_t * read_config_file(const char * fname) {
         // Set default config values first
         cfg->remote_port = BDM_SYNC_PORT;
         cfg->bundle_lifetime = BDM_BUNDLE_LIFETIME;
-        cfg->bundle_mtu = -1;
+        cfg->sync_mtu = -1;
 
         if(strlen(cfg->resource_name_pattern) == 0){
             strncpy(cfg->resource_name_pattern, "*.*.*:*", 

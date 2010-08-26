@@ -27,6 +27,35 @@ static struct tm * gmtime_r(const time_t *timep, struct tm* _tm) {
 }
 #endif
 
+static int _count_bytes(const void *buffer, size_t size, void * voidp) {
+    ssize_t *pBytes = (ssize_t*)voidp;
+
+    (*pBytes) += size;
+
+    return size;
+}
+
+ssize_t der_encoded_size(
+        asn_TYPE_descriptor_t *type_descriptor,
+        void *struct_ptr)
+{
+    ssize_t bytes = 0;
+    asn_enc_rval_t asn_r;
+
+    asn_r = type_descriptor->der_encoder(type_descriptor,
+            struct_ptr,	/* Pointer to the destination structure */
+            0, 0,
+            _count_bytes, (void*)&bytes);
+
+    if (asn_r.encoded == -1) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "der_encoded_size(): error with der_encode(): %s", 
+                asn_r.failed_type ? asn_r.failed_type->name : "unknown");
+        return -1;
+    }
+
+    return bytes;
+}
 
 
 int bionet_accumulate_asn_buffer(const void *new_buffer, size_t new_size, void *buffer_as_voidp) {

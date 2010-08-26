@@ -26,6 +26,7 @@
 #include "bionet.h"
 #include "bionet-util.h"
 #include "bionet-data-manager.h"
+#include "bdm-list-iterator.h"
 #include "bdm-db.h"
 
 #define _Min(x,y) ((x)<(y)?(x):(y))
@@ -114,8 +115,8 @@ static int sync_send_metadata(
             write_data_to_message, config);
 	if (asn_r.encoded == -1) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "send_sync_metadata(): error with der_encode(): %p, %p", 
-                    asn_r.failed_type, asn_r.structure_ptr);
+                    "send_sync_metadata(): error with der_encode(): %s", 
+                    asn_r.failed_type ? asn_r.failed_type->name : "unknown");
             sync_cancel_connection(config);
             return -1;
 	}
@@ -205,16 +206,23 @@ static int sync_send_datapoints(
 	goto cleanup;
     }
 
+    dp_iter_state_t make_message_state;
+    bdm_list_iterator_t iter;
 
-    sync_message = bdm_sync_datapoints_to_asn(bdm_list);
-    bdm_list_free(bdm_list);
-    if( sync_message) {
+    bdm_sync_datapoints_to_asn_setup(bdm_list, &make_message_state, &iter);
+
+    while((sync_message = bdm_sync_datapoints_to_asn(&iter, &make_message_state)))
+    {
 	// send the reply to the client
 	asn_enc_rval_t asn_r;
 	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, sync_message, 
             write_data_to_message, config);
+
+        ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
+
 	if (asn_r.encoded == -1) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
+            bdm_list_free(bdm_list);
             goto cleanup;
 	}
 
@@ -224,23 +232,19 @@ static int sync_send_datapoints(
               config->sync_recipient,
               from_seq, to_seq);
     }
+    bdm_list_free(bdm_list);
 
     r = sync_finish_connection(config);
     if( r != 0 ) {
         goto cleanup;
     }
 
-
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
           "    Sync datapoints finished");
 
-    if (sync_message) ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
-
     return 0;
 
-
 cleanup:
-    if (sync_message) ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
     sync_cancel_connection(config);
     return -1;
 } /* sync_send_datapoints() */
@@ -286,9 +290,9 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
         return 0;
     }
 
-    if(config->bundle_mtu > 0 && config->buf_len + size > config->bundle_mtu) {
+    if(config->sync_mtu > 0 && config->buf_len + size > config->sync_mtu) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-            "Bundle would exceed MTU of %d", config->bundle_mtu);
+            "Bundle would exceed MTU of %d", config->sync_mtu);
         return -1;
     }
 
