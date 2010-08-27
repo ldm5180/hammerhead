@@ -171,7 +171,7 @@ while dir_not_empty filecla/host2-delay; do
 done
 
 test_log "Waiting for all data to sync"
-time_watch 60 dirempty filecla/host2 || test_error "Data didn't sync in time"
+time_watch 120 dirempty filecla/host2 || test_error "Data didn't sync in time"
 sleep 5
 
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
