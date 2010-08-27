@@ -20,6 +20,10 @@
 #include "bionet-util.h"
 #include "check-libutil-node-tests.h"
 
+
+static void node_destructor(bionet_node_t * hab, void * user_data);
+
+
 /*
  * bionet_node_new(hab, id)
  */
@@ -1603,6 +1607,109 @@ START_TEST (test_libutil_node_add_event_2) {
 } END_TEST /* test_libutil_node_add_event_2 */
 
 
+/*
+ * bionet_node_add_destructor(node)
+ */
+START_TEST (test_libutil_node_add_destructor_0) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_if (bionet_hab_add_node(hab, node), "Failed to add node to HAB.");
+
+    fail_if(bionet_node_add_destructor(node, node_destructor, &called), "Failed to add destructor to Node.");
+
+    bionet_hab_free(hab);
+    
+    fail_unless(1 == called, 
+		"HAB free'd. Destructor should have been called and counter incremented.");
+} END_TEST /* test_libutil_node_add_destructor_0 */
+
+
+/*
+ * bionet_node_add_destructor(node)
+ */
+START_TEST (test_libutil_node_add_destructor_1) {
+    bionet_hab_t * hab;
+    bionet_event_t * event;
+    bionet_node_t * node;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_if(bionet_node_add_destructor(node, node_destructor, &called), "Failed to add event to HAB.");
+    fail_if(bionet_node_add_destructor(node, node_destructor, &called), "Failed to add event to HAB.");
+
+    bionet_node_free(node);
+    
+    fail_unless(2 == called, 
+		"Node free'd. Destructor added twice so should have been called and counter incremented twice.");
+} END_TEST /* test_libutil_node_add_destructor_1 */
+
+
+/*
+ * bionet_node_add_destructor(node)
+ */
+START_TEST (test_libutil_node_add_destructor_2) {
+    int called = 0;
+    
+    fail_unless(bionet_node_add_destructor(NULL, node_destructor, &called), 
+		"Failed to detect NULL Node passed in.");
+} END_TEST /* test_libutil_node_add_destructor_2 */
+
+
+/*
+ * bionet_node_add_destructor(node)
+ */
+START_TEST (test_libutil_node_add_destructor_3) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_unless(bionet_node_add_destructor(node, NULL, &called), 
+		"Failed to detect NULL destructor passed in.");
+} END_TEST /* test_libutil_node_add_destructor_3 */
+
+
+/*
+ * bionet_node_add_destructor(node)
+ */
+START_TEST (test_libutil_node_add_destructor_4) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_if(bionet_node_add_destructor(node, node_destructor, &called), "Failed to add destructor to Node.");
+
+    bionet_node_free(node);
+    
+    fail_unless(1 == called, 
+		"Node free'd. Destructor should have been called and counter incremented.");
+} END_TEST /* test_libutil_node_add_destructor_4 */
+
+
 void libutil_node_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet Node");
@@ -1731,10 +1838,20 @@ void libutil_node_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_node_add_event_1);
     tcase_add_test(tc, test_libutil_node_add_event_2);
 
+    /* bionet_node_add_destructor*/
+    tcase_add_test(tc, test_libutil_node_add_destructor_0);
+    tcase_add_test(tc, test_libutil_node_add_destructor_1);
+    tcase_add_test(tc, test_libutil_node_add_destructor_2);
+    tcase_add_test(tc, test_libutil_node_add_destructor_3);
+    tcase_add_test(tc, test_libutil_node_add_destructor_4);
+
     return;
 } /* libutil_node_tests_suite() */
 
-
+static void node_destructor(bionet_node_t * hab, void * user_data) {
+    int * called = (int *)user_data;
+    *called = *called + 1;
+}
 
 // Emacs cruft
 // Local Variables:
