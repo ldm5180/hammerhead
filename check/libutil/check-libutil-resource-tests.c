@@ -609,6 +609,76 @@ START_TEST (test_libutil_resource_data_type_from_string_11) {
 } END_TEST /* test_libutil_resource_data_type_from_string_11 */
 
 
+START_TEST (test_libutil_resource_set_0) {
+    bionet_resource_t * resource;
+    bionet_value_t * value;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    value = bionet_value_new_str(resource, "value");
+    fail_if (NULL == value, "Failed to create new Bionet Value.");
+
+    fail_if (bionet_resource_set(resource, value, NULL),
+	"Failed to set the resource when the timestamp is NULL");
+} END_TEST /* test_libutil_resource_set_0 */
+
+
+START_TEST (test_libutil_resource_set_1) {
+    bionet_resource_t * resource;
+    bionet_value_t * value;
+    struct timeval tv;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    value = bionet_value_new_str(resource, "value");
+    fail_if (NULL == value, "Failed to create new Bionet Value.");
+
+    gettimeofday(&tv, NULL);
+    fail_if (bionet_resource_set(resource, value, &tv),
+	     "Failed to set the resource when there is a defined timestamp");
+} END_TEST /* test_libutil_resource_set_1 */
+
+
+START_TEST (test_libutil_resource_set_2) {
+    bionet_resource_t * resource;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless (bionet_resource_set(resource, NULL, NULL),
+		 "Failed to detect NULL value passed in.");
+} END_TEST /* test_libutil_resource_set_2 */
+
+
+START_TEST (test_libutil_resource_set_3) {
+    bionet_resource_t * resource;
+    bionet_value_t * value;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    value = bionet_value_new_str(resource, "value");
+    fail_if (NULL == value, "Failed to create new Bionet Value.");
+
+    fail_unless (bionet_resource_set(NULL, value, NULL),
+		 "Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_set_3 */
+
+
 START_TEST (test_libutil_resource_set_str_0) {
     bionet_resource_t *resource;
     int r;
@@ -722,6 +792,12 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_data_type_from_string_9);
     tcase_add_test(tc, test_libutil_resource_data_type_from_string_10);
     tcase_add_test(tc, test_libutil_resource_data_type_from_string_11);
+
+    /* bionet_resource_set() */
+    tcase_add_test(tc, test_libutil_resource_set_0);
+    tcase_add_test(tc, test_libutil_resource_set_1);
+    tcase_add_test(tc, test_libutil_resource_set_2);
+    tcase_add_test(tc, test_libutil_resource_set_3);
 
     /* bionet_resource_set_str() */
     tcase_add_test(tc, test_libutil_resource_set_str_0);
