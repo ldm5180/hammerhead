@@ -51,6 +51,9 @@ rm -f ion.log
 echo "removing old DB file, and allowing bionet-data-manger to create schema"
 rm -f orig-bdm.db sync-bdm.db
 
+echo "running killm to make sure ION isn't running"
+killm
+
 echo starting ION Loopback interface
 CONFIGDIR="./ionconfig"
 
