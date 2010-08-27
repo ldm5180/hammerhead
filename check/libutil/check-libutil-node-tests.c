@@ -1337,6 +1337,272 @@ START_TEST (test_libutil_node_get_set_user_data_4) {
 } END_TEST /* test_libutil_node_get_set_user_data_4 */
 
 
+/*
+ * bionet_node_get_num_events(hab)
+ */
+START_TEST (test_libutil_node_get_num_events_0) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_unless(0 == bionet_node_get_num_events(node),
+		"Nothing has happened. There should be 0 events.");
+} END_TEST /* test_libutil_node_get_num_events_0 */
+
+
+/*
+ * bionet_node_get_num_events(hab)
+ */
+START_TEST (test_libutil_node_get_num_events_1) {
+    fail_unless(-1 == bionet_node_get_num_events(NULL),
+		"NULL Node pointer not detected.");
+} END_TEST /* test_libutil_node_get_num_events_1 */
+
+
+/*
+ * bionet_node_get_num_events(hab)
+ */
+START_TEST (test_libutil_node_get_num_events_2) {
+    bionet_hab_t * hab;
+    struct timeval tv;
+    int num_events;
+    bionet_node_t * node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_if(NULL == hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    gettimeofday(&tv, NULL);
+    bionet_event_t * event = bionet_event_new(&tv, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_node_add_event(node, event), "Failed to add event to Node.");
+
+    num_events = bionet_node_get_num_events(node);
+    fail_unless(1 == num_events,
+		"%d is the wrong number of events. There should be 1 events.", num_events);
+} END_TEST /* test_libutil_node_get_num_events_2 */
+
+
+/*
+ * bionet_node_get_num_events(node)
+ */
+START_TEST (test_libutil_node_get_num_events_3) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    int num_events;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_if(NULL == hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    bionet_event_t * event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_node_add_event(node, event), "Failed to add event to Node.");
+
+    num_events = bionet_node_get_num_events(node);
+    fail_unless(1 == num_events,
+		"%d is the wrong number of events. There should be 1 events.", num_events);
+
+    event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_node_add_event(node, event), "Failed to add event to Node.");
+
+    num_events = bionet_node_get_num_events(node);
+    fail_unless(2 == num_events,
+		"%d is the wrong number of events. There should be 2 events.", num_events);
+} END_TEST /* test_libutil_node_get_num_events_3 */
+
+
+/*
+ * bionet_node_get_event_by_index(node)
+ */
+START_TEST (test_libutil_node_get_event_by_index_0) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_unless(NULL == bionet_hab_get_event_by_index(node, 0),
+		"Nothing has happened. There should be 0 events.");
+} END_TEST /* test_libutil_node_get_event_by_index_0 */
+
+
+/*
+ * bionet_hab_get_event_by_index(hab)
+ */
+START_TEST (test_libutil_node_get_event_by_index_1) {
+    bionet_hab_t * hab;
+    bionet_event_t * event;
+    bionet_node_t * node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_unless(NULL == bionet_node_get_event_by_index(node, 0),
+		"Nothing has happened. There should be 0 events.");
+
+    event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_node_add_event(node, event), "Failed to add event to Node.");
+
+    fail_unless(event == bionet_node_get_event_by_index(node, 0),
+		"Got a different event than the one added.");
+} END_TEST /* test_libutil_node_get_event_by_index_1 */
+
+
+/*
+ * bionet_node_get_event_by_index(node)
+ */
+START_TEST (test_libutil_node_get_event_by_index_2) {
+    bionet_hab_t * hab;
+    bionet_event_t * event0;
+    bionet_event_t * event1;
+    bionet_node_t * node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_unless(NULL == bionet_node_get_event_by_index(node, 0),
+		"Nothing has happened. There should be 0 events.");
+
+    event0 = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event0, "Failed to create new event.");
+
+    fail_if(bionet_node_add_event(node, event0), "Failed to add event to Node.");
+
+    event1 = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event1, "Failed to create new event.");
+
+    fail_if(bionet_node_add_event(node, event1), "Failed to add event to Node.");
+
+    fail_unless(event1 == bionet_node_get_event_by_index(node, 1),
+		"Got a different event than the second added.");
+
+    fail_unless(event0 == bionet_node_get_event_by_index(node, 0),
+		"Got a different event than the first added.");
+} END_TEST /* test_libutil_node_get_event_by_index_2 */
+
+
+/*
+ * bionet_hab_get_event_by_index(hab)
+ */
+START_TEST (test_libutil_node_get_event_by_index_3) {
+    fail_unless(NULL == bionet_node_get_event_by_index(NULL, 0),
+		"Failed to detect NULL Node passed in.");
+} END_TEST /* test_libutil_node_get_event_by_index_3 */
+
+
+/*
+ * bionet_hab_get_event_by_index(hab)
+ */
+START_TEST (test_libutil_node_get_event_by_index_4) {
+    bionet_hab_t * hab;
+    bionet_event_t * event;
+    bionet_node_t * node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_unless(NULL == bionet_node_get_event_by_index(node, 0),
+		"Nothing has happened. There should be 0 events.");
+
+    event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_node_add_event(node, event), "Failed to add event to Node.");
+
+    fail_unless(NULL == bionet_node_get_event_by_index(node, 1),
+		"There should be 1 events so index 1 is too big.");
+} END_TEST /* test_libutil_node_get_event_by_index_4 */
+
+
+/*
+ * bionet_node_add_event(node)
+ */
+START_TEST (test_libutil_node_add_event_0) {
+    bionet_hab_t * hab;
+    bionet_event_t * event;
+    bionet_node_t * node;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_if(bionet_node_add_event(node, event), "Failed to add event to Node.");
+
+    int num_events = bionet_node_get_num_events(node);
+    fail_unless(1 == num_events,
+		"1 event added, but Node is reporting %d", num_events);
+} END_TEST /* test_libutil_node_add_event_0 */
+
+
+/*
+ * bionet_node_add_event(node)
+ */
+START_TEST (test_libutil_node_add_event_1) {
+    bionet_event_t * event;
+    
+    event = bionet_event_new(NULL, "BDM", BIONET_EVENT_PUBLISHED);
+    fail_if(NULL == event, "Failed to create new event.");
+
+    fail_unless(bionet_node_add_event(NULL, event), 
+		"Failed to detect NULL Node passed in.");
+} END_TEST /* test_libutil_node_add_event_1 */
+
+
+/*
+ * bionet_node_add_event(node)
+ */
+START_TEST (test_libutil_node_add_event_2) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_unless(bionet_node_add_event(node, NULL), 
+		"Failed to detect NULL event passed in.");
+
+    int num_events = bionet_node_get_num_events(node);
+    fail_unless(0 == num_events,
+		"No event added, but Node is reporting %d", num_events);
+} END_TEST /* test_libutil_node_add_event_2 */
+
+
 void libutil_node_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet Node");
@@ -1446,6 +1712,24 @@ void libutil_node_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_node_get_set_user_data_2);
     tcase_add_test(tc, test_libutil_node_get_set_user_data_3);
     tcase_add_test(tc, test_libutil_node_get_set_user_data_4);
+
+    /* bionet_node_get_num_events() */
+    tcase_add_test(tc, test_libutil_node_get_num_events_0);
+    tcase_add_test(tc, test_libutil_node_get_num_events_1);
+    tcase_add_test(tc, test_libutil_node_get_num_events_2);
+    tcase_add_test(tc, test_libutil_node_get_num_events_3);
+
+    /* bionet_node_get_event_by_index() */
+    tcase_add_test(tc, test_libutil_node_get_event_by_index_0);
+    tcase_add_test(tc, test_libutil_node_get_event_by_index_1);
+    tcase_add_test(tc, test_libutil_node_get_event_by_index_2);
+    tcase_add_test(tc, test_libutil_node_get_event_by_index_3);
+    tcase_add_test(tc, test_libutil_node_get_event_by_index_4);
+
+    /* bionet_node_add_event() */
+    tcase_add_test(tc, test_libutil_node_add_event_0);
+    tcase_add_test(tc, test_libutil_node_add_event_1);
+    tcase_add_test(tc, test_libutil_node_add_event_2);
 
     return;
 } /* libutil_node_tests_suite() */
