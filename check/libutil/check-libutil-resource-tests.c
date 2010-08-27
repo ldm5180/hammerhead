@@ -91,6 +91,24 @@ START_TEST (test_libutil_resource_new_4) {
 } END_TEST /* test_libutil_resource_new_4 */
 
 
+START_TEST (test_libutil_resource_free_0) {
+    bionet_resource_t * resource;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    bionet_resource_free(resource);
+} END_TEST /* test_libutil_resource_free_0 */
+
+
+START_TEST (test_libutil_resource_free_1) {
+    bionet_resource_free(NULL);
+} END_TEST /* test_libutil_resource_free_1 */
+
+
 START_TEST (test_libutil_resource_set_str_0) {
     bionet_resource_t *resource;
     int r;
@@ -121,6 +139,10 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_new_2);
     tcase_add_test(tc, test_libutil_resource_new_3);
     tcase_add_test(tc, test_libutil_resource_new_4);
+
+    /* bionet_resource_free() */
+    tcase_add_test(tc, test_libutil_resource_free_0);
+    tcase_add_test(tc, test_libutil_resource_free_1);
 
     /* bionet_resource_set_str() */
     tcase_add_test(tc, test_libutil_resource_set_str_0);
