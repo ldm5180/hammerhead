@@ -395,6 +395,26 @@ START_TEST (test_libutil_resource_get_hab_3) {
 } END_TEST /* test_libutil_resource_get_hab_3 */
 
 
+START_TEST (test_libutil_resource_get_data_type_0) {
+    fail_unless(BIONET_RESOURCE_DATA_TYPE_INVALID == bionet_resource_get_data_type(NULL),
+		"Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_get_node_0 */
+
+
+START_TEST (test_libutil_resource_get_data_type_1) {
+    bionet_resource_t * resource;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(BIONET_RESOURCE_DATA_TYPE_STRING == bionet_resource_get_data_type(resource),
+		"Resource is a STRING. Why is it reporting %d", bionet_resource_get_data_type(resource));
+} END_TEST /* test_libutil_resource_get_data_type_1 */
+
+
 START_TEST (test_libutil_resource_set_str_0) {
     bionet_resource_t *resource;
     int r;
@@ -458,6 +478,10 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_get_hab_1);
     tcase_add_test(tc, test_libutil_resource_get_hab_2);
     tcase_add_test(tc, test_libutil_resource_get_hab_3);
+
+    /* bionet_resource_get_data_type() */
+    tcase_add_test(tc, test_libutil_resource_get_data_type_0);
+    tcase_add_test(tc, test_libutil_resource_get_data_type_1);
 
     /* bionet_resource_set_str() */
     tcase_add_test(tc, test_libutil_resource_set_str_0);
