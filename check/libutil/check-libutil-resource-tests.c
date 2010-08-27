@@ -235,6 +235,68 @@ START_TEST (test_libutil_resource_get_local_name_3) {
 } END_TEST /* test_libutil_resource_get_local_name_3 */
 
 
+START_TEST (test_libutil_resource_get_id_0) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    char * resname;
+
+    hab = bionet_hab_new("foo", "bar");
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(strcmp("resource", bionet_resource_get_id(resource)),
+		   "Incorrect local resource name %s", bionet_resource_get_id(resource));
+} END_TEST /* test_libutil_resource_get_id_0 */
+
+
+START_TEST (test_libutil_resource_get_id_1) {
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    char * resname;
+
+    node = bionet_node_new(NULL, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(strcmp("resource", bionet_resource_get_id(resource)),
+		   "Incorrect local resource name %s", bionet_resource_get_id(resource));
+} END_TEST /* test_libutil_resource_get_id_1 */
+
+
+START_TEST (test_libutil_resource_get_id_2) {
+    bionet_resource_t * resource;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(strcmp("resource", bionet_resource_get_id(resource)),
+		   "Incorrect local resource name %s", bionet_resource_get_id(resource));
+} END_TEST /* test_libutil_resource_get_id_2 */
+
+
+START_TEST (test_libutil_resource_get_id_3) {
+    fail_unless(NULL == bionet_resource_get_id(NULL),
+		"Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_get_id_3 */
+
+
 START_TEST (test_libutil_resource_set_str_0) {
     bionet_resource_t *resource;
     int r;
@@ -282,9 +344,21 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_get_local_name_2);
     tcase_add_test(tc, test_libutil_resource_get_local_name_3);
 
+    /* bionet_resource_get_id() */
+    tcase_add_test(tc, test_libutil_resource_get_id_0);
+    tcase_add_test(tc, test_libutil_resource_get_id_1);
+    tcase_add_test(tc, test_libutil_resource_get_id_2);
+    tcase_add_test(tc, test_libutil_resource_get_id_3);
+
     /* bionet_resource_set_str() */
     tcase_add_test(tc, test_libutil_resource_set_str_0);
 
     return;
 } /* libutil_resource_tests_suite */
 
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
