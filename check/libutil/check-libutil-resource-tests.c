@@ -421,6 +421,24 @@ START_TEST (test_libutil_resource_get_flavor_0) {
 } END_TEST /* test_libutil_resource_get_flavor_0 */
 
 
+START_TEST (test_libutil_resource_flavor_to_string_0) {
+    fail_if(strcmp("(invalid)", bionet_resource_flavor_to_string(BIONET_RESOURCE_FLAVOR_INVALID)),
+	    "Flavor string should be '(invalid)' but is '%s'", bionet_resource_flavor_to_string(BIONET_RESOURCE_FLAVOR_INVALID));
+
+    fail_if(strcmp("Sensor", bionet_resource_flavor_to_string(BIONET_RESOURCE_FLAVOR_SENSOR)),
+	    "Flavor string should be 'Sensor' but is '%s'", bionet_resource_flavor_to_string(BIONET_RESOURCE_FLAVOR_SENSOR));
+
+    fail_if(strcmp("Parameter", bionet_resource_flavor_to_string(BIONET_RESOURCE_FLAVOR_PARAMETER)),
+	    "Flavor string should be 'Parameter' but is '%s'", bionet_resource_flavor_to_string(BIONET_RESOURCE_FLAVOR_PARAMETER));
+
+    fail_if(strcmp("Actuator", bionet_resource_flavor_to_string(BIONET_RESOURCE_FLAVOR_ACTUATOR)),
+	    "Flavor string should be 'Actuator' but is '%s'", bionet_resource_flavor_to_string(BIONET_RESOURCE_FLAVOR_ACTUATOR));
+
+    fail_if(strcmp("(invalid)", bionet_resource_flavor_to_string(1000000)),
+	    "Flavor string should be '(invalid)' but is '%s'", bionet_resource_flavor_to_string(1000000));
+} END_TEST /* test_libutil_resource_get_flavor_0 */
+
+
 START_TEST (test_libutil_resource_get_flavor_1) {
     bionet_resource_t * resource;
 
@@ -433,6 +451,8 @@ START_TEST (test_libutil_resource_get_flavor_1) {
     fail_unless(BIONET_RESOURCE_FLAVOR_PARAMETER == bionet_resource_get_flavor(resource),
 		"Resource is a PARAMETER. Why is it reporting %d", bionet_resource_get_flavor(resource));
 } END_TEST /* test_libutil_resource_get_flavor_1 */
+
+
 
 
 START_TEST (test_libutil_resource_set_str_0) {
@@ -506,6 +526,9 @@ void libutil_resource_tests_suite(Suite *s) {
     /* bionet_resource_get_flavor() */
     tcase_add_test(tc, test_libutil_resource_get_flavor_0);
     tcase_add_test(tc, test_libutil_resource_get_flavor_1);
+
+    /* bionet_resource_flavor_to_string() */
+    tcase_add_test(tc, test_libutil_resource_flavor_to_string_0);
 
     /* bionet_resource_set_str() */
     tcase_add_test(tc, test_libutil_resource_set_str_0);
