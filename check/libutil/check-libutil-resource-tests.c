@@ -109,6 +109,69 @@ START_TEST (test_libutil_resource_free_1) {
 } END_TEST /* test_libutil_resource_free_1 */
 
 
+START_TEST (test_libutil_resource_get_name_0) {
+    bionet_resource_t * resource;
+    char * resname;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(NULL == bionet_resource_get_name(resource),
+		"Resource has no node pointer. How can it have a name?");
+} END_TEST /* test_libutil_resource_get_name_0 */
+
+
+START_TEST (test_libutil_resource_get_name_1) {
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    char * resname;
+
+    node = bionet_node_new(NULL, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(NULL == bionet_resource_get_name(resource),
+		"Resource's node has no HAB pointer. How can it have a name?");
+} END_TEST /* test_libutil_resource_get_name_1 */
+
+
+START_TEST (test_libutil_resource_get_name_2) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    char * resname;
+
+    hab = bionet_hab_new("foo", "bar");
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(strcmp("foo.bar.node:resource", bionet_resource_get_name(resource)),
+		   "Incorrect resource name %s", bionet_resource_get_name(resource));
+} END_TEST /* test_libutil_resource_get_name_2 */
+
+
+START_TEST (test_libutil_resource_get_name_3) {
+    fail_if(NULL != bionet_resource_get_name(NULL),
+	    "Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_get_name_3 */
+
+
 START_TEST (test_libutil_resource_set_str_0) {
     bionet_resource_t *resource;
     int r;
@@ -143,6 +206,12 @@ void libutil_resource_tests_suite(Suite *s) {
     /* bionet_resource_free() */
     tcase_add_test(tc, test_libutil_resource_free_0);
     tcase_add_test(tc, test_libutil_resource_free_1);
+
+    /* bionet_resource_get_name() */
+    tcase_add_test(tc, test_libutil_resource_get_name_0);
+    tcase_add_test(tc, test_libutil_resource_get_name_1);
+    tcase_add_test(tc, test_libutil_resource_get_name_2);
+    tcase_add_test(tc, test_libutil_resource_get_name_3);
 
     /* bionet_resource_set_str() */
     tcase_add_test(tc, test_libutil_resource_set_str_0);
