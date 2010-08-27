@@ -548,6 +548,67 @@ START_TEST (test_libutil_resource_data_type_to_string_11) {
 } END_TEST /* test_libutil_resource_data_type_to_string_11 */
 
 
+START_TEST (test_libutil_resource_data_type_from_string_0) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_INVALID != bionet_resource_data_type_from_string("(invalid)"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_INVALID, bionet_resource_data_type_from_string("(invalid)"));
+} END_TEST /* test_libutil_resource_data_type_from_string_0 */
+
+START_TEST (test_libutil_resource_data_type_from_string_1) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_INVALID != bionet_resource_data_type_from_string(NULL),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_INVALID, bionet_resource_data_type_from_string(NULL));
+} END_TEST /* test_libutil_resource_data_type_from_string_1 */
+
+START_TEST (test_libutil_resource_data_type_from_string_2) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_BINARY != bionet_resource_data_type_from_string("Binary"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_BINARY, bionet_resource_data_type_from_string("Binary"));
+} END_TEST /* test_libutil_resource_data_type_from_string_2 */
+
+START_TEST (test_libutil_resource_data_type_from_string_3) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_UINT8 != bionet_resource_data_type_from_string("UInt8"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_UINT8, bionet_resource_data_type_from_string("UInt8"));
+} END_TEST /* test_libutil_resource_data_type_from_string_3 */
+
+START_TEST (test_libutil_resource_data_type_from_string_4) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_INT8 != bionet_resource_data_type_from_string("Int8"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_INT8, bionet_resource_data_type_from_string("Int8"));
+} END_TEST /* test_libutil_resource_data_type_from_string_4 */
+
+START_TEST (test_libutil_resource_data_type_from_string_5) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_UINT16 != bionet_resource_data_type_from_string("UInt16"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_UINT16, bionet_resource_data_type_from_string("UInt16"));
+} END_TEST /* test_libutil_resource_data_type_from_string_5 */
+
+START_TEST (test_libutil_resource_data_type_from_string_6) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_INT16 != bionet_resource_data_type_from_string("Int16"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_INT16, bionet_resource_data_type_from_string("Int16"));
+} END_TEST /* test_libutil_resource_data_type_from_string_6 */
+
+START_TEST (test_libutil_resource_data_type_from_string_7) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_UINT32 != bionet_resource_data_type_from_string("UInt32"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_UINT32, bionet_resource_data_type_from_string("UInt32"));
+} END_TEST /* test_libutil_resource_data_type_from_string_7 */
+
+START_TEST (test_libutil_resource_data_type_from_string_8) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_INT32 != bionet_resource_data_type_from_string("Int32"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_INT32, bionet_resource_data_type_from_string("Int32"));
+} END_TEST /* test_libutil_resource_data_type_from_string_8 */
+
+START_TEST (test_libutil_resource_data_type_from_string_9) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_FLOAT != bionet_resource_data_type_from_string("Float"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_FLOAT, bionet_resource_data_type_from_string("Float"));
+} END_TEST /* test_libutil_resource_data_type_from_string_9 */
+
+START_TEST (test_libutil_resource_data_type_from_string_10) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_DOUBLE != bionet_resource_data_type_from_string("Double"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_DOUBLE, bionet_resource_data_type_from_string("Double"));
+} END_TEST /* test_libutil_resource_data_type_from_string_10 */
+
+START_TEST (test_libutil_resource_data_type_from_string_11) {
+    fail_if(BIONET_RESOURCE_DATA_TYPE_STRING != bionet_resource_data_type_from_string("String"),
+	    "Datatype string should be %d but is %d", BIONET_RESOURCE_DATA_TYPE_STRING, bionet_resource_data_type_from_string("String"));
+} END_TEST /* test_libutil_resource_data_type_from_string_11 */
+
+
 START_TEST (test_libutil_resource_set_str_0) {
     bionet_resource_t *resource;
     int r;
@@ -647,6 +708,20 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_data_type_to_string_9);
     tcase_add_test(tc, test_libutil_resource_data_type_to_string_10);
     tcase_add_test(tc, test_libutil_resource_data_type_to_string_11);
+
+    /* bionet_resource_data_type_from_string() */
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_0);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_1);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_2);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_3);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_4);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_5);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_6);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_7);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_8);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_9);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_10);
+    tcase_add_test(tc, test_libutil_resource_data_type_from_string_11);
 
     /* bionet_resource_set_str() */
     tcase_add_test(tc, test_libutil_resource_set_str_0);
