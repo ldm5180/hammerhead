@@ -715,6 +715,42 @@ START_TEST (test_libutil_resource_set_binary_2) {
 } END_TEST /* test_libutil_resource_set_binary_2 */
 
 
+START_TEST (test_libutil_resource_set_uint8_0) {
+    bionet_resource_t * resource;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT8, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if (bionet_resource_set_uint8(resource, 1, NULL),
+	"Failed to set the resource when the timestamp is NULL");
+} END_TEST /* test_libutil_resource_set_uint8_0 */
+
+
+START_TEST (test_libutil_resource_set_uint8_1) {
+    bionet_resource_t * resource;
+    struct timeval tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT8, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&tv, NULL);
+    fail_if (bionet_resource_set_uint8(resource, 1, &tv),
+	"Failed to set the resource when the timestamp is defined");
+} END_TEST /* test_libutil_resource_set_uint8_1 */
+
+
+START_TEST (test_libutil_resource_set_uint8_2) {
+    fail_unless (bionet_resource_set_uint8(NULL, 1, NULL),
+		 "Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_set_uint8_2 */
+
+
 START_TEST (test_libutil_resource_set_str_0) {
     bionet_resource_t *resource;
     int r;
@@ -839,6 +875,11 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_set_binary_0);
     tcase_add_test(tc, test_libutil_resource_set_binary_1);
     tcase_add_test(tc, test_libutil_resource_set_binary_2);
+
+    /* bionet_resource_set_uint8() */
+    tcase_add_test(tc, test_libutil_resource_set_uint8_0);
+    tcase_add_test(tc, test_libutil_resource_set_uint8_1);
+    tcase_add_test(tc, test_libutil_resource_set_uint8_2);
 
     /* bionet_resource_set_str() */
     tcase_add_test(tc, test_libutil_resource_set_str_0);
