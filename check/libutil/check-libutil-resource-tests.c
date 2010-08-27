@@ -1151,6 +1151,588 @@ START_TEST (test_libutil_resource_get_binary_4) {
 } END_TEST /* test_libutil_resource_get_binary_4 */
 
 
+START_TEST (test_libutil_resource_get_uint8_0) {
+    bionet_resource_t * resource;
+    uint8_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT8, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_uint8(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_uint8(resource, &content, &tv),
+	    "Failed to get uint8 value and timestamp from resource.");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_uint8_0 */
+
+
+START_TEST (test_libutil_resource_get_uint8_1) {
+    bionet_resource_t * resource;
+    uint8_t content;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT8, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_uint8(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_uint8(resource, &content, NULL),
+	    "Failed to get uint8 value and timestamp from resource when timestamp is NULL");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+} END_TEST /* test_libutil_resource_get_uint8_1 */
+
+
+START_TEST (test_libutil_resource_get_uint8_2) {
+    bionet_resource_t * resource;
+    uint8_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT8, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_uint8(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_uint8(resource, NULL, &tv),
+	    "Failed to get uint8 value and timestamp from resource when content is NULL");
+
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_uint8_2 */
+
+
+START_TEST (test_libutil_resource_get_uint8_3) {
+    bionet_resource_t * resource;
+    uint8_t content;
+    struct timeval tv;
+
+    fail_unless(bionet_resource_get_uint8(NULL, &content, &tv),
+		"Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_get_uint8_3 */
+
+
+START_TEST (test_libutil_resource_get_uint8_4) {
+    bionet_resource_t * resource;
+    uint8_t content;
+    struct timeval tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT8, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_get_uint8(resource, &content, &tv),
+		"Failed to detect the resource has no value.");
+} END_TEST /* test_libutil_resource_get_uint8_4 */
+
+
+START_TEST (test_libutil_resource_get_int8_0) {
+    bionet_resource_t * resource;
+    int8_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT8, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_int8(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_int8(resource, &content, &tv),
+	    "Failed to get int8 value and timestamp from resource.");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_int8_0 */
+
+
+START_TEST (test_libutil_resource_get_int8_1) {
+    bionet_resource_t * resource;
+    int8_t content;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT8, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_int8(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_int8(resource, &content, NULL),
+	    "Failed to get int8 value and timestamp from resource when timestamp is NULL");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+} END_TEST /* test_libutil_resource_get_int8_1 */
+
+
+START_TEST (test_libutil_resource_get_int8_2) {
+    bionet_resource_t * resource;
+    int8_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT8, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_int8(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_int8(resource, NULL, &tv),
+	    "Failed to get int8 value and timestamp from resource when content is NULL");
+
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_int8_2 */
+
+
+START_TEST (test_libutil_resource_get_int8_3) {
+    bionet_resource_t * resource;
+    int8_t content;
+    struct timeval tv;
+
+    fail_unless(bionet_resource_get_int8(NULL, &content, &tv),
+		"Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_get_int8_3 */
+
+
+START_TEST (test_libutil_resource_get_int8_4) {
+    bionet_resource_t * resource;
+    int8_t content;
+    struct timeval tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT8, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_get_int8(resource, &content, &tv),
+		"Failed to detect the resource has no value.");
+} END_TEST /* test_libutil_resource_get_int8_4 */
+
+
+START_TEST (test_libutil_resource_get_uint16_0) {
+    bionet_resource_t * resource;
+    uint16_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT16, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_uint16(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_uint16(resource, &content, &tv),
+	    "Failed to get uint16 value and timestamp from resource.");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_uint16_0 */
+
+
+START_TEST (test_libutil_resource_get_uint16_1) {
+    bionet_resource_t * resource;
+    uint16_t content;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT16, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_uint16(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_uint16(resource, &content, NULL),
+	    "Failed to get uint16 value and timestamp from resource when timestamp is NULL");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+} END_TEST /* test_libutil_resource_get_uint16_1 */
+
+
+START_TEST (test_libutil_resource_get_uint16_2) {
+    bionet_resource_t * resource;
+    uint16_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT16, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_uint16(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_uint16(resource, NULL, &tv),
+	    "Failed to get uint16 value and timestamp from resource when content is NULL");
+
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_uint16_2 */
+
+
+START_TEST (test_libutil_resource_get_uint16_3) {
+    bionet_resource_t * resource;
+    uint16_t content;
+    struct timeval tv;
+
+    fail_unless(bionet_resource_get_uint16(NULL, &content, &tv),
+		"Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_get_uint16_3 */
+
+
+START_TEST (test_libutil_resource_get_uint16_4) {
+    bionet_resource_t * resource;
+    uint16_t content;
+    struct timeval tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT16, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_get_uint16(resource, &content, &tv),
+		"Failed to detect the resource has no value.");
+} END_TEST /* test_libutil_resource_get_uint16_4 */
+
+
+START_TEST (test_libutil_resource_get_int16_0) {
+    bionet_resource_t * resource;
+    int16_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT16, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_int16(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_int16(resource, &content, &tv),
+	    "Failed to get int16 value and timestamp from resource.");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_int16_0 */
+
+
+START_TEST (test_libutil_resource_get_int16_1) {
+    bionet_resource_t * resource;
+    int16_t content;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT16, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_int16(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_int16(resource, &content, NULL),
+	    "Failed to get int16 value and timestamp from resource when timestamp is NULL");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+} END_TEST /* test_libutil_resource_get_int16_1 */
+
+
+START_TEST (test_libutil_resource_get_int16_2) {
+    bionet_resource_t * resource;
+    int16_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT16, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_int16(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_int16(resource, NULL, &tv),
+	    "Failed to get int16 value and timestamp from resource when content is NULL");
+
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_int16_2 */
+
+
+START_TEST (test_libutil_resource_get_int16_3) {
+    bionet_resource_t * resource;
+    int16_t content;
+    struct timeval tv;
+
+    fail_unless(bionet_resource_get_int16(NULL, &content, &tv),
+		"Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_get_int16_3 */
+
+
+START_TEST (test_libutil_resource_get_int16_4) {
+    bionet_resource_t * resource;
+    int16_t content;
+    struct timeval tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT16, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_get_int16(resource, &content, &tv),
+		"Failed to detect the resource has no value.");
+} END_TEST /* test_libutil_resource_get_int16_4 */
+
+
+START_TEST (test_libutil_resource_get_uint32_0) {
+    bionet_resource_t * resource;
+    uint32_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT32, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_uint32(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_uint32(resource, &content, &tv),
+	    "Failed to get uint32 value and timestamp from resource.");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_uint32_0 */
+
+
+START_TEST (test_libutil_resource_get_uint32_1) {
+    bionet_resource_t * resource;
+    uint32_t content;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT32, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_uint32(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_uint32(resource, &content, NULL),
+	    "Failed to get uint32 value and timestamp from resource when timestamp is NULL");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+} END_TEST /* test_libutil_resource_get_uint32_1 */
+
+
+START_TEST (test_libutil_resource_get_uint32_2) {
+    bionet_resource_t * resource;
+    uint32_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT32, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_uint32(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_uint32(resource, NULL, &tv),
+	    "Failed to get uint32 value and timestamp from resource when content is NULL");
+
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_uint32_2 */
+
+
+START_TEST (test_libutil_resource_get_uint32_3) {
+    bionet_resource_t * resource;
+    uint32_t content;
+    struct timeval tv;
+
+    fail_unless(bionet_resource_get_uint32(NULL, &content, &tv),
+		"Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_get_uint32_3 */
+
+
+START_TEST (test_libutil_resource_get_uint32_4) {
+    bionet_resource_t * resource;
+    uint32_t content;
+    struct timeval tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_UINT32, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_get_uint32(resource, &content, &tv),
+		"Failed to detect the resource has no value.");
+} END_TEST /* test_libutil_resource_get_uint32_4 */
+
+
+START_TEST (test_libutil_resource_get_int32_0) {
+    bionet_resource_t * resource;
+    int32_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT32, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_int32(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_int32(resource, &content, &tv),
+	    "Failed to get int32 value and timestamp from resource.");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_int32_0 */
+
+
+START_TEST (test_libutil_resource_get_int32_1) {
+    bionet_resource_t * resource;
+    int32_t content;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT32, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_int32(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_int32(resource, &content, NULL),
+	    "Failed to get int32 value and timestamp from resource when timestamp is NULL");
+
+    fail_if(1 != content, "Failed to get the correct content from resource");
+} END_TEST /* test_libutil_resource_get_int32_1 */
+
+
+START_TEST (test_libutil_resource_get_int32_2) {
+    bionet_resource_t * resource;
+    int32_t content;
+    struct timeval tv;
+    struct timeval orig_tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT32, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&orig_tv, NULL);
+    fail_if (bionet_resource_set_int32(resource, 1, &orig_tv),
+	"Failed to set the resource when the timestamp is NULL");
+
+    fail_if(bionet_resource_get_int32(resource, NULL, &tv),
+	    "Failed to get int32 value and timestamp from resource when content is NULL");
+
+    fail_if((orig_tv.tv_sec != tv.tv_sec || orig_tv.tv_usec != tv.tv_usec),
+	    "Failed to get correct timestamp from resource");
+} END_TEST /* test_libutil_resource_get_int32_2 */
+
+
+START_TEST (test_libutil_resource_get_int32_3) {
+    bionet_resource_t * resource;
+    int32_t content;
+    struct timeval tv;
+
+    fail_unless(bionet_resource_get_int32(NULL, &content, &tv),
+		"Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_get_int32_3 */
+
+
+START_TEST (test_libutil_resource_get_int32_4) {
+    bionet_resource_t * resource;
+    int32_t content;
+    struct timeval tv;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_INT32, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_get_int32(resource, &content, &tv),
+		"Failed to detect the resource has no value.");
+} END_TEST /* test_libutil_resource_get_int32_4 */
+
+
 void libutil_resource_tests_suite(Suite *s) {
     TCase *tc = tcase_create("Bionet Resource");
     suite_add_tcase(s, tc);
@@ -1311,6 +1893,47 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_get_binary_3);
     tcase_add_test(tc, test_libutil_resource_get_binary_4);
 
+    /* bionet_resource_get_uint8() */
+    tcase_add_test(tc, test_libutil_resource_get_uint8_0);
+    tcase_add_test(tc, test_libutil_resource_get_uint8_1);
+    tcase_add_test(tc, test_libutil_resource_get_uint8_2);
+    tcase_add_test(tc, test_libutil_resource_get_uint8_3);
+    tcase_add_test(tc, test_libutil_resource_get_uint8_4);
+
+    /* bionet_resource_get_int8() */
+    tcase_add_test(tc, test_libutil_resource_get_int8_0);
+    tcase_add_test(tc, test_libutil_resource_get_int8_1);
+    tcase_add_test(tc, test_libutil_resource_get_int8_2);
+    tcase_add_test(tc, test_libutil_resource_get_int8_3);
+    tcase_add_test(tc, test_libutil_resource_get_int8_4);
+
+    /* bionet_resource_get_uint16() */
+    tcase_add_test(tc, test_libutil_resource_get_uint16_0);
+    tcase_add_test(tc, test_libutil_resource_get_uint16_1);
+    tcase_add_test(tc, test_libutil_resource_get_uint16_2);
+    tcase_add_test(tc, test_libutil_resource_get_uint16_3);
+    tcase_add_test(tc, test_libutil_resource_get_uint16_4);
+
+    /* bionet_resource_get_int16() */
+    tcase_add_test(tc, test_libutil_resource_get_int16_0);
+    tcase_add_test(tc, test_libutil_resource_get_int16_1);
+    tcase_add_test(tc, test_libutil_resource_get_int16_2);
+    tcase_add_test(tc, test_libutil_resource_get_int16_3);
+    tcase_add_test(tc, test_libutil_resource_get_int16_4);
+
+    /* bionet_resource_get_uint32() */
+    tcase_add_test(tc, test_libutil_resource_get_uint32_0);
+    tcase_add_test(tc, test_libutil_resource_get_uint32_1);
+    tcase_add_test(tc, test_libutil_resource_get_uint32_2);
+    tcase_add_test(tc, test_libutil_resource_get_uint32_3);
+    tcase_add_test(tc, test_libutil_resource_get_uint32_4);
+
+    /* bionet_resource_get_int32() */
+    tcase_add_test(tc, test_libutil_resource_get_int32_0);
+    tcase_add_test(tc, test_libutil_resource_get_int32_1);
+    tcase_add_test(tc, test_libutil_resource_get_int32_2);
+    tcase_add_test(tc, test_libutil_resource_get_int32_3);
+    tcase_add_test(tc, test_libutil_resource_get_int32_4);
 
     return;
 } /* libutil_resource_tests_suite */
