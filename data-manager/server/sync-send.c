@@ -107,21 +107,30 @@ static int sync_send_metadata(
     }
 
     // sync_message NULL when nothing to send
-    sync_message = bdm_sync_metadata_to_asn(bdm_list);
-    if( sync_message) {
+    md_iter_state_t make_message_state;
+    bdm_list_iterator_t iter;
+
+    bdm_sync_metadata_to_asn_setup(bdm_list, &make_message_state, &iter);
+
+    while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
+    {
 	// send the reply to the client
 	asn_enc_rval_t asn_r;
 	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, sync_message, 
             write_data_to_message, config);
+
+        ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
+
 	if (asn_r.encoded == -1) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                     "send_sync_metadata(): error with der_encode(): %s", 
                     asn_r.failed_type ? asn_r.failed_type->name : "unknown");
+            bdm_list_free(bdm_list);
             sync_cancel_connection(config);
             return -1;
 	}
-
     }
+
 
     r = sync_finish_connection(config);
     if ( r == 0 ) {
@@ -134,13 +143,8 @@ static int sync_send_metadata(
     }
 
     bdm_list_free(bdm_list);
-    if (sync_message) ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
 
-    if ( NULL == sync_message ) {
-        return -1;
-    } else {
-        return r;
-    }
+    return r;
 
 } /* sync_send_metadata() */
 
@@ -218,11 +222,11 @@ static int sync_send_datapoints(
 	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, sync_message, 
             write_data_to_message, config);
 
-        ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
 
 	if (asn_r.encoded == -1) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
             bdm_list_free(bdm_list);
+            ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
             goto cleanup;
 	}
 
@@ -231,6 +235,7 @@ static int sync_send_datapoints(
               count_sync_datapoints(sync_message),
               config->sync_recipient,
               from_seq, to_seq);
+        ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
     }
     bdm_list_free(bdm_list);
 
@@ -461,8 +466,10 @@ static void sync_cancel_connection(sync_sender_config_t *config) {
 
 #if ENABLE_ION
         case BDM_SYNC_METHOD_ION:
-            (*bdm_bp_funcs.sdr_cancel_xn)(ion.sdr);
-            ion.sdr = NULL;
+            if(ion.sdr) {
+                (*bdm_bp_funcs.sdr_cancel_xn)(ion.sdr);
+                ion.sdr = NULL;
+            }
             break;
 #endif
         

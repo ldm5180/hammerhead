@@ -14,9 +14,10 @@ nodist_check_data_manager_SOURCES = \
 	../check-common.c \
 	check-bdm.c \
 	check-bdm-cfg.c \
-	check-bdm-subscription-topic.c
+	check-bdm-subscription-topic.c \
+	check-bdm-sync.c
 
-check_data_manager_CFLAGS = $(CHECK_CFLAGS) \
+check_data_manager_CFLAGS = $(AM_CFLAGS) $(CHECK_CFLAGS) \
     -I.. \
     -I$(top_srcdir)/data-manager/include \
     $(CFLAGS_BIONET_CAL_SERVER) \

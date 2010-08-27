@@ -3,6 +3,7 @@
 
 void data_manager_config_suite(Suite *s);
 void bdm_subscription_topic_suite(Suite *s);
+void data_manager_sync(Suite *s);
 
 
 #endif

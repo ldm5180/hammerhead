@@ -437,6 +437,26 @@ void make_shutdowns_clean(int withThreads);
 
 
 // BDM sync'ing
+
+typedef struct {
+    // This is build up during traversal
+    BDM_Sync_Metadata_Message_t * asn_message;
+
+    // These are pointers intp message, as placeholders...
+    DataManager_t * asn_bdm;
+    BDM_HardwareAbstractor_t * asn_hab;
+    BDM_Node_t * asn_node;
+
+    int done;
+} md_iter_state_t;
+
+void bdm_sync_metadata_to_asn_setup(
+        GPtrArray * bdm_list,
+        md_iter_state_t * state_buf,
+        bdm_list_iterator_t * iter_buf);
+
+BDM_Sync_Message_t * bdm_sync_metadata_to_asn(bdm_list_iterator_t * iter, md_iter_state_t * state);
+
 typedef struct {
     // This is build up during traversal
     BDM_Sync_Datapoints_Message_t * asn_message;
@@ -444,10 +464,9 @@ typedef struct {
     // These are pointers intp message, as placeholders...
     BDMSyncRecord_t * asn_sync_record;
     ResourceRecord_t * asn_resource_rec;
+
+    int done;
 } dp_iter_state_t;
-
-
-BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray *hab_list);
 
 void bdm_sync_datapoints_to_asn_setup(
         GPtrArray * bdm_list,

@@ -22,30 +22,176 @@
 
 #include "util/protected.h"
 
-int md_bdm_cb(bionet_bdm_t * bdm, void * usr_data);
+static int md_handle_bdm(bionet_bdm_t * bdm, void * usr_data)
+{
+    md_iter_state_t * state = (md_iter_state_t*)usr_data;
+    int r;
+    DataManager_t * asn_bdm;
 
-int md_hab_cb(
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+          " BDM %s:", bionet_bdm_get_id(bdm));
+
+    //add the BDM to the message
+    asn_bdm = (DataManager_t *)calloc(1, sizeof(DataManager_t));
+    if (asn_bdm == NULL) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+              "%s(): out of memory!", __FUNCTION__);
+        return -1;
+    }
+
+    r = asn_sequence_add(&state->asn_message->list, asn_bdm);
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+              "sync_send_metadata(): error adding BDM to Sync Metadata: %s", strerror(errno));
+        free(asn_bdm);
+        return -1;
+    }
+
+    r = OCTET_STRING_fromString(&asn_bdm->id, bionet_bdm_get_id(bdm));
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+              "%s(): error making OCTET_STRING for BDM-ID %s", __FUNCTION__, bionet_bdm_get_id(bdm));
+        return -1;
+    }
+        
+    state->asn_bdm = asn_bdm;
+
+    return 0;
+}
+
+static int md_handle_hab(
         bionet_bdm_t * bdm,
         bionet_hab_t * hab, 
-        void * usr_data);
+        void * usr_data)
+{
+    md_iter_state_t * state = (md_iter_state_t*)usr_data;
+    int r;
+    int ei;
 
-int md_node_cb(
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+          "     HAB %s:", bionet_hab_get_name(hab));
+
+
+    //add the HAB to the message
+    BDM_HardwareAbstractor_t *asn_hab = (BDM_HardwareAbstractor_t *)calloc(1, sizeof(BDM_HardwareAbstractor_t));
+    if (asn_hab == NULL) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+              "%s(): out of memory!", __FUNCTION__);
+        return -1;
+    }
+
+    r = asn_sequence_add(&state->asn_bdm->hablist.list, asn_hab);
+    if (r != 0) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+              "%s(): error adding HAB to Metadata: %s", __FUNCTION__, strerror(errno));
+        free(asn_hab);
+        return -1;
+    }
+
+    r = OCTET_STRING_fromString(&asn_hab->type, bionet_hab_get_type(hab));
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s(): error making OCTET_STRING for HAB-Type %s",
+                __FUNCTION__, bionet_hab_get_type(hab));
+        return -1;
+    }
+
+    r = OCTET_STRING_fromString(&asn_hab->id, bionet_hab_get_id(hab));
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                "%s(): error making OCTET_STRING for HAB-ID %s",
+                __FUNCTION__, bionet_hab_get_id(hab));
+        return -1;
+    }
+
+    // Add new/lost hab events
+    for (ei = 0; ei < bionet_hab_get_num_events(hab); ei++) {
+        bionet_event_t * event = bionet_hab_get_event_by_index(hab, ei);
+
+        BDM_Event_t * asn_event = calloc(1, sizeof(BDM_Event_t));
+        if(NULL == asn_event) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Out of memory");
+            return -1;
+        }
+
+        r = asn_sequence_add(&asn_hab->events.list, asn_event);
+        if (r != 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                  "bdm_to_asn(): error adding BDM to ASN Metadata: %s", strerror(errno));
+            free(asn_event);
+            return -1;
+        }
+
+        r = bionet_event_to_asn_r(event, asn_event);
+        if(r) return -1;
+    }
+
+    state->asn_hab = asn_hab;
+
+    return 0;
+}
+
+static int md_handle_node(
         bionet_bdm_t * bdm,
         bionet_node_t * node, 
-        void * usr_data);
+        void * usr_data)
+{
+    md_iter_state_t * state = (md_iter_state_t*)usr_data;
 
-BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray * bdm_list)
+    BDM_Node_t *asn_node;
+
+    int r;
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+          "         NODE %s:", bionet_node_get_id(node));
+
+
+    asn_node = bionet_node_to_bdm_asn(node);
+    if (NULL == asn_node) return -1;
+
+    r = asn_sequence_add(&state->asn_hab->nodes.list, asn_node);
+    if (r != 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): error adding Node to ResourceDatapointReply: %s", __FUNCTION__, strerror(errno));
+        ASN_STRUCT_FREE(asn_DEF_BDM_Node, asn_node);
+        return -1;
+    }
+
+    state->asn_node = asn_node;
+
+    return 0;
+}
+
+void bdm_sync_metadata_to_asn_setup(
+        GPtrArray * bdm_list,
+        md_iter_state_t * state_buf,
+        bdm_list_iterator_t * iter_buf)
+{
+    memset(state_buf, 0, sizeof(md_iter_state_t));
+
+    bdm_iterator_init(bdm_list, 
+            md_handle_bdm,
+            md_handle_hab,
+            md_handle_node,
+            NULL,
+            NULL,
+            (void *)state_buf,
+            iter_buf
+            );
+}
+
+BDM_Sync_Message_t * bdm_sync_metadata_to_asn(bdm_list_iterator_t * iter, md_iter_state_t * state)
 {
 
     BDM_Sync_Metadata_Message_t * message;
     BDM_Sync_Message_t *sync_message;
-    int bi, r;
+    int r;
 
-    if (NULL == bdm_list) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	      "%s(): NULL BDM list", __FUNCTION__);
+    if(state->done) {
         return NULL;
     }
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+          "Building Metadata Sync Message {");
 
     sync_message = (BDM_Sync_Message_t*)calloc(1, sizeof(BDM_Sync_Message_t));
     if (NULL == sync_message) {
@@ -57,35 +203,25 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(GPtrArray * bdm_list)
     sync_message->present = BDM_Sync_Message_PR_metadataMessage;
     message = &sync_message->choice.metadataMessage;
 
-    for (bi = 0; bi < bdm_list->len; bi++) {
-        DataManager_t * asn_bdm;
-	bionet_bdm_t * bdm = g_ptr_array_index(bdm_list, bi);
-	if (NULL == bdm) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "Failed to get BDM %d from BDM list", bi);
-	    goto cleanup;
-	}
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-              "       BDM %s", bionet_bdm_get_id(bdm));
+    state->asn_message = message;
 
-        //add the BDM to the message
-        asn_bdm = bionet_bdm_to_asn(bdm);
-
-        r = asn_sequence_add(&message->list, asn_bdm);
-        if (r != 0) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                  "sync_send_metadata(): error adding BDM to Sync Metadata: %s", strerror(errno));
-            goto cleanup;
-        }
-    } //for (bi = 0; bi < bdm_list->len; bi++)
-
-    if (bi) {
-        return sync_message;
+    r = bdm_list_traverse(iter);
+    if(r < 0) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+	      "%s(): Error while traversing bdm_list", __FUNCTION__);
+        ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
+        return NULL;
     }
 
-cleanup:
-    ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
-    return NULL;
+    if ( r == 0 ) {
+        // Done done.
+        state->done = 1;
+    }
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+          "} Done Building Metadata Sync Message");
+
+    return sync_message;
 } 
 
 /*** DATAPOINTS ***/
@@ -267,6 +403,11 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_i
         return NULL;
     }
 
+    if(state->done) {
+        return NULL;
+    }
+
+
     sync_message = (BDM_Sync_Message_t*)calloc(1, sizeof(BDM_Sync_Message_t));
     if (NULL == sync_message) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -280,11 +421,16 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_i
     state->asn_message = message;
 
     r = bdm_list_traverse(iter);
-    if(r) {
+    if(r < 0) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
 	      "%s(): Error while traversing bdm_list", __FUNCTION__);
         ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
         return NULL;
+    }
+
+    if ( 0 == r ) {
+        // Done Done
+        state->done = 1;
     }
 
     return sync_message;

@@ -21,6 +21,7 @@ int main(int argc, char * argv[])
         {
             { "Bionet data Manager Config Read", &data_manager_config_suite },
             { "Bionet data Manager Topic Subscriptions", &bdm_subscription_topic_suite },
+            { "Bionet data Manager Sync", &data_manager_sync },
         };
 
     /* run all the integration test suites */

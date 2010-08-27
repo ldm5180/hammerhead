@@ -24,7 +24,7 @@
 #include "BDM-Resource.h"
 #include "BDM-Datapoint.h"
 
-static int bionet_event_to_asn_r(bionet_event_t * event, BDM_Event_t * asn_event) {
+int bionet_event_to_asn_r(bionet_event_t * event, BDM_Event_t * asn_event) {
     bionet_timeval_to_GeneralizedTime(bionet_event_get_timestamp(event), &asn_event->timestamp);
 
     asn_event->entrySeq = bionet_event_get_seq(event);
@@ -139,7 +139,7 @@ cleanup:
     return NULL;
 }
 
-static BDM_Node_t * bionet_node_to_bdm_asn(const bionet_node_t *node) {
+BDM_Node_t * bionet_node_to_bdm_asn(const bionet_node_t *node) {
     int r;
     int ri;
     int ei;

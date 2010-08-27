@@ -96,7 +96,7 @@ int bdm_list_traverse(bdm_list_iterator_t * iter) {
                 }
 
                 // No point to traverse further if no handler
-                if(iter->datapoint_handler) {
+                if(iter->datapoint_handler || iter->resource_handler) {
                     for (; iter->ri < bionet_node_get_num_resources(node); iter->ri++) {
                         bionet_resource_t *resource = 
                             bionet_node_get_resource_by_index(node, iter->ri);
@@ -107,31 +107,45 @@ int bdm_list_traverse(bdm_list_iterator_t * iter) {
                             continue;
                         }
 
-                        for (;
-                             iter->di < bionet_resource_get_num_datapoints(resource);
-                             iter->di++) 
-                        {
-                            bionet_datapoint_t * d = 
-                                bionet_resource_get_datapoint_by_index(resource, iter->di);
-
-                            if (NULL == d) {
-                                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-                                      "%s(): Failed to get datapoint %d from Resource %s",
-                                      __FUNCTION__,
-                                      iter->di, bionet_resource_get_name(resource));
-                            }
-
-                            r = iter->datapoint_handler(bdm, d, iter->usr_data);
+                        if(iter->resource_handler) {
+                            r = iter->resource_handler(bdm, resource, iter->usr_data);
                             if(r) {
                                 return r;
                             }
+                        }
 
-                        } // for-each datapoint
+                        if(iter->datapoint_handler) {
+                            for (;
+                                 iter->di < bionet_resource_get_num_datapoints(resource);
+                                 iter->di++) 
+                            {
+                                bionet_datapoint_t * d = 
+                                    bionet_resource_get_datapoint_by_index(resource, iter->di);
+
+                                if (NULL == d) {
+                                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                                          "%s(): Failed to get datapoint %d from Resource %s",
+                                          __FUNCTION__,
+                                          iter->di, bionet_resource_get_name(resource));
+                                }
+
+                                r = iter->datapoint_handler(bdm, d, iter->usr_data);
+                                if(r) {
+                                    return r;
+                                }
+
+                            } // for-each datapoint
+                            iter->di=0;
+                        }
                     } // for-each resource
+                    iter->ri=0;
                 }
             } // for-each node
+            iter->ni=0;
         } // for-each hab
+        iter->hi = 0;
     } // for-each bdm
+    iter->bi = 0;
 
     // Done
     return 0;

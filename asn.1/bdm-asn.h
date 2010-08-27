@@ -70,5 +70,11 @@ bionet_datapoint_t *bdm_publish_asn_to_datapoint(
 BIONET_ASN_API_DECL
 DataManager_t * bionet_bdm_to_asn(bionet_bdm_t * bdm);
 
+BIONET_ASN_API_DECL
+int bionet_event_to_asn_r(bionet_event_t * event, BDM_Event_t * asn_event);
+
+BIONET_ASN_API_DECL
+BDM_Node_t * bionet_node_to_bdm_asn(const bionet_node_t *node);
+
 
 #endif /* BDM_ASN_H */
