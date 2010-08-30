@@ -70,16 +70,11 @@ static int sync_send_metadata(
     char * node_id;
     char * resource_id;
     BDM_Sync_Message_t *sync_message = NULL;
-    int r;
+    int r = -1;
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "Syncing metadata to %s", config->sync_recipient);
 
-    if (sync_init_connection(config)) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-	      "    Unable to make TCP connection to BDM Sync Receiver");
-	return -1;
-    }
 
     if (bionet_split_resource_name(config->resource_name_pattern,
 				   &hab_type, &hab_id, &node_id, &resource_id)) {
@@ -110,10 +105,17 @@ static int sync_send_metadata(
     md_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_metadata_to_asn_setup(bdm_list, &make_message_state, &iter);
+    bdm_sync_metadata_to_asn_setup(bdm_list, config->sync_mtu, &make_message_state, &iter);
 
     while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
     {
+        if (sync_init_connection(config)) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+                  "    Unable to setup connection to BDM Sync Receiver");
+            bdm_list_free(bdm_list);
+            return -1;
+        }
+
 	// send the reply to the client
 	asn_enc_rval_t asn_r;
 	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, sync_message, 
@@ -123,23 +125,22 @@ static int sync_send_metadata(
 
 	if (asn_r.encoded == -1) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "send_sync_metadata(): error with der_encode(): %s", 
+                    "send_sync_metadata(): error with der_encode(%s)", 
                     asn_r.failed_type ? asn_r.failed_type->name : "unknown");
             bdm_list_free(bdm_list);
             sync_cancel_connection(config);
             return -1;
 	}
-    }
 
+        r = sync_finish_connection(config);
+        if ( r == 0 ) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+                  "    Sync metadata finished");
+        } else {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+                  "    Sync metadata FAILED");
 
-    r = sync_finish_connection(config);
-    if ( r == 0 ) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-              "    Sync metadata finished");
-    } else {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-              "    Sync metadata FAILED");
-
+        }
     }
 
     bdm_list_free(bdm_list);
@@ -182,12 +183,6 @@ static int sync_send_datapoints(
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "Syncing datapoints");
 
-    if (sync_init_connection(config)) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-	      "    Unable to make TCP connection to BDM Sync Receiver");
-	return -1;
-    }
-
     if (bionet_split_resource_name(config->resource_name_pattern,
 				   &hab_type, &hab_id, &node_id, &resource_id)) {
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -213,10 +208,17 @@ static int sync_send_datapoints(
     dp_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_datapoints_to_asn_setup(bdm_list, &make_message_state, &iter);
+    bdm_sync_datapoints_to_asn_setup(bdm_list, config->sync_mtu, &make_message_state, &iter);
 
     while((sync_message = bdm_sync_datapoints_to_asn(&iter, &make_message_state)))
     {
+        if (sync_init_connection(config)) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
+                  "    Unable to make TCP connection to BDM Sync Receiver");
+            bdm_list_free(bdm_list);
+            return -1;
+        }
+
 	// send the reply to the client
 	asn_enc_rval_t asn_r;
 	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, sync_message, 
@@ -224,7 +226,9 @@ static int sync_send_datapoints(
 
 
 	if (asn_r.encoded == -1) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_datapoints(): error with der_encode(): %m");
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "send_sync_datapoints(): error with der_encode(%s)",
+                    asn_r.failed_type ? asn_r.failed_type->name : "unknown");
             bdm_list_free(bdm_list);
             ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
             goto cleanup;
@@ -236,13 +240,15 @@ static int sync_send_datapoints(
               config->sync_recipient,
               from_seq, to_seq);
         ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
+
+        r = sync_finish_connection(config);
+        if( r != 0 ) {
+            bdm_list_free(bdm_list);
+            goto cleanup;
+        }
     }
     bdm_list_free(bdm_list);
 
-    r = sync_finish_connection(config);
-    if( r != 0 ) {
-        goto cleanup;
-    }
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
           "    Sync datapoints finished");
@@ -295,9 +301,10 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
         return 0;
     }
 
-    if(config->sync_mtu > 0 && config->buf_len + size > config->sync_mtu) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-            "Bundle would exceed MTU of %d", config->sync_mtu);
+    if(config->sync_mtu > 0 && config->buf_len + ion.bundle_size + size > config->sync_mtu) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+            "Bundle would exceed MTU of %d (%ld+%ld+%ld)", config->sync_mtu,
+            config->buf_len, ion.bundle_size, size);
         return -1;
     }
 
@@ -450,6 +457,8 @@ static int sync_init_connection_ion(sync_sender_config_t * config) {
     ion.bundleZco = (*bdm_bp_funcs.zco_create)(ion.sdr, ZcoSdrSource, 0,
 			       0, 0);
     ion.bundle_size = 0;
+
+    config->buf_len = 0;
 
     (*bdm_bp_funcs.writeErrmsgMemos)();
 
