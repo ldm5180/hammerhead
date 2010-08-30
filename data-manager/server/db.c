@@ -1417,7 +1417,7 @@ int db_get_event_rowid(
 
     if(all_stmts[ROWFOR_EVENT_STMT] == NULL) {
 	r = sqlite3_prepare_v2(db, 
-	    "SELECT Key"
+	    "SELECT seq"
 	    " FROM Events"
 	    " WHERE timestamp_sec  = ?"
             "   AND timestamp_usec = ?"
