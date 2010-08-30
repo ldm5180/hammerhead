@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <inttypes.h>
 
 #include <glib.h>
 
@@ -64,7 +65,7 @@ static int md_handle_bdm(bionet_bdm_t * bdm, void * usr_data)
             ssize_t old_serialized_size = der_encoded_size(
                     &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                  "%s(): Adding element %d makes size %ld from %ld, which would exceed mtu",
+                  "%s(): Adding element %d makes size %" PRIdPTR " from %" PRIdPTR ", which would exceed mtu",
                   __FUNCTION__, i, serialized_size, old_serialized_size);
             return 1; // Tell caller send message and continue
         }
@@ -153,7 +154,7 @@ static int md_handle_hab(
                     &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
 
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                  "%s(): Adding element %d makes size %ld from %ld, which would exceed mtu",
+                  "%s(): Adding element %d makes size %" PRIdPTR " from %" PRIdPTR ", which would exceed mtu",
                   __FUNCTION__, i, serialized_size, old_serialized_size);
             return 1; // Tell caller send message and continue here
         }
@@ -200,7 +201,7 @@ static int md_handle_node(
             ssize_t old_serialized_size = der_encoded_size(
                     &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                  "%s(): Adding element %d makes size %ld from %ld, which would exceed mtu",
+                  "%s(): Adding element %d makes size %" PRIdPTR " from %" PRIdPTR ", which would exceed mtu",
                   __FUNCTION__, i, serialized_size, old_serialized_size);
             return 1; // Tell caller send message and continue
         }
@@ -274,12 +275,10 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(bdm_list_iterator_t * iter, md_ite
 
     size_t message_size = der_encoded_size(
                 &asn_DEF_BDM_Sync_Metadata_Message, message);
-    size_t md_message_size = der_encoded_size(
-                &asn_DEF_BDM_Sync_Message, sync_message);
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-          "} Done Building Metadata Sync Message (%ld,%ld)",
-          message_size, md_message_size);
+          "} Done Building Metadata Sync Message (%" PRIdPTR " bytes)",
+          message_size);
 
 
     return sync_message;
@@ -325,7 +324,7 @@ static int dp_handle_bdm(bionet_bdm_t * bdm, void * usr_data)
         if(serialized_size > state->mtu) {
             int i = state->asn_message->list.count -1;
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                  "%s(): Adding element %d makes size %ld, which would exceed mtu",
+                  "%s(): Adding element %d makes size %" PRIdPTR ", which would exceed mtu",
                   __FUNCTION__, i, serialized_size);
             asn_sequence_del(&state->asn_message->list, i, 1);
             return 1; // Tell caller send message and continue
@@ -388,7 +387,7 @@ static int dp_handle_resource(
         if(serialized_size > state->mtu) {
             int i = state->asn_sync_record->syncResources.list.count -1;
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                  "%s(): Adding element %d makes size %ld, which would exceed mtu",
+                  "%s(): Adding element %d makes size %" PRIdPTR ", which would exceed mtu",
                   __FUNCTION__, i, serialized_size);
             asn_sequence_del(&state->asn_sync_record->syncResources.list, i, 1);
             return 1; // Tell caller send message and continue
@@ -468,7 +467,7 @@ static int dp_handle_datapoint(
                 ssize_t old_serialized_size = der_encoded_size(
                     &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                      "%s(): Adding element %d,%d makes size %ld from %ld, which would exceed mtu",
+                  "%s(): Adding element %d,%d makes size %" PRIdPTR " from %" PRIdPTR ", which would exceed mtu",
                       __FUNCTION__, ei, i,serialized_size, old_serialized_size);
                 return 1; // Tell caller send message and continue
             }
