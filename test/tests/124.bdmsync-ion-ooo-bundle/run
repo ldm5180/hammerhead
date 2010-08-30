@@ -162,16 +162,18 @@ test_log "Waiting for most data to sync"
 sleep 10
 
 test_log "Manually delivering bundles in (mostly) reverse order..."
+bundle_cnt=0
 while dir_not_empty filecla/host2-delay; do
     for bdl in `ls -t filecla/host2-delay`; do
         mv filecla/host2-delay/$bdl filecla/host2
-        touch filecla/host2/$bdl
+	bundle_cnt=`expr $bundle_cnt + 1`
         sleep 1
     done
 done
 
+test_log "$bundle_cnt bundles delivered"
 test_log "Waiting for all data to sync"
-time_watch 120 dirempty filecla/host2 || test_error "Data didn't sync in time"
+time_watch 120 dirempty filecla/host2 || (find filecla; test_error "Data didn't sync in time")
 sleep 5
 
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
