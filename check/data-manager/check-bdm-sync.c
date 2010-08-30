@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #include <check.h>
 
@@ -141,7 +142,7 @@ START_TEST (test_bdm_sync_asn) {
 
 	fail_if (bytes > MTU, "Message (%d bytes) too big (>%d)",
                 bytes, MTU);
-	printf("Message (%ld bytes)\n", bytes);
+	printf("Message (%" PRIdPTR " bytes)\n", bytes);
     }
 
 } END_TEST /* test_bdm_cfg_read_good */
