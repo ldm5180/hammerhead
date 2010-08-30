@@ -53,6 +53,22 @@ static int md_handle_bdm(bionet_bdm_t * bdm, void * usr_data)
               "%s(): error making OCTET_STRING for BDM-ID %s", __FUNCTION__, bionet_bdm_get_id(bdm));
         return -1;
     }
+
+    if(state->mtu > 0){
+        ssize_t serialized_size = der_encoded_size(
+                &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
+        if(serialized_size > state->mtu) {
+            int i = state->asn_message->list.count - 1;
+            asn_sequence_del(&state->asn_message->list, i, 1);
+
+            ssize_t old_serialized_size = der_encoded_size(
+                    &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                  "%s(): Adding element %d makes size %ld from %ld, which would exceed mtu",
+                  __FUNCTION__, i, serialized_size, old_serialized_size);
+            return 1; // Tell caller send message and continue
+        }
+    }
         
     state->asn_bdm = asn_bdm;
 
@@ -126,6 +142,24 @@ static int md_handle_hab(
         if(r) return -1;
     }
 
+    if(state->mtu > 0){
+        ssize_t serialized_size = der_encoded_size(
+                &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
+        if(serialized_size > state->mtu) {
+            int i = state->asn_bdm->hablist.list.count -1;
+            asn_sequence_del(&state->asn_bdm->hablist.list, i, 1);
+
+            ssize_t old_serialized_size = der_encoded_size(
+                    &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
+
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                  "%s(): Adding element %d makes size %ld from %ld, which would exceed mtu",
+                  __FUNCTION__, i, serialized_size, old_serialized_size);
+            return 1; // Tell caller send message and continue here
+        }
+    }
+        
+
     state->asn_hab = asn_hab;
 
     return 0;
@@ -156,6 +190,23 @@ static int md_handle_node(
         return -1;
     }
 
+    if(state->mtu > 0){
+        ssize_t serialized_size = der_encoded_size(
+                &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
+        if(serialized_size > state->mtu) {
+            int i = state->asn_hab->nodes.list.count -1;
+            asn_sequence_del(&state->asn_hab->nodes.list, i, 1);
+
+            ssize_t old_serialized_size = der_encoded_size(
+                    &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                  "%s(): Adding element %d makes size %ld from %ld, which would exceed mtu",
+                  __FUNCTION__, i, serialized_size, old_serialized_size);
+            return 1; // Tell caller send message and continue
+        }
+    }
+        
+
     state->asn_node = asn_node;
 
     return 0;
@@ -163,10 +214,12 @@ static int md_handle_node(
 
 void bdm_sync_metadata_to_asn_setup(
         GPtrArray * bdm_list,
+        ssize_t mtu,
         md_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf)
 {
     memset(state_buf, 0, sizeof(md_iter_state_t));
+    state_buf->mtu = mtu; // Subtract the sync_message wrapper size
 
     bdm_iterator_init(bdm_list, 
             md_handle_bdm,
@@ -203,6 +256,7 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(bdm_list_iterator_t * iter, md_ite
     sync_message->present = BDM_Sync_Message_PR_metadataMessage;
     message = &sync_message->choice.metadataMessage;
 
+    state->asn_sync_message = sync_message;
     state->asn_message = message;
 
     r = bdm_list_traverse(iter);
@@ -218,8 +272,15 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(bdm_list_iterator_t * iter, md_ite
         state->done = 1;
     }
 
+    size_t message_size = der_encoded_size(
+                &asn_DEF_BDM_Sync_Metadata_Message, message);
+    size_t md_message_size = der_encoded_size(
+                &asn_DEF_BDM_Sync_Message, sync_message);
+
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-          "} Done Building Metadata Sync Message");
+          "} Done Building Metadata Sync Message (%ld,%ld)",
+          message_size, md_message_size);
+
 
     return sync_message;
 } 
@@ -258,6 +319,20 @@ static int dp_handle_bdm(bionet_bdm_t * bdm, void * usr_data)
         return -1;
     }
 
+    if(state->mtu > 0){
+        ssize_t serialized_size = der_encoded_size(
+                &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
+        if(serialized_size > state->mtu) {
+            int i = state->asn_message->list.count -1;
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                  "%s(): Adding element %d makes size %ld, which would exceed mtu",
+                  __FUNCTION__, i, serialized_size);
+            asn_sequence_del(&state->asn_message->list, i, 1);
+            return 1; // Tell caller send message and continue
+        }
+    }
+        
+
     state->asn_sync_record = sync_record;
 
 
@@ -281,7 +356,7 @@ static int dp_handle_resource(
         return -1;
     }
 
-    r = asn_sequence_add(&state->asn_sync_record->syncResources, resource_rec);
+    r = asn_sequence_add(&state->asn_sync_record->syncResources.list, resource_rec);
     if (r != 0) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
               "sync_send_datapoints(): Failed to add resource record.");
@@ -307,6 +382,20 @@ static int dp_handle_resource(
         return -1;
     }
 
+    if(state->mtu > 0){
+        ssize_t serialized_size = der_encoded_size(
+                &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
+        if(serialized_size > state->mtu) {
+            int i = state->asn_sync_record->syncResources.list.count -1;
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                  "%s(): Adding element %d makes size %ld, which would exceed mtu",
+                  __FUNCTION__, i, serialized_size);
+            asn_sequence_del(&state->asn_sync_record->syncResources.list, i, 1);
+            return 1; // Tell caller send message and continue
+        }
+    }
+        
+
     state->asn_resource_rec = resource_rec;
 
     return 0;
@@ -324,7 +413,7 @@ static int dp_handle_datapoint(
     bionet_resource_t * resource = bionet_datapoint_get_resource(d);
 
     int ei;
-    for ( ei = 0; ei < bionet_datapoint_get_num_events(d); ei++) {
+    for (ei=0; ei < bionet_datapoint_get_num_events(d); ei++) {
         bionet_event_t * event = bionet_datapoint_get_event_by_index(d, ei);
 
         {
@@ -367,6 +456,24 @@ static int dp_handle_datapoint(
             free(asn_sync_datapoint);
             return -1;
         }
+
+
+        if(state->mtu > 0){
+            ssize_t serialized_size = der_encoded_size(
+                    &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
+            if(serialized_size > state->mtu) {
+                int i = state->asn_resource_rec->resourceDatapoints.list.count -1;
+                asn_sequence_del(&state->asn_resource_rec->resourceDatapoints.list, i, 1);
+
+                ssize_t old_serialized_size = der_encoded_size(
+                    &asn_DEF_BDM_Sync_Message, state->asn_sync_message);
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                      "%s(): Adding element %d,%d makes size %ld from %ld, which would exceed mtu",
+                      __FUNCTION__, ei, i,serialized_size, old_serialized_size);
+                return 1; // Tell caller send message and continue
+            }
+        }
+
     } // for each event
 
     return 0;
@@ -374,10 +481,12 @@ static int dp_handle_datapoint(
 
 void bdm_sync_datapoints_to_asn_setup(
         GPtrArray * bdm_list,
+        ssize_t mtu,
         dp_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf)
 {
     memset(state_buf, 0, sizeof(dp_iter_state_t));
+    state_buf->mtu = mtu; // Subtract the sync_message wrapper size
 
     bdm_iterator_init(bdm_list, 
             dp_handle_bdm,
@@ -418,6 +527,7 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_i
     sync_message->present = BDM_Sync_Message_PR_datapointsMessage;
     message = &sync_message->choice.datapointsMessage;
 
+    state->asn_sync_message = sync_message;
     state->asn_message = message;
 
     r = bdm_list_traverse(iter);
