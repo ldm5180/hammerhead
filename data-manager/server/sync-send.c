@@ -303,8 +303,7 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
 
     if(config->sync_mtu > 0 && config->buf_len + ion.bundle_size + size > config->sync_mtu) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-            "Bundle would exceed MTU of %d (%ld+%ld+%ld)", config->sync_mtu,
-            config->buf_len, ion.bundle_size, size);
+            "Bundle would exceed MTU of %d", config->sync_mtu);
         return -1;
     }
 
