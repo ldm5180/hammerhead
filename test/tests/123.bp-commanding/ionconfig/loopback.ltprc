@@ -19,7 +19,7 @@
 #	Set a total LTP memory space usage limit as the sum of the memory
 #	space usage of all spans (more or less the number of bytes in transit
 #	on all links for their duration).
-1 128 524288
+1 16 128000
 
 # Add a span. (a connection) 
 #	Identify the span as engine number 1.  That is the ipn node number
@@ -41,7 +41,7 @@
 #	loopback) using port 1113 (defined by IANA as the default UDP port
 #	for Licklider Transmission Protocol).  The single quote is
 #	important, don't use double quotes.
-a span 1 48 4096 48 4096 4096 1024 1 'udplso localhost:1113'
+a span 1 8 4096 8 4096 4096 1024 1 'udplso localhost:1113'
 
 # Start command.
 #	This command actually runs the link service output commands
