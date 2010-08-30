@@ -51,10 +51,27 @@ static const char * resource_names[] = {
     "resource2",
     "resource3",
     "resource4",
+    "resource5",
+    "resource6",
+    "resource7",
+    "resource8",
+    "resource9",
+    "resource10",
+    "resource11",
+    "resource12",
+    "resource13",
+    "resource14",
+    "resource15",
+    "resource16",
+    "resource17",
+    "resource18",
+    "resource19",
+    "resource20",
+    "resource21",
 };
 static const int num_resource_names = SIZEOF(resource_names);
 
-static const int MTU = 100000;
+static const int MTU = 1000;
 
 static int check_count_bytes(const void *buffer, size_t size, void * voidp) {
     ssize_t *pBytes = (ssize_t*)voidp;
@@ -126,7 +143,36 @@ START_TEST (test_bdm_sync_asn) {
     md_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_metadata_to_asn_setup(bdm_list, &make_message_state, &iter);
+    bdm_sync_metadata_to_asn_setup(bdm_list, MTU, &make_message_state, &iter);
+
+    BDM_Sync_Message_t * sync_message;
+    while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
+    {
+
+	// Encode as ASN
+	asn_enc_rval_t asn_r;
+        ssize_t bytes = 0;
+	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, sync_message, 
+            check_count_bytes, &bytes);
+
+        ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
+
+	fail_if (bytes > MTU, "Message (%d bytes) too big (>%d)",
+                bytes, MTU);
+	printf("Message (%" PRIdPTR " bytes)\n", bytes);
+    }
+
+} END_TEST /* test_bdm_cfg_read_good */
+
+START_TEST (test_bdm_sync_asn_restart) {
+    GPtrArray * bdm_list = make_bdm_list(2,2,2,20,20);
+
+    g_log_set_default_handler(g_log_default_handler, NULL);
+
+    md_iter_state_t make_message_state;
+    bdm_list_iterator_t iter;
+
+    bdm_sync_metadata_to_asn_setup(bdm_list, MTU, &make_message_state, &iter);
 
     BDM_Sync_Message_t * sync_message;
     while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
@@ -154,6 +200,7 @@ void data_manager_sync(Suite *s)
     suite_add_tcase(s, tc);
 
     tcase_add_test(tc, test_bdm_sync_asn);
+    tcase_add_test(tc, test_bdm_sync_asn_restart);
 
     return;
 } /* libutil_hab_tests_suite() */
