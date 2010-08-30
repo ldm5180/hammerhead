@@ -34,10 +34,6 @@ int main (int argc, char * argv[], char * envp[]){
     int ch;
 
     char cadir[1024];
-    char * procname = strrchr(cadir, '/');
-    if(procname){
-        procname[0] = '\0';
-    }
 
     ssize_t err = readlink("/proc/self/cwd", cadir, sizeof(cadir)-1);
     if(err<0){
