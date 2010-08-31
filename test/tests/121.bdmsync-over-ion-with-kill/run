@@ -26,17 +26,37 @@ fi
 UNIQUE=$$
 RETVAL=0
 
+sync_complete(){
+    sendlog=$1
+    recvlog=$2
+
+    test `grep -c 'Sending bundle with payload' $sendlog` -le  `grep -c 'Processing a bundle'  $recvlog`
+}
+
 # We REALLY need to cleanup if we can
 on_die()
 {
-    kill %1
-    kill %3
-    kill %4
-    kill %5
-    killm
-    exit 2
+    test_error "Test interrupted with signl"
 }
 trap 'on_die' TERM INT
+
+test_error()
+{
+    test_log "Error running test: $@"
+
+    echo "Killing jobs: " `jobs -p`
+    kill `jobs -p`
+    echo "Waiting for all jobs"
+    wait
+
+    echo "Stopping ION..."
+    ionstop
+
+    echo "Running killm"
+    killm > /dev/null
+
+    exit 2
+}
 
 YEAR=`date +%Y`
 PREV_YEAR=$(($YEAR-1))
@@ -60,13 +80,16 @@ ionstart                           \
 
 # receive the message and store it in a file via test bundle sink
 echo "Starting ION sync receiver BDM"
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver &
+rm -f sync-recv.log
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver --debug --log-file=sync-recv.log &
 RCVPID=$!
 
 echo starting ION sync sender BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  sync-send.cfg --port 11111 &
-SNDPID=$!
-sleep 12 # let the bdm come up before starting the HAB
+rm -f sync-send.log
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  sync-send.cfg --port 11111  --debug --log-file=sync-send.log&
+SENDPID=$!
+time_watch 60 grep -i "connected to bionet" sync-send.log || test_error "bdm didn't start"
+sleep 5 # let the bdm come up before starting the HAB
 
 echo starting random-hab
 $ROOT/hab/random/random-hab --id $UNIQUE --output-mode bdm-client --max-delay 1 >| out.random-hab &
@@ -81,7 +104,7 @@ wait $RCVPID
 sleep 20 
 
 echo re-starting ION sync receiver BDM
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver --debug --log-file=sync-recv.log &
 RCVPID=$!
 
 sleep `expr $TEST_DURATION / 2`
@@ -90,15 +113,23 @@ echo "test run complete, killing random-hab"
 kill $HABPID
 wait $HABPID
 
-sleep 30
+echo "Waiting for all data to sync"
+time_watch 60 grep ": lost hab: random-hab.$UNIQUE"  sync-send.log || test_error "Never saw hab go away"
+sleep 5 # Wait at leat one sync-send interval
+if ! time_watch 120 sync_complete sync-send.log sync-recv.log; then
+    echo "Sync incomplete"
+    grep 'Sending bundle with payload' sync-send.log
+    grep 'Processing a bundle'  sync-recv.log
+    test_error "Data hasn't sync'd completely"
+fi
+
 
 echo "getting data from ION sync sender BDM"
-
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
 
 echo "killing the ION sync sender BDM"
-kill $SNDPID
-wait $SNDPID
+kill $SENDPID
+wait $SENDPID
 
 echo "getting data from TCP sync receiver BDM"
 
