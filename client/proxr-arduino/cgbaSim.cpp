@@ -147,19 +147,25 @@ void cgbaSim::bionetSetup()
 
 }
 
-void cgbaSim::cookedValueMode()
+void cgbaSim::switch_command_mode()
 {
    if(ON == cookedMode)
    {
         cookedMode = OFF;
         for(int i=0; i<16; i++)
+        {
             dial[i]->switch_voltage_mode();
+            dial[i]->update_display_voltage();
+        }
    }
    else if(OFF == cookedMode)
    {
        cookedMode = ON;
        for(int i=0; i<16; i++)
+       {
             dial[i]->switch_cooked_mode();
+            dial[i]->update_display_cooked();
+       }
    }
 }
 

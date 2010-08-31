@@ -27,7 +27,7 @@ public slots:
     void use_node_set_resources(bionet_node_t *node);
     void datapoint_update(bionet_datapoint_t *data);
     void lostHab();
-    void cookedValueMode();
+    void switch_command_mode();
 protected:
     void bionetSetup();
 private:

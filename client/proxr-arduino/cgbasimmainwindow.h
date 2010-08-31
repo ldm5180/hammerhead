@@ -24,8 +24,9 @@ private:
     QAction *exitAction;
     QAction *aboutAction;
     QAction *cookedValAction;
-
     cgbaSim *mainWidget;
+
+    bool cooked_mode;
 };
 
 #endif // CGBASIMMAINWINDOW_H

@@ -40,17 +40,17 @@ void cgbaDial::set_display(int dialValue)
     QString s;
     //set dials value to new value
     this->dial->setValue(dialValue);
-    this->voltage = dialValue*VOLTAGE_INCREMENT;
 
     if(OFF == cookedMode)
     {
+        this->voltage = dialValue*VOLTAGE_INCREMENT;
         s.setNum(voltage, 'f', 3);
         this->dialDisplay->setText(s);
     }
     else if(ON == cookedMode)
     {
-        this->cookedVal = dialValue*increment;
-        s.setNum(cookedVal, 'f', 3);
+        this->cooked_voltage = dialValue*increment;
+        s.setNum(cooked_voltage, 'f', 3);
         this->dialDisplay->setText(s);
     }
 } 
@@ -84,7 +84,15 @@ void cgbaDial::command_potentiometer()
     }
     else if(ON == cookedMode)
     {
-        // dance
+        double new_cooked_voltage = value*increment;
+
+        // convert double to char*
+        s.setNum(new_cooked_voltage, 'f', 3);
+        QByteArray ba = s.toLatin1();
+        char *newVal = ba.data();
+
+        // send set resource command to translator clab
+        bionet_set_resource(translator_pot_resource, newVal);
     }
 }
 
@@ -141,6 +149,24 @@ void cgbaDial::switch_cooked_mode()
 void cgbaDial::switch_voltage_mode()
 {
     dial->setRange(0, 255);
+}
+
+void cgbaDial::update_display_voltage()
+{
+    double content;
+    bionet_resource_get_double(this->proxr_pot_resource, &content, NULL);
+    // dividing cooked_voltage by increment gives the dial value
+    int dial_value = content/increment;
+    set_display(dial_value);
+}
+
+void cgbaDial::update_display_cooked()
+{   
+    double content;
+    bionet_resource_get_double(this->translator_pot_resource, &content, NULL);
+    // dividing cooked_voltage by increment gives the dial value
+    int dial_value = content/increment;
+    set_display(dial_value);
 }
 
 void cgbaDial::update_increment()

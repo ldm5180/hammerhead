@@ -2,6 +2,8 @@
 
 CgbaSimMainWindow::CgbaSimMainWindow()
 {
+    cooked_mode = false;
+
     setupWindow();
     createActions();
     createMenus();
@@ -12,7 +14,7 @@ void CgbaSimMainWindow::setupWindow()
     mainWidget = new cgbaSim();
     this->setCentralWidget(mainWidget);
 
-    this->setWindowTitle(tr("CGBA Interface Simulator"));
+    this->setWindowTitle(tr("CGBA Interface Simulator       Voltage Mode"));
     this->setWindowIcon(QIcon(":icons/bionet.png"));
     this->setMinimumSize(QSize(550, 550));
     this->resize(QSize(825,825));
@@ -42,7 +44,20 @@ void CgbaSimMainWindow::createMenus()
 
 void CgbaSimMainWindow::triggerMode()
 {
-    mainWidget->cookedValueMode();
+    // change display title to represent current mode
+    if(cooked_mode)
+    {
+        this->setWindowTitle(tr("CGBA Interface Simulator       Voltage Mode"));
+        this->cooked_mode = false;
+    }
+    if(!cooked_mode)
+    {
+        this->setWindowTitle(tr("CGBA Interface Simulator       Cooked Mode"));
+        this->cooked_mode = true;
+    }
+
+    // switch command mode from voltage to cooked or vice versa
+    mainWidget->switch_command_mode();
 }
 
 void CgbaSimMainWindow::quit()

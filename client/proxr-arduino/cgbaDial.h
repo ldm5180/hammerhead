@@ -29,12 +29,16 @@ public slots:
     void command_potentiometer();
     void set_proxr_resource(bionet_node_t *node);
     void set_translator_resource(bionet_node_t *node);
+    
     void store_max_range(double max);
     void store_min_range(double min);
 
     void switch_cooked_mode();
     void switch_voltage_mode();
+   
     void update_increment();
+    void update_display_voltage();
+    void update_display_cooked();
 
 private:
     Dial *dial;
@@ -44,7 +48,7 @@ private:
     QLineEdit *dialDisplay;
 
     double voltage;
-    double cooked_val;
+    double cooked_voltage;
     double max_range;
     double min_range;
     double increment;
