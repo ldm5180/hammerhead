@@ -126,6 +126,15 @@ int main(int argc, char* argv[])
             }
             full_name[0] = '\0';
         }
+
+        // subscribe to DMM hab adc states 
+        for(int i=0; i<16; i++)
+        {
+            strcpy(full_name, hab_name);
+            strcat(full_name, default_settings->state_names[i]);
+            bionet_subscribe_datapoints_by_name(full_name);
+            full_name[0]='\0';
+        }
         
         // subscribe to proxr resources
         bionet_subscribe_datapoints_by_name("proxr.cgba5-gse-1.*:*");

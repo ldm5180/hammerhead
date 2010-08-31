@@ -1,4 +1,5 @@
 #include "hardware-abstractor.h"
+#include <glib.h>
 #include "bionet-util.h"
 #include "bionet.h"
 
@@ -10,7 +11,16 @@
 #define ZERO_VOLT 0
 #define FIVE_VOLT 1
 
+#define NUM_STATES  16
+
+// used with ini file
+typedef struct
+{
+    gchar **state_names;
+}translator_settings_t;
+
 //variables
+extern translator_settings_t *default_settings;
 double table[16][256][2];
 double calibration_const[16][7];
 double adc_increment[16][1];
