@@ -15,7 +15,7 @@ proxr_arduino_client_SOURCES =  \
     dial.cpp                    \
     main.cpp                    \
     qled.cpp			        \
-    read-bad.c                  \
+    ini-read.c                  \
     cgbaDial.moc.cpp	    	\
     cgbaled.moc.cpp	            \
     cgbaSim.moc.cpp             \
