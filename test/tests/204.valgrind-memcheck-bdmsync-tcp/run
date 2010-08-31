@@ -36,6 +36,25 @@ if [ -z "$ENABLE_DARWIN" ]; then
     VGLEAK="--leak-check=full --leak-resolution=high"
 fi
 
+test_error()
+{
+    test_log "Error running test: $@"
+
+    echo "Killing jobs: " `jobs -p`
+    kill `jobs -p`
+    echo "Waiting for all jobs"
+    wait
+
+    exit 2
+}
+
+sync_complete(){
+    sendlog=$1
+    recvlog=$2
+
+    test `grep -c 'Syncd ' $sendlog` -le  `grep -c 'Sync-Received'  $recvlog`
+}
+
 
 # Create the database files now, so they aren't created under valgrind
 test_log "Creating empty database files"
@@ -76,7 +95,7 @@ if [ "$TEST_PATTERN" != "testpattern.in" ]; then
   TPPID=$!
 fi
 
-sleep 5
+sleep 15
 
 test_log "starting random-hab"
 if [ -z "$TEST_PATTERN" ]; then
@@ -86,13 +105,22 @@ else
 fi
 HABPID=$!
 
-sleep 30
+sleep $TEST_DURATION
 
 test_log "killing random-hab"
 kill $HABPID
 wait $HABPID
 
-sleep 25
+echo "Waiting for all data to sync"
+time_watch 60 grep ": lost hab: random-hab.$UNIQUE"  bdm-send.log || test_error "Never saw hab go away"
+sleep 5 # Wait at leat one bdm-send interval
+if ! time_watch 120 sync_complete bdm-send.log bdm-recv.log; then
+    echo "Sync incomplete"
+    grep 'Sending bundle with payload' bdm-send.log
+    grep 'Processing a bundle'  bdm-recv.log
+    test_error "Data hasn't sync'd completely"
+fi
+
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
 test_log "test run complete. killing the TCP sync sender BDM"
 kill $SENDPID
