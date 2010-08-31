@@ -59,6 +59,9 @@ int main(int argc, char* argv[])
         }
     }
 
+    // read ini file
+    translator_read_ini("translator.ini\0");
+
     // connect to bionet
     bionet_fd = bionet_connect();
     if(bionet_fd < 0)

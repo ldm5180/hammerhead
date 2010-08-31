@@ -41,5 +41,6 @@ void generate_table(int adc);
 double find_voltage(int adc, double value);
 
 //misc
+int translator_read_ini(char *config_file);
 void signal_handler(int unused);
 void usage(void);
