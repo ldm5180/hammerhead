@@ -66,6 +66,7 @@ usr/bin/test-asn-c2h
 usr/bin/test-asn-bdm-s2c
 usr/bin/test-asn-bdm-c2s
 usr/bin/test-asn-h2c
+usr/bin/test-asn-sync
 usr/bin/time-publisher
 usr/bin/time-subscriber
 
