@@ -6,7 +6,8 @@ int cookedMode;
 cgbaSim::cgbaSim(QWidget *parent)
     : QWidget(parent)
 {
-    pa_read_ini("pa.ini\0");
+    char file[] = "pa.ini\0";
+    pa_read_ini(file);
     bionetSetup();
     cookedMode = OFF;
 
