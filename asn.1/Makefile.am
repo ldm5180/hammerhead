@@ -34,7 +34,7 @@ libbionet_asn_la_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_BIONET_UTIL)
 
 if ENABLE_EXE
 
-bin_PROGRAMS = test-asn-h2c test-asn-c2h test-asn-bdm-c2s test-asn-bdm-s2c
+bin_PROGRAMS = test-asn-h2c test-asn-c2h test-asn-bdm-c2s test-asn-bdm-s2c test-asn-sync
 
 test_asn_h2c_DEPENDENCIES = libbionet-asn.la
 test_asn_h2c_SOURCES = converter-sample.c pdu_collection.c
@@ -59,6 +59,12 @@ test_asn_bdm_s2c_SOURCES = converter-sample.c pdu_collection.c
 test_asn_bdm_s2c_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) -I../util -DASN_PDU_COLLECTION -DPDU=BDM_S2C_Message 
 test_asn_bdm_s2c_LDFLAGS = $(AM_LDFLAGS) $(GLIB_LIBS) -L../util
 test_asn_bdm_s2c_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lm
+
+test_asn_sync_DEPENDENCIES = libbionet-asn.la
+test_asn_sync_SOURCES = converter-sample.c pdu_collection.c
+test_asn_sync_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) -I../util -DASN_PDU_COLLECTION -DPDU=BDM_Sync_Message 
+test_asn_sync_LDFLAGS = $(AM_LDFLAGS) $(GLIB_LIBS) -L../util
+test_asn_sync_LDADD = $(AM_LDADD) -lbionet-util -lbionet-asn -lm
 
 
 

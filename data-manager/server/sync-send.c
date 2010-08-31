@@ -307,31 +307,36 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
         return -1;
     }
 
-    int bytes_to_copy = _Min(size,BP_SEND_BUF_SIZE - config->buf_len);
-    char * dst = config->send_buf + config->buf_len;
-    memcpy(dst, buffer, bytes_to_copy);
-    config->buf_len += bytes_to_copy;
+    int buffer_index = 0;
+    while(size) {
+        int bytes_to_copy = _Min(size,BP_SEND_BUF_SIZE - config->buf_len);
+        char * dst = config->send_buf + config->buf_len;
+        memcpy(dst, buffer+buffer_index, bytes_to_copy);
+        config->buf_len += bytes_to_copy;
+        size -= bytes_to_copy;
+        buffer_index += bytes_to_copy;
 
-    if(config->buf_len >= BP_SEND_BUF_SIZE) {
-        extent = bdm_sdr_malloc(sdr, BP_SEND_BUF_SIZE);
-        if (extent == 0)
-        {
-            (*bdm_bp_funcs.sdr_cancel_xn)(sdr);
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                "No space for ZCO extent.");
+        if(config->buf_len >= BP_SEND_BUF_SIZE) {
+            extent = bdm_sdr_malloc(sdr, BP_SEND_BUF_SIZE);
+            if (extent == 0)
+            {
+                (*bdm_bp_funcs.sdr_cancel_xn)(sdr);
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                    "No space for ZCO extent.");
 
-            ion.sdr = NULL;
-            return -1;
+                ion.sdr = NULL;
+                return -1;
+            }
+
+            bdm_sdr_write(sdr, extent, (void*)config->send_buf, BP_SEND_BUF_SIZE);
+            (*bdm_bp_funcs.zco_append_extent)(sdr, bundleZco, ZcoSdrSource, extent, 0, BP_SEND_BUF_SIZE);
+            ion.bundle_size += BP_SEND_BUF_SIZE;
+
+            config->buf_len = 0;
         }
-
-        bdm_sdr_write(sdr, extent, (void*)config->send_buf, BP_SEND_BUF_SIZE);
-        (*bdm_bp_funcs.zco_append_extent)(sdr, bundleZco, ZcoSdrSource, extent, 0, BP_SEND_BUF_SIZE);
-        ion.bundle_size += BP_SEND_BUF_SIZE;
-
-        config->buf_len = 0;
     }
 
-    return size;
+    return 1;
 }
 #endif
 
