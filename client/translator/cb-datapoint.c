@@ -17,6 +17,21 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
     // determine where the resource is coming from
     if(strcmp(node_name, "0") == 0)
     {
+        // Check if it is a state resource update from DMM
+        for(int i=0; i<16; i++)
+        {
+            if(strcmp(default_settings->state_names[i], res_name) == 0)
+            {
+                int8_t value;
+                bionet_resource_get_int8(resource, &value, NULL);
+                bionet_resource_set_int8(adc_state_resource[i], value, NULL);
+                hab_report_datapoints(bionet_resource_get_node(translator_resource[0]));
+                return;
+            }
+        }
+
+        // Wasn't state resource so must be a calibration 
+
         // use resource name to find adc number (0-15)
         id[0] = res_name[3];
         id[1] = res_name[4];
