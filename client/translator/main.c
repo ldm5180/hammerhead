@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     }
 
     // read ini file
-    translator_read_ini("translator.ini\0");
+    translator_read_ini("translator.ini");
 
     // connect to bionet
     bionet_fd = bionet_connect();
@@ -133,9 +133,13 @@ int main(int argc, char* argv[])
         // subscribe to DMM hab adc states 
         for(int i=0; i<16; i++)
         {
+            // copy hab name into empty full_name
             strcpy(full_name, hab_name);
+            // cat the resource name to the hab_name
             strcat(full_name, default_settings->state_names[i]);
+            // subscribe
             bionet_subscribe_datapoints_by_name(full_name);
+            // make full_name appear empty for next loop
             full_name[0]='\0';
         }
         

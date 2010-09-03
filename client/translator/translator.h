@@ -27,6 +27,7 @@ double adc_increment[16][1];
 bionet_resource_t *adc_range_resource[16][2];
 bionet_resource_t *translator_resource[16];
 bionet_resource_t *proxr_resource[16];
+bionet_resource_t *adc_state_resource[16];
 
 // bionet stuff
 void cb_datapoint(bionet_datapoint_t *datapoint);
@@ -34,6 +35,7 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value);
 void create_node(bionet_hab_t *hab, char *name);
 bionet_resource_t* create_adc_resource(bionet_node_t *node, char *name);
 bionet_resource_t* create_range_resource(bionet_node_t *node, char *name);
+bionet_resource_t* create_state_resource(bionet_node_t *node, char *name);
 
 //translation stuff
 void set_calibration_const(int adc, int calib, double constant);
