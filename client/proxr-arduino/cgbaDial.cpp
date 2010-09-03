@@ -157,7 +157,7 @@ void cgbaDial::update_display_voltage()
     double content;
     bionet_resource_get_double(this->proxr_pot_resource, &content, NULL);
     // dividing cooked_voltage by increment gives the dial value
-    int dial_value = content/increment;
+    int dial_value = content/VOLTAGE_INCREMENT;
     set_display(dial_value);
 }
 
