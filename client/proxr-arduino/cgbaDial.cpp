@@ -134,6 +134,7 @@ void cgbaDial::store_min_range(double min)
     qDebug() << "min " << potNum << " = " << min_range;
 }
 
+// switches dials to operate with cooked voltages
 void cgbaDial::switch_cooked_mode()
 {
     if(min_range > max_range)

@@ -6,7 +6,7 @@ int cookedMode;
 cgbaSim::cgbaSim(QWidget *parent)
     : QWidget(parent)
 {
-    char file[] = "pa.ini\0";
+    char file[] = "pa.ini";
     pa_read_ini(file);
     bionetSetup();
     cookedMode = OFF;
@@ -199,89 +199,36 @@ void cgbaSim::datapoint_update(bionet_datapoint_t *data)
     char *name = NULL;
     bionet_resource_t *resource;
     bionet_value_t *value;
-    int content;
+    int binary_content;
+    double double_content;
 
     resource = bionet_datapoint_get_resource(data);
     bionet_split_resource_name(bionet_resource_get_name(resource), NULL, NULL, NULL, &name);
 
-    // huge if else ball. checks to see if the updated datapoint is one we care about
-    // if it is check the value it changed to and update led light accordingly
-    if(strcmp(name, "digital-input0") == 0) {
-        value = bionet_datapoint_get_value(data);
-        bionet_value_get_binary(value, &content);
-        if(content == 0)
-            leds[0]->setValue(false);
-        else
-            leds[0]->setValue(true);
-        return;
-    }else if(strcmp(name, "digital-input1") == 0) {
-        value = bionet_datapoint_get_value(data);
-        bionet_value_get_binary(value, &content);
-        if(content  == 0)
-            leds[1]->setValue(false);
-        else
-            leds[1]->setValue(true);
-        return;
-    }else if(strcmp(name, "digital-input2") == 0) {
-        value = bionet_datapoint_get_value(data);
-        bionet_value_get_binary(value, &content);
-        if(content  == 0)
-            leds[2]->setValue(false);
-        else
-            leds[2]->setValue(true);
-        return;
-    }else if(strcmp(name, "digital-input3") == 0) {
-        value = bionet_datapoint_get_value(data);
-        bionet_value_get_binary(value, &content);
-        if(content  == 0)
-            leds[3]->setValue(false);
-        else
-            leds[3]->setValue(true);
-        return;
-    }else if(strcmp(name, "digital-input4") == 0) {
-        value = bionet_datapoint_get_value(data);
-        bionet_value_get_binary(value, &content);
-        if(content  == 0)
-            leds[4]->setValue(false);
-        else
-            leds[4]->setValue(true);
-        return;
-    }else if(strcmp(name, "digital-input5") == 0) {
-        value = bionet_datapoint_get_value(data);
-        bionet_value_get_binary(value, &content);
-        if(content  == 0)
-            leds[5]->setValue(false);
-        else
-            leds[5]->setValue(true);;
-        return;
-    }else if(strcmp(name, "digital-input6") == 0) {
-        value = bionet_datapoint_get_value(data);
-        bionet_value_get_binary(value, &content);
-        if(content  == 0)
-            leds[6]->setValue(false);
-        else
-            leds[6]->setValue(true);
-        return;
-    }else if(strcmp(name, "digital-input7") == 0) {
-        value = bionet_datapoint_get_value(data);
-        bionet_value_get_binary(value, &content);
-        if(content  == 0)
-            leds[7]->setValue(false);
-        else
-            leds[7]->setValue(true);
-        return;
-    }
+    // check through stored resource names to see which one has been updated
 
-    double cont;
+    // check through arduino datapoints
+    for(int i=0; i<8; i++)
+    {
+        if(strcmp(name, default_settings->arduino[i]) == 0)
+        {
+            bionet_resource_get_binary(resource, &binary_content, NULL);
+            if(true == binary_content)
+                leds[i]->setValue(true);
+            else if(false == binary_content)
+                leds[i]->setValue(false);
+           return;
+        }
+    }
 
     // check mins
     for(int i=0; i<16; i++)
     {
         if(strcmp(default_settings->mins_names[i], name) == 0)
         {
-            bionet_resource_get_double(resource, &cont, NULL);
+            bionet_resource_get_double(resource, &double_content, NULL);
             // store range
-            dial[i]->store_min_range(cont);
+            dial[i]->store_min_range(double_content);
             // set increment with new range
             dial[i]->update_increment();
             return;
@@ -293,15 +240,14 @@ void cgbaSim::datapoint_update(bionet_datapoint_t *data)
     {
         if(strcmp(default_settings->maxs_names[i], name) == 0)
         {
-            bionet_resource_get_double(resource, &cont, NULL);
+            bionet_resource_get_double(resource, &double_content, NULL);
             // store range
-            dial[i]->store_max_range(cont);
+            dial[i]->store_max_range(double_content);
             // set increment with new range
             dial[i]->update_increment();
             return;
         }
     }
-
 }
 
 void cgbaSim::lostHab()
