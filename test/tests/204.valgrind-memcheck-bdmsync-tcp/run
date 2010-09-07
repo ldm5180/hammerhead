@@ -48,14 +48,6 @@ test_error()
     exit 2
 }
 
-sync_complete(){
-    sendlog=$1
-    recvlog=$2
-
-    test `grep -c 'Syncd ' $sendlog` -le  `grep -c 'Sync-Received'  $recvlog`
-}
-
-
 # Create the database files now, so they aren't created under valgrind
 test_log "Creating empty database files"
 rm -f orig-bdm.db sync-bdm.db
@@ -76,12 +68,12 @@ DOVALGRIND="$LIBTOOL --mode=execute valgrind --suppressions=valgrind.suppression
 
 test_log "starting TCP sync receiver BDM"
 rm -f bdm-recv.log
-$DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$UNIQUE --no-resources --tcp-sync-receiver --log-file bdm-recv.log --debug &
+$DOVALGRIND --log-file=log.vg.recv $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-receive-$UNIQUE --no-resources --tcp-sync-receiver --log-file bdm-recv.log --debug --bdm-stats 1 &
 RECVPID=$!
 
 test_log "starting TCP sync sender BDM"
 rm -f bdm-send.log
-$DOVALGRIND --log-file=log.vg.send $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 --log-file bdm-send.log --debug &
+$DOVALGRIND --log-file=log.vg.send $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --sync-sender-config $ROOT/test/tests/110.bdmsync-over-tcp-random-to-bdm-to-bdm/test.cfg --port 11111 --log-file bdm-send.log --debug --bdm-stats 1 &
 SENDPID=$!
 
 #Wait for BDM to start before starting hab
@@ -114,12 +106,8 @@ wait $HABPID
 echo "Waiting for all data to sync"
 time_watch 60 grep ": lost hab: random-hab.$UNIQUE"  bdm-send.log || test_error "Never saw hab go away"
 sleep 5 # Wait at leat one bdm-send interval
-if ! time_watch 120 sync_complete bdm-send.log bdm-recv.log; then
-    echo "Sync incomplete"
-    grep 'Sending bundle with payload' bdm-send.log
-    grep 'Processing a bundle'  bdm-recv.log
-    test_error "Data hasn't sync'd completely"
-fi
+
+$ROOT/test/pylib/SysTest/BdmSyncTest/sync_monitor.py --timeout=120 --send-id="sync-send-$UNIQUE" --recv-id="sync-receive-$UNIQUE" || test_error "Data hasn't sync'd completely"
 
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
 test_log "test run complete. killing the TCP sync sender BDM"

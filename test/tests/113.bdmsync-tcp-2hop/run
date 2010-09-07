@@ -166,8 +166,8 @@ for h in A B; do
     for i in out.bdm-watcher.*-to-*-$h; do
         normalize_bdm_client $i > norm.$i
         if ! diff -q $ref norm.$i; then
-            echo "ERROR: $i output differs from random-hab output:"
-            diff -u norm.random-hab norm.$i
+            echo "ERROR: $i output differs from random-hab-$h output:"
+            diff -u norm.random-hab-$h norm.$i
             RETVAL=1
         fi
     done

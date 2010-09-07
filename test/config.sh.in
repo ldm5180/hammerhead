@@ -12,7 +12,7 @@ export LIBTOOL="$top_builddir/libtool"
 
 @ENABLE_ION_TRUE@export ENABLE_ION=1
 
-PYEXTRA=$ROOT/test/pylib:$ROOT/data-manager/client/py-libbdm:$ROOT/data-manager/client/py-libbdm/.libs:$ROOT/data-manager/client/twisted:$ROOT/client/py-libbionet:$ROOT/client/py-libbionet/.libs:$ROOT/hab/py-libhab:$ROOT/hab/py-libhab/.libs
+PYEXTRA=$ROOT/test/pylib:$ROOT/data-manager/client/py-libbdm:$ROOT/data-manager/client/py-libbdm/.libs:$ROOT/data-manager/client/twisted:$ROOT/client/py-libbionet:$ROOT/client/py-libbionet/.libs:$ROOT/client/twisted:$ROOT/hab/py-libhab:$ROOT/hab/py-libhab/.libs
 if [ -z "$PYTHONPATH" ]; then
     export PYTHONPATH=$PYEXTRA
 else
