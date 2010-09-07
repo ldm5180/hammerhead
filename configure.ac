@@ -180,7 +180,7 @@ AC_SUBST(OPENSSL_LIBS)
 
 AC_ARG_WITH(
     [emdnssd],
-    AC_HELP_STRING([--with-emdnssd], [Use embedded mdnssd library @<:@default=check@:>@]),
+    AC_HELP_STRING([--with-emdnssd], [Use embedded mdnssd library @<:@default=no@:>@]),
         [with_emdnssd=$withval],
         [with_emdnssd=no]
     )
