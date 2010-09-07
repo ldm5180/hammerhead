@@ -64,6 +64,7 @@ check_check_db_SOURCES = \
     check/check-bdm.c                 \
     check/check-db.c                  \
     db.c                              \
+    bdm-stats.c                       \
     db-batch.c                        \
     db-schema.c                       \
     publish.c                         \

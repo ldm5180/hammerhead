@@ -36,6 +36,7 @@ check_data_manager_LDFLAGS = $(AM_LDFLAGS) $(CHECK_LIBS) \
 
 check_data_manager_LDADD = \
     $(LIBS_BIONET_CLIENT) \
+    $(LIBS_BIONET_HAB) \
     $(LIBS_BDM) \
     $(LIBS_BIONET_UTIL) \
     $(top_srcdir)/data-manager/server/libbionet-data-manager.la
