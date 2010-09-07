@@ -11,8 +11,7 @@
 #include "../../util/protected.h"
 #include "bdm-db.h"
 
-
-extern uint32_t num_bionet_datapoints;
+#include "bdm-stats.h"
 
 
 // 
@@ -33,17 +32,9 @@ int require_security = 0;
 
 int no_resources = 0;
 
-extern bionet_hab_t * bdm_hab;
-extern int start_hab;
-
 // 
 // bionet callbacks
 //
-
-extern int ignore_self;
-
-struct timeval dp_ts_accum = { 0, 0 };
-struct timeval db_accum = { 0, 0 };
 
 static void cb_datapoint(bionet_datapoint_t *datapoint) {
     struct timeval tv_before_write;
@@ -63,6 +54,7 @@ static void cb_datapoint(bionet_datapoint_t *datapoint) {
             (void) dbb_add_event(dbb, DBB_DATAPOINT_EVENT, data, 
                     bionet_bdm_get_id(this_bdm), 
                     bionet_event_get_timestamp(event));
+            num_bionet_events++;
         }
     }
 
@@ -124,6 +116,7 @@ static void cb_lost_node(bionet_node_t *node) {
             (void) dbb_add_event(dbb, DBB_LOST_NODE_EVENT, data, 
                     bionet_bdm_get_id(this_bdm), 
                     bionet_event_get_timestamp(event));
+            num_bionet_events++;
         }
     }
 }
@@ -186,6 +179,7 @@ static void cb_new_node(bionet_node_t *node) {
             (void) dbb_add_event(dbb, DBB_NEW_NODE_EVENT, data, 
                     bionet_bdm_get_id(this_bdm), 
                     bionet_event_get_timestamp(event));
+            num_bionet_events++;
         }
     }
 }
@@ -207,6 +201,7 @@ static void cb_lost_hab(bionet_hab_t *hab) {
             (void) dbb_add_event(dbb, DBB_LOST_HAB_EVENT, data, 
                     bionet_bdm_get_id(this_bdm), 
                     bionet_event_get_timestamp(event));
+            num_bionet_events++;
         }
     }
 
@@ -233,6 +228,7 @@ static void cb_new_hab(bionet_hab_t *hab) {
             (void) dbb_add_event(dbb, DBB_NEW_HAB_EVENT, data, 
                     bionet_bdm_get_id(this_bdm), 
                     bionet_event_get_timestamp(event));
+            num_bionet_events++;
         }
     }
 }

@@ -22,11 +22,11 @@
 #include "bdm-db.h"
 #include "../../util/protected.h"
 
+#include "bdm-stats.h"
+
 #undef _DUMP_SQL
 
 extern const char * bdm_schema_sql;
-
-extern uint32_t num_db_commits;
 
 int db_get_hab_rowid(
         sqlite3* db,

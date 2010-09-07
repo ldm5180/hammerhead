@@ -48,6 +48,7 @@ libbionet_data_manager_la_SOURCES =   \
     handle-sync-datapoints-message.c  \
     handle-sync-metadata-message.c    \
     bdm-list-iterator.c               \
+    bdm-stats.c                       \
     cfg-parser.y                      \
     cfg-lexer.l
 

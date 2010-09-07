@@ -29,6 +29,8 @@
 #include "bdm-list-iterator.h"
 #include "bdm-db.h"
 
+#include "bdm-stats.h"
+
 #define _Min(x,y) ((x)<(y)?(x):(y))
 
 #if ENABLE_ION
@@ -58,6 +60,28 @@ static gboolean sync_check(gpointer data);
 #if ENABLE_ION
 static int write_data_to_ion(const void *buffer, size_t size, void * config_void);
 #endif
+
+static int count_sync_events(BDM_Sync_Metadata_Message_t * msg) {
+
+    int n = 0;
+
+    int bi, hi, ni;
+    for(bi=0; bi<msg->list.count; bi++) {
+        DataManager_t * bdm = msg->list.array[bi]; 
+
+        for(hi=0; hi<bdm->hablist.list.count; hi++) {
+            BDM_HardwareAbstractor_t * hab = bdm->hablist.list.array[hi];
+            n += hab->events.list.count;
+
+            for(ni=0; ni<hab->nodes.list.count; ni++) {
+                BDM_Node_t * node = hab->nodes.list.array[ni];
+                n += node->events.list.count;
+            }
+        }
+    }
+
+    return n;
+}
 
 static int sync_send_metadata(
     sync_sender_config_t * config,
@@ -121,6 +145,8 @@ static int sync_send_metadata(
 	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, sync_message, 
             write_data_to_message, config);
 
+        int num_events = count_sync_events(&sync_message->choice.metadataMessage);
+
         ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
 
 	if (asn_r.encoded == -1) {
@@ -136,6 +162,13 @@ static int sync_send_metadata(
         if ( r == 0 ) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                   "    Sync metadata finished");
+
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                  "Syncd %d metadata events to %s for seqs [%d,%d]",
+                  num_events,
+                  config->sync_recipient,
+                  from_seq, to_seq);
+            num_sync_sent_events += num_events;
         } else {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                   "    Sync metadata FAILED");
@@ -166,6 +199,7 @@ static int count_sync_datapoints(BDM_Sync_Message_t * msg) {
 
     return n;
 }
+
 
 static int sync_send_datapoints(
     sync_sender_config_t * config,
@@ -234,12 +268,14 @@ static int sync_send_datapoints(
             goto cleanup;
 	}
 
+        int num_datapoints = count_sync_datapoints(sync_message);
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
               "Syncd %d datapoints to %s for seqs [%d,%d]",
-              count_sync_datapoints(sync_message),
+              num_datapoints,
               config->sync_recipient,
               from_seq, to_seq);
         ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
+        num_sync_sent_events += num_datapoints;
 
         r = sync_finish_connection(config);
         if( r != 0 ) {

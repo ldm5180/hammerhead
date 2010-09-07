@@ -12,6 +12,8 @@
 #include "bdm-db.h"
 #include "util/protected.h"
 
+#include "bdm-stats.h"
+
 #include "asn_SEQUENCE_OF.h"
 typedef A_SEQUENCE_OF(struct BDM_Event) sequence_of_BDM_Event_t;
 
@@ -43,6 +45,7 @@ static int _dbb_add_asn_event(
             r = -1;
             break;
         }
+        num_sync_recv_events++;
     }
 
     return r;

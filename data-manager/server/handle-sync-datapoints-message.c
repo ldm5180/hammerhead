@@ -11,7 +11,7 @@
 #include "bionet-data-manager.h"
 #include "bdm-db.h"
 
-extern uint32_t num_sync_datapoints;
+#include "bdm-stats.h"
 
 void handle_sync_datapoints_message(BDM_Sync_Datapoints_Message_t *message) {
     int sri;
@@ -174,6 +174,7 @@ void handle_sync_datapoints_message(BDM_Sync_Datapoints_Message_t *message) {
 
                 counter++;
                 num_sync_datapoints++;
+                num_sync_recv_events++;
 	    }
 	}
     }

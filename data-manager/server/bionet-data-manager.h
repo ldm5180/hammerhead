@@ -122,11 +122,6 @@ extern int libbdm_cal_fd;
 extern void bdm_cal_callback(void * cal_handle, const cal_event_t *event);
 extern int libbdm_cal_topic_matches(const char * topic, const char *subscription);
 
-// Global BDM Statistics
-extern uint32_t num_bionet_datapoints;
-extern uint32_t num_sync_datapoints;
-extern uint32_t num_db_commits;
-
 // Call from threads instead of sleep after starting a g_main_loop.
 // Returns if thread should exit
 int bdm_thread_sleep();
