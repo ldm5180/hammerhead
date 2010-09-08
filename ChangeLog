@@ -1,3 +1,11 @@
+Bionet 2.6.0, Future
+
+    * Revamped Data Manager: 
+    Data manager records 'events' now instead of just datapoints
+    
+    * libbdm API changes, applications need to be updated:
+    Specifically, the callback signatures have been modified
+
 Bionet 2.5.2, 2010 August 9
 
     * Updated licensing to contain the open source licenses and agreements.

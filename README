@@ -99,21 +99,8 @@ Known issues:
     messages will fit in the maximum bundle size supported by the trasport
     being used. 
 
-    It is suggested that the transport be configured to support the largest
-    bundle possible, and the following steps are taken to ensure that BDM
-    sync messages are as small as possible. Each sync message includes all
-    the new datapoints since the last sync, so to keep those messages
-    small:
-
-      1 - Set the sync interval often enough so that the number of
-          datapoints in each messages is smaller than the maximum bundle size
-
-      2 - Don't allow a data-manager to accumulate data before the initial
-          sync message is sent. Doing so will cause the first bundle to be 
-          quite large. Either delete the bdm database after modifying the 
-          sync-send configuration, or use a start_time filter to send only 
-          the datapoints that are generated after the configuration was 
-          modified.
+    After calculating the maximum bundle size for the transport(s) in use, 
+    set the 'bunble_mtu' setting in the bdm-sync-sender-config
 
 
   Experimental Software:
