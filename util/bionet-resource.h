@@ -924,6 +924,7 @@ bionet_datapoint_t *bionet_resource_get_datapoint_by_index(const bionet_resource
  * @param[in] resource The resource
  * @param[in] index Index of the datapoint to remove
  *
+ * @note The datapoint (and value) is freed.
  */
 BIONET_UTIL_API_DECL
 void bionet_resource_remove_datapoint_by_index(bionet_resource_t *resource, unsigned int index);

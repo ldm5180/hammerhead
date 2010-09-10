@@ -2451,6 +2451,175 @@ START_TEST (test_libutil_resource_get_datapoint_by_index_4) {
 } END_TEST /* test_libutil_resource_get_datapoint_by_index_4 */
 
 
+START_TEST (test_libutil_resource_remove_datapoint_by_index_0) {
+    bionet_resource_t * resource;
+    char * content;
+    struct timeval tv;
+    bionet_datapoint_t * datapoint;
+    bionet_value_t * value;
+    bionet_datapoint_t * fetched;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&tv, NULL);
+
+    value = bionet_value_new_str(resource, "foo");
+    fail_if(NULL == value, "Failed to create new value.");
+
+    datapoint = bionet_datapoint_new(resource, value, &tv);
+    fail_if(NULL == datapoint, "Failed to create new datapoint.");
+
+    bionet_resource_add_datapoint(resource, datapoint);
+    fail_unless(1 == bionet_resource_get_num_datapoints(resource),
+		"Failed to add datapoint.");
+
+    fetched = BIONET_RESOURCE_GET_DATAPOINT(resource);
+    fail_unless(datapoint == fetched, "Failed to get the added datapoint.");
+
+    fetched = bionet_resource_get_datapoint_by_index(resource, 0);
+    fail_unless(datapoint == fetched, "Failed to get the added datapoint.");
+
+    bionet_resource_remove_datapoint_by_index(resource, 0);
+    fail_unless(0 == bionet_resource_get_num_datapoints(resource),
+		"Failed to remove datapoint.");
+} END_TEST /* test_libutil_resource_remove_datapoint_by_index_0 */
+
+
+START_TEST (test_libutil_resource_remove_datapoint_by_index_1) {
+    bionet_resource_t * resource;
+    char * content;
+    struct timeval tv;
+    bionet_datapoint_t * datapoint;
+    bionet_value_t * value;
+    bionet_datapoint_t * fetched;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&tv, NULL);
+
+    value = bionet_value_new_str(resource, "foo");
+    fail_if(NULL == value, "Failed to create new value.");
+
+    datapoint = bionet_datapoint_new(resource, value, &tv);
+    fail_if(NULL == datapoint, "Failed to create new datapoint.");
+
+    bionet_resource_add_datapoint(resource, datapoint);
+    fail_unless(1 == bionet_resource_get_num_datapoints(resource),
+		"Failed to add datapoint.");
+
+    datapoint = bionet_datapoint_new(resource, value, &tv);
+    fail_if(NULL == datapoint, "Failed to create new datapoint.");
+
+    bionet_resource_add_datapoint(resource, datapoint);
+    fail_unless(2 == bionet_resource_get_num_datapoints(resource),
+		"Failed to add datapoint.");
+
+    bionet_resource_remove_datapoint_by_index(resource, 0);
+    fail_unless(1 == bionet_resource_get_num_datapoints(resource),
+		"Failed to remove datapoint.");
+
+    fetched = bionet_resource_get_datapoint_by_index(resource, 0);
+    fail_unless(datapoint == fetched, "Failed to get the second added datapoint after the first was removed.");
+} END_TEST /* test_libutil_resource_remove_datapoint_by_index_1 */
+
+
+START_TEST (test_libutil_resource_remove_datapoint_by_index_2) {
+    bionet_resource_t * resource;
+    char * content;
+    struct timeval tv;
+    bionet_datapoint_t * datapoint1;
+    bionet_datapoint_t * datapoint2;
+    bionet_value_t * value;
+    bionet_datapoint_t * fetched;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&tv, NULL);
+
+    value = bionet_value_new_str(resource, "foo");
+    fail_if(NULL == value, "Failed to create new value.");
+
+    datapoint1 = bionet_datapoint_new(resource, value, &tv);
+    fail_if(NULL == datapoint1, "Failed to create new datapoint.");
+
+    bionet_resource_add_datapoint(resource, datapoint1);
+    fail_unless(1 == bionet_resource_get_num_datapoints(resource),
+		"Failed to add datapoint.");
+
+    datapoint2 = bionet_datapoint_new(resource, value, &tv);
+    fail_if(NULL == datapoint2, "Failed to create new datapoint.");
+
+    bionet_resource_add_datapoint(resource, datapoint2);
+    fail_unless(2 == bionet_resource_get_num_datapoints(resource),
+		"Failed to add datapoint.");
+
+    bionet_resource_remove_datapoint_by_index(resource, 1);
+    fail_unless(1 == bionet_resource_get_num_datapoints(resource),
+		"Failed to remove datapoint.");
+
+    fetched = bionet_resource_get_datapoint_by_index(resource, 0);
+    fail_unless(datapoint1 == fetched, "Failed to get the first added datapoint after the second was removed.");
+} END_TEST /* test_libutil_resource_remove_datapoint_by_index_2 */
+
+
+START_TEST (test_libutil_resource_remove_datapoint_by_index_3) {
+    bionet_resource_t * resource;
+    char * content;
+    struct timeval tv;
+    bionet_datapoint_t * datapoint;
+    bionet_value_t * value;
+    bionet_datapoint_t * fetched;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    gettimeofday(&tv, NULL);
+
+    value = bionet_value_new_str(resource, "foo");
+    fail_if(NULL == value, "Failed to create new value.");
+
+    datapoint = bionet_datapoint_new(resource, value, &tv);
+    fail_if(NULL == datapoint, "Failed to create new datapoint.");
+
+    bionet_resource_add_datapoint(resource, datapoint);
+    fail_unless(1 == bionet_resource_get_num_datapoints(resource),
+		"Failed to add datapoint.");
+
+    fetched = BIONET_RESOURCE_GET_DATAPOINT(resource);
+    fail_unless(datapoint == fetched, "Failed to get the added datapoint.");
+
+    bionet_resource_remove_datapoint_by_index(resource, 0);
+    fail_unless(0 == bionet_resource_get_num_datapoints(resource),
+		"Failed to remove datapoint.");
+
+    fetched = bionet_resource_get_datapoint_by_index(resource, 0);
+    fail_unless(NULL == fetched, "Where did another datapoint come from?");
+} END_TEST /* test_libutil_resource_remove_datapoint_by_index_3 */
+
+
+START_TEST (test_libutil_resource_remove_datapoint_by_index_4) {
+    bionet_datapoint_t * fetched;
+
+    fetched = bionet_resource_get_datapoint_by_index(NULL, 0);
+    fail_unless(NULL == fetched, "Failed to detect NULL resource.");
+} END_TEST /* test_libutil_resource_remove_datapoint_by_index_4 */
+
+
 void libutil_resource_tests_suite(Suite *s) {
     TCase *tc = tcase_create("Bionet Resource");
     suite_add_tcase(s, tc);
@@ -2694,6 +2863,13 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_get_datapoint_by_index_2);
     tcase_add_test(tc, test_libutil_resource_get_datapoint_by_index_3);
     tcase_add_test(tc, test_libutil_resource_get_datapoint_by_index_4);
+
+    /* bionet_resource_remove_datapoint_by_index() */
+    tcase_add_test(tc, test_libutil_resource_remove_datapoint_by_index_0);
+    tcase_add_test(tc, test_libutil_resource_remove_datapoint_by_index_1);
+    tcase_add_test(tc, test_libutil_resource_remove_datapoint_by_index_2);
+    tcase_add_test(tc, test_libutil_resource_remove_datapoint_by_index_3);
+    tcase_add_test(tc, test_libutil_resource_remove_datapoint_by_index_4);
 
     return;
 } /* libutil_resource_tests_suite */
