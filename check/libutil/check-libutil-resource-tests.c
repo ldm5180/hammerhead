@@ -2682,6 +2682,358 @@ START_TEST (test_libutil_resource_matches_id_4) {
 } END_TEST /* test_libutil_resource_matches_id_4 */
 
 
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_0) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "type", "hab", "node", "resource"),
+		"type.hab.node:resource does not match resource name %s", bionet_resource_get_name(resource));
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_0 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_1) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_habtype_habid_nodeid_resourceid(NULL, "type", "hab", "node", "resource"),
+		"Failed to detect NULL resource.");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_1 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_2) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, NULL, "hab", "node", "resource"),
+		"Failed to detect NULL HAB Type.");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_2 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_3) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "type", NULL, "node", "resource"),
+		"Failed to detect NULL HAB ID.");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_3 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_4) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "type", "hab", NULL, "resource"),
+		"Failed to detect NULL Node ID.");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_4 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_5) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "type", "hab", "node", NULL),
+		"Failed to detect NULL Resource ID.");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_5 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_6) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "*", "*", "*", "*"),
+		"Failed to match with wildcards.");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_6 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_7) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "type", "*", "*", "*"),
+		"Failed to match with wildcards.");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_7 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_8) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "*", "hab", "*", "*"),
+		"Failed to match with wildcards.");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_8 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_9) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "*", "*", "node", "*"),
+		"Failed to match with wildcards.");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_9 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_10) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "*", "*", "*", "resource"),
+		"Failed to match with wildcards.");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_10 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_11) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "wrong", "*", "*", "*"),
+		"Failed to detect wrong HAB Type");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_11 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_12) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "*", "wrong", "*", "*"),
+		"Failed to detect wrong HAB ID");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_12 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_13) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "*", "*", "wrong", "*"),
+		"Failed to detect wrong Node ID");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_13 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_14) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "*", "*", "*", "wrong"),
+		"Failed to detect wrong Resource ID");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_14 */
+
+
+START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_15) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    
+    hab = bionet_hab_new("type", "hab");
+    fail_if(NULL == hab, "Failed to create HAB.");
+
+    node = bionet_node_new(hab, "node");
+    fail_if(NULL == node, "Failed to create Node.");
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_habtype_habid_nodeid_resourceid(resource, "*", "*", "*", "*"),
+		"Failed to detect missing HAB/Node");
+} END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_15 */
+
+
 void libutil_resource_tests_suite(Suite *s) {
     TCase *tc = tcase_create("Bionet Resource");
     suite_add_tcase(s, tc);
@@ -2940,6 +3292,23 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_matches_id_3);
     tcase_add_test(tc, test_libutil_resource_matches_id_4);
 
+    /* bionet_resource_matches_habtype_habid_nodeid_resourceid() */
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_0);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_1);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_2);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_3);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_4);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_5);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_6);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_7);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_8);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_9);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_10);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_11);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_12);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_13);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_14);
+    tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_15);
 
     return;
 } /* libutil_resource_tests_suite */
