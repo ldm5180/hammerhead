@@ -3034,6 +3034,86 @@ START_TEST (test_libutil_resource_matches_habtype_habid_nodeid_resourceid_15) {
 } END_TEST /* test_libutil_resource_matches_habtype_habid_nodeid_resourceid_15 */
 
 
+START_TEST (test_libutil_resource_get_set_user_data_0) {
+    bionet_resource_t * resource;
+    char * data = "mystring";
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    bionet_resource_set_user_data(resource, (void *)data);
+    fail_unless(data == (bionet_hab_t *)bionet_resource_get_user_data(resource),
+		"Failed to get user data which was set.\n");
+} END_TEST /* test_libutil_resource_get_set_user_data_0 */
+
+
+START_TEST (test_libutil_resource_get_set_user_data_1) {
+    bionet_resource_t * resource;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    bionet_resource_set_user_data(resource, NULL);
+    fail_unless(NULL == bionet_resource_get_user_data(resource),
+		"Failed to get user data which was set to NULL.\n");
+} END_TEST /* test_libutil_resource_get_set_user_data_1 */
+
+
+START_TEST (test_libutil_resource_get_set_user_data_2) {
+    bionet_resource_t * resource;
+    char * data = "mystring";
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    bionet_resource_set_user_data(NULL, (void *)data);
+    fail_unless(NULL == bionet_resource_get_user_data(resource),
+		"Failed to get user data which was never.\n");
+} END_TEST /* test_libutil_resource_get_set_user_data_2 */
+
+
+START_TEST (test_libutil_resource_get_set_user_data_3) {
+    bionet_resource_t * resource;
+    char * data = "mystring";
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    bionet_resource_set_user_data(resource, (void *)data);
+    bionet_resource_set_user_data(resource, NULL);
+    fail_unless(NULL == bionet_resource_get_user_data(resource),
+		"Failed to get user data which was unset.\n");
+} END_TEST /* test_libutil_resource_get_set_user_data_3 */
+
+
+START_TEST (test_libutil_resource_get_set_user_data_4) {
+    bionet_resource_t * resource;
+    char * data = "mystring";
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    bionet_resource_set_user_data(NULL, (void *)data);
+    fail_unless(NULL == bionet_resource_get_user_data(NULL),
+		"Failed to detect NULL resource passed into get user data\n");
+} END_TEST /* test_libutil_resource_get_set_user_data_4 */
+
+
 void libutil_resource_tests_suite(Suite *s) {
     TCase *tc = tcase_create("Bionet Resource");
     suite_add_tcase(s, tc);
@@ -3309,6 +3389,13 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_13);
     tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_14);
     tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_15);
+
+    /* bionet_resource_get_set_user_data() */
+    tcase_add_test(tc, test_libutil_resource_get_set_user_data_0);
+    tcase_add_test(tc, test_libutil_resource_get_set_user_data_1);
+    tcase_add_test(tc, test_libutil_resource_get_set_user_data_2);
+    tcase_add_test(tc, test_libutil_resource_get_set_user_data_3);
+    tcase_add_test(tc, test_libutil_resource_get_set_user_data_4);
 
     return;
 } /* libutil_resource_tests_suite */
