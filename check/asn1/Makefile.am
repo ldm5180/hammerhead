@@ -15,7 +15,7 @@ nodist_check_asn1_SOURCES = \
 	check-asn1.c \
 	check-asn1-coding.c
 
-check_asn1_CFLAGS = $(AM_CFLAGS) $(CHECK_CFLAGS) -I.. $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1)  $(GLIB_CFLAGS) -fno-strict-aliasing
+check_asn1_CFLAGS = $(CHECK_CFLAGS) -I.. $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1)  $(GLIB_CFLAGS) -fno-strict-aliasing
 
 check_asn1_LDFLAGS = $(AM_LDFLAGS) $(CHECK_LIBS) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1)  $(GLIB_LIBS)
 
