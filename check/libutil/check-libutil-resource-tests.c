@@ -2620,6 +2620,68 @@ START_TEST (test_libutil_resource_remove_datapoint_by_index_4) {
 } END_TEST /* test_libutil_resource_remove_datapoint_by_index_4 */
 
 
+START_TEST (test_libutil_resource_matches_id_0) {
+    bionet_resource_t * resource;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_matches_id(resource, "resource"),
+		"'resource' does not match resource ID %s", bionet_resource_get_id(resource));
+} END_TEST /* test_libutil_resource_matches_id_0 */
+
+
+START_TEST (test_libutil_resource_matches_id_1) {
+    bionet_resource_t * resource;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_unless(bionet_resource_matches_id(resource, "*"),
+		"'*' does not match resource ID %s", bionet_resource_get_id(resource));
+} END_TEST /* test_libutil_resource_matches_id_1 */
+
+
+START_TEST (test_libutil_resource_matches_id_2) {
+    bionet_resource_t * resource;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_id(resource, NULL),
+	    "Failed to detect NULL ID passed in.");
+} END_TEST /* test_libutil_resource_matches_id_2 */
+
+
+START_TEST (test_libutil_resource_matches_id_3) {
+    fail_if(bionet_resource_matches_id(NULL, "resource"),
+	    "Failed to detect NULL resource passed in.");
+} END_TEST /* test_libutil_resource_matches_id_3 */
+
+
+START_TEST (test_libutil_resource_matches_id_4) {
+    bionet_resource_t * resource;
+    
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_STRING, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resourcenot");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_matches_id(resource, "resource"),
+	    "'resource' does not match resource ID %s", bionet_resource_get_id(resource));
+} END_TEST /* test_libutil_resource_matches_id_4 */
+
+
 void libutil_resource_tests_suite(Suite *s) {
     TCase *tc = tcase_create("Bionet Resource");
     suite_add_tcase(s, tc);
@@ -2870,6 +2932,14 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_remove_datapoint_by_index_2);
     tcase_add_test(tc, test_libutil_resource_remove_datapoint_by_index_3);
     tcase_add_test(tc, test_libutil_resource_remove_datapoint_by_index_4);
+
+    /* bionet_resource_matches_id() */
+    tcase_add_test(tc, test_libutil_resource_matches_id_0);
+    tcase_add_test(tc, test_libutil_resource_matches_id_1);
+    tcase_add_test(tc, test_libutil_resource_matches_id_2);
+    tcase_add_test(tc, test_libutil_resource_matches_id_3);
+    tcase_add_test(tc, test_libutil_resource_matches_id_4);
+
 
     return;
 } /* libutil_resource_tests_suite */
