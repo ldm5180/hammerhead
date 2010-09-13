@@ -215,10 +215,12 @@ void MainWindow::openDefaultPlotPreferences() {
     if ( defaultPreferences == NULL ) {
         defaultPreferences = new PlotPreferences(scaleInfoTemplate, QString("All"), this);
 
-        connect(defaultPreferences, SIGNAL(newScaleInfo(ScaleInfo*)), 
-            bdmTab, SLOT(updateScaleInfo(ScaleInfo*)));
-        connect(defaultPreferences, SIGNAL(newScaleInfo(ScaleInfo*)), 
-            liveTab, SLOT(updateScaleInfo(ScaleInfo*)));
+        if (bdmEnabled)
+            connect(defaultPreferences, SIGNAL(newScaleInfo(ScaleInfo*)), 
+                bdmTab, SLOT(updateScaleInfo(ScaleInfo*)));
+        if (bionetEnabled)
+            connect(defaultPreferences, SIGNAL(newScaleInfo(ScaleInfo*)), 
+                liveTab, SLOT(updateScaleInfo(ScaleInfo*)));
 
         defaultPreferences->show();
     } 
