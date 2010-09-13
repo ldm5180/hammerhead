@@ -15,7 +15,7 @@ def cb_new_bdm(bdm, user_data):
     None
 
 
-def cb_lost_hab(hab):
+def cb_lost_hab(hab, user_data):
     for i in range(0, bionet_hab_num_nodes(hab)):
         node = bionet_hab_get_node_by_index(hab, i)
         for j in range(0, bionet_node_get_num_resources(node)):
@@ -24,11 +24,11 @@ def cb_lost_hab(hab):
     print("lost hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab))
 
 
-def cb_new_hab(hab):
+def cb_new_hab(hab, user_data):
     print("new hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab))
 
 
-def cb_new_node(node):
+def cb_new_node(node, user_data):
     hab = bionet_node_get_hab(node)
 	
     print("new node: " + bionet_node_get_name(node))
@@ -56,7 +56,7 @@ def cb_new_node(node):
             print("        " + bionet_stream_get_id(stream) + " " + bionet_stream_get_type(stream) + " " + bionet_stream_direction_to_string(bionet_stream_get_direction(stream)))
 
 
-def cb_lost_node(node):
+def cb_lost_node(node, userdata):
     hab = bionet_node_get_hab(node)
     for j in range(0, bionet_node_get_num_resources(node)):
         resource = bionet_node_get_resource_by_index(node, j)
@@ -64,7 +64,7 @@ def cb_lost_node(node):
     print("lost node: " + bionet_node_get_name(node))
 
 
-def cb_datapoint(datapoint):
+def cb_datapoint(datapoint, userdata):
     value = bionet_datapoint_get_value(datapoint);
     resource = bionet_value_get_resource(value);
     node = bionet_resource_get_node(resource);
