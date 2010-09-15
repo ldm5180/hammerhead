@@ -12,6 +12,7 @@ check_PROGRAMS = check-cal
 
 nodist_check_cal_SOURCES = \
 	../check-common.c \
+	check-cal-event.c \
 	check-itc.c \
 	check-cal.c
 

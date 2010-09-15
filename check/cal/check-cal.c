@@ -12,6 +12,7 @@
 
 #include "check-common.h"
 #include "check-cal.h"
+#include "check-cal-event.h"
 
 int main(int argc, char * argv[])
 {
@@ -20,6 +21,7 @@ int main(int argc, char * argv[])
     suite_t func_unit_test_suite[] = 
         {
             { "Bionet CAL Tests", &bionet_cal_test_suite },
+            { "Bionet CAL Event Tests", &cal_event_test_suite },
         };
 
     /* run all the integration test suites */
