@@ -17,7 +17,7 @@ cal_event_t *cal_event_new(cal_event_type_t type) {
 
     event = (cal_event_t *)calloc(1, sizeof(cal_event_t));
     if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "cal_event_new(): out of memory");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "cal_event_new(): out of memory");
         return NULL;
     }
 

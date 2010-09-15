@@ -64,7 +64,7 @@ int cal_event_is_valid(const cal_event_t *event) {
         case CAL_EVENT_SUBSCRIBE: {
             if (!cal_peer_name_is_valid(event->peer_name)) return 0;
             if (!cal_topic_is_valid(event->topic)) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "cal_event_is_valid(): subscribe event with NULL topic");
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "cal_event_is_valid(): subscribe event with NULL topic");
                 return 0;
             }
             if (event->msg.buffer != NULL) return 0;
@@ -75,7 +75,7 @@ int cal_event_is_valid(const cal_event_t *event) {
         case CAL_EVENT_UNSUBSCRIBE: {
             if (!cal_peer_name_is_valid(event->peer_name)) return 0;
             if (!cal_topic_is_valid(event->topic)) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "cal_event_is_valid(): unsubscribe event with NULL topic");
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "cal_event_is_valid(): unsubscribe event with NULL topic");
                 return 0;
             }
             if (event->msg.buffer != NULL) return 0;
