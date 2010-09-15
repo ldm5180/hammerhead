@@ -110,7 +110,7 @@ START_TEST (test_cal_event_is_valid_Unsubscribe_with_peer_but_no_topic) {
 
 
 
-START_TEST (test_cal_event_is_valid_Publish_with_no_peer_and_invalid_topic) {
+START_TEST (test_cal_event_is_valid_Publish_with_no_peer_and_no_topic) {
     cal_event_t *e;
     int r;
 
@@ -119,6 +119,24 @@ START_TEST (test_cal_event_is_valid_Publish_with_no_peer_and_invalid_topic) {
 
     r = cal_event_is_valid(e);
     fail_if(r != 0, "oh no, a Publish event with NULL peer and with an invalid topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Publish_with_peer_but_invalid_topic) {
+    cal_event_t *e;
+    int r;
+    char invalid_topic[] = { 'H', 'i', 0xff, 0x01 };
+
+    e = cal_event_new(CAL_EVENT_PUBLISH);
+    fail_if(e == NULL, "failed to create a Publish event");
+
+    e->peer_name = "dummy-peer";
+    e->topic = invalid_topic;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Publish event with a peer but invalid topic was accepted as valid");
 } END_TEST
 
 
@@ -140,7 +158,8 @@ void cal_event_test_suite(Suite *s)
     tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_without_peer);
     tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_with_peer_but_no_topic);
 
-    tcase_add_test(tc, test_cal_event_is_valid_Publish_with_no_peer_and_invalid_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Publish_with_no_peer_and_no_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Publish_with_peer_but_invalid_topic);
 
     return;
 } 
