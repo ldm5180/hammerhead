@@ -36,6 +36,13 @@ START_TEST (test_cal_event_free_empty) {
 
 
 
+START_TEST (test_cal_event_is_valid_NULL) {
+    cal_event_is_valid(NULL);
+} END_TEST
+
+
+
+
 START_TEST (test_cal_event_is_valid_None) {
     cal_event_t *e;
     int r;
@@ -45,6 +52,335 @@ START_TEST (test_cal_event_is_valid_None) {
 
     r = cal_event_is_valid(e);
     fail_if(r != 0, "oh no, a None event was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Join_without_peer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_JOIN);
+    fail_if(e == NULL, "failed to create a Join event");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Join event without a peer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Join_with_peer_and_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_JOIN);
+    fail_if(e == NULL, "failed to create a Join event");
+
+    e->peer_name = "dummy-peer";
+    e->topic = "dummy-topic";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Join event with a topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Join_with_peer_and_msg_buffer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_JOIN);
+    fail_if(e == NULL, "failed to create a Join event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.buffer = strdup("dummy-topic");
+    e->msg.size = 0;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Join event with a msg.buffer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Join_with_peer_and_nonzero_msg_size) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_JOIN);
+    fail_if(e == NULL, "failed to create a Join event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.size = 999;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Join event with a non-zero msg.size was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Leave_without_peer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_LEAVE);
+    fail_if(e == NULL, "failed to create a Leave event");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Leave event without a peer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Leave_with_peer_and_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_LEAVE);
+    fail_if(e == NULL, "failed to create a Leave event");
+
+    e->peer_name = "dummy-peer";
+    e->topic = "dummy-topic";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Leave event with a topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Leave_with_peer_and_msg_buffer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_LEAVE);
+    fail_if(e == NULL, "failed to create a Leave event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.buffer = strdup("dummy-topic");
+    e->msg.size = 0;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Leave event with a msg.buffer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Leave_with_peer_and_nonzero_msg_size) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_LEAVE);
+    fail_if(e == NULL, "failed to create a Leave event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.size = 999;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Leave event with a non-zero msg.size was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Connect_without_peer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_CONNECT);
+    fail_if(e == NULL, "failed to create a Connect event");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Connect event without a peer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Connect_with_peer_and_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_CONNECT);
+    fail_if(e == NULL, "failed to create a Connect event");
+
+    e->peer_name = "dummy-peer";
+    e->topic = "dummy-topic";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Connect event with a topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Connect_with_peer_and_msg_buffer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_CONNECT);
+    fail_if(e == NULL, "failed to create a Connect event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.buffer = strdup("dummy-topic");
+    e->msg.size = 0;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Connect event with a msg.buffer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Connect_with_peer_and_nonzero_msg_size) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_CONNECT);
+    fail_if(e == NULL, "failed to create a Connect event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.size = 999;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Connect event with a non-zero msg.size was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Disconnect_without_peer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_DISCONNECT);
+    fail_if(e == NULL, "failed to create a Disconnect event");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Disconnect event without a peer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Disconnect_with_peer_and_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_DISCONNECT);
+    fail_if(e == NULL, "failed to create a Disconnect event");
+
+    e->peer_name = "dummy-peer";
+    e->topic = "dummy-topic";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Disconnect event with a topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Disconnect_with_peer_and_msg_buffer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_DISCONNECT);
+    fail_if(e == NULL, "failed to create a Disconnect event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.buffer = strdup("dummy-topic");
+    e->msg.size = 0;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Disconnect event with a msg.buffer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Disconnect_with_peer_and_nonzero_msg_size) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_DISCONNECT);
+    fail_if(e == NULL, "failed to create a Disconnect event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.size = 999;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Disconnect event with a non-zero msg.size was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Message_without_peer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_MESSAGE);
+    fail_if(e == NULL, "failed to create a Message event");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Message event without a peer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Message_with_peer_and_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_MESSAGE);
+    fail_if(e == NULL, "failed to create a Message event");
+
+    e->peer_name = "dummy-peer";
+    e->topic = "dummy-topic";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Message event with a topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Message_with_peer_and_NULL_msg_buffer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_MESSAGE);
+    fail_if(e == NULL, "failed to create a Message event");
+
+    e->peer_name = "dummy-peer";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Message event with a NULL msg.buffer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Message_with_peer_and_zero_msg_size) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_MESSAGE);
+    fail_if(e == NULL, "failed to create a Message event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.buffer = strdup("dummy message");
+    e->msg.size = 0;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Message event with a zero msg.size was accepted as valid");
 } END_TEST
 
 
@@ -80,6 +416,40 @@ START_TEST (test_cal_event_is_valid_Subscribe_with_peer_but_no_topic) {
 
 
 
+START_TEST (test_cal_event_is_valid_Subscribe_with_peer_and_msg_buffer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_SUBSCRIBE);
+    fail_if(e == NULL, "failed to create a Subscribe event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.buffer = strdup("dummy-msg");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Subscribe event with a peer and a non-Null msg.buffer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Subscribe_with_peer_and_nonzero_msg_size) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_SUBSCRIBE);
+    fail_if(e == NULL, "failed to create a Subscribe event");
+
+    e->peer_name = "dummy-peer";
+    e->msg.size = 12345;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Subscribe event with a peer and a non-zero msg.size was accepted as valid");
+} END_TEST
+
+
+
+
 START_TEST (test_cal_event_is_valid_Unsubscribe_without_peer) {
     cal_event_t *e;
     int r;
@@ -105,6 +475,44 @@ START_TEST (test_cal_event_is_valid_Unsubscribe_with_peer_but_no_topic) {
 
     r = cal_event_is_valid(e);
     fail_if(r != 0, "oh no, an Unsubscribe event with a peer but no topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Unsubscribe_with_peer_and_topic_and_msg_buffer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_UNSUBSCRIBE);
+    fail_if(e == NULL, "failed to create an Unsubscribe event");
+
+    e->peer_name = "dummy-peer";
+    e->topic = "dummy-topic";
+
+    e->msg.buffer = strdup("dummy-message");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Unsubscribe event with a peer and topic and msg.buffer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Unsubscribe_with_peer_and_topic_and_nonzero_msg_size) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_UNSUBSCRIBE);
+    fail_if(e == NULL, "failed to create an Unsubscribe event");
+
+    e->peer_name = "dummy-peer";
+    e->topic = "dummy-topic";
+
+    e->msg.size = 4544;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Unsubscribe event with a peer and topic and nonzero msg.size was accepted as valid");
 } END_TEST
 
 
@@ -142,6 +550,59 @@ START_TEST (test_cal_event_is_valid_Publish_with_peer_but_invalid_topic) {
 
 
 
+START_TEST (test_cal_event_is_valid_Publish_with_invalid_non_NULL_peer) {
+    cal_event_t *e;
+    int r;
+    char invalid_peer[] = { 'H', 'i', 0x0a };
+
+    e = cal_event_new(CAL_EVENT_PUBLISH);
+    fail_if(e == NULL, "failed to create a Publish event");
+
+    e->peer_name = invalid_peer;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Publish event with a non-NULL but invalid peer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_msg_buffer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_PUBLISH);
+    fail_if(e == NULL, "failed to create a Publish event");
+
+    e->topic = strdup("dummy topic");
+
+    e->msg.buffer = "blabber";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Publish event with a NULL peer and valid topic but non-NULL msg.buffer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_nonzero_msg_size) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_PUBLISH);
+    fail_if(e == NULL, "failed to create a Publish event");
+
+    e->topic = strdup("dummy topic");
+
+    e->msg.size = 91823;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Publish event with a NULL peer and valid topic but non-zero msg.size was accepted as valid");
+} END_TEST
+
+
+
+
 void cal_event_test_suite(Suite *s)
 {
     TCase *tc = tcase_create("cal event test suite");
@@ -150,16 +611,49 @@ void cal_event_test_suite(Suite *s)
     tcase_add_test(tc, test_cal_event_free_NULL);
     tcase_add_test(tc, test_cal_event_free_empty);
 
+    tcase_add_test(tc, test_cal_event_is_valid_NULL);
+
     tcase_add_test(tc, test_cal_event_is_valid_None);
+
+    tcase_add_test(tc, test_cal_event_is_valid_Join_without_peer);
+    tcase_add_test(tc, test_cal_event_is_valid_Join_with_peer_and_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Join_with_peer_and_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Join_with_peer_and_nonzero_msg_size);
+
+    tcase_add_test(tc, test_cal_event_is_valid_Leave_without_peer);
+    tcase_add_test(tc, test_cal_event_is_valid_Leave_with_peer_and_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Leave_with_peer_and_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Leave_with_peer_and_nonzero_msg_size);
+
+    tcase_add_test(tc, test_cal_event_is_valid_Connect_without_peer);
+    tcase_add_test(tc, test_cal_event_is_valid_Connect_with_peer_and_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Connect_with_peer_and_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Connect_with_peer_and_nonzero_msg_size);
+
+    tcase_add_test(tc, test_cal_event_is_valid_Disconnect_without_peer);
+    tcase_add_test(tc, test_cal_event_is_valid_Disconnect_with_peer_and_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Disconnect_with_peer_and_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Disconnect_with_peer_and_nonzero_msg_size);
+
+    tcase_add_test(tc, test_cal_event_is_valid_Message_without_peer);
+    tcase_add_test(tc, test_cal_event_is_valid_Message_with_peer_and_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Message_with_peer_and_NULL_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Message_with_peer_and_zero_msg_size);
 
     tcase_add_test(tc, test_cal_event_is_valid_Subscribe_without_peer);
     tcase_add_test(tc, test_cal_event_is_valid_Subscribe_with_peer_but_no_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Subscribe_with_peer_and_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Subscribe_with_peer_and_nonzero_msg_size);
 
     tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_without_peer);
     tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_with_peer_but_no_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_with_peer_and_topic_and_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_with_peer_and_topic_and_nonzero_msg_size);
 
     tcase_add_test(tc, test_cal_event_is_valid_Publish_with_no_peer_and_no_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Publish_with_invalid_non_NULL_peer);
     tcase_add_test(tc, test_cal_event_is_valid_Publish_with_peer_but_invalid_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_msg_buffer);
 
     return;
 } 
