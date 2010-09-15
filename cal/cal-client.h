@@ -89,12 +89,14 @@ typedef struct {
     //!     is also the default if NULL is passed in for peer_matches.
     //!     peer_matches must be reentrant.
     //!
-    //! \return On success, returns a non-blocking file descriptor which
-    //!     should be monitored by the caller.  When the fd is readable,
-    //!     or if the caller wants to poll it, the caller should call the
-    //!     .read() function.  The caller must never read or write the
-    //!     returned file descriptor directly.
-    //!     On failure, returns -1.
+    //! \return On success, returns an opaque pointer to a CAL Client
+    //!     context.  You can call the .get_fd() function to get a non-
+    //!     blocking file descriptor from this context which should be
+    //!     monitored by the caller.  When the fd is readable, or if the
+    //!     caller wants to poll it, the caller should call the .read()
+    //!     function.  The caller must never read or write the returned
+    //!     file descriptor directly.
+    //!     On failure, returns NULL.
     //!
 
     void * (*init)(
