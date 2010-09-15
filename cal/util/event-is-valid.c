@@ -14,7 +14,9 @@
 
 
 int cal_event_is_valid(const cal_event_t *event) {
-    if (event == NULL) return 0;
+    if (event == NULL) {
+        return 0;
+    }
 
     switch (event->type) {
         case CAL_EVENT_NONE: {
@@ -22,64 +24,116 @@ int cal_event_is_valid(const cal_event_t *event) {
         }
 
         case CAL_EVENT_JOIN: {
-            if (!cal_peer_name_is_valid(event->peer_name)) return 0;
-            if (event->topic != NULL) return 0;
-            if (event->msg.buffer != NULL) return 0;
-            if (event->msg.size != 0) return 0;
+            if (!cal_peer_name_is_valid(event->peer_name)) {
+                return 0;
+            }
+            if (event->topic != NULL) {
+                return 0;
+            }
+            if (event->msg.buffer != NULL) {
+                return 0;
+            }
+            if (event->msg.size != 0) {
+                return 0;
+            }
             return 1;
         }
 
         case CAL_EVENT_LEAVE: {
-            if (!cal_peer_name_is_valid(event->peer_name)) return 0;
-            if (event->topic != NULL) return 0;
-            if (event->msg.buffer != NULL) return 0;
-            if (event->msg.size != 0) return 0;
+            if (!cal_peer_name_is_valid(event->peer_name)) {
+                return 0;
+            }
+            if (event->topic != NULL) {
+                return 0;
+            }
+            if (event->msg.buffer != NULL) {
+                return 0;
+            }
+            if (event->msg.size != 0) {
+                return 0;
+            }
             return 1;
         }
 
         case CAL_EVENT_CONNECT: {
-            if (!cal_peer_name_is_valid(event->peer_name)) return 0;
-            if (event->topic != NULL) return 0;
-            if (event->msg.buffer != NULL) return 0;
-            if (event->msg.size != 0) return 0;
+            if (!cal_peer_name_is_valid(event->peer_name)) {
+                return 0;
+            }
+            if (event->topic != NULL) {
+                return 0;
+            }
+            if (event->msg.buffer != NULL) {
+                return 0;
+            }
+            if (event->msg.size != 0) {
+                return 0;
+            }
             return 1;
         }
 
         case CAL_EVENT_DISCONNECT: {
-            if (!cal_peer_name_is_valid(event->peer_name)) return 0;
-            if (event->topic != NULL) return 0;
-            if (event->msg.buffer != NULL) return 0;
-            if (event->msg.size != 0) return 0;
+            if (!cal_peer_name_is_valid(event->peer_name)) {
+                return 0;
+            }
+            if (event->topic != NULL) {
+                return 0;
+            }
+            if (event->msg.buffer != NULL) {
+                return 0;
+            }
+            if (event->msg.size != 0) {
+                return 0;
+            }
             return 1;
         }
 
         case CAL_EVENT_MESSAGE: {
-            if (!cal_peer_name_is_valid(event->peer_name)) return 0;
-            if (event->topic != NULL) return 0;
-            if (event->msg.buffer == NULL) return 0;
-            if (event->msg.size == 0) return 0;
+            if (!cal_peer_name_is_valid(event->peer_name)) {
+                return 0;
+            }
+            if (event->topic != NULL) {
+                return 0;
+            }
+            if (event->msg.buffer == NULL) {
+                return 0;
+            }
+            if (event->msg.size == 0) {
+                return 0;
+            }
             return 1;
         }
 
         case CAL_EVENT_SUBSCRIBE: {
-            if (!cal_peer_name_is_valid(event->peer_name)) return 0;
+            if (!cal_peer_name_is_valid(event->peer_name)) {
+                return 0;
+            }
             if (!cal_topic_is_valid(event->topic)) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "cal_event_is_valid(): subscribe event with NULL topic");
                 return 0;
             }
-            if (event->msg.buffer != NULL) return 0;
-            if (event->msg.size != 0) return 0;
+            if (event->msg.buffer != NULL) {
+                return 0;
+            }
+            if (event->msg.size != 0) {
+                return 0;
+            }
             return 1;
         }
 
         case CAL_EVENT_UNSUBSCRIBE: {
-            if (!cal_peer_name_is_valid(event->peer_name)) return 0;
+            if (!cal_peer_name_is_valid(event->peer_name)) {
+                return 0;
+            }
             if (!cal_topic_is_valid(event->topic)) {
                 g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "cal_event_is_valid(): unsubscribe event with NULL topic");
                 return 0;
             }
-            if (event->msg.buffer != NULL) return 0;
-            if (event->msg.size != 0) return 0;
+            if (event->msg.buffer != NULL) {
+                return 0;
+            }
+            if (event->msg.size != 0) {
+                return 0;
+            }
             return 1;
         }
 
@@ -90,30 +144,52 @@ int cal_event_is_valid(const cal_event_t *event) {
                     return 0;
                 }
             } else {
-                if (!cal_peer_name_is_valid(event->peer_name)) return 0;
+                if (!cal_peer_name_is_valid(event->peer_name)) {
+                    return 0;
+                }
                 if ((event->topic != NULL) && !cal_topic_is_valid(event->topic)) {
                     g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "cal_event_is_valid(): publish event with peer has invalid topic");
                     return 0;
                 }
             }
-            if (event->msg.buffer == NULL) return 0;
-            if (event->msg.size == 0) return 0;
+            if (event->msg.buffer == NULL) {
+                return 0;
+            }
+            if (event->msg.size == 0) {
+                return 0;
+            }
             return 1;
         }
 
         case CAL_EVENT_INIT: {
-            if (event->peer_name != NULL) return 0;
-            if (event->topic != NULL) return 0;
-            if (event->msg.buffer != NULL) return 0;
-            if (event->msg.size != 0) return 0;
+            if (event->peer_name != NULL) {
+                return 0;
+            }
+            if (event->topic != NULL) {
+                return 0;
+            }
+            if (event->msg.buffer != NULL) {
+                return 0;
+            }
+            if (event->msg.size != 0) {
+                return 0;
+            }
             return 1;
         }
 
         case CAL_EVENT_SHUTDOWN: {
-            if (event->peer_name != NULL) return 0;
-            if (event->topic != NULL) return 0;
-            if (event->msg.buffer != NULL) return 0;
-            if (event->msg.size != 0) return 0;
+            if (event->peer_name != NULL) {
+                return 0;
+            }
+            if (event->topic != NULL) {
+                return 0;
+            }
+            if (event->msg.buffer != NULL) {
+                return 0;
+            }
+            if (event->msg.size != 0) {
+                return 0;
+            }
             return 1;
         }
 
