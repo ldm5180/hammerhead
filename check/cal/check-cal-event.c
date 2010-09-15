@@ -50,7 +50,7 @@ START_TEST (test_cal_event_is_valid_None) {
 
 
 
-START_TEST (test_cal_event_is_valid_Subscribe_without_topic) {
+START_TEST (test_cal_event_is_valid_Subscribe_without_peer) {
     cal_event_t *e;
     int r;
 
@@ -58,13 +58,29 @@ START_TEST (test_cal_event_is_valid_Subscribe_without_topic) {
     fail_if(e == NULL, "failed to create a Subscribe event");
 
     r = cal_event_is_valid(e);
-    fail_if(r != 0, "oh no, a Subscribe event without a topic was accepted as valid");
+    fail_if(r != 0, "oh no, a Subscribe event without a peer was accepted as valid");
 } END_TEST
 
 
 
 
-START_TEST (test_cal_event_is_valid_Unsubscribe_without_topic) {
+START_TEST (test_cal_event_is_valid_Subscribe_with_peer_but_no_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_SUBSCRIBE);
+    fail_if(e == NULL, "failed to create a Subscribe event");
+
+    e->peer_name = "dummy-peer";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Subscribe event with a peer but without a topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Unsubscribe_without_peer) {
     cal_event_t *e;
     int r;
 
@@ -72,7 +88,23 @@ START_TEST (test_cal_event_is_valid_Unsubscribe_without_topic) {
     fail_if(e == NULL, "failed to create an Unsubscribe event");
 
     r = cal_event_is_valid(e);
-    fail_if(r != 0, "oh no, an Unsubscribe event without a topic was accepted as valid");
+    fail_if(r != 0, "oh no, an Unsubscribe event without a peer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Unsubscribe_with_peer_but_no_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_UNSUBSCRIBE);
+    fail_if(e == NULL, "failed to create an Unsubscribe event");
+
+    e->peer_name = "dummy-peer";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Unsubscribe event with a peer but no topic was accepted as valid");
 } END_TEST
 
 
@@ -101,8 +133,13 @@ void cal_event_test_suite(Suite *s)
     tcase_add_test(tc, test_cal_event_free_empty);
 
     tcase_add_test(tc, test_cal_event_is_valid_None);
-    tcase_add_test(tc, test_cal_event_is_valid_Subscribe_without_topic);
-    tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_without_topic);
+
+    tcase_add_test(tc, test_cal_event_is_valid_Subscribe_without_peer);
+    tcase_add_test(tc, test_cal_event_is_valid_Subscribe_with_peer_but_no_topic);
+
+    tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_without_peer);
+    tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_with_peer_but_no_topic);
+
     tcase_add_test(tc, test_cal_event_is_valid_Publish_with_no_peer_and_invalid_topic);
 
     return;
