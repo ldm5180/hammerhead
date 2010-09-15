@@ -86,13 +86,13 @@ int cal_event_is_valid(const cal_event_t *event) {
         case CAL_EVENT_PUBLISH: {
             if (event->peer_name == NULL) {
                 if (!cal_topic_is_valid(event->topic)) {
-                    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "cal_event_is_valid(): publish event with NULL peer and invalid topic");
+                    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "cal_event_is_valid(): publish event with NULL peer and invalid topic");
                     return 0;
                 }
             } else {
                 if (!cal_peer_name_is_valid(event->peer_name)) return 0;
                 if ((event->topic != NULL) && !cal_topic_is_valid(event->topic)) {
-                    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "cal_event_is_valid(): publish event with peer has invalid topic");
+                    g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "cal_event_is_valid(): publish event with peer has invalid topic");
                     return 0;
                 }
             }
@@ -118,7 +118,7 @@ int cal_event_is_valid(const cal_event_t *event) {
         }
 
         default: {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "cal_event_is_valid(): unknown event type %d passed in", event->type);
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "cal_event_is_valid(): unknown event type %d passed in", event->type);
             return 0;
         }
     }
