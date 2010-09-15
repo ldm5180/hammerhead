@@ -167,9 +167,15 @@ void cal_client_mdnssd_bip_shutdown(void * cal) {
 int cal_client_mdnssd_bip_subscribe(void * cal_handle,
 				    const char *peer_name, 
 				    const char *topic) {
-    cal_client_mdnssd_bip_t * this = (cal_client_mdnssd_bip_t *)cal_handle;
+    cal_client_mdnssd_bip_t * this;
     int r;
     cal_event_t *event;
+
+    if (cal_handle == NULL) {
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: NULL CAL context passed in!");
+        return 0;
+    }
+    this = (cal_client_mdnssd_bip_t *)cal_handle;
 
     if (this->client_thread == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "subscribe: called before init()!");

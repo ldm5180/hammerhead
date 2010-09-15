@@ -10,6 +10,7 @@
 
 #include <check.h>
 
+#include "cal-client.h"
 #include "cal-event.h"
 
 #include "check-common.h"
@@ -67,9 +68,21 @@ START_TEST (test_itc_pipe) {
     r = bip_msg_queue_close(&q, BIP_MSG_QUEUE_TO_USER);
     fail_unless(r == 0, "bip_msg_queue_close() returned %d", r);
 
+} END_TEST /* test_itc_pipe */
 
+
+
+
+START_TEST (test_uninitialized_subscribe) {
+
+    int r;
+
+    r = cal_client.subscribe(NULL, "peer-name", "topic");
+    fail_unless(r == 0, "oh no, cal_client.subscribe with a NULL CAL context succeeded!");
 
 } END_TEST /* test_itc_pipe */
+
+
 
 
 void bionet_cal_test_suite(Suite *s)
@@ -78,6 +91,7 @@ void bionet_cal_test_suite(Suite *s)
     suite_add_tcase(s, tc);
 
     tcase_add_test(tc, test_itc_pipe);
+    tcase_add_test(tc, test_uninitialized_subscribe);
 
     return;
 } 
