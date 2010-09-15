@@ -866,6 +866,34 @@ int bionet_resource_get_str(bionet_resource_t *resource,
 
 
 /**
+ * @brief Render the timestamp of one of a Resource's Datapoints as a string.
+ *
+ * @param[in] resource The Resource to look at.
+ * @param[in] datapoint_index The index of the datapoint to look at.
+ *
+ * @retval Returns a pointer to a freshly allocated string containing the
+ *         timestamp of the specified datapoint, or NULL on failure.  The
+ *         returned memory becomes the responsibility of the caller.
+ *
+ */
+char *bionet_resource_timestamp_to_string(const bionet_resource_t *resource, int datapoint_index);
+
+
+/**
+ * @brief Render the value of one of a Resource's Datapoints as a string.
+ *
+ * @param[in] resource The Resource to look at.
+ * @param[in] datapoint_index The index of the datapoint to look at.
+ *
+ * @retval Returns a pointer to a freshly allocated string containing the
+ *         value of the specified datapoint, or NULL on failure.  The
+ *         returned memory becomes the responsibility of the caller.
+ *
+ */
+char *bionet_resource_value_to_string(const bionet_resource_t *resource, int datapoint_index);
+
+
+/**
  * @brief Add a datapoint to a resource
  *
  * @param[in] resource The resource to which the datapoint is added

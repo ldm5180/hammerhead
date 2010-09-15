@@ -77,6 +77,7 @@ libbionet_util_la_SOURCES =    \
     node-new.c                 \
     node-sort-resource.c       \
     node-user-data.c           \
+    resource-to-string.c       \
     resource-data-type.c       \
     resource-datapoint.c       \
     resource-destructor.c      \
