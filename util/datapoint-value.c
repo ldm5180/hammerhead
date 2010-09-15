@@ -46,7 +46,7 @@ void bionet_datapoint_set_value(bionet_datapoint_t *datapoint, bionet_value_t *v
 }
 
 
-bionet_value_t * bionet_datapoint_get_value(bionet_datapoint_t *datapoint)
+bionet_value_t * bionet_datapoint_get_value(const bionet_datapoint_t *datapoint)
 {
     if (NULL == datapoint)
     {
