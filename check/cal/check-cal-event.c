@@ -36,6 +36,62 @@ START_TEST (test_cal_event_free_empty) {
 
 
 
+START_TEST (test_cal_event_is_valid_None) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_NONE);
+    fail_if(e == NULL, "failed to create a None event");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a None event was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Subscribe_without_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_SUBSCRIBE);
+    fail_if(e == NULL, "failed to create a Subscribe event");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Subscribe event without a topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Unsubscribe_without_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_UNSUBSCRIBE);
+    fail_if(e == NULL, "failed to create an Unsubscribe event");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Unsubscribe event without a topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Publish_with_no_peer_and_invalid_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_PUBLISH);
+    fail_if(e == NULL, "failed to create a Publish event");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, a Publish event with NULL peer and with an invalid topic was accepted as valid");
+} END_TEST
+
+
+
+
 void cal_event_test_suite(Suite *s)
 {
     TCase *tc = tcase_create("cal event test suite");
@@ -43,6 +99,11 @@ void cal_event_test_suite(Suite *s)
 
     tcase_add_test(tc, test_cal_event_free_NULL);
     tcase_add_test(tc, test_cal_event_free_empty);
+
+    tcase_add_test(tc, test_cal_event_is_valid_None);
+    tcase_add_test(tc, test_cal_event_is_valid_Subscribe_without_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_without_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Publish_with_no_peer_and_invalid_topic);
 
     return;
 } 
