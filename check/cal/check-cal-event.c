@@ -605,6 +605,22 @@ START_TEST (test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_and_n
 
 
 
+START_TEST (test_cal_event_is_valid_Init_with_peer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_INIT);
+    fail_if(e == NULL, "failed to create an Init event");
+
+    e->peer_name = "dummy-peer";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Init event with a peer was accepted as valid");
+} END_TEST
+
+
+
+
 void cal_event_test_suite(Suite *s)
 {
     TCase *tc = tcase_create("cal event test suite");
@@ -657,6 +673,8 @@ void cal_event_test_suite(Suite *s)
     tcase_add_test(tc, test_cal_event_is_valid_Publish_with_peer_but_invalid_topic);
     tcase_add_test(tc, test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_NULL_msg_buffer);
     tcase_add_test(tc, test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_and_non_NULL_msg_buffer_but_zero_msg_size);
+
+    tcase_add_test(tc, test_cal_event_is_valid_Init_with_peer);
 
     return;
 } 
