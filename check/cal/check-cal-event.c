@@ -416,7 +416,7 @@ START_TEST (test_cal_event_is_valid_Subscribe_with_peer_but_no_topic) {
 
 
 
-START_TEST (test_cal_event_is_valid_Subscribe_with_peer_and_msg_buffer) {
+START_TEST (test_cal_event_is_valid_Subscribe_with_peer_and_topic_and_msg_buffer) {
     cal_event_t *e;
     int r;
 
@@ -424,16 +424,18 @@ START_TEST (test_cal_event_is_valid_Subscribe_with_peer_and_msg_buffer) {
     fail_if(e == NULL, "failed to create a Subscribe event");
 
     e->peer_name = "dummy-peer";
+    e->topic = "dummy-topic";
+
     e->msg.buffer = strdup("dummy-msg");
 
     r = cal_event_is_valid(e);
-    fail_if(r != 0, "oh no, a Subscribe event with a peer and a non-Null msg.buffer was accepted as valid");
+    fail_if(r != 0, "oh no, a Subscribe event with a peer and topic and a non-Null msg.buffer was accepted as valid");
 } END_TEST
 
 
 
 
-START_TEST (test_cal_event_is_valid_Subscribe_with_peer_and_nonzero_msg_size) {
+START_TEST (test_cal_event_is_valid_Subscribe_with_peer_and_topic_and_nonzero_msg_size) {
     cal_event_t *e;
     int r;
 
@@ -441,10 +443,12 @@ START_TEST (test_cal_event_is_valid_Subscribe_with_peer_and_nonzero_msg_size) {
     fail_if(e == NULL, "failed to create a Subscribe event");
 
     e->peer_name = "dummy-peer";
+    e->topic = "dummy-topic";
+
     e->msg.size = 12345;
 
     r = cal_event_is_valid(e);
-    fail_if(r != 0, "oh no, a Subscribe event with a peer and a non-zero msg.size was accepted as valid");
+    fail_if(r != 0, "oh no, a Subscribe event with a peer and topic and a non-zero msg.size was accepted as valid");
 } END_TEST
 
 
@@ -567,7 +571,7 @@ START_TEST (test_cal_event_is_valid_Publish_with_invalid_non_NULL_peer) {
 
 
 
-START_TEST (test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_msg_buffer) {
+START_TEST (test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_NULL_msg_buffer) {
     cal_event_t *e;
     int r;
 
@@ -576,16 +580,14 @@ START_TEST (test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_m
 
     e->topic = strdup("dummy topic");
 
-    e->msg.buffer = "blabber";
-
     r = cal_event_is_valid(e);
-    fail_if(r != 0, "oh no, a Publish event with a NULL peer and valid topic but non-NULL msg.buffer was accepted as valid");
+    fail_if(r != 0, "oh no, a Publish event with a NULL peer and valid topic but NULL msg.buffer was accepted as valid");
 } END_TEST
 
 
 
 
-START_TEST (test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_nonzero_msg_size) {
+START_TEST (test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_and_non_NULL_msg_buffer_but_zero_msg_size) {
     cal_event_t *e;
     int r;
 
@@ -594,7 +596,7 @@ START_TEST (test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_n
 
     e->topic = strdup("dummy topic");
 
-    e->msg.size = 91823;
+    e->msg.buffer = "dummy message";
 
     r = cal_event_is_valid(e);
     fail_if(r != 0, "oh no, a Publish event with a NULL peer and valid topic but non-zero msg.size was accepted as valid");
@@ -642,8 +644,8 @@ void cal_event_test_suite(Suite *s)
 
     tcase_add_test(tc, test_cal_event_is_valid_Subscribe_without_peer);
     tcase_add_test(tc, test_cal_event_is_valid_Subscribe_with_peer_but_no_topic);
-    tcase_add_test(tc, test_cal_event_is_valid_Subscribe_with_peer_and_msg_buffer);
-    tcase_add_test(tc, test_cal_event_is_valid_Subscribe_with_peer_and_nonzero_msg_size);
+    tcase_add_test(tc, test_cal_event_is_valid_Subscribe_with_peer_and_topic_and_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Subscribe_with_peer_and_topic_and_nonzero_msg_size);
 
     tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_without_peer);
     tcase_add_test(tc, test_cal_event_is_valid_Unsubscribe_with_peer_but_no_topic);
@@ -653,7 +655,8 @@ void cal_event_test_suite(Suite *s)
     tcase_add_test(tc, test_cal_event_is_valid_Publish_with_no_peer_and_no_topic);
     tcase_add_test(tc, test_cal_event_is_valid_Publish_with_invalid_non_NULL_peer);
     tcase_add_test(tc, test_cal_event_is_valid_Publish_with_peer_but_invalid_topic);
-    tcase_add_test(tc, test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_but_NULL_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Publish_with_NULL_peer_and_valid_topic_and_non_NULL_msg_buffer_but_zero_msg_size);
 
     return;
 } 
