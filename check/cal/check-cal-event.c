@@ -637,6 +637,38 @@ START_TEST (test_cal_event_is_valid_Init_with_topic) {
 
 
 
+START_TEST (test_cal_event_is_valid_Init_with_msg_buffer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_INIT);
+    fail_if(e == NULL, "failed to create an Init event");
+
+    e->msg.buffer = "dummy-topic";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Init event with a non-NULL msg.buffer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Init_with_msg_size) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_INIT);
+    fail_if(e == NULL, "failed to create an Init event");
+
+    e->msg.size = 1;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Init event with a non-zero msg.size was accepted as valid");
+} END_TEST
+
+
+
+
 void cal_event_test_suite(Suite *s)
 {
     TCase *tc = tcase_create("cal event test suite");
@@ -692,6 +724,8 @@ void cal_event_test_suite(Suite *s)
 
     tcase_add_test(tc, test_cal_event_is_valid_Init_with_peer);
     tcase_add_test(tc, test_cal_event_is_valid_Init_with_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Init_with_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Init_with_msg_size);
 
     return;
 } 
