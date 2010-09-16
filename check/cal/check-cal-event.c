@@ -669,6 +669,70 @@ START_TEST (test_cal_event_is_valid_Init_with_msg_size) {
 
 
 
+START_TEST (test_cal_event_is_valid_Shutdown_with_peer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_SHUTDOWN);
+    fail_if(e == NULL, "failed to create an Shutdown event");
+
+    e->peer_name = "dummy-peer";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Shutdown event with a peer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Shutdown_with_topic) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_SHUTDOWN);
+    fail_if(e == NULL, "failed to create an Shutdown event");
+
+    e->topic = "dummy-topic";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Shutdown event with a topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Shutdown_with_msg_buffer) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_SHUTDOWN);
+    fail_if(e == NULL, "failed to create an Shutdown event");
+
+    e->msg.buffer = "dummy-topic";
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Shutdown event with a non-NULL msg.buffer was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_Shutdown_with_msg_size) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_SHUTDOWN);
+    fail_if(e == NULL, "failed to create an Shutdown event");
+
+    e->msg.size = 1;
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an Shutdown event with a non-zero msg.size was accepted as valid");
+} END_TEST
+
+
+
+
 void cal_event_test_suite(Suite *s)
 {
     TCase *tc = tcase_create("cal event test suite");
@@ -726,6 +790,11 @@ void cal_event_test_suite(Suite *s)
     tcase_add_test(tc, test_cal_event_is_valid_Init_with_topic);
     tcase_add_test(tc, test_cal_event_is_valid_Init_with_msg_buffer);
     tcase_add_test(tc, test_cal_event_is_valid_Init_with_msg_size);
+
+    tcase_add_test(tc, test_cal_event_is_valid_Shutdown_with_peer);
+    tcase_add_test(tc, test_cal_event_is_valid_Shutdown_with_topic);
+    tcase_add_test(tc, test_cal_event_is_valid_Shutdown_with_msg_buffer);
+    tcase_add_test(tc, test_cal_event_is_valid_Shutdown_with_msg_size);
 
     return;
 } 
