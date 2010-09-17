@@ -733,6 +733,34 @@ START_TEST (test_cal_event_is_valid_Shutdown_with_msg_size) {
 
 
 
+START_TEST (test_cal_event_is_valid_Shutdown_valid) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(CAL_EVENT_SHUTDOWN);
+    fail_if(e == NULL, "failed to create an Shutdown event");
+
+    r = cal_event_is_valid(e);
+    fail_if(r == 0, "oh no, a valid Shutdown event was not accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_event_is_valid_unknown_type) {
+    cal_event_t *e;
+    int r;
+
+    e = cal_event_new(9999);
+    fail_if(e == NULL, "failed to create an event with some invalid event type");
+
+    r = cal_event_is_valid(e);
+    fail_if(r != 0, "oh no, an event with some crazy event type was accepted as valid");
+} END_TEST
+
+
+
+
 void cal_event_test_suite(Suite *s)
 {
     TCase *tc = tcase_create("cal event test suite");
@@ -795,9 +823,12 @@ void cal_event_test_suite(Suite *s)
     tcase_add_test(tc, test_cal_event_is_valid_Shutdown_with_topic);
     tcase_add_test(tc, test_cal_event_is_valid_Shutdown_with_msg_buffer);
     tcase_add_test(tc, test_cal_event_is_valid_Shutdown_with_msg_size);
+    tcase_add_test(tc, test_cal_event_is_valid_Shutdown_valid);
+
+    tcase_add_test(tc, test_cal_event_is_valid_unknown_type);
 
     return;
-} 
+}
 
 
 // vim: ts=8 sw=4 sta expandtab
