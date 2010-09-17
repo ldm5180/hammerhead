@@ -761,6 +761,16 @@ START_TEST (test_cal_event_is_valid_unknown_type) {
 
 
 
+START_TEST (test_cal_peer_name_is_valid_zero_length) {
+    int r;
+
+    r = cal_peer_name_is_valid("");
+    fail_if(r != 0, "oh no, a zero-length peer name was accepted as valid");
+} END_TEST
+
+
+
+
 void cal_event_test_suite(Suite *s)
 {
     TCase *tc = tcase_create("cal event test suite");
@@ -826,6 +836,8 @@ void cal_event_test_suite(Suite *s)
     tcase_add_test(tc, test_cal_event_is_valid_Shutdown_valid);
 
     tcase_add_test(tc, test_cal_event_is_valid_unknown_type);
+
+    tcase_add_test(tc, test_cal_peer_name_is_valid_zero_length);
 
     return;
 }
