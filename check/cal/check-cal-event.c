@@ -10,7 +10,7 @@
 
 #include <check.h>
 
-#include "cal-event.h"
+#include "cal-util.h"
 
 #include "check-common.h"
 #include "check-cal.h"
@@ -771,6 +771,23 @@ START_TEST (test_cal_peer_name_is_valid_zero_length) {
 
 
 
+START_TEST (test_cal_peer_name_is_valid_too_long) {
+    int r;
+    char *peer_name;
+
+    peer_name = (char*)malloc(CAL_PEER_NAME_MAX_LENGTH+1);
+    fail_if(peer_name == NULL, "out of memory for test");
+
+    memset(peer_name, 'A', CAL_PEER_NAME_MAX_LENGTH);
+    peer_name[CAL_PEER_NAME_MAX_LENGTH] = 0;
+
+    r = cal_peer_name_is_valid(peer_name);
+    fail_if(r != 0, "oh no, a too-long peer name was accepted as valid");
+} END_TEST
+
+
+
+
 void cal_event_test_suite(Suite *s)
 {
     TCase *tc = tcase_create("cal event test suite");
@@ -838,6 +855,7 @@ void cal_event_test_suite(Suite *s)
     tcase_add_test(tc, test_cal_event_is_valid_unknown_type);
 
     tcase_add_test(tc, test_cal_peer_name_is_valid_zero_length);
+    tcase_add_test(tc, test_cal_peer_name_is_valid_too_long);
 
     return;
 }
