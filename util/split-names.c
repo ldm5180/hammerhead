@@ -171,6 +171,10 @@ int bionet_split_resource_name_r(
     //
     // sanity checks
     //
+    if (NULL == topic) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_resource_name_r(): NULL Name Pattern passed in.");
+	return -1;
+    }
 
 
     p = topic;
@@ -697,3 +701,162 @@ int bionet_split_hab_name_r(
     return 0;
 }
 
+
+int bionet_split_name_components_r(const char * name_pattern,
+				   char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+				   char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
+				   char node_id[BIONET_NAME_COMPONENT_MAX_LEN],
+				   char resource_id[BIONET_NAME_COMPONENT_MAX_LEN]) {
+    const char *p;
+    int size;
+    char *separator;
+
+    hab_type[0] = '\0';
+    hab_id[0] = '\0';
+    node_id[0] = '\0';
+    resource_id[0] = '\0';
+
+    //
+    // sanity checks
+    //
+
+    if (NULL == name_pattern) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): NULL Name Pattern passed in.");
+	return -1;
+    }
+
+    p = name_pattern;
+
+    // get the HAB-Type
+    separator = strchr(p, '.');
+    if (separator == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): error parsing Name Pattern '%s'", name_pattern);
+        return -1;
+    }
+    size = separator - p;
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): HAB-Type of Name Pattern '%s' has zero length", name_pattern);
+        return -1;
+    }
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): HAB-Type of Name Pattern '%s' is too long (%d bytes, max %lu)", name_pattern, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
+        return -1;
+    }
+    memcpy(hab_type, p, size);
+    hab_type[size] = '\0';
+
+    if (! bionet_is_valid_name_component_or_wildcard(hab_type)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): HAB-Type of Name Pattern '%s' is not a valid name component or a wildcard", name_pattern);
+        return -1;
+    }
+
+
+    // get the HAB-ID
+    p = separator + 1;
+    separator = strchr(p, '.');
+    if (separator == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "bionet_split_name_components_r(): error parsing Name Pattern '%s'", name_pattern);
+	size = (name_pattern) + strlen(name_pattern) - p;
+	if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): HAB-ID of Name Pattern '%s' is too long (%d bytes, max %lu)", name_pattern, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
+	    return -1;
+	}
+	memcpy(hab_id, p, size);
+	hab_id[size] = '\0';
+	
+	if (! bionet_is_valid_name_component_or_wildcard(hab_id)) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): HAB-ID of Name Pattern '%s' is not a valid name component or a wildcard", name_pattern);
+	    return -1;
+	}
+	return 0;
+    }
+    size = separator - p;
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): HAB-ID of Name Pattern '%s' has zero length", name_pattern);
+        return -1;
+    }
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): HAB-ID of Name Pattern '%s' is too long (%d bytes, max %lu)", name_pattern, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
+        return -1;
+    }
+    memcpy(hab_id, p, size);
+    hab_id[size] = '\0';
+
+    if (! bionet_is_valid_name_component_or_wildcard(hab_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): HAB-ID of Name Pattern '%s' is not a valid name component or a wildcard", name_pattern);
+        return -1;
+    }
+
+
+    // get the Node-ID
+    p = separator + 1;
+    separator = strchr(p, ':');
+    if (separator == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "bionet_split_name_components_r(): error parsing Name Pattern'%s'", name_pattern);
+	size = (name_pattern) + strlen(name_pattern) - p;
+	if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): Node-ID of Name Pattern '%s' is too long (%d bytes, max %lu)", name_pattern, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
+	    return -1;
+	}
+	memcpy(node_id, p, size);
+	node_id[size] = '\0';
+	
+	if (! bionet_is_valid_name_component_or_wildcard(node_id)) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): Node-ID of Name Pattern '%s' is not a valid name component or a wildcard", name_pattern);
+	    return -1;
+	}
+	return 0;
+    }
+    size = separator - p;
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): Node-ID of Name Pattern '%s' has zero length", name_pattern);
+        return -1;
+    }
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): Node-ID of Name Pattern '%s' is too long (%d bytes, max %lu)", name_pattern, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
+        return -1;
+    }
+    memcpy(node_id, p, size);
+    node_id[size] = '\0';
+
+    if (! bionet_is_valid_name_component_or_wildcard(node_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): Node-ID of Name Pattern '%s' is not a valid name component or a wildcard", name_pattern);
+        return -1;
+    }
+
+
+    // get the Resource-ID
+    int query_offset = 0;
+    p = separator + 1;
+    separator = strchr(p, '?');
+    if (separator) {
+        size = separator - p;
+        query_offset = p-name_pattern;
+    } else {
+        size = strlen(p);
+    }
+    if (size == 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "bionet_split_name_components_r(): Resource-ID of Name Pattern '%s' has zero length", name_pattern);
+        return 0;
+    }
+    if (size >= BIONET_NAME_COMPONENT_MAX_LEN) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): Resource-ID of Name Pattern '%s' is too long (%d bytes, max %lu)", name_pattern, size, (long unsigned)BIONET_NAME_COMPONENT_MAX_LEN);
+        return -1;
+    }
+    memcpy(resource_id, p, size);
+    resource_id[size] = '\0';
+
+    if (! bionet_is_valid_name_component_or_wildcard(resource_id)) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_split_name_components_r(): Resource-ID of Name Pattern '%s' is not a valid name component or a wildcard", name_pattern);
+        return -1;
+    }
+
+    return 0;
+} /* bionet_split_name_components_r() */
+
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

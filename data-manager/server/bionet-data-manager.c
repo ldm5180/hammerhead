@@ -426,64 +426,84 @@ static int _add_filter_subscription(char * resource_pattern) {
     char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
     int r;
 
-    r = bionet_split_resource_name_r(resource_pattern, hab_type, hab_id, node_id, resource_id);
+    r = bionet_split_name_components_r(resource_pattern, hab_type, hab_id, node_id, resource_id);
     if (r != 0) {
         // a helpful error message has already been logged
         return -1;
     }
 
     // Add hab subscription
-    int hab_name_size = strlen(hab_type) + strlen(hab_type) + 2;
-    char *hab_name = malloc(hab_name_size);
-    snprintf(hab_name, hab_name_size, "%s.%s", hab_type, hab_id);
-
-    if(hab_list_index < MAX_SUBSCRIPTIONS ) {
-        hab_list_name_patterns = realloc(hab_list_name_patterns, sizeof(gchar *) * (hab_list_index + 1));
-        if (NULL == hab_list_name_patterns) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate hab_list_name_patterns");
-            free(hab_name);
-            return 1;
-        }
-        hab_list_name_patterns[hab_list_index] = hab_name;
-        hab_list_index++;
+    if (strlen(hab_type) && strlen(hab_id)) {
+	int hab_name_size = strlen(hab_type) + strlen(hab_id) + 2;
+	char *hab_name = malloc(hab_name_size);
+	snprintf(hab_name, hab_name_size, "%s.%s", hab_type, hab_id);
+	
+	if(hab_list_index < MAX_SUBSCRIPTIONS ) {
+	    hab_list_name_patterns = realloc(hab_list_name_patterns, sizeof(gchar *) * (hab_list_index + 1));
+	    if (NULL == hab_list_name_patterns) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate hab_list_name_patterns");
+		free(hab_name);
+		return 1;
+	    }
+	    hab_list_name_patterns[hab_list_index] = hab_name;
+	    hab_list_index++;
+	} else {
+	    g_warning("skipping Hab subscription %s, only %d are handled", 
+		      hab_name, MAX_SUBSCRIPTIONS);
+	}
     } else {
-        g_warning("skipping Hab subscription %s, only %d are handled", 
-                  hab_name, MAX_SUBSCRIPTIONS);
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "_add_filter_subscription: length of hab_type or hab_id is 0: %s",
+	      resource_pattern);
+	return -1;
     }
-
 
     // Add node subscription
-    int node_name_size = strlen(hab_type) + strlen(hab_type) + strlen(node_id) + 3;
-    char *node_name = malloc(node_name_size);
-    snprintf(node_name, node_name_size, "%s.%s.%s", hab_type, hab_id, node_id);
-
-    if(node_list_index < MAX_SUBSCRIPTIONS ) {
-        node_list_name_patterns = realloc(node_list_name_patterns, sizeof(gchar *) * (node_list_index + 1));
-        if (NULL == node_list_name_patterns) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate node_list_name_patterns");
-            free(node_name);
-            return 1;
-        }
-        node_list_name_patterns[node_list_index] = node_name;
-        node_list_index++;
+    if (strlen(node_id)) {
+	int node_name_size = strlen(hab_type) + strlen(hab_id) + strlen(node_id) + 3;
+	char *node_name = malloc(node_name_size);
+	snprintf(node_name, node_name_size, "%s.%s.%s", hab_type, hab_id, node_id);
+	
+	if(node_list_index < MAX_SUBSCRIPTIONS ) {
+	    node_list_name_patterns = realloc(node_list_name_patterns, sizeof(gchar *) * (node_list_index + 1));
+	    if (NULL == node_list_name_patterns) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate node_list_name_patterns");
+		free(node_name);
+		return 1;
+	    }
+	    node_list_name_patterns[node_list_index] = node_name;
+	    node_list_index++;
+	} else {
+	    g_warning("skipping Node subscription %s, only %d are handled", 
+		      node_name, MAX_SUBSCRIPTIONS);
+	}
     } else {
-        g_warning("skipping Node subscription %s, only %d are handled", 
-                  node_name, MAX_SUBSCRIPTIONS);
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "_add_filter_subscription: length of node_id is 0: %s",
+	      resource_pattern);
+	return 0;
     }
 
-
-    // Add resource subscription
-    if(node_list_index < MAX_SUBSCRIPTIONS ) {
-        resource_name_patterns = realloc(resource_name_patterns, sizeof(gchar *) * (resource_index + 1));
-        if (NULL == resource_name_patterns) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate resource_name_patterns");
-            return 1;
-        }
-        resource_name_patterns[resource_index] = resource_pattern;
-        resource_index++;
+    if (strlen(resource_id)) {
+	int resource_name_size = strlen(hab_type) + strlen(hab_id) + strlen(node_id) + strlen(resource_id) + 4;
+	char *resource_name = malloc(resource_name_size);
+	snprintf(resource_name, resource_name_size, "%s.%s.%s:%s", hab_type, hab_id, node_id, resource_id);
+	
+	if(resource_index < MAX_SUBSCRIPTIONS ) {
+	    resource_name_patterns = realloc(resource_name_patterns, sizeof(gchar *) * (resource_index + 1));
+	    if (NULL == resource_name_patterns) {
+		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Out of memory, cannot allocate resource_name_patterns");
+		free(resource_name);
+		return 1;
+	    }
+	    resource_name_patterns[resource_index] = resource_name;
+	    resource_index++;
+	} else {
+	    g_warning("skipping Resource subscription %s, only %d are handled", 
+		      resource_name, MAX_SUBSCRIPTIONS);
+	}
     } else {
-        g_warning("skipping Resource subscription %s, only %d are handled", 
-                  resource_pattern, MAX_SUBSCRIPTIONS);
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "_add_filter_subscription: length of resource_id is 0: %s",
+	      resource_pattern);
+	return 0;
     }
 
     return 0;

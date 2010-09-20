@@ -244,16 +244,223 @@ START_TEST (test_libutil_split_resource_name_2) {
 } END_TEST
 
 
+START_TEST (test_libutil_split_name_components_r_0) {
+    char * name = "type.id.node:res";
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+    fail_if(bionet_split_name_components_r(name, hab_type, hab_id, node_id, resource_id),
+	    "Failed to split a valid Bionet name: %s", name);
+
+    fail_if(strcmp("type", hab_type),
+	    "Failed to get the correct HAB Type: %s", hab_type);
+
+    fail_if(strcmp("id", hab_id),
+	    "Failed to get the correct HAB ID: %s", hab_id);
+
+    fail_if(strcmp("node", node_id),
+	    "Failed to get the correct Node ID: %s", node_id);
+
+    fail_if(strcmp("res", resource_id),
+	    "Failed to get the correct Resource ID: %s", resource_id);
+} END_TEST /* bionet_split_name_components_r_0 */
+
+
+START_TEST (test_libutil_split_name_components_r_1) {
+    char * name = "type.id.node";
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+    fail_if(bionet_split_name_components_r(name, hab_type, hab_id, node_id, resource_id),
+	    "Failed to split a valid Bionet name: %s", name);
+
+    fail_if(strcmp("type", hab_type),
+	    "Failed to get the correct HAB Type: %s", hab_type);
+
+    fail_if(strcmp("id", hab_id),
+	    "Failed to get the correct HAB ID: %s", hab_id);
+
+    fail_if(strcmp("node", node_id),
+	    "Failed to get the correct Node ID: %s", node_id);
+
+    fail_if(strcmp("", resource_id),
+	    "Failed to get the correct Resource ID: %s", resource_id);
+} END_TEST /* bionet_split_name_components_r_1 */
+
+
+START_TEST (test_libutil_split_name_components_r_2) {
+    char * name = "type.id";
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+    fail_if(bionet_split_name_components_r(name, hab_type, hab_id, node_id, resource_id),
+	    "Failed to split a valid Bionet name: %s", name);
+
+    fail_if(strcmp("type", hab_type),
+	    "Failed to get the correct HAB Type: %s", hab_type);
+
+    fail_if(strcmp("id", hab_id),
+	    "Failed to get the correct HAB ID: %s", hab_id);
+
+    fail_if(strcmp("", node_id),
+	    "Failed to get the correct Node ID: %s", node_id);
+
+    fail_if(strcmp("", resource_id),
+	    "Failed to get the correct Resource ID: %s", resource_id);
+} END_TEST /* bionet_split_name_components_r_2 */
+
+
+START_TEST (test_libutil_split_name_components_r_3) {
+    char * name = "type";
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+    fail_unless(bionet_split_name_components_r(name, hab_type, hab_id, node_id, resource_id),
+	    "Failed to detect only a HAB-Type which is invalid Bionet name: %s", name);
+
+    fail_if(strcmp("", hab_type),
+	    "Failed to get the correct HAB Type: %s", hab_type);
+
+    fail_if(strcmp("", hab_id),
+	    "Failed to get the correct HAB ID: %s", hab_id);
+
+    fail_if(strcmp("", node_id),
+	    "Failed to get the correct Node ID: %s", node_id);
+
+    fail_if(strcmp("", resource_id),
+	    "Failed to get the correct Resource ID: %s", resource_id);
+} END_TEST /* bionet_split_name_components_r_3 */
+
+
+START_TEST (test_libutil_split_name_components_r_4) {
+    char * name = "";
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+    fail_unless(bionet_split_name_components_r(name, hab_type, hab_id, node_id, resource_id),
+	    "Failed to detect invalid blank Bionet name: %s", name);
+
+    fail_if(strcmp("", hab_type),
+	    "Failed to get the correct HAB Type: %s", hab_type);
+
+    fail_if(strcmp("", hab_id),
+	    "Failed to get the correct HAB ID: %s", hab_id);
+
+    fail_if(strcmp("", node_id),
+	    "Failed to get the correct Node ID: %s", node_id);
+
+    fail_if(strcmp("", resource_id),
+	    "Failed to get the correct Resource ID: %s", resource_id);
+} END_TEST /* bionet_split_name_components_r_4 */
+
+
+START_TEST (test_libutil_split_name_components_r_5) {
+    char * name = "not valid";
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+    fail_unless(bionet_split_name_components_r(name, hab_type, hab_id, node_id, resource_id),
+	    "Failed to detect an invalid Bionet name: %s", name);
+
+    fail_if(strcmp("", hab_type),
+	    "Failed to get the correct HAB Type: %s", hab_type);
+
+    fail_if(strcmp("", hab_id),
+	    "Failed to get the correct HAB ID: %s", hab_id);
+
+    fail_if(strcmp("", node_id),
+	    "Failed to get the correct Node ID: %s", node_id);
+
+    fail_if(strcmp("", resource_id),
+	    "Failed to get the correct Resource ID: %s", resource_id);
+} END_TEST /* bionet_split_name_components_r_5 */
+
+
+START_TEST (test_libutil_split_name_components_r_6) {
+    char * name = NULL;
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+    fail_unless(bionet_split_name_components_r(name, hab_type, hab_id, node_id, resource_id),
+	    "Failed to detect a NULL Bionet name: %s", name);
+
+    fail_if(strcmp("", hab_type),
+	    "Failed to get the correct HAB Type: %s", hab_type);
+
+    fail_if(strcmp("", hab_id),
+	    "Failed to get the correct HAB ID: %s", hab_id);
+
+    fail_if(strcmp("", node_id),
+	    "Failed to get the correct Node ID: %s", node_id);
+
+    fail_if(strcmp("", resource_id),
+	    "Failed to get the correct Resource ID: %s", resource_id);
+} END_TEST /* bionet_split_name_components_r_6 */
+
+
+START_TEST (test_libutil_split_name_components_r_7) {
+    char * name = "foo:bar";
+    char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+    char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+    char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+
+    fail_unless(bionet_split_name_components_r(name, hab_type, hab_id, node_id, resource_id),
+	    "Failed to detect an invalid Bionet name: %s", name);
+
+    fail_if(strcmp("", hab_type),
+	    "Failed to get the correct HAB Type: %s", hab_type);
+
+    fail_if(strcmp("", hab_id),
+	    "Failed to get the correct HAB ID: %s", hab_id);
+
+    fail_if(strcmp("", node_id),
+	    "Failed to get the correct Node ID: %s", node_id);
+
+    fail_if(strcmp("", resource_id),
+	    "Failed to get the correct Resource ID: %s", resource_id);
+} END_TEST /* bionet_split_name_components_r_7 */
 
 
 void libutil_split_resource_name_suite(Suite *s) {
-    TCase *tc = tcase_create("bionet_split_resource_name()");
+    TCase *tc = tcase_create("Bionet Splitting Resource Names");
     suite_add_tcase(s, tc);
 
+    /* bionet_split_resource_name() */
     tcase_add_test(tc, test_libutil_split_resource_name_0);
     tcase_add_test(tc, test_libutil_split_resource_name_1);
     tcase_add_test(tc, test_libutil_split_resource_name_2);
 
+    /* bionet_split_name_components_r() */
+    tcase_add_test(tc, test_libutil_split_name_components_r_0);
+    tcase_add_test(tc, test_libutil_split_name_components_r_1);
+    tcase_add_test(tc, test_libutil_split_name_components_r_2);
+    tcase_add_test(tc, test_libutil_split_name_components_r_3);
+    tcase_add_test(tc, test_libutil_split_name_components_r_4);
+    tcase_add_test(tc, test_libutil_split_name_components_r_5);
+    tcase_add_test(tc, test_libutil_split_name_components_r_6);
+    tcase_add_test(tc, test_libutil_split_name_components_r_7);
+
     return;
 }
 
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:

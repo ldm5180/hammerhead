@@ -263,9 +263,6 @@ int bionet_split_resource_name(
  * Resource name string shall be in the format 
  *    \<HAB-type\>.\<HAB-ID\>.\<Node-ID\>:\<Resource-ID\>[?\<Topic Query params\>]
  * 
- * If the caller passes in NULL for any of the "out" arguments, that part
- * of the name component will be skipped.
- *
  * @param[in] resource_name Resource name to split
  * @param[out] hab_type HAB-type from resource name
  * @param[out] hab_id HAB-ID from resource name
@@ -274,6 +271,8 @@ int bionet_split_resource_name(
  *
  * @retval N The offest of the Topic Query Parameters, or 0 if none
  * @retval -1 Failure
+ *
+ * @note Topic Query params are optional and used for internal BDM-specifics.
  */
 BIONET_UTIL_API_DECL
 int bionet_split_resource_name_r(
@@ -282,6 +281,35 @@ int bionet_split_resource_name_r(
     char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
     char node_id[BIONET_NAME_COMPONENT_MAX_LEN],
     char resource_id[BIONET_NAME_COMPONENT_MAX_LEN]);
+
+
+/**
+ * @brief Split a Bionet name pattern into its component parts.
+ *
+ * Name pattern is of several possible formats:
+ *     \<HAB-type\>.\<HAB-ID\>
+ *     \<HAB-type\>.\<HAB-ID\>.\<Node-ID\>
+ *     \<HAB-type\>.\<HAB-ID\>.\<Node-ID\>:\<Resource-ID\>
+ * Other formats may be misinterpreted.
+ *
+ * @param[in]  name_pattern Resource name to split
+ * @param[out] hab_type HAB-type from resource name
+ * @param[out] hab_id HAB-ID from resource name
+ * @param[out] node_id Node-ID from resource name
+ * @param[out] resource_id Resource-ID from resource name
+ *
+ * @retval 0 Success
+ * @retval -1 Failure
+ *
+ * @note If a component is not part of the name pattern, the returned parameter
+ * is the string "".
+ */
+BIONET_UTIL_API_DECL
+int bionet_split_name_components_r(const char * name_pattern,
+				   char hab_type[BIONET_NAME_COMPONENT_MAX_LEN],
+				   char hab_id[BIONET_NAME_COMPONENT_MAX_LEN],
+				   char node_id[BIONET_NAME_COMPONENT_MAX_LEN],
+				   char resource_id[BIONET_NAME_COMPONENT_MAX_LEN]);
 
 
 /**
