@@ -3,6 +3,15 @@
 -- This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
 -- NNC07CB47C.
 
+-- The current version of the schema
+-- This can be used for internal consistancy checks,
+-- and/or scheam upgrades
+CREATE TABLE bdm_schema_version (
+    version INTEGER NOT NULL
+);
+INSERT INTO bdm_schema_version VALUES (1);
+
+
 
 -- 
 -- Note: This validates rows for uniqueness as appropriate, but does no
@@ -142,4 +151,5 @@ CREATE TABLE DanglingDatapoints (
     UNIQUE (datapoint)
 );
 CREATE INDEX dangling_datapoint_Index ON DanglingDatapoints(datapoint);
+
 
