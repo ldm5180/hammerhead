@@ -788,6 +788,33 @@ START_TEST (test_cal_peer_name_is_valid_too_long) {
 
 
 
+START_TEST (test_cal_topic_is_valid_zero_length) {
+    int r;
+
+    r = cal_topic_is_valid("");
+    fail_if(r != 0, "oh no, a zero-length topic was accepted as valid");
+} END_TEST
+
+
+
+
+START_TEST (test_cal_topic_is_valid_too_long) {
+    int r;
+    char *topic;
+
+    topic = (char*)malloc(CAL_TOPIC_MAX_LENGTH+1);
+    fail_if(topic == NULL, "out of memory for test");
+
+    memset(topic, 'A', CAL_TOPIC_MAX_LENGTH);
+    topic[CAL_TOPIC_MAX_LENGTH] = 0;
+
+    r = cal_topic_is_valid(topic);
+    fail_if(r != 0, "oh no, a too-long topic was accepted as valid");
+} END_TEST
+
+
+
+
 void cal_event_test_suite(Suite *s)
 {
     TCase *tc = tcase_create("cal event test suite");
@@ -856,6 +883,9 @@ void cal_event_test_suite(Suite *s)
 
     tcase_add_test(tc, test_cal_peer_name_is_valid_zero_length);
     tcase_add_test(tc, test_cal_peer_name_is_valid_too_long);
+
+    tcase_add_test(tc, test_cal_topic_is_valid_zero_length);
+    tcase_add_test(tc, test_cal_topic_is_valid_too_long);
 
     return;
 }
