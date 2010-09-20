@@ -1,7 +1,9 @@
 Bionet 2.6.0, Future
 
     * Revamped Data Manager: 
+    New database schema; Old database files are no longer supported
     Data manager records 'events' now instead of just datapoints
+    bionet-data-manager will automatically add a schema to a new database file, so it is no longer required to manually create the database file before starting bionet-data-manger.
     
     * libbdm API changes, applications need to be updated:
     Specifically, the callback signatures have been modified
