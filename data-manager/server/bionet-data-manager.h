@@ -374,6 +374,8 @@ extern gchar ** resource_name_patterns;
 extern char * security_dir;
 extern int require_security;
 
+extern gchar ** filters;
+
 int try_to_connect_to_bionet(void *unused);
 void disconnect_from_bionet(void *unused);
 

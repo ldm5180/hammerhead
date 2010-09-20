@@ -32,6 +32,8 @@ int require_security = 0;
 
 int no_resources = 0;
 
+gchar ** filters = NULL;
+
 // 
 // bionet callbacks
 //

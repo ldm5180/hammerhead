@@ -9,11 +9,10 @@ Name=Bionet Data Manager Configuration
 
 DBFILE=/var/lib/bionet-data-manager/bdm.db
 
-# Subscribe to HABs/Nodes/Resources in these lists
-# HABS, NODES, RESOURCES are ';' separated lists
-HABS=*.*
-NODES=*.*.*
-RESOURCES=*.*.*:*
+# Subscribe to HABs/Nodes/Resources in this list. Add a HAB/Node/Resource filter. All HAB and Node
+# permutations are automatically added when a resource name pattern is used.
+# FILTERS is a ';' separated list
+FILTERS=*.*.*:*
 
 # Publish BDM statistics to Bionet every defined number of seconds.
 BdmStats=60
