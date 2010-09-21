@@ -339,7 +339,7 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
 
     client = bip_peer_new();
     if (client == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: out of memory");
         goto fail_handshake2;
     }
 
@@ -363,7 +363,7 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
 
         event->peer_name = strdup(name);
         if (event->peer_name == NULL) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: out of memory");
             goto fail_handshake2;
         }
     }
@@ -376,7 +376,7 @@ static int accept_handshake( cal_server_mdnssd_bip_t * this, bip_peer_network_in
 
         name_key = strdup(event->peer_name);
         if (name_key == NULL) {
-            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
+            g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: out of memory");
             goto fail_handshake2;
         }
         g_hash_table_insert(this->clients, name_key, client);
@@ -420,7 +420,7 @@ static int accept_connection(cal_server_mdnssd_bip_t *this) {
 
     net = bip_net_new(NULL, 0);
     if (net == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "accept_connection: out of memory");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "accept_connection: out of memory");
         return -1;
     }
     
@@ -433,7 +433,7 @@ static int accept_connection(cal_server_mdnssd_bip_t *this) {
 
     // Make accepted socket non-blocking
     if (bip_socket_set_blocking(net->socket, 0) < 0 ) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
             ID "%s: error setting socket non-blocking", __FUNCTION__);
     }
 
@@ -501,20 +501,20 @@ static void handle_client_disconnect(cal_server_mdnssd_bip_t * this, const char 
 
             event = cal_event_new(CAL_EVENT_UNSUBSCRIBE);
             if (event == NULL) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "handle_client_disconnect: out of memory");
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: out of memory");
                 return;
             }
 
             event->peer_name = strdup(peer_name);
             if (event->peer_name == NULL) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "handle_client_disconnect: out of memory");
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: out of memory");
                 cal_event_free(event);
                 return;
             }
 
             event->topic = strdup(sub_topic);
             if (event->topic == NULL) {
-                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "handle_client_disconnect: out of memory");
+                g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: out of memory");
                 cal_event_free(event);
                 return;
             }
@@ -529,13 +529,13 @@ static void handle_client_disconnect(cal_server_mdnssd_bip_t * this, const char 
 
     event = cal_event_new(CAL_EVENT_DISCONNECT);
     if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "handle_client_disconnect: out of memory");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: out of memory");
         return;
     }
 
     event->peer_name = strdup(peer_name);
     if (event->peer_name == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "handle_client_disconnect: out of memory");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "handle_client_disconnect: out of memory");
         cal_event_free(event);
         return;
     }
@@ -580,7 +580,7 @@ static int read_from_client(cal_server_mdnssd_bip_t *this, const char *peer_name
     // the actual event type will be set below
     event = cal_event_new(CAL_EVENT_NONE);
     if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_client: out of memory!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: out of memory!");
         bip_net_clear(net);
         return -1;
     }
@@ -677,7 +677,7 @@ static int read_from_client(cal_server_mdnssd_bip_t *this, const char *peer_name
 
     event->peer_name = strdup(peer_name);
     if (event->peer_name == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "read_from_client: out of memory");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "read_from_client: out of memory");
         cal_event_free(event);
         return -1;
     }
@@ -773,7 +773,7 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
     r = snprintf(mdnssd_service_name, sizeof(mdnssd_service_name), 
 		 "_%s._tcp", this->cal_server_mdnssd_bip_network_type);
     if (r >= sizeof(mdnssd_service_name)) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID 
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID 
 	      "server thread: network type '%s' is too long!", 
 	      this->cal_server_mdnssd_bip_network_type);
         return (void*)1;
@@ -789,7 +789,7 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
     this->advertisedRef = malloc(sizeof(DNSServiceRef));
     if (this->advertisedRef == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: out of memory!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: out of memory!");
         return (void*)1;
     }
 
@@ -891,7 +891,7 @@ void* cal_server_mdnssd_bip_function(void *this_as_voidp) {
 
     event = cal_event_new(CAL_EVENT_INIT);
     if (event == NULL) {
-        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "server thread: out of memory!");
+        g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "server thread: out of memory!");
         return (void*)1;
     }
 
