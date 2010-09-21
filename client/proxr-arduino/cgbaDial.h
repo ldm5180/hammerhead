@@ -16,6 +16,14 @@ extern "C"
 #include "pa-config.h"
 };
 
+#define SM_ZERO       3
+#define LL            2
+#define LO            1
+#define GREEN         0
+#define HI           -1
+#define HH           -2
+#define SM_FIVE      -3
+
 class cgbaDial : public QWidget
 {
     Q_OBJECT
@@ -39,6 +47,7 @@ public slots:
     void update_increment();
     void update_display_voltage();
     void update_display_cooked();
+    void update_display_color(int8_t state);
 
 private:
     Dial *dial;

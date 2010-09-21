@@ -145,7 +145,6 @@ void cgbaSim::bionetSetup()
     id = ba.data();
     bionet_subscribe_node_list_by_name(id);
     bionet_subscribe_datapoints_by_name(strcat(id, ":*"));
-
 }
 
 void cgbaSim::switch_command_mode()
@@ -170,8 +169,9 @@ void cgbaSim::switch_command_mode()
    }
 }
 
-// this function uses the node of proxr hab and sets
-// each dial to correspond with a proxr resource
+// this function uses the node of proxr hab and translator and sets
+// each dials class variable to correspond with a proxr resource
+// and translator resource
 void cgbaSim::use_node_set_resources(bionet_node_t *node)
 {
     char *node_id = NULL;
@@ -197,55 +197,78 @@ void cgbaSim::use_node_set_resources(bionet_node_t *node)
 void cgbaSim::datapoint_update(bionet_datapoint_t *data)
 {
     char *name = NULL;
+    char *hab_type = NULL;
     bionet_resource_t *resource;
     bionet_value_t *value;
+    
     int binary_content;
     double double_content;
+    int8_t int8_content;
 
     resource = bionet_datapoint_get_resource(data);
-    bionet_split_resource_name(bionet_resource_get_name(resource), NULL, NULL, NULL, &name);
+    bionet_split_resource_name(bionet_resource_get_name(resource), &hab_type, NULL, NULL, &name);
 
     // check through stored resource names to see which one has been updated
 
-    // check through arduino datapoints
-    for(int i=0; i<8; i++)
+
+    if(strcmp(hab_type, "arduino") == 0)
     {
-        if(strcmp(name, default_settings->arduino[i]) == 0)
+        // check through arduino datapoints from arduino
+        for(int i=0; i<8; i++)
         {
-            bionet_resource_get_binary(resource, &binary_content, NULL);
-            if(true == binary_content)
-                leds[i]->setValue(true);
-            else if(false == binary_content)
-                leds[i]->setValue(false);
-           return;
+            if(strcmp(name, default_settings->arduino[i]) == 0)
+            {
+                bionet_resource_get_binary(resource, &binary_content, NULL);
+                if(true == binary_content)
+                    leds[i]->setValue(true);
+                else if(false == binary_content)
+                    leds[i]->setValue(false);
+                return;
+            }   
         }
     }
-
-    // check mins
-    for(int i=0; i<16; i++)
+    else if(strcmp(hab_type, "translator") == 0)
     {
-        if(strcmp(default_settings->mins_names[i], name) == 0)
+
+        // check state resources from translator
+        for(int i=0; i<16; i++)
         {
-            bionet_resource_get_double(resource, &double_content, NULL);
-            // store range
-            dial[i]->store_min_range(double_content);
-            // set increment with new range
-            dial[i]->update_increment();
-            return;
+            if(strcmp(default_settings->state_names[i], name) == 0)
+            {
+                // get new value
+                bionet_resource_get_int8(resource, &int8_content, NULL);
+                // update display color with new value
+                dial[i]->update_display_color(int8_content);
+                return;
+            }
         }
-    }
-
-    // check maxs
-    for(int i=0; i<16; i++)
-    {
-        if(strcmp(default_settings->maxs_names[i], name) == 0)
+ 
+        // check dial mins for resource update from translator
+        for(int i=0; i<16; i++)
         {
-            bionet_resource_get_double(resource, &double_content, NULL);
-            // store range
-            dial[i]->store_max_range(double_content);
-            // set increment with new range
-            dial[i]->update_increment();
-            return;
+            if(strcmp(default_settings->mins_names[i], name) == 0)
+            {
+                bionet_resource_get_double(resource, &double_content, NULL);
+                // store range
+                dial[i]->store_min_range(double_content);
+                // set increment with new range
+                dial[i]->update_increment();
+                return;
+            }
+        }
+
+        // check dial maxs for resoruce update from translator
+        for(int i=0; i<16; i++)
+        {
+            if(strcmp(default_settings->maxs_names[i], name) == 0)
+            {
+                bionet_resource_get_double(resource, &double_content, NULL);
+                // store range
+                dial[i]->store_max_range(double_content);
+                // set increment with new range
+                dial[i]->update_increment();
+                return;
+            }
         }
     }
 }

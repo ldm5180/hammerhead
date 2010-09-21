@@ -28,7 +28,7 @@ void CgbaSimMainWindow::createActions()
     exitAction = new QAction(tr("&Quit"), this);
     connect(exitAction, SIGNAL(triggered()), this, SLOT(quit()));
 
-    cookedValAction = new QAction(tr("Cooked Values"), this);
+    cookedValAction = new QAction(tr("Switch Mode"), this);
     connect(cookedValAction, SIGNAL(triggered()), this, SLOT(triggerMode()));
 }
 
@@ -45,12 +45,12 @@ void CgbaSimMainWindow::createMenus()
 void CgbaSimMainWindow::triggerMode()
 {
     // change display title to represent current mode
-    if(cooked_mode)
+    if(true == cooked_mode)
     {
         this->setWindowTitle(tr("CGBA Interface Simulator       Voltage Mode"));
         this->cooked_mode = false;
     }
-    if(!cooked_mode)
+    else if(true != cooked_mode)
     {
         this->setWindowTitle(tr("CGBA Interface Simulator       Cooked Mode"));
         this->cooked_mode = true;

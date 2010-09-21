@@ -33,7 +33,7 @@ int pa_read_ini(char *config_file)
         return 1;
     }
 
-    // Collect Names
+    // Collect dial tooltip Names
     g_debug("Collecting dial names.");
     default_settings->dial_names = g_key_file_get_string_list(keyfile, "PA", "Names", &length, &error);    if((NULL == default_settings->dial_names) || (PA_NUM_NAMES != length))
     {
@@ -63,6 +63,15 @@ int pa_read_ini(char *config_file)
     if((NULL == default_settings->arduino) || (PA_NUM_ARDUINO != length))
     {
         g_error("pa_read_ini: failed to get arduino dp's from file %s. %s", config_file, error->message);
+        return 1;
+    }
+
+    // Collect translators adc-state resource names
+    g_debug("Collecting adc-state resources.");
+    default_settings->state_names = g_key_file_get_string_list(keyfile, "PA", "state_names", &length, &error);
+    if((NULL == default_settings->state_names) || (PA_NUM_NAMES != length))
+    {
+        g_error("pa_read_ini: Failed to get adc-state names from file %s. %s.", config_file, error->message);
         return 1;
     }
 

@@ -96,6 +96,9 @@ void cgbaDial::command_potentiometer()
     }
 }
 
+// this function is called from cgbaSim.cpp when there is a new node
+// this function uses that node to get the proxr resources and associate
+// them the dial
 void cgbaDial::set_proxr_resource(bionet_node_t *node)
 {
     proxr_pot_resource = bionet_node_get_resource_by_index(node, potNum);
@@ -107,6 +110,7 @@ void cgbaDial::set_proxr_resource(bionet_node_t *node)
     set_display(int(content));
 }
 
+// this function is the same as above but associates translator resources
 void cgbaDial::set_translator_resource(bionet_node_t *node)
 {
     translator_pot_resource = bionet_node_get_resource_by_index(node, potNum);
@@ -119,8 +123,6 @@ void cgbaDial::store_max_range(double max)
         max_range = ceil(max);
     if(max < 0)
         max_range = floor(max);
-
-    qDebug() << "max " << potNum << " = " << max_range;
 }
 
 void cgbaDial::store_min_range(double min)
@@ -130,8 +132,6 @@ void cgbaDial::store_min_range(double min)
         min_range = ceil(min);
     if(min < 0)
         min_range = floor(min);
-
-    qDebug() << "min " << potNum << " = " << min_range;
 }
 
 // switches dials to operate with cooked voltages
@@ -156,6 +156,7 @@ void cgbaDial::update_display_voltage()
 {
     double content;
     bionet_resource_get_double(this->proxr_pot_resource, &content, NULL);
+    qDebug() << "proxr resource " << potNum << " says " << content;
     // dividing cooked_voltage by increment gives the dial value
     int dial_value = content/VOLTAGE_INCREMENT;
     set_display(dial_value);
@@ -178,6 +179,45 @@ void cgbaDial::update_increment()
 
     // the 256 is because proxr is 8 bit resolution;
     increment = sum/256;
+}
+
+void cgbaDial::update_display_color(int8_t state)
+{
+    // get palette
+    QPalette pal = dialDisplay->palette();
+    QString s;
+
+    // depending on the state color differently
+    switch (state)
+    {
+        case SM_ZERO:
+            pal.setColor(QPalette::Base, Qt::gray);
+           s = dialDisplay->getText();
+            break;
+        case LL:    
+            pal.setColor(QPalette::Base, Qt::red);
+            break;
+        case LO: 
+            pal.setColor(QPalette::Base, Qt::yellow);
+            break;
+        case GREEN: 
+            pal.setColor(QPalette::Base, Qt::green);
+            break;
+        case HI: 
+            pal.setColor(QPalette::Base, Qt::yellow);
+            break;
+        case HH: 
+            pal.setColor(QPalette::Base, Qt::red);
+            break;
+        case SM_FIVE: 
+            pal.setColor(QPalette::Base, Qt::gray);
+            break;
+        default:
+            return;
+    }
+
+    // set the palette
+    dialDisplay->setPalette(pal);
 }
 
 cgbaDial::~cgbaDial()
