@@ -19,6 +19,7 @@ import logging
 import time
 from select import select
 import os
+import random
 
 # import Bionet's Hardware Abstractor module
 from bionet import *    
@@ -32,6 +33,8 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
+
+count = 0
 
 # New HAB callback is called each time a new HAB matching the subscription joins the Bionet network
 def cb_new_hab(hab):
@@ -62,7 +65,19 @@ def cb_datapoint(datapoint):
     logger.info("%(name)s = %(value)s @ %(timestamp)s", {"name" : bionet_resource_get_name(resource),
                                                          "value" : bionet_value_as_str(value),
                                                          "timestamp" : bionet_datapoint_timestamp_to_string(datapoint) } )
-
+    
+    # every 5th datapoint, change the update interval to some random number of seconds 1-10.
+    global count
+    count = count + 1
+    if (count % 5 == 0):
+        node = bionet_resource_get_node(resource)
+        hab = bionet_resource_get_hab(resource)
+        interval_res = bionet_cache_lookup_resource("Sample",
+                                                    bionet_hab_get_id(hab), 
+                                                    bionet_node_get_id(node), 
+                                                    "update-interval")
+        if (interval_res):
+            bionet_set_resource(interval_res, str(random.randint(1, 10)))
 
 
 # set the default Bionet log handler
@@ -96,8 +111,9 @@ if (bionet_fd != -1):
     fd_list.append(bionet_fd)
 
 while(1):
-    # select on the fd list and wait for 1 second.
-    (rr, wr, er) = select(fd_list, [], [], 1)
+    # select on the fd list
+    (rr, wr, er) = select(fd_list, [], [], None)
     for fd in rr:
         if (fd == bionet_fd):
             bionet_read() # causes the callbacks to get called
+        

@@ -59,8 +59,9 @@ logger.addHandler(ch)
 # the Bionet HAB to decide what to do. Either set the value in the 
 # hardware, ignore it, or just simply publish the new value.
 def pycb_set_resource(resource, value):
-    logger.info("callback: should set " + bionet_resource_get_local_name(resource) + " to " + bionet_value_to_str(value))
-
+    logger.debug("callback: setting " + bionet_resource_get_name(resource) + " to " + bionet_value_to_str(value))
+    bionet_resource_set(resource, value, None)
+    hab_report_datapoints(bionet_resource_get_node(resource))
 
 def process(hab):
     # this is where polling of the hardware would happen and then all
@@ -69,12 +70,13 @@ def process(hab):
     # get the node and the resource, increment the value in the resource
     node = bionet_hab_get_node_by_id(hab, "process")
     resource = bionet_node_get_resource_by_id(node, "uptime")
+    interval_res = bionet_node_get_resource_by_id(node, "update-interval")
 
     # at this time the python wrapper is still in development, there is no way
     # get the value without converting to a string and back again. In C this is
     # not a problem.
     val = int(bionet_resource_value_to_string(resource, 0))
-    val = val + 1
+    val = val + int(bionet_resource_value_to_string(interval_res, 0))
     bionet_resource_set_uint32(resource, val, None)
 
     # publish all the new datapoints
@@ -121,10 +123,19 @@ bionet_resource_set_uint32(resource, 0, None)
 bionet_node_add_resource(node, resource)
 
 # create the resource
-resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_STRING, BIONET_RESOURCE_FLAVOR_SENSOR, "process-id")
+resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_STRING, BIONET_RESOURCE_FLAVOR_SENSOR, "id")
 
-# set the datapoint of the resource to value 0 and timestamp Now.
+# set the datapoint of the resource to the PID of the process and timestamp Now.
 bionet_resource_set_str(resource, str(os.getppid()), None)
+
+# add the resource to the node
+bionet_node_add_resource(node, resource)
+
+# create a command-able resource
+resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_UINT32, BIONET_RESOURCE_FLAVOR_PARAMETER, "update-interval")
+
+# set the datapoint of the resource to 1 second
+bionet_resource_set_uint32(resource, 1, None)
 
 # add the resource to the node
 bionet_node_add_resource(node, resource)
@@ -148,23 +159,27 @@ fd_list = []
 if (hab_fd != -1):
     fd_list.append(hab_fd)
 
+interval_res = bionet_node_get_resource_by_id(bionet_hab_get_node_by_id(hab, "process"), "update-interval")
 
 last = time.time()
+remaining = remaining = int(bionet_resource_value_to_string(interval_res, 0))
+
 # main loop!
-# this very simple main loop selects on the fd list for 1 sec. every time 
+# this very simple main loop selects on the fd list for INTERVAL secs. every time 
 # the select ends it checks the fds and does a hab_read() if needed. If 1 second
 # has expired then it calls the process() function.
 while(1):
-    # select on the fd list and wait for 1 second.
-    (rr, wr, er) = select(fd_list, [], [], 1)
+    # select on the fd list and wait for some seconds.
+    (rr, wr, er) = select(fd_list, [], [], remaining)
     for fd in rr:
         if (fd == hab_fd):
             hab_read()
-    if ((time.time() - last) >= float(1)):
-        remaining = 1
+    if ((time.time() - last) >= int(bionet_resource_value_to_string(interval_res, 0))):
+        remaining = int(bionet_resource_value_to_string(interval_res, 0))
         process(hab)
+        last = time.time()
     else:
-        remaining = 1 - (time.time() - last)
+        remaining = int(bionet_resource_value_to_string(interval_res, 0)) - (time.time() - last)
     
-    last = time.time()
+    
         
