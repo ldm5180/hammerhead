@@ -1,0 +1,103 @@
+#!/usr/bin/python
+#
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+# Bionet Clients subscribe to data published by Bionet HABs. 
+# Subscriptions are in the format of resource name patterns:
+#     HAB-Type.HAB-ID.Node-ID:Resource-ID
+# Any of the '.' separated fields of the name pattern may be
+# a '*' which means match anything in that field. Bionet
+# automatically takes care of service discovery and calls 
+# user-registered callbacks for each piece of data received from 
+# a HAB.
+
+import sys
+import logging
+import time
+from select import select
+import os
+
+# import Bionet's Hardware Abstractor module
+from bionet import *    
+
+# initialize the Python logger
+logger = logging.getLogger("Bionet Sample Client")
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+
+# New HAB callback is called each time a new HAB matching the subscription joins the Bionet network
+def cb_new_hab(hab):
+    logger.info("new hab: %s" % bionet_hab_get_name(hab))
+
+# Lost HAB callback is called each time a HAB matching the subscription disconnects from the Bionet network
+def cb_lost_hab(hab):
+    logger.info("lost hab: %s" % bionet_hab_get_name(hab))
+
+# New Node callback is called each time a HAB reports a new node matching the subscription
+def cb_new_node(node):
+    logger.info("new node: %s" % bionet_node_get_name(node))
+    logger.info("    resources:");
+    for i in range(bionet_node_get_num_resources(node)):
+        resource = bionet_node_get_resource_by_index(node, i)
+        logger.info("        %(datatype)s %(flavor)s %(id)s" % {"datatype" : bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
+                                                                "flavor" : bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
+                                                                "id" : bionet_resource_get_id(resource) } )
+
+# Lost Node callback is called each time a HAB reports a lost node matching the subscription
+def cb_lost_node(node):
+    logger.info("lost node: %s" % bionet_node_get_name(node))
+
+# Datapoint callback is called each time a HAB publishes a datapoint matching the subscription
+def cb_datapoint(datapoint):
+    resource = bionet_datapoint_get_resource(datapoint)
+    value = bionet_datapoint_get_value(datapoint)
+    logger.info("%(name)s = %(value)s @ %(timestamp)s", {"name" : bionet_resource_get_name(resource),
+                                                         "value" : bionet_value_as_str(value),
+                                                         "timestamp" : bionet_datapoint_timestamp_to_string(datapoint) } )
+
+
+
+# set the default Bionet log handler
+bionet_log_use_default_handler(None)
+
+# connect to Bionet as a client
+bionet_fd = bionet_connect()
+
+# register all the callbacks desired
+pybionet_register_callback_new_hab(cb_new_hab);
+pybionet_register_callback_new_node(cb_new_node);
+pybionet_register_callback_lost_hab(cb_lost_hab);
+pybionet_register_callback_lost_node(cb_lost_node);
+pybionet_register_callback_datapoint(cb_datapoint);
+
+# subscribe to HABs, Nodes, and Datapoints. In this example, all HABs and Nodes 
+# are subscribed, but only datapoints from the Sample HAB.
+bionet_subscribe_hab_list_by_name("*.*")
+bionet_subscribe_node_list_by_name("*.*.*")
+bionet_subscribe_datapoints_by_name("Sample.*.*:*")
+
+
+# set up the selectable file descriptor list. Any time the file descriptor is
+# readable it should be read. It is readable any time a HAB published a
+# datapoint, new/lost node, or new/lost HAB and you are subscribed to it. The
+# proper callback will be called automatically.
+#
+# include any file descriptors for your own hardware if there are any.
+fd_list = []
+if (bionet_fd != -1):
+    fd_list.append(bionet_fd)
+
+while(1):
+    # select on the fd list and wait for 1 second.
+    (rr, wr, er) = select(fd_list, [], [], 1)
+    for fd in rr:
+        if (fd == bionet_fd):
+            bionet_read() # causes the callbacks to get called

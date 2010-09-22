@@ -1,0 +1,170 @@
+#!/usr/bin/python
+#
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+# HABs (Hardware Abstractors) are simple Bionet applications which 
+# communicate directly with hardware to convert and normalize the
+# data coming from a piece of hardware and publish it to all subscribers.
+# 
+# HABs contain 1 or more Rodes. Nodes allow for groupings of Resources 
+# into logical concepts. For example, if the HAB is controlling a
+# bluetooth receiver, each bluetooth transmitter connected to the receiver
+# would be a node.
+#
+# Nodes contain 1 or more Resources. Resources are the individual sensors
+# or other value producing/receiving items. Following the above example,
+# if each bluetooth transmitter has a thermometer and an accelerometer
+# the Node would have 2 Resources, 'Temperature-C' and 'Accel'.
+#
+# Resources are set with Datapoints. Datapoints are a tuple of a timestamp
+# and a value. If the hardware is smart enough to provide a timestamp then
+# that timestamp can be used in the datapoint, otherwise the timestamp
+# will be automatically set to the current time. 
+#
+# Ideally, the HAB always normalizes the data prior to publishing it. 
+# Again following the above example, the bluetooth receiver receives a 
+# binary value from the 'Temperature-C' resource. This value is then 
+# converted by the HAB to degrees C and then published. The idea here
+# is that only the HAB needs to have the specifics about how to convert
+# data from this particular device to a useful value. Once it is in a
+# "normal" engineering unit then any client can use it or convert it to
+# any other engineering unit desired without having to know anything
+# about the underlying hardware.
+
+import sys
+import logging
+import time
+from select import select
+import os
+
+# import Bionet's Hardware Abstractor module
+from hab import *    
+
+
+# initialize the Python logger
+logger = logging.getLogger("Bionet Sample HAB")
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+
+# The set resource callback function is called when a Bionet Client 
+# commands the resource to a specific value. At this point it is up to
+# the Bionet HAB to decide what to do. Either set the value in the 
+# hardware, ignore it, or just simply publish the new value.
+def pycb_set_resource(resource, value):
+    logger.info("callback: should set " + bionet_resource_get_local_name(resource) + " to " + bionet_value_to_str(value))
+
+
+def process(hab):
+    # this is where polling of the hardware would happen and then all
+    # the new values get set to the resources and published.
+
+    # get the node and the resource, increment the value in the resource
+    node = bionet_hab_get_node_by_id(hab, "process")
+    resource = bionet_node_get_resource_by_id(node, "uptime")
+
+    # at this time the python wrapper is still in development, there is no way
+    # get the value without converting to a string and back again. In C this is
+    # not a problem.
+    val = int(bionet_resource_value_to_string(resource, 0))
+    val = val + 1
+    bionet_resource_set_uint32(resource, val, None)
+
+    # publish all the new datapoints
+    hab_report_datapoints(node)
+
+    return
+
+
+
+# initialize Bionet Security here before connecting the HAB to Bionet if desired.
+
+
+# set the default Bionet log handler
+bionet_log_use_default_handler(None)
+
+
+# create the new HAB and name it.
+hab = bionet_hab_new("Sample", None)
+
+# register the set resource callback
+pyhab_register_callback_set_resource(pycb_set_resource)
+
+# connect the HAB to the Bionet network
+hab_fd = hab_connect(hab)
+
+
+# connect to your hardware and ensure it is there.
+
+
+# create nodes for each logical piece of hardware the HAB communicates with and
+# add it to the HAB. Note: all resources must also be created for the node before
+# the node is published since resources are static. Nodes however can come and go
+# as they please.
+node = bionet_node_new(hab, "process");
+bionet_hab_add_node(hab, node)
+
+# create the resource
+resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_UINT32, BIONET_RESOURCE_FLAVOR_SENSOR, "uptime")
+
+# set the datapoint of the resource to value 0 and timestamp Now.
+bionet_resource_set_uint32(resource, 0, None)
+
+# add the resource to the node
+bionet_node_add_resource(node, resource)
+
+# create the resource
+resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_STRING, BIONET_RESOURCE_FLAVOR_SENSOR, "process-id")
+
+# set the datapoint of the resource to value 0 and timestamp Now.
+bionet_resource_set_str(resource, str(os.getppid()), None)
+
+# add the resource to the node
+bionet_node_add_resource(node, resource)
+
+# publish the new node to the Bionet network
+hab_report_new_node(node)
+
+# publish all the datapoints to the Bionet network
+hab_report_datapoints(node)
+
+
+
+# set up the selectable file descriptor list. Any time the file descriptor is
+# readable it should be read. It is readable when a new client is subscribing
+# or when a client has commanded something. Either way the correct callbacks
+# are called, your 'set resource' callback or internal ones to handle the
+# subscription.
+#
+# include any file descriptors for your own hardware if there are any.
+fd_list = []
+if (hab_fd != -1):
+    fd_list.append(hab_fd)
+
+
+last = time.time()
+# main loop!
+# this very simple main loop selects on the fd list for 1 sec. every time 
+# the select ends it checks the fds and does a hab_read() if needed. If 1 second
+# has expired then it calls the process() function.
+while(1):
+    # select on the fd list and wait for 1 second.
+    (rr, wr, er) = select(fd_list, [], [], 1)
+    for fd in rr:
+        if (fd == hab_fd):
+            hab_read()
+    if ((time.time() - last) >= float(1)):
+        remaining = 1
+        process(hab)
+    else:
+        remaining = 1 - (time.time() - last)
+    
+    last = time.time()
+        
