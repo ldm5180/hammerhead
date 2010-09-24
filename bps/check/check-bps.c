@@ -8,6 +8,7 @@
 #include <check.h>
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/wait.h>
 
 #include "check-bps.h"
@@ -25,25 +26,30 @@ int main(int argc, char * argv[])
     int number_failed = 0;
     int rc;
 
-    Suite *s = check_bps_suite();
-    SRunner *sr = srunner_create(s);
-
-
     // Start ION
     printf("==============================================================\n");
+    printf("Starting ION for ALL checks...\n");
     rc = system("ionstart -I ion.rc");
-    printf("==============================================================\n");
     printf("ionstart => %d\n", WEXITSTATUS(rc));
+    printf("==============================================================\n");
+
+
+    Suite *s = check_bps_suite();
+    SRunner *sr = srunner_create(s);
 
     // Run all tests
     srunner_run_all(sr, CK_NORMAL);
 
-    printf("==============================================================\n");
-    rc = system("ionstop");
-    printf("==============================================================\n");
-
     number_failed = srunner_ntests_failed(sr);
     srunner_free(sr);
+
+    alarm(0); // This should have happened in srunner_free :(
+
+    printf("==============================================================\n");
+    printf("Stopping ION\n");
+    rc = system("ionstop");
+    printf("==============================================================\n");
+    printf("\n");
 
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 } /* main() */
