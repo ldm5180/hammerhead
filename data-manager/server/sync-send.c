@@ -35,9 +35,8 @@
 
 #if ENABLE_ION
 #include "bps/bps_socket.h"
-
-char * dtn_endpoint_id = NULL;
 #endif
+char * dtn_endpoint_id = NULL;
 
 static int sync_init_connection(sync_sender_config_t * config);
 static void sync_cancel_connection(sync_sender_config_t * config);

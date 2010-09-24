@@ -383,6 +383,7 @@ int cal_readable_handler(
     return cal_server.read(libbdm_cal_handle, &timeout, 0);
 }
 
+#if ENABLE_ION
 int bp_readable_handler(GIOChannel *listening_ch,
 			 GIOCondition condition,
 			 gpointer usr_data) 
@@ -411,6 +412,7 @@ int bp_readable_handler(GIOChannel *listening_ch,
 
     return TRUE;
 }
+#endif
 
 
 
@@ -622,7 +624,6 @@ int main(int argc, char *argv[]) {
     // we'll be using glib, so capture its log messages
     //
     int switch_to_syslog = 1;
-    int r;
 
     bdm_log_context_t lc = {
         log_to: stdout,
@@ -766,6 +767,7 @@ int main(int argc, char *argv[]) {
 #if ENABLE_ION
     if(ion_key){
 #if     HAVE_SM_SET_BASEKEY
+            int r;
             r = bps_setopt(BPST_ION, BPSO_ION_BASEKEY, &ion_key, sizeof(long));
             if ( r != 0 ) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
@@ -970,25 +972,31 @@ int main(int argc, char *argv[]) {
     make_shutdowns_clean();
 
     if(need_bps_socket) {
-        bps_fd = bps_socket(0, 0, 0);
-        if(bps_fd < 0) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-                  "Error creating bps socket: %s", strerror(errno));
-            return 1;
-        }
-
-	if (dtn_endpoint_id) {
-            struct bps_sockaddr srcaddr;
-            strncpy(srcaddr.uri, dtn_endpoint_id, BPS_EID_SIZE);
-            r = bps_bind(bps_fd, &srcaddr, sizeof(struct bps_sockaddr));
-            if ( r ) {
+#if     ENABLE_ION
+            bps_fd = bps_socket(0, 0, 0);
+            if(bps_fd < 0) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-                      "Error binding bps socket to '%s': %s", 
-                    dtn_endpoint_id, strerror(errno));
+                      "Error creating bps socket: %s", strerror(errno));
                 return 1;
             }
 
-        }
+            if (dtn_endpoint_id) {
+                int r;
+                struct bps_sockaddr srcaddr;
+                strncpy(srcaddr.uri, dtn_endpoint_id, BPS_EID_SIZE);
+                r = bps_bind(bps_fd, &srcaddr, sizeof(struct bps_sockaddr));
+                if ( r ) {
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                          "Error binding bps socket to '%s': %s", 
+                        dtn_endpoint_id, strerror(errno));
+                    return 1;
+                }
+
+            }
+#       else
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                  "DTN capabilities were disabled at compile time.");
+#       endif
     }
 
     //create a config for each sync sender configuration
@@ -1018,6 +1026,7 @@ int main(int argc, char *argv[]) {
 #if ENABLE_ION
     // Setup the sync-receive socket
     if (enable_dtn_sync_receiver) {
+        int r;
 	if (NULL == dtn_endpoint_id) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		  "DTN Sync Receiver requested, but no DTN endpoint ID specified.");
@@ -1053,9 +1062,11 @@ int main(int argc, char *argv[]) {
     g_main_loop_run(bdm_main_loop);
 
 
+#if ENABLE_ION
     if ( need_bps_socket ) {
         bps_close(bps_fd);
     }
+#endif
 
     // 
     // if we get here, then the main loop has quit and we need to exit

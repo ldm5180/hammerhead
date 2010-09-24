@@ -336,10 +336,7 @@ typedef struct {
 } client_t;
 
 
-#ifdef ENABLE_ION
-extern client_t dtn_thread_data;
 extern char * dtn_endpoint_id;
-#endif
 
 int client_connecting_handler(GIOChannel *ch, GIOCondition condition, gpointer listening_fd_as_pointer);
 int client_readable_handler(GIOChannel *unused, GIOCondition unused2, client_t *client);

@@ -10,9 +10,6 @@ void * libbdm_cal_handle = NULL;
 bionet_bdm_t * this_bdm = NULL;
 
 int bdm_shutdown_now = 0;
-#ifdef ENABLE_ION
-client_t dtn_thread_data = {0};
-#endif
 
 sqlite3 * main_db = NULL;
 bdm_db_batch_t * dbb = NULL;
