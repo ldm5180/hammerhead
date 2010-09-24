@@ -102,4 +102,8 @@ LIBS_BDM = $(top_srcdir)/libbdm/libbdm.la
 INCLUDES_QT = `pkg-config --cflags QtCore` `pkg-config --cflags QtGui`
 LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`
 
+CFLAGS_LIBBPS = -pthread
+LDFLAGS_LIBBPS = -pthread
+LIBS_LIBBPS = $(top_srcdir)/bps/libbps.la
+
 bionetdatadir = $(datadir)/bionet2

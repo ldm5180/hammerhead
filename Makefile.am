@@ -7,10 +7,10 @@ include $(top_srcdir)/common.am
 
 ACLOCAL_AMFLAGS = -I build-aux/m4
 
-SUBDIRS = cal util asn.1 libhab libbionet  
+SUBDIRS = cal util asn.1 libhab libbionet bps
 
 if ENABLE_BDM
-SUBDIRS += libbdm data-manager
+SUBDIRS += libbdm data-manager bps
 endif
 SUBDIRS += hab client security apps check test
 

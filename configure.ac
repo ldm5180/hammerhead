@@ -702,6 +702,9 @@ AC_CONFIG_FILES([Makefile
                  data-manager/client/bp-commander/Makefile
                  data-manager/client/twisted/Makefile
                  data-manager/client/bdmplot/Makefile
+                 bps/Makefile
+                 bps/utils/Makefile
+                 bps/check/Makefile
 		 security/Makefile
 		 security/ca/Makefile
 		 apps/Makefile

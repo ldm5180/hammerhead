@@ -37,11 +37,13 @@
 // Instructions can be found on our website at 
 // http://bioserve.colorado.edu/developers-corner.
 
-#include <stdlib.h>
-#include <sys/types.h>
-
 #ifndef BPS_SOCKET_H
 #define BPS_SOCKET_H
+
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
 
 /**
  * @file bps_socket.h
@@ -56,14 +58,73 @@ extern "C"
 {
 #endif
 
-#define AF_DTN
+#define BPS_EID_SIZE 255
+
+/* Implmentation Types */
+#define BPST_ION 1
+
+/* ION Options */
+/* TODO: Move to a bps_ion_bits.h */
+#define BPSO_ION_BASEKEY 1
+
+/*
+ * BPS Socket Options.
+ *
+ * Used with bps_setsockopt() and bps_getsockopt()
+ */
+
+/* Socket Level */
+#define SOL_BP 1
+
+
+/**
+ * BPS Socket option for the bundle lifetime, in seconds.
+ *
+ * Type: int
+ *
+ *
+ * Values: Anything > 0 (Default = 60 )
+ */
+#define BPS_SO_BDL_LIFETIME    1
+
+/**
+ * BPS Socket option for the bundle priority.
+ *
+ * Type: int
+ *
+ * Values may be:
+ *  0 - Bulk Priority (Slower)
+ *  1 - Standard Priority (Default)
+ *  2 - Expediated Priority (Faster)
+ */
+#define BPS_SO_BDL_PRIORITY    2
+
+/**
+ * BPS Socket option for custody flag
+ *
+ * Type: int
+ *
+ * Values may be:
+ *  0 - No custody requested (Default)
+ *  1 - Source custody optional
+ *  2 - Source custody required
+ */
+#define BPS_SO_REQ_CUSTODY 3
+
 
 
 typedef struct bps_sockaddr
 {
-	char uri[BPS_EID_SZ];
+    char uri[BPS_EID_SIZE];
 } bps_sockaddr;
-typedef bps_sockaddr *in_bpsaddr;
+
+/**
+ * Destroy the bps_interface
+ *
+ * This needs to be called prior to exit(), to properly
+ * detach from any system shared memory
+ */
+void bps_destroy(void);
 
 /**
  * Create a socket for bps communication.
@@ -96,10 +157,12 @@ extern int bps_socket(int domain, int type, int protocol);
  * @param[in] sockfd
  *   Socket file descriptor returned by some bps_*() function
  * @param[in] level 
- *   The socket API level to set. Only SOL_SOCKET is supported.
+ *   The socket API level to set. Only SOL_BP is supported.
  * @param[in] optname 
  *   Option to set. One of:
- *     - TBD
+ *     - #BPS_SO_BDL_LIFETIME (int)
+ *     - #BPS_SO_BDL_PRIORITY (int)
+ *     - #BPS_SO_REQ_CUSTODY  (int)
  * @param[in] optval 
  *   Set option to this value. Type is specified by optname
  * @param[in] optlen 
@@ -109,7 +172,7 @@ extern int bps_socket(int domain, int type, int protocol);
  * @return On error, -1 is returned, and errno is set appropriately. 
  */
 extern int bps_setsockopt(int sock_fd, int level, int optname, 
-        void *optval, socklen_t optlen);
+        const void *optval, socklen_t optlen);
 
 /**
  * Set bps soclket options
@@ -119,10 +182,12 @@ extern int bps_setsockopt(int sock_fd, int level, int optname,
  * @param[in] sockfd
  *   Socket file descriptor returned by some bps_*() function
  * @param[in] level 
- *   The socket API level to set. Only SOL_SOCKET is supported.
+ *   The socket API level to set. Only SOL_BP is supported.
  * @param[in] optname 
  *   Option to get. One of:
- *     - TBD
+ *     - #BPS_SO_BDL_LIFETIME (int)
+ *     - #BPS_SO_BDL_PRIORITY (int)
+ *     - #BPS_SO_REQ_CUSTODY  (int)
  * @param[out] optval 
  *   Buffer to store option value in. Type is specified by optname
  * @param[in,out] optlen 
@@ -172,7 +237,7 @@ extern int bps_bind(int sockfd, struct bps_sockaddr *addr, socklen_t addrlen);
  * @return On success, a new bps socket file descriptor
  * @return On error, -1 is returned, and errno is set appropriately. 
  */
-extern int bps_connect(int dtn_fd, struct bps_sockaddr *addr, socklen_t addrlen);
+extern int bps_connect(int sockfd, struct bps_sockaddr *addr, socklen_t addrlen);
 
 /**
  * Put the bound socket in listening mode
@@ -328,8 +393,35 @@ extern int bps_sendto(int sockfd, void *buf, size_t len, int flags,
  * this socket.
  *
  * @param sockfd The bps socket to close
+ *
+ * @return 0 on success
+ * @return -1 on error, with errno set accordingly
  */
-extern void bps_close(int sockfd);
+extern int bps_close(int sockfd);
+
+/**
+ * Set an option for the library
+ *
+ * This should be called before calling bps_socket()
+ *
+ * @param impl_type
+ *    The BP Implementation type. one of
+ *     - #BPST_ION
+ *
+ * @param opt
+ *    The option to set. One of
+ *     - #BPSO_ION_BASEKEY (long) The basekey to use for ion
+ *
+ * @param optval
+ *    The value to set. Type is defined by opt
+ *
+ * @param optlen
+ *     The length of the buffer pointed to by optval
+ *
+ * @return 0 on succes
+ * @return -1 on error, with errno set
+ */
+extern int bps_setopt(int impl_type, int opt, void* optval, size_t optlen);
 
 #ifdef __cplusplus
 }
