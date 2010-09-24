@@ -30,9 +30,12 @@ int main(int argc, char * argv[])
     // Start ION
     printf("==============================================================\n");
     printf("Starting ION for ALL checks...\n");
+    fflush(stdout);
     rc = system("ionstart -I ion.rc");
+    fflush(stdout);
     printf("ionstart => %d\n", WEXITSTATUS(rc));
     printf("==============================================================\n");
+    fflush(stdout);
 
 
     Suite *s = check_bps_suite();
@@ -48,9 +51,11 @@ int main(int argc, char * argv[])
 
     printf("==============================================================\n");
     printf("Stopping ION\n");
+    fflush(stdout);
     rc = system("ionstop");
     printf("==============================================================\n");
     printf("\n");
+    fflush(stdout);
 
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 } /* main() */

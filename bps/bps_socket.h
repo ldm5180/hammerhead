@@ -171,7 +171,7 @@ extern int bps_socket(int domain, int type, int protocol);
  * @return On success, zero is returned
  * @return On error, -1 is returned, and errno is set appropriately. 
  */
-extern int bps_setsockopt(int sock_fd, int level, int optname, 
+extern int bps_setsockopt(int sockfd, int level, int optname, 
         const void *optval, socklen_t optlen);
 
 /**
@@ -340,7 +340,7 @@ extern int bps_recv(int sockfd, void *buf, size_t len, int flags);
  * @return -1 on error. errno set accordingly
  */
 extern int bps_recvfrom(int sockfd, void *buf, size_t len, int flags, 
-        struct bps_sockaddr *src_addr, socklen_t *adderlen);
+        struct bps_sockaddr *src_addr, socklen_t *addrlen);
 
 
 /**
@@ -386,7 +386,7 @@ extern int bps_send(int sockfd, void *buf, size_t len, int flags);
  * @return On error, -1. errno set accordingly
  */
 extern int bps_sendto(int sockfd, void *buf, size_t len, int flags, 
-        struct bps_sockaddr *dst_addr, socklen_t adderlen);
+        struct bps_sockaddr *dst_addr, socklen_t addrlen);
 
 /**
  * Close the bps socket and destroys any memory held internally for 
