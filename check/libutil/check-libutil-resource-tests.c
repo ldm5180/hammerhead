@@ -3045,7 +3045,7 @@ START_TEST (test_libutil_resource_get_set_user_data_0) {
     fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
 
     bionet_resource_set_user_data(resource, (void *)data);
-    fail_unless(data == (bionet_hab_t *)bionet_resource_get_user_data(resource),
+    fail_unless(data == (char *)bionet_resource_get_user_data(resource),
 		"Failed to get user data which was set.\n");
 } END_TEST /* test_libutil_resource_get_set_user_data_0 */
 
@@ -3199,6 +3199,112 @@ START_TEST (test_libutil_resource_get_set_epsilon_4) {
     fail_unless(epsilon2 == bionet_resource_get_epsilon(resource),
 		"Failed to get the epsilon set.\n");
 } END_TEST /* test_libutil_resource_get_set_epsilon_4 */
+
+
+START_TEST (test_libutil_resource_get_set_delta_0) {
+    bionet_resource_t * resource;
+    struct timeval tv;
+    const struct timeval * delta;
+
+    tv.tv_sec = 1;
+    tv.tv_usec = 10;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_set_delta(resource, tv),
+	    "Failed to set delta.\n");
+
+    delta = bionet_resource_get_delta(resource);
+    fail_unless(delta->tv_sec == 1 && delta->tv_usec == 10,
+		"Failed to get the delta set.\n");
+} END_TEST /* test_libutil_resource_get_set_delta_0 */
+
+
+START_TEST (test_libutil_resource_get_set_delta_1) {
+    struct timeval tv;
+
+    tv.tv_sec = 1;
+    tv.tv_usec = 10;
+
+    fail_unless(bionet_resource_set_delta(NULL, tv),
+	    "Failed to detect NULL resource\n");
+} END_TEST /* test_libutil_resource_get_set_delta_1 */
+
+
+START_TEST (test_libutil_resource_get_set_delta_2) {
+    bionet_resource_t * resource;
+    struct timeval tv;
+    const struct timeval * delta;
+
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_set_delta(resource, tv),
+	    "Failed to set delta.\n");
+
+    delta = bionet_resource_get_delta(resource);
+    fail_unless(NULL == delta,
+		"Failed to get the delta set.\n");
+} END_TEST /* test_libutil_resource_get_set_delta_2 */
+
+
+START_TEST (test_libutil_resource_get_set_delta_3) {
+    bionet_resource_t * resource;
+    struct timeval tv;
+    const struct timeval * delta;
+
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    delta = bionet_resource_get_delta(resource);
+    fail_unless(NULL == delta,
+		"Failed to get the delta set.\n");
+} END_TEST /* test_libutil_resource_get_set_delta_3 */
+
+
+START_TEST (test_libutil_resource_get_set_delta_4) {
+    bionet_resource_t * resource;
+    struct timeval tv;
+    const struct timeval * delta;
+
+    tv.tv_sec = 1;
+    tv.tv_usec = 1;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_resource_set_delta(resource, tv),
+	    "Failed to set delta.\n");
+
+    tv.tv_sec = 2;
+    tv.tv_usec = 2;
+
+    fail_if(bionet_resource_set_delta(resource, tv),
+	    "Failed to set delta.\n");
+
+    delta = bionet_resource_get_delta(resource);
+    fail_unless(delta->tv_sec == 2 && delta->tv_usec == 2,
+		"Failed to get the delta set.\n");
+} END_TEST /* test_libutil_resource_get_set_delta_4 */
 
 
 void libutil_resource_tests_suite(Suite *s) {
@@ -3492,6 +3598,14 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_get_set_epsilon_2);
     tcase_add_test(tc, test_libutil_resource_get_set_epsilon_3);
     tcase_add_test(tc, test_libutil_resource_get_set_epsilon_4);
+
+    /* bionet_resource_set_delta() */
+    /* bionet_resource_get_delta() */
+    tcase_add_test(tc, test_libutil_resource_get_set_delta_0);
+    tcase_add_test(tc, test_libutil_resource_get_set_delta_1);
+    tcase_add_test(tc, test_libutil_resource_get_set_delta_2);
+    tcase_add_test(tc, test_libutil_resource_get_set_delta_3);
+    tcase_add_test(tc, test_libutil_resource_get_set_delta_4);
 
     return;
 } /* libutil_resource_tests_suite */
