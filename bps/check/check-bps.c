@@ -17,7 +17,8 @@ Suite * check_bps_suite(void) {
     Suite * s = suite_create ("bundle-protocol-sockets");
 
     // Add tests
-    bsp_api_tests_init(s);
+    bps_api_tests_init(s);
+    bps_ion_tests_init(s);
     return s;
 }
 

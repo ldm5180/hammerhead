@@ -1,3 +1,4 @@
+#include "check-bps.h"
 
 #include <check.h>
 #include <errno.h>
@@ -26,6 +27,7 @@ START_TEST (check_bps_socket) {
 
 }
 END_TEST
+
 
 START_TEST (check_bps_send) {
     int r;
@@ -57,7 +59,7 @@ START_TEST (check_bps_send) {
 }
 END_TEST
 
-void bsp_api_tests_init(Suite *s) {
+void bps_api_tests_init(Suite *s) {
     TCase * tc = tcase_create ("bps-api");
 
     tcase_add_test (tc, check_bps_socket);

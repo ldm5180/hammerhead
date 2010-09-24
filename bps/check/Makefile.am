@@ -12,7 +12,8 @@ check_PROGRAMS = check-bps
 
 nodist_check_bps_SOURCES = \
 	check-bps.c \
-	bps-api-tests.c
+	bps-api-tests.c \
+	bps-ion-tests.c
 
 check_bps_CFLAGS = $(AM_CFLAGS) $(CHECK_CFLAGS) $(GLIB_CFLAGS) -fno-strict-aliasing
 
