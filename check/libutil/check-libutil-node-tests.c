@@ -21,7 +21,7 @@
 #include "check-libutil-node-tests.h"
 
 
-static void node_destructor(bionet_node_t * hab, void * user_data);
+static void node_destructor(bionet_node_t * node, void * user_data);
 
 
 /*
@@ -1848,7 +1848,7 @@ void libutil_node_tests_suite(Suite *s)
     return;
 } /* libutil_node_tests_suite() */
 
-static void node_destructor(bionet_node_t * hab, void * user_data) {
+static void node_destructor(bionet_node_t * node, void * user_data) {
     int * called = (int *)user_data;
     *called = *called + 1;
 }

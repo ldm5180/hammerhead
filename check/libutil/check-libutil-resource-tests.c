@@ -20,6 +20,9 @@
 #include "check-libutil-resource-tests.h"
 
 
+static void resource_destructor(bionet_resource_t * resource, void * user_data);
+
+
 START_TEST (test_libutil_resource_new_0) {
     bionet_resource_t * resource;
 
@@ -3307,6 +3310,145 @@ START_TEST (test_libutil_resource_get_set_delta_4) {
 } END_TEST /* test_libutil_resource_get_set_delta_4 */
 
 
+/*
+ * bionet_resource_add_destructor(node)
+ */
+START_TEST (test_libutil_resource_add_destructor_0) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    fail_if (bionet_hab_add_node(hab, node), "Failed to add node to HAB.");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_node_add_resource(node, resource), "Failed to add resource to node.");
+
+    fail_if(bionet_resource_add_destructor(resource, resource_destructor, &called), "Failed to add destructor to Node.");
+
+    bionet_hab_free(hab);
+    
+    fail_unless(1 == called, 
+		"HAB free'd. Destructor should have been called and counter incremented.");
+} END_TEST /* test_libutil_resource_add_destructor_0 */
+
+
+/*
+ * bionet_resource_add_destructor(node)
+ */
+START_TEST (test_libutil_resource_add_destructor_1) {
+    bionet_hab_t * hab;
+    bionet_event_t * event;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_node_add_resource(node, resource), "Failed to add resource to node.");
+
+    fail_if(bionet_resource_add_destructor(resource, resource_destructor, &called), "Failed to add event to HAB.");
+    fail_if(bionet_resource_add_destructor(resource, resource_destructor, &called), "Failed to add event to HAB.");
+
+    bionet_resource_free(resource);
+    
+    fail_unless(2 == called, 
+		"Node free'd. Destructor added twice so should have been called and counter incremented twice.");
+} END_TEST /* test_libutil_resource_add_destructor_1 */
+
+
+/*
+ * bionet_resource_add_destructor(node)
+ */
+START_TEST (test_libutil_resource_add_destructor_2) {
+    int called = 0;
+    
+    fail_unless(bionet_resource_add_destructor(NULL, resource_destructor, &called), 
+		"Failed to detect NULL Node passed in.");
+} END_TEST /* test_libutil_resource_add_destructor_2 */
+
+
+/*
+ * bionet_resource_add_destructor(node)
+ */
+START_TEST (test_libutil_resource_add_destructor_3) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_node_add_resource(node, resource), "Failed to add resource to node.");
+
+    fail_unless(bionet_resource_add_destructor(resource, NULL, &called), 
+		"Failed to detect NULL destructor passed in.");
+} END_TEST /* test_libutil_resource_add_destructor_3 */
+
+
+/*
+ * bionet_resource_add_destructor(node)
+ */
+START_TEST (test_libutil_resource_add_destructor_4) {
+    bionet_hab_t * hab;
+    bionet_node_t * node;
+    bionet_resource_t * resource;
+    int called = 0;
+    
+    hab = bionet_hab_new(NULL, NULL);
+    fail_unless(NULL != hab, "Failed to get a new HAB: %m\n");
+
+    node = bionet_node_new(hab, "node");
+    fail_unless(NULL != node, "Failed to get a new Node: %m\n");
+
+    resource = bionet_resource_new(node, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    fail_if(bionet_node_add_resource(node, resource), "Failed to add resource to node.");
+
+    fail_if(bionet_resource_add_destructor(resource, resource_destructor, &called), "Failed to add destructor to Resource.");
+
+    bionet_resource_free(resource);
+    
+    fail_unless(1 == called, 
+		"Node free'd. Destructor should have been called and counter incremented.");
+} END_TEST /* test_libutil_resource_add_destructor_4 */
+
+
 void libutil_resource_tests_suite(Suite *s) {
     TCase *tc = tcase_create("Bionet Resource");
     suite_add_tcase(s, tc);
@@ -3607,9 +3749,20 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_get_set_delta_3);
     tcase_add_test(tc, test_libutil_resource_get_set_delta_4);
 
+    /* bionet_resource_add_destructor*/
+    tcase_add_test(tc, test_libutil_resource_add_destructor_0);
+    tcase_add_test(tc, test_libutil_resource_add_destructor_1);
+    tcase_add_test(tc, test_libutil_resource_add_destructor_2);
+    tcase_add_test(tc, test_libutil_resource_add_destructor_3);
+    tcase_add_test(tc, test_libutil_resource_add_destructor_4);
+
     return;
 } /* libutil_resource_tests_suite */
 
+static void resource_destructor(bionet_resource_t * resource, void * user_data) {
+    int * called = (int *)user_data;
+    *called = *called + 1;
+}
 
 // Emacs cruft
 // Local Variables:
