@@ -105,8 +105,8 @@ int bionet_epsilon_get_str(const bionet_epsilon_t *epsilon,
 			 int * content)
 {
     return bionet_epsilon_get_internal(epsilon, 
-				     &content,
-				     BIONET_RESOURCE_DATA_TYPE_STRING);
+				       content,
+				       BIONET_RESOURCE_DATA_TYPE_STRING);
 } /* bionet_epsilon_get_str() */
 
 

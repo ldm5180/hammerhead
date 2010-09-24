@@ -21,7 +21,7 @@ static bionet_epsilon_t * bionet_epsilon_new_internal(const void *content,
 bionet_epsilon_t *bionet_epsilon_new_binary(int content)
 {
     return bionet_epsilon_new_internal(&content, 
-				     BIONET_RESOURCE_DATA_TYPE_BINARY);
+				       BIONET_RESOURCE_DATA_TYPE_BINARY);
 } /* bionet_epsilon_new_binary() */
 
 
@@ -116,6 +116,10 @@ static bionet_epsilon_t * bionet_epsilon_new_internal(const void *content,
     case BIONET_RESOURCE_DATA_TYPE_BINARY:
     {
 	int * pContent = (int *)content;
+	if (*pContent) {
+	    /* since this is a binary, ensure that it is only 0 or 1 */
+	    *pContent = 1;
+	}
 	epsilon->content.binary_v = *pContent;
 	break;
     }

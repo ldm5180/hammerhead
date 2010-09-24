@@ -390,7 +390,7 @@ int bionet_epsilon_get_double(const bionet_epsilon_t *epsilon,
  */
 BIONET_UTIL_API_DECL
 int bionet_epsilon_get_str(const bionet_epsilon_t *epsilon,
-			 int * content);
+			   int * content);
 
 
 

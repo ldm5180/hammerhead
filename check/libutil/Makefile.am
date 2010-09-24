@@ -13,12 +13,14 @@ check_PROGRAMS = check-libutil
 nodist_check_libutil_SOURCES = \
 	../check-common.c \
 	check-libutil.c \
-	check-libutil-resource-tests.c \
-	check-libutil-hab-tests.c \
-	check-libutil-node-tests.c \
 	check-libutil-split-hab-name.c \
 	check-libutil-split-node-name.c \
-	check-libutil-split-resource-name.c
+	check-libutil-split-resource-name.c \
+	check-libutil-hab-tests.c \
+	check-libutil-node-tests.c \
+	check-libutil-resource-tests.c \
+	check-libutil-epsilon-tests.c
+
 
 check_libutil_CFLAGS = $(CHECK_CFLAGS) -I.. $(CFLAGS_BIONET_UTIL) $(GLIB_CFLAGS)
 

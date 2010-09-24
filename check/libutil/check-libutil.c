@@ -13,12 +13,13 @@
 #include "check-common.h"
 #include "bionet-util.h"
 
-#include "check-libutil-hab-tests.h"
-#include "check-libutil-node-tests.h"
 #include "check-libutil-split-hab-name.h"
 #include "check-libutil-split-node-name.h"
 #include "check-libutil-split-resource-name.h"
+#include "check-libutil-hab-tests.h"
+#include "check-libutil-node-tests.h"
 #include "check-libutil-resource-tests.h"
+#include "check-libutil-epsilon-tests.h"
 
 int main(int argc, char * argv[])
 {
@@ -26,12 +27,13 @@ int main(int argc, char * argv[])
 
     suite_t func_unit_test_suite[] = 
         {
-            { "Bionet Util HAB Tests", &libutil_hab_tests_suite },
-            { "Bionet Util Node Tests", &libutil_node_tests_suite },
-            { "Bionet Util Resource Tests", &libutil_resource_tests_suite },
             { "Bionet Util Split HAB Name", &libutil_split_hab_name_suite },
             { "Bionet Util Split Node Name", &libutil_split_node_name_suite },
             { "Bionet Util Split Resource Name", &libutil_split_resource_name_suite },
+            { "Bionet Util HAB Tests", &libutil_hab_tests_suite },
+            { "Bionet Util Node Tests", &libutil_node_tests_suite },
+            { "Bionet Util Resource Tests", &libutil_resource_tests_suite },
+            { "Bionet Util Epsilon Tests", &libutil_epsilon_tests_suite },
         };
 
     /* run all the integration test suites */
