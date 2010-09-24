@@ -201,6 +201,22 @@ START_TEST (test_libutil_epsilon_new_str_0) {
 } END_TEST /* test_libutil_epsilon_new_str_0 */
 
 
+START_TEST (test_libutil_epsilon_free_0) {
+    bionet_epsilon_t * epsilon;
+    int val = 1;
+
+    epsilon = bionet_epsilon_new_str(val);
+    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+
+    bionet_epsilon_free(epsilon);
+} END_TEST /* test_libutil_epsilon_free_0 */
+
+
+START_TEST (test_libutil_epsilon_free_1) {
+    bionet_epsilon_free(NULL);
+} END_TEST /* test_libutil_epsilon_free_1 */
+
+
 void libutil_epsilon_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet Epsilon");
@@ -211,32 +227,36 @@ void libutil_epsilon_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_epsilon_new_binary_1);
     tcase_add_test(tc, test_libutil_epsilon_new_binary_2);
 
-    /* bionet_epsilon_new_uint8_0() */
+    /* bionet_epsilon_new_uint8() */
     tcase_add_test(tc, test_libutil_epsilon_new_uint8_0);
 
-    /* bionet_epsilon_new_int8_0() */
+    /* bionet_epsilon_new_int8() */
     tcase_add_test(tc, test_libutil_epsilon_new_int8_0);
 
-    /* bionet_epsilon_new_uint16_0() */
+    /* bionet_epsilon_new_uint16() */
     tcase_add_test(tc, test_libutil_epsilon_new_uint16_0);
 
-    /* bionet_epsilon_new_int16_0() */
+    /* bionet_epsilon_new_int16() */
     tcase_add_test(tc, test_libutil_epsilon_new_int16_0);
 
-    /* bionet_epsilon_new_uint32_0() */
+    /* bionet_epsilon_new_uint32() */
     tcase_add_test(tc, test_libutil_epsilon_new_uint32_0);
 
-    /* bionet_epsilon_new_int32_0() */
+    /* bionet_epsilon_new_int32() */
     tcase_add_test(tc, test_libutil_epsilon_new_int32_0);
 
-    /* bionet_epsilon_new_float_0() */
+    /* bionet_epsilon_new_float() */
     tcase_add_test(tc, test_libutil_epsilon_new_float_0);
 
-    /* bionet_epsilon_new_double_0() */
+    /* bionet_epsilon_new_double() */
     tcase_add_test(tc, test_libutil_epsilon_new_double_0);
 
-    /* bionet_epsilon_new_str_0() */
+    /* bionet_epsilon_new_str() */
     tcase_add_test(tc, test_libutil_epsilon_new_str_0);
+
+    /* bionet_epsilon_free() */
+    tcase_add_test(tc, test_libutil_epsilon_free_0);
+    tcase_add_test(tc, test_libutil_epsilon_free_1);
 
     return;
 } /* libutil_hab_tests_suite() */

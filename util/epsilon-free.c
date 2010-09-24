@@ -20,7 +20,7 @@ void bionet_epsilon_free(bionet_epsilon_t *epsilon)
     /* sanity */
     if (NULL == epsilon)
     {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "bionet_epsilon_free(): NULL epsilon passed in");
 	errno = EINVAL;
 	return;
