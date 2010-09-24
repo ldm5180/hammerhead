@@ -245,6 +245,416 @@ START_TEST (test_libutil_epsilon_to_str_1) {
 } END_TEST /* test_libutil_epsilon_to_str_1 */
 
 
+START_TEST (test_libutil_epsilon_get_binary_0) {
+    bionet_epsilon_t * epsilon;
+    int val = 1;
+    int content;
+
+    epsilon = bionet_epsilon_new_binary(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_if(bionet_epsilon_get_binary(epsilon, &content),
+	    "Fail to get content of epsilon.");
+
+    fail_if(content != val, "Failed to get correct value of epsilon.");
+} END_TEST /* test_libutil_epsilon_get_binary_0 */
+
+
+START_TEST (test_libutil_epsilon_get_binary_1) {
+    bionet_epsilon_t * epsilon;
+    int val = 1;
+    int content;
+
+    epsilon = bionet_epsilon_new_binary(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_binary(NULL, &content),
+	    "Failed to detect NULL epsilon passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_binary_1 */
+
+
+START_TEST (test_libutil_epsilon_get_binary_2) {
+    bionet_epsilon_t * epsilon;
+    int val = 1;
+    int content;
+
+    epsilon = bionet_epsilon_new_binary(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_binary(epsilon, NULL),
+	    "Failed to detect NULL content ptr passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_binary_2 */
+
+
+START_TEST (test_libutil_epsilon_get_uint8_0) {
+    bionet_epsilon_t * epsilon;
+    uint8_t val = 1;
+    uint8_t content;
+
+    epsilon = bionet_epsilon_new_uint8(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_if(bionet_epsilon_get_uint8(epsilon, &content),
+	    "Fail to get content of epsilon.");
+
+    fail_if(content != val, "Failed to get correct value of epsilon.");
+} END_TEST /* test_libutil_epsilon_get_binary_0 */
+
+
+START_TEST (test_libutil_epsilon_get_uint8_1) {
+    bionet_epsilon_t * epsilon;
+    uint8_t val = 1;
+    uint8_t content;
+
+    epsilon = bionet_epsilon_new_uint8(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_uint8(NULL, &content),
+	    "Failed to detect NULL epsilon passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_uint8_1 */
+
+
+START_TEST (test_libutil_epsilon_get_uint8_2) {
+    bionet_epsilon_t * epsilon;
+    uint8_t val = 1;
+    uint8_t content;
+
+    epsilon = bionet_epsilon_new_uint8(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_uint8(epsilon, NULL),
+	    "Failed to detect NULL content ptr passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_uint8_2 */
+
+
+START_TEST (test_libutil_epsilon_get_int8_0) {
+    bionet_epsilon_t * epsilon;
+    int8_t val = 1;
+    int8_t content;
+
+    epsilon = bionet_epsilon_new_int8(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_if(bionet_epsilon_get_int8(epsilon, &content),
+	    "Fail to get content of epsilon.");
+
+    fail_if(content != val, "Failed to get correct value of epsilon.");
+} END_TEST /* test_libutil_epsilon_get_binary_0 */
+
+
+START_TEST (test_libutil_epsilon_get_int8_1) {
+    bionet_epsilon_t * epsilon;
+    int8_t val = 1;
+    int8_t content;
+
+    epsilon = bionet_epsilon_new_int8(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_int8(NULL, &content),
+	    "Failed to detect NULL epsilon passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_int8_1 */
+
+
+START_TEST (test_libutil_epsilon_get_int8_2) {
+    bionet_epsilon_t * epsilon;
+    int8_t val = 1;
+    int8_t content;
+
+    epsilon = bionet_epsilon_new_int8(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_int8(epsilon, NULL),
+	    "Failed to detect NULL content ptr passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_int8_2 */
+
+
+START_TEST (test_libutil_epsilon_get_uint16_0) {
+    bionet_epsilon_t * epsilon;
+    uint16_t val = 1;
+    uint16_t content;
+
+    epsilon = bionet_epsilon_new_uint16(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_if(bionet_epsilon_get_uint16(epsilon, &content),
+	    "Fail to get content of epsilon.");
+
+    fail_if(content != val, "Failed to get correct value of epsilon.");
+} END_TEST /* test_libutil_epsilon_get_binary_0 */
+
+
+START_TEST (test_libutil_epsilon_get_uint16_1) {
+    bionet_epsilon_t * epsilon;
+    uint16_t val = 1;
+    uint16_t content;
+
+    epsilon = bionet_epsilon_new_uint16(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_uint16(NULL, &content),
+	    "Failed to detect NULL epsilon passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_uint16_1 */
+
+
+START_TEST (test_libutil_epsilon_get_uint16_2) {
+    bionet_epsilon_t * epsilon;
+    uint16_t val = 1;
+    uint16_t content;
+
+    epsilon = bionet_epsilon_new_uint16(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_uint16(epsilon, NULL),
+	    "Failed to detect NULL content ptr passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_uint16_2 */
+
+
+START_TEST (test_libutil_epsilon_get_int16_0) {
+    bionet_epsilon_t * epsilon;
+    int16_t val = 1;
+    int16_t content;
+
+    epsilon = bionet_epsilon_new_int16(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_if(bionet_epsilon_get_int16(epsilon, &content),
+	    "Fail to get content of epsilon.");
+
+    fail_if(content != val, "Failed to get correct value of epsilon.");
+} END_TEST /* test_libutil_epsilon_get_binary_0 */
+
+
+START_TEST (test_libutil_epsilon_get_int16_1) {
+    bionet_epsilon_t * epsilon;
+    int16_t val = 1;
+    int16_t content;
+
+    epsilon = bionet_epsilon_new_int16(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_int16(NULL, &content),
+	    "Failed to detect NULL epsilon passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_int16_1 */
+
+
+START_TEST (test_libutil_epsilon_get_int16_2) {
+    bionet_epsilon_t * epsilon;
+    int16_t val = 1;
+    int16_t content;
+
+    epsilon = bionet_epsilon_new_int16(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_int16(epsilon, NULL),
+	    "Failed to detect NULL content ptr passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_int16_2 */
+
+
+START_TEST (test_libutil_epsilon_get_uint32_0) {
+    bionet_epsilon_t * epsilon;
+    uint32_t val = 1;
+    uint32_t content;
+
+    epsilon = bionet_epsilon_new_uint32(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_if(bionet_epsilon_get_uint32(epsilon, &content),
+	    "Fail to get content of epsilon.");
+
+    fail_if(content != val, "Failed to get correct value of epsilon.");
+} END_TEST /* test_libutil_epsilon_get_binary_0 */
+
+
+START_TEST (test_libutil_epsilon_get_uint32_1) {
+    bionet_epsilon_t * epsilon;
+    uint32_t val = 1;
+    uint32_t content;
+
+    epsilon = bionet_epsilon_new_uint32(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_uint32(NULL, &content),
+	    "Failed to detect NULL epsilon passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_uint32_1 */
+
+
+START_TEST (test_libutil_epsilon_get_uint32_2) {
+    bionet_epsilon_t * epsilon;
+    uint32_t val = 1;
+    uint32_t content;
+
+    epsilon = bionet_epsilon_new_uint32(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_uint32(epsilon, NULL),
+	    "Failed to detect NULL content ptr passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_uint32_2 */
+
+
+START_TEST (test_libutil_epsilon_get_int32_0) {
+    bionet_epsilon_t * epsilon;
+    int32_t val = 1;
+    int32_t content;
+
+    epsilon = bionet_epsilon_new_int32(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_if(bionet_epsilon_get_int32(epsilon, &content),
+	    "Fail to get content of epsilon.");
+
+    fail_if(content != val, "Failed to get correct value of epsilon.");
+} END_TEST /* test_libutil_epsilon_get_binary_0 */
+
+
+START_TEST (test_libutil_epsilon_get_int32_1) {
+    bionet_epsilon_t * epsilon;
+    int32_t val = 1;
+    int32_t content;
+
+    epsilon = bionet_epsilon_new_int32(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_int32(NULL, &content),
+	    "Failed to detect NULL epsilon passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_int32_1 */
+
+
+START_TEST (test_libutil_epsilon_get_int32_2) {
+    bionet_epsilon_t * epsilon;
+    int32_t val = 1;
+    int32_t content;
+
+    epsilon = bionet_epsilon_new_int32(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_int32(epsilon, NULL),
+	    "Failed to detect NULL content ptr passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_int32_2 */
+
+
+START_TEST (test_libutil_epsilon_get_float_0) {
+    bionet_epsilon_t * epsilon;
+    float val = 1.0;
+    float content;
+
+    epsilon = bionet_epsilon_new_float(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_if(bionet_epsilon_get_float(epsilon, &content),
+	    "Fail to get content of epsilon.");
+
+    fail_if(content != val, "Failed to get correct value of epsilon.");
+} END_TEST /* test_libutil_epsilon_get_binary_0 */
+
+
+START_TEST (test_libutil_epsilon_get_float_1) {
+    bionet_epsilon_t * epsilon;
+    float val = 1.0;
+    float content;
+
+    epsilon = bionet_epsilon_new_float(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_float(NULL, &content),
+	    "Failed to detect NULL epsilon passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_float_1 */
+
+
+START_TEST (test_libutil_epsilon_get_float_2) {
+    bionet_epsilon_t * epsilon;
+    float val = 1.0;
+    float content;
+
+    epsilon = bionet_epsilon_new_float(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_float(epsilon, NULL),
+	    "Failed to detect NULL content ptr passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_float_2 */
+
+
+START_TEST (test_libutil_epsilon_get_double_0) {
+    bionet_epsilon_t * epsilon;
+    double val = 1.0;
+    double content;
+
+    epsilon = bionet_epsilon_new_double(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_if(bionet_epsilon_get_double(epsilon, &content),
+	    "Fail to get content of epsilon.");
+
+    fail_if(content != val, "Failed to get correct value of epsilon.");
+} END_TEST /* test_libutil_epsilon_get_binary_0 */
+
+
+START_TEST (test_libutil_epsilon_get_double_1) {
+    bionet_epsilon_t * epsilon;
+    double val = 1.0;
+    double content;
+
+    epsilon = bionet_epsilon_new_double(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_double(NULL, &content),
+	    "Failed to detect NULL epsilon passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_double_1 */
+
+
+START_TEST (test_libutil_epsilon_get_double_2) {
+    bionet_epsilon_t * epsilon;
+    double val = 1.0;
+    double content;
+
+    epsilon = bionet_epsilon_new_double(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_double(epsilon, NULL),
+	    "Failed to detect NULL content ptr passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_double_2 */
+
+
+START_TEST (test_libutil_epsilon_get_str_0) {
+    bionet_epsilon_t * epsilon;
+    int val = 1;
+    int content;
+
+    epsilon = bionet_epsilon_new_str(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_if(bionet_epsilon_get_str(epsilon, &content),
+	    "Fail to get content of epsilon.");
+
+    fail_if(content != val, "Failed to get correct value of epsilon.");
+} END_TEST /* test_libutil_epsilon_get_str_0 */
+
+
+START_TEST (test_libutil_epsilon_get_str_1) {
+    bionet_epsilon_t * epsilon;
+    int val = 1;
+    int content;
+
+    epsilon = bionet_epsilon_new_str(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_str(NULL, &content),
+	    "Failed to detect NULL epsilon passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_str_1 */
+
+
+START_TEST (test_libutil_epsilon_get_str_2) {
+    bionet_epsilon_t * epsilon;
+    int val = 1;
+    int content;
+
+    epsilon = bionet_epsilon_new_str(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    fail_unless(bionet_epsilon_get_str(epsilon, NULL),
+	    "Failed to detect NULL content ptr passed in.\n");
+} END_TEST /* test_libutil_epsilon_get_str_2 */
+
+
 void libutil_epsilon_tests_suite(Suite *s)
 {
     TCase *tc = tcase_create("Bionet Epsilon");
@@ -290,6 +700,55 @@ void libutil_epsilon_tests_suite(Suite *s)
     tcase_add_test(tc, test_libutil_epsilon_to_str_0);
     tcase_add_test(tc, test_libutil_epsilon_to_str_1);
     
+    /* bionet_epsilon_get_binary() */
+    tcase_add_test(tc, test_libutil_epsilon_get_binary_0);
+    tcase_add_test(tc, test_libutil_epsilon_get_binary_1);
+    tcase_add_test(tc, test_libutil_epsilon_get_binary_2);
+
+    /* bionet_epsilon_get_uint8() */
+    tcase_add_test(tc, test_libutil_epsilon_get_uint8_0);
+    tcase_add_test(tc, test_libutil_epsilon_get_uint8_1);
+    tcase_add_test(tc, test_libutil_epsilon_get_uint8_2);
+
+    /* bionet_epsilon_get_int8() */
+    tcase_add_test(tc, test_libutil_epsilon_get_int8_0);
+    tcase_add_test(tc, test_libutil_epsilon_get_int8_1);
+    tcase_add_test(tc, test_libutil_epsilon_get_int8_2);
+
+    /* bionet_epsilon_get_uint16() */
+    tcase_add_test(tc, test_libutil_epsilon_get_uint16_0);
+    tcase_add_test(tc, test_libutil_epsilon_get_uint16_1);
+    tcase_add_test(tc, test_libutil_epsilon_get_uint16_2);
+
+    /* bionet_epsilon_get_int16() */
+    tcase_add_test(tc, test_libutil_epsilon_get_int16_0);
+    tcase_add_test(tc, test_libutil_epsilon_get_int16_1);
+    tcase_add_test(tc, test_libutil_epsilon_get_int16_2);
+
+    /* bionet_epsilon_get_uint32() */
+    tcase_add_test(tc, test_libutil_epsilon_get_uint32_0);
+    tcase_add_test(tc, test_libutil_epsilon_get_uint32_1);
+    tcase_add_test(tc, test_libutil_epsilon_get_uint32_2);
+
+    /* bionet_epsilon_get_int32() */
+    tcase_add_test(tc, test_libutil_epsilon_get_int32_0);
+    tcase_add_test(tc, test_libutil_epsilon_get_int32_1);
+    tcase_add_test(tc, test_libutil_epsilon_get_int32_2);
+
+    /* bionet_epsilon_get_float() */
+    tcase_add_test(tc, test_libutil_epsilon_get_float_0);
+    tcase_add_test(tc, test_libutil_epsilon_get_float_1);
+    tcase_add_test(tc, test_libutil_epsilon_get_float_2);
+
+    /* bionet_epsilon_get_double() */
+    tcase_add_test(tc, test_libutil_epsilon_get_double_0);
+    tcase_add_test(tc, test_libutil_epsilon_get_double_1);
+    tcase_add_test(tc, test_libutil_epsilon_get_double_2);
+
+    /* bionet_epsilon_get_str() */
+    tcase_add_test(tc, test_libutil_epsilon_get_str_0);
+    tcase_add_test(tc, test_libutil_epsilon_get_str_1);
+    tcase_add_test(tc, test_libutil_epsilon_get_str_2);
 
     return;
 } /* libutil_hab_tests_suite() */
