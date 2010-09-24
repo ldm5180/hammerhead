@@ -3114,6 +3114,93 @@ START_TEST (test_libutil_resource_get_set_user_data_4) {
 } END_TEST /* test_libutil_resource_get_set_user_data_4 */
 
 
+START_TEST (test_libutil_resource_get_set_epsilon_0) {
+    bionet_resource_t * resource;
+    bionet_epsilon_t * epsilon;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    epsilon = bionet_epsilon_new_binary(1);
+    fail_if(NULL == epsilon, "failed to create perfectly normal epsilon\n.");
+
+    fail_if(bionet_resource_set_epsilon(resource, epsilon),
+	    "Failed to set epsilon.\n");
+
+    fail_unless(epsilon == bionet_resource_get_epsilon(resource),
+		"Failed to get the epsilon set.\n");
+} END_TEST /* test_libutil_resource_get_set_epsilon_0 */
+
+
+START_TEST (test_libutil_resource_get_set_epsilon_1) {
+    bionet_epsilon_t * epsilon;
+
+    epsilon = bionet_epsilon_new_binary(1);
+    fail_if(NULL == epsilon, "failed to create perfectly normal epsilon\n.");
+
+    fail_unless(bionet_resource_set_epsilon(NULL, epsilon),
+	    "Failed to detect NULL resource.\n");
+} END_TEST /* test_libutil_resource_get_set_epsilon_1 */
+
+
+START_TEST (test_libutil_resource_get_set_epsilon_2) {
+    fail_unless(NULL == bionet_resource_get_epsilon(NULL),
+	    "Failed to detect NULL resource.\n");
+} END_TEST /* test_libutil_resource_get_set_epsilon_2 */
+
+
+START_TEST (test_libutil_resource_get_set_epsilon_3) {
+    bionet_resource_t * resource;
+    bionet_epsilon_t * epsilon;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    epsilon = bionet_epsilon_new_binary(1);
+    fail_if(NULL == epsilon, "failed to create perfectly normal epsilon\n.");
+
+    fail_if(bionet_resource_set_epsilon(resource, NULL),
+	    "Failed to set epsilon.\n");
+
+    fail_unless(NULL == bionet_resource_get_epsilon(resource),
+		"Failed to get the epsilon set.\n");
+} END_TEST /* test_libutil_resource_get_set_epsilon_3 */
+
+
+START_TEST (test_libutil_resource_get_set_epsilon_4) {
+    bionet_resource_t * resource;
+    bionet_epsilon_t * epsilon1;
+    bionet_epsilon_t * epsilon2;
+
+    resource = bionet_resource_new(NULL, 
+				   BIONET_RESOURCE_DATA_TYPE_BINARY, 
+				   BIONET_RESOURCE_FLAVOR_PARAMETER, 
+				   "resource");
+    fail_if(resource == NULL, "failed to create a perfectly normal resource\n");
+
+    epsilon1 = bionet_epsilon_new_binary(1);
+    fail_if(NULL == epsilon1, "failed to create perfectly normal epsilon\n.");
+
+    epsilon2 = bionet_epsilon_new_binary(1);
+    fail_if(NULL == epsilon2, "failed to create perfectly normal epsilon\n.");
+
+    fail_if(bionet_resource_set_epsilon(resource, epsilon1),
+	    "Failed to set epsilon.\n");
+
+    fail_if(bionet_resource_set_epsilon(resource, epsilon2),
+	    "Failed to set epsilon.\n");
+
+    fail_unless(epsilon2 == bionet_resource_get_epsilon(resource),
+		"Failed to get the epsilon set.\n");
+} END_TEST /* test_libutil_resource_get_set_epsilon_4 */
+
+
 void libutil_resource_tests_suite(Suite *s) {
     TCase *tc = tcase_create("Bionet Resource");
     suite_add_tcase(s, tc);
@@ -3390,12 +3477,21 @@ void libutil_resource_tests_suite(Suite *s) {
     tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_14);
     tcase_add_test(tc, test_libutil_resource_matches_habtype_habid_nodeid_resourceid_15);
 
-    /* bionet_resource_get_set_user_data() */
+    /* bionet_resource_set_user_data() */
+    /* bionet_resource_get_user_data() */
     tcase_add_test(tc, test_libutil_resource_get_set_user_data_0);
     tcase_add_test(tc, test_libutil_resource_get_set_user_data_1);
     tcase_add_test(tc, test_libutil_resource_get_set_user_data_2);
     tcase_add_test(tc, test_libutil_resource_get_set_user_data_3);
     tcase_add_test(tc, test_libutil_resource_get_set_user_data_4);
+
+    /* bionet_resource_set_epsilon() */
+    /* bionet_resource_get_epsilon() */
+    tcase_add_test(tc, test_libutil_resource_get_set_epsilon_0);
+    tcase_add_test(tc, test_libutil_resource_get_set_epsilon_1);
+    tcase_add_test(tc, test_libutil_resource_get_set_epsilon_2);
+    tcase_add_test(tc, test_libutil_resource_get_set_epsilon_3);
+    tcase_add_test(tc, test_libutil_resource_get_set_epsilon_4);
 
     return;
 } /* libutil_resource_tests_suite */
