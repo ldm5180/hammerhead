@@ -71,7 +71,6 @@ static void * _recv_thread_main(void * v_args) {
 
             default:
                 (*bdm_bp_funcs.bp_release_delivery)(&dlv, 1);
-                WARN("Unknown ion result: %d", dlv.result);
                 goto done;
         }
     }
