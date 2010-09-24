@@ -1,0 +1,74 @@
+Usage Notes:
+
+  The ION implemetation is a work in progres, and is missing several
+  features, including but not limited to:
+    - No Extened class of service
+    - Can't set report-to-eid
+    - Can't set many bundle flags
+    - No access to bundle header
+  
+  Also, there is a very large queue between calling bps_send() and the
+  bundle actually being processed by ion.
+
+
+IMPLEMENTATION:
+
+
+ION uses SystemV shared memory, and the API implements a POSIX socket
+look-alike. These are not compatible, so we use the folowing threaded design to join them:
+
+There are two additional background created (Minimum 3 threads total): 
+
+    USER THREAD
+
+	This is the thread that the user code operates from. Its probably
+	the process's main thread. Calls into the bps library will directly
+	call the bp_* functions they are wrapping, and/or pass messages to
+	one of the additial threads
+
+
+	Receiving Bundles
+
+	When a bundle is available, its contents can be copied into user
+	memory in one shot with bps_recv*(), or the bundle can be saved
+	with bps_accept(). In the bps_accept case, a new socket is created,
+	and returned to the user. It is always readable, so all processing
+	can be handled by this thread (bsp_read() will always leave the
+	accept socket readable until the entire bundle has been processed)
+
+
+	Sending Bundles
+
+	When bps_send*() is called, a ZCO object will be build in the user
+	thrad, then a pointer sent to the ION Send thread.
+
+
+    ION RECEIVE THREAD
+
+	This thread is always blocked on bp_receive(). When a bundle
+	arrives, this thread will marshall it into a message, and write it
+	to the correct IPC socket (Which will cause the socket to be
+	readable by the user)
+
+
+    ION SEND THREAD
+
+	This thread is usualy blocked waiting for a bundle from the user
+	thread. Once a bundle is dequeued to be sent, this thread will
+	block on bp_send until the bundle is sent.
+
+
+
+
+Thread Comunication
+
+    The tables sockets opened by the user are shared between all threads,
+    and will be protected by a mutex whenever the table is refrenced, or
+    updated. After removing an entry from the list, all associated file
+    descriptors will be closed, and only then the memory freed.
+
+    The ION thread(s) will obtain the table mutex whenever accessing a sock
+    struct. The ION thread will prefer to cache any variable needed in
+    local storage
+
+# vim: tw=75 sw=4
