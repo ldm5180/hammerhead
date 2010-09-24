@@ -7,6 +7,7 @@
 #define _GNU_SOURCE
 
 #include "bionet-data-manager.h"
+#include "bps/bps_socket.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -30,11 +31,11 @@ static void exit_signal_handler(int signal_number) {
     } else {
         bdm_shutdown_now = 1;
     }
+
 #if ENABLE_ION
-    if(bdm_bp_funcs.bp_interrupt) {
-        (*bdm_bp_funcs.bp_interrupt)(dtn_thread_data.ion.sap);
-    }
+    bps_destroy();
 #endif
+
     if (sync_sender_main_loop) {
 	g_main_loop_quit(sync_sender_main_loop);
     }

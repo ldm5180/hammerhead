@@ -24,74 +24,6 @@
 #define BDM_BUNDLE_LIFETIME (300)
 #define BP_SEND_BUF_SIZE 4048
 
-#if ENABLE_ION
-#include "zco.h"
-#include "sdr.h"
-#include "bp.h"
-
-typedef void (*sm_set_basekey_t)(unsigned int key);
-typedef int (*bp_attach_t)(void);
-typedef void (*bp_interrupt_t)(BpSAP sap);
-typedef int (*bp_open_t)(char *eid, BpSAP *ionsapPtr);
-typedef void (*bp_close_t)(BpSAP sap);
-typedef Sdr (*bp_get_sdr_t)(void);
-typedef int (*bp_send_t)(BpSAP sap, int mode, char *destEid, char *reportToEid, int lifespan, int classOfService, BpCustodySwitch custodySwitch, unsigned char srrFlags, int ackRequested, BpExtendedCOS *extendedCOS, Object adu, Object *newBundle);
-typedef int (*bp_receive_t)(BpSAP sap, BpDelivery *dlvBuffer, int timeoutSeconds);
-typedef int (*bp_add_endpoint_t)(char *eid, char *script);
-typedef void (*bp_release_delivery_t)(BpDelivery *dlvBuffer, int releaseAdu);
-
-typedef Object (*Sdr_malloc_t)(char *file, int line, Sdr sdr, unsigned long size);
-typedef void (*sdr_begin_xn_t)(Sdr sdr);
-typedef void (*sdr_cancel_xn_t)(Sdr sdr);
-typedef int (*sdr_end_xn_t)(Sdr sdr);
-typedef void (*Sdr_write_t)(char *file, int line, Sdr sdr, Address into, char *from, int length);
-
-typedef Object (*zco_create_t)(Sdr sdr, ZcoMedium firstExtentSourceMedium, Object firstExtentLocation, unsigned int firstExtentOffset, unsigned int firstExtentLength);
-typedef int (*zco_append_extent_t)(Sdr sdr, Object zcoRef, ZcoMedium sourceMedium, Object location, unsigned int offset, unsigned int length);
-typedef void (*zco_start_receiving_t)(Sdr sdr, Object zcoRef, ZcoReader *reader);
-typedef int (*zco_receive_source_t)(Sdr sdr, ZcoReader *reader, unsigned int length, char *buffer);
-typedef void (*zco_stop_receiving_t)(Sdr sdr, ZcoReader *reader);
-typedef unsigned int (*zco_source_data_length_t)(Sdr sdr, Object zcoRef);
-
-typedef void (*writeErrMemo_t)(char *);
-typedef void (*writeErrmsgMemos_t)(void);
-
-typedef struct {
-    sm_set_basekey_t sm_set_basekey;
-    bp_attach_t bp_attach;
-    bp_interrupt_t bp_interrupt;
-    bp_open_t bp_open;
-    bp_close_t bp_close;
-    bp_get_sdr_t bp_get_sdr;
-    bp_send_t bp_send;
-    bp_receive_t bp_receive;
-    bp_add_endpoint_t bp_add_endpoint;
-    bp_release_delivery_t bp_release_delivery;
-
-    Sdr_malloc_t Sdr_malloc;
-    sdr_begin_xn_t sdr_begin_xn;
-    sdr_cancel_xn_t sdr_cancel_xn;
-    sdr_end_xn_t sdr_end_xn;
-    Sdr_write_t Sdr_write;
-
-    zco_create_t zco_create;
-    zco_append_extent_t zco_append_extent;
-    zco_start_receiving_t zco_start_receiving;
-    zco_receive_source_t zco_receive_source;
-    zco_stop_receiving_t zco_stop_receiving;
-    zco_source_data_length_t zco_source_data_length;
-
-    writeErrMemo_t writeErrMemo;
-    writeErrmsgMemos_t writeErrmsgMemos;
-} bdm_bp_funcs_t;
-
-#define bdm_sdr_malloc(sdr, size)            (*bdm_bp_funcs.Sdr_malloc)(__FILE__, __LINE__, sdr, size)
-#define bdm_sdr_write(sdr, into, from, size) (*bdm_bp_funcs.Sdr_write)(__FILE__, __LINE__, sdr, into, from, size)
-
-extern bdm_bp_funcs_t bdm_bp_funcs;
-#endif
-
-
 #include <sqlite3.h>
 
 // Number of bytes to use for the resource key
@@ -174,11 +106,14 @@ typedef struct {
     int last_entry_end_seq;    
     char send_buf[BP_SEND_BUF_SIZE]; // Buffer for building bundles
     size_t buf_len;           // Number of bytes valid in send_buf
-
-
-    // TCP Specific
-    int fd;
     int bytes_sent;
+
+    // BP Only
+    int bp_fd;
+    int bp_bundle_fd;
+
+    // TCP Only
+    int fd;
 } sync_sender_config_t;
 
 typedef struct {
@@ -388,15 +323,6 @@ typedef struct {
     int fd;
     GIOChannel *ch;
 
-#if ENABLE_ION
-    struct {
-        int	running;
-        BpSAP	sap;
-        Sdr		sdr;
-	ZcoReader	reader;
-    } ion;
-#endif
-
     // keep track of messages coming in from the client
     union {
 	BDM_C2S_Message_t             *C2S_message;
@@ -423,6 +349,7 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition unused2, clie
 void handle_sync_datapoints_message(BDM_Sync_Datapoints_Message_t *message);
 void handle_sync_metadata_message(BDM_Sync_Metadata_Message_t *message);
 
+int sync_bundle_handler(GIOChannel *ch, GIOCondition condition, gpointer listening_fd_as_pointer);
 
 
 int make_listening_socket(int port);
@@ -476,8 +403,8 @@ void bdm_sync_datapoints_to_asn_setup(
         bdm_list_iterator_t * iter_buf);
 BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_iter_state_t * state);
 
-gpointer sync_thread(gpointer config_list);
-gpointer dtn_receive_thread(gpointer config);
+// Decode and process a sync message
+BDM_Sync_Message_t * handle_sync_msg(int bundle_fd);
 
 sync_sender_config_t * read_config_file(const char * fname);
 

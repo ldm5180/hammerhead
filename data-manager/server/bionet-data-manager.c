@@ -26,12 +26,16 @@
 
 
 
-static gboolean _add_filter_subscription(const char * resource_pattern) ;
-
-
+#if ENABLE_ION
+#include "bps/bps_socket.h"
+#endif
 
 // Default config values
 #define DB_NAME "bdm.db"
+
+
+static gboolean _add_filter_subscription(const char * resource_pattern) ;
+
 
 // Configuration variables
 static const char * bdm_id = NULL;
@@ -53,7 +57,6 @@ static gchar ** sync_cfg_file_list = NULL;
 static gchar ** filter_patterns = NULL;
 
 static gchar ** unparsed_args;
-static GSList * sync_thread_list = NULL;
 
 static gboolean _opt_version(const char * optname, const char * optarg, void* data, GError ** error) {
     print_bionet_version(stdout);
@@ -101,203 +104,6 @@ static gchar ** strv_append(gchar ** strv, const gchar * str) {
     return strv;
 
 }
-
-
-#if ENABLE_ION
-
-bdm_bp_funcs_t bdm_bp_funcs;
-
-#define LIBBP_FILE_NAME "libbp.so.0"
-
-int load_ion(void) {
-    void *libbp_handle;
-    char *error;
-    static int loaded_ion = 0;
-
-    if (loaded_ion) return 0;
-
-    libbp_handle = dlopen("libbp.so.0", RTLD_NOW);
-    if (libbp_handle == NULL) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "failed to dlopen %s: %s", LIBBP_FILE_NAME, dlerror());
-        return -1;
-    }
-
-    dlerror();    /* Clear any existing error */
-
-    /* Writing: cosine = (double (*)(double)) dlsym(handle, "cos");
-    would seem more natural, but the C99 standard leaves
-    casting from "void *" to a function pointer undefined.
-    The assignment used below is the POSIX.1-2003 (Technical
-    Corrigendum 1) workaround; see the Rationale for the
-    POSIX specification of dlsym(). */
-
-    bdm_bp_funcs.sm_set_basekey = (sm_set_basekey_t)dlsym(libbp_handle, "sm_set_basekey");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sm_set_basekey() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.bp_attach = (bp_attach_t)dlsym(libbp_handle, "bp_attach");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_attach() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.bp_interrupt = (bp_interrupt_t)dlsym(libbp_handle, "bp_interrupt");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_interrupt() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.bp_open = (bp_open_t)dlsym(libbp_handle, "bp_open");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_open() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.bp_close = (bp_close_t)dlsym(libbp_handle, "bp_close");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_close() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.bp_get_sdr = (bp_get_sdr_t)dlsym(libbp_handle, "bp_get_sdr");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_get_sdr() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.bp_send = (bp_send_t)dlsym(libbp_handle, "bp_send");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_send() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.bp_receive = (bp_receive_t)dlsym(libbp_handle, "bp_receive");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_receive() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.bp_add_endpoint = (bp_add_endpoint_t)dlsym(libbp_handle, "bp_add_endpoint");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_add_endpoint() in libbp.so: %s, ignoring error", error);
-    }
-
-    bdm_bp_funcs.bp_release_delivery = (bp_release_delivery_t)dlsym(libbp_handle, "bp_release_delivery");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find bp_release_delivery() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.Sdr_malloc = (Sdr_malloc_t)dlsym(libbp_handle, "Sdr_malloc");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find Sdr_malloc() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.sdr_begin_xn = (sdr_begin_xn_t)dlsym(libbp_handle, "sdr_begin_xn");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sdr_begin_xn() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.sdr_cancel_xn = (sdr_cancel_xn_t)dlsym(libbp_handle, "sdr_cancel_xn");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sdr_cancel_xn() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.sdr_end_xn = (sdr_end_xn_t)dlsym(libbp_handle, "sdr_end_xn");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find sdr_end_xn() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.Sdr_write = (Sdr_write_t)dlsym(libbp_handle, "Sdr_write");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find Sdr_write() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.zco_create = (zco_create_t)dlsym(libbp_handle, "zco_create");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_create() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.zco_append_extent = (zco_append_extent_t)dlsym(libbp_handle, "zco_append_extent");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_append_extent() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.zco_start_receiving = (zco_start_receiving_t)dlsym(libbp_handle, "zco_start_receiving");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_start_receiving() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.zco_receive_source = (zco_receive_source_t)dlsym(libbp_handle, "zco_receive_source");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_receive_source() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.zco_stop_receiving = (zco_stop_receiving_t)dlsym(libbp_handle, "zco_stop_receiving");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_stop_receiving() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.zco_source_data_length = (zco_source_data_length_t)dlsym(libbp_handle, "zco_source_data_length");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find zco_source_data_length() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-
-    bdm_bp_funcs.writeErrMemo = (writeErrMemo_t)dlsym(libbp_handle, "writeErrMemo");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find writeErrMemo() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    bdm_bp_funcs.writeErrmsgMemos = (writeErrmsgMemos_t)dlsym(libbp_handle, "writeErrmsgMemos");
-    error = dlerror();
-    if (error != NULL)  {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "couldn't find writeErrmsgMemos() in %s: %s", LIBBP_FILE_NAME, error);
-        return -1;
-    }
-
-    loaded_ion = 1;
-    return 0;
-}
-
-#endif
-
 
 
 
@@ -577,6 +383,24 @@ int cal_readable_handler(
     return cal_server.read(libbdm_cal_handle, &timeout, 0);
 }
 
+int bp_readable_handler(GIOChannel *listening_ch,
+			 GIOCondition condition,
+			 gpointer usr_data) 
+{
+    int bpfd = *(int*)usr_data;
+
+    int bdl_fd = bps_accept(bpfd, NULL, NULL);
+    if ( bdl_fd < 0 ) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
+                "Error accepting bundle: %s", strerror(errno));
+        return 1; // Keep me registered
+    }
+
+    handle_sync_msg(bpfd);
+
+    return 1;
+}
+
 
 
 
@@ -629,8 +453,6 @@ void bdm_glib_log_handler(
         return;
     }
 }
-
-
 
 // TODO: This should adds '*' subscriptions to all parts that are not specified
 static gboolean _add_filter_subscription(const char * resource_pattern) 
@@ -789,6 +611,7 @@ int main(int argc, char *argv[]) {
     // we'll be using glib, so capture its log messages
     //
     int switch_to_syslog = 1;
+    int r;
 
     bdm_log_context_t lc = {
         log_to: stdout,
@@ -802,7 +625,8 @@ int main(int argc, char *argv[]) {
     int i = 0;
     int c;
 
-    int need_bp = 0;
+    int need_bps_socket = 0;
+    int bps_fd = -1;
 
     struct option long_options[] = {
         { "bdm-config-file", 1, 0, 'x' },
@@ -895,7 +719,7 @@ int main(int argc, char *argv[]) {
 
             if(sync_config->method == BDM_SYNC_METHOD_ION) {
 #if ENABLE_ION
-                need_bp++;
+                need_bps_socket++;
 #else
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
                       "Bad config file '%s': BDM Syncronization over DTN was disabled at compile time.", *pval);
@@ -905,8 +729,6 @@ int main(int argc, char *argv[]) {
             sync_config_list = g_slist_append(sync_config_list, sync_config);
             break;
         }
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-		  "Starting BDM-DTN sync receiver");
     }
 
 
@@ -921,6 +743,24 @@ int main(int argc, char *argv[]) {
         return (-1);
     }
 #endif
+
+#if ENABLE_ION
+    if(ion_key){
+#if     HAVE_SM_SET_BASEKEY
+            r = bps_setopt(BPST_ION, BPSO_ION_BASEKEY, &ion_key, sizeof(long));
+            if ( r != 0 ) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "Can't set custom ION SM basekey '%d': %s", 
+                    ion_key, strerror(errno));
+                return 1;
+            }
+#       else	
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                  "Setting ION basekey not supported");
+            return (1);
+#       endif // HAVE_SM_SET_BASEKEY
+    }
+#endif // ENABLE_ION
 
 
 
@@ -982,8 +822,6 @@ int main(int argc, char *argv[]) {
 	g_error("Security required, but no secutiry dir provided.");
 	return 1;
     }
-
-    g_thread_init(NULL);
 
     this_bdm = bionet_bdm_new(bdm_id);
     if (NULL == this_bdm ) {
@@ -1082,16 +920,6 @@ int main(int argc, char *argv[]) {
 	g_io_add_watch(ch, G_IO_IN, sync_receive_connecting_handler, GINT_TO_POINTER(fd));
     }
 
-    if (enable_dtn_sync_receiver) {
-	if (NULL == dtn_endpoint_id) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		  "DTN Sync Receiver requested, but no DTN endpoint ID specified.");
-	    return (-1);
-	}
-
-        need_bp++;
-    }
-
     // 
     // we're not connected to the Bionet, so add an idle function to the main loop to try to connect
     // if this function succeeds in connecting, it'll remove itself from the main loop and add the bionet fd
@@ -1113,34 +941,6 @@ int main(int argc, char *argv[]) {
         lc.log_to = NULL; // Syslog
     }
 
-#if ENABLE_ION
-    if(need_bp) {
-        if (load_ion() != 0) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ION shared memory base key requested, but can't load ION libraries, aborting");
-            return 1;
-        }
-
-
-        if(ion_key){
-#if         HAVE_SM_SET_BASEKEY
-                (*bdm_bp_funcs.sm_set_basekey)(ion_key);
-#           else	
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-                      "Setting ION basekey not supported");
-                return (1);
-#           endif // HAVE_SM_SET_BASEKEY
-        }
-
-
-        if ((*bdm_bp_funcs.bp_attach)() < 0)
-        {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                "Can't attach to BP.");
-            return -1;
-        }
-    }
-#endif // ENABLE_ION
-
 
 
     if (sync_config_list || enable_dtn_sync_receiver) {
@@ -1149,6 +949,31 @@ int main(int argc, char *argv[]) {
         make_shutdowns_clean(0);
     }
 
+    if(need_bps_socket) {
+        bps_fd = bps_socket(0, 0, 0);
+        if(bps_fd < 0) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                  "Error creating bps socket: %s", strerror(errno));
+            return 1;
+        }
+
+	if (dtn_endpoint_id) {
+            struct bps_sockaddr dstaddr;
+            strncpy(dstaddr.uri, dtn_endpoint_id, BPS_EID_SIZE);
+            r = bps_bind(bps_fd, &dstaddr, sizeof(struct bps_sockaddr));
+            if ( r ) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                      "Error binding bps socket to '%s': %s", 
+                    dtn_endpoint_id, strerror(errno));
+                return 1;
+            }
+	}
+
+        GIOChannel *ch;
+
+        ch = g_io_channel_unix_new(bps_fd);
+        g_io_add_watch(ch, G_IO_IN, bp_readable_handler, GINT_TO_POINTER(bps_fd));
+    }
 
     //create a config for each sync sender configuration
     for (i = 0; i < g_slist_length(sync_config_list); i++) {
@@ -1161,6 +986,11 @@ int main(int argc, char *argv[]) {
 	    sync_config->last_entry_end_seq = 
                 db_get_last_sync_seq(sync_config->db, 
                     sync_config->sync_recipient);
+#if ENABLE_ION
+            if(sync_config->method == BDM_SYNC_METHOD_ION) {
+                sync_config->bp_fd = bps_fd;
+            }
+#endif
 
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
@@ -1168,34 +998,18 @@ int main(int argc, char *argv[]) {
 	}
     }
 
-    GThread * thread = NULL;
-    if (g_slist_length(sync_config_list)) {
-	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-	      "Starting sync thread");
-	thread = g_thread_create(sync_thread, sync_config_list, TRUE, NULL);
-
-	if (thread) {
-	    sync_thread_list = g_slist_append(sync_thread_list, thread);
-	} else {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "Failed to create a thread for config %d", i);
-	}
-    }
 
 #if ENABLE_ION
-    //start the DTN receiver thread
-    GThread * dtn_recv = NULL;
+    // Setup the sync-receive socket
     if (enable_dtn_sync_receiver) {
+	if (NULL == dtn_endpoint_id) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		  "DTN Sync Receiver requested, but no DTN endpoint ID specified.");
+	    return (-1);
+	}
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	      "DTN Sync Receiver starting. DTN endpoint ID: %s", dtn_endpoint_id);
 
-
-
-	dtn_recv = g_thread_create(dtn_receive_thread, &dtn_thread_data, TRUE, NULL);
-	if (NULL == dtn_recv) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		  "Failed to create DTN receiver thread: %m");
-	}
     }
 #endif
 
@@ -1210,16 +1024,16 @@ int main(int argc, char *argv[]) {
         g_main_context_iteration(NULL, TRUE);
     }
 
-    for (i = 0; i < g_slist_length(sync_thread_list); i++) {
-        g_thread_join(g_slist_nth_data(sync_thread_list, i));
+    for (i = 0; i < g_slist_length(sync_config_list); i++) {
+	sync_sender_config_t * sync_config = NULL;
+
+	sync_config = g_slist_nth_data(sync_config_list, i);
+
+        if(sync_config->method == BDM_SYNC_METHOD_ION) {
+            bps_close(sync_config->bp_fd);
+        }
     }
 
-#if ENABLE_ION
-    if(dtn_recv){
-        g_thread_join(dtn_recv);
-    }
-#endif
-    
 
     // 
     // if we get here, then the main loop has quit and we need to exit

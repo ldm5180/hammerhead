@@ -34,18 +34,10 @@
 #define _Min(x,y) ((x)<(y)?(x):(y))
 
 #if ENABLE_ION
+#include "bps/bps_socket.h"
+
 char * dtn_endpoint_id = NULL;
-
-// Group ion configs for clarity
-typedef struct {
-    int basekey; // ION base key, to allow multiple instance on a machine
-    Sdr	sdr; // The SDR of the open transaction. NULL when not in transaction
-    BpSAP   sap;      // Sender endpoint ID
-    Object	bundleZco; // The ZCO that is being appended to.
-    size_t  bundle_size; // Running total of all extents appended to bundle
-} ion_config_t;
-
-ion_config_t ion;
+int bpfd = -1; 
 #endif
 
 GMainLoop * sync_sender_main_loop = NULL;
@@ -323,21 +315,11 @@ static int write_data_to_socket(const void *buffer, size_t size, void * config_v
 static int write_data_to_ion(const void *buffer, size_t size, void * config_void) {
     sync_sender_config_t * config = (sync_sender_config_t *)config_void;
 
-    Object	extent;
-    Sdr sdr = ion.sdr;
-    Object bundleZco = ion.bundleZco;
-
-    if(sdr == NULL) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-            "SDR not initialized for send");
-        return -1;
-    }
-
     if(size == 0) {
         return 0;
     }
 
-    if(config->sync_mtu > 0 && config->buf_len + ion.bundle_size + size > config->sync_mtu) {
+    if(config->sync_mtu > 0 && config->buf_len + config->bytes_sent + size > config->sync_mtu) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
             "Bundle would exceed MTU of %d", config->sync_mtu);
         return -1;
@@ -353,21 +335,13 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
         buffer_index += bytes_to_copy;
 
         if(config->buf_len >= BP_SEND_BUF_SIZE) {
-            extent = bdm_sdr_malloc(sdr, BP_SEND_BUF_SIZE);
-            if (extent == 0)
-            {
-                (*bdm_bp_funcs.sdr_cancel_xn)(sdr);
+            ssize_t bytes = bps_send(bpfd, (void*)config->send_buf, BP_SEND_BUF_SIZE, MSG_MORE);
+            if ( bytes != BP_SEND_BUF_SIZE ) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                    "No space for ZCO extent.");
-
-                ion.sdr = NULL;
+                    "Error writing to bundle: %s", strerror(errno));
                 return -1;
             }
-
-            bdm_sdr_write(sdr, extent, (void*)config->send_buf, BP_SEND_BUF_SIZE);
-            (*bdm_bp_funcs.zco_append_extent)(sdr, bundleZco, ZcoSdrSource, extent, 0, BP_SEND_BUF_SIZE);
-            ion.bundle_size += BP_SEND_BUF_SIZE;
-
+            config->bytes_sent += BP_SEND_BUF_SIZE;
             config->buf_len = 0;
         }
     }
@@ -417,22 +391,26 @@ gpointer sync_thread(gpointer config_list) {
 #ifdef ENABLE_ION
     if (need_bp) {
         int r;
-        
-        r = (*bdm_bp_funcs.bp_open)(dtn_endpoint_id, &ion.sap);
-        if (r < 0) {
-            if (bdm_bp_funcs.bp_add_endpoint != NULL) {
-                if ((*bdm_bp_funcs.bp_add_endpoint)(dtn_endpoint_id, NULL) != 0) {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Can't create own endpoint ('%s')", dtn_endpoint_id);
-                    return NULL;
-                }
-                r = (*bdm_bp_funcs.bp_open)(dtn_endpoint_id, &ion.sap);
-            }
-            if (r < 0) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Can't open own endpoint ('%s')", dtn_endpoint_id);
+
+        if(bpfd < 0) {
+            bpfd = bps_socket(0, 0, 0);
+            if ( bpfd < 0 ) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                        "Can't create bp socket: %s", strerror(errno));
                 return NULL;
             }
         }
+            
+        r = bps_bind(bpfd, (struct bps_sockaddr*)dtn_endpoint_id, sizeof(struct bps_sockaddr));
+        if( r < 0 ) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "Can't bind to local bp EID '%s': %s", 
+                    dtn_endpoint_id, strerror(errno));
+
+            return NULL;
+        }
     }
+
 #endif // ENABLE_ION
 
     GMainContext * this_loop_context = 
@@ -488,24 +466,6 @@ static gboolean sync_check(gpointer data) {
     return TRUE;
 } /* sync_check() */
 
-#if ENABLE_ION
-static int sync_init_connection_ion(sync_sender_config_t * config) {
-    ion.sdr = (*bdm_bp_funcs.bp_get_sdr)();
-	
-    (*bdm_bp_funcs.sdr_begin_xn)(ion.sdr);
-
-    ion.bundleZco = (*bdm_bp_funcs.zco_create)(ion.sdr, ZcoSdrSource, 0,
-			       0, 0);
-    ion.bundle_size = 0;
-
-    config->buf_len = 0;
-
-    (*bdm_bp_funcs.writeErrmsgMemos)();
-
-    return 0;
-}
-#endif
-
 
 static void sync_cancel_connection(sync_sender_config_t *config) {
     switch ( config->method ) {
@@ -515,10 +475,7 @@ static void sync_cancel_connection(sync_sender_config_t *config) {
 
 #if ENABLE_ION
         case BDM_SYNC_METHOD_ION:
-            if(ion.sdr) {
-                (*bdm_bp_funcs.sdr_cancel_xn)(ion.sdr);
-                ion.sdr = NULL;
-            }
+            // nothing to do here
             break;
 #endif
         
@@ -643,74 +600,31 @@ static int sync_finish_connection_tcp(sync_sender_config_t * config) {
 
 #if ENABLE_ION
 static int sync_finish_connection_ion(sync_sender_config_t * config) {
+    ssize_t bytes;
 
-    // Append any bytes in buffer to zco
     if(config->buf_len > 0) {
-        Object	extent;
-        Object bundleZco = ion.bundleZco;
-
-        extent = bdm_sdr_malloc(ion.sdr, config->buf_len);
-        if (extent == 0)
-        {
-            (*bdm_bp_funcs.sdr_cancel_xn)(ion.sdr);
+        bytes = bps_send(bpfd, config->send_buf, config->buf_len, 0);
+        if ( bytes != config->buf_len ) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                "No space for ZCO extent.");
-
-            ion.sdr = NULL;
+                "Error writing to bundle: %s", strerror(errno));
+            config->bytes_sent = 0;
             return -1;
         }
-
-        bdm_sdr_write(ion.sdr, extent, (void*)config->send_buf, config->buf_len);
-        (*bdm_bp_funcs.zco_append_extent)(ion.sdr, bundleZco, ZcoSdrSource, extent, 0, config->buf_len);
-        ion.bundle_size += config->buf_len;
-
+        config->bytes_sent += config->buf_len;
         config->buf_len = 0;
-    }
-
-    if ((*bdm_bp_funcs.sdr_end_xn)(ion.sdr) < 0 || ion.bundleZco == 0)
-    {
+    } else {
+        // Send 0 bytes, without MSG_MORE to flush any queued data
+        bytes = bps_send(bpfd, NULL, 0, 0);
+        if ( bytes != 0 ) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                "Can't end sdr transaction");
-            (*bdm_bp_funcs.sdr_cancel_xn)(ion.sdr);
-            ion.sdr = NULL;
-            return -1;
-    }
-
-    if ( ion.bundle_size ) {
-        int r;
-        Object unused_new_bundle;
-
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-            "Sending bundle with payload of %lu bytes",
-            (unsigned long)ion.bundle_size);
-
-        r = (*bdm_bp_funcs.bp_send)(
-            ion.sap,
-            BP_BLOCKING,
-            config->sync_recipient, 
-            NULL,                     // report-to EID
-            config->bundle_lifetime,  // Lifetime in seconds
-            BP_STD_PRIORITY,          // class of service
-            SourceCustodyRequired,
-            0,                        // reporting flags - all disabled
-            0,                        // app-level ack requested - what's this doing in BP?!
-            NULL,                     // extended CoS - not used when CoS is STD_PRIORITY as above
-            ion.bundleZco,
-            &unused_new_bundle        // handle to the bundle in the BA, we dont need it (wish we could pass in NULL here)
-        );
-
-        if (r < 1) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "error sending bundle!");
+                "Error writing to bundle: %s", strerror(errno));
+            config->bytes_sent = 0;
             return -1;
         }
-    } else {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "no bundle to send!");
-        // FIXME: what's the right way to delete the bundle?
-        // zco_destroy_reference(ion.sdr, ion.bundleZco);
     }
 
+    config->bytes_sent = 0;
 
-    (*bdm_bp_funcs.writeErrmsgMemos)();
     return 0;
 
 }
@@ -868,7 +782,7 @@ static int sync_init_connection(sync_sender_config_t * config) {
 
 #if ENABLE_ION
         case BDM_SYNC_METHOD_ION:
-            rc = sync_init_connection_ion(config);
+            config->bytes_sent = 0;
             break;
 #endif
         
