@@ -20,7 +20,7 @@ endif
 
 if ENABLE_DOXYGEN
 doc_DATA = doxygen/html/index.html
-DOXYGEN_INPUT = $(top_srcdir)/libbionet/bionet.h $(top_srcdir)/libhab/hardware-abstractor.h $(top_srcdir)/libbdm/bdm-client.h $(top_srcdir)/util/bionet-bdm.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-util.h $(top_srcdir)/mainpage.h
+DOXYGEN_INPUT = $(top_srcdir)/libbionet/bionet.h $(top_srcdir)/libhab/hardware-abstractor.h $(top_srcdir)/libbdm/bdm-client.h $(top_srcdir)/util/bionet-bdm.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-util.h $(top_srcdir)/mainpage.h $(top_srcdir)/bps/bps_socket.h
 DOXYFILE = Doxyfile
 endif
 
@@ -30,7 +30,7 @@ endif
 
 all-local: $(DOXYGEN_INPUT) $(doc_DATA) 
 
-doxygen/html/index.html: $(DOXYGEN_INPUT)
+doxygen/html/index.html: $(DOXYGEN_INPUT) $(DOXYFILE)
 	doxygen $(DOXYFILE)
 
 clean-local:
