@@ -362,14 +362,11 @@ void dbb_free(bdm_db_batch_t * dbb);
 //
 
 #define MAX_SUBSCRIPTIONS 100
-extern int hab_list_index;
 extern gchar ** hab_list_name_patterns;
-
-extern int node_list_index;
 extern gchar ** node_list_name_patterns;
-
-extern int resource_index;
 extern gchar ** resource_name_patterns;
+extern int no_resources; // Subscribe to nothing
+
 
 extern char * security_dir;
 extern int require_security;

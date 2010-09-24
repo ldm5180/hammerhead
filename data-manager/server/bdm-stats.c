@@ -6,7 +6,7 @@
 
 #include "bdm-stats.h"
 
-unsigned int bdm_stats_interval = 300;
+unsigned int bdm_stats_interval = 0;
 int start_hab = 0;
 bionet_hab_t * bdm_hab = NULL;
 int ignore_self = 1;

@@ -18,13 +18,8 @@
 // main() initializes these from the command-line arguments
 //
 
-int hab_list_index = 0;
 gchar ** hab_list_name_patterns = NULL;
-
-int node_list_index = 0;
 gchar ** node_list_name_patterns = NULL;
-
-int resource_index = 0;
 gchar ** resource_name_patterns = NULL;
 
 char * security_dir = NULL;
@@ -301,27 +296,32 @@ int try_to_connect_to_bionet(void *unused) {
     //
 
     if (
-        (hab_list_index == 0) &&
-        (node_list_index == 0) &&
-        (resource_index == 0) && 
+        (hab_list_name_patterns == NULL) &&
+        (node_list_name_patterns == NULL) &&
+        (resource_name_patterns == NULL) && 
 	(no_resources == 0)
     ) {
         bionet_subscribe_hab_list_by_name("*.*");
         bionet_subscribe_node_list_by_name("*.*.*");
         bionet_subscribe_datapoints_by_name("*.*.*:*");
     } else {
-        int i;
-
-        for (i = 0; i < hab_list_index; i ++) {
-            bionet_subscribe_hab_list_by_name(hab_list_name_patterns[i]);
+        char ** pPat;
+        if(hab_list_name_patterns){
+            for (pPat = hab_list_name_patterns; *pPat; pPat++) {
+                bionet_subscribe_hab_list_by_name(*pPat);
+            }
         }
 
-        for (i = 0; i < node_list_index; i ++) {
-            bionet_subscribe_node_list_by_name(node_list_name_patterns[i]);
+        if(node_list_name_patterns){
+            for (pPat = node_list_name_patterns; *pPat; pPat++) {
+                bionet_subscribe_node_list_by_name(*pPat);
+            }
         }
 
-        for (i = 0; i < resource_index; i ++) {
-            bionet_subscribe_datapoints_by_name(resource_name_patterns[i]);
+        if(resource_name_patterns){
+            for (pPat = resource_name_patterns; *pPat; pPat++) {
+                bionet_subscribe_datapoints_by_name(*pPat);
+            }
         }
     }
 
