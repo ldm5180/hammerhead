@@ -27,7 +27,7 @@ START_TEST (test_libutil_epsilon_new_binary_0) {
     int content;
 
     epsilon = bionet_epsilon_new_binary(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     fail_if(bionet_epsilon_get_binary(epsilon, &content),
 	    "Failed to get value of binary.\n");
@@ -42,7 +42,7 @@ START_TEST (test_libutil_epsilon_new_binary_1) {
     int content;
 
     epsilon = bionet_epsilon_new_binary(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.");
 
     fail_if(bionet_epsilon_get_binary(epsilon, &content),
 	    "Failed to get value of binary.\n");
@@ -57,7 +57,7 @@ START_TEST (test_libutil_epsilon_new_binary_2) {
     int content;
 
     epsilon = bionet_epsilon_new_binary(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.");
 
     fail_if(bionet_epsilon_get_binary(epsilon, &content),
 	    "Failed to get value of binary.\n");
@@ -72,7 +72,7 @@ START_TEST (test_libutil_epsilon_new_uint8_0) {
     uint8_t content;
 
     epsilon = bionet_epsilon_new_uint8(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     fail_if(bionet_epsilon_get_uint8(epsilon, &content),
 	    "Failed to get value.\n");
@@ -87,7 +87,7 @@ START_TEST (test_libutil_epsilon_new_int8_0) {
     int8_t content;
 
     epsilon = bionet_epsilon_new_int8(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     fail_if(bionet_epsilon_get_int8(epsilon, &content),
 	    "Failed to get value.\n");
@@ -102,7 +102,7 @@ START_TEST (test_libutil_epsilon_new_uint16_0) {
     uint16_t content;
 
     epsilon = bionet_epsilon_new_uint16(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     fail_if(bionet_epsilon_get_uint16(epsilon, &content),
 	    "Failed to get value.\n");
@@ -117,7 +117,7 @@ START_TEST (test_libutil_epsilon_new_int16_0) {
     int16_t content;
 
     epsilon = bionet_epsilon_new_int16(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     fail_if(bionet_epsilon_get_int16(epsilon, &content),
 	    "Failed to get value.\n");
@@ -132,7 +132,7 @@ START_TEST (test_libutil_epsilon_new_uint32_0) {
     uint32_t content;
 
     epsilon = bionet_epsilon_new_uint32(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     fail_if(bionet_epsilon_get_uint32(epsilon, &content),
 	    "Failed to get value.\n");
@@ -147,7 +147,7 @@ START_TEST (test_libutil_epsilon_new_int32_0) {
     int32_t content;
 
     epsilon = bionet_epsilon_new_int32(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     fail_if(bionet_epsilon_get_int32(epsilon, &content),
 	    "Failed to get value.\n");
@@ -162,7 +162,7 @@ START_TEST (test_libutil_epsilon_new_float_0) {
     float content;
 
     epsilon = bionet_epsilon_new_float(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     fail_if(bionet_epsilon_get_float(epsilon, &content),
 	    "Failed to get value.\n");
@@ -177,7 +177,7 @@ START_TEST (test_libutil_epsilon_new_double_0) {
     double content;
 
     epsilon = bionet_epsilon_new_double(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     fail_if(bionet_epsilon_get_double(epsilon, &content),
 	    "Failed to get value.\n");
@@ -192,7 +192,7 @@ START_TEST (test_libutil_epsilon_new_str_0) {
     int content;
 
     epsilon = bionet_epsilon_new_str(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     fail_if(bionet_epsilon_get_str(epsilon, &content),
 	    "Failed to get value.\n");
@@ -206,7 +206,7 @@ START_TEST (test_libutil_epsilon_free_0) {
     int val = 1;
 
     epsilon = bionet_epsilon_new_str(val);
-    fail_unless(epsilon, "Failed to get a new epsilon.\n");
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
 
     bionet_epsilon_free(epsilon);
 } END_TEST /* test_libutil_epsilon_free_0 */
@@ -215,6 +215,34 @@ START_TEST (test_libutil_epsilon_free_0) {
 START_TEST (test_libutil_epsilon_free_1) {
     bionet_epsilon_free(NULL);
 } END_TEST /* test_libutil_epsilon_free_1 */
+
+
+START_TEST (test_libutil_epsilon_to_str_0) {
+    bionet_epsilon_t * epsilon;
+    int val = 123;
+    char * content_str;
+
+    epsilon = bionet_epsilon_new_uint8(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    content_str = bionet_epsilon_to_str(epsilon, BIONET_RESOURCE_DATA_TYPE_UINT8);
+    fail_unless(0 == strcmp("123", content_str),
+		"Failed to get the correct content string. %s != %s\n", "123", content_str);
+} END_TEST /* test_libutil_epsilon_to_str_0 */
+
+
+START_TEST (test_libutil_epsilon_to_str_1) {
+    bionet_epsilon_t * epsilon;
+    int val = 123;
+    char * content_str;
+
+    epsilon = bionet_epsilon_new_uint8(val);
+    fail_unless(NULL != epsilon, "Failed to get a new epsilon.\n");
+
+    content_str = bionet_epsilon_to_str(NULL, BIONET_RESOURCE_DATA_TYPE_UINT8);
+    fail_unless(NULL == content_str,
+		"Failed to detect NULL epsilon passed in.");
+} END_TEST /* test_libutil_epsilon_to_str_1 */
 
 
 void libutil_epsilon_tests_suite(Suite *s)
@@ -257,6 +285,11 @@ void libutil_epsilon_tests_suite(Suite *s)
     /* bionet_epsilon_free() */
     tcase_add_test(tc, test_libutil_epsilon_free_0);
     tcase_add_test(tc, test_libutil_epsilon_free_1);
+
+    /* bionet_epsilon_to_str() */
+    tcase_add_test(tc, test_libutil_epsilon_to_str_0);
+    tcase_add_test(tc, test_libutil_epsilon_to_str_1);
+    
 
     return;
 } /* libutil_hab_tests_suite() */

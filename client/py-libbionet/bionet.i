@@ -18,6 +18,8 @@
 %}
 
 %newobject bionet_value_to_str;
+%newobject bionet_resource_value_to_str;
+%newobject bionet_epsilon_to_str;
 
 %include "libbionet-decl.h"
 %include "libbionet-util-decl.h"
