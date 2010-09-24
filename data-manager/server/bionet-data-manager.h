@@ -19,6 +19,9 @@
 
 #include "bdm-list-iterator.h"
 
+#ifdef ENABLE_ION
+#       include "bps/bps_socket.h"
+#endif
 
 // Default bundle lifetime in seconds.
 #define BDM_BUNDLE_LIFETIME (300)
@@ -53,10 +56,6 @@ extern int bdm_shutdown_now;
 extern int libbdm_cal_fd;
 extern void bdm_cal_callback(void * cal_handle, const cal_event_t *event);
 extern int libbdm_cal_topic_matches(const char * topic, const char *subscription);
-
-// Call from threads instead of sleep after starting a g_main_loop.
-// Returns if thread should exit
-int bdm_thread_sleep();
 
 typedef enum {
     DB_INT = 0,
@@ -100,6 +99,7 @@ typedef struct {
     int remote_port;
     int bundle_lifetime; // Sync bundles have this rfc5050 lifetime (seconds)
     int sync_mtu; // Sync messages have this MTU. <= 0 means no limit
+    char * dtn_source_eid;
 
     //State vars
     sqlite3 *db;
@@ -109,6 +109,9 @@ typedef struct {
     int bytes_sent;
 
     // BP Only
+#ifdef ENABLE_ION
+    struct bps_sockaddr bp_dstaddr;
+#endif
     int bp_fd;
     int bp_bundle_fd;
 
@@ -354,7 +357,7 @@ int sync_bundle_handler(GIOChannel *ch, GIOCondition condition, gpointer listeni
 
 int make_listening_socket(int port);
 void keepalive(int socket, int idle, int count, int interval);
-void make_shutdowns_clean(int withThreads);
+void make_shutdowns_clean(void);
 
 
 // BDM sync'ing
@@ -402,6 +405,10 @@ void bdm_sync_datapoints_to_asn_setup(
         dp_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf);
 BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_iter_state_t * state);
+
+// Create a sync-send gio source
+// bp_fd is ignored except for BP sync configs
+GSource * sync_send_new_gio_source(sync_sender_config_t* cfg, const char * database_file, int bp_fd);
 
 // Decode and process a sync message
 BDM_Sync_Message_t * handle_sync_msg(int bundle_fd);

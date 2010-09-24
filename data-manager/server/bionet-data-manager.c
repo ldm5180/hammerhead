@@ -387,18 +387,29 @@ int bp_readable_handler(GIOChannel *listening_ch,
 			 GIOCondition condition,
 			 gpointer usr_data) 
 {
-    int bpfd = *(int*)usr_data;
+    int bpfd = GPOINTER_TO_INT(usr_data);
 
     int bdl_fd = bps_accept(bpfd, NULL, NULL);
     if ( bdl_fd < 0 ) {
+        int stay_registered;
+        switch(errno){
+            case EPIPE:
+            case EBADF:
+                stay_registered = FALSE;
+                break;
+            default:
+                stay_registered = TRUE;
+                break;
+        }
+
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
                 "Error accepting bundle: %s", strerror(errno));
-        return 1; // Keep me registered
+        return stay_registered;
     }
 
-    handle_sync_msg(bpfd);
+    handle_sync_msg(bdl_fd);
 
-    return 1;
+    return TRUE;
 }
 
 
@@ -688,6 +699,7 @@ int main(int argc, char *argv[]) {
     // Now, interperet the options we've gathered
     //
 
+    g_thread_init(NULL);
 
     if ( keep_self_stats ) {
         ignore_self = 0;
@@ -720,6 +732,8 @@ int main(int argc, char *argv[]) {
             if(sync_config->method == BDM_SYNC_METHOD_ION) {
 #if ENABLE_ION
                 need_bps_socket++;
+
+                strncpy(sync_config->bp_dstaddr.uri, sync_config->sync_recipient, BPS_EID_SIZE);
 #else
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
                       "Bad config file '%s': BDM Syncronization over DTN was disabled at compile time.", *pval);
@@ -727,6 +741,11 @@ int main(int argc, char *argv[]) {
 #endif
             }
             sync_config_list = g_slist_append(sync_config_list, sync_config);
+
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+                  "Syncing %s to '%s'", 
+                  sync_config->resource_name_pattern,
+                  sync_config->sync_recipient);
             break;
         }
     }
@@ -920,6 +939,11 @@ int main(int argc, char *argv[]) {
 	g_io_add_watch(ch, G_IO_IN, sync_receive_connecting_handler, GINT_TO_POINTER(fd));
     }
 
+    if (enable_dtn_sync_receiver) {
+        need_bps_socket++;
+    }
+
+
     // 
     // we're not connected to the Bionet, so add an idle function to the main loop to try to connect
     // if this function succeeds in connecting, it'll remove itself from the main loop and add the bionet fd
@@ -943,11 +967,7 @@ int main(int argc, char *argv[]) {
 
 
 
-    if (sync_config_list || enable_dtn_sync_receiver) {
-        make_shutdowns_clean(1);
-    } else {
-        make_shutdowns_clean(0);
-    }
+    make_shutdowns_clean();
 
     if(need_bps_socket) {
         bps_fd = bps_socket(0, 0, 0);
@@ -958,21 +978,17 @@ int main(int argc, char *argv[]) {
         }
 
 	if (dtn_endpoint_id) {
-            struct bps_sockaddr dstaddr;
-            strncpy(dstaddr.uri, dtn_endpoint_id, BPS_EID_SIZE);
-            r = bps_bind(bps_fd, &dstaddr, sizeof(struct bps_sockaddr));
+            struct bps_sockaddr srcaddr;
+            strncpy(srcaddr.uri, dtn_endpoint_id, BPS_EID_SIZE);
+            r = bps_bind(bps_fd, &srcaddr, sizeof(struct bps_sockaddr));
             if ( r ) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
                       "Error binding bps socket to '%s': %s", 
                     dtn_endpoint_id, strerror(errno));
                 return 1;
             }
-	}
 
-        GIOChannel *ch;
-
-        ch = g_io_channel_unix_new(bps_fd);
-        g_io_add_watch(ch, G_IO_IN, bp_readable_handler, GINT_TO_POINTER(bps_fd));
+        }
     }
 
     //create a config for each sync sender configuration
@@ -982,15 +998,15 @@ int main(int argc, char *argv[]) {
 	//init the latest entry end time for the config
 	sync_config = g_slist_nth_data(sync_config_list, i);
 	if (sync_config) {
-	    sync_config->db = db_init(database_file);
-	    sync_config->last_entry_end_seq = 
-                db_get_last_sync_seq(sync_config->db, 
-                    sync_config->sync_recipient);
-#if ENABLE_ION
-            if(sync_config->method == BDM_SYNC_METHOD_ION) {
-                sync_config->bp_fd = bps_fd;
+            GSource * source;
+
+            source = sync_send_new_gio_source(sync_config, database_file, bps_fd);
+            if(source) {
+                g_source_attach(source, NULL);
+            } else {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                      "Failed to init sync-send");
             }
-#endif
 
 	} else {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
@@ -1007,6 +1023,20 @@ int main(int argc, char *argv[]) {
 		  "DTN Sync Receiver requested, but no DTN endpoint ID specified.");
 	    return (-1);
 	}
+
+        r = bps_listen(bps_fd, 1);
+        if ( r ) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+                  "Error listening bps socket on '%s': %s", 
+                dtn_endpoint_id, strerror(errno));
+            return 1;
+        }
+
+        GIOChannel *ch;
+
+        ch = g_io_channel_unix_new(bps_fd);
+        g_io_add_watch(ch, G_IO_IN, bp_readable_handler, GINT_TO_POINTER(bps_fd));
+
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
 	      "DTN Sync Receiver starting. DTN endpoint ID: %s", dtn_endpoint_id);
 
@@ -1020,20 +1050,12 @@ int main(int argc, char *argv[]) {
     //  and all the clients' sockets, and handles I/O events as they come.
     //
 
-    while (g_main_loop_is_running(bdm_main_loop)) {
-        g_main_context_iteration(NULL, TRUE);
+    g_main_loop_run(bdm_main_loop);
+
+
+    if ( need_bps_socket ) {
+        bps_close(bps_fd);
     }
-
-    for (i = 0; i < g_slist_length(sync_config_list); i++) {
-	sync_sender_config_t * sync_config = NULL;
-
-	sync_config = g_slist_nth_data(sync_config_list, i);
-
-        if(sync_config->method == BDM_SYNC_METHOD_ION) {
-            bps_close(sync_config->bp_fd);
-        }
-    }
-
 
     // 
     // if we get here, then the main loop has quit and we need to exit

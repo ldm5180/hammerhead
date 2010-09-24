@@ -142,8 +142,7 @@ static void * _send_thread_main(void * v_args) {
 
 shutdown:
     // Shutdown
-fprintf(stderr, "ion-send thread exiting (%s)\n", strerror(errno));
-    close(args->ipcfd);
+    shutdown(args->ipcfd, SHUT_RD);
     (*bdm_bp_funcs.writeErrmsgMemos)();
 
     return NULL;
@@ -206,9 +205,7 @@ int stop_ion_send_thread(ion_send_thread_hdl_t * args)
 
     if(args->thread_running) {
         args->thread_running = 0;
-        if(bdm_bp_funcs.bp_interrupt) {
-            (*bdm_bp_funcs.bp_interrupt)(args->sap);
-        }
+
         r = pthread_join(args->pthread, NULL);
         if ( r )  return -1;
     }

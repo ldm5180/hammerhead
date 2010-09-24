@@ -17,6 +17,9 @@ bps_socket_t * bps_sock_new(void);
 // Lookup socket by user's sockfd
 bps_socket_t * bps_sock_table_lookup_fd(int fd);
 
+// Remove and return the sock for this fd
+bps_socket_t * bps_sock_table_remove_fd(int fd);
+
 
 #endif  //BPS_SOCK_TABLE_H
 

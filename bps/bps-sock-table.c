@@ -32,6 +32,32 @@ int bps_sock_table_add(bps_socket_t * sock) {
     return 0;
 }
 
+bps_socket_t * bps_sock_table_remove_fd(int fd) {
+    bps_socket_t * ret = NULL;
+
+    bps_socket_t key_sock;
+    key_sock.usrfd = fd;
+    bps_socket_t * key = &key_sock;
+
+    bps_socket_t ** sock = bsearch(&key, (void *)sock_table, 
+            num_socks, sizeof(bps_socket_t*), sock_cmp);
+
+    if(sock){
+        ret = *sock;
+        // Remove this sock pointer, and shift remaining up
+
+        // Caclulate the index of the next pointer...
+        int i=(sock - sock_table) + 1;
+
+        for(;i<num_socks; i++) {
+            sock_table[i-1] = sock_table[i];
+        }
+        num_socks--;
+    }
+
+    return ret;
+}
+
 bps_socket_t * bps_sock_table_lookup_fd(int fd) {
 
     bps_socket_t key_sock;
@@ -41,7 +67,11 @@ bps_socket_t * bps_sock_table_lookup_fd(int fd) {
     bps_socket_t ** sock = bsearch(&key, (void *)sock_table, 
             num_socks, sizeof(bps_socket_t*), sock_cmp);
 
-    return *sock;
+    if(sock){
+        return *sock;
+    } else {
+        return NULL;
+    }
 }
 
 bps_socket_t * bps_sock_new(void) {
@@ -58,7 +88,7 @@ bps_socket_t * bps_sock_new(void) {
     new_sock->opts.custodySwitch  = BPS_DEFAULT_CUSTODY_SWITCH;
 
     int fds[2];
-    r = socketpair(AF_UNIX, SOCK_DGRAM, 0, fds);
+    r = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
     if ( r != 0 ) goto cleanup;
 
     new_sock->libfd = fds[0];
@@ -87,6 +117,4 @@ cleanup:
     }
 
     return NULL;
-
 }
-

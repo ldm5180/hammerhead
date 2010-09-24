@@ -37,10 +37,7 @@
 #include "bps/bps_socket.h"
 
 char * dtn_endpoint_id = NULL;
-int bpfd = -1; 
 #endif
-
-GMainLoop * sync_sender_main_loop = NULL;
 
 static int sync_init_connection(sync_sender_config_t * config);
 static void sync_cancel_connection(sync_sender_config_t * config);
@@ -335,7 +332,8 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
         buffer_index += bytes_to_copy;
 
         if(config->buf_len >= BP_SEND_BUF_SIZE) {
-            ssize_t bytes = bps_send(bpfd, (void*)config->send_buf, BP_SEND_BUF_SIZE, MSG_MORE);
+            ssize_t bytes = bps_sendto(config->bp_fd, (void*)config->send_buf, BP_SEND_BUF_SIZE, MSG_MORE,
+                &config->bp_dstaddr, sizeof(struct bps_sockaddr));
             if ( bytes != BP_SEND_BUF_SIZE ) {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
                     "Error writing to bundle: %s", strerror(errno));
@@ -351,95 +349,34 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
 #endif
 
 
-gpointer sync_thread(gpointer config_list) {
-    int i;
-    sync_sender_config_t * cfg;
-    GSList * cfg_list = (GSList *)config_list;
+GSource * sync_send_new_gio_source(sync_sender_config_t* cfg, const char * database_file, int bp_fd) {
+    GSource * source = NULL;
 
+    cfg->db = db_init(database_file);
+    if(cfg->db == NULL) {
+        return NULL;
+    }
 
-#ifdef ENABLE_ION
-    int need_bp = 0;
-#endif
+    if(cfg->frequency <= 0 ) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+              "Sync-send frequency is 0");
+        return NULL;
+    }
 
-    for (i = 0; i < g_slist_length(cfg_list); i++) {
-	cfg = g_slist_nth_data(cfg_list, i);
-	
-       	if (NULL == cfg) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		  "sync_thread() found NULL config: %d", i); 
-	    return NULL;
-	}
-
-        db_insert_bdm(cfg->db, cfg->sync_recipient, NULL);
-
-	cfg->last_entry_end_seq = 
-	    db_get_last_sync_seq(cfg->db, cfg->sync_recipient);
-    
-	// One-time setup
+    cfg->last_entry_end_seq = 
+        db_get_last_sync_seq(cfg->db, 
+            cfg->sync_recipient);
 #if ENABLE_ION
-	if( cfg->method == BDM_SYNC_METHOD_ION ) {
-	    if(NULL == dtn_endpoint_id) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		      "sync-send: No source EID defined. Cannot continue");
-		return NULL;
-	    }
-	    need_bp++;
-	}
+    if(cfg->method == BDM_SYNC_METHOD_ION) {
+        cfg->bp_fd = bp_fd;
+    }
 #endif
-    }
+    source = g_timeout_source_new_seconds(cfg->frequency);
+    g_source_set_callback(source, sync_check, cfg, NULL);
 
-#ifdef ENABLE_ION
-    if (need_bp) {
-        int r;
+    return source;
+}
 
-        if(bpfd < 0) {
-            bpfd = bps_socket(0, 0, 0);
-            if ( bpfd < 0 ) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                        "Can't create bp socket: %s", strerror(errno));
-                return NULL;
-            }
-        }
-            
-        r = bps_bind(bpfd, (struct bps_sockaddr*)dtn_endpoint_id, sizeof(struct bps_sockaddr));
-        if( r < 0 ) {
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "Can't bind to local bp EID '%s': %s", 
-                    dtn_endpoint_id, strerror(errno));
-
-            return NULL;
-        }
-    }
-
-#endif // ENABLE_ION
-
-    GMainContext * this_loop_context = 
-        g_main_context_new();
-
-    sync_sender_main_loop = g_main_loop_new(this_loop_context, TRUE);
-    
-    for (i = 0; i < g_slist_length(cfg_list); i++) {
-        GSource * source;
-	cfg = g_slist_nth_data(cfg_list, i);
-
-	source = g_timeout_source_new_seconds(cfg->frequency);
-        g_source_set_callback(source, sync_check, cfg, NULL);
-        g_source_attach(source, this_loop_context);
-    }
-
-    g_main_loop_run(sync_sender_main_loop);
-
-    for (i = 0; i < g_slist_length(cfg_list); i++) {
-	cfg = g_slist_nth_data(cfg_list, i);
-	if (cfg) {
-	    sync_sender_config_destroy(cfg);
-	}
-    }
-
-    sync_sender_main_loop = NULL;
-
-    return NULL;
-} /* sync_thread() */
 
 static gboolean sync_check(gpointer data) {
     sync_sender_config_t * cfg = (sync_sender_config_t *)data;
@@ -603,7 +540,8 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
     ssize_t bytes;
 
     if(config->buf_len > 0) {
-        bytes = bps_send(bpfd, config->send_buf, config->buf_len, 0);
+        bytes = bps_sendto(config->bp_fd, config->send_buf, config->buf_len, 0, 
+                &config->bp_dstaddr, sizeof(struct bps_sockaddr));
         if ( bytes != config->buf_len ) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
                 "Error writing to bundle: %s", strerror(errno));
@@ -614,7 +552,8 @@ static int sync_finish_connection_ion(sync_sender_config_t * config) {
         config->buf_len = 0;
     } else {
         // Send 0 bytes, without MSG_MORE to flush any queued data
-        bytes = bps_send(bpfd, NULL, 0, 0);
+        bytes = bps_sendto(config->bp_fd, NULL, 0, 0,
+                &config->bp_dstaddr, sizeof(struct bps_sockaddr));
         if ( bytes != 0 ) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
                 "Error writing to bundle: %s", strerror(errno));
@@ -796,6 +735,7 @@ static int sync_init_connection(sync_sender_config_t * config) {
     }
     return rc;
 }
+
 
 
 

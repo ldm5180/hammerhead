@@ -271,6 +271,9 @@ int bps_accept(int sockfd, struct bps_sockaddr *addr, socklen_t *addrlen)
     BpDelivery *dlv;
     r = pop_recv_bundle(sockfd, &dlv);
     if ( r <= 0 ) {
+        if ( r == 0 ) {
+            errno = EPIPE;
+        }
         return -1;
     }
 
@@ -498,24 +501,33 @@ int bps_close(int sockfd)
         sock->bundle = NULL;
     }
 
-    //
-    // TODO Steps:
-    //  1: Remove sock from table
-    //  2: Close all FDs to notify ION thread
-    //  3: call bp_interrupt to allow ION threads to notice
-    //  3: Free sock buf
-    //
+
+    // 1. Remove sock from table
+    bps_sock_table_remove_fd(sockfd);
+
+    // 2. Close socket to threads, so they know to shutdown
+    close(sockfd);
+
+    // 3. Stop and wait for threads
+    if(sock->recv_thread) {
+        stop_ion_recv_thread(sock->recv_thread);
+    }
+    if(sock->send_thread) {
+        stop_ion_send_thread(sock->send_thread);
+    }
+
+    // 5. Free sock
+    if(sock->have_local_uri){
+        (*bdm_bp_funcs.bp_close)(sock->sap);
+    }
+
+    free(sock);
 
     return 0;
 }
 
 void bps_destroy(void) {
     // TODO: Verify all fds are closed, so ION threads will exit
-    /*
-    if(bdm_bp_funcs.bp_interrupt) {
-        (*bdm_bp_funcs.bp_interrupt)(sock->sap);
-    }
-    */
 }
 
 int bps_setopt(int impl_type, int opt, void* optval, size_t optlen)
