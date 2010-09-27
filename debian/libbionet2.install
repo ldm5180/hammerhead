@@ -3,3 +3,4 @@ usr/lib/libbionet.so.*
 usr/lib/libhab.so.*
 usr/lib/libbionet-asn.so.*
 usr/lib/libbionet-util.so.*
+usr/lib/libbps.so.*

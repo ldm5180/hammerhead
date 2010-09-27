@@ -5,7 +5,7 @@
 
 include $(top_srcdir)/common.am
 
-bin_PROGRAMS = ping echod bpecho bping
+noinst_PROGRAMS = ping echod bpecho bping
 
 ping_CFLAGS = $(AM_CFLAGS) $(CFLAGS_LIBBPS)
 
