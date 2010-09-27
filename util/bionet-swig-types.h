@@ -6,15 +6,12 @@ typedef struct {
 } Hab;
 
 typedef struct {
-    bionet_node_t * this;
 } Node;
 
 typedef struct {
-    bionet_resource_t * this;
 } Resource;
 
 typedef struct {
-    bionet_datapoint_t * this;
 } Datapoint;
 
 typedef struct {
