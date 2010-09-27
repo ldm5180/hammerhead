@@ -68,9 +68,8 @@ def process(hab):
     # the new values get set to the resources and published.
 
     # get the node and the resource, increment the value in the resource
-    node = bionet_hab_get_node_by_id(hab, "process")
-    resource = bionet_node_get_resource_by_id(node, "uptime")
-    interval_res = bionet_node_get_resource_by_id(node, "update-interval")
+    resource = hab.node("process").resource("uptime")
+    interval_res = hab.node("process").resource("update-interval")
 
     # at this time the python wrapper is still in development, there is no way
     # get the value without converting to a string and back again. In C this is

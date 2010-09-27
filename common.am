@@ -107,6 +107,8 @@ LIBS_BP_COMMANDING = $(top_srcdir)/libbdm/libbp-commanding.la
 INCLUDES_QT = `pkg-config --cflags QtCore` `pkg-config --cflags QtGui`
 LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`
 
+INCLUDES_SWIG_BIONET_UTIL = $(top_srcdir)/util/bionet-hab.i $(top_srcdir)/util/bionet-node.i $(top_srcdir)/util/bionet-resource.i $(top_srcdir)/util/bionet-util.i $(top_srcdir)/util/bionet-datapoint.i $(top_srcdir)/util/bionet-value.i $(top_srcdir)/util/bionet-stream.i $(top_srcdir)/util/bionet-epsilon.i
+
 if ENABLE_ION
 CFLAGS_LIBBPS = -pthread
 LDFLAGS_LIBBPS = -pthread
