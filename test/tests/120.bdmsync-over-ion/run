@@ -27,12 +27,6 @@ fi
 UNIQUE=$$
 RETVAL=0
 
-sync_complete(){
-    sendlog=$1
-    recvlog=$2
-
-    test `grep -c 'Sending bundle with payload' $sendlog` -le  `grep -c 'Processing a bundle'  $recvlog`
-}
 
 # We REALLY need to cleanup if we can
 on_die()
@@ -90,12 +84,12 @@ ionstart -I ${CONFIGDIR}/ion.rc
 # receive the message and store it in a file via test bundle sink
 echo "Starting ION sync receiver BDM"
 rm -f sync-recv.log
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver  --debug --log-file=sync-recv.log &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --dtn-endpoint-id 'ipn:1.1' --dtn-sync-receiver --bdm-stats 1  --debug --log-file=sync-recv.log &
 RECVPID=$!
 
 echo starting ION sync sender BDM
 rm -f sync-send.log
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  bdm-sync-send.cfg --port 11111  --debug --log-file=sync-send.log &
+$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.2' --sync-sender-config  bdm-sync-send.cfg --port 11111 --bdm-stats 1 --debug --log-file=sync-send.log &
 SENDPID=$!
 time_watch 60 grep -i "connected to bionet" sync-send.log || test_error "bdm didn't start"
 sleep 5 # let the bdm come up before starting the HAB
@@ -115,12 +109,8 @@ wait $HABPID
 echo "Waiting for all data to sync"
 time_watch 60 grep ": lost hab: random-hab.$UNIQUE"  sync-send.log || test_error "Never saw hab go away"
 sleep 5 # Wait at leat one sync-send interval
-if ! time_watch 120 sync_complete sync-send.log sync-recv.log; then
-    echo "Sync incomplete"
-    grep 'Sending bundle with payload' sync-send.log
-    grep 'Processing a bundle'  sync-recv.log
-    test_error "Data hasn't sync'd completely"
-fi
+
+$ROOT/test/pylib/SysTest/BdmSyncTest/sync_monitor.py --timeout=120 --send-id="sync-send-$UNIQUE" --recv-id="sync-recv-$UNIQUE" || test_error "Data hasn't sync'd completely"
 
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
 echo "killing the ION sync sender BDM"

@@ -121,6 +121,11 @@ static int sync_send_metadata(
 
     while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
     {
+        int num_events = count_sync_events(&sync_message->choice.metadataMessage);
+        if ( 0 == num_events ) {
+            continue;
+        }
+
         if (sync_init_connection(config)) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                   "    Unable to setup connection to BDM Sync Receiver");
@@ -133,7 +138,6 @@ static int sync_send_metadata(
 	asn_r = der_encode(&asn_DEF_BDM_Sync_Message, sync_message, 
             write_data_to_message, config);
 
-        int num_events = count_sync_events(&sync_message->choice.metadataMessage);
 
         ASN_STRUCT_FREE(asn_DEF_BDM_Sync_Message, sync_message);
 
@@ -234,6 +238,12 @@ static int sync_send_datapoints(
 
     while((sync_message = bdm_sync_datapoints_to_asn(&iter, &make_message_state)))
     {
+        int num_datapoints = count_sync_datapoints(sync_message);
+    
+        if( 0 == num_datapoints ) {
+            continue;
+        }
+
         if (sync_init_connection(config)) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                   "    Unable to make TCP connection to BDM Sync Receiver");
@@ -256,7 +266,6 @@ static int sync_send_datapoints(
             goto cleanup;
 	}
 
-        int num_datapoints = count_sync_datapoints(sync_message);
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
               "Syncd %d datapoints to %s for seqs [%d,%d]",
               num_datapoints,
@@ -721,6 +730,7 @@ static int sync_init_connection(sync_sender_config_t * config) {
 #if ENABLE_ION
         case BDM_SYNC_METHOD_ION:
             config->bytes_sent = 0;
+            rc = 0;
             break;
 #endif
         
