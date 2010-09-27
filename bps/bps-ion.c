@@ -23,7 +23,7 @@
 
 // Group ion configs for clarity
 typedef struct {
-    Sdr	sdr; // The SDR of the open transaction. NULL when not in transaction
+    Sdr	sdr; // The SDR handle
 } ion_config_t;
 
 static struct {
@@ -295,7 +295,11 @@ int bps_accept(int sockfd, struct bps_sockaddr *addr, socklen_t *addrlen)
 
     // Tell user to read from accept socket
     char buf[1] = {0};
-    write(accept_sock->libfd, buf, sizeof(buf));
+    ssize_t bytes;
+    while((bytes = write(accept_sock->libfd, buf, sizeof(buf))) < 0 && errno == EINTR);
+    if(bytes != sizeof(buf)){
+        return -1;
+    }
 
     return accept_sock->usrfd;
 }
