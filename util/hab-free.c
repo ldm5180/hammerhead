@@ -21,6 +21,24 @@ void bionet_hab_free(bionet_hab_t *hab) {
         return;
     }
 
+    if(hab->ref) {
+	hab->ref = hab->ref - 1;
+
+	/* set all the nodes' hab ptrs to NULL */
+	do {
+	    bionet_node_t *node;
+	    
+	    node = g_slist_nth_data(hab->nodes, 0);
+	    if (node == NULL) break;  // done
+	    
+	    hab->nodes = g_slist_remove(hab->nodes, node);
+	    
+	    node->hab = NULL;
+	} while(1);	
+
+	return;
+    }
+
     bionet_hab_remove_all_nodes(hab);
 
     /* run all the destructors */

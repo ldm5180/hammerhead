@@ -22,6 +22,14 @@ void bionet_resource_free(bionet_resource_t *resource) {
         return;
     }
 
+    if (resource->ref) {
+	resource->ref = resource->ref - 1;
+
+	//TODO: remove ptrs from values
+
+	return;
+    }
+
     /* run all the destructors */
     g_slist_foreach(resource->destructors,
 		    resource_destroy,

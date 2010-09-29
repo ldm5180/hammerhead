@@ -1,29 +1,47 @@
 %extend Resource {
     Resource(Node * node, bionet_resource_data_type_t datatype, bionet_resource_flavor_t flavor, const char * id) {
-	Resource * resource = (Resource *)bionet_resource_new((bionet_node_t *)node, datatype, flavor, id);
+	Resource * resource = (Resource *)malloc(sizeof(Resource));
+	if (NULL == resource) {
+	    return resource;
+	}
+
+	resource->this = bionet_resource_new(node->this, datatype, flavor, id);
+	if (NULL == resource->this) {
+	    free(resource);
+	    return NULL;
+	}
+
+	bionet_resource_set_user_data(resource->this, resource);
+
 	return resource;
     }
 
     ~Resource() {
-	bionet_resource_free((bionet_resource_t *)$self);
+	bionet_resource_set_user_data($self->this, NULL);
+	bionet_resource_free($self->this);
+	free($self);
     }
 
-    const char * name() { return bionet_resource_get_name((bionet_resource_t *)$self); }
+    const char * name() { return bionet_resource_get_name($self->this); }
 
-    const char * local_name() { return bionet_resource_get_local_name((bionet_resource_t *)$self); }
+    const char * local_name() { return bionet_resource_get_local_name($self->this); }
 
-    const char * id() { return bionet_resource_get_id((bionet_resource_t *)$self); }
+    const char * id() { return bionet_resource_get_id($self->this); }
 
-    Node * node() { return (Node *)bionet_resource_get_node((bionet_resource_t *)$self); }
+    Node * node() {
+	bionet_node_t * n = bionet_resource_get_node($self->this); 
+	bionet_node_increment_ref_count(n);
+	return (Node *)bionet_node_get_user_data(n);
+    }
 
-    bionet_resource_data_type_t datatype() { return bionet_resource_get_data_type((bionet_resource_t *)$self); }
+    bionet_resource_data_type_t datatype() { return bionet_resource_get_data_type($self->this); }
 
-    bionet_resource_flavor_t flavor() { return bionet_resource_get_flavor((bionet_resource_t *)$self); }
+    bionet_resource_flavor_t flavor() { return bionet_resource_get_flavor($self->this); }
 
     const char * flavorToString(bionet_resource_flavor_t flavor) { return bionet_resource_flavor_to_string(flavor); }
 
-    bionet_resource_flavor_t flavorFromString(const char * flavor_string) { return 
-	    bionet_resource_flavor_from_string(flavor_string); 
+    bionet_resource_flavor_t flavorFromString(const char * flavor_string) { 
+	return bionet_resource_flavor_from_string(flavor_string); 
     }
 
     const char * datatypeToString(bionet_resource_data_type_t data_type) { 
@@ -34,234 +52,390 @@
 	return bionet_resource_data_type_from_string(data_type_string); 
     }
 
-    int set(const bionet_value_t *content, 
+    int set(Value * content, 
 	    const struct timeval *timestamp) {
-	return bionet_resource_set((bionet_resource_t *)$self, content, timestamp); 
+	return bionet_resource_set($self->this, content->this, timestamp); 
     }
 
     int set(int content, const struct timeval * timestamp) {
 	char newstr[1024];
-	switch (bionet_resource_get_data_type((bionet_resource_t *)$self)) {
+	int r;
+	bionet_datapoint_t * d;
+	bionet_value_t * v;
+
+	Datapoint * datapoint = (Datapoint *)malloc(sizeof(Datapoint));
+	if (NULL == datapoint) {
+	    return 1;
+	}
+
+	Value * value = (Value *)malloc(sizeof(Value));
+	if (NULL == value) {
+	    return 1;
+	}
+
+	switch (bionet_resource_get_data_type($self->this)) {
 	case BIONET_RESOURCE_DATA_TYPE_BINARY:
-	    return bionet_resource_set_binary((bionet_resource_t *)$self, content, timestamp); 
+	    r = bionet_resource_set_binary($self->this, content, timestamp);
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_UINT8:
-	    return bionet_resource_set_uint8((bionet_resource_t *)$self, (uint8_t)content, timestamp); 
+	    r = bionet_resource_set_uint8($self->this, (uint8_t)content, timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT8:
-	    return bionet_resource_set_int8((bionet_resource_t *)$self, (int8_t)content, timestamp); 
+	    r = bionet_resource_set_int8($self->this, (int8_t)content, timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_UINT16:
-	    return bionet_resource_set_uint16((bionet_resource_t *)$self, (uint16_t)content, timestamp); 
+	    r = bionet_resource_set_uint16($self->this, (uint16_t)content, timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT16:
-	    return bionet_resource_set_int16((bionet_resource_t *)$self, (int16_t)content, timestamp); 
+	    r = bionet_resource_set_int16($self->this, (int16_t)content, timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_UINT32:
-	    return bionet_resource_set_uint32((bionet_resource_t *)$self, (uint32_t)content, timestamp); 
+	    r = bionet_resource_set_uint32($self->this, (uint32_t)content, timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT32:
-	    return bionet_resource_set_int32((bionet_resource_t *)$self, (int32_t)content, timestamp); 
+	    r = bionet_resource_set_int32($self->this, (int32_t)content, timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
 	    snprintf(newstr, sizeof(newstr), "%d", content);
-	    return bionet_resource_set_str((bionet_resource_t *)$self, newstr, timestamp); 
+	    r = bionet_resource_set_str($self->this, newstr, timestamp); 
 	    break;
 	default:
 	    return -1;
 	    break;
 	}
+
+	if (0 == r) {
+	    d = bionet_resource_get_datapoint_by_index($self->this, 0);
+	    datapoint->this = d;
+	    bionet_datapoint_set_user_data(d, datapoint);
+
+	    v = bionet_datapoint_get_value(d);
+	    value->this = v;
+	    bionet_value_set_user_data(v, value);
+	}
+
+	return r;
     }
 
     int set(float content, const struct timeval * timestamp) {
 	char newstr[1024];
-	switch (bionet_resource_get_data_type((bionet_resource_t *)$self)) {
+	int r;
+	bionet_datapoint_t * d;
+	bionet_value_t * v;
+
+	Datapoint * datapoint = (Datapoint *)malloc(sizeof(Datapoint));
+	if (NULL == datapoint) {
+	    return 1;
+	}
+
+	Value * value = (Value *)malloc(sizeof(Value));
+	if (NULL == value) {
+	    return 1;
+	}
+
+	switch (bionet_resource_get_data_type($self->this)) {
 	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-	    return bionet_resource_set_float((bionet_resource_t *)$self, content, timestamp); 
+	    r = bionet_resource_set_float($self->this, content, timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-	    return bionet_resource_set_double((bionet_resource_t *)$self, (double)content, timestamp); 
+	    r = bionet_resource_set_double($self->this, (double)content, timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
 	    snprintf(newstr, sizeof(newstr), "%f", content);
-	    return bionet_resource_set_str((bionet_resource_t *)$self, newstr, timestamp); 
+	    r = bionet_resource_set_str($self->this, newstr, timestamp); 
 	    break;
 	default: 
 	    return -1;
 	    break;
 	}
+
+	if (0 == r) {
+	    d = bionet_resource_get_datapoint_by_index($self->this, 0);
+	    datapoint->this = d;
+	    bionet_datapoint_set_user_data(d, datapoint);
+
+	    v = bionet_datapoint_get_value(d);
+	    value->this = v;
+	    bionet_value_set_user_data(v, value);
+	}
+
+	return r;
     }
 
     int set(const char * content, const struct timeval * timestamp) {
-	switch (bionet_resource_get_data_type((bionet_resource_t *)$self)) {
+	int r;
+	bionet_datapoint_t * d;
+	bionet_value_t * v;
+
+	Datapoint * datapoint = (Datapoint *)malloc(sizeof(Datapoint));
+	if (NULL == datapoint) {
+	    return 1;
+	}
+
+	Value * value = (Value *)malloc(sizeof(Value));
+	if (NULL == value) {
+	    return 1;
+	}
+
+	switch (bionet_resource_get_data_type($self->this)) {
 	case BIONET_RESOURCE_DATA_TYPE_BINARY:
-	    return bionet_resource_set_binary((bionet_resource_t *)$self, strtol(content, NULL, 0), timestamp); 
+	    r = bionet_resource_set_binary($self->this, strtol(content, NULL, 0), timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_UINT8:
-	    return bionet_resource_set_uint8((bionet_resource_t *)$self, (uint8_t)strtoul(content, NULL, 0), timestamp); 
+	    r = bionet_resource_set_uint8($self->this, (uint8_t)strtoul(content, NULL, 0), timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT8:
-	    return bionet_resource_set_int8((bionet_resource_t *)$self, (int8_t)strtol(content, NULL, 0), timestamp);
+	    r = bionet_resource_set_int8($self->this, (int8_t)strtol(content, NULL, 0), timestamp);
 	    break;
 	    case BIONET_RESOURCE_DATA_TYPE_UINT16:
-	    return bionet_resource_set_uint16((bionet_resource_t *)$self, (uint16_t)strtoul(content, NULL, 0), timestamp); 
+	    r = bionet_resource_set_uint16($self->this, (uint16_t)strtoul(content, NULL, 0), timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT16:
-	    return bionet_resource_set_int16((bionet_resource_t *)$self, (int16_t)strtol(content, NULL, 0), timestamp); 
+	    r = bionet_resource_set_int16($self->this, (int16_t)strtol(content, NULL, 0), timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_UINT32:
-	    return bionet_resource_set_uint32((bionet_resource_t *)$self, (uint32_t)strtoul(content, NULL, 0), timestamp); 
+	    r = bionet_resource_set_uint32($self->this, (uint32_t)strtoul(content, NULL, 0), timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT32:
-	    return bionet_resource_set_int32((bionet_resource_t *)$self, (int32_t)strtol(content, NULL, 0), timestamp); 
+	    r = bionet_resource_set_int32($self->this, (int32_t)strtol(content, NULL, 0), timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-	    return bionet_resource_set_float((bionet_resource_t *)$self, strtof(content, NULL), timestamp); 
+	    r = bionet_resource_set_float($self->this, strtof(content, NULL), timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-	    return bionet_resource_set_double((bionet_resource_t *)$self, strtod(content, NULL), timestamp); 
+	    r = bionet_resource_set_double($self->this, strtod(content, NULL), timestamp); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
-	    return bionet_resource_set_str((bionet_resource_t *)$self, content, timestamp); 
+	    r = bionet_resource_set_str($self->this, content, timestamp); 
 	    break;
 
 	default:
 	    return -1;
 	    break;
 	}
+
+	if (0 == r) {
+	    d = bionet_resource_get_datapoint_by_index($self->this, 0);
+	    datapoint->this = d;
+	    bionet_datapoint_set_user_data(d, datapoint);
+
+	    v = bionet_datapoint_get_value(d);
+	    value->this = v;
+	    bionet_value_set_user_data(v, value);
+	}
+
+	return r;
     }
 
     int set(int content) {
 	char newstr[1024];
-	switch (bionet_resource_get_data_type((bionet_resource_t *)$self)) {
+	int r;
+	bionet_datapoint_t * d;
+	bionet_value_t * v;
+
+	Datapoint * datapoint = (Datapoint *)malloc(sizeof(Datapoint));
+	if (NULL == datapoint) {
+	    return 1;
+	}
+
+	Value * value = (Value *)malloc(sizeof(Value));
+	if (NULL == value) {
+	    return 1;
+	}
+
+	switch (bionet_resource_get_data_type($self->this)) {
 	case BIONET_RESOURCE_DATA_TYPE_BINARY:
-	    return bionet_resource_set_binary((bionet_resource_t *)$self, content, NULL); 
+	    r = bionet_resource_set_binary($self->this, content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_UINT8:
-	    return bionet_resource_set_uint8((bionet_resource_t *)$self, (uint8_t)content, NULL); 
+	    r = bionet_resource_set_uint8($self->this, (uint8_t)content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT8:
-	    return bionet_resource_set_int8((bionet_resource_t *)$self, (int8_t)content, NULL); 
+	    r = bionet_resource_set_int8($self->this, (int8_t)content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_UINT16:
-	    return bionet_resource_set_uint16((bionet_resource_t *)$self, (uint16_t)content, NULL); 
+	    r = bionet_resource_set_uint16($self->this, (uint16_t)content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT16:
-	    return bionet_resource_set_int16((bionet_resource_t *)$self, (int16_t)content, NULL); 
+	    r = bionet_resource_set_int16($self->this, (int16_t)content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_UINT32:
-	    return bionet_resource_set_uint32((bionet_resource_t *)$self, (uint32_t)content, NULL); 
+	    r = bionet_resource_set_uint32($self->this, (uint32_t)content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT32:
-	    return bionet_resource_set_int32((bionet_resource_t *)$self, (int32_t)content, NULL); 
+	    r = bionet_resource_set_int32($self->this, (int32_t)content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-	    return bionet_resource_set_float((bionet_resource_t *)$self, (float)content, NULL); 
+	    r = bionet_resource_set_float($self->this, (float)content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-	    return bionet_resource_set_double((bionet_resource_t *)$self, (double)content, NULL); 
+	    r = bionet_resource_set_double($self->this, (double)content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
 	    snprintf(newstr, sizeof(newstr), "%d", content);
-	    return bionet_resource_set_str((bionet_resource_t *)$self, newstr, NULL); 
+	    r = bionet_resource_set_str($self->this, newstr, NULL); 
 	    break;
 	default:
 	    return -1;
 	    break;
 	}
+
+	if (0 == r) {
+	    d = bionet_resource_get_datapoint_by_index($self->this, 0);
+	    datapoint->this = d;
+	    bionet_datapoint_set_user_data(d, datapoint);
+
+	    v = bionet_datapoint_get_value(d);
+	    value->this = v;
+	    bionet_value_set_user_data(v, value);
+	}
+
+	return r;
     }
 
     int set(float content) {
 	char newstr[1024];
-	switch (bionet_resource_get_data_type((bionet_resource_t *)$self)) {
+	int r;
+	bionet_datapoint_t * d;
+	bionet_value_t * v;
+
+	Datapoint * datapoint = (Datapoint *)malloc(sizeof(Datapoint));
+	if (NULL == datapoint) {
+	    return 1;
+	}
+
+	Value * value = (Value *)malloc(sizeof(Value));
+	if (NULL == value) {
+	    return 1;
+	}
+
+	switch (bionet_resource_get_data_type($self->this)) {
 	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-	    return bionet_resource_set_float((bionet_resource_t *)$self, content, NULL); 
+	    r = bionet_resource_set_float($self->this, content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-	    return bionet_resource_set_double((bionet_resource_t *)$self, (double)content, NULL); 
+	    r = bionet_resource_set_double($self->this, (double)content, NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
 	    snprintf(newstr, sizeof(newstr), "%f", content);
-	    return bionet_resource_set_str((bionet_resource_t *)$self, newstr, NULL); 
+	    r = bionet_resource_set_str($self->this, newstr, NULL); 
 	    break;
 	default: 
-	    return -1;
+	    r = -1;
 	    break;
 	}
+
+	if (0 == r) {
+	    d = bionet_resource_get_datapoint_by_index($self->this, 0);
+	    datapoint->this = d;
+	    bionet_datapoint_set_user_data(d, datapoint);
+
+	    v = bionet_datapoint_get_value(d);
+	    value->this = v;
+	    bionet_value_set_user_data(v, value);
+	}
+
+	return r;
     }
 
     int set(const char * content) {
-	switch (bionet_resource_get_data_type((bionet_resource_t *)$self)) {
+	int r;
+	bionet_datapoint_t * d;
+	bionet_value_t * v;
+
+	Datapoint * datapoint = (Datapoint *)malloc(sizeof(Datapoint));
+	if (NULL == datapoint) {
+	    return 1;
+	}
+
+	Value * value = (Value *)malloc(sizeof(Value));
+	if (NULL == value) {
+	    return 1;
+	}
+
+	switch (bionet_resource_get_data_type($self->this)) {
 	case BIONET_RESOURCE_DATA_TYPE_BINARY:
-	    return bionet_resource_set_binary((bionet_resource_t *)$self, strtol(content, NULL, 0), NULL); 
+	    r = bionet_resource_set_binary($self->this, strtol(content, NULL, 0), NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_UINT8:
-	    return bionet_resource_set_uint8((bionet_resource_t *)$self, (uint8_t)strtoul(content, NULL, 0), NULL); 
+	    r = bionet_resource_set_uint8($self->this, (uint8_t)strtoul(content, NULL, 0), NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT8:
-	    return bionet_resource_set_int8((bionet_resource_t *)$self, (int8_t)strtol(content, NULL, 0), NULL);
+	    r = bionet_resource_set_int8($self->this, (int8_t)strtol(content, NULL, 0), NULL);
 	    break;
 	    case BIONET_RESOURCE_DATA_TYPE_UINT16:
-	    return bionet_resource_set_uint16((bionet_resource_t *)$self, (uint16_t)strtoul(content, NULL, 0), NULL); 
+	    r = bionet_resource_set_uint16($self->this, (uint16_t)strtoul(content, NULL, 0), NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT16:
-	    return bionet_resource_set_int16((bionet_resource_t *)$self, (int16_t)strtol(content, NULL, 0), NULL); 
+	    r = bionet_resource_set_int16($self->this, (int16_t)strtol(content, NULL, 0), NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_UINT32:
-	    return bionet_resource_set_uint32((bionet_resource_t *)$self, (uint32_t)strtoul(content, NULL, 0), NULL); 
+	    r = bionet_resource_set_uint32($self->this, (uint32_t)strtoul(content, NULL, 0), NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_INT32:
-	    return bionet_resource_set_int32((bionet_resource_t *)$self, (int32_t)strtol(content, NULL, 0), NULL); 
+	    r = bionet_resource_set_int32($self->this, (int32_t)strtol(content, NULL, 0), NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-	    return bionet_resource_set_float((bionet_resource_t *)$self, strtof(content, NULL), NULL); 
+	    r = bionet_resource_set_float($self->this, strtof(content, NULL), NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-	    return bionet_resource_set_double((bionet_resource_t *)$self, strtod(content, NULL), NULL); 
+	    r = bionet_resource_set_double($self->this, strtod(content, NULL), NULL); 
 	    break;
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
-	    return bionet_resource_set_str((bionet_resource_t *)$self, content, NULL); 
+	    r = bionet_resource_set_str($self->this, content, NULL); 
 	    break;
 
 	default:
 	    return -1;
 	    break;
 	}
+
+	if (0 == r) {
+	    d = bionet_resource_get_datapoint_by_index($self->this, 0);
+	    datapoint->this = d;
+	    bionet_datapoint_set_user_data(d, datapoint);
+
+	    v = bionet_datapoint_get_value(d);
+	    value->this = v;
+	    bionet_value_set_user_data(v, value);
+	}
+
+	return r;
     }
 
-    int numDatapoints() { return bionet_resource_get_num_datapoints((bionet_resource_t *)$self); }
+    int numDatapoints() { return bionet_resource_get_num_datapoints($self->this); }
 
-    bionet_datapoint_t * datapoint(unsigned int index) { return bionet_resource_get_datapoint_by_index((bionet_resource_t *)$self, index); }
+    Datapoint * datapoint(unsigned int index) { 
+	bionet_datapoint_t * d = bionet_resource_get_datapoint_by_index($self->this, index); 
+	bionet_datapoint_increment_ref_count(d);
+	return (Datapoint *)bionet_datapoint_get_user_data(d);
+    }
 
-    void removeDatapoint(unsigned int index) { return bionet_resource_remove_datapoint_by_index((bionet_resource_t *)$self, index); }
+    void removeDatapoint(unsigned int index) { return bionet_resource_remove_datapoint_by_index($self->this, index); }
 
-    int matchesId(const char * id) { return bionet_resource_matches_id((bionet_resource_t *)$self, id); }
+    int matchesId(const char * id) { return bionet_resource_matches_id($self->this, id); }
 
     int matchesHabTypeHabIdNodeIdResourceId(const char *hab_type,
 					    const char *hab_id,
 					    const char *node_id,
 					    const char *resource_id) {
-	return bionet_resource_matches_habtype_habid_nodeid_resourceid((bionet_resource_t *)$self,
+	return bionet_resource_matches_habtype_habid_nodeid_resourceid($self->this,
 								       hab_type,
 								       hab_id,
 								       node_id,
 								       resource_id); 
     }
 
-    void setUserData(const void * user_data) { bionet_resource_set_user_data((bionet_resource_t *)$self, user_data); }
+    bionet_epsilon_t * epsilon() { return bionet_resource_get_epsilon($self->this); }
 
-    void * userData() { return bionet_resource_get_user_data((bionet_resource_t *)$self); }
+    int setEpislon(bionet_epsilon_t * epsilon) { return bionet_resource_set_epsilon($self->this, epsilon); }
 
-    bionet_epsilon_t * epsilon() { return bionet_resource_get_epsilon((bionet_resource_t *)$self); }
+    int setDelta(struct timeval delta) { return bionet_resource_set_delta($self->this, delta); }
 
-    int setEpislon(bionet_epsilon_t * epsilon) { return bionet_resource_set_epsilon((bionet_resource_t *)$self, epsilon); }
-
-    int setDelta(struct timeval delta) { return bionet_resource_set_delta((bionet_resource_t *)$self, delta); }
-
-    const struct timeval * delta() { return bionet_resource_get_delta((bionet_resource_t *)$self); }
+    const struct timeval * delta() { return bionet_resource_get_delta($self->this); }
 
     int add(void (*destructor)(bionet_resource_t * resource, void * user_data),
 		      void * user_data) {
-	return bionet_resource_add_destructor((bionet_resource_t *)$self, destructor, user_data); 
+	return bionet_resource_add_destructor($self->this, destructor, user_data); 
     }
  }

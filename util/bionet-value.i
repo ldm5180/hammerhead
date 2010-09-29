@@ -1,64 +1,103 @@
 %extend Value {
     Value(Resource * resource, int content) {
-	Value * value;
+	Value * value = (Value *)malloc(sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
 	char newstr[1024];
-	switch (bionet_resource_get_data_type((bionet_resource_t *)resource)) {
+
+	switch (bionet_resource_get_data_type(resource->this)) {
 	case BIONET_RESOURCE_DATA_TYPE_BINARY:
-	    value = (Value *)bionet_value_new_binary((bionet_resource_t *)resource, content);
+	    value->this = bionet_value_new_binary(resource->this, content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_UINT8:
-	    value = (Value *)bionet_value_new_uint8((bionet_resource_t *)resource, (uint8_t)content);
+	    value->this = bionet_value_new_uint8(resource->this, (uint8_t)content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_INT8:
-	    value = (Value *)bionet_value_new_int8((bionet_resource_t *)resource, (int8_t)content);
+	    value->this = bionet_value_new_int8(resource->this, (int8_t)content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_UINT16:
-	    value = (Value *)bionet_value_new_uint16((bionet_resource_t *)resource, (uint16_t)content);
+	    value->this = bionet_value_new_uint16(resource->this, (uint16_t)content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_INT16:
-	    value = (Value *)bionet_value_new_int16((bionet_resource_t *)resource, (int16_t)content);
+	    value->this = bionet_value_new_int16(resource->this, (int16_t)content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_UINT32:
-	    value = (Value *)bionet_value_new_uint32((bionet_resource_t *)resource, (uint32_t)content);
+	    value->this = bionet_value_new_uint32(resource->this, (uint32_t)content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_INT32:
-	    value = (Value *)bionet_value_new_int32((bionet_resource_t *)resource, (int32_t)content);
+	    value->this = bionet_value_new_int32(resource->this, (int32_t)content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-	    value = (Value *)bionet_value_new_float((bionet_resource_t *)resource, (float)content);
+	    value->this = bionet_value_new_float(resource->this, (float)content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-	    value = (Value *)bionet_value_new_double((bionet_resource_t *)resource, (double)content);
+	    value->this = bionet_value_new_double(resource->this, (double)content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
 	    snprintf(newstr, sizeof(newstr), "%d", content);
-	    value = (Value *)bionet_value_new_str((bionet_resource_t *)resource, newstr);
+	    value->this = bionet_value_new_str(resource->this, newstr);
 	    break;
+
 	default:
+	    free(value);
 	    value = NULL;
 	    break;
+	}
+
+	if (NULL == value->this) {
+	    free(value);
+	    value = NULL;
+	} else {
+	    bionet_value_set_user_data(value->this, value);
 	}
 	return value;
     }
 
     Value(Resource * resource, float content) {
-	Value * value;
+	Value * value = (Value *)malloc(sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
 	char newstr[1024];
-	switch (bionet_resource_get_data_type((bionet_resource_t *)resource)) {
+
+	switch (bionet_resource_get_data_type(resource->this)) {
 	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-	    value = (Value *)bionet_value_new_float((bionet_resource_t *)resource, (float)content);
+	    value->this = bionet_value_new_float(resource->this, (float)content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-	    value = (Value *)bionet_value_new_double((bionet_resource_t *)resource, (double)content);
+	    value->this = bionet_value_new_double(resource->this, (double)content);
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
 	    snprintf(newstr, sizeof(newstr), "%f", content);
-	    value = (Value *)bionet_value_new_str((bionet_resource_t *)resource, newstr);
+	    value->this = bionet_value_new_str(resource->this, newstr);
 	    break;
+
 	default:
 	    value = NULL;
 	    break;
 	}
+
+	if (NULL == value->this) {
+	    free(value);
+	    value = NULL;
+	} else {
+	    bionet_value_set_user_data(value->this, value);
+	}
+
 	return value;
     }
 
@@ -67,49 +106,74 @@
 	if (NULL == value) {
 	    return value;
 	}
-	switch (bionet_resource_get_data_type((bionet_resource_t *)resource)) {
+
+	switch (bionet_resource_get_data_type(resource->this)) {
+
 	case BIONET_RESOURCE_DATA_TYPE_BINARY:
-	    value = (Value *)bionet_value_new_binary((bionet_resource_t *)resource, strtol(content, NULL, 0));
+	    value->this = bionet_value_new_binary(resource->this, strtol(content, NULL, 0));
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_UINT8:
-	    value = (Value *)bionet_value_new_uint8((bionet_resource_t *)resource, strtoul(content, NULL, 0));
+	    value->this = bionet_value_new_uint8(resource->this, strtoul(content, NULL, 0));
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_INT8:
-	    value = (Value *)bionet_value_new_int8((bionet_resource_t *)resource, strtol(content, NULL, 0));
+	    value->this = bionet_value_new_int8(resource->this, strtol(content, NULL, 0));
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_UINT16:
-	    value = (Value *)bionet_value_new_uint16((bionet_resource_t *)resource, strtoul(content, NULL, 0));
+	    value->this = bionet_value_new_uint16(resource->this, strtoul(content, NULL, 0));
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_INT16:
-	    value = (Value *)bionet_value_new_int16((bionet_resource_t *)resource, strtol(content, NULL, 0));
+	    value->this = bionet_value_new_int16(resource->this, strtol(content, NULL, 0));
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_UINT32:
-	    value = (Value *)bionet_value_new_uint32((bionet_resource_t *)resource, strtoul(content, NULL, 0));
+	    value->this = bionet_value_new_uint32(resource->this, strtoul(content, NULL, 0));
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_INT32:
-	    value = (Value *)bionet_value_new_int32((bionet_resource_t *)resource, strtol(content, NULL, 0));
+	    value->this = bionet_value_new_int32(resource->this, strtol(content, NULL, 0));
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
-	    value = (Value *)bionet_value_new_float((bionet_resource_t *)resource, strtof(content, NULL));
+	    value->this = bionet_value_new_float(resource->this, strtof(content, NULL));
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
-	    value = (Value *)bionet_value_new_double((bionet_resource_t *)resource, strtod(content, NULL));
+	    value->this = bionet_value_new_double(resource->this, strtod(content, NULL));
 	    break;
+
 	case BIONET_RESOURCE_DATA_TYPE_STRING:
-	    value = (Value *)bionet_value_new_str((bionet_resource_t *)resource, content);
+	    value->this = bionet_value_new_str(resource->this, content);
 	    break;
+
 	default:
 	    value = NULL;
 	    break;
 	}
+
+	if (NULL == value->this) {
+	    free(value);
+	    value = NULL;
+	} else {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	
 	return value;
     }
 
     ~Value() {
-	bionet_value_free((bionet_value_t *)$self);
+	bionet_value_free($self->this);
+	free($self);
     }
 
-    Datapoint * datapoint() { return (Datapoint *)bionet_value_get_datapoint((bionet_value_t *)$self); }
+    Datapoint * datapoint() { 
+	bionet_datapoint_t * d = bionet_value_get_datapoint($self->this); 
+	bionet_datapoint_increment_ref_count(d);
+	return (Datapoint *)bionet_datapoint_get_user_data(d);
+    }
 
 
 

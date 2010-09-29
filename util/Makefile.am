@@ -59,6 +59,7 @@ libbionet_util_la_SOURCES =    \
     hab-event.c                \
     hab-free.c                 \
     hab-get-node.c             \
+    hab-incref.c               \
     hab-matches.c              \
     hab-name.c                 \
     hab-new.c                  \
@@ -72,6 +73,7 @@ libbionet_util_la_SOURCES =    \
     node-free.c                \
     node-get-resource.c        \
     node-get-stream.c          \
+    node-incref.c              \
     node-matches.c             \
     node-name.c                \
     node-new.c                 \
@@ -88,6 +90,7 @@ libbionet_util_la_SOURCES =    \
     resource-get-delta.c       \
     resource-get-epsilon.c     \
     resource-get-value.c       \
+    resource-incref.c          \
     resource-is-dirty.c        \
     resource-make-clean.c      \
     resource-matches.c         \
@@ -100,12 +103,14 @@ libbionet_util_la_SOURCES =    \
     datapoint-destructor.c     \
     datapoint-dup.c            \
     datapoint-new.c            \
-    datapoint-free.c	\
+    datapoint-free.c	       \
     datapoint-event.c	       \
     datapoint-value.c          \
     datapoint-timestamp.c      \
     datapoint-is-dirty.c       \
     datapoint-make-clean.c     \
+    datapoint-user-data.c      \
+    datapoint-incref.c         \
     is-valid-name-component.c  \
     glib-log-handler.c                  \
     network-error.c                     \
@@ -125,9 +130,11 @@ libbionet_util_la_SOURCES =    \
     value-free.c                        \
     value-get.c                         \
     value-get-resource.c                \
+    value-incref.c                      \
     value-new.c                         \
     value-set.c                         \
     value-to-string.c                   \
+    value-user-data.c                   \
     version.c
 
 

@@ -268,6 +268,31 @@ bionet_datapoint_t * bionet_datapoint_dup(bionet_datapoint_t * datapoint);
 
 
 /**
+ * @brief Set the user-data annotation of a Datapoint
+ *
+ * @param[in] datapoint The Datapoint
+ * @param[in] user_data The data to annotate the Datapoint with.
+ *
+ * @note If the user sets the user data, then the user is 
+ *       responsible for freeing the it and setting it to 
+ *       NULL before the hab is free'd.
+ */
+BIONET_UTIL_API_DECL
+void bionet_datapoint_set_user_data(bionet_datapoint_t *datapoint, const void *user_data);
+
+
+/**
+ * @brief Get the user-data annotation of a Datapoint
+ *
+ * @param[in] datapoint The Datapoint
+ *
+ * @return The user_data pointer, or NULL if none has been set.
+ */
+BIONET_UTIL_API_DECL
+void *bionet_datapoint_get_user_data(const bionet_datapoint_t *datapoint);
+
+
+/**
  * @brief Get the number of events in the Datapoint
  * 
  * @param[in] datapoint Pointer to a Datapoint
@@ -314,7 +339,7 @@ int bionet_datapoint_add_event(bionet_datapoint_t *datapoint, const bionet_event
  * Each destruction notifier will be called in the order they
  * were added when bionet_datapoint_free() is called.
  *
- * @param[in] datapoint Resource to add the destructor for
+ * @param[in] datapoint Datapoint to add the destructor for
  * @param[in] destructor The destructor to run.
  * @param[in] user_data User data to pass into the destructor.
  *
@@ -325,6 +350,19 @@ BIONET_UTIL_API_DECL
 int bionet_datapoint_add_destructor(bionet_datapoint_t * datapoint, 
 				    void (*destructor)(bionet_datapoint_t * datapoint, void * user_data),
 				    void * user_data);
+
+
+/**
+ * @brief Increment the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] datapoint Hab to increment the reference count for
+ */
+BIONET_UTIL_API_DECL
+void bionet_datapoint_increment_ref_count(bionet_datapoint_t * datapoint);
 
 
 #endif /* __BIONET_DATAPOINT_H */

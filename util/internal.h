@@ -36,6 +36,8 @@ struct bionet_hab_opaque_t {
     bionet_bdm_t *bdm; // Used only internally by BDM server/client
 
     GSList * destructors;
+
+    unsigned int ref;
 };
 
 
@@ -55,6 +57,8 @@ struct bionet_node_opaque_t {
     const void *user_data;  // const because the bionet library wont monkey with it
 
     GSList * destructors;
+
+    unsigned int ref;
 };
 
 
@@ -142,6 +146,8 @@ struct bionet_resource_opaque_t {
     int persist;
 
     GSList * destructors;
+
+    unsigned int ref;
 };
 
 struct bionet_value_opaque_t {
@@ -149,6 +155,10 @@ struct bionet_value_opaque_t {
     bionet_datapoint_value_t content;
 
     char * as_string;
+
+    const void * user_data;
+
+    unsigned int ref;
 };
 
 
@@ -160,6 +170,10 @@ struct bionet_datapoint_opaque_t {
     GSList *events; // Events that recorded this datapoint
 
     GSList * destructors;
+
+    const void * user_data;
+
+    unsigned int ref;
 };
 
 struct bionet_epsilon_opaque_t {

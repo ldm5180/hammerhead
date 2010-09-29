@@ -1,50 +1,76 @@
 %extend Datapoint {
     Datapoint(Resource * resource, Value * value, const struct timeval * timestamp) {
-	bionet_datapoint_t * datapoint = bionet_datapoint_new((bionet_resource_t *)resource, (bionet_value_t *)value, timestamp);
-	return (Datapoint *)datapoint;
+	Datapoint * datapoint = (Datapoint *)malloc(sizeof(Datapoint));
+	if (NULL == datapoint) {
+	    return NULL;
+	}
+
+	datapoint->this = bionet_datapoint_new(resource->this, value->this, timestamp);
+	if (NULL == datapoint->this) {
+	    free(datapoint);
+	    return NULL;
+	}
+
+	bionet_datapoint_set_user_data(datapoint->this, datapoint);
+
+	return datapoint;
     }
 
     ~Datapoint() {
-	bionet_datapoint_free((bionet_datapoint_t *)$self);
+	bionet_datapoint_free($self->this);
+	free($self);
     }
     
-    void setValue(Value * value) { bionet_datapoint_set_value((bionet_datapoint_t *)$self, (bionet_value_t *)value); }
+    void setValue(Value * value) { 
+	bionet_value_increment_ref_count(value->this);
+	bionet_datapoint_set_value($self->this, value->this); 
+    }
 
-    Value * value() { return (Value *)bionet_datapoint_get_value((bionet_datapoint_t *)$self); }
+    Value * value() {
+	bionet_value_t * v = bionet_datapoint_get_value($self->this); 
+	bionet_value_increment_ref_count(v);
+	return (Value *)bionet_value_get_user_data(v);
+    }
 
-    Resource * resource() { return (Resource *)bionet_datapoint_get_resource((bionet_datapoint_t *)$self); }
+    Resource * resource() {
+	bionet_resource_t * r = bionet_datapoint_get_resource($self->this); 
+	bionet_resource_increment_ref_count(r);
+	return (Resource *)bionet_resource_get_user_data(r);
+    }
 
-    const char * timestampToString() { return bionet_datapoint_timestamp_to_string((bionet_datapoint_t *)$self); }
+    const char * timestampToString() { return bionet_datapoint_timestamp_to_string($self->this); }
 
-    void setTimestamp(const struct timeval * timestamp) { bionet_datapoint_set_timestamp((bionet_datapoint_t *)$self, timestamp); }
+    void setTimestamp(const struct timeval * timestamp) { bionet_datapoint_set_timestamp($self->this, timestamp); }
 
-    struct timeval * timestamp() { return bionet_datapoint_get_timestamp((bionet_datapoint_t *)$self); }
+    struct timeval * timestamp() { return bionet_datapoint_get_timestamp($self->this); }
 
-    int isDirty() { return bionet_datapoint_is_dirty((bionet_datapoint_t *)$self); }
+    int isDirty() { return bionet_datapoint_is_dirty($self->this); }
 
-    void makeClean() { bionet_datapoint_make_clean((bionet_datapoint_t *)$self); }
+    void makeClean() { bionet_datapoint_make_clean($self->this); }
 
-    int isEqual(const Datapoint * datapoint) { return bionet_datapoint_iseq((bionet_datapoint_t *)$self, (bionet_datapoint_t *)datapoint); }
+    int isEqual(const Datapoint * datapoint) { 
+	return bionet_datapoint_iseq($self->this, datapoint->this); 
+    }
 
     int compareTimeval(const struct timeval * tv) { 
-	return bionet_timeval_compare(bionet_datapoint_get_timestamp((bionet_datapoint_t *)$self), tv);
+	return bionet_timeval_compare(bionet_datapoint_get_timestamp($self->this), tv);
     }
 
     struct timeval subtractTimeval(const struct timeval * tv) {
-	return bionet_timeval_subtract(bionet_datapoint_get_timestamp((bionet_datapoint_t *)$self), tv);
+	return bionet_timeval_subtract(bionet_datapoint_get_timestamp($self->this), tv);
     }
 
-    Datapoint * dup() { return (Datapoint *)bionet_datapoint_dup((bionet_datapoint_t *)$self); }
+    Datapoint * dup() { return (Datapoint *)bionet_datapoint_dup($self->this); }
 
-    int numEvents() { return bionet_datapoint_get_num_events((bionet_datapoint_t *)$self); }
+    int numEvents() { return bionet_datapoint_get_num_events($self->this); }
 
-    bionet_event_t * event(unsigned int index) { return bionet_datapoint_get_event_by_index((bionet_datapoint_t *)$self, index); }
+    bionet_event_t * event(unsigned int index) { return bionet_datapoint_get_event_by_index($self->this, index); }
 
-    int add(const bionet_event_t * event) { return bionet_datapoint_add_event((bionet_datapoint_t *)$self, event); }
+    int add(const bionet_event_t * event) { return bionet_datapoint_add_event($self->this, event); }
 
     int add(void (*destructor)(bionet_datapoint_t * datapoint, void * user_data),
 		      void * user_data) {
-	return bionet_datapoint_add_destructor((bionet_datapoint_t *)$self, destructor, user_data);
+	return bionet_datapoint_add_destructor($self->this, destructor, user_data);
     }
 
 }

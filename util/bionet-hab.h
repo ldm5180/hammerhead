@@ -362,6 +362,18 @@ int bionet_hab_add_destructor(bionet_hab_t * hab,
 			      void (*destructor)(bionet_hab_t * hab, void * user_data),
 			      void * user_data);
 
+/**
+ * @brief Increment the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] hab Hab to increment the reference count for
+ */
+BIONET_UTIL_API_DECL
+void bionet_hab_increment_ref_count(bionet_hab_t * hab);
+
 
 #ifdef __cplusplus
 }

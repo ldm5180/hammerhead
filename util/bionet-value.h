@@ -673,6 +673,45 @@ int bionet_value_get_str(const bionet_value_t *value,
 BIONET_UTIL_API_DECL
 bionet_value_t * bionet_value_dup(const bionet_resource_t *resource, const bionet_value_t *value);
 
+
+/**
+ * @brief Set the user-data annotation of a Value
+ *
+ * @param[in] value The Value
+ * @param[in] user_data The data to annotate the Value with.
+ *
+ * @note If the user sets the user data, then the user is 
+ *       responsible for freeing the it and setting it to 
+ *       NULL before the hab is free'd.
+ */
+BIONET_UTIL_API_DECL
+void bionet_value_set_user_data(bionet_value_t *value, const void *user_data);
+
+
+/**
+ * @brief Get the user-data annotation of a Value
+ *
+ * @param[in] value The Value
+ *
+ * @return The user_data pointer, or NULL if none has been set.
+ */
+BIONET_UTIL_API_DECL
+void *bionet_value_get_user_data(const bionet_value_t *value);
+
+
+/**
+ * @brief Increment the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] value Hab to increment the reference count for
+ */
+BIONET_UTIL_API_DECL
+void bionet_value_increment_ref_count(bionet_value_t * value);
+
+
 #ifdef __cplusplus
 }
 #endif
