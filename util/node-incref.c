@@ -24,6 +24,16 @@ void bionet_node_increment_ref_count(bionet_node_t * node) {
 } /* bionet_node_increment_ref_count() */
 
 
+unsigned int bionet_node_get_ref_count(bionet_node_t * node) {
+    if (NULL == node) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_node_get_ref_count: NULL NODE passed in.");
+	return 0;
+    }
+
+    return node->ref;
+} /* bionet_node_get_ref_count() */
+
+
 // Emacs cruft
 // Local Variables:
 // mode: C

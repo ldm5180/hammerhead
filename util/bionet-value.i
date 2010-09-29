@@ -165,8 +165,14 @@
     }
 
     ~Value() {
+	int free_me = 0;
+	if (0 == bionet_value_get_ref_count($self->this)) {
+	    free_me = 1;
+	}
 	bionet_value_free($self->this);
-	free($self);
+	if (free_me) {
+	    free($self);
+	}
     }
 
     Datapoint * datapoint() { 

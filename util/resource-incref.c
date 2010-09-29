@@ -24,6 +24,16 @@ void bionet_resource_increment_ref_count(bionet_resource_t * resource) {
 } /* bionet_resource_increment_ref_count() */
 
 
+unsigned int bionet_resource_get_ref_count(bionet_resource_t * resource) {
+    if (NULL == resource) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_resource_get_ref_count: NULL RESOURCE passed in.");
+	return 0;
+    }
+
+    return resource->ref;
+} /* bionet_resource_get_ref_count() */
+
+
 // Emacs cruft
 // Local Variables:
 // mode: C

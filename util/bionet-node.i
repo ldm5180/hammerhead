@@ -17,8 +17,14 @@
     }
 
     ~Node() {
-	bionet_node_free((bionet_node_t *)$self->this);
-	free($self);
+	int free_me = 0;
+	if (0 == bionet_node_get_ref_count($self->this)) {
+	    free_me = 1;
+	}
+	bionet_node_free($self->this);
+	if (free_me) {
+	    free($self);
+	}
     }
 
     const char * name() { return bionet_node_get_name((bionet_node_t *)$self->this); }

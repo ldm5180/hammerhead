@@ -24,6 +24,16 @@ void bionet_datapoint_increment_ref_count(bionet_datapoint_t * datapoint) {
 } /* bionet_datapoint_increment_ref_count() */
 
 
+unsigned int bionet_datapoint_get_ref_count(bionet_datapoint_t * datapoint) {
+    if (NULL == datapoint) {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bionet_datapoint_get_ref_count: NULL DATAPOINT passed in.");
+	return 0;
+    }
+
+    return datapoint->ref;
+} /* bionet_datapoint_get_ref_count() */
+
+
 // Emacs cruft
 // Local Variables:
 // mode: C

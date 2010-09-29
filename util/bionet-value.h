@@ -712,6 +712,21 @@ BIONET_UTIL_API_DECL
 void bionet_value_increment_ref_count(bionet_value_t * value);
 
 
+/**
+ * @brief Get the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] value Value to get the reference count for
+ *
+ * @return Number of references currently held.
+ */
+BIONET_UTIL_API_DECL
+unsigned int bionet_value_get_ref_count(bionet_value_t * value);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -387,6 +387,22 @@ int bionet_node_add_destructor(bionet_node_t * node,
 BIONET_UTIL_API_DECL
 void bionet_node_increment_ref_count(bionet_node_t * node);
 
+
+/**
+ * @brief Get the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] node Node to get the reference count for
+ *
+ * @return Number of references currently held.
+ */
+BIONET_UTIL_API_DECL
+unsigned int bionet_node_get_ref_count(bionet_node_t * node);
+
+
 #ifdef __cplusplus
 }
 #endif

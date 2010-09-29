@@ -32,8 +32,14 @@
 	return hab;
     }
     ~Hab() {
-	bionet_hab_free((bionet_hab_t *)$self->this);
-	free($self);
+	int free_me = 0;
+	if (0 == bionet_hab_get_ref_count($self->this)) {
+	    free_me = 1;
+	}
+	bionet_hab_free($self->this);
+	if (free_me) {
+	    free($self);
+	}
     }
     const char * name() {
 	return bionet_hab_get_name((bionet_hab_t *)$self->this);

@@ -365,6 +365,21 @@ BIONET_UTIL_API_DECL
 void bionet_datapoint_increment_ref_count(bionet_datapoint_t * datapoint);
 
 
+/**
+ * @brief Get the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] datapoint Datapoint to get the reference count for
+ *
+ * @return Number of references currently held.
+ */
+BIONET_UTIL_API_DECL
+unsigned int bionet_datapoint_get_ref_count(bionet_datapoint_t * datapoint);
+
+
 #endif /* __BIONET_DATAPOINT_H */
 
 // Emacs cruft
