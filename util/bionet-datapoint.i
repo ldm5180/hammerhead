@@ -80,7 +80,6 @@
     }
 
     char * __str__() {
-	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Datapoint.__str__(): Called.");
 	char * newstr = (char *)malloc(2048);
 	if (NULL == newstr) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Datapoint.__str__(): Failed to allocate memory.");
