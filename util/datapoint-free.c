@@ -25,6 +25,11 @@ void bionet_datapoint_free(bionet_datapoint_t *d) {
 	return;
     }
 
+    if (d->ref) {
+	d->ref = d->ref - 1;
+	return;
+    }
+
     /* run all the destructors */
     g_slist_foreach(d->destructors,
 		    datapoint_destroy,

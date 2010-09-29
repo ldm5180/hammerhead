@@ -175,6 +175,8 @@
 	return (Datapoint *)bionet_datapoint_get_user_data(d);
     }
 
-
+    char * __str__() {
+	return bionet_value_to_str($self->this);
+    }
 
 }

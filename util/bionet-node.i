@@ -17,7 +17,6 @@
     }
 
     ~Node() {
-	bionet_node_set_user_data($self->this, NULL);
 	bionet_node_free((bionet_node_t *)$self->this);
 	free($self);
     }

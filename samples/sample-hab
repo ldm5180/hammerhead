@@ -63,23 +63,21 @@ def pycb_set_resource(resource, value):
     bionet_resource_set(resource, value, None)
     hab_report_datapoints(bionet_resource_get_node(resource))
 
-def process(hab):
+def process(h):
     # this is where polling of the hardware would happen and then all
     # the new values get set to the resources and published.
-
-    # get the node and the resource, increment the value in the resource
-    resource = hab.node("process").resource("uptime")
-    interval_res = hab.node("process").resource("update-interval")
 
     # at this time the python wrapper is still in development, there is no way
     # get the value without converting to a string and back again. In C this is
     # not a problem.
-    val = int(bionet_resource_value_to_string(resource, 0))
-    val = val + int(bionet_resource_value_to_string(interval_res, 0))
-    bionet_resource_set_uint32(resource, val, None)
+    print h.node("process").resource("uptime")
+    val = h.node("process").resource("uptime").datapoint(0).value()
+    val = val + int(str(h.node("process").resource("update-interval").datapoint(0).value()))
+    h.node("process").resource("uptime").set(val)
 
     # publish all the new datapoints
-    hab_report_datapoints(node)
+    HabReportDatapoints(h.node("process"))
+    print "4"
 
     return
 
@@ -93,13 +91,13 @@ bionet_log_use_default_handler(None)
 
 
 # create the new HAB and name it.
-hab = bionet_hab_new("Sample", None)
+h = Hab("Sample", None)
 
 # register the set resource callback
 pyhab_register_callback_set_resource(pycb_set_resource)
 
 # connect the HAB to the Bionet network
-hab_fd = hab_connect(hab)
+hab_fd = HabConnect(h)
 
 
 # connect to your hardware and ensure it is there.
@@ -109,41 +107,43 @@ hab_fd = hab_connect(hab)
 # add it to the HAB. Note: all resources must also be created for the node before
 # the node is published since resources are static. Nodes however can come and go
 # as they please.
-node = bionet_node_new(hab, "process");
-bionet_hab_add_node(hab, node)
+n = Node(h, "process");
+h.add(n)
 
 # create the resource
-resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_UINT32, BIONET_RESOURCE_FLAVOR_SENSOR, "uptime")
+r = Resource(n, BIONET_RESOURCE_DATA_TYPE_UINT32, BIONET_RESOURCE_FLAVOR_SENSOR, "uptime")
 
 # set the datapoint of the resource to value 0 and timestamp Now.
-bionet_resource_set_uint32(resource, 0, None)
+r.set(0)
 
 # add the resource to the node
-bionet_node_add_resource(node, resource)
+n.add(r)
+
+print h.node("process").resource("uptime").datapoint(0)
 
 # create the resource
-resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_STRING, BIONET_RESOURCE_FLAVOR_SENSOR, "id")
+r = Resource(n, BIONET_RESOURCE_DATA_TYPE_STRING, BIONET_RESOURCE_FLAVOR_SENSOR, "id")
 
 # set the datapoint of the resource to the PID of the process and timestamp Now.
-bionet_resource_set_str(resource, str(os.getppid()), None)
+r.set(os.getppid())
 
 # add the resource to the node
-bionet_node_add_resource(node, resource)
+n.add(r)
 
 # create a command-able resource
-resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_UINT32, BIONET_RESOURCE_FLAVOR_PARAMETER, "update-interval")
+r = Resource(n, BIONET_RESOURCE_DATA_TYPE_UINT32, BIONET_RESOURCE_FLAVOR_PARAMETER, "update-interval")
 
 # set the datapoint of the resource to 1 second
-bionet_resource_set_uint32(resource, 1, None)
+r.set(1)
 
 # add the resource to the node
-bionet_node_add_resource(node, resource)
+n.add(r)
 
 # publish the new node to the Bionet network
-hab_report_new_node(node)
+HabReportNewNode(n)
 
 # publish all the datapoints to the Bionet network
-hab_report_datapoints(node)
+HabReportDatapoints(n)
 
 
 
@@ -158,10 +158,10 @@ fd_list = []
 if (hab_fd != -1):
     fd_list.append(hab_fd)
 
-interval_res = bionet_node_get_resource_by_id(bionet_hab_get_node_by_id(hab, "process"), "update-interval")
+interval_res = h.node("process").resource("update-interval")
 
 last = time.time()
-remaining = remaining = int(bionet_resource_value_to_string(interval_res, 0))
+remaining = float(str(interval_res.datapoint(0).value()))
 
 # main loop!
 # this very simple main loop selects on the fd list for INTERVAL secs. every time 
@@ -172,13 +172,13 @@ while(1):
     (rr, wr, er) = select(fd_list, [], [], remaining)
     for fd in rr:
         if (fd == hab_fd):
-            hab_read()
-    if ((time.time() - last) >= int(bionet_resource_value_to_string(interval_res, 0))):
-        remaining = int(bionet_resource_value_to_string(interval_res, 0))
-        process(hab)
+            HabRead()
+    if ((time.time() - last) >= float(str(interval_res.datapoint(0).value()))):
+        remaining = float(str(interval_res.datapoint(0).value()))
+        process(h)
         last = time.time()
     else:
-        remaining = int(bionet_resource_value_to_string(interval_res, 0)) - (time.time() - last)
+        remaining = float(str(interval_res.datapoint(0).value())) - (time.time() - last)
     
     
         

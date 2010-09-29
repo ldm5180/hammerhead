@@ -26,6 +26,11 @@ void bionet_value_free(bionet_value_t *value)
 	return;
     }
     
+    if (value->ref) {
+	value->ref = value->ref - 1;
+	return;
+    }
+
     /* free any additional memory */
     if ((BIONET_RESOURCE_DATA_TYPE_STRING == value->resource->data_type) 
 	&& (value->content.string_v))

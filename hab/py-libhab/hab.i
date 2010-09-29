@@ -81,5 +81,46 @@ typedef struct timeval
 
 	return py_set_resource_callback;
     }
-%}
 
+    int HabConnect(Hab * hab) {
+	if (NULL == hab) {
+	    return hab_connect(NULL);
+	}
+	return hab_connect(hab->this);
+    }
+
+    void HabDisconnect() {
+	hab_disconnect();
+    }
+
+    int HabReportNewNode(Node * node) {
+	if (NULL == node) {
+	    return hab_report_new_node(NULL);
+	}
+	return hab_report_new_node(node->this);
+    }
+
+    int HabReportDatapoints(Node * node) {
+	if (NULL == node) {
+	    return hab_report_datapoints(NULL);
+	}
+	return hab_report_datapoints(node->this);
+    }
+    
+    int HabReportLostNode(Node * node) {
+	if (NULL == node) {
+	    return hab_report_lost_node(NULL);
+	}
+	return hab_report_lost_node(node->this);
+    }
+
+    void HabRead() {
+	hab_read();
+    }
+
+    void HabReadWithTimeout(struct timeval * timeout) {
+	hab_read_with_timeout(timeout);
+    }
+
+    
+%}

@@ -32,7 +32,6 @@
 	return hab;
     }
     ~Hab() {
-	bionet_hab_set_user_data($self->this, NULL);
 	bionet_hab_free((bionet_hab_t *)$self->this);
 	free($self);
     }

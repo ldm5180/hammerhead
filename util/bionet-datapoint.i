@@ -73,4 +73,25 @@
 	return bionet_datapoint_add_destructor($self->this, destructor, user_data);
     }
 
+    char * __str__() {
+	g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Datapoint.__str__(): Called.");
+	char * newstr = (char *)malloc(2048);
+	if (NULL == newstr) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Datapoint.__str__(): Failed to allocate memory.");
+	    return NULL;
+	}
+	bionet_value_t * value = bionet_datapoint_get_value($self->this);
+	if (NULL == value) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Datapoint.__str__(): Value is NULL.");
+	    return NULL;
+	}
+	int r = snprintf(newstr, 2048, "%s @ %s", 
+			 bionet_value_to_str(value),
+			 bionet_datapoint_timestamp_to_string($self->this));
+	if (r >= 2048) {
+	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Datapoint.__str__(): String to too long.");
+	    return NULL;
+	}
+	return newstr;
+    }
 }

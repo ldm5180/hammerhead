@@ -46,6 +46,7 @@
  * Helper functions for dealing with Bionet datatypes
  */
 
+#include <stdint.h>
 #include <glib.h>
 
 typedef struct bionet_bdm_opaque_t       bionet_bdm_t;
