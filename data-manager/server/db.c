@@ -25,6 +25,7 @@
 #include "bdm-stats.h"
 
 #undef _DUMP_SQL
+#undef _DEBUG_DB
 
 extern const char * bdm_schema_sql;
 
@@ -376,8 +377,10 @@ int db_commit(sqlite3 *db) {
         );
 
         if (r == SQLITE_OK) {
+#ifdef _DEBUG_DB
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                   "committed(%p)", db);
+#endif
              return 0;
         }
 
@@ -432,8 +435,10 @@ int db_begin_transaction(sqlite3 *db) {
         return -1;
     }
 
+#ifdef _DEBUG_DB
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "in transaction(%p)", db);
+#endif
 
     return 0;
 }
@@ -481,10 +486,12 @@ int db_insert_hab(
 	return -1;
     }
 
+#ifdef _DEBUG_DB
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "%s(%p): %s.%s",
           __FUNCTION__, db,
           hab_type, hab_id);
+#endif
 
     while(SQLITE_BUSY == (r = sqlite3_step(this_stmt))){
         g_usleep(20 * 1000);
@@ -639,10 +646,12 @@ int db_insert_node(
 	return -1;
     }
 
+#ifdef _DEBUG_DB
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "db_insert_node(%p): %s.%s.%s [" UUID_FMTSTR "]",
           db,
           hab_type, hab_id, node_id, UUID_ARGS(guid));
+#endif
 
     while(SQLITE_BUSY == (r = sqlite3_step(this_stmt))){
         g_usleep(20 * 1000);
@@ -665,9 +674,11 @@ int db_insert_node(
                 if(0 == ret) {
                     ret = 1; // Row already existed
                 }
+#ifdef _DEBUG_DB
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                       "%s(%p): => %" PRId64,
                       __FUNCTION__, db, (int64_t)*rowid);
+#endif
             }
             break;
 
@@ -930,11 +941,13 @@ int db_insert_resource(
 	return -1;
     }
 
+#ifdef _DEBUG_DB
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "%s(%p): %s.%s.%s:%s: " UUID_FMTSTR, 
           __FUNCTION__, db,
           hab_type, hab_id, node_id, resource_id,
           UUID_ARGS(resource_key));
+#endif
 
 
     while(SQLITE_BUSY == (r = sqlite3_step(this_stmt))){
@@ -1102,21 +1115,27 @@ static int bind_dp_value(sqlite3_stmt* this_stmt, int param, bdm_datapoint_t *dp
     switch(dp->type) {
         case DB_INT:
             r = sqlite3_bind_int(this_stmt, param, dp->value.i);
+#ifdef _DEBUG_DB
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "%s(): (unsigned int)%lu (int)%li", __FUNCTION__, 
                   (unsigned long)dp->value.i, (long)dp->value.i);
+#endif
             break;
             
         case DB_DOUBLE:
 	    r = sqlite3_bind_double(this_stmt, param, dp->value.d);
+#ifdef _DEBUG_DB
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "%s(): (double)%.16g", __FUNCTION__, dp->value.d);
+#endif
             break;
             
         case DB_STRING:
             r = sqlite3_bind_text(this_stmt, param, dp->value.str, -1, SQLITE_STATIC);
+#ifdef _DEBUG_DB
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 		  "%s(): (str)%s", __FUNCTION__, dp->value.str);
+#endif
             break;
 
         default:
@@ -1216,9 +1235,11 @@ int db_insert_datapoint(sqlite3* db,
     }
 
     if(rowid) {
+#ifdef _DEBUG_DB
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
               "add_datapoint_to_db(%p): => %" PRId64,
           db, (int64_t)*rowid);
+#endif
     }
 
 
@@ -1524,9 +1545,11 @@ int db_insert_event(
             // Success!
             if(rowid) {
                 *rowid = sqlite3_last_insert_rowid(db);
+#ifdef _DEBUG_DB
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                       "%s(): => %" PRId64,
                       __FUNCTION__, (int64_t)*rowid);
+#endif
             }
             break;
 

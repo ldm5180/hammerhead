@@ -18,9 +18,9 @@ uint32_t num_sync_datapoints = 0;
 uint32_t num_bionet_datapoints = 0;
 uint32_t num_db_commits = 0;
 
-uint32_t num_bionet_events;
-uint32_t num_sync_sent_events;
-uint32_t num_sync_recv_events;
+uint32_t num_bionet_events = 0;
+uint32_t num_sync_sent_events = 0;
+uint32_t num_sync_recv_events = 0;
 
 bionet_hab_t * start_stat_hab(const char * bdm_id, int *pHab_fd) {
 	bionet_hab_t * bdm_hab = bionet_hab_new("Bionet-Data-Manager", bdm_id);

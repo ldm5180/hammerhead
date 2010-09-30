@@ -396,6 +396,7 @@ int bp_readable_handler(GIOChannel *listening_ch,
         switch(errno){
             case EPIPE:
             case EBADF:
+            case EBADFD:
                 stay_registered = FALSE;
                 break;
             default:

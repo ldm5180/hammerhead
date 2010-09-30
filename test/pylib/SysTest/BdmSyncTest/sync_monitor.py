@@ -24,7 +24,9 @@ def dp_callback(this_mon, datapoint):
     elif (resource_name == this_mon.syncd_resource):
         this_mon.stats['syncd_events'] = int(val_str)
 
-    if ( this_mon.stats['recorded_events'] > 0 and this_mon.stats['recorded_events'] == this_mon.stats['sync_received_events']):
+    if ( this_mon.stats['recorded_events'] > 0 \
+        and this_mon.stats['recorded_events'] == this_mon.stats['sync_received_events'] \
+        and this_mon.stats['recorded_events'] == this_mon.stats['syncd_events']):
         this_mon.notifyComplete(True)
 
 

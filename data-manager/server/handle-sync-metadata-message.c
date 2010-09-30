@@ -64,6 +64,8 @@ void handle_sync_metadata_message(BDM_Sync_Metadata_Message_t *message) {
         return;
     }
 
+    int num_events_before = num_sync_recv_events;
+
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Sync Metadata Message {");
 
     for (bi = 0; bi < message->list.count; bi ++) {
@@ -196,6 +198,9 @@ void handle_sync_metadata_message(BDM_Sync_Metadata_Message_t *message) {
 
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "} Sync Metadata Message [%lld,%lld]",
         tmp_dbb->first_seq, tmp_dbb->last_seq);
+
+    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
+          "Sync-Received %d events", num_sync_recv_events - num_events_before);
 
 
     if(tmp_dbb->first_seq >= 0 && tmp_dbb->last_seq >= 0 ) {

@@ -48,6 +48,8 @@ BDM_Sync_Message_t * handle_sync_msg(int bundle_fd)
         bytes_read = bps_recv(bundle_fd, (void*)(buffer+buffer_index), bytes_to_read, 0);
         if(bytes_read < 0)
         {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                "Error reading from accepted socket: %s", strerror(errno));
             goto fail;
         }
         if(bytes_read == 0)
@@ -66,7 +68,14 @@ BDM_Sync_Message_t * handle_sync_msg(int bundle_fd)
                           buffer, 
                           buffer_index);
         switch ( rval.code ) {
-            case RC_OK:
+            case RC_OK: 
+            {
+                char buf[4];
+                if( 0 != bps_recv(bundle_fd, buf, sizeof(buf), 0)) {
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                          "sync_receive_ion(): More data present in bundle after ASN.1 message");
+                    goto fail;
+                }
                 if (sync_message->present 
                     == BDM_Sync_Message_PR_metadataMessage) 
                 {
@@ -88,6 +97,7 @@ BDM_Sync_Message_t * handle_sync_msg(int bundle_fd)
                           "sync_receive_ion(): unknown Sync Message choice");
                 }
                 goto fail;
+            }
 
             case RC_WMORE:
                 // ber_decode is waiting for more data, suck more data
@@ -121,7 +131,7 @@ fail:
     }
 
 done:
-    close(bundle_fd);
+    bps_close(bundle_fd);
 
     free(buffer);
 
