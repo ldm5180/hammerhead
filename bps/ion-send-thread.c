@@ -56,11 +56,10 @@ static int _send_bundle_zco(ion_send_thread_hdl_t * args, send_dgram_t * dgram)
         errno = EINVAL;
         return -1;
     }
-    if ( args->sap == 0 ) {
-        errno = EINVAL;
-        return -1;
-    }
-    if ( dgram->dst_eid == NULL || dgram->dst_eid[0] == '\0' ) {
+
+    if ( args->sap
+    && ( dgram->dst_eid == NULL || dgram->dst_eid[0] == '\0' ))
+    {
         errno = EINVAL;
         return -1;
     }
@@ -204,9 +203,9 @@ int stop_ion_send_thread(ion_send_thread_hdl_t * args)
     int r;
 
     if(args->thread_running) {
-        args->thread_running = 0;
 
         r = pthread_join(args->pthread, NULL);
+        args->thread_running = 0; // We want the thread to finish after its sent all the queued up bundles;
         if ( r )  return -1;
     }
 

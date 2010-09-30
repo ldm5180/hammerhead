@@ -46,36 +46,46 @@ static int _push_recv_bundle(ion_recv_thread_hdl_t * args, BpDelivery * dlv)
 static void * _recv_thread_main(void * v_args) {
     ion_recv_thread_hdl_t *args = (ion_recv_thread_hdl_t*)v_args;
     
-    BpDelivery dlv;
+
+    BpDelivery *dlv = NULL;
 
     // Wait for bundles, and dispatch them
     while(args->thread_running) {
-        if ((*bdm_bp_funcs.bp_receive)(args->sap, &dlv, BP_BLOCKING) < 0)
+        dlv = calloc(1, sizeof(BpDelivery));
+        if(NULL == dlv) {
+            goto done;
+        }
+        if ((*bdm_bp_funcs.bp_receive)(args->sap, dlv, BP_BLOCKING) < 0)
         {
             goto done;
         }
 
-        switch(dlv.result) {
+        switch(dlv->result) {
             case BpPayloadPresent: 
                 {
-                    if (_push_recv_bundle(args, &dlv)) {
+                    if (_push_recv_bundle(args, dlv)) {
                         goto done;
                     }
+                    dlv = NULL; // Passed to other thread
                 }
                 break;
 
             case BpReceptionTimedOut:
             case BpReceptionInterrupted:
-                (*bdm_bp_funcs.bp_release_delivery)(&dlv, 1);
+                (*bdm_bp_funcs.bp_release_delivery)(dlv, 1);
                 break;
 
             default:
-                (*bdm_bp_funcs.bp_release_delivery)(&dlv, 1);
+                (*bdm_bp_funcs.bp_release_delivery)(dlv, 1);
                 goto done;
         }
+
+        free(dlv);
+        dlv = NULL;
     }
 
 done:
+    free(dlv);
     shutdown(args->ipcfd, SHUT_WR);
 
     // Shutdown
