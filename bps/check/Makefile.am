@@ -17,7 +17,7 @@ nodist_check_bps_SOURCES = \
 
 check_bps_CFLAGS = $(AM_CFLAGS) $(CHECK_CFLAGS) $(GLIB_CFLAGS) -fno-strict-aliasing
 
-check_bps_LDFLAGS = $(CHECK_LDFLAGS) $(GLIB_LDFLAGS)
+check_bps_LDFLAGS = $(AM_LDFLAGS) $(CHECK_LDFLAGS) $(GLIB_LDFLAGS)
 
 check_bps_LDADD = $(CHECK_LIBS) $(GLIB_LIBS) ../../bps/libbps.la
 
