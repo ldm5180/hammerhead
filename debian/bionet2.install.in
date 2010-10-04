@@ -55,12 +55,6 @@ usr/bin/bdm-watcher
 usr/bin/bdm-client
 
 
-# optional bionet programs the need ION to build - enabled by "debian/configure --with-ion"
-@BPSTATS2_HAB@
-@BP_COMMANDER@
-@BP_COMMAND_PROXY@
-
-
 # little test programs that maybe shouldn't be installed at all
 usr/bin/test-asn-c2h
 usr/bin/test-asn-bdm-s2c

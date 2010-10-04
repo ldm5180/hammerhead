@@ -13,9 +13,8 @@ function subst () {
         -e "s|@CONFIGURE_WITH_EMDNSSD@|$CONFIGURE_WITH_EMDNSSD|g"  \
         -e "s|@ALSA_BUILD_DEP@|$ALSA_BUILD_DEP|g"  \
         -e "s|@ALSA_HAB@|$ALSA_HAB|g"              \
-        -e "s|@BPSTATS2_HAB@|$BPSTATS2_HAB|g"  \
-        -e "s|@BP_COMMANDER@|$BP_COMMANDER|g"  \
-        -e "s|@BP_COMMAND_PROXY@|$BP_COMMAND_PROXY|g"  \
+        -e "s|@BIONET2_BP_UTILS_CONTROL@|$BIONET2_BP_UTILS_CONTROL|g" \
+        -e "s|@RECOMMENDS_BIONET2_BP_UTILS@|$RECOMMENDS_BIONET2_BP_UTILS|g" \
         $*
 }
 
@@ -77,9 +76,16 @@ while true ; do
             RECOMMENDS_ION="ion,"
             ION_BUILD_DEP="ion-dev, "
             CONFIGURE_WITH_ION="--with-ion"
-            BPSTATS2_HAB="usr/bin/bpstats2-hab"
-            BP_COMMANDER="usr/bin/bionet-bp-commander"
-            BP_COMMAND_PROXY="usr/bin/bionet-bp-command-proxy"
+            RECOMMENDS_BIONET2_BP_UTILS="bionet2-bp-utils,"
+            BIONET2_BP_UTILS_CONTROL="Package: bionet2-bp-utils\n\
+Section: net\n\
+Architecture: any\n\
+Depends: \${shlibs:Depends}\n\
+Description: A network-transparent pub/sub system for information exchange\n\
+ Bionet2 utilities that use BP, the Bundle Protocol (RFC 5050).\n\
+ This includes the bionet-bp-command-proxy, the bionet-bp-commander, and\n\
+ the bpstats2-hab."
+
             shift 1
             ;;
         --with-emdnssd)
