@@ -9,7 +9,7 @@
 
 #include <glib.h>
 
-#include "bdm-client.h"
+#include "bp-commanding.h"
 
 
 int main(int argc, char *argv[]) {

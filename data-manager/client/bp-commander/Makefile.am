@@ -37,6 +37,7 @@ bionet_bp_commander_LDFLAGS = \
 	$(LDFLAGS_BIONET_CAL_CLIENT) 
 
 bionet_bp_commander_LDADD = \
+	$(LIBS_BP_COMMANDING) \
 	$(LIBS_BDM) \
 	$(LIBS_ION) \
 	$(LIBS_BIONET_CAL_UTIL) \

@@ -99,6 +99,11 @@ CFLAGS_BDM = -I$(top_srcdir)/libbdm $(GLIB_CFLAGS) $(CFLAGS_BIONET_UTIL) $(CFLAG
 LDFLAGS_BDM = -L$(top_srcdir)/libbdm $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1)
 LIBS_BDM = $(top_srcdir)/libbdm/libbdm.la
 
+INCLUDES_BP_COMMANDING = $(top_srcdir)/libbdm/bp-commanding.h
+CFLAGS_BP_COMMANDING = -I$(top_srcdir)/libbdm $(GLIB_CFLAGS) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1)
+LDFLAGS_BP_COMMANDING = -L$(top_srcdir)/libbdm $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_UTIL) $(LDFLAGS_BIONET_ASN1)
+LIBS_BP_COMMANDING = $(top_srcdir)/libbdm/libbp-commanding.la
+
 INCLUDES_QT = `pkg-config --cflags QtCore` `pkg-config --cflags QtGui`
 LDFLAGS_QT = `pkg-config --libs QtCore` `pkg-config --libs QtGui`
 
