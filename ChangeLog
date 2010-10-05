@@ -1,3 +1,10 @@
+Bionet 2.6.1, 2010 October 5
+
+    * Remove dependency on ION. BP Utils are split into their own package
+
+    * Fix update version string in configure.ac
+
+
 Bionet 2.6.0, 2010 September 21
 
     * Revamped Data Manager:

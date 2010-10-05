@@ -6,6 +6,8 @@ in mainline:
     update common.am (BIONET_INTERFACE_VERSION and BIONET_RELEASE_VERSION
     at the bottom)
 
+    update version in configure.ac
+
     update rpm/bionet.spec version number
 
     update Doxyfile version number

@@ -8,7 +8,7 @@
 
 # Prelude.
 AC_PREREQ([2.59])
-AC_INIT([Bionet], [2.5], [bionet@bioserve.colorado.edu])
+AC_INIT([Bionet], [2.6], [bionet@bioserve.colorado.edu])
 # unique source file --- primitive safety check 
 AC_CONFIG_SRCDIR([cal/cal-server.h])
 
