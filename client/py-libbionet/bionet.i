@@ -15,6 +15,7 @@
 #include "bionet-datapoint.h"
 #include "bionet-value.h"
 #include "bionet-event.h"
+#include "bionet-swig-types.h"
 %}
 
 %newobject bionet_value_to_str;
@@ -32,6 +33,7 @@
 %include "bionet-datapoint.h"
 %include "bionet-value.h"
 %include "bionet-event.h"
+%include "bionet-swig-types.h"
 
 %include "cpointer.i"
 %pointer_functions(int,      binaryp);
@@ -48,6 +50,12 @@
 %include "typemaps.i"
 %import "stdint.i"
 %import "inttypes.i"
+
+%include "bionet-hab.i"
+%include "bionet-node.i"
+%include "bionet-resource.i"
+%include "bionet-datapoint.i"
+%include "bionet-value.i"
 
 %inline %{
 #define SWIG_HAB_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_hab_opaque_t, 1)
@@ -257,4 +265,222 @@
 	return (PyObject *)bionet_resource_get_user_data(resource);
     }
 
+    typedef struct {
+	void * this;
+    } BionetCache;
+
+    typedef struct {
+	void * this;
+	int fd;
+    } Bionet;
 %} 
+
+%extend BionetCache {
+    BionetCache() {
+	BionetCache * cache = (BionetCache *)malloc(sizeof(BionetCache));
+	return cache;
+    }
+
+    ~BionetCache() {
+	free($self);
+    }
+
+    unsigned int numHabs() { return bionet_cache_get_num_habs(); }
+    
+    Hab * hab(unsigned int index) { 
+	Hab * hab = (Hab *)malloc(sizeof(Hab));
+	if (NULL == hab) {
+	    return NULL;
+	}
+
+	hab->this = bionet_cache_get_hab_by_index(index);
+	if (NULL == hab->this) {
+	    free(hab);
+	    return NULL;
+	}
+	
+	bionet_hab_set_user_data(hab->this, hab);
+
+	return hab;
+    }
+
+    Hab * hab(const char *hab_type, const char *hab_id) { 
+	Hab * hab = (Hab *)malloc(sizeof(Hab));
+	if (NULL == hab) {
+	    return NULL;
+	}
+
+	hab->this = bionet_cache_lookup_hab(hab_type, hab_id);
+	if (NULL == hab->this) {
+	    free(hab);
+	    return NULL;
+	}
+
+	bionet_hab_set_user_data(hab->this, hab);
+
+	return hab;
+    }
+
+    Node * node(const char *hab_type, const char *hab_id, const char *node_id) { 
+	Node * node = (Node *)malloc(sizeof(Node));
+	if (NULL == node) {
+	    return NULL;
+	}
+
+	node->this = bionet_cache_lookup_node(hab_type, hab_id, node_id);
+	if (NULL == node->this) {
+	    free(node);
+	    return NULL;
+	}
+
+	bionet_node_set_user_data(node->this, node);
+
+	return node;
+    }
+
+    Resource * resource(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id) { 
+	Resource * resource = (Resource *)malloc(sizeof(Resource));
+	if (NULL == resource) {
+	    return NULL;
+	}
+
+	resource->this = bionet_cache_lookup_resource(hab_type, hab_id, node_id, resource_id);
+	if (NULL == resource->this) {
+	    free(resource);
+	    return NULL;
+	}
+
+	bionet_resource_set_user_data(resource->this, resource);
+
+	return resource;
+    }
+}
+
+
+%extend Bionet {
+    Bionet() {
+	Bionet * bionet = (Bionet *)malloc(sizeof(Bionet));
+	if (NULL == bionet) {
+	    return NULL;
+	}
+
+	bionet->fd = bionet_connect();
+	if (-1 == bionet->fd) {
+	    free(bionet);
+	    return NULL;
+	}
+
+	return bionet;
+    }
+
+    ~Bionet() {
+	bionet_disconnect();
+	free($self);
+    }
+
+    int read() {
+	return bionet_read();
+    }
+
+    int read(struct timeval * tv) {
+	return bionet_read_with_timeout(tv);
+    }
+
+    int read(struct timeval * tv, unsigned int num) {
+	return bionet_read_many(tv, num);
+    }
+
+    int subscribe(const char * subscription) {
+	char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+	char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+	char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+	char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+	int r = -1;
+
+	if (bionet_split_name_components_r(subscription,
+					   hab_type, hab_id,
+					   node_id,
+					   resource_id)) {
+	    return -1;
+	}
+
+	if (0 < strlen(resource_id)) {
+	    r = bionet_subscribe_datapoints_by_name(subscription);
+	} else if (0 < strlen(node_id)) {
+	    r = bionet_subscribe_node_list_by_name(subscription);
+	} else if ((0 < strlen(hab_id)) && (0 < strlen(hab_type))) {
+	    r = bionet_subscribe_hab_list_by_name(subscription);
+	}
+
+	return r;
+    }
+
+    int unsubscribe(const char * subscription) {
+	char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
+	char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
+	char node_id[BIONET_NAME_COMPONENT_MAX_LEN];
+	char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+	int r = -1;
+
+	if (bionet_split_name_components_r(subscription,
+					   hab_type, hab_id,
+					   node_id,
+					   resource_id)) {
+	    return -1;
+	}
+
+	if (0 < strlen(resource_id)) {
+	    r = bionet_unsubscribe_datapoints_by_name(subscription);
+	} else if (0 < strlen(node_id)) {
+	    r = bionet_unsubscribe_node_list_by_name(subscription);
+	} else if ((0 < strlen(hab_id)) && (0 < strlen(hab_type))) {
+	    r = bionet_unsubscribe_hab_list_by_name(subscription);
+	}
+
+	return r;
+    }
+
+    int set(Resource * resource, const char * value) {
+	return bionet_set_resource(resource->this, value);
+    }
+
+    int set(Resource * resource, int value) {
+	char valstr[1024];
+	if (1024 <= snprintf(valstr, sizeof(valstr), "%d", value)) {
+	    return -1;
+	}
+	return bionet_set_resource(resource->this, valstr);
+    }
+
+    int set(Resource * resource, float value) {
+	char valstr[1024];
+	if (1024 <= snprintf(valstr, sizeof(valstr), "%f", value)) {
+	    return -1;
+	}
+	return bionet_set_resource(resource->this, valstr);
+    }
+
+    int set(const char * resource_name, const char * value) {
+	return bionet_set_resource_by_name(resource_name, value);
+    }
+
+    int set(const char * resource_name, int value) {
+	char valstr[1024];
+	if (1024 <= snprintf(valstr, sizeof(valstr), "%d", value)) {
+	    return -1;
+	}
+	return bionet_set_resource_by_name(resource_name, valstr);
+    }
+
+    int set(const char * resource_name, float value) {
+	char valstr[1024];
+	if (1024 <= snprintf(valstr, sizeof(valstr), "%f", value)) {
+	    return -1;
+	}
+	return bionet_set_resource_by_name(resource_name, valstr);
+    }
+
+    int security(const char * dir, int require) {
+	return bionet_init_security(dir, require);
+    }
+}

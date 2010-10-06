@@ -76,15 +76,15 @@ def cb_datapoint(datapoint):
                                                     bionet_hab_get_id(hab), 
                                                     bionet_node_get_id(node), 
                                                     "update-interval")
-        if (interval_res):
-            bionet_set_resource(interval_res, str(random.randint(1, 10)))
+#        if (interval_res):
+#            bionet_set_resource(interval_res, str(random.randint(1, 10)))
 
 
 # set the default Bionet log handler
 bionet_log_use_default_handler(None)
 
 # connect to Bionet as a client
-bionet_fd = bionet_connect()
+bn = Bionet()
 
 # register all the callbacks desired
 pybionet_register_callback_new_hab(cb_new_hab);
@@ -95,9 +95,9 @@ pybionet_register_callback_datapoint(cb_datapoint);
 
 # subscribe to HABs, Nodes, and Datapoints. In this example, all HABs and Nodes 
 # are subscribed, but only datapoints from the Sample HAB.
-bionet_subscribe_hab_list_by_name("*.*")
-bionet_subscribe_node_list_by_name("*.*.*")
-bionet_subscribe_datapoints_by_name("Sample.*.*:*")
+bn.subscribe("*.*")
+bn.subscribe("*.*.*")
+bn.subscribe("Sample.*.*:*")
 
 
 # set up the selectable file descriptor list. Any time the file descriptor is
@@ -107,13 +107,13 @@ bionet_subscribe_datapoints_by_name("Sample.*.*:*")
 #
 # include any file descriptors for your own hardware if there are any.
 fd_list = []
-if (bionet_fd != -1):
-    fd_list.append(bionet_fd)
+if (bn.fd != -1):
+    fd_list.append(bn.fd)
 
 while(1):
     # select on the fd list
     (rr, wr, er) = select(fd_list, [], [], None)
     for fd in rr:
-        if (fd == bionet_fd):
-            bionet_read() # causes the callbacks to get called
+        if (fd == bn.fd):
+            read = bn.read() # causes the callbacks to get called
         

@@ -171,7 +171,7 @@ while(1):
     for fd in rr:
         if (fd == hab_fd):
             HabRead()
-    remainingstr = str(interval_res.datapoint(0).value())
+    remainingstr = str(hab.node("process").resource("update-interval").datapoint(0).value())
     if ((time.time() - last) >= float(remainingstr)):
         remaining = float(remainingstr)
         process(hab)
