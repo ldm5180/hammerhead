@@ -1,19 +1,33 @@
-#!/bin/bash
+#!/bin/bash 
 
 SRC=$1
 DST=$2
 
 
-echo "const char * bdm_schema_sql = " > $DST
 
 # Parse the schema through sqlite3 to verify syntax, and strip comments
 # Then Convert it to a const char * in a c file
+ERR=`mktemp`
 echo -e ".read $SRC\n.dump" | \
-sqlite3 ':memory:' | \
-  sed -e 's/\\/\\\\/g' | \
-  sed -e 's/"/\\"/g' | \
-  sed -e 's/^/    "/' | \
-  sed -e 's/$/\\n"/'  >> $DST
+    sqlite3 ':memory:' > $DST.tmp 2>$ERR
+if [ "$?" != "0" ]; then
+    cat $ERR
+    exit 1
+fi
+
+if  grep -i error $ERR; then
+    exit 1
+fi
+rm $ERR
+
+# Convert to C
+echo "const char * bdm_schema_sql = " > $DST
+
+sed -e 's/\\/\\\\/g' $DST.tmp | \
+sed -e 's/"/\\"/g' | \
+sed -e 's/^/    "/' | \
+sed -e 's/$/\\n"/'  >> $DST
+#rm $DST.tmp
 
 echo '"";' >> $DST
 
