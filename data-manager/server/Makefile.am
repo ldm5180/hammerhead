@@ -29,6 +29,7 @@ libbionet_data_manager_la_SOURCES =   \
     db.c                              \
     db-batch.c                        \
     db-schema.c                       \
+    db-sync.c                         \
     cal-callback.c                    \
     cal-topic-matches.c               \
     client-connecting-handler.c       \
@@ -40,6 +41,7 @@ libbionet_data_manager_la_SOURCES =   \
     keepalive.c                       \
     subscription.c                    \
     sync-send.c                       \
+    sync-receive.c                    \
     sync-receive-connecting-handler.c \
     sync-receive-readable-handler.c   \
     sync-receive-ion.c                \
@@ -64,10 +66,13 @@ check_check_db_SOURCES = \
     check/check-bdm.c                 \
     check/check-db.c                  \
     db.c                              \
+    db-sync.c                         \
     bdm-stats.c                       \
     db-batch.c                        \
     db-schema.c                       \
     publish.c                         \
+    cfg-parser.y                      \
+    cfg-lexer.l                       \
     global.c
 
 extra_cflags = $(OPENSSL_CFLAGS) $(GLIB_CFLAGS) $(OPENSSL_CFLAGS) $(CFLAGS_BIONET_CAL_SERVER) $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) $(ION_CFLAGS) $(CFLAGS_BIONET_HAB)

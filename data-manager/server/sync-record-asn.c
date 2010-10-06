@@ -216,11 +216,13 @@ static int md_handle_node(
 void bdm_sync_metadata_to_asn_setup(
         GPtrArray * bdm_list,
         ssize_t mtu,
+        sqlite_int64 recipient_key,
         md_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf)
 {
     memset(state_buf, 0, sizeof(md_iter_state_t));
     state_buf->mtu = mtu; // Subtract the sync_message wrapper size
+    state_buf->channid = recipient_key; 
 
     bdm_iterator_init(bdm_list, 
             md_handle_bdm,
@@ -233,7 +235,9 @@ void bdm_sync_metadata_to_asn_setup(
             );
 }
 
-BDM_Sync_Message_t * bdm_sync_metadata_to_asn(bdm_list_iterator_t * iter, md_iter_state_t * state)
+BDM_Sync_Message_t * bdm_sync_metadata_to_asn(
+        bdm_list_iterator_t * iter,
+        md_iter_state_t * state)
 {
 
     BDM_Sync_Metadata_Message_t * message;
@@ -254,8 +258,9 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(bdm_list_iterator_t * iter, md_ite
         return NULL;
     }
 
-    sync_message->present = BDM_Sync_Message_PR_metadataMessage;
-    message = &sync_message->choice.metadataMessage;
+    sync_message->syncchannel = state->channid;
+    sync_message->data.present = BDM_Sync_Data_PR_metadataMessage;
+    message = &sync_message->data.choice.metadataMessage;
 
     state->asn_sync_message = sync_message;
     state->asn_message = message;
@@ -481,11 +486,13 @@ static int dp_handle_datapoint(
 void bdm_sync_datapoints_to_asn_setup(
         GPtrArray * bdm_list,
         ssize_t mtu,
+        sqlite_int64 recipient_key,
         dp_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf)
 {
     memset(state_buf, 0, sizeof(dp_iter_state_t));
     state_buf->mtu = mtu; // Subtract the sync_message wrapper size
+    state_buf->channid = recipient_key; 
 
     bdm_iterator_init(bdm_list, 
             dp_handle_bdm,
@@ -523,8 +530,9 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_i
         return NULL;
     }
 
-    sync_message->present = BDM_Sync_Message_PR_datapointsMessage;
-    message = &sync_message->choice.datapointsMessage;
+    sync_message->syncchannel = state->channid;
+    sync_message->data.present = BDM_Sync_Data_PR_datapointsMessage;
+    message = &sync_message->data.choice.datapointsMessage;
 
     state->asn_sync_message = sync_message;
     state->asn_message = message;
@@ -544,6 +552,50 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_i
 
     return sync_message;
 } 
+
+
+int bdm_gen_sync_msg_ack_asnbuf(BDM_Sync_Message_t * msg, bionet_asn_buffer_t *buf) {
+
+    BDM_Sync_Message_t ackmsg;
+    asn_enc_rval_t asn_r;
+
+    switch(msg->data.present) {
+        case BDM_Sync_Data_PR_datapointsMessage:
+            ackmsg.data.present = BDM_Sync_Data_PR_ackDatapoints;
+            ackmsg.data.choice.ackDatapoints = 1;
+            break;
+
+        case BDM_Sync_Data_PR_metadataMessage:
+            ackmsg.data.present = BDM_Sync_Data_PR_ackMetadata;
+            ackmsg.data.choice.ackMetadata = 1;
+            break;
+
+        default:
+            g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                    "%s(): Unknown message type", __FUNCTION__);
+            return -1;
+    }
+    ackmsg.syncchannel = msg->syncchannel;
+    ackmsg.firstSeq = msg->firstSeq;
+    ackmsg.lastSeq = msg->lastSeq;
+
+
+    buf->buf = NULL;
+    buf->size = 0;
+
+    asn_r = der_encode(&asn_DEF_BDM_Sync_Message, &ackmsg, bionet_accumulate_asn_buffer, buf);
+    if (asn_r.encoded == -1) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s(): error with der_encode(): %s", __FUNCTION__, strerror(errno));
+        if (buf->buf != NULL) {
+            free(buf->buf);
+            buf->buf = NULL;
+        }
+        return -1;
+    }
+
+    return 0;
+}
 
 // Emacs cruft
 // Local Variables:

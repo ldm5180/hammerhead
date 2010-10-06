@@ -51,9 +51,13 @@ static int _dbb_add_asn_event(
     return r;
 }
 
-void handle_sync_metadata_message(BDM_Sync_Metadata_Message_t *message) {
+int handle_sync_metadata_message(
+        BDM_Sync_Metadata_Message_t *message,
+        sqlite_int64 channid)
+{
     int bi;
     int r;
+    int rc = -1;
 
     bionet_hab_t * hab = NULL;
 
@@ -61,7 +65,7 @@ void handle_sync_metadata_message(BDM_Sync_Metadata_Message_t *message) {
     bdm_db_batch_t * tmp_dbb = calloc(1, sizeof(bdm_db_batch_t));
     if(tmp_dbb == NULL) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s(): Out of Memory!", __FUNCTION__);
-        return;
+        return -1;
     }
 
     int num_events_before = num_sync_recv_events;
@@ -196,6 +200,8 @@ void handle_sync_metadata_message(BDM_Sync_Metadata_Message_t *message) {
         goto cleanup;
     }
 
+    rc = 0;
+
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "} Sync Metadata Message [%lld,%lld]",
         tmp_dbb->first_seq, tmp_dbb->last_seq);
 
@@ -214,7 +220,10 @@ cleanup:
 
     dbb_free(tmp_dbb);
 
+
+    return rc;
 }
+
 
 // Emacs cruft
 // Local Variables:

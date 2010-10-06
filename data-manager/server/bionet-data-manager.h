@@ -101,6 +101,8 @@ typedef struct {
     int sync_mtu; // Sync messages have this MTU. <= 0 means no limit
     char * dtn_source_eid;
 
+    sqlite_int64 db_key; // The db row for this sync recipient
+
     //State vars
     sqlite3 *db;
     int last_entry_end_seq;    
@@ -346,8 +348,30 @@ void disconnect_sync_sender(client_t *client);
 
 int sync_receive_connecting_handler(GIOChannel *ch, GIOCondition condition, gpointer listening_fd_as_pointer);
 int sync_receive_readable_handler(GIOChannel *unused, GIOCondition unused2, client_t *client);
-void handle_sync_datapoints_message(BDM_Sync_Datapoints_Message_t *message);
-void handle_sync_metadata_message(BDM_Sync_Metadata_Message_t *message);
+
+// Handle sync message.
+int handle_sync_msg(BDM_Sync_Message_t * sync_message);
+int sync_message_is_ack(BDM_Sync_Message_t * sync_message);
+
+int handle_sync_datapoints_message(
+        BDM_Sync_Datapoints_Message_t *message,
+        sqlite_int64 channid);
+
+int handle_sync_metadata_message(
+        BDM_Sync_Metadata_Message_t *message,
+        sqlite_int64 channid);
+
+int handle_sync_datapoints_ack_message(
+        int code,
+        sqlite_int64 cahnnid,
+        int firstSeq, int lastSeq);
+
+int handle_sync_metadata_ack_message(
+        int code,
+        sqlite_int64 cahnnid,
+        int firstSeq, int lastSeq);
+
+int bdm_gen_sync_msg_ack_asnbuf(BDM_Sync_Message_t * msg, bionet_asn_buffer_t *buf);
 
 int sync_bundle_handler(GIOChannel *ch, GIOCondition condition, gpointer listening_fd_as_pointer);
 
@@ -371,12 +395,14 @@ typedef struct {
 
     // Other control parameters
     ssize_t mtu;
+    sqlite_int64 channid;
     int done;
 } md_iter_state_t;
 
 void bdm_sync_metadata_to_asn_setup(
         GPtrArray * bdm_list,
         ssize_t mtu,
+        sqlite_int64 recipient_key,
         md_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf);
 
@@ -393,12 +419,14 @@ typedef struct {
 
     // Other control parameters
     ssize_t mtu;
+    sqlite_int64 channid;
     int done;
 } dp_iter_state_t;
 
 void bdm_sync_datapoints_to_asn_setup(
         GPtrArray * bdm_list,
         ssize_t mtu,
+        sqlite_int64 recipient_key,
         dp_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf);
 BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_iter_state_t * state);
@@ -408,8 +436,9 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_i
 GSource * sync_send_new_gio_source(sync_sender_config_t* cfg, const char * database_file, int bp_fd);
 
 // Decode and process a sync message
-BDM_Sync_Message_t * handle_sync_msg(int bundle_fd);
+BDM_Sync_Message_t * handle_sync_bundle(int bundle_fd);
 
+void sync_config_init_default(sync_sender_config_t * cfg);
 sync_sender_config_t * read_config_file(const char * fname);
 
 void sync_sender_config_destroy(sync_sender_config_t * cfg);

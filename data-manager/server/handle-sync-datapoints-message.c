@@ -13,7 +13,10 @@
 
 #include "bdm-stats.h"
 
-void handle_sync_datapoints_message(BDM_Sync_Datapoints_Message_t *message) {
+int handle_sync_datapoints_message(
+        BDM_Sync_Datapoints_Message_t *message,
+        sqlite_int64 channid)
+{
     int sri;
     int r;
     int counter = 0;
@@ -189,7 +192,7 @@ void handle_sync_datapoints_message(BDM_Sync_Datapoints_Message_t *message) {
         db_publish_synced_datapoints(main_db, first_seq, last_seq);
     }
 
-    return;
+    return 0;
 
 fail:
     g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
@@ -197,7 +200,10 @@ fail:
 
     db_rollback(main_db);
 
+    return -1;
+
 }
+
 
 // Emacs cruft
 // Local Variables:

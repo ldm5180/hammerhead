@@ -26,20 +26,25 @@ static int write_data_to_fd(const void *buffer, size_t size, void * fd_void) {
     */
 
     return r;
-} /* write_data_to_socket() */
+} /* write_data_to_fd() */
 
-static void send_ack(client_t *client, BDM_Sync_Ack_t ack_type ) {
-    asn_enc_rval_t asn_r;
-    BDM_Sync_Ack_t sync_ack = ack_type;
+int send_ack_tcp(BDM_Sync_Message_t * sync_msg, int fd) {
 
-    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-        "Sending ACK (%ld)...", ack_type);
-    
-    asn_r = der_encode(&asn_DEF_BDM_Sync_Ack, &sync_ack, 
-        write_data_to_fd, &client->fd);
-    if (asn_r.encoded == -1) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "send_sync_ack(): error with der_encode(): %m");
+    bionet_asn_buffer_t buf;
+
+    if (bdm_gen_sync_msg_ack_asnbuf(sync_msg, &buf) ) {
+        return -1;
     }
+
+    ssize_t bytes = write_data_to_fd(buf.buf, buf.size, &fd);
+
+    if(bytes != buf.size){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "Failed to send sync message ACK: %s", strerror(errno));
+        return -1;
+    }
+
+    return 0;
 }
 
 int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_t *client) {
@@ -77,21 +82,13 @@ int sync_receive_readable_handler(GIOChannel *unused, GIOCondition cond, client_
 			  client->buffer, 
 			  client->index);
         if (rval.code == RC_OK) {
-	    if (client->message.sync_message->present == BDM_Sync_Message_PR_metadataMessage) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-		      "sync_receive_readable_handler(): receive Sync Metadata Message");
-		handle_sync_metadata_message(&client->message.sync_message->choice.metadataMessage);
+            if(handle_sync_msg(client->message.sync_message)) {
+                return FALSE;
+            }
+            if(!sync_message_is_ack(client->message.sync_message)){
+                send_ack_tcp(client->message.sync_message, client->fd);
+            }
 
-                send_ack(client, BDM_Sync_Ack_metadataAck);
-	    } else if (client->message.sync_message->present == BDM_Sync_Message_PR_datapointsMessage) {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO,
-		      "sync_receive_readable_handler(): receive Sync Datapoints Message");
-		handle_sync_datapoints_message(&client->message.sync_message->choice.datapointsMessage);
-                send_ack(client, BDM_Sync_Ack_datapointAck);
-	    } else {
-		g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-		      "sync_receive_readable_handler(): unknown Sync Message choice");
-	    }
 	    asn_DEF_BDM_Sync_Message.free_struct(&asn_DEF_BDM_Sync_Message, client->message.sync_message, 0);
             client->message.sync_message = NULL;
         } else if (rval.code == RC_WMORE) {

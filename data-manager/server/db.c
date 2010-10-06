@@ -62,38 +62,8 @@ int db_get_event_rowid(
         sqlite_int64 data_row,
         sqlite_int64 *rowid);
 
-/*
- * There are a lot of statements
- *
- * Put them into this array to more easily manage them
- */
-enum prepared_stmt_idx {
-    INSERT_EVENT_STMT = 0,
-    INSERT_BDM_STMT,
-    INSERT_HAB_STMT,
-    INSERT_NODE_STMT,
-    INSERT_RESOURCE_STMT,
-    INSERT_DATAPOINT_SYNC_STMT,
 
-    ROWFOR_BDM_STMT,
-    ROWFOR_HAB_STMT,
-    ROWFOR_NODE_STMT,
-    ROWFOR_DATAPOINT_STMT,
-    ROWFOR_EVENT_STMT,
-
-    GET_LAST_SYNC_BDM_STMT,
-    SET_LAST_SYNC_BDM_STMT,
-    SET_NEXT_ENTRY_SEQ_STMT,
-
-    GET_SYNC_AFFECTED_DATAPOINTS,
-    SAVE_DANGLING_DATAPOINTS,
-    CLEAN_DANGLING_STMT,
-
-
-    NUM_PREPARED_STMTS
-};
-
-static sqlite3_stmt * all_stmts[NUM_PREPARED_STMTS] = {0};
+sqlite3_stmt * all_stmts[NUM_PREPARED_STMTS] = {0};
 
 extern char * database_file;
 
@@ -2901,96 +2871,6 @@ int db_get_latest_entry_seq(sqlite3 *db) {
     return seq;
 }
 
-
-int db_get_last_sync_seq(sqlite3 *db, char * bdm_id) {
-    int r;
-
-    if(all_stmts[GET_LAST_SYNC_BDM_STMT]  == NULL) {
-	r = sqlite3_prepare_v2(db, 
-	    "SELECT Last_Sync"
-            " FROM BDMs"
-            " WHERE BDM_ID = ?",
-	    -1, &all_stmts[GET_LAST_SYNC_BDM_STMT] , NULL);
-
-	if (r != SQLITE_OK) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "get-last-sync SQL error: %s", sqlite3_errmsg(db));
-	    return -1;
-	}
-
-    }
-    sqlite3_stmt * stmt = all_stmts[GET_LAST_SYNC_BDM_STMT];
-
-    r = sqlite3_bind_text(stmt, 1, bdm_id, -1, SQLITE_STATIC);
-    if(r != SQLITE_OK){
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-            "get-last-sync SQL bind error");
-        return -1;
-    }
-
-    r = sqlite3_step(stmt);
-    if (r != SQLITE_ROW && r != SQLITE_DONE) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "No row for last-sync: %s", sqlite3_errmsg(db));
-        sqlite3_reset(stmt);
-        return -1;
-    }
-
-    int seq = sqlite3_column_int(stmt, 1);
-
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
-
-    return seq;
-    
-}
-
-void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int last_sync) {
-    int r;
-
-    if(all_stmts[SET_LAST_SYNC_BDM_STMT]  == NULL) {
-	r = sqlite3_prepare_v2(db, 
-	    "UPDATE BDMs"
-            " SET Last_Sync = ?"
-            " WHERE BDM_ID = ?",
-	    -1, &all_stmts[SET_LAST_SYNC_BDM_STMT] , NULL);
-
-	if (r != SQLITE_OK) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                "set-last-sync SQL error: %s", sqlite3_errmsg(db));
-	    return;
-	}
-
-    }
-    sqlite3_stmt * stmt = all_stmts[SET_LAST_SYNC_BDM_STMT];
-
-    // Bind variables
-    r = sqlite3_bind_int(stmt, 1, last_sync);
-    if(r != SQLITE_OK){
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-            "set-last-sync SQL bind error");
-        return;
-    }
-    r = sqlite3_bind_text(stmt, 2, bdm_id, -1, SQLITE_STATIC);
-    if(r != SQLITE_OK){
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-            "set-last-sync SQL bind error");
-        return;
-    }
-
-    while(SQLITE_BUSY == (r = sqlite3_step(stmt))){
-        g_usleep(20 * 1000);
-    }
-    if (r != SQLITE_DONE) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Error updating last-sync: %s", sqlite3_errmsg(db));
-        sqlite3_reset(stmt);
-        return;
-    }
-
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
-
-
-}
 
 static bionet_datapoint_t * _dbrow_to_bionet_dp(
         const char * bdm_id,

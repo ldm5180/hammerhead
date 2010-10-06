@@ -117,14 +117,17 @@ static int sync_send_metadata(
     md_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_metadata_to_asn_setup(bdm_list, config->sync_mtu, &make_message_state, &iter);
+    bdm_sync_metadata_to_asn_setup(bdm_list, config->sync_mtu, config->db_key, &make_message_state, &iter);
 
     while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
     {
-        int num_events = count_sync_events(&sync_message->choice.metadataMessage);
+        int num_events = count_sync_events(&sync_message->data.choice.metadataMessage);
         if ( 0 == num_events ) {
             continue;
         }
+
+        sync_message->firstSeq = from_seq;
+        sync_message->lastSeq = to_seq;
 
         if (sync_init_connection(config)) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
@@ -161,6 +164,10 @@ static int sync_send_metadata(
                   config->sync_recipient,
                   from_seq, to_seq);
             num_sync_sent_events += num_events;
+
+            num_syncs_sent++;
+
+            db_record_sync(config, from_seq, to_seq, 0);
         } else {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                   "    Sync metadata FAILED");
@@ -180,9 +187,9 @@ static int count_sync_datapoints(BDM_Sync_Message_t * msg) {
     int n = 0;
 
     int i;
-    for(i=0; i<msg->choice.datapointsMessage.list.count; i++) {
+    for(i=0; i<msg->data.choice.datapointsMessage.list.count; i++) {
         int j;
-        BDMSyncRecord_t * syncRecord = msg->choice.datapointsMessage.list.array[i]; 
+        BDMSyncRecord_t * syncRecord = msg->data.choice.datapointsMessage.list.array[i]; 
 
         for(j=0; j<syncRecord->syncResources.list.count; j++) {
             n += syncRecord->syncResources.list.array[j]->resourceDatapoints.list.count;
@@ -234,7 +241,7 @@ static int sync_send_datapoints(
     dp_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_datapoints_to_asn_setup(bdm_list, config->sync_mtu, &make_message_state, &iter);
+    bdm_sync_datapoints_to_asn_setup(bdm_list, config->sync_mtu, config->db_key, &make_message_state, &iter);
 
     while((sync_message = bdm_sync_datapoints_to_asn(&iter, &make_message_state)))
     {
@@ -243,6 +250,9 @@ static int sync_send_datapoints(
         if( 0 == num_datapoints ) {
             continue;
         }
+
+        sync_message->firstSeq = from_seq;
+        sync_message->lastSeq = to_seq;
 
         if (sync_init_connection(config)) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
@@ -279,6 +289,7 @@ static int sync_send_datapoints(
             bdm_list_free(bdm_list);
             goto cleanup;
         }
+        db_record_sync(config, from_seq, to_seq, 1);
     }
     bdm_list_free(bdm_list);
 
@@ -365,20 +376,27 @@ GSource * sync_send_new_gio_source(sync_sender_config_t* cfg, const char * datab
         return NULL;
     }
 
+
     if(cfg->frequency <= 0 ) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
               "Sync-send frequency is 0");
         return NULL;
     }
 
-    cfg->last_entry_end_seq = 
-        db_get_last_sync_seq(cfg->db, 
-            cfg->sync_recipient);
 #if ENABLE_ION
     if(cfg->method == BDM_SYNC_METHOD_ION) {
         cfg->bp_fd = bp_fd;
     }
 #endif
+
+    cfg->last_entry_end_seq = -1;
+
+
+    if(db_sync_sender_setup(cfg)) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+              "Failed to reconcile Config with database");
+    }
+
     source = g_timeout_source_new_seconds(cfg->frequency);
     g_source_set_callback(source, sync_check, cfg, NULL);
 
@@ -446,10 +464,10 @@ static int read_ack_tcp(sync_sender_config_t *config) {
 
     char buffer[128];
     int index = 0;
-    BDM_Sync_Ack_t sync_ack;
-    BDM_Sync_Ack_t * p_sync_ack = &sync_ack;
+    BDM_Sync_Message_t sync_msg;
+    BDM_Sync_Message_t * p_sync_msg = &sync_msg;
 
-    memset(&sync_ack, 0, sizeof(sync_ack));
+    memset(&sync_msg, 0, sizeof(sync_msg));
 
     while (1) {
 	bytes_to_read = sizeof(buffer) - index;
@@ -466,41 +484,36 @@ static int read_ack_tcp(sync_sender_config_t *config) {
 	index += bytes_read;
 
         rval = ber_decode(NULL, 
-			  &asn_DEF_BDM_Sync_Ack, 
-			  (void **)&p_sync_ack, 
+			  &asn_DEF_BDM_Sync_Message, 
+			  (void **)&p_sync_msg, 
 			  buffer, 
 			  index);
 
         if (rval.code == RC_OK) {
-
-            if(sync_ack < 0) {
-                // The connection worked, but the remote side couldn't save the
-                // data 
-                return -1;
-            }
-
-            switch(sync_ack){
-                case BDM_Sync_Ack_datapointAck:
-                    db_set_last_sync_seq(config->db, 
-                        config->sync_recipient, 
-                        config->last_entry_end_seq);
-
+            int rc = -1;
+            switch(sync_msg.data.present) {
+                case BDM_Sync_Data_PR_ackMetadata:
+                    rc = handle_sync_metadata_ack_message(
+                            sync_msg.data.choice.ackMetadata,
+                            config->db_key,
+                            sync_msg.firstSeq, sync_msg.lastSeq);
                     break;
 
-                case BDM_Sync_Ack_metadataAck:
-                    db_set_last_sync_seq(config->db, 
-                        config->sync_recipient, 
-                        config->last_entry_end_seq);
+                case BDM_Sync_Data_PR_ackDatapoints:
+                    rc = handle_sync_datapoints_ack_message(
+                            sync_msg.data.choice.ackDatapoints,
+                            config->db_key,
+                            sync_msg.firstSeq, sync_msg.lastSeq);
                     break;
 
                 default:
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
-                        "Unhandled ack value: %ld", sync_ack);
-                    return -1;
+                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                            "Unexpected Sync Message type");
+                    break;
             }
 
-            return 0;
-                        
+            return rc;
+
         } else if (rval.code == RC_WMORE) {
             // ber_decode is waiting for more data, but so far so good
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_INFO, "ber_decode: waiting for more data");

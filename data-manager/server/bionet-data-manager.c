@@ -51,6 +51,7 @@ static int bdm_port = BDM_PORT;
 static int enable_tcp_sync_receiver = 0;
 
 static int enable_dtn_sync_receiver = 0;
+static int enable_dtn_sync_acks = 0;
 static int ion_key = 0;
 
 static gchar ** sync_cfg_file_list = NULL;
@@ -409,7 +410,7 @@ int bp_readable_handler(GIOChannel *listening_ch,
         return stay_registered;
     }
 
-    handle_sync_msg(bdl_fd);
+    handle_sync_bundle(bdl_fd);
 
     return TRUE;
 }
@@ -729,11 +730,10 @@ int main(int argc, char *argv[]) {
                       "Failed to parse sync config file %s", *pval);
                 return 1;
             }
-            sync_config->last_entry_end_seq = -1;
-
             if(sync_config->method == BDM_SYNC_METHOD_ION) {
 #if ENABLE_ION
                 need_bps_socket++;
+                enable_dtn_sync_acks++;
 
                 strncpy(sync_config->bp_dstaddr.uri, sync_config->sync_recipient, BPS_EID_SIZE);
 #else
@@ -1014,7 +1014,7 @@ int main(int argc, char *argv[]) {
                 g_source_attach(source, NULL);
             } else {
                 g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-                      "Failed to init sync-send");
+                        "Failed to init sync-send");
             }
 
 	} else {
@@ -1026,11 +1026,11 @@ int main(int argc, char *argv[]) {
 
 #if ENABLE_ION
     // Setup the sync-receive socket
-    if (enable_dtn_sync_receiver) {
+    if (enable_dtn_sync_receiver || enable_dtn_sync_acks) {
         int r;
 	if (NULL == dtn_endpoint_id) {
 	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		  "DTN Sync Receiver requested, but no DTN endpoint ID specified.");
+		  "DTN Receiver or sync acks requested, but no DTN endpoint ID specified.");
 	    return (-1);
 	}
 

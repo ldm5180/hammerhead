@@ -36,8 +36,8 @@ ASN_MODULE_SOURCES=	\
 	ResourceRecord.c	\
 	BDMSyncRecord.c	\
 	BDM-Sync-Datapoints-Message.c	\
-	BDM-Sync-Message.c	\
-	BDM-Sync-Ack.c
+	BDM-Sync-Data.c	\
+	BDM-Sync-Message.c
 
 ASN_MODULE_HEADS=	\
 	ResourceFlavor.h	\
@@ -77,8 +77,8 @@ ASN_MODULE_HEADS=	\
 	ResourceRecord.h	\
 	BDMSyncRecord.h	\
 	BDM-Sync-Datapoints-Message.h	\
-	BDM-Sync-Message.h	\
-	BDM-Sync-Ack.h
+	BDM-Sync-Data.h	\
+	BDM-Sync-Message.h
 
 ASN_MODULE_HEADS+=BOOLEAN.h
 ASN_MODULE_SOURCES+=BOOLEAN.c

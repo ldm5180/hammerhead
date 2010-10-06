@@ -12,28 +12,20 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "BDM-Sync-Metadata-Message.h"
-#include "BDM-Sync-Datapoints-Message.h"
-#include <constr_CHOICE.h>
+#include "BDM-Sync-Data.h"
+#include <NativeInteger.h>
+#include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Dependencies */
-typedef enum BDM_Sync_Message_PR {
-	BDM_Sync_Message_PR_NOTHING,	/* No components present */
-	BDM_Sync_Message_PR_metadataMessage,
-	BDM_Sync_Message_PR_datapointsMessage
-} BDM_Sync_Message_PR;
-
 /* BDM-Sync-Message */
 typedef struct BDM_Sync_Message {
-	BDM_Sync_Message_PR present;
-	union BDM_Sync_Message_u {
-		BDM_Sync_Metadata_Message_t	 metadataMessage;
-		BDM_Sync_Datapoints_Message_t	 datapointsMessage;
-	} choice;
+	BDM_Sync_Data_t	 data;
+	long	 syncchannel;
+	long	 firstSeq;
+	long	 lastSeq;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

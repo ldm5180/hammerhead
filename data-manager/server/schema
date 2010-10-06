@@ -79,10 +79,6 @@ INSERT INTO Resource_Flavors VALUES (NULL, 'parameter');
 CREATE TABLE BDMs (
     Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
     BDM_ID VARCHAR(255) NOT NULL,
-    -- NOTE: Once a bundle is sent, these values are updated, and the bundle is 
-    -- inserted into the 'Sync_*_Bundle_Outstatnding' table, and later removed
-    -- once it has been confirmed.
-    Last_Sync INTEGER REFERENCES Events(seq), --Seq of the last successfully sent event
     UNIQUE (BDM_ID)
 );
 CREATE INDEX BDM_ID_Index ON BDMs(BDM_ID);
@@ -153,3 +149,46 @@ CREATE TABLE DanglingDatapoints (
 CREATE INDEX dangling_datapoint_Index ON DanglingDatapoints(datapoint);
 
 
+-- Sync Recipients
+--
+-- This table records each sync recipient
+-- whenever the sync-sender config changes, It may mean a new sync
+-- recipient...
+CREATE TABLE SyncRecipients (
+    Key        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
+    eid        VARCHAR(255) NOT NULL, -- The DTN EID, or tcp Hostname of recipient
+    filter     VARCHAR(255) NOT NULL, -- The event sync filter
+    start_sec  INTEGER      NOT NULL, -- The start time filter. NULL = forever
+    start_usec INTEGER      NOT NULL, -- The start time filter. NULL = forever
+    end_sec    INTEGER      NOT NULL, -- The end time filter. NULL = forever
+    end_usec   INTEGER      NOT NULL, -- The end time filter. NULL = forever
+
+    -- NOTE: Once a bundle is sent, these values are updated, and the bundle is 
+    -- inserted into the 'Sync_*_Bundle_Outstatnding' table, and later removed
+    -- once it has been confirmed.
+    last_sync INTEGER NOT NULL REFERENCES Events(seq), --Seq of the last successfully sent event
+    UNIQUE(eid,filter,start_sec,start_usec,end_sec,end_usec)
+);
+
+-- Unacknowledged Sync Messages
+--
+-- This table lists the un-acknowledged sync messages
+-- 
+CREATE TABLE SyncsOutstanding (
+    recipient     INTEGER NOT NULL REFERENCES SyncRecipients(Key),
+    sync_message  INTEGER NOT NULL REFERENCES SyncsSent(Key),
+    timestamp_sec INTEGER NOT NULL      -- Time this msg was sent
+);
+
+-- Syncs Sent table
+--
+-- This table records all sync messages made.
+-- Joined with the SyncAcks table, it is possible to see
+-- which sync recipients have not acknowledged specific events
+CREATE TABLE SyncsSent (
+    Key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  -- row index
+    first_seq INTEGER REFERENCES Events(seq), --Seq of the first event in this range
+    last_seq INTEGER REFERENCES Events(seq), --Seq of the last event in this range
+    is_datapoint   BOOLEAN NOT NULL, -- True if datapoint sync; false if metadata
+    UNIQUE (first_seq,last_seq,is_datapoint)
+);

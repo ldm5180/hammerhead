@@ -100,7 +100,7 @@ asn_sources.am: Makefile.am.sample
 endif
 
 rebuild-asn1: asn1-stamp
-asn1-stamp: $(ASN_SOURCE) asn_sources.am 
+asn1-stamp: $(ASN_SOURCE)
 	asn1c -Werror -fnative-types -fskeletons-copy -pdu=auto -gen-PER -fcompound-names $(ASN_SOURCE)
 	patch --quiet -p1 < local-patch
 	touch $@

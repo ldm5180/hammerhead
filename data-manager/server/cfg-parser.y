@@ -133,6 +133,20 @@ set_unknown     :       SET_UNKNOWN ASSIGN STRINGVAL {
 // NOTE: This method is not thread safe, as it uses static memory
 // (Blame yacc/lex)
 //
+void sync_config_init_default(sync_sender_config_t * cfg) {
+
+    memset(cfg, 0, sizeof(sync_sender_config_t));
+    cfg->remote_port = BDM_SYNC_PORT;
+    cfg->bundle_lifetime = BDM_BUNDLE_LIFETIME;
+    cfg->sync_mtu = -1;
+
+    if(strlen(cfg->resource_name_pattern) == 0){
+        strncpy(cfg->resource_name_pattern, "*.*.*:*", 
+            sizeof(cfg->resource_name_pattern));
+    }
+
+}
+
 sync_sender_config_t * read_config_file(const char * fname) {
 
     yyin = fopen(fname, "r");
@@ -146,14 +160,7 @@ sync_sender_config_t * read_config_file(const char * fname) {
 
     if(cfg){
         // Set default config values first
-        cfg->remote_port = BDM_SYNC_PORT;
-        cfg->bundle_lifetime = BDM_BUNDLE_LIFETIME;
-        cfg->sync_mtu = -1;
-
-        if(strlen(cfg->resource_name_pattern) == 0){
-            strncpy(cfg->resource_name_pattern, "*.*.*:*", 
-                sizeof(cfg->resource_name_pattern));
-        }
+	sync_config_init_default(cfg);
 
         // Set static bdmcfg used by parser and parse file
         bdmcfg = cfg;

@@ -60,9 +60,6 @@ int db_add_bdm(sqlite3 *db, const char * bdm_id);
 
 
 
-int db_get_last_sync_seq(sqlite3 *db, char * bdm_id);
-void db_set_last_sync_seq(sqlite3 *db, char * bdm_id, int last_sync);
-
 
 
 typedef enum {
@@ -236,6 +233,63 @@ int db_insert_event(
     sqlite_int64 data_row,
     sqlite_int64 *rowid);
 
+int db_sync_sender_setup(sync_sender_config_t * sync_config);
+
+extern sqlite_int64 db_record_sync(sync_sender_config_t * sync_config, int firstSeq, int lastSeq, int isDatapoint);
+
+extern sqlite_int64 db_insert_sync_sent(sqlite3 *db, int firstSeq, int lastSeq, int isDatapoint);
+extern sqlite_int64 db_get_sync_sent(sqlite3 *db, int firstSeq, int lastSeq, int isDatapoint);
+extern int db_record_sync_ack(
+        sqlite3 *db,
+        sqlite_int64 channid,
+        int firstSeq,
+        int lastSeq,
+        int isDatapoint);
+
+
+
+
+/*
+ * There are a lot of statements
+ *
+ * Put them into this array to more easily manage them
+ */
+enum prepared_stmt_idx {
+    INSERT_EVENT_STMT = 0,
+    INSERT_BDM_STMT,
+    INSERT_HAB_STMT,
+    INSERT_NODE_STMT,
+    INSERT_RESOURCE_STMT,
+    INSERT_DATAPOINT_SYNC_STMT,
+
+    ROWFOR_BDM_STMT,
+    ROWFOR_HAB_STMT,
+    ROWFOR_NODE_STMT,
+    ROWFOR_DATAPOINT_STMT,
+    ROWFOR_EVENT_STMT,
+
+    GET_LAST_SYNC_BDM_STMT,
+    SET_LAST_SYNC_BDM_STMT,
+    SET_NEXT_ENTRY_SEQ_STMT,
+    GET_SYNC_RECIPIENT_STMT,
+    INSERT_SYNC_RECIPIENT_STMT,
+
+    GET_SYNC_SENT_STMT,
+    INSERT_SYNC_SENT_STMT,
+    INSERT_SYNC_OUTSTANDING_STMT,
+    DELETE_OUTSTANDING_SYNC_STMT,
+
+
+    GET_SYNC_AFFECTED_DATAPOINTS,
+    SAVE_DANGLING_DATAPOINTS,
+    CLEAN_DANGLING_STMT,
+
+
+    NUM_PREPARED_STMTS
+};
+
+// Internal db files should add:
+// extern sqlite3_stmt * all_stmts[NUM_PREPARED_STMTS];
 
 #endif /* BIONET_DATA_MANAGER_DB_H */
 

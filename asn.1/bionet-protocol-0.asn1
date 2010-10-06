@@ -356,17 +356,18 @@ BEGIN
 
     -- BDM Sync Message
     -- this contains either a metadata message or a datapoints message
-    BDM-Sync-Message ::= CHOICE {
+    BDM-Sync-Data ::= CHOICE {
         metadataMessage      BDM-Sync-Metadata-Message,
-        datapointsMessage    BDM-Sync-Datapoints-Message
+        datapointsMessage    BDM-Sync-Datapoints-Message,
+	ackMetadata          INTEGER,
+	ackDatapoints        INTEGER
     }
 
-    -- BDM Sync Ack
-    -- this contains the TCP equivelent of the BP Reception report signal
-    BDM-Sync-Ack ::= ENUMERATED {
-        error(-1),
-        datapointAck,
-        metadataAck
+    BDM-Sync-Message ::= SEQUENCE {
+        data         BDM-Sync-Data,
+	syncchannel  INTEGER, -- A Sender-specific channel ID
+        firstSeq     INTEGER,
+        lastSeq      INTEGER
     }
 
 END

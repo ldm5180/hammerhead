@@ -21,11 +21,30 @@
 
 #include "bps/bps_socket.h"
 
+int send_ack_bundle(int bpfd, BDM_Sync_Message_t * sync_msg) {
 
-BDM_Sync_Message_t * handle_sync_msg(int bundle_fd)
+    bionet_asn_buffer_t buf;
+
+    if ( bdm_gen_sync_msg_ack_asnbuf(sync_msg, &buf) ) {
+        return -1;
+    }
+
+    ssize_t bytes = bps_send(bpfd, buf.buf, buf.size, 0);
+
+    if(bytes != buf.size) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+            "Failed to send sync message ACK: %s", strerror(errno));
+        return -1;
+    }
+
+    return 0;
+}
+
+BDM_Sync_Message_t * handle_sync_bundle(int bundle_fd)
 {
     int bytes_to_read;
     int bytes_read;
+    int r;
     asn_dec_rval_t rval = {0};
     BDM_Sync_Message_t * sync_message = NULL;
 
@@ -68,7 +87,7 @@ BDM_Sync_Message_t * handle_sync_msg(int bundle_fd)
                           buffer, 
                           buffer_index);
         switch ( rval.code ) {
-            case RC_OK: 
+            case RC_OK:
             {
                 char buf[4];
                 if( 0 != bps_recv(bundle_fd, buf, sizeof(buf), 0)) {
@@ -76,27 +95,15 @@ BDM_Sync_Message_t * handle_sync_msg(int bundle_fd)
                           "sync_receive_ion(): More data present in bundle after ASN.1 message");
                     goto fail;
                 }
-                if (sync_message->present 
-                    == BDM_Sync_Message_PR_metadataMessage) 
-                {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-                          "sync_receive_ion(): receive Sync Metadata Message");
-                    handle_sync_metadata_message(&sync_message->choice.metadataMessage);
 
-                    goto done;
-                } else if (sync_message->present 
-                    == BDM_Sync_Message_PR_datapointsMessage) 
-                {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-                          "sync_receive_ion(): receive Sync Datapoints Message");
-                    handle_sync_datapoints_message(&sync_message->choice.datapointsMessage);
-
-                    goto done;
-                } else {
-                    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-                          "sync_receive_ion(): unknown Sync Message choice");
+                r = handle_sync_msg(sync_message);
+                if ( r ) {
+                    goto fail;
                 }
-                goto fail;
+                if(!sync_message_is_ack(sync_message)){
+                    send_ack_bundle(bundle_fd, sync_message);
+                }
+                goto done;
             }
 
             case RC_WMORE:
