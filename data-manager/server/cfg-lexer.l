@@ -25,6 +25,7 @@ start_time             { return SET_START; }
 stop_time              { return SET_STOP; }
 resource_name_pattern  { return SET_RES; }
 frequency              { return SET_FREQ; }
+sync_acks              { return SET_SYNC_ACKS; }
 sync_recipient         { return SET_RECPT; }
 sync_port              { return SET_PORT; }
 bundle_lifetime        { return SET_BUNDLE_LIFETIME; }
@@ -88,6 +89,16 @@ ion                    { return METH_ION; }
 [+-]?[0-9]{1,10} {
     yylval.intval = strtol(yytext, NULL, 10);
     return INTVAL;
+}
+
+[Tt]rue|[Yy]es|1 {
+    yylval.boolval = 1;
+    return BOOLVAL;
+}
+
+[Ff]alse|[Nn]|0 {
+    yylval.boolval = 0;
+    return BOOLVAL;
 }
 
 [ \t]*=[ \t]*                   { return ASSIGN; }

@@ -104,7 +104,7 @@ BDM_Sync_Message_t * handle_sync_bundle(int bundle_fd)
                 if ( r ) {
                     goto fail;
                 }
-                if(!sync_message_is_ack(sync_message)){
+                if(!sync_message_is_ack(sync_message) && sync_message->syncchannel >= 0){
                     send_ack_bundle(bundle_fd, sync_message);
                 }
                 goto done;

@@ -30,6 +30,7 @@ static sync_sender_config_t * bdmcfg;
 %token SET_STOP
 %token SET_RES
 %token SET_FREQ
+%token SET_SYNC_ACKS
 %token SET_RECPT
 %token SET_PORT
 %token SET_BUNDLE_LIFETIME
@@ -39,6 +40,7 @@ static sync_sender_config_t * bdmcfg;
 %token STRINGVAL
 %token TIMEVAL
 %token INTVAL
+%token BOOLVAL
 %token METH_TCP
 %token METH_ION
 
@@ -48,6 +50,7 @@ static sync_sender_config_t * bdmcfg;
     int intval;
     char *stringval;
     struct timeval timeval;
+    int boolval;
 }
 
 %%
@@ -64,6 +67,7 @@ opt     :       set_method
         |       set_recpt_port
         |       set_recpt
         |       set_freq
+        |       set_sync_acks
         |       set_bundle_lifetime
         |       set_bundle_mtu
         |       set_unknown
@@ -99,6 +103,10 @@ set_freq        :       SET_FREQ ASSIGN INTVAL {
                             bdmcfg->frequency = $<intval>3;
                         }
 
+set_sync_acks   :       SET_SYNC_ACKS ASSIGN BOOLVAL {
+                            bdmcfg->enable_acks = $<boolval>3;
+                        }
+
 set_recpt_port :        SET_PORT ASSIGN INTVAL {
                             bdmcfg->remote_port = $<intval>3;
                         }
@@ -124,7 +132,6 @@ set_unknown     :       SET_UNKNOWN ASSIGN STRINGVAL {
                                 $<stringval>1);
 			    free($<stringval>3);
                         }
-
 
 %%
 

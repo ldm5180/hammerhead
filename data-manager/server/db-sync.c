@@ -506,8 +506,6 @@ sqlite_int64 db_record_sync(sync_sender_config_t * sync_config, int firstSeq, in
     sqlite3_reset(this_stmt);
     sqlite3_clear_bindings(this_stmt);
 
-    db_update_sync_seq(sync_config, lastSeq, isDatapoint);
-
     return rowid;
 
 }

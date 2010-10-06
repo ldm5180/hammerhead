@@ -744,6 +744,8 @@ int main(int argc, char *argv[]) {
                       "Bad config file '%s': BDM Syncronization over DTN was disabled at compile time.", *pval);
                 return (1);
 #endif
+            } else {
+                sync_config->enable_acks = 0; // TCP Sends acks over the same connection, so don't bother recording to database
             }
             sync_config_list = g_slist_append(sync_config_list, sync_config);
 

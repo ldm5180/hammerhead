@@ -30,19 +30,22 @@ def dp_callback(this_mon, datapoint):
     elif (resource_name == this_mon.recvd_acks_resource):
         this_mon.stats['recvd_acks'] = int(val_str)
 
-    if ( this_mon.stats['recorded_events'] > 0 \
-        and this_mon.stats['recvd_acks'] > 0 \
-        and this_mon.stats['recorded_events'] == this_mon.stats['sync_received_events'] \
-        and this_mon.stats['recvd_acks'] == this_mon.stats['sent_acks'] \
-        and this_mon.stats['recvd_acks'] == this_mon.stats['sent_syncs'] \
-        and this_mon.stats['recorded_events'] == this_mon.stats['syncd_events']):
-        this_mon.notifyComplete(True)
+    if this_mon.stats['recorded_events'] > 0 \
+     and this_mon.stats['sent_syncs'] > 0 \
+     and this_mon.stats['recorded_events'] == this_mon.stats['sync_received_events'] \
+     and this_mon.stats['recorded_events'] == this_mon.stats['syncd_events']:
+
+        if this_mon.acks == False or \
+         (this_mon.stats['recvd_acks'] == this_mon.stats['sent_acks'] \
+         and this_mon.stats['recvd_acks'] == this_mon.stats['sent_syncs'] ):
+
+            this_mon.notifyComplete(True)
 
 
 
 class SyncMonitor(basic.LineReceiver):
 
-    def __init__(self, bdm_id_send, bdm_id_recv, timeout=60):
+    def __init__(self, bdm_id_send, bdm_id_recv, timeout=60, acks=False):
         self.waiting = True;
 
         tc = Client()
@@ -51,6 +54,7 @@ class SyncMonitor(basic.LineReceiver):
 
 
         self.timeout = timeout
+        self.acks = acks
 
         this_mon = self
 
@@ -128,7 +132,7 @@ def __doReport(stats):
     print "  Recorded Events:      %(recorded_events)d" % stats
     print "  Syncd Events:         %(syncd_events)d" % stats
     print "  Sync Received Events: %(sync_received_events)d" % stats
-    print "  Sync Acks Sent:       %(sent_syncs)d" % stats
+    print "  Sync Msgs Sent:       %(sent_syncs)d" % stats
     print "  Sync Acks Received:   %(recvd_acks)d" % stats
     print "  Sync Acks Sent:       %(sent_acks)d" % stats
     
@@ -159,10 +163,16 @@ Wait for sync to be complete. Exits success if complete, or error if timeout"""
         default=120,
         help="Timeout in seconds to wait for sync to complete")
 
+    parser.add_option("--with-acks",
+        dest="withacks",
+        action="store_true",
+        default=False,
+        help="Sync will have acks")
 
     (opts,args) = parser.parse_args()
 
-    m = SyncMonitor(opts.sendid, opts.recvid, timeout=opts.timeout)
+    m = SyncMonitor(opts.sendid, opts.recvid, timeout=opts.timeout, acks=opts.withacks)
+    
 
     
     d = m.getStatusDeferred()

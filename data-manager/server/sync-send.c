@@ -117,7 +117,13 @@ static int sync_send_metadata(
     md_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_metadata_to_asn_setup(bdm_list, config->sync_mtu, config->db_key, from_seq, to_seq, &make_message_state, &iter);
+    sqlite_int64 ack_key;
+    if(config->enable_acks) {
+        ack_key = config->db_key;
+    } else {
+        ack_key = -1;
+    }
+    bdm_sync_metadata_to_asn_setup(bdm_list, config->sync_mtu, ack_key, from_seq, to_seq, &make_message_state, &iter);
 
     while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
     {
@@ -164,7 +170,12 @@ static int sync_send_metadata(
 
             num_syncs_sent++;
 
-            db_record_sync(config, from_seq, to_seq, 0);
+            if(config->enable_acks) {
+                db_record_sync(config, from_seq, to_seq, 0);
+            }
+
+            db_update_sync_seq(config, to_seq, 0);
+
         } else {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
                   "    Sync metadata FAILED");
@@ -238,7 +249,13 @@ static int sync_send_datapoints(
     dp_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_datapoints_to_asn_setup(bdm_list, config->sync_mtu, config->db_key, from_seq, to_seq, &make_message_state, &iter);
+    sqlite_int64 ack_key;
+    if(config->enable_acks) {
+        ack_key = config->db_key;
+    } else {
+        ack_key = -1;
+    }
+    bdm_sync_datapoints_to_asn_setup(bdm_list, config->sync_mtu, ack_key, from_seq, to_seq, &make_message_state, &iter);
 
     while((sync_message = bdm_sync_datapoints_to_asn(&iter, &make_message_state)))
     {
@@ -284,7 +301,12 @@ static int sync_send_datapoints(
             goto cleanup;
         }
         num_syncs_sent++;
-        db_record_sync(config, from_seq, to_seq, 1);
+
+        if(config->enable_acks) {
+            db_record_sync(config, from_seq, to_seq, 1);
+        }
+
+        db_update_sync_seq(config, to_seq, 1);
     }
     bdm_list_free(bdm_list);
 
@@ -499,17 +521,11 @@ static int read_ack_tcp(sync_sender_config_t *config) {
             int rc = -1;
             switch(sync_msg.data.present) {
                 case BDM_Sync_Data_PR_ackMetadata:
-                    rc = handle_sync_metadata_ack_message(
-                            sync_msg.data.choice.ackMetadata,
-                            config->db_key,
-                            sync_msg.firstSeq, sync_msg.lastSeq);
+                    rc = 0;
                     break;
 
                 case BDM_Sync_Data_PR_ackDatapoints:
-                    rc = handle_sync_datapoints_ack_message(
-                            sync_msg.data.choice.ackDatapoints,
-                            config->db_key,
-                            sync_msg.firstSeq, sync_msg.lastSeq);
+                    rc = 0;
                     break;
 
                 default:

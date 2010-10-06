@@ -365,7 +365,7 @@ BEGIN
 
     BDM-Sync-Message ::= SEQUENCE {
         data         BDM-Sync-Data,
-	syncchannel  INTEGER, -- A Sender-specific channel ID
+	syncchannel  INTEGER, -- A Sender-specific channel ID. Negative if none
         firstSeq     INTEGER,
         lastSeq      INTEGER
     }

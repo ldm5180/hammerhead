@@ -160,6 +160,11 @@ else
     echo "Sync'd BDM output is identical to original, yay"
 fi
 
+if ! check_db_sync_acks orig-bdm.db; then
+    echo "ERROR: Some syncs still unacknowledged"
+    RETVAL=1
+fi
+
 # see what we got
 bpstats
 

@@ -110,7 +110,7 @@ echo "Waiting for all data to sync"
 time_watch 60 grep ": lost hab: random-hab.$UNIQUE"  sync-send.log || test_error "Never saw hab go away"
 sleep 5 # Wait at leat one sync-send interval
 
-$ROOT/test/pylib/SysTest/BdmSyncTest/sync_monitor.py --timeout=120 --send-id="sync-send-$UNIQUE" --recv-id="sync-recv-$UNIQUE" || test_error "Data hasn't sync'd completely"
+$ROOT/test/pylib/SysTest/BdmSyncTest/sync_monitor.py --timeout=120 --send-id="sync-send-$UNIQUE" --recv-id="sync-recv-$UNIQUE" --with-acks || test_error "Data hasn't sync'd completely"
 
 $ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -p 11111 -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "random-hab.$UNIQUE.*:*" >| out.bdm-orig
 echo "killing the ION sync sender BDM"

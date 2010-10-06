@@ -100,6 +100,7 @@ typedef struct {
     int bundle_lifetime; // Sync bundles have this rfc5050 lifetime (seconds)
     int sync_mtu; // Sync messages have this MTU. <= 0 means no limit
     char * dtn_source_eid;
+    int enable_acks; // If true, record syncs and acks to database, and request acks from recipient
 
     sqlite_int64 db_key; // The db row for this sync recipient
 
