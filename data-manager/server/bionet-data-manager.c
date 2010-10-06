@@ -51,13 +51,16 @@ static int bdm_port = BDM_PORT;
 static int enable_tcp_sync_receiver = 0;
 
 static int enable_dtn_sync_receiver = 0;
-static int enable_dtn_sync_acks = 0;
 static int ion_key = 0;
 
 static gchar ** sync_cfg_file_list = NULL;
 static gchar ** filter_patterns = NULL;
 
 static gchar ** unparsed_args;
+
+#if ENABLE_ION
+static int enable_dtn_sync_acks = 0;
+#endif
 
 static gboolean _opt_version(const char * optname, const char * optarg, void* data, GError ** error) {
     print_bionet_version(stdout);

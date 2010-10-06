@@ -7,7 +7,7 @@ DST=$2
 
 # Parse the schema through sqlite3 to verify syntax, and strip comments
 # Then Convert it to a const char * in a c file
-ERR=`mktemp`
+ERR=`mktemp sql2c-tmp.XXXXXXXX`
 echo -e ".read $SRC\n.dump" | \
     sqlite3 ':memory:' > $DST.tmp 2>$ERR
 if [ "$?" != "0" ]; then
