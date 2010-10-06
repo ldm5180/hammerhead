@@ -117,7 +117,7 @@ static int sync_send_metadata(
     md_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_metadata_to_asn_setup(bdm_list, config->sync_mtu, config->db_key, &make_message_state, &iter);
+    bdm_sync_metadata_to_asn_setup(bdm_list, config->sync_mtu, config->db_key, from_seq, to_seq, &make_message_state, &iter);
 
     while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
     {
@@ -125,9 +125,6 @@ static int sync_send_metadata(
         if ( 0 == num_events ) {
             continue;
         }
-
-        sync_message->firstSeq = from_seq;
-        sync_message->lastSeq = to_seq;
 
         if (sync_init_connection(config)) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
@@ -241,7 +238,7 @@ static int sync_send_datapoints(
     dp_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_datapoints_to_asn_setup(bdm_list, config->sync_mtu, config->db_key, &make_message_state, &iter);
+    bdm_sync_datapoints_to_asn_setup(bdm_list, config->sync_mtu, config->db_key, from_seq, to_seq, &make_message_state, &iter);
 
     while((sync_message = bdm_sync_datapoints_to_asn(&iter, &make_message_state)))
     {
@@ -250,9 +247,6 @@ static int sync_send_datapoints(
         if( 0 == num_datapoints ) {
             continue;
         }
-
-        sync_message->firstSeq = from_seq;
-        sync_message->lastSeq = to_seq;
 
         if (sync_init_connection(config)) {
             g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
@@ -338,7 +332,8 @@ static int write_data_to_ion(const void *buffer, size_t size, void * config_void
 
     if(config->sync_mtu > 0 && config->buf_len + config->bytes_sent + size > config->sync_mtu) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-            "Bundle would exceed MTU of %d", config->sync_mtu);
+            "Bundle would exceed MTU of %d (%zd+%zd)", 
+            config->sync_mtu, config->buf_len + config->bytes_sent, size);
         return -1;
     }
 

@@ -217,12 +217,16 @@ void bdm_sync_metadata_to_asn_setup(
         GPtrArray * bdm_list,
         ssize_t mtu,
         sqlite_int64 recipient_key,
+        sqlite_int64 firstSeq,
+        sqlite_int64 lastSeq,
         md_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf)
 {
     memset(state_buf, 0, sizeof(md_iter_state_t));
     state_buf->mtu = mtu; // Subtract the sync_message wrapper size
     state_buf->channid = recipient_key; 
+    state_buf->firstSeq = firstSeq;
+    state_buf->lastSeq = lastSeq;
 
     bdm_iterator_init(bdm_list, 
             md_handle_bdm,
@@ -259,6 +263,8 @@ BDM_Sync_Message_t * bdm_sync_metadata_to_asn(
     }
 
     sync_message->syncchannel = state->channid;
+    sync_message->firstSeq = state->firstSeq;
+    sync_message->lastSeq = state->lastSeq;
     sync_message->data.present = BDM_Sync_Data_PR_metadataMessage;
     message = &sync_message->data.choice.metadataMessage;
 
@@ -487,12 +493,16 @@ void bdm_sync_datapoints_to_asn_setup(
         GPtrArray * bdm_list,
         ssize_t mtu,
         sqlite_int64 recipient_key,
+        sqlite_int64 firstSeq,
+        sqlite_int64 lastSeq,
         dp_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf)
 {
     memset(state_buf, 0, sizeof(dp_iter_state_t));
     state_buf->mtu = mtu; // Subtract the sync_message wrapper size
     state_buf->channid = recipient_key; 
+    state_buf->firstSeq = firstSeq;
+    state_buf->lastSeq = lastSeq;
 
     bdm_iterator_init(bdm_list, 
             dp_handle_bdm,
@@ -530,6 +540,8 @@ BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_i
         return NULL;
     }
 
+    sync_message->firstSeq = state->firstSeq;
+    sync_message->lastSeq = state->lastSeq;
     sync_message->syncchannel = state->channid;
     sync_message->data.present = BDM_Sync_Data_PR_datapointsMessage;
     message = &sync_message->data.choice.datapointsMessage;

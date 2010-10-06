@@ -397,6 +397,8 @@ typedef struct {
     // Other control parameters
     ssize_t mtu;
     sqlite_int64 channid;
+    sqlite_int64 firstSeq;
+    sqlite_int64 lastSeq;
     int done;
 } md_iter_state_t;
 
@@ -404,6 +406,8 @@ void bdm_sync_metadata_to_asn_setup(
         GPtrArray * bdm_list,
         ssize_t mtu,
         sqlite_int64 recipient_key,
+        sqlite_int64 firstSeq,
+        sqlite_int64 lastSeq,
         md_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf);
 
@@ -421,6 +425,8 @@ typedef struct {
     // Other control parameters
     ssize_t mtu;
     sqlite_int64 channid;
+    sqlite_int64 firstSeq;
+    sqlite_int64 lastSeq;
     int done;
 } dp_iter_state_t;
 
@@ -428,6 +434,8 @@ void bdm_sync_datapoints_to_asn_setup(
         GPtrArray * bdm_list,
         ssize_t mtu,
         sqlite_int64 recipient_key,
+        sqlite_int64 firstSeq,
+        sqlite_int64 lastSeq,
         dp_iter_state_t * state_buf,
         bdm_list_iterator_t * iter_buf);
 BDM_Sync_Message_t * bdm_sync_datapoints_to_asn(bdm_list_iterator_t * iter, dp_iter_state_t * state);
