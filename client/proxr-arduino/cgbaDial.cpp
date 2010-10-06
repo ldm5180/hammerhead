@@ -103,13 +103,12 @@ void cgbaDial::command_potentiometer()
 void cgbaDial::set_proxr_resource(bionet_node_t *node)
 {
     proxr_pot_resource = bionet_node_get_resource_by_index(node, potNum);
-/*    test_node = node;
 
     // set the start up values of the dials to reflect the proxr-hab's values
     double content;
     bionet_resource_get_double(proxr_pot_resource, &content, NULL);
     content = content/VOLTAGE_INCREMENT;
-    set_display(int(content));*/
+    set_display(int(content));
 }
 
 // this function is the same as above but associates translator resources
@@ -160,7 +159,6 @@ void cgbaDial::update_display_voltage()
     bionet_resource_get_double(this->proxr_pot_resource, &content, NULL);
     // dividing cooked_voltage by increment gives the dial value
     int dial_value = content/VOLTAGE_INCREMENT;
-    qDebug() << "dial " << potNum << " :::: " << content;
 
     set_display(dial_value);
 }

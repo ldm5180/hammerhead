@@ -95,7 +95,8 @@ void cgbaSim::bionetSetup()
     liveIO->setup();
 
     QString habId;
-
+    
+    // get habID
     bool ok = false;
     habId = QInputDialog::getText(this, tr("Input"), tr("HabID"),
                                  QLineEdit::Normal, tr(""), &ok, Qt::Dialog);
@@ -104,6 +105,7 @@ void cgbaSim::bionetSetup()
         exit(1);
     }
 
+    // register call backs
     connect(liveIO, SIGNAL(newNode(bionet_node_t*, bionet_event_t*, void*)), this, SLOT(use_node_set_resources(bionet_node_t*)));
     connect(liveIO, SIGNAL(datapointUpdate(bionet_datapoint_t*, bionet_event_t*,void*)), this,  SLOT(datapoint_update(bionet_datapoint_t*)));
     connect(liveIO, SIGNAL(lostHab(bionet_hab_t*, bionet_event_t*, void*)), this, SLOT(lostHab()));
@@ -116,7 +118,7 @@ void cgbaSim::bionetSetup()
     //subscribe to proxr
     bionet_subscribe_hab_list_by_name(id);
     bionet_subscribe_node_list_by_name(strcat(id, ".*"));
-    
+    bionet_subscribe_datapoints_by_name(strcat(id, ":*"));
 
     //subscribe to arduino
     QString arduino = "arduino.";
