@@ -143,11 +143,13 @@ START_TEST (test_bdm_sync_asn) {
     md_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_metadata_to_asn_setup(bdm_list, MTU, &make_message_state, &iter);
+    bdm_sync_metadata_to_asn_setup(bdm_list, MTU, 13, &make_message_state, &iter);
 
     BDM_Sync_Message_t * sync_message;
     while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
     {
+        fail_unless(sync_message->syncchannel == 13,
+                "metadata_to_asn didn't set correct channel");
 
 	// Encode as ASN
 	asn_enc_rval_t asn_r;
@@ -172,11 +174,14 @@ START_TEST (test_bdm_sync_asn_restart) {
     md_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_metadata_to_asn_setup(bdm_list, MTU, &make_message_state, &iter);
+    bdm_sync_metadata_to_asn_setup(bdm_list, MTU, 81, &make_message_state, &iter);
 
     BDM_Sync_Message_t * sync_message;
     while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
     {
+
+        fail_unless(sync_message->syncchannel == 81,
+                "metadata_to_asn didn't set correct channel");
 
 	// Encode as ASN
 	asn_enc_rval_t asn_r;

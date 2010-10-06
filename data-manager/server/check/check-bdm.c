@@ -7,6 +7,7 @@ Suite * check_bdm_suite(void) {
 
     // Add test cases
     check_bdm_db_init(s);
+    check_bdm_db_sync(s);
     return s;
 }
 

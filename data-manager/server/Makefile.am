@@ -65,6 +65,7 @@ nobase_sysconf_DATA =           \
 check_check_db_SOURCES = \
     check/check-bdm.c                 \
     check/check-db.c                  \
+    check/check-db-sync.c             \
     db.c                              \
     db-sync.c                         \
     bdm-stats.c                       \
@@ -77,7 +78,7 @@ check_check_db_SOURCES = \
 
 extra_cflags = $(OPENSSL_CFLAGS) $(GLIB_CFLAGS) $(OPENSSL_CFLAGS) $(CFLAGS_BIONET_CAL_SERVER) $(CFLAGS_BIONET_CAL_UTIL) $(CFLAGS_BIONET_CLIENT) $(CFLAGS_BIONET_UTIL) $(CFLAGS_BIONET_ASN1) $(ION_CFLAGS) $(CFLAGS_BIONET_HAB)
 
-check_check_db_CFLAGS = $(extra_cflags) @CHECK_CFLAGS@
+check_check_db_CFLAGS = $(AM_CFLAGS) $(extra_cflags) @CHECK_CFLAGS@
 check_check_db_LDADD =  -lsqlite3 $(LIBS_BIONET_CLIENT) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_CLIENT) $(LIBS_BIONET_CAL_SERVER)  -lpthread -lm $(LIBS_BIONET_CAL_SERVER) $(LIBS_BIONET_HAB) $(LIBS_CAL_MDNSSD_BIP_SHARED)  @CHECK_LIBS@
 
 bionet_data_manager_CFLAGS = $(AM_CFLAGS) $(extra_cflags)
