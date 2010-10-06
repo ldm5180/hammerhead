@@ -21,6 +21,36 @@ uint32_t num_db_commits = 0;
 uint32_t num_bionet_events = 0;
 uint32_t num_sync_sent_events = 0;
 uint32_t num_sync_recv_events = 0;
+uint32_t num_sync_ackd_events = 0;
+
+static int _create_uint32_resource(
+        bionet_node_t * node,
+        const char * res_id,
+        uint32_t val,
+        struct timeval *tv)
+{
+    bionet_resource_t * resource;
+    resource = bionet_resource_new(node, 
+                                   BIONET_RESOURCE_DATA_TYPE_UINT32,
+                                   BIONET_RESOURCE_FLAVOR_SENSOR,
+                                   res_id);
+    if (NULL == resource) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize %s", res_id);
+        return -1;
+    }
+
+    if (bionet_node_add_resource(node, resource)) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+              "Failed to add %s resource to Statistics node", res_id);
+        return -1;
+    }
+
+    if (bionet_resource_set_uint32(resource, val, tv)) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set %s resource value", res_id);
+    }
+
+    return 0;
+}
 
 bionet_hab_t * start_stat_hab(const char * bdm_id, int *pHab_fd) {
 	bionet_hab_t * bdm_hab = bionet_hab_new("Bionet-Data-Manager", bdm_id);
@@ -71,44 +101,18 @@ bionet_hab_t * start_stat_hab(const char * bdm_id, int *pHab_fd) {
 
 
 	/* DTN Datapoints */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT32,
-				       BIONET_RESOURCE_FLAVOR_SENSOR,
-				       "Number-of-Datapoints-over-DTN-Recorded");
-	if (NULL == resource) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize Num DTN Datapoints resource.");
-	    return NULL;
-	}
-
-	if (bionet_node_add_resource(node, resource)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "Failed to add Num DTN Datapoints resource to Statistics node");
-	    return NULL;
-	}
-
-	if (bionet_resource_set_uint32(resource, num_sync_datapoints, &tv)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Num DTN Datapoints resource value");
+        if ( _create_uint32_resource(node, 
+                    "Number-of-Datapoints-over-DTN-Recorded", num_sync_datapoints, &tv))
+        {
+            return NULL;
 	}
 
 
 	/* Bionet Datapoints */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT32,
-				       BIONET_RESOURCE_FLAVOR_SENSOR,
-				       "Number-of-Local-Datapoints-Recorded");
-	if (NULL == resource) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize Num Local Datapoints resource.");
-	    return NULL;
-	}
-
-	if (bionet_node_add_resource(node, resource)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "Failed to add Num Local Datapoints resource to Statistics node");
-	    return NULL;
-	}
-
-	if (bionet_resource_set_uint32(resource, num_bionet_datapoints, &tv)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Num Local Datapoints resource value");
+        if ( _create_uint32_resource(node, 
+                    "Number-of-Local-Datapoints-Recorded", num_bionet_datapoints, &tv))
+        {
+            return NULL;
 	}
 
 	/* DTN Datapoints Rate */
@@ -191,84 +195,34 @@ bionet_hab_t * start_stat_hab(const char * bdm_id, int *pHab_fd) {
 	}
 
         /* DB Commit */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT32,
-				       BIONET_RESOURCE_FLAVOR_SENSOR,
-				       "Number-of-DB-Commits");
-	if (NULL == resource) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize Num DB Commits resource.");
-	    return NULL;
-	}
-
-	if (bionet_node_add_resource(node, resource)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "Failed to add Num Local Datapoints resource to Statistics node");
-	    return NULL;
-	}
-
-	if (bionet_resource_set_uint32(resource, num_bionet_datapoints, &tv)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Num DB Commits resource value");
+        if ( _create_uint32_resource(node, 
+                    "Number-of-DB-Commits", num_bionet_datapoints, &tv))
+        {
+            return NULL;
 	}
 
 	/* Sync-Receive Events */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT32,
-				       BIONET_RESOURCE_FLAVOR_SENSOR,
-				       "Sync-Received-Events");
-	if (NULL == resource) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize Sync-Received-Events");
-	    return NULL;
-	}
-
-	if (bionet_node_add_resource(node, resource)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "Failed to add Sync-Received-Events resource to Statistics node");
-	    return NULL;
-	}
-
-	if (bionet_resource_set_uint32(resource, num_sync_recv_events, &tv)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Sync-Received-Events resource value");
+        if ( _create_uint32_resource(node, 
+                    "Sync-Received-Events", num_sync_recv_events, &tv))
+        {
+            return NULL;
 	}
 
 	/* Sync-Send Events */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT32,
-				       BIONET_RESOURCE_FLAVOR_SENSOR,
-				       "Sync-Sent-Events");
-	if (NULL == resource) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize Sync-Sent-Events");
-	    return NULL;
-	}
-
-	if (bionet_node_add_resource(node, resource)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "Failed to add Sync-Sent-Events resource to Statistics node");
-	    return NULL;
-	}
-
-	if (bionet_resource_set_uint32(resource, num_sync_sent_events, &tv)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Sync-Sent-Events resource value");
+        if ( _create_uint32_resource(node, 
+                    "Sync-Sent-Events", num_sync_sent_events, &tv))
+        {
+            return NULL;
 	}
 
 
-	/* Bionset Events */
-	resource = bionet_resource_new(node, 
-				       BIONET_RESOURCE_DATA_TYPE_UINT32,
-				       BIONET_RESOURCE_FLAVOR_SENSOR,
-				       "Recorded-Bionet-Events");
-	if (NULL == resource) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "Failed to initialize Recorded-Bionet-Events");
-	    return NULL;
 	}
 
-	if (bionet_node_add_resource(node, resource)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-		  "Failed to add Recorded-Bionet-Events resource to Statistics node");
-	    return NULL;
-	}
-
-	if (bionet_resource_set_uint32(resource, num_bionet_events, &tv)) {
-	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Failed to set Recorded-Bionet-Events resource value");
+	/* Bionet Events */
+        if ( _create_uint32_resource(node, 
+                    "Recorded-Bionet-Events", num_bionet_events, &tv))
+        {
+            return NULL;
 	}
 
 
