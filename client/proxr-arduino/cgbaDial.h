@@ -48,6 +48,7 @@ public slots:
     void update_display_voltage();
     void update_display_cooked();
     void update_display_color(int8_t state);
+    QString get_current_dv();
 
 private:
     Dial *dial;
@@ -56,12 +57,15 @@ private:
     QVBoxLayout *dialLayout;
     QLineEdit *dialDisplay;
 
+    bionet_node_t *test_node;
+
     double voltage;
     double cooked_voltage;
     double max_range;
     double min_range;
     double increment;
     int potNum;
+    int adc_state;
     bionet_resource_t *proxr_pot_resource;
     bionet_resource_t *translator_pot_resource;
 };

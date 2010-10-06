@@ -8,6 +8,7 @@ cgbaDial::cgbaDial(QString label, int pot, QWidget *parent)
     :QWidget(parent)
 {
     proxr_pot_resource = NULL;
+    translator_pot_resource = NULL;
     potNum = pot;
     dialToolTip = default_settings->dial_names[potNum];
 
@@ -102,12 +103,13 @@ void cgbaDial::command_potentiometer()
 void cgbaDial::set_proxr_resource(bionet_node_t *node)
 {
     proxr_pot_resource = bionet_node_get_resource_by_index(node, potNum);
+/*    test_node = node;
 
     // set the start up values of the dials to reflect the proxr-hab's values
     double content;
     bionet_resource_get_double(proxr_pot_resource, &content, NULL);
     content = content/VOLTAGE_INCREMENT;
-    set_display(int(content));
+    set_display(int(content));*/
 }
 
 // this function is the same as above but associates translator resources
@@ -156,9 +158,10 @@ void cgbaDial::update_display_voltage()
 {
     double content;
     bionet_resource_get_double(this->proxr_pot_resource, &content, NULL);
-    qDebug() << "proxr resource " << potNum << " says " << content;
     // dividing cooked_voltage by increment gives the dial value
     int dial_value = content/VOLTAGE_INCREMENT;
+    qDebug() << "dial " << potNum << " :::: " << content;
+
     set_display(dial_value);
 }
 
@@ -185,32 +188,47 @@ void cgbaDial::update_display_color(int8_t state)
 {
     // get palette
     QPalette pal = dialDisplay->palette();
-    QString s;
+    QString s = get_current_dv();
 
     // depending on the state color differently
     switch (state)
     {
         case SM_ZERO:
+            // set color
             pal.setColor(QPalette::Base, Qt::gray);
-           s = dialDisplay->getText();
+            // append id
+            s += "   SM";
+            dialDisplay->setText(s);
             break;
         case LL:    
             pal.setColor(QPalette::Base, Qt::red);
+            s += "   HH";  
+            dialDisplay->setText(s);
             break;
         case LO: 
             pal.setColor(QPalette::Base, Qt::yellow);
+            s += "   HI";
+            dialDisplay->setText(s);
             break;
         case GREEN: 
+            // green has no ID
             pal.setColor(QPalette::Base, Qt::green);
+            dialDisplay->setText(s);
             break;
         case HI: 
             pal.setColor(QPalette::Base, Qt::yellow);
+            s += "   LO";
+            dialDisplay->setText(s);
             break;
         case HH: 
             pal.setColor(QPalette::Base, Qt::red);
+            s += "   LL";
+            dialDisplay->setText(s);
             break;
         case SM_FIVE: 
             pal.setColor(QPalette::Base, Qt::gray);
+            s += "   SM";
+            dialDisplay->setText(s);
             break;
         default:
             return;
@@ -218,6 +236,21 @@ void cgbaDial::update_display_color(int8_t state)
 
     // set the palette
     dialDisplay->setPalette(pal);
+}
+
+//returns the value to be displayed based on mode
+QString cgbaDial::get_current_dv()
+{
+    QString s;
+
+    if(OFF == cookedMode)
+    {
+        return s.setNum(this->voltage, 'f', 3);
+    }
+    else if(ON == cookedMode)
+    {
+        return s.setNum(this->cooked_voltage, 'f', 3);
+    }
 }
 
 cgbaDial::~cgbaDial()

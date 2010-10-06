@@ -237,7 +237,7 @@ void cgbaSim::datapoint_update(bionet_datapoint_t *data)
             {
                 // get new value
                 bionet_resource_get_int8(resource, &int8_content, NULL);
-                // update display color with new value
+                // update color based on state
                 dial[i]->update_display_color(int8_content);
                 return;
             }
