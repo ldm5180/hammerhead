@@ -13,6 +13,8 @@
 #include "bionet-asn.h"
 #include "bionet-data-manager.h"
 
+#include "bdm-stats.h"
+
 static int write_data_to_fd(const void *buffer, size_t size, void * fd_void) {
     int fd = *(int*)fd_void;
     int r;
@@ -43,6 +45,8 @@ int send_ack_tcp(BDM_Sync_Message_t * sync_msg, int fd) {
             "Failed to send sync message ACK: %s", strerror(errno));
         return -1;
     }
+
+    num_sync_acks_sent++;
 
     return 0;
 }

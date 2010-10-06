@@ -21,6 +21,8 @@
 
 #include "bps/bps_socket.h"
 
+#include "bdm-stats.h"
+
 int send_ack_bundle(int bpfd, BDM_Sync_Message_t * sync_msg) {
 
     bionet_asn_buffer_t buf;
@@ -36,6 +38,8 @@ int send_ack_bundle(int bpfd, BDM_Sync_Message_t * sync_msg) {
             "Failed to send sync message ACK: %s", strerror(errno));
         return -1;
     }
+
+    num_sync_acks_sent++;
 
     return 0;
 }

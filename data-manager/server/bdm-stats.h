@@ -33,4 +33,9 @@ extern uint32_t num_bionet_events;
 extern uint32_t num_sync_sent_events;
 extern uint32_t num_sync_recv_events;
 
+extern uint32_t num_syncs_sent;
+extern uint32_t num_syncs_recvd;
+extern uint32_t num_sync_acks_sent;
+extern uint32_t num_sync_acks_recvd;
+
 #endif // BDM_STATS_H

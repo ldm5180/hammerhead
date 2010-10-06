@@ -23,9 +23,18 @@ def dp_callback(this_mon, datapoint):
         this_mon.stats['sync_received_events'] = int(val_str)
     elif (resource_name == this_mon.syncd_resource):
         this_mon.stats['syncd_events'] = int(val_str)
+    elif (resource_name == this_mon.sent_syncs_resource):
+        this_mon.stats['sent_syncs'] = int(val_str)
+    elif (resource_name == this_mon.sent_acks_resource):
+        this_mon.stats['sent_acks'] = int(val_str)
+    elif (resource_name == this_mon.recvd_acks_resource):
+        this_mon.stats['recvd_acks'] = int(val_str)
 
     if ( this_mon.stats['recorded_events'] > 0 \
+        and this_mon.stats['recvd_acks'] > 0 \
         and this_mon.stats['recorded_events'] == this_mon.stats['sync_received_events'] \
+        and this_mon.stats['recvd_acks'] == this_mon.stats['sent_acks'] \
+        and this_mon.stats['recvd_acks'] == this_mon.stats['sent_syncs'] \
         and this_mon.stats['recorded_events'] == this_mon.stats['syncd_events']):
         this_mon.notifyComplete(True)
 
@@ -55,17 +64,26 @@ class SyncMonitor(basic.LineReceiver):
         self.recorded_resource = "Bionet-Data-Manager.%s.Statistics:Recorded-Bionet-Events" % bdm_id_send
         self.syncd_resource = "Bionet-Data-Manager.%s.Statistics:Sync-Sent-Events" % bdm_id_send
         self.sync_received_resource = "Bionet-Data-Manager.%s.Statistics:Sync-Received-Events" % bdm_id_recv
+        self.sent_syncs_resource = "Bionet-Data-Manager.%s.Statistics:Sync-Messages-Sent" % bdm_id_send
+        self.sent_acks_resource = "Bionet-Data-Manager.%s.Statistics:Sync-Acks-Sent" % bdm_id_recv
+        self.recvd_acks_resource = "Bionet-Data-Manager.%s.Statistics:Sync-Acks-Received" % bdm_id_send
 
         self.stats = {
                 'complete': False,
                 'recorded_events': 0,
                 'syncd_events': 0,
                 'sync_received_events': 0,
+                'sent_syncs': 0,
+                'sent_acks': 0,
+                'recvd_acks': 0,
                 }
 
         bionet_subscribe_datapoints_by_name(self.recorded_resource)
         bionet_subscribe_datapoints_by_name(self.syncd_resource)
         bionet_subscribe_datapoints_by_name(self.sync_received_resource)
+        bionet_subscribe_datapoints_by_name(self.sent_syncs_resource)
+        bionet_subscribe_datapoints_by_name(self.sent_acks_resource)
+        bionet_subscribe_datapoints_by_name(self.recvd_acks_resource)
 
 
 
@@ -110,6 +128,9 @@ def __doReport(stats):
     print "  Recorded Events:      %(recorded_events)d" % stats
     print "  Syncd Events:         %(syncd_events)d" % stats
     print "  Sync Received Events: %(sync_received_events)d" % stats
+    print "  Sync Acks Sent:       %(sent_syncs)d" % stats
+    print "  Sync Acks Received:   %(recvd_acks)d" % stats
+    print "  Sync Acks Sent:       %(sent_acks)d" % stats
     
     reactor.stop()
 

@@ -289,6 +289,7 @@ static int sync_send_datapoints(
             bdm_list_free(bdm_list);
             goto cleanup;
         }
+        num_syncs_sent++;
         db_record_sync(config, from_seq, to_seq, 1);
     }
     bdm_list_free(bdm_list);

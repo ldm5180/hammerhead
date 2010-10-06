@@ -18,6 +18,8 @@
 #include "bionet-data-manager.h"
 #include "bdm-db.h"
 
+#include "bdm-stats.h"
+
 int sync_message_is_ack(BDM_Sync_Message_t * sync_message)
 {
     switch(sync_message->data.present) {
@@ -48,6 +50,7 @@ int handle_sync_msg(BDM_Sync_Message_t * sync_message)
             rc = handle_sync_metadata_message(
                     &sync_message->data.choice.metadataMessage,
                     sync_message->syncchannel);
+            num_syncs_recvd++;
 
             break;
         }
@@ -58,7 +61,7 @@ int handle_sync_msg(BDM_Sync_Message_t * sync_message)
             rc = handle_sync_datapoints_message(
                     &sync_message->data.choice.datapointsMessage, 
                     sync_message->syncchannel);
-
+            num_syncs_recvd++;
             break;
         }
 
@@ -107,6 +110,7 @@ int handle_sync_datapoints_ack_message(
     int r;
     r = db_record_sync_ack(main_db, channid, firstSeq, lastSeq, 1);
 
+    num_sync_acks_recvd++;
     return r;
 }
 
@@ -118,6 +122,9 @@ int handle_sync_metadata_ack_message(
 {
     int r;
     r = db_record_sync_ack(main_db, channid, firstSeq, lastSeq, 0);
+
+
+    num_sync_acks_recvd++;
 
     return r;
 }

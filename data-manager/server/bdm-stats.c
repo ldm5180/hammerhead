@@ -21,7 +21,11 @@ uint32_t num_db_commits = 0;
 uint32_t num_bionet_events = 0;
 uint32_t num_sync_sent_events = 0;
 uint32_t num_sync_recv_events = 0;
-uint32_t num_sync_ackd_events = 0;
+
+uint32_t num_syncs_sent = 0;
+uint32_t num_syncs_recvd = 0;
+uint32_t num_sync_acks_sent = 0;
+uint32_t num_sync_acks_recvd = 0;
 
 static int _create_uint32_resource(
         bionet_node_t * node,
@@ -216,6 +220,26 @@ bionet_hab_t * start_stat_hab(const char * bdm_id, int *pHab_fd) {
 	}
 
 
+	/* Sync-Acks */
+        if ( _create_uint32_resource(node, 
+                    "Sync-Acks-Sent", num_sync_acks_sent, &tv))
+        {
+            return NULL;
+	}
+        if ( _create_uint32_resource(node, 
+                    "Sync-Acks-Received", num_sync_acks_recvd, &tv))
+        {
+            return NULL;
+	}
+        if ( _create_uint32_resource(node, 
+                    "Sync-Messages-Sent", num_syncs_sent, &tv))
+        {
+            return NULL;
+	}
+        if ( _create_uint32_resource(node, 
+                    "Sync-Messages-Received", num_syncs_recvd, &tv))
+        {
+            return NULL;
 	}
 
 	/* Bionet Events */
@@ -397,6 +421,18 @@ gboolean update_stat_hab(gpointer usr_data) {
 	return 1;
     }
     if(_update_uint32_res(node, "Sync-Received-Events", num_sync_recv_events, &tv)) {
+	return 1;
+    }
+    if(_update_uint32_res(node, "Sync-Acks-Sent", num_sync_acks_sent, &tv)) {
+	return 1;
+    }
+    if(_update_uint32_res(node, "Sync-Acks-Received", num_sync_acks_recvd, &tv)) {
+	return 1;
+    }
+    if(_update_uint32_res(node, "Sync-Messages-Sent", num_syncs_sent, &tv)) {
+	return 1;
+    }
+    if(_update_uint32_res(node, "Sync-Messages-Received", num_syncs_recvd, &tv)) {
 	return 1;
     }
 
