@@ -143,7 +143,7 @@ START_TEST (test_bdm_sync_asn) {
     md_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_metadata_to_asn_setup(bdm_list, MTU, 13, &make_message_state, &iter);
+    bdm_sync_metadata_to_asn_setup(bdm_list, MTU, 13, 1, 1, &make_message_state, &iter);
 
     BDM_Sync_Message_t * sync_message;
     while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
@@ -174,7 +174,7 @@ START_TEST (test_bdm_sync_asn_restart) {
     md_iter_state_t make_message_state;
     bdm_list_iterator_t iter;
 
-    bdm_sync_metadata_to_asn_setup(bdm_list, MTU, 81, &make_message_state, &iter);
+    bdm_sync_metadata_to_asn_setup(bdm_list, MTU, 81, 1, 1, &make_message_state, &iter);
 
     BDM_Sync_Message_t * sync_message;
     while((sync_message = bdm_sync_metadata_to_asn(&iter, &make_message_state)))
