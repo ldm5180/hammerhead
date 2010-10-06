@@ -59,9 +59,10 @@ logger.addHandler(ch)
 # the Bionet HAB to decide what to do. Either set the value in the 
 # hardware, ignore it, or just simply publish the new value.
 def pycb_set_resource(resource, value):
-    logger.debug("callback: setting " + bionet_resource_get_name(resource) + " to " + bionet_value_to_str(value))
-    bionet_resource_set(resource, value, None)
-    hab_report_datapoints(bionet_resource_get_node(resource))
+    resource.set(value)
+    logger.debug("callback: setting " + resource.name() + " to " + str(resource.datapoint(0).value()))
+    hab = resource.node().hab()
+    hab.reportDatapoints(resource.node())
 
 def process(h):
     # this is where polling of the hardware would happen and then all
@@ -76,7 +77,7 @@ def process(h):
     h.node("process").resource("uptime").set(val)
 
     # publish all the new datapoints
-    HabReportDatapoints(h.node("process"))
+    h.reportDatapoints(h.node("process"))
 
     return
 
@@ -93,10 +94,10 @@ bionet_log_use_default_handler(None)
 hab = Hab("Sample", None)
 
 # register the set resource callback
-pyhab_register_callback_set_resource(pycb_set_resource)
+hab.registerSetResourceCallback(pycb_set_resource)
 
 # connect the HAB to the Bionet network
-hab_fd = HabConnect(hab)
+hab.connect()
 
 
 # connect to your hardware and ensure it is there.
@@ -137,10 +138,10 @@ hab.node("process").resource("update-interval").set(1)
 
 
 # publish the new node to the Bionet network
-HabReportNewNode(hab.node("process"))
+hab.reportNode(hab.node("process"))
 
 # publish all the datapoints to the Bionet network
-HabReportDatapoints(hab.node("process"))
+hab.reportDatapoints(hab.node("process"))
 
 
 
@@ -152,8 +153,8 @@ HabReportDatapoints(hab.node("process"))
 #
 # include any file descriptors for your own hardware if there are any.
 fd_list = []
-if (hab_fd != -1):
-    fd_list.append(hab_fd)
+if (hab.fd != -1):
+    fd_list.append(hab.fd)
 
 interval_res = hab.node("process").resource("update-interval")
 
@@ -169,8 +170,8 @@ while(1):
     # select on the fd list and wait for some seconds.
     (rr, wr, er) = select(fd_list, [], [], remaining)
     for fd in rr:
-        if (fd == hab_fd):
-            HabRead()
+        if (fd == hab.fd):
+            hab.read()
     remainingstr = str(hab.node("process").resource("update-interval").datapoint(0).value())
     if ((time.time() - last) >= float(remainingstr)):
         remaining = float(remainingstr)

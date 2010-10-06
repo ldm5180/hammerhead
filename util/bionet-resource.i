@@ -360,6 +360,46 @@
 	return r;
     }
 
+    int set(Value * content) {
+
+	bionet_datapoint_t * d;
+	bionet_value_t * v;
+	int r;
+
+	Datapoint * datapoint = (Datapoint *)malloc(sizeof(Datapoint));
+	if (NULL == datapoint) {
+	    return 1;
+	}
+
+	Value * value = (Value *)malloc(sizeof(Value));
+	if (NULL == value) {
+	    free(datapoint);
+	    return 1;
+	}
+
+	r = bionet_resource_set($self->this, content->this, NULL); 
+
+	if (0 == r) {
+	    d = bionet_resource_get_datapoint_by_index($self->this, 0);
+	    datapoint->this = d;
+	    bionet_datapoint_set_user_data(d, datapoint);
+	    bionet_datapoint_increment_ref_count(d);
+
+	    v = bionet_datapoint_get_value(d);
+	    value->this = v;
+	    if (NULL == value->this) {
+		g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Resource.set(): No value to set the userdata.");
+	    }
+	    bionet_value_set_user_data(v, value);
+	    bionet_value_increment_ref_count(v);
+	} else {
+	    free(value);
+	    free(datapoint);
+	}
+
+	return r;
+    }
+
     int set(int content) {
 	char newstr[1024];
 	int r;

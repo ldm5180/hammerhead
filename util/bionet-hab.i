@@ -1,3 +1,7 @@
+%inline %{
+
+%}
+
 %extend Hab {
     Hab(const char * type, const char * id) {
 	Hab * hab = (Hab *)malloc(sizeof(Hab));
@@ -12,6 +16,9 @@
 	}
 
 	bionet_hab_set_user_data(hab->this, hab);
+
+	hab->fd = -1;
+	hab->set_resource_callback = NULL;
 
 	return hab;
     }
@@ -28,6 +35,9 @@
 	}
 
 	bionet_hab_set_user_data(hab->this, hab);
+
+	hab->fd = -1;
+	hab->set_resource_callback = NULL;
 
 	return hab;
     }
@@ -103,4 +113,5 @@
 		      void * user_data) {
 	return bionet_hab_add_destructor((bionet_hab_t *)$self->this, destructor, user_data);
     }
+
 }

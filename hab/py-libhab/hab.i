@@ -84,45 +84,91 @@ typedef struct timeval
 	return py_set_resource_callback;
     }
 
-    int HabConnect(Hab * hab) {
-	if (NULL == hab) {
-	    return hab_connect(NULL);
+
+#define SWIG_OORESOURCE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Resource, 1)
+#define SWIG_OOVALUE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Value, 1)
+
+    void pythonoo_set_resource_callback(bionet_resource_t *resource, bionet_value_t *value)
+    {
+	PyObject *arglist;
+	PyObject *result = NULL;
+	
+	bionet_hab_t * h = bionet_resource_get_hab(resource);
+	Hab * hab = bionet_hab_get_user_data(h);
+	
+	Resource * r = (Resource *)bionet_resource_get_user_data(resource);
+	Value * v = (Value *)malloc(sizeof(Value));
+	if (NULL == v) {
+	    g_warning("pythonoo_callback: Failed to allocate Value.");
+	    return;
 	}
-	return hab_connect(hab->this);
+	
+	v->this = value;
+	bionet_value_set_user_data(value, v);
+	
+	arglist = Py_BuildValue("(OO)", SWIG_OORESOURCE_WRAPPER(r), SWIG_OOVALUE_WRAPPER(v));
+	
+	result = PyEval_CallObject(hab->set_resource_callback, arglist);
+	Py_DECREF(arglist);
+	if (result == NULL) {
+	    return;
+	}
+	Py_DECREF(result);
     }
 
-    void HabDisconnect() {
+%}
+
+%extend Hab {
+    int connect() {
+	$self->fd = hab_connect($self->this);
+	return $self->fd;
+    }
+
+    void disconnect() {
 	hab_disconnect();
     }
 
-    int HabReportNewNode(Node * node) {
+    int reportNode(Node * node) {
 	if (NULL == node) {
 	    return hab_report_new_node(NULL);
 	}
 	return hab_report_new_node(node->this);
     }
 
-    int HabReportDatapoints(Node * node) {
+    int reportDatapoints(Node * node) {
 	if (NULL == node) {
 	    return hab_report_datapoints(NULL);
 	}
-	return hab_report_datapoints(node->this);
+	return hab_report_datapoints(node->this);	
     }
-    
-    int HabReportLostNode(Node * node) {
+
+    int reportLostNode(Node * node) {
 	if (NULL == node) {
 	    return hab_report_lost_node(NULL);
 	}
 	return hab_report_lost_node(node->this);
     }
 
-    void HabRead() {
+    void read() {
 	hab_read();
     }
 
-    void HabReadWithTimeout(struct timeval * timeout) {
+    void read(struct timeval * timeout) {
 	hab_read_with_timeout(timeout);
     }
 
-    
-%}
+    PyObject * registerSetResourceCallback(PyObject * cb) {
+	if (!PyCallable_Check(cb)) {
+            PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+            return NULL;
+        }
+        Py_XINCREF(cb);         /* Add a reference to new callback */
+	if (NULL != $self->set_resource_callback)
+	    Py_XDECREF($self->set_resource_callback);  /* Dispose of previous callback */
+        $self->set_resource_callback = cb;       /* Remember new callback */
+
+	hab_register_callback_set_resource(pythonoo_set_resource_callback);
+
+	return $self->set_resource_callback;
+    }
+}
