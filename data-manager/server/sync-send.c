@@ -521,10 +521,12 @@ static int read_ack_tcp(sync_sender_config_t *config) {
             int rc = -1;
             switch(sync_msg.data.present) {
                 case BDM_Sync_Data_PR_ackMetadata:
+                    num_sync_acks_recvd++;
                     rc = 0;
                     break;
 
                 case BDM_Sync_Data_PR_ackDatapoints:
+                    num_sync_acks_recvd++;
                     rc = 0;
                     break;
 
