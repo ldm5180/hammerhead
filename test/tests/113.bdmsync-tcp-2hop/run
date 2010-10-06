@@ -173,6 +173,11 @@ for h in A B; do
     done
 done
 
+if ! check_db_sync_acks orig-bdm.db; then
+    echo "ERROR: Some syncs still unacknowledged"
+    RETVAL=1
+fi
+
 if [ $RETVAL -eq 0 ] ; then
     echo "All outputs checkout. Yeah!"
     ./clean

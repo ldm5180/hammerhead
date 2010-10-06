@@ -78,3 +78,21 @@ test_log() {
 normalize_bdm_client() {
   sort $1 | sed 's/^[^,]*,//' 
 }
+
+check_db_sync_acks() {
+    db="$1"
+    n1=`sqlite3 -list -noheader "$db" 'SELECT count(*) from SyncsOutstanding'`
+    n2=`sqlite3 -list -noheader "$db" 'SELECT count(*) from SyncsSent'`
+
+    if [ "$n1" -ne 0 ]; then
+        echo "There are $n1 outstanding sync messages"
+        return 1;
+    fi
+
+    if [ "$n2" -ne 0 ]; then
+        echo "There are $n2 sync messages outstanding"
+        return 1;
+    fi
+
+    return 0
+}
