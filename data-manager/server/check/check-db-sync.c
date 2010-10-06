@@ -51,7 +51,8 @@ static void setup_with_recipient(void)
 
     check_sync_config.db = db;
     check_sync_config.frequency = 60;
-    check_sync_config.last_entry_end_seq = 3;
+    check_sync_config.last_metadata_sync = 3;
+    check_sync_config.last_datapoint_sync = 3;
     check_sync_config.sync_recipient = strdup("localhost");
 
     // Add check_sync_config the first time
@@ -71,7 +72,8 @@ START_TEST (check_db_sync_recipient)
 
     cfgSet.db = db;
     cfgSet.frequency = 60;
-    cfgSet.last_entry_end_seq = 3;
+    cfgSet.last_metadata_sync = 3;
+    cfgSet.last_datapoint_sync = 3;
     cfgSet.sync_recipient = strdup("localhost");
 
     // Make cfg1 cfg2 duplicates of cgfSet, then change the unique stuff
@@ -80,11 +82,13 @@ START_TEST (check_db_sync_recipient)
 
 
     // cfg 1 is same as cfgSet, but with different state
-    cfg1.last_entry_end_seq = -1;
+    cfg1.last_metadata_sync = -1;
+    cfg1.last_datapoint_sync = -1;
 
 
     // cfg 2 is a different config...
-    cfg2.last_entry_end_seq = 5;
+    cfg2.last_metadata_sync = 5;
+    cfg2.last_datapoint_sync = 5;
     cfg2.sync_recipient = strdup("other_host");
 
 
@@ -96,7 +100,9 @@ START_TEST (check_db_sync_recipient)
     fail_unless(0 == db_sync_sender_setup(&cfg1),
             "db_sync_sender_setup returned error");
 
-    fail_unless(cfg1.last_entry_end_seq == cfgSet.last_entry_end_seq,
+    fail_unless(cfg1.last_metadata_sync == cfgSet.last_metadata_sync,
+            "Didn't load state from db");
+    fail_unless(cfg1.last_datapoint_sync == cfgSet.last_datapoint_sync,
             "Didn't load state from db");
 
 
@@ -104,9 +110,47 @@ START_TEST (check_db_sync_recipient)
     fail_unless(0 == db_sync_sender_setup(&cfg2),
             "db_sync_sender_setup returned error");
 
-    fail_unless(cfg2.last_entry_end_seq == 5,
+    fail_unless(cfg2.last_metadata_sync == 5,
+            "Loaded wrong state from DB; should have added new record");
+    fail_unless(cfg2.last_datapoint_sync == 5,
             "Loaded wrong state from DB; should have added new record");
 
+}
+END_TEST
+
+START_TEST (check_db_sync_last_seq)
+{
+    sync_sender_config_t tmp_cfg; // Used to check database state
+    sync_config_init_default(&tmp_cfg);
+    tmp_cfg.db = db;
+    tmp_cfg.frequency = 60;
+    tmp_cfg.last_metadata_sync = 0;
+    tmp_cfg.last_datapoint_sync = 0;
+    tmp_cfg.sync_recipient = strdup("localhost");
+
+    // Update datapoint only
+    db_update_sync_seq(&check_sync_config, 11, 1);
+
+    // Setup tmp_cfg to see if the last_sync held...
+    fail_unless(0 == db_sync_sender_setup(&tmp_cfg),
+            "db_sync_sender_setup returned error");
+
+    fail_unless(11 == tmp_cfg.last_datapoint_sync,
+            "db_update_sync_seq didn't update the datapoint seq");
+    fail_unless(3 == tmp_cfg.last_metadata_sync,
+            "db_update_sync_seq modified the metadata seq");
+
+    // Update metadata only
+    db_update_sync_seq(&check_sync_config, 99, 0);
+
+    // Setup tmp_cfg to see if the last_sync held...
+    fail_unless(0 == db_sync_sender_setup(&tmp_cfg),
+            "db_sync_sender_setup returned error");
+
+    fail_unless(99 == tmp_cfg.last_metadata_sync,
+            "db_update_sync_seq didn't update the metadata seq");
+    fail_unless(11 == tmp_cfg.last_datapoint_sync,
+            "db_update_sync_seq modified the datapoint seq");
 }
 END_TEST
 
@@ -209,6 +253,7 @@ void check_bdm_db_sync(Suite *s) {
 
     tc = tcase_create ("db-sync");
     tcase_add_checked_fixture(tc, setup_with_recipient, db_sync_teardown);
+    tcase_add_test (tc, check_db_sync_last_seq);
     tcase_add_test (tc, check_db_sync_sent);
     tcase_add_test (tc, check_db_sync_ackd);
     suite_add_tcase(s, tc);

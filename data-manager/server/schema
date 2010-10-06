@@ -166,7 +166,8 @@ CREATE TABLE SyncRecipients (
     -- NOTE: Once a bundle is sent, these values are updated, and the bundle is 
     -- inserted into the 'Sync_*_Bundle_Outstatnding' table, and later removed
     -- once it has been confirmed.
-    last_sync INTEGER NOT NULL REFERENCES Events(seq), --Seq of the last successfully sent event
+    last_md_sync INTEGER NOT NULL REFERENCES Events(seq), --Seq of the last successfully sent event
+    last_dp_sync INTEGER NOT NULL REFERENCES Events(seq), --Seq of the last successfully sent event
     UNIQUE(eid,filter,start_sec,start_usec,end_sec,end_usec)
 );
 

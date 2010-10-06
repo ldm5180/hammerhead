@@ -246,6 +246,8 @@ extern int db_record_sync_ack(
         int lastSeq,
         int isDatapoint);
 
+void db_update_sync_seq(sync_sender_config_t * sync_config, int lastSeq, int isDatapoint);
+
 
 
 
@@ -268,9 +270,8 @@ enum prepared_stmt_idx {
     ROWFOR_DATAPOINT_STMT,
     ROWFOR_EVENT_STMT,
 
-    GET_LAST_SYNC_BDM_STMT,
-    SET_LAST_SYNC_BDM_STMT,
-    SET_NEXT_ENTRY_SEQ_STMT,
+    UPDATE_LAST_MD_SYNC_STMT,
+    UPDATE_LAST_DP_SYNC_STMT,
     GET_SYNC_RECIPIENT_STMT,
     INSERT_SYNC_RECIPIENT_STMT,
 

@@ -26,6 +26,75 @@ extern sqlite3_stmt * all_stmts[NUM_PREPARED_STMTS];
 
 
 
+void db_update_sync_seq(sync_sender_config_t * sync_config, int lastSeq, int isDatapoint) {
+    int r;
+
+    if(all_stmts[UPDATE_LAST_DP_SYNC_STMT]  == NULL) {
+	r = sqlite3_prepare_v2(sync_config->db, 
+	    "UPDATE SyncRecipients"
+            " SET last_dp_sync = ?"
+            " WHERE key = ?",
+	    -1, &all_stmts[UPDATE_LAST_DP_SYNC_STMT] , NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "set-last-sync SQL error: %s", sqlite3_errmsg(sync_config->db));
+	    return;
+	}
+
+    }
+    if(all_stmts[UPDATE_LAST_MD_SYNC_STMT]  == NULL) {
+	r = sqlite3_prepare_v2(sync_config->db, 
+	    "UPDATE SyncRecipients"
+            " SET last_md_sync = ?"
+            " WHERE key = ?",
+	    -1, &all_stmts[UPDATE_LAST_MD_SYNC_STMT] , NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "set-last-sync SQL error: %s", sqlite3_errmsg(sync_config->db));
+	    return;
+	}
+
+    }
+
+    sqlite3_stmt * stmt;
+
+    if(isDatapoint) {
+        stmt = all_stmts[UPDATE_LAST_DP_SYNC_STMT];
+    } else {
+        stmt = all_stmts[UPDATE_LAST_MD_SYNC_STMT];
+    }
+
+    // Bind variables
+    r = sqlite3_bind_int(stmt, 1, lastSeq);
+    if(r != SQLITE_OK){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+            "set-last-sync SQL bind error");
+        return;
+    }
+
+    r = sqlite3_bind_int64(stmt, 2, sync_config->db_key);
+    if(r != SQLITE_OK){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+            "set-last-sync SQL bind error");
+        return;
+    }
+
+    while(SQLITE_BUSY == (r = sqlite3_step(stmt))){
+        g_usleep(20 * 1000);
+    }
+    if (r != SQLITE_DONE) {
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "Error updating last-sync: %s", sqlite3_errmsg(sync_config->db));
+        sqlite3_reset(stmt);
+        return;
+    }
+
+    sqlite3_reset(stmt);
+    sqlite3_clear_bindings(stmt);
+
+}
 
 // bind the columns that make up the SyncRecipients 
 // table's unique contraint
@@ -94,7 +163,7 @@ static sqlite_int64 db_get_sync_recipient(sync_sender_config_t * sync_config) {
 
     if(all_stmts[GET_SYNC_RECIPIENT_STMT]  == NULL) {
 	r = sqlite3_prepare_v2(sync_config->db, 
-	    "SELECT Key, last_sync "
+	    "SELECT Key, last_dp_sync, last_md_sync "
             "FROM SyncRecipients "
             "WHERE eid=? "
             "  AND filter=? "
@@ -128,7 +197,8 @@ static sqlite_int64 db_get_sync_recipient(sync_sender_config_t * sync_config) {
         if(r == SQLITE_ROW) {
             rowid = sqlite3_column_int64(this_stmt, 0); 
             sync_config->db_key = rowid;
-            sync_config->last_entry_end_seq = sqlite3_column_int(this_stmt, 1); 
+            sync_config->last_datapoint_sync = sqlite3_column_int(this_stmt, 1); 
+            sync_config->last_metadata_sync = sqlite3_column_int(this_stmt, 2); 
         } else {
             break;
         }
@@ -152,8 +222,8 @@ static int db_insert_sync_recipient(sync_sender_config_t * sync_config) {
 
     if(all_stmts[INSERT_SYNC_RECIPIENT_STMT]  == NULL) {
 	r = sqlite3_prepare_v2(sync_config->db, 
-	    "INSERT INTO SyncRecipients (eid,filter,start_sec,start_usec,end_sec,end_usec,last_sync) "
-            "VALUES (?,?,?,?,?,?,?) ",
+	    "INSERT INTO SyncRecipients (eid,filter,start_sec,start_usec,end_sec,end_usec,last_dp_sync,last_md_sync) "
+            "VALUES (?,?,?,?,?,?,?,?) ",
 	    -1, &all_stmts[INSERT_SYNC_RECIPIENT_STMT] , NULL);
 
 	if (r != SQLITE_OK) {
@@ -169,7 +239,13 @@ static int db_insert_sync_recipient(sync_sender_config_t * sync_config) {
     if ( r ) return -1;
 
     // Bind last_sync
-    r = sqlite3_bind_int64(this_stmt, param++, sync_config->last_entry_end_seq);
+    r = sqlite3_bind_int64(this_stmt, param++, sync_config->last_datapoint_sync);
+    if(r != SQLITE_OK){
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+            "SyncRecipients SQL bind error");
+        return -1;
+    }
+    r = sqlite3_bind_int64(this_stmt, param++, sync_config->last_metadata_sync);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "SyncRecipients SQL bind error");
@@ -372,7 +448,6 @@ sqlite_int64 db_record_sync(sync_sender_config_t * sync_config, int firstSeq, in
     sqlite_int64 rowid = -1;
     int r;
 
-
     if(all_stmts[INSERT_SYNC_OUTSTANDING_STMT]  == NULL) {
 	r = sqlite3_prepare_v2(sync_config->db, 
 	    "INSERT "
@@ -430,6 +505,8 @@ sqlite_int64 db_record_sync(sync_sender_config_t * sync_config, int firstSeq, in
 
     sqlite3_reset(this_stmt);
     sqlite3_clear_bindings(this_stmt);
+
+    db_update_sync_seq(sync_config, lastSeq, isDatapoint);
 
     return rowid;
 

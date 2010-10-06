@@ -390,7 +390,8 @@ GSource * sync_send_new_gio_source(sync_sender_config_t* cfg, const char * datab
     }
 #endif
 
-    cfg->last_entry_end_seq = -1;
+    cfg->last_metadata_sync = -1;
+    cfg->last_datapoint_sync = -1;
 
 
     if(db_sync_sender_setup(cfg)) {
@@ -412,19 +413,28 @@ static gboolean sync_check(gpointer data) {
 
     curr_seq = db_get_latest_entry_seq(cfg->db);
     
-    if (curr_seq > cfg->last_entry_end_seq) {
-        int start_seq = cfg->last_entry_end_seq + 1;
+    if (curr_seq > cfg->last_metadata_sync) {
+        int start_seq = cfg->last_metadata_sync + 1;
         int r;
 
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Syncing to %s seq [%d,%d]", 
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Syncing Metadata to %s seq [%d,%d]", 
                 cfg->sync_recipient, start_seq, curr_seq);
 	r = sync_send_metadata(cfg, start_seq, curr_seq);
         if ( r ) return TRUE;
+
+        cfg->last_metadata_sync = curr_seq;
+    }
 	
+    if (curr_seq > cfg->last_datapoint_sync) {
+        int start_seq = cfg->last_datapoint_sync + 1;
+        int r;
+
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Syncing Datapoints to %s seq [%d,%d]", 
+                cfg->sync_recipient, start_seq, curr_seq);
 	r = sync_send_datapoints(cfg, start_seq, curr_seq);
         if ( r ) return TRUE;
 
-        cfg->last_entry_end_seq = curr_seq;
+        cfg->last_datapoint_sync = curr_seq;
     }
 
     return TRUE;

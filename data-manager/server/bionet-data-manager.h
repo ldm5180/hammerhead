@@ -105,7 +105,8 @@ typedef struct {
 
     //State vars
     sqlite3 *db;
-    int last_entry_end_seq;    
+    int last_datapoint_sync;    
+    int last_metadata_sync;    
     char send_buf[BP_SEND_BUF_SIZE]; // Buffer for building bundles
     size_t buf_len;           // Number of bytes valid in send_buf
     int bytes_sent;
