@@ -435,6 +435,47 @@ sqlite_int64 db_record_sync(sync_sender_config_t * sync_config, int firstSeq, in
 
 }
 
+// Delete and SyncsSent rows that have been acknowledged by all recipients
+static int db_delete_dangling_syncs(sqlite3 * db)
+{
+    int r;
+
+    if(all_stmts[DELETE_SYNCS_SENT_STMT]  == NULL) {
+	r = sqlite3_prepare_v2(db, 
+	    "DELETE FROM SyncsSent "
+            "WHERE key NOT IN "
+               "(SELECT sync_message FROM SyncsOutstanding) ",
+	    -1, &all_stmts[DELETE_SYNCS_SENT_STMT] , NULL);
+
+	if (r != SQLITE_OK) {
+	    g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "%s SQL error: %s", __FUNCTION__, sqlite3_errmsg(db));
+	    return -1;
+	}
+    }
+    sqlite3_stmt * this_stmt = all_stmts[DELETE_SYNCS_SENT_STMT];
+
+    while(SQLITE_BUSY == (r = sqlite3_step(this_stmt))){
+        g_usleep(20 * 1000);
+    }
+        
+    switch (r) {
+        case SQLITE_DONE:
+            // Success!
+            break;
+
+        default:
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s SQL error: %s", 
+                   __FUNCTION__,  sqlite3_errmsg(db));
+            break;
+    }
+
+    sqlite3_reset(this_stmt);
+    sqlite3_clear_bindings(this_stmt);
+
+    return 0;
+}
+
 int db_record_sync_ack(
     sqlite3 * db,
     sqlite_int64 channid,
@@ -500,6 +541,11 @@ int db_record_sync_ack(
         
     switch (r) {
         case SQLITE_DONE:
+            if( sqlite3_changes(db) < 1 ) {
+                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
+                    "%s No local record for sync ack (%ld,%d,%d,%d)",
+                   __FUNCTION__, (long int)channid, firstSeq, lastSeq, isDatapoint);
+            }
             // Success!
             break;
 
@@ -512,6 +558,7 @@ int db_record_sync_ack(
     sqlite3_reset(this_stmt);
     sqlite3_clear_bindings(this_stmt);
 
+    db_delete_dangling_syncs(db);
+
     return 0;
 }
-
