@@ -58,26 +58,26 @@ logger.addHandler(ch)
 # commands the resource to a specific value. At this point it is up to
 # the Bionet HAB to decide what to do. Either set the value in the 
 # hardware, ignore it, or just simply publish the new value.
-def pycb_set_resource(resource, value):
+def cb_set_resource(resource, value):
     resource.set(value)
     logger.debug("callback: setting " + resource.name() + " to " + str(resource.datapoint(0).value()))
-    hab = resource.node().hab()
-    hab.reportDatapoints(resource.node())
+    hp = HabPublisher(resource.node().hab())
+    hp.reportDatapoints(resource.node())
 
-def process(h):
+def process(hp):
     # this is where polling of the hardware would happen and then all
     # the new values get set to the resources and published.
 
     # at this time the python wrapper is still in development, there is no way
     # get the value without converting to a string and back again. In C this is
     # not a problem.
-    uptimestr = str(h.node("process").resource("uptime").datapoint(0).value())
-    intervalstr = str(h.node("process").resource("update-interval").datapoint(0).value())
+    uptimestr = str(hp.hab.node("process").resource("uptime").datapoint(0).value())
+    intervalstr = str(hp.hab.node("process").resource("update-interval").datapoint(0).value())
     val = int(uptimestr) + int(intervalstr)
-    h.node("process").resource("uptime").set(val)
+    hp.hab.node("process").resource("uptime").set(val)
 
     # publish all the new datapoints
-    h.reportDatapoints(h.node("process"))
+    hp.reportDatapoints(hp.hab.node("process"))
 
     return
 
@@ -87,17 +87,22 @@ def process(h):
 
 
 # set the default Bionet log handler
-bionet_log_use_default_handler(None)
+#bionet_log_use_default_handler(None)
 
 
 # create the new HAB and name it.
 hab = Hab("Sample", None)
 
+# create a Hab Publisher to publish the new HAB
+hp = HabPublisher(hab)
+
 # register the set resource callback
-hab.registerSetResourceCallback(pycb_set_resource)
+#hp.registerSetResourceCallback(cb_set_resource)
+
+hp.setResourceCallback = cb_set_resource;
 
 # connect the HAB to the Bionet network
-hab.connect()
+hp.connect()
 
 
 # connect to your hardware and ensure it is there.
@@ -107,41 +112,41 @@ hab.connect()
 # add it to the HAB. Note: all resources must also be created for the node before
 # the node is published since resources are static. Nodes however can come and go
 # as they please.
-hab.add(Node(hab, "process"))
+hp.hab.add(Node(hab, "process"))
 
 # create the resource and add it to the node
-hab.node("process").add(Resource(hab.node("process"), 
-                                 BIONET_RESOURCE_DATA_TYPE_UINT32, 
-                                 BIONET_RESOURCE_FLAVOR_SENSOR, 
-                                 "uptime"))
+hp.hab.node("process").add(Resource(hp.hab.node("process"), 
+                                    BIONET_RESOURCE_DATA_TYPE_UINT32, 
+                                    BIONET_RESOURCE_FLAVOR_SENSOR, 
+                                    "uptime"))
 
 # set the datapoint of the resource to value 0 and timestamp Now.
-hab.node("process").resource("uptime").set(0)
+hp.hab.node("process").resource("uptime").set(0)
 
 # create the resource and add it to the node
-hab.node("process").add(Resource(hab.node("process"), 
-                                 BIONET_RESOURCE_DATA_TYPE_STRING, 
-                                 BIONET_RESOURCE_FLAVOR_SENSOR, 
-                                 "id"))
+hp.hab.node("process").add(Resource(hp.hab.node("process"), 
+                                    BIONET_RESOURCE_DATA_TYPE_STRING, 
+                                    BIONET_RESOURCE_FLAVOR_SENSOR, 
+                                    "id"))
 
 # set the datapoint of the resource to the PID of the process and timestamp Now.
-hab.node("process").resource("id").set(os.getppid())
+hp.hab.node("process").resource("id").set(os.getppid())
 
 # create a command-able resource and add it to the node
-hab.node("process").add(Resource(hab.node("process"), 
+hp.hab.node("process").add(Resource(hp.hab.node("process"), 
                                  BIONET_RESOURCE_DATA_TYPE_UINT32, 
                                  BIONET_RESOURCE_FLAVOR_PARAMETER, 
                                  "update-interval"))
 
 # set the datapoint of the resource to 1 second
-hab.node("process").resource("update-interval").set(1)
+hp.hab.node("process").resource("update-interval").set(1)
 
 
 # publish the new node to the Bionet network
-hab.reportNode(hab.node("process"))
+hp.reportNode(hp.hab.node("process"))
 
 # publish all the datapoints to the Bionet network
-hab.reportDatapoints(hab.node("process"))
+hp.reportDatapoints(hp.hab.node("process"))
 
 
 
@@ -153,10 +158,10 @@ hab.reportDatapoints(hab.node("process"))
 #
 # include any file descriptors for your own hardware if there are any.
 fd_list = []
-if (hab.fd != -1):
-    fd_list.append(hab.fd)
+if (hp.fd != -1):
+    fd_list.append(hp.fd)
 
-interval_res = hab.node("process").resource("update-interval")
+interval_res = hp.hab.node("process").resource("update-interval")
 
 last = time.time()
 remainingstr = str(interval_res.datapoint(0).value())
@@ -170,12 +175,12 @@ while(1):
     # select on the fd list and wait for some seconds.
     (rr, wr, er) = select(fd_list, [], [], remaining)
     for fd in rr:
-        if (fd == hab.fd):
-            hab.read()
-    remainingstr = str(hab.node("process").resource("update-interval").datapoint(0).value())
+        if (fd == hp.fd):
+            hp.read()
+    remainingstr = str(hp.hab.node("process").resource("update-interval").datapoint(0).value())
     if ((time.time() - last) >= float(remainingstr)):
         remaining = float(remainingstr)
-        process(hab)
+        process(hp)
         last = time.time()
     else:
         remaining = float(remainingstr) - (time.time() - last)

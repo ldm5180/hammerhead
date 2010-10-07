@@ -9,16 +9,21 @@
 	    return hab;
 	}
 	
+	HabUserData * ud = (HabUserData *)malloc(sizeof(HabUserData));
+	if (NULL == ud) {
+	    free(hab);
+	    return NULL;
+	}
+	
 	hab->this = bionet_hab_new(type, id);
 	if (NULL == hab->this) {
 	    free(hab);
 	    return NULL;
 	}
 
-	bionet_hab_set_user_data(hab->this, hab);
-
-	hab->fd = -1;
-	hab->set_resource_callback = NULL;
+	ud->hab = hab;
+	ud->hp = NULL;
+	bionet_hab_set_user_data(hab->this, ud);
 
 	return hab;
     }
@@ -27,6 +32,12 @@
 	if (NULL == hab) {
 	    return hab;
 	}
+
+	HabUserData * ud = (HabUserData *)malloc(sizeof(HabUserData));
+	if (NULL == ud) {
+	    free(hab);
+	    return NULL;
+	}
 	
 	hab->this = bionet_hab_new(NULL, NULL);
 	if (NULL == hab->this) {
@@ -34,10 +45,9 @@
 	    return NULL;
 	}
 
-	bionet_hab_set_user_data(hab->this, hab);
-
-	hab->fd = -1;
-	hab->set_resource_callback = NULL;
+	ud->hab = hab;
+	ud->hp = NULL;
+	bionet_hab_set_user_data(hab->this, ud);
 
 	return hab;
     }
@@ -113,5 +123,4 @@
 		      void * user_data) {
 	return bionet_hab_add_destructor((bionet_hab_t *)$self->this, destructor, user_data);
     }
-
 }

@@ -87,6 +87,13 @@ typedef struct timeval
 
 #define SWIG_OORESOURCE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Resource, 1)
 #define SWIG_OOVALUE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Value, 1)
+    
+    typedef struct {
+	Hab * hab;
+	int fd;
+	PyObject * setResourceCallback;
+	int ref_count;
+    } HabPublisher;
 
     void pythonoo_set_resource_callback(bionet_resource_t *resource, bionet_value_t *value)
     {
@@ -94,7 +101,7 @@ typedef struct timeval
 	PyObject *result = NULL;
 	
 	bionet_hab_t * h = bionet_resource_get_hab(resource);
-	Hab * hab = bionet_hab_get_user_data(h);
+	HabPublisher * hp = ((HabUserData *)bionet_hab_get_user_data(h))->hp;
 	
 	Resource * r = (Resource *)bionet_resource_get_user_data(resource);
 	Value * v = (Value *)malloc(sizeof(Value));
@@ -107,8 +114,7 @@ typedef struct timeval
 	bionet_value_set_user_data(value, v);
 	
 	arglist = Py_BuildValue("(OO)", SWIG_OORESOURCE_WRAPPER(r), SWIG_OOVALUE_WRAPPER(v));
-	
-	result = PyEval_CallObject(hab->set_resource_callback, arglist);
+	result = PyEval_CallObject(hp->setResourceCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
 	    return;
@@ -118,13 +124,54 @@ typedef struct timeval
 
 %}
 
-%extend Hab {
+%extend HabPublisher {
+    HabPublisher(Hab * hab) {
+	if (NULL == hab) {
+	    return NULL;
+	}
+
+	HabUserData * ud = (HabUserData *)bionet_hab_get_user_data(hab->this);
+	if (NULL != ud->hp) {
+	    bionet_hab_increment_ref_count(hab->this);
+	    ((HabPublisher *)ud->hp)->ref_count += 1;
+	    return ud->hp;
+	}
+
+	HabPublisher * hp = (HabPublisher *)malloc(sizeof(HabPublisher));
+	if (NULL == hp) {
+	    return NULL;
+	}
+
+	hp->hab = hab;
+
+	hp->fd = -1;
+	hp->setResourceCallback = NULL;
+	hp->ref_count = 0;
+	
+	ud->hp = hp;
+
+	return hp;
+    }
+
+    ~HabPublisher() {
+	if ($self->ref_count) {
+	    $self->ref_count -= 1;
+	} else {
+	    free($self);
+	} 
+    }
+
     int connect() {
-	$self->fd = hab_connect($self->this);
+	hab_register_callback_set_resource(pythonoo_set_resource_callback);
+
+	$self->fd = hab_connect($self->hab->this);
+
 	return $self->fd;
     }
 
     void disconnect() {
+	HabUserData * ud = (HabUserData *)bionet_hab_get_user_data($self->hab->this);
+	ud->hp = NULL;
 	hab_disconnect();
     }
 
@@ -155,20 +202,5 @@ typedef struct timeval
 
     void read(struct timeval * timeout) {
 	hab_read_with_timeout(timeout);
-    }
-
-    PyObject * registerSetResourceCallback(PyObject * cb) {
-	if (!PyCallable_Check(cb)) {
-            PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-            return NULL;
-        }
-        Py_XINCREF(cb);         /* Add a reference to new callback */
-	if (NULL != $self->set_resource_callback)
-	    Py_XDECREF($self->set_resource_callback);  /* Dispose of previous callback */
-        $self->set_resource_callback = cb;       /* Remember new callback */
-
-	hab_register_callback_set_resource(pythonoo_set_resource_callback);
-
-	return $self->set_resource_callback;
     }
 }
