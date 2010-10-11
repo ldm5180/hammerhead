@@ -5,6 +5,7 @@ BDM_DB_FILE=/var/lib/bionet-data-manager/bdm.db
 if [ "$1" = "remove" ]; then
     invoke-rc.d bionet-data-manager stop
     rm -f $BDM_DB_FILE
+    update-alternatives --remove bdm.ini /etc/bdm.ini.default
 fi
 
 
