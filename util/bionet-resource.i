@@ -645,4 +645,13 @@
 		      void * user_data) {
 	return bionet_resource_add_destructor($self->this, destructor, user_data); 
     }
+
+    char * __str__() {
+	char * resstr = malloc(1024);
+	snprintf(resstr, 1024, "%s: %s %s", 
+		 bionet_resource_get_name($self->this),
+		 bionet_resource_data_type_to_string(bionet_resource_get_data_type($self->this)),
+		 bionet_resource_flavor_to_string(bionet_resource_get_flavor($self->this)));
+	return resstr;
+    }
  }

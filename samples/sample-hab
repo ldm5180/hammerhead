@@ -71,9 +71,9 @@ def process(hp):
     # at this time the python wrapper is still in development, there is no way
     # get the value without converting to a string and back again. In C this is
     # not a problem.
-    uptimestr = str(hp.hab.node("process").resource("uptime").datapoint(0).value())
-    intervalstr = str(hp.hab.node("process").resource("update-interval").datapoint(0).value())
-    val = int(uptimestr) + int(intervalstr)
+    uptimestr = int(hp.hab.node("process").resource("uptime").datapoint(0).value())
+    intervalstr = int(hp.hab.node("process").resource("update-interval").datapoint(0).value())
+    val = uptimestr + intervalstr
     hp.hab.node("process").resource("uptime").set(val)
 
     # publish all the new datapoints
@@ -161,8 +161,7 @@ if (hp.fd != -1):
 interval_res = hp.hab.node("process").resource("update-interval")
 
 last = time.time()
-remainingstr = str(interval_res.datapoint(0).value())
-remaining = float(remainingstr)
+remaining = float(interval_res.datapoint(0).value())
 
 # main loop!
 # this very simple main loop selects on the fd list for INTERVAL secs. every time 
@@ -174,13 +173,12 @@ while(1):
     for fd in rr:
         if (fd == hp.fd):
             hp.read()
-    remainingstr = str(hp.hab.node("process").resource("update-interval").datapoint(0).value())
-    if ((time.time() - last) >= float(remainingstr)):
-        remaining = float(remainingstr)
+    remaining = float(hp.hab.node("process").resource("update-interval").datapoint(0).value())
+    if ((time.time() - last) >= remaining):
         process(hp)
         last = time.time()
     else:
-        remaining = float(remainingstr) - (time.time() - last)
+        remaining = float(remaining - (time.time() - last))
     
     
         

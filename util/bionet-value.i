@@ -185,4 +185,123 @@
 	return bionet_value_to_str($self->this);
     }
 
+    int __int__() {
+	bionet_resource_data_type_t type = bionet_resource_get_data_type(bionet_value_get_resource($self->this));
+
+	switch (type) {
+
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    bionet_value_get_uint8($self->this, &val);
+	    return (int)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    bionet_value_get_int8($self->this, &val);
+	    return (int)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    bionet_value_get_uint16($self->this, &val);
+	    return (int)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    bionet_value_get_int16($self->this, &val);
+	    return (int)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    bionet_value_get_uint32($self->this, &val);
+	    return (int)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    bionet_value_get_int32($self->this, &val);
+	    return (int)val;
+	}
+
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion from %s to integer.",
+		      bionet_resource_data_type_to_string(type));
+	    return 0;
+	    break;	    
+	}
+    }
+
+    float __float__() {
+	bionet_resource_data_type_t type = bionet_resource_get_data_type(bionet_value_get_resource($self->this));
+
+	switch (type) {
+
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    bionet_value_get_uint8($self->this, &val);
+	    return (float)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    bionet_value_get_int8($self->this, &val);
+	    return (float)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    bionet_value_get_uint16($self->this, &val);
+	    return (float)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    bionet_value_get_int16($self->this, &val);
+	    return (float)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    bionet_value_get_uint32($self->this, &val);
+	    return (float)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    bionet_value_get_int32($self->this, &val);
+	    return (float)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	{
+	    float val = 0;
+	    bionet_value_get_float($self->this, &val);
+	    return (float)val;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	{
+	    double val = 0;
+	    bionet_value_get_double($self->this, &val);
+	    return (float)val;
+	}
+
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion from %s to integer.",
+		      bionet_resource_data_type_to_string(type));
+	    return (float)0;
+	    break;	    
+	}
+
+    }
+
 }
