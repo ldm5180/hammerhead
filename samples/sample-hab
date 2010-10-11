@@ -82,7 +82,6 @@ def process(hp):
     return
 
 
-
 # initialize Bionet Security here before connecting the HAB to Bionet if desired.
 
 
@@ -97,8 +96,6 @@ hab = Hab("Sample", None)
 hp = HabPublisher(hab)
 
 # register the set resource callback
-#hp.registerSetResourceCallback(cb_set_resource)
-
 hp.setResourceCallback = cb_set_resource;
 
 # connect the HAB to the Bionet network

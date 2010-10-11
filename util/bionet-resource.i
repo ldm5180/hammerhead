@@ -45,12 +45,20 @@
 
     const char * flavorToString(bionet_resource_flavor_t flavor) { return bionet_resource_flavor_to_string(flavor); }
 
+    const char * flavorToString() { 
+	return bionet_resource_flavor_to_string(bionet_resource_get_flavor($self->this));
+    }
+
     bionet_resource_flavor_t flavorFromString(const char * flavor_string) { 
 	return bionet_resource_flavor_from_string(flavor_string); 
     }
 
     const char * datatypeToString(bionet_resource_data_type_t data_type) { 
 	return bionet_resource_data_type_to_string(data_type); 
+    }
+
+    const char * datatypeToString() { 
+	return bionet_resource_data_type_to_string(bionet_resource_get_data_type($self->this));
     }
 
     bionet_resource_data_type_t datatypeFromString(const char * data_type_string) { 

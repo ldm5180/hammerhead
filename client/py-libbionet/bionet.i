@@ -57,6 +57,9 @@
 %include "bionet-datapoint.i"
 %include "bionet-value.i"
 
+%include "bionet-callbacks.i"
+
+
 %inline %{
 #define SWIG_HAB_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_hab_opaque_t, 1)
 #define SWIG_NODE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_node_opaque_t, 1)
@@ -64,7 +67,6 @@
 #define SWIG_DATAPOINT_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_datapoint_opaque_t, 1)
 #define SWIG_STREAM_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_stream_opaque_t, 1)
 #define SWIG_VALUE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_value_opaque_t, 1)
-
 
     static PyObject * py_cb_lost_hab = NULL;
     static PyObject * py_cb_new_hab = NULL;
@@ -268,11 +270,6 @@
     typedef struct {
 	void * this;
     } BionetCache;
-
-    typedef struct {
-	void * this;
-	int fd;
-    } Bionet;
 %} 
 
 %extend BionetCache {
@@ -359,10 +356,20 @@
 
 %extend Bionet {
     Bionet() {
+	if (bionet_singleton) {
+	    return bionet_singleton;
+	}
 	Bionet * bionet = (Bionet *)malloc(sizeof(Bionet));
 	if (NULL == bionet) {
 	    return NULL;
 	}
+
+	/* Register the callbacks which are currently calling NULL until set from Python */
+	bionet_register_callback_new_hab(pybionetoo_callback_new_hab);
+	bionet_register_callback_lost_hab(pybionetoo_callback_lost_hab);
+	bionet_register_callback_new_node(pybionetoo_callback_new_node);
+	bionet_register_callback_lost_node(pybionetoo_callback_lost_node);
+	bionet_register_callback_datapoint(pybionetoo_callback_datapoint);
 
 	bionet->fd = bionet_connect();
 	if (-1 == bionet->fd) {
@@ -370,11 +377,13 @@
 	    return NULL;
 	}
 
-	return bionet;
+	bionet_singleton = bionet;
+	return bionet_singleton;
     }
 
     ~Bionet() {
 	bionet_disconnect();
+	bionet_singleton = NULL;
 	free($self);
     }
 

@@ -38,46 +38,42 @@ count = 0
 
 # New HAB callback is called each time a new HAB matching the subscription joins the Bionet network
 def cb_new_hab(hab):
-    logger.info("new hab: %s" % bionet_hab_get_name(hab))
+    logger.info("new hab: %s" % hab.name())
 
 # Lost HAB callback is called each time a HAB matching the subscription disconnects from the Bionet network
 def cb_lost_hab(hab):
-    logger.info("lost hab: %s" % bionet_hab_get_name(hab))
+    logger.info("lost hab: %s" % hab.name())
 
 # New Node callback is called each time a HAB reports a new node matching the subscription
 def cb_new_node(node):
-    logger.info("new node: %s" % bionet_node_get_name(node))
+    logger.info("  new node: %s" % node.name())
     logger.info("    resources:");
-    for i in range(bionet_node_get_num_resources(node)):
-        resource = bionet_node_get_resource_by_index(node, i)
-        logger.info("        %(datatype)s %(flavor)s %(id)s" % {"datatype" : bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                                                "flavor" : bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                                                "id" : bionet_resource_get_id(resource) } )
+    for i in range(node.numResources()):
+        resource = node.resource(i)
+        logger.info("        %(datatype)s %(flavor)s %(id)s" % {"datatype" : resource.datatypeToString(),
+                                                                "flavor" : resource.flavorToString(),
+                                                                "id" : resource.id() } )
 
 # Lost Node callback is called each time a HAB reports a lost node matching the subscription
 def cb_lost_node(node):
-    logger.info("lost node: %s" % bionet_node_get_name(node))
+    logger.info("  lost node: %s" % node.name())
 
 # Datapoint callback is called each time a HAB publishes a datapoint matching the subscription
 def cb_datapoint(datapoint):
-    resource = bionet_datapoint_get_resource(datapoint)
-    value = bionet_datapoint_get_value(datapoint)
-    logger.info("%(name)s = %(value)s @ %(timestamp)s", {"name" : bionet_resource_get_name(resource),
-                                                         "value" : bionet_value_as_str(value),
-                                                         "timestamp" : bionet_datapoint_timestamp_to_string(datapoint) } )
+    resource = datapoint.resource()
+    value = datapoint.value()
+    logger.info("%(name)s = %(value)s @ %(timestamp)s", {"name" : resource.name(),
+                                                         "value" : str(value),
+                                                         "timestamp" : str(datapoint) } )
     
     # every 5th datapoint, change the update interval to some random number of seconds 1-3.
     global count
     count = count + 1
     if (count % 5 == 0):
-        node = bionet_resource_get_node(resource)
-        hab = bionet_resource_get_hab(resource)
-        interval_res = bionet_cache_lookup_resource("Sample",
-                                                    bionet_hab_get_id(hab), 
-                                                    bionet_node_get_id(node), 
-                                                    "update-interval")
-        if (interval_res):
-            bionet_set_resource(interval_res, str(random.randint(1, 3)))
+        global bn
+        node = resource.node()
+        resource_name = node.name() + ":" +  "update-interval"
+        bn.set(resource_name, random.randint(1, 3))
 
 
 # set the default Bionet log handler
@@ -86,19 +82,18 @@ bionet_log_use_default_handler(None)
 # connect to Bionet as a client
 bn = Bionet()
 
-# register all the callbacks desired
-pybionet_register_callback_new_hab(cb_new_hab);
-pybionet_register_callback_new_node(cb_new_node);
-pybionet_register_callback_lost_hab(cb_lost_hab);
-pybionet_register_callback_lost_node(cb_lost_node);
-pybionet_register_callback_datapoint(cb_datapoint);
-
 # subscribe to HABs, Nodes, and Datapoints. In this example, all HABs and Nodes 
 # are subscribed, but only datapoints from the Sample HAB.
 bn.subscribe("*.*")
 bn.subscribe("*.*.*")
 bn.subscribe("Sample.*.*:*")
 
+# register all the callbacks desired
+bn.newHabCallback = cb_new_hab
+bn.lostHabCallback = cb_lost_hab
+bn.newNodeCallback = cb_new_node
+bn.lostNodeCallback = cb_lost_node
+bn.datapointCallback = cb_datapoint
 
 # set up the selectable file descriptor list. Any time the file descriptor is
 # readable it should be read. It is readable any time a HAB published a
