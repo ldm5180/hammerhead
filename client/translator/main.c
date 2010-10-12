@@ -60,7 +60,12 @@ int main(int argc, char* argv[])
     }
 
     // read ini file
-    translator_read_ini("translator.ini");
+    int r = translator_read_ini("translator.ini");
+    if(0 != r)
+    {
+        printf("failed to read ini file.\n");
+        return 1;
+    }
 
     // connect to bionet
     bionet_fd = bionet_connect();
@@ -102,50 +107,45 @@ int main(int argc, char* argv[])
     bionet_register_callback_datapoint(cb_datapoint);
     hab_register_callback_set_resource(cb_set_resource);
 
-    //subscribe to relevant datapoints
+    char full_name[64];
+    char hab_name[] = "proxr.cgba5-gse-1.";
+    // subscrine to DMM hab calibration constants
+    for(int i=0; i<NUM_ADCS; i++)
     {
-        // subscribe to DMM hab calibration constants
-        char full_name[256];
-        char hab_name[] = "DMM.cgba4.0:\0";
-        char *adc[16] = {"adc00\0", "adc01\0", "adc02\0", "adc03\0",
-                         "adc04\0", "adc05\0", "adc06\0", "adc07\0",
-                         "adc08\0", "adc09\0", "adc10\0", "adc11\0",
-                         "adc12\0", "adc13\0", "adc14\0", "adc15\0"};
-                    
-        char *cali[7] = {"-calibration-C0\0", "-calibration-C1\0",
-                         "-calibration-C2\0", "-calibration-C3\0",
-                         "-calibration-C4\0", "-calibration-C5\0",
-                         "-calibration-C6\0"};
-        
-        for(int i=0; i<16; i++)
+        // copy hab name in
+        strcpy(full_name, hab_name);
+        // cat adc calibration
+        strcat(full_name, default_settings->adc_calibration[i]);
+        for(int j=0; j<NUM_CONSTS; j++)
         {
-            strcpy(full_name, hab_name);
-            strcat(full_name, adc[i]);
-            for(int j=0; j<7; j++)
-            {
-                strcat(full_name, cali[j]);
-                bionet_subscribe_datapoints_by_name(full_name);
-                full_name[17] = '\0'; //the 17 nulled is so the strcat doesn't endlessly append.
-            }
-            full_name[0] = '\0';
+            char tmp_full_name[64];
+            // copy built string from above
+            strcpy(tmp_full_name, full_name);
+            // cat the -C0 to the resource name
+            // resource name is now complete
+            strcat(tmp_full_name, default_settings->calibration_const[j]);
+            // subscribe to resource
+            bionet_subscribe_datapoints_by_name(tmp_full_name);
         }
+        // empty full_name
+        full_name[0] = '\0';
+     }
 
-        // subscribe to DMM hab adc states 
-        for(int i=0; i<16; i++)
-        {
-            // copy hab name into empty full_name
-            strcpy(full_name, hab_name);
-            // cat the resource name to the hab_name
-            strcat(full_name, default_settings->state_names[i]);
-            // subscribe
-            bionet_subscribe_datapoints_by_name(full_name);
-            // make full_name appear empty for next loop
-            full_name[0]='\0';
-        }
-        
-        // subscribe to proxr resources
-        bionet_subscribe_datapoints_by_name("proxr.cgba5-gse-1.*:*");
+    // subscribe to DMM hab adc states 
+    for(int i=0; i<NUM_STATES; i++)
+    {
+        // copy hab name into empty full_name
+        strcpy(full_name, hab_name);
+        // cat the resource name to the hab_name
+        strcat(full_name, default_settings->state_names[i]);
+        // subscribe
+        bionet_subscribe_datapoints_by_name(full_name);
+        // make full_name appear empty for next loop
+        full_name[0]='\0';
     }
+    
+    // subscribe to proxr resources
+    bionet_subscribe_datapoints_by_name("proxr.cgba5-gse-1.*:*");
 
     // add node and resources to hab
     create_node(hab, "translator");
