@@ -7,6 +7,9 @@
 /**
  * @mainpage Bionet API Documentation
  *
+ * <b>Check out the Quick Start Guide for getting a Bionet Network up in under 
+ * 1 minute. http://bioserve.colorado.edu/bionet-release/quickstart.html</b>
+ *
  * @section intro Intro
  *
  * There are three parts to the Bionet API, the Client API (libbionet),the

@@ -51,6 +51,9 @@ in the release branch:
     	   rm -f /var/www/bionet-api
 	   ln -s /var/www/bionet/doc/2.1.1 /var/www/bionet-api
     
+    ensure the quickstart is up to date and then copy the quickstart guide:
+    	 scp doc/quickstart.html bioserve.colorado.edu:/data/bionet-release/.
+
     upload the tarball to bioserve.colorado.edu:/data/bionet-release
 
     Build iPhone App for AdHoc distribution:

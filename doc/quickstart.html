@@ -1,0 +1,50 @@
+<html>
+<title>Bionet Quick Start</title>
+<body>
+<h1>Bionet Quick Start</h1>
+<p>
+This guide assumes you have already installed Bionet and you are simply looking to get started exploring<br />
+what Bionet can do for you.
+</p>
+<h2>Start a Hab (Hardware Abstractor) and Client</h2>
+<p>Let's start a simple Hab which publishes information about the system running the Hab every 1 second. The<br />
+Hab will start and be publishing the information to all subscribers, but there are no subscribers yet. It<br />
+will mostly be idle.
+<br /><br />
+By default Bionet uses the mDNS-SD CAL Module which requires zero-configuration so you can get up and<br />
+running quickly. This underlying "Communications Abstraction Layer" is pluggable with your own CAL Module<br />
+if something else is more suitable.
+</p>
+<table width="800px" border="1">
+
+<tr>
+  <td width="30%" align="center"><b>Action</b></td>
+  <td align="center"><b>What Bionet is doing behind the scenes</b></td>
+</tr>
+
+<tr>
+  <td>1. Start the Hab by running the command:<br />
+  <pre>    'syshealth-hab --delay 1'</pre></td>
+  <td>The System Health Hab starts and opens an ephemeral port. It connects to Bionet by announcing itself to the locally running mDNS-SD system service (bonjour, avahi, etc...).<br /><br />Every 1 second it publishes the latest information to all subscribers. At this point there are none.<br /><br />The mDNS-SD service uses multicast to advertise Habs.</td>
+</tr>
+
+<tr>
+  <td>2. On the same machine or another machine on the same subnet, start the client by running the command:<br />
+  <pre>    'bionet-monitor'</pre></td>
+  <td>The Bionet Monitor client starts which is a generic client and subscribes to all Bionet traffic on the network. It requests the locally running mDNS-SD system service to find all Bionet Habs.<br /><br />
+The mDNS-SD service sends out a multicast service discovery message for which it gets a response from the machine running the 'syshealth-hab' containing all the necessary information to connect.<br /><br />
+Since the Bionet Monitor is configured to subscribe to everything by default, it automatically issues a subscribe request to the sysheath-hab.</td>
+</tr>
+
+<tr>
+  <td>3. Click around in Bionet-Monitor</td>
+  <td>The syshealth-hab receives the subscription and immediately sends the most recent Nodes, Resources, and Datapoints matching the subscription request to the Bionet Monitor and continues to publish updates every 1 second.<br /><br />
+Click around in the Bionet Monitor to see how the data is structured within the Hab-Node-Resource ontology and plot graphs of individual resources.</td>
+</tr>
+
+</table>
+<br />
+<p>
+Feel free to start as many Bionet Monitors and System Health Habs on your network as you would like to see<br />
+and every System Health Hab show up in every Bionet Monitor automatically with zero-configuration required.
+</p>

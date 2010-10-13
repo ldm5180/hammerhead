@@ -1,6 +1,4 @@
 etc/mon-hab.d
-usr/share/doc/bionet/index.html usr/share/doc/bionet2
-
 
 # all the python stuff
 usr/lib/python*/*/_bdm_client.a

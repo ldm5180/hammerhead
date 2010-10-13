@@ -28,7 +28,7 @@ Package: bionet2
 Section: net
 Architecture: any
 Depends: ${shlibs:Depends}, libnss-mdns, python, ${python:Depends}
-Recommends: @RECOMMENDS_BIONET2_BP_UTILS@ bionet2-cpod, bionet2-stethoscope, bionet2-monitor, bionet2-streams, bionet2-data-manager
+Recommends: @RECOMMENDS_BIONET2_BP_UTILS@ bionet2-cpod, bionet2-stethoscope, bionet2-monitor, bionet2-streams, bionet2-data-manager, bionet2-doc
 Description: A network-transparent pub/sub system for information exchange
  Bionet2 HABs and Clients, and BDM Clients
 
@@ -186,4 +186,11 @@ Description: Communication Abstraction Layer for Bionet and BDM (client side)
  This package contains libraries to implement a CAL Client (such as a
  Bionet Client or a BDM Client).  You usually do not need to explicitly
  install this package, it will be automatically installed if you need it.
+
+Package: bionet2-doc
+Section: net
+Architecture: any
+Depends: ${shlibs:Depends}
+Conflicts: bionet2 (<< 2.6.1+bzr2075)
+Description: Documentation for Bionet APIs and a "Quick Start Guide".
 
