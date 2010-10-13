@@ -23,7 +23,7 @@ LDCONFIG_EXE = /sbin/ldconfig
 endif
 
 if ENABLE_DOXYGEN
-doc_DATA = doc/quickstart.html $(DOXYGEN_FILES)
+doc_DATA = doc/quickstart.html doxygen/html/index.html $(DOXYGEN_FILES)
 DOXYGEN_INPUT = $(top_srcdir)/libbionet/bionet.h $(top_srcdir)/libhab/hardware-abstractor.h $(top_srcdir)/libbdm/bdm-client.h $(top_srcdir)/util/bionet-bdm.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-util.h $(top_srcdir)/mainpage.h $(top_srcdir)/bps/bps_socket.h
 DOXYFILE = Doxyfile
 endif
@@ -32,10 +32,12 @@ if DISABLE_DOT
 DOXYFILE = Doxyfile.nodot
 endif
 
-all-local: $(DOXYGEN_INPUT) $(doc_DATA) 
+all-local: $(DOXYGEN_INPUT) doxygen/html/index.html
 
-$(DOXYGEN_FILES): $(DOXYGEN_INPUT) $(DOXYFILE)
+doxygen/html/index.html: $(DOXYGEN_INPUT) $(DOXYFILE)
 	doxygen $(DOXYFILE)
+
+$(DOXYGEN_FILES): doxygen/html/index.html
 
 clean-local:
 	rm -rf doxygen
