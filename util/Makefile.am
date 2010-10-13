@@ -43,10 +43,11 @@ libbionet_util_la_LIBADD = \
 	$(OPENSSL_LIBS)
 
 libbionet_util_la_SOURCES =    \
-    bdm-new.c                  \
+    bdm-destructor.c           \
     bdm-free.c                 \
-    bdm-matches.c              \
     bdm-hab-list.c             \
+    bdm-matches.c              \
+    bdm-new.c                  \
     bdm-node-uid.c             \
     event-get.c                \
     event-alloc.c              \

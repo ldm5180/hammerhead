@@ -153,6 +153,25 @@ BIONET_UTIL_API_DECL
 void bionet_bdm_set_secure(bionet_bdm_t *bdm, int is_secure);
 
 
+/**
+ * @brief Add a destruction notifier
+ *
+ * Each destruction notifier will be called in the order they
+ * were added when bionet_bdm_free() is called.
+ *
+ * @param[in] bdm BDM to add the destructor for
+ * @param[in] destructor The destructor to run.
+ * @param[in] user_data User data to pass into the destructor.
+ *
+ * @retval 0 Successfully added.
+ * @retval 1 Failed to add.
+ */
+BIONET_UTIL_API_DECL
+int bionet_bdm_add_destructor(bionet_bdm_t * bdm, 
+			      void (*destructor)(bionet_bdm_t * bdm, void * user_data),
+			      void * user_data);
+
+
 #endif //  BIONET_BDM_H
 
 

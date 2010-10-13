@@ -18,6 +18,8 @@ struct bionet_bdm_opaque_t {
     GPtrArray *hab_list; // Used only internally by BDM server/client
 
     const void *user_data;
+
+    GSList * destructors;
 };
 
 struct bionet_hab_opaque_t {
@@ -211,6 +213,11 @@ typedef struct {
     void (*destructor)(bionet_datapoint_t * datapoint, void * user_data);
     void * user_data;
 } bionet_datapoint_destructor_t;
+
+typedef struct {
+    void (*destructor)(bionet_bdm_t * bdm, void * user_data);
+    void * user_data;
+} bionet_bdm_destructor_t;
 
 
 /**
