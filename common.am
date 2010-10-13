@@ -118,7 +118,6 @@ endif
 bionetdatadir = $(datadir)/bionet2
 
 DOXYGEN_FILES = \
-    doxygen/html/index.html \
     doxygen/html/annotated.html \
     doxygen/html/bdm-client_8h.html \
     doxygen/html/bionet_8h__dep__incl.map \

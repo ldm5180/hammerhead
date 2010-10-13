@@ -34,7 +34,7 @@ endif
 
 all-local: $(DOXYGEN_INPUT) $(doc_DATA) 
 
-doxygen/html/index.html: $(DOXYGEN_INPUT) $(DOXYFILE)
+$(DOXYGEN_FILES): $(DOXYGEN_INPUT) $(DOXYFILE)
 	doxygen $(DOXYFILE)
 
 clean-local:
