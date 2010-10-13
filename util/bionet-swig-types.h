@@ -27,4 +27,8 @@ typedef struct {
     bionet_value_t * this;
 } Value;
 
+typedef struct {
+    bionet_bdm_t * this;
+} Bdm;
+
 #endif /* BIONET_SWIG_TYPES */

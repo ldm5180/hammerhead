@@ -20,6 +20,8 @@ struct bionet_bdm_opaque_t {
     const void *user_data;
 
     GSList * destructors;
+
+    unsigned int ref;
 };
 
 struct bionet_hab_opaque_t {

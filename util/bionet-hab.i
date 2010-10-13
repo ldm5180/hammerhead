@@ -1,7 +1,3 @@
-%inline %{
-
-%}
-
 %extend Hab {
     Hab(const char * type, const char * id) {
 	Hab * hab = (Hab *)malloc(sizeof(Hab));

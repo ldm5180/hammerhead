@@ -56,7 +56,7 @@
 %include "bionet-resource.i"
 %include "bionet-datapoint.i"
 %include "bionet-value.i"
-
+%include "bionet-wrappers.i"
 %include "bionet-callbacks.i"
 
 

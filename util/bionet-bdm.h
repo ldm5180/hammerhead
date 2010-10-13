@@ -172,6 +172,34 @@ int bionet_bdm_add_destructor(bionet_bdm_t * bdm,
 			      void * user_data);
 
 
+/**
+ * @brief Increment the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] bdm Bdm to increment the reference count for
+ */
+BIONET_UTIL_API_DECL
+void bionet_bdm_increment_ref_count(bionet_bdm_t * bdm);
+
+
+/**
+ * @brief Get the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] bdm Bdm to get the reference count for
+ *
+ * @return Number of references currently held.
+ */
+BIONET_UTIL_API_DECL
+unsigned int bionet_bdm_get_ref_count(bionet_bdm_t * bdm);
+
+
 #endif //  BIONET_BDM_H
 
 

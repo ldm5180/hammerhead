@@ -48,6 +48,7 @@ typedef struct timeval
 %include "bionet-resource.i"
 %include "bionet-datapoint.i"
 %include "bionet-value.i"
+%include "bionet-wrappers.i"
 
 %inline %{
 #define SWIG_RESOURCE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_resource_opaque_t, 1)
@@ -84,9 +85,6 @@ typedef struct timeval
 	return py_set_resource_callback;
     }
 
-
-#define SWIG_OORESOURCE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Resource, 1)
-#define SWIG_OOVALUE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Value, 1)
     
     typedef struct {
 	Hab * hab;

@@ -46,6 +46,7 @@ libbionet_util_la_SOURCES =    \
     bdm-destructor.c           \
     bdm-free.c                 \
     bdm-hab-list.c             \
+    bdm-incref.c               \
     bdm-matches.c              \
     bdm-new.c                  \
     bdm-node-uid.c             \

@@ -57,6 +57,13 @@ typedef struct timeval
 %import "stdint.i"
 %import "inttypes.i"
 
+%include "bionet-hab.i"
+%include "bionet-node.i"
+%include "bionet-resource.i"
+%include "bionet-datapoint.i"
+%include "bionet-value.i"
+%include "bionet-wrappers.i"
+
 %inline %{
 #define SWIG_BDM_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_bdm_opaque_t, 1)
 #define SWIG_HAB_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_hab_opaque_t, 1)
