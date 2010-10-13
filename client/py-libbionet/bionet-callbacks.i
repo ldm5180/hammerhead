@@ -179,7 +179,8 @@
 	}
 
 	/* wrap up the datapoint */
-	if (NULL == bionet_datapoint_get_user_data(d)) {
+	datapoint = bionet_datapoint_get_user_data(d);
+	if (NULL == datapoint) {
 	    datapoint = (Datapoint *)malloc(sizeof(Datapoint));
 	    if (NULL == datapoint) {
 		return;
