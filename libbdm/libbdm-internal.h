@@ -155,4 +155,55 @@ void libbdm_cache_replace_resource(bionet_resource_t *resource);
 void libbdm_cache_cleanup_habs();
 void libbdm_cache_cleanup_nodes();
 
+/**
+ * @brief Looks through the locally cached information for a specific Node.
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ * @param[in] node_id The Node-ID to look up
+ *
+ * @return Pointer to the Node if found
+ * @retval NULL Not found
+ */
+bionet_node_t *bdm_cache_lookup_node(const char *hab_type, const char *hab_id, const char *node_id);
+
+/**
+ * @brief Looks through the locally cached information for a specific Node.
+ *
+ * @param[in] node_uid The UUID of the node to return
+ *
+ * @return Pointer to the Node if found
+ * @retval NULL Not found
+ */
+bionet_node_t *bdm_cache_lookup_node_uid(const uint8_t node_uid[BDM_UUID_LEN]);
+
+/**
+ * @brief Looks through the locally cached information for a specific Resource
+ *
+ * @param[in] node_uid The UUID of the node to return
+ * @param[in] resource_id The Resource-ID to look up
+ *
+ * @return Pointer to the Resource if found
+ * @retval NULL Not found
+ */
+bionet_resource_t *bdm_cache_lookup_resource_uid(const uint8_t node_uid[BDM_UUID_LEN], const char *resource_id);
+
+
+
+#if 0
+/**
+ * @brief Looks through the locally cached information for a specific Stream.
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ * @param[in] node_id The Node-ID to look up
+ * @param[in] resource_id The Resource-ID to look up
+ *
+ * @return Pointer to the stream if found
+ * @retval NULL Not found
+ */
+bionet_stream_t *bdm_cache_lookup_stream(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
+#endif
+
+
 #endif

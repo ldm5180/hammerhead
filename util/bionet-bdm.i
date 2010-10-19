@@ -31,4 +31,17 @@
 	    free($self);
 	}
     }
+
+    const char * id() {
+	return bionet_bdm_get_id($self->this);
+    }
+
+    int matches(const char * id) {
+	return bionet_bdm_matches_id($self->this, id);
+    }
+
+    int isSecure() {
+	return bionet_bdm_is_secure($self->this);
+    }
+
 }

@@ -1,0 +1,105 @@
+#!/usr/bin/python
+#
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+# Bionet Clients subscribe to data published by Bionet HABs. 
+# Subscriptions are in the format of resource name patterns:
+#     HAB-Type.HAB-ID.Node-ID:Resource-ID
+# Any of the '.' separated fields of the name pattern may be
+# a '*' which means match anything in that field. Bionet
+# automatically takes care of service discovery and calls 
+# user-registered callbacks for each piece of data received from 
+# a HAB.
+
+import sys
+import logging
+import time
+from select import select
+import os
+import random
+
+# import Bionet's Hardware Abstractor module
+from bdm_client import *    
+
+# initialize the Python logger
+logger = logging.getLogger("BDM Sample Client")
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+
+count = 0
+
+# New HAB callback is called each time a new HAB matching the subscription joins the Bionet network
+def cb_new_hab(hab):
+    logger.info("new hab: %s" % hab.name())
+
+# Lost HAB callback is called each time a HAB matching the subscription disconnects from the Bionet network
+def cb_lost_hab(hab):
+    logger.info("lost hab: %s" % hab.name())
+
+# New Node callback is called each time a HAB reports a new node matching the subscription
+def cb_new_node(node):
+    logger.info("  new node: %s" % node.name())
+    logger.info("    resources:");
+    for i in range(node.numResources()):
+        resource = node.resource(i)
+        logger.info("        %(datatype)s %(flavor)s %(id)s" % {"datatype" : resource.datatypeToString(),
+                                                                "flavor" : resource.flavorToString(),
+                                                                "id" : resource.id() } )
+
+# Lost Node callback is called each time a HAB reports a lost node matching the subscription
+def cb_lost_node(node):
+    logger.info("  lost node: %s" % node.name())
+
+# Datapoint callback is called each time a HAB publishes a datapoint matching the subscription
+def cb_datapoint(datapoint):
+    resource = datapoint.resource()
+    value = datapoint.value()
+    logger.info("%(name)s = %(value)s @ %(timestamp)s", {"name" : resource.name(),
+                                                         "value" : str(value),
+                                                         "timestamp" : str(datapoint) } )
+    
+
+# set the default Bionet log handler
+bionet_log_use_default_handler(None)
+
+# connect to Bionet as a client
+bdm_sub = BdmSubscriber()
+
+# subscribe to HABs, Nodes, and Datapoints. In this example, all HABs and Nodes 
+# are subscribed, but only datapoints from the Sample HAB.
+bdm_sub.subscribeToHab("*.*")
+bdm_sub.subscribeToNode("*.*.*")
+bdm_sub.subscribeToDatapoints("Sample.*.*:*", time.time(), None)
+
+# register all the callbacks desired
+bdm_sub.newHabCallback = cb_new_hab
+bdm_sub.lostHabCallback = cb_lost_hab
+bdm_sub.newNodeCallback = cb_new_node
+bdm_sub.lostNodeCallback = cb_lost_node
+bdm_sub.datapointCallback = cb_datapoint
+
+# set up the selectable file descriptor list. Any time the file descriptor is
+# readable it should be read. It is readable any time a HAB published a
+# datapoint, new/lost node, or new/lost HAB and you are subscribed to it. The
+# proper callback will be called automatically.
+#
+# include any file descriptors for your own hardware if there are any.
+fd_list = []
+if (bdm_sub.fd != -1):
+    fd_list.append(bdm_sub.fd)
+
+while(1):
+    # select on the fd list
+    (rr, wr, er) = select(fd_list, [], [], None)
+    for fd in rr:
+        if (fd == bdm_sub.fd):
+            read = bdm_sub.read() # causes the callbacks to get called
+        

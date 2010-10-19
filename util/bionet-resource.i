@@ -620,12 +620,12 @@
 	return bionet_resource_remove_datapoint_by_index($self->this, index); 
     }
 
-    int matchesId(const char * id) { return bionet_resource_matches_id($self->this, id); }
+    int matches(const char * id) { return bionet_resource_matches_id($self->this, id); }
 
-    int matchesHabTypeHabIdNodeIdResourceId(const char *hab_type,
-					    const char *hab_id,
-					    const char *node_id,
-					    const char *resource_id) {
+    int matches(const char *hab_type,
+		const char *hab_id,
+		const char *node_id,
+		const char *resource_id) {
 	return bionet_resource_matches_habtype_habid_nodeid_resourceid($self->this,
 								       hab_type,
 								       hab_id,

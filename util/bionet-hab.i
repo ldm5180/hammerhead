@@ -100,7 +100,7 @@
     int removeAll() {
 	return bionet_hab_remove_all_nodes((bionet_hab_t *)$self->this);
     }
-    int matchesTypeAndId(const char * type, const char * id) {
+    int matches(const char * type, const char * id) {
 	return bionet_hab_matches_type_and_id((bionet_hab_t *)$self->this, type, id);
     }
     int isSecure() {

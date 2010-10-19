@@ -6,6 +6,7 @@
 #define SWIG_RESOURCEOO_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Resource, 1)
 #define SWIG_DATAPOINTOO_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Datapoint, 1)
 #define SWIG_VALUEOO_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Value, 1)
+#define SWIG_BDMOO_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Bdm, 1)
 
     Hab * wrap_a_hab(bionet_hab_t * h) {
 	if (NULL == h) {
@@ -67,7 +68,7 @@
 	    }
 	    Resource * resource = (Resource *)calloc(1, sizeof(Resource));
 	    if (NULL == resource) {
-		g_warning("bionet.i: Failed to allocate memory for resource");
+		g_warning("bionet-wrappers.i: Failed to allocate memory for resource");
 		continue;
 	    }
 	    resource->this = res;
@@ -75,6 +76,28 @@
 	}
 
 	return node;
+    }
+
+    Bdm * wrap_a_bdm(bionet_bdm_t * b) {
+	if (NULL == b) {
+	    g_warning("bionet-wrappers.i: Unable to wrap NULL bionet_bdm_t");
+	    return NULL;
+	}
+
+	Bdm * bdm = bionet_bdm_get_user_data(b);
+	if (NULL == bdm) {
+
+	    bdm = (Bdm *)calloc(1, sizeof(Bdm));
+	    if (NULL == bdm) {
+		g_warning("bionet-wrappers.i: Failed to allocate memory for Bdm");
+		return NULL;
+	    }
+	    
+	    bdm->this = b;
+	    bionet_bdm_set_user_data(bdm->this, bdm);
+	}
+
+	return bdm;
     }
 
 %}

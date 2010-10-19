@@ -41,7 +41,7 @@ static int libbdm_find_node_by_guid(const void *vp_node, const void *vp_target) 
     const bionet_node_t *node = vp_node;
     const uint8_t *target_guid = vp_target;
 
-    return memcmp(node->guid, target_guid, BDM_UUID_LEN);
+    return memcmp(bionet_node_get_uid(node), target_guid, BDM_UUID_LEN);
 }
 
 bionet_node_t *bdm_cache_lookup_node_uid(const uint8_t node_uid[BDM_UUID_LEN]) {

@@ -69,11 +69,11 @@
 
     bionet_stream_t * stream(const char * id) { return bionet_node_get_stream_by_id((bionet_node_t *)$self->this, id); }
 
-    int matchesId(const char * id) { return bionet_node_matches_id((bionet_node_t *)$self->this, id); }
+    int matches(const char * id) { return bionet_node_matches_id((bionet_node_t *)$self->this, id); }
 
-    int matchesHabTypeHabIdNodeId(const char * hab_type,
-				  const char * hab_id, 
-				  const char * node_id) { 
+    int matches(const char * hab_type,
+		const char * hab_id, 
+		const char * node_id) { 
 	return bionet_node_matches_habtype_habid_nodeid((bionet_node_t *)$self->this, hab_type, hab_id, node_id);
     }
 

@@ -19,6 +19,8 @@ struct bionet_bdm_opaque_t {
 
     const void *user_data;
 
+    int is_secure;
+
     GSList * destructors;
 
     unsigned int ref;

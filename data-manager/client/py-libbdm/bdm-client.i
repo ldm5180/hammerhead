@@ -16,6 +16,8 @@
 #include "bionet-value.h"
 #include "bionet-asn.h"
 #include "bionet-event.h"
+#include "bionet-bdm.h"
+#include "bionet-swig-types.h"
 %}
 
 %newobject bionet_value_to_str;
@@ -42,6 +44,8 @@ typedef struct timeval
 %include "bionet-datapoint.h"
 %include "bionet-value.h"
 %include "bionet-event.h"
+%include "bionet-bdm.h"
+%include "bionet-swig-types.h"
 
 %include "cpointer.i"
 %pointer_functions(int,      binaryp);
@@ -57,12 +61,14 @@ typedef struct timeval
 %import "stdint.i"
 %import "inttypes.i"
 
+%include "bionet-bdm.i"
 %include "bionet-hab.i"
 %include "bionet-node.i"
 %include "bionet-resource.i"
 %include "bionet-datapoint.i"
 %include "bionet-value.i"
 %include "bionet-wrappers.i"
+%include "bdm-callbacks.i"
 
 %inline %{
 #define SWIG_BDM_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_bdm_opaque_t, 1)
@@ -317,3 +323,194 @@ typedef struct timeval
     }
 
 %} 
+
+%extend BdmSubscriber {
+    BdmSubscriber() {
+	if (bdm_subscriber_singleton) {
+	    return bdm_subscriber_singleton;
+	} 
+
+	BdmSubscriber * bdmsub = (BdmSubscriber *)calloc(1, sizeof(BdmSubscriber));
+	if (NULL == bdmsub) {
+	    return NULL;
+	}
+	
+	bdm_register_callback_new_bdm(pybdmoo_callback_new_bdm, NULL);
+	bdm_register_callback_lost_bdm(pybdmoo_callback_lost_bdm, NULL);
+	bdm_register_callback_new_hab(pybdmoo_callback_new_hab, NULL);
+	bdm_register_callback_lost_hab(pybdmoo_callback_lost_hab, NULL);
+	bdm_register_callback_new_node(pybdmoo_callback_new_node, NULL);
+	bdm_register_callback_lost_node(pybdmoo_callback_lost_node, NULL);
+	bdm_register_callback_datapoint(pybdmoo_callback_datapoint, NULL);
+
+	bdmsub->fd = bdm_start();
+	if (-1 == bdmsub->fd) {
+	    free(bdmsub);
+	    return NULL;
+	}
+
+	bdm_subscriber_singleton = bdmsub;
+
+	return bdmsub;
+    }
+    
+    ~BdmSubscriber() {
+	bdm_disconnect();
+	bdm_subscriber_singleton = NULL;
+	free($self);
+    }
+
+    int read() {
+	return bdm_read();
+    }
+    
+    int read(struct timeval * timeout) {
+	return bdm_read_with_timeout(timeout);
+    }
+
+    int read(struct timeval * timeout, unsigned int num) {
+	return bdm_read_many(timeout, num);
+    }
+
+    int subscribeToBdm(const char * bdm_name) {
+	return bdm_subscribe_bdm_list_by_name(bdm_name);
+    }
+    
+    int subscribeToHab(const char * hab_name) {
+	return bdm_subscribe_hab_list_by_name(hab_name);
+    }
+
+    int subscribeToNode(const char * node_name) {
+	return bdm_subscribe_node_list_by_name(node_name);
+    }
+
+    int subscribeToDatapoints(const char * resource_name, struct timeval * start_time, struct timeval * end_time) {
+	return bdm_subscribe_datapoints_by_name(resource_name, start_time, end_time);
+    }
+
+    int subscribeToDatapoints(const char * resource_name, float start_time, float end_time) {
+	struct timeval tv_start;
+	struct timeval tv_end;
+
+	tv_start.tv_sec = (time_t)start_time;
+	tv_start.tv_usec = (suseconds_t)((start_time - (float)tv_start.tv_sec) * 1000000);
+
+	tv_end.tv_sec = (time_t)end_time;
+	tv_end.tv_usec = (suseconds_t)((end_time - (float)tv_end.tv_sec) * 1000000);
+
+
+	return bdm_subscribe_datapoints_by_name(resource_name, &tv_start, &tv_end);
+    }
+
+    int subscribeToDatapoints(const char * resource_name, float start_time, void * Null) {
+	struct timeval tv_start;
+
+	tv_start.tv_sec = (time_t)start_time;
+	tv_start.tv_usec = (suseconds_t)((start_time - (float)tv_start.tv_sec) * 1000000);
+
+	return bdm_subscribe_datapoints_by_name(resource_name, &tv_start, NULL);
+    }
+
+    int subscribeToDatapoints(const char * resource_name, void * Null, float end_time) {
+	struct timeval tv_end;
+
+	tv_end.tv_sec = (time_t)end_time;
+	tv_end.tv_usec = (suseconds_t)((end_time - (float)tv_end.tv_sec) * 1000000);
+
+
+	return bdm_subscribe_datapoints_by_name(resource_name, NULL, &tv_end);
+    }
+
+    unsigned int numBdms() {
+	return bdm_cache_get_num_bdms();
+    }
+
+    Bdm * bdm(unsigned int index) {
+	Bdm * bdm = NULL;
+	bionet_bdm_t * b = bdm_cache_get_bdm_by_index(index);
+	if (NULL == b) {
+	    return NULL;
+	}
+	
+	bdm = bionet_bdm_get_user_data(b);
+
+	if (NULL == bdm) {
+	    bdm = (Bdm *)calloc(1, sizeof(Bdm));
+	    if (NULL == bdm) {
+		return NULL;
+	    }
+	    bdm->this = b;
+	    bionet_bdm_set_user_data(bdm->this, bdm);
+	}
+
+	return bdm;
+    }
+
+    Bdm * bdm(const char * id) {
+	Bdm * bdm = NULL;
+	bionet_bdm_t * b = bdm_cache_lookup_bdm(id);
+	if (NULL == b) {
+	    return NULL;
+	}
+	
+	bdm = bionet_bdm_get_user_data(b);
+
+	if (NULL == bdm) {
+	    bdm = (Bdm *)calloc(1, sizeof(Bdm));
+	    if (NULL == bdm) {
+		return NULL;
+	    }
+	    bdm->this = b;
+	    bionet_bdm_set_user_data(bdm->this, bdm);
+	}
+
+	return bdm;	
+    }
+
+    unsigned int numHabs() {
+	return bdm_cache_get_num_habs();
+    }
+
+    Hab * hab(unsigned int index) {
+	Hab * hab = NULL;
+	bionet_hab_t * h = bdm_cache_get_hab_by_index(index);
+	if (NULL == h) {
+	    return NULL;
+	}
+	
+	hab = bionet_hab_get_user_data(h);
+
+	if (NULL == hab) {
+	    hab = (Hab *)calloc(1, sizeof(Hab));
+	    if (NULL == hab) {
+		return NULL;
+	    }
+	    hab->this = h;
+	    bionet_hab_set_user_data(hab->this, hab);
+	}
+
+	return hab;
+    }
+
+    Hab * hab(const char * type, const char * id) {
+	Hab * hab = NULL;
+	bionet_hab_t * h = bdm_cache_lookup_hab(type, id);
+	if (NULL == h) {
+	    return NULL;
+	}
+	
+	hab = bionet_hab_get_user_data(h);
+
+	if (NULL == hab) {
+	    hab = (Hab *)calloc(1, sizeof(Hab));
+	    if (NULL == hab) {
+		return NULL;
+	    }
+	    hab->this = h;
+	    bionet_hab_set_user_data(hab->this, hab);
+	}
+
+	return hab;	
+    }
+
+}

@@ -111,7 +111,7 @@ typedef struct timeval
 	v->this = value;
 	bionet_value_set_user_data(value, v);
 	
-	arglist = Py_BuildValue("(OO)", SWIG_OORESOURCE_WRAPPER(r), SWIG_OOVALUE_WRAPPER(v));
+	arglist = Py_BuildValue("(OO)", SWIG_RESOURCEOO_WRAPPER(r), SWIG_VALUEOO_WRAPPER(v));
 	result = PyEval_CallObject(hp->setResourceCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {

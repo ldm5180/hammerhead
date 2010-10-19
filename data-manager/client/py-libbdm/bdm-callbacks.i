@@ -8,11 +8,11 @@
 	PyObject * newNodeCallback;
 	PyObject * lostNodeCallback;
 	PyObject * datapointCallback;
-    } BdmClient;
+    } BdmSubscriber;
 
-    static Bionet * bdm_client_singleton = NULL;
+    static BdmSubscriber * bdm_subscriber_singleton = NULL;
 
-    void pybdmoo_callback_lost_bdm(bionet_bdm_t *b) {
+    void pybdmoo_callback_lost_bdm(bionet_bdm_t *b, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
@@ -23,7 +23,7 @@
 	}
 
 	arglist = Py_BuildValue("(O)", SWIG_BDMOO_WRAPPER(bdm));
-	result = PyEval_CallObject(bdm_client_singleton->lostBdmCallback, arglist);
+	result = PyEval_CallObject(bdm_subscriber_singleton->lostBdmCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
 	    return;
@@ -31,7 +31,7 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_new_hab(bionet_bdm_t *b) {
+    void pybdmoo_callback_new_bdm(bionet_bdm_t *b, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
@@ -42,7 +42,7 @@
 	}
 
 	arglist = Py_BuildValue("(O)", SWIG_BDMOO_WRAPPER(bdm));
-	result = PyEval_CallObject(bdm_client_singleton->newBdmCallback, arglist);
+	result = PyEval_CallObject(bdm_subscriber_singleton->newBdmCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
 	    return;
@@ -50,7 +50,7 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_lost_hab(bionet_hab_t *h) {
+    void pybdmoo_callback_lost_hab(bionet_hab_t *h, bionet_event_t * event, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
@@ -61,7 +61,7 @@
 	}
 
 	arglist = Py_BuildValue("(O)", SWIG_HABOO_WRAPPER(hab));
-	result = PyEval_CallObject(bdm_client_singleton->lostHabCallback, arglist);
+	result = PyEval_CallObject(bdm_subscriber_singleton->lostHabCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
 	    return;
@@ -69,7 +69,7 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_new_hab(bionet_hab_t *h) {
+    void pybdmoo_callback_new_hab(bionet_hab_t *h, bionet_event_t * event, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
@@ -80,7 +80,7 @@
 	}
 
 	arglist = Py_BuildValue("(O)", SWIG_HABOO_WRAPPER(hab));
-	result = PyEval_CallObject(bdm_client_singleton->newHabCallback, arglist);
+	result = PyEval_CallObject(bdm_subscriber_singleton->newHabCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
 	    return;
@@ -88,7 +88,7 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_lost_node(bionet_node_t *n) {
+    void pybdmoo_callback_lost_node(bionet_node_t *n, bionet_event_t * event, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
@@ -99,7 +99,7 @@
 	}
 
 	arglist = Py_BuildValue("(O)", SWIG_NODEOO_WRAPPER(node));
-	result = PyEval_CallObject(bdm_client_singleton->lostNodeCallback, arglist);
+	result = PyEval_CallObject(bdm_subscriber_singleton->lostNodeCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
 	    return;
@@ -107,7 +107,7 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_new_node(bionet_node_t *n) {
+    void pybdmoo_callback_new_node(bionet_node_t *n, bionet_event_t * event, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 
@@ -118,7 +118,7 @@
 	}
 
 	arglist = Py_BuildValue("(O)", SWIG_NODEOO_WRAPPER(node));
-	result = PyEval_CallObject(bdm_client_singleton->newNodeCallback, arglist);
+	result = PyEval_CallObject(bdm_subscriber_singleton->newNodeCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
 	    return;
@@ -126,7 +126,7 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_datapoint(bionet_datapoint_t *d) {
+    void pybdmoo_callback_datapoint(bionet_datapoint_t *d, bionet_event_t * event, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 	Datapoint * datapoint;
@@ -161,7 +161,7 @@
 	}
 
 	arglist = Py_BuildValue("(O)", SWIG_DATAPOINTOO_WRAPPER(datapoint));
-	result = PyEval_CallObject(bdm_client_singleton->datapointCallback, arglist);
+	result = PyEval_CallObject(bdm_subscriber_singleton->datapointCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
 	    return;

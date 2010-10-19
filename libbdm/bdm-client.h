@@ -489,11 +489,12 @@ int bdm_subscribe_datapoints_by_name(const char * resource_name,
 
 
 /**
- * @brief Get the number of HABs available
+ * @brief Get the number of BDMs available
  * 
- * @return Number of available HABs
+ * @return Number of available BDMs
  */
-unsigned int bdm_cache_get_num_habs(void);
+unsigned int bdm_cache_get_num_bdms(void);
+
 
 /**
  * @brief Get a BDM by its index
@@ -517,6 +518,15 @@ bionet_bdm_t *bdm_cache_get_bdm_by_index(unsigned int index);
  */
 bionet_bdm_t *bdm_cache_lookup_bdm(const char *bdm_id);
 
+
+/**
+ * @brief Get the number of HABs available
+ * 
+ * @return Number of available HABs
+ */
+unsigned int bdm_cache_get_num_habs(void);
+
+
 /**
  * @brief Get a HAB by its index
  *
@@ -539,59 +549,6 @@ bionet_hab_t *bdm_cache_get_hab_by_index(unsigned int index);
  * @retval NULL Not found
  */
 bionet_hab_t *bdm_cache_lookup_hab(const char *hab_type, const char *hab_id);
-
-
-/**
- * @brief Looks through the locally cached information for a specific Node.
- *
- * @param[in] hab_type The HAB-Type to look up
- * @param[in] hab_id The HAB-ID to look up
- * @param[in] node_id The Node-ID to look up
- *
- * @return Pointer to the Node if found
- * @retval NULL Not found
- */
-bionet_node_t *bdm_cache_lookup_node(const char *hab_type, const char *hab_id, const char *node_id);
-
-/**
- * @brief Looks through the locally cached information for a specific Node.
- *
- * @param[in] node_uid The UUID of the node to return
- *
- * @return Pointer to the Node if found
- * @retval NULL Not found
- */
-bionet_node_t *bdm_cache_lookup_node_uid(const uint8_t node_uid[BDM_UUID_LEN]);
-
-/**
- * @brief Looks through the locally cached information for a specific Resource
- *
- * @param[in] node_uid The UUID of the node to return
- * @param[in] resource_id The Resource-ID to look up
- *
- * @return Pointer to the Resource if found
- * @retval NULL Not found
- */
-bionet_resource_t *bdm_cache_lookup_resource_uid(const uint8_t node_uid[BDM_UUID_LEN], const char *resource_id);
-
-
-
-#if 0
-/**
- * @brief Looks through the locally cached information for a specific Stream.
- *
- * @param[in] hab_type The HAB-Type to look up
- * @param[in] hab_id The HAB-ID to look up
- * @param[in] node_id The Node-ID to look up
- * @param[in] resource_id The Resource-ID to look up
- *
- * @return Pointer to the stream if found
- * @retval NULL Not found
- */
-bionet_stream_t *bdm_cache_lookup_stream(const char *hab_type, const char *hab_id, const char *node_id, const char *resource_id);
-#endif
-
-
 
 
 #endif
