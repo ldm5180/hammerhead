@@ -37,7 +37,6 @@ all-local: $(DOXYGEN_INPUT) doxygen/html/index.html
 doxygen/html/index.html: $(DOXYGEN_INPUT) $(DOXYFILE)
 	doxygen $(DOXYFILE)
 
-$(DOXYFILE): doxygen/html/index.html
 $(DOXYGEN_FILES): doxygen/html/index.html
 
 clean-local:
