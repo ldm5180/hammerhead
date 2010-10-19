@@ -13,6 +13,12 @@ double find_voltage(int adc, double ev)
     // type one
     if(type < 0)
     {
+        // check if ev is out of range of possible ev's. if so return nearest corresponding voltage
+        if(ev > table[adc][255][ENG_VAL])
+            return table[adc][255][VOLTAGE];
+        else if(ev < table[adc][0][ENG_VAL]) 
+            return table[adc][0][VOLTAGE];
+
         for(int i=1; i<256; i++)
         {
             // if desired ev is between ev of last and current voltage use it
@@ -25,6 +31,12 @@ double find_voltage(int adc, double ev)
     // type two
     else if(type > 0)
     {
+        // check if ev is out of range of possible ev's. if so return nearest corresponding voltage
+        if(ev > table[adc][0][ENG_VAL])
+            return table[adc][0][VOLTAGE];
+        else if(ev < table[adc][255][ENG_VAL])
+            return table[adc][255][ENG_VAL];
+
         for(int i=1; i<256; i++)
         {
             // if desired ev is between ev of last and current voltage use it
