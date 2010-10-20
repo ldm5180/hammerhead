@@ -16,32 +16,32 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 
-def Update(hab, f):
-    node = bionet_hab_get_node_by_index(hab, random.randint(0, bionet_hab_get_num_nodes(hab)))
+def Update(habpublisher, f):
+    node = habpublisher.hab.node(random.randint(0, habpublisher.hab.numNodes() - 1))
 
     if (node != None):
-        logger.info("updating Resources on Node " + bionet_node_get_id(node))
-        if (0 == bionet_node_get_num_resources(node)):
+        logger.info("updating Resources on Node " + node.id())
+        if (0 == node.numResources()):
             logger.info("    no Resources, skipping")
-        for i in range(bionet_node_get_num_resources(node)):
-            resource = bionet_node_get_resource_by_index(node, i);
+        for i in range(node.numResources()):
+            resource = node.resource(i)
             
 
             #resources are only updated 50% of the time
             if ((random.randint(0,1)) == 0):
-                logger.info("    " + bionet_resource_get_id(resource) + " " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " = " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " = *** skipped")
+                logger.info("    " + resource.id() + " " + resource.datatypeToString() + " = " + resource.flavorToString() + " = *** skipped")
             else:
                 set_random_resource_value.Set(resource)
 
-                datapoint = bionet_resource_get_datapoint_by_index(resource, 0)
-                value = bionet_datapoint_get_value(datapoint)
-                hab = bionet_node_get_hab(node)
-                logger.info("    " + bionet_resource_get_id(resource) + " " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " = " + bionet_value_to_str(bionet_datapoint_get_value(datapoint)))
+                datapoint = resource.datapoint(0)
+                value = datapoint.value()
+                hab = node.hab()
+                logger.info("    " + resource.id() + " " + resource.datatypeToString() + " = " + resource.flavorToString() + " = " + value)
                 if (f):
-                    output_string = bionet_datapoint_timestamp_to_string(datapoint) + "," + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab) + "." + bionet_node_get_id(node) + ":" + bionet_resource_get_id(resource) + "," + bionet_value_to_str(value) + "\n"
+                    output_string = datapoint.timestampToString() + "," + hab.type() + "." + hab.id() + "." + node.id() + ":" + resource.id() + "," + value + "\n"
                     f.write(output_string)
 
 
-            if (hab_report_datapoints(node)):
+            if (habpublisher.reportDatapoints(node)):
                 logger.warning("PROBLEM UPDATING!!!\n");
 

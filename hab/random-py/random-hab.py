@@ -11,6 +11,7 @@ import optparse
 import logging
 import time
 import random
+from select import select 
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--id", dest="hab_id", default="python",
@@ -48,7 +49,7 @@ import destroy_node
 import update_node
 
 
-def pycb_set_resource(resource, value):
+def cb_set_resource(resource, value):
     print "callback: should set " + bionet_resource_get_local_name(resource) + " to " + bionet_value_to_str(value)
 
 
@@ -59,43 +60,59 @@ if (options.security_dir != None):
 
 
 #connect to bionet
-hab = bionet_hab_new("RANDOM", options.hab_id)
-pyhab_register_callback_set_resource(pycb_set_resource);
-bionet_fd = hab_connect(hab)
-if (0 > bionet_fd):
+hab = Hab("RANDOM", options.hab_id)
+if (None == hab):
     logger.warning("problem connection to Bionet, exiting\n")
     exit(1)
+
+habp = HabPublisher(hab)
+
+habp.setResourceCallback = cb_set_resource;
+
+habp.connect()
 
 loops = 0
 
 #test mode. open the output file and sleep to let subscribers catch up
 if (options.test):
     f = open(options.test, "w")
-    time.sleep(10)
+    time.sleep(3)
 else:
     f = None;
 
 
-hab_read()
+fd_list = []
+if (habp.fd != -1):
+    fd_list.append(habp.fd)
 
-#make nodes
+remaining = options.max_delay
+elapsed = 0
 while (int(options.loops) == 0) or (loops < int(options.loops)):
-    while(bionet_hab_get_num_nodes(hab) < options.min_nodes):
-        add_node.Add(hab, f)
-
-    while(bionet_hab_get_num_nodes(hab) > (2 * options.min_nodes)):
-        destroy_node.Destroy(hab, f)
-
-    rnd = random.randint(0,100)
-
-    if (rnd < 10):
-        destroy_node.Destroy(hab, f)
-    elif (rnd < 20):
-        add_node.Add(hab, f)
+    # select on the fd list and wait for some seconds.
+    curtime = time.time()
+    (rr, wr, er) = select(fd_list, [], [], remaining)
+    for fd in rr:
+        if (fd == habp.fd):
+            habp.read()
+    elapsed += (time.time() - curtime)
+    if (elapsed < remaining):
+        remaining = options.max_delay - elapsed
+        continue
     else:
-        update_node.Update(hab, f)
+        while (habp.hab.numNodes() < options.min_nodes):
+            add_node.Add(habp, f)
 
-    hab_read()
-    loops = loops + 1
-    time.sleep(options.max_delay)
+        while (habp.hab.numNodes() > 2 * options.min_nodes):
+            destroy_node.Destroy(habp, f)
 
+        rnd = random.randint(0,100)
+
+        if (rnd < 10):
+            destroy_node.Destroy(habp, f)
+        elif (rnd < 20):
+            add_node.Add(habp, f)
+        else:
+            update_node.Update(habp, f)
+        
+        loops = loops + 1
+        remaining = options.max_delay
