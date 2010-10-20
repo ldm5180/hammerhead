@@ -35,6 +35,9 @@
 
     Node * node() {
 	bionet_node_t * n = bionet_resource_get_node($self->this); 
+	if (NULL == n) {
+	    return NULL;
+	}
 	bionet_node_increment_ref_count(n);
 	return (Node *)bionet_node_get_user_data(n);
     }
@@ -612,6 +615,9 @@
 
     Datapoint * datapoint(unsigned int index) { 
 	bionet_datapoint_t * d = bionet_resource_get_datapoint_by_index($self->this, index); 
+	if (NULL == d) {
+	    return NULL;
+	}
 	bionet_datapoint_increment_ref_count(d);
 	return (Datapoint *)bionet_datapoint_get_user_data(d);
     }

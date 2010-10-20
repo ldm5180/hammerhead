@@ -68,11 +68,17 @@
     }
     Node * node(const char * node_id) {
 	bionet_node_t * n = bionet_hab_get_node_by_id((bionet_hab_t *)$self->this, node_id);
+	if (NULL == n) {
+	    return NULL;
+	}
 	bionet_node_increment_ref_count(n);
 	return (Node *)bionet_node_get_user_data(n);
     }
     Node * node(const char * node_id, const uint8_t node_uid[BDM_UUID_LEN]) {
 	bionet_node_t * n = bionet_hab_get_node_by_id_and_uid((bionet_hab_t *)$self->this, node_id, node_uid);
+	if (NULL == n) {
+	    return NULL;
+	}
 	bionet_node_increment_ref_count(n);
 	return (Node *)bionet_node_get_user_data(n);
     }
@@ -81,6 +87,9 @@
     }
     Node * node(unsigned int index) {
 	bionet_node_t * n = bionet_hab_get_node_by_index((bionet_hab_t *)$self->this, index);
+	if (NULL == n) {
+	    return NULL;
+	}
 	bionet_node_increment_ref_count(n);
 	return (Node *)bionet_node_get_user_data(n);
     }
@@ -92,10 +101,18 @@
 	return r;
     }
     Node * remove(const char * node_id) {
-	return (Node *)bionet_node_get_user_data(bionet_hab_remove_node_by_id((bionet_hab_t *)$self->this, node_id));
+	Node * node = (Node *)bionet_node_get_user_data(bionet_hab_remove_node_by_id((bionet_hab_t *)$self->this, node_id));
+	if (node) {
+	    bionet_node_free(node->this);
+	}
+	return node;
     }
     Node * remove(const char *node_id, const uint8_t node_uid[BDM_UUID_LEN]) {
-	return (Node *)bionet_node_get_user_data(bionet_hab_remove_node_by_id_and_uid((bionet_hab_t *)$self->this, node_id, node_uid));
+	Node * node = (Node *)bionet_node_get_user_data(bionet_hab_remove_node_by_id_and_uid((bionet_hab_t *)$self->this, node_id, node_uid));
+	if (node) {
+	    bionet_node_free(node->this);
+	}
+	return node;
     }
     int removeAll() {
 	return bionet_hab_remove_all_nodes((bionet_hab_t *)$self->this);

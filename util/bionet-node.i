@@ -51,12 +51,18 @@
 
     Resource * resource(unsigned int index) { 
 	bionet_resource_t * r = bionet_node_get_resource_by_index($self->this, index);
+	if (NULL == r) {
+	    return NULL;
+	}
 	bionet_resource_increment_ref_count(r);
 	return (Resource *)bionet_resource_get_user_data(r);
     }
 
     Resource * resource(const char * id) { 
 	bionet_resource_t * r = bionet_node_get_resource_by_id($self->this, id);
+	if (NULL == r) {
+	    return NULL;
+	}
 	bionet_resource_increment_ref_count(r);
 	return (Resource *)bionet_resource_get_user_data(r);
     }
