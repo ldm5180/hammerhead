@@ -84,200 +84,208 @@ if (options.bdm_only) and (datapoint_start == None) and (datapoint_end == None):
 
 #bionet callbacks
 def cb_lost_hab(hab):
-    print("lost hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab))
+    print("lost hab: " + hab.name())
 
 
 def cb_new_hab(hab):
-    print("new hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab))
+    print("new hab: " + hab.name())
 
 
 def cb_new_node(node):
-    hab = bionet_node_get_hab(node)
+    hab = node.hab()
 	
-    print("new node: " + bionet_node_get_name(node))
+    print("new node: " + node.name())
 	
-    if (bionet_node_get_num_resources(node)):
+    if (node.numResources()):
         print("    Resources:")
 	    
-        for i in range(bionet_node_get_num_resources(node)):
-            resource = bionet_node_get_resource_by_index(node, i)
-            datapoint = bionet_resource_get_datapoint_by_index(resource, 0)
+        for i in range(node.numResources()):
+            resource = node.resource(i)
+            datapoint = resource.datapoint(0)
 		
             if (datapoint == None):
-                print("        " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + bionet_resource_get_id(resource) + ": (no known value)")
+                print("        " + resource.datatypeToString() + " " + resource.flavorToString() + " " + resource.id() + ": (no known value)")
             
             else:
-                value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+                value = datapoint.value()
                 #%s %s %s = %s @ %s 
-                print("        " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + bionet_resource_get_id(resource) + " = " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
+                print("        " + resource.datatypeToString() + " " + resource.flavorToString() + " " + resource.id() + " = " + str(value) + " @ " + datapoint.timestampToString())
 
-    if (bionet_node_get_num_streams(node)):
-        print("    Streams:")
-    
-        for i in range(bionet_node_get_num_streams(node)):
-            stream = bionet_node_get_stream_by_index(node, i)
-            print("        " + bionet_stream_get_id(stream) + " " + bionet_stream_get_type(stream) + " " + bionet_stream_direction_to_string(bionet_stream_get_direction(stream)))
+# TODO: streams are not yet implemented in OO bindings
+#    if (bionet_node_get_num_streams(node)):
+#        print("    Streams:")
+#    
+#        for i in range(bionet_node_get_num_streams(node)):
+#            stream = bionet_node_get_stream_by_index(node, i)
+#            print("        " + bionet_stream_get_id(stream) + " " + bionet_stream_get_type(stream) + " " + bionet_stream_direction_to_string(bionet_stream_get_direction(stream)))
 
 
 def cb_lost_node(node):
-    hab = bionet_node_get_hab(node);
-    print("lost node: " + bionet_node_get_name(node))
+    print("lost node: " + node.name())
 
 
 def cb_datapoint(datapoint):
-    value = bionet_datapoint_get_value(datapoint);
-    resource = bionet_value_get_resource(value);
-    node = bionet_resource_get_node(resource);
-    hab = bionet_node_get_hab(node);
+    value = datapoint.value()
+    resource = datapoint.resource()
+    node = resource.node()
+    hab = node.hab()
     
-    value_str = bionet_value_to_str(value);
     #"%s.%s.%s:%s = %s %s %s @ %s"    
-    print(bionet_resource_get_name(resource) + " = " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
+    print(resource.name() + " = " + resource.datatypeToString() + " " + resource.flavorToString() + " " + str(value) + " @ " + datapoint.timestampToString())
 
 
 #bdm callbacks
+def cb_bdm_lost_bdm(bdm):
+    print("BDM lost bdm: " + bdm.id())
+
+
+def cb_bdm_new_bdm(bdm):
+    print("BDM new bdm: " + bdm.id())
+
+
 def cb_bdm_lost_hab(hab):
-    print("BDM lost hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab))
+    print("BDM lost hab: " + hab.name())
 
 
 def cb_bdm_new_hab(hab):
-    print("BDM new hab: " + bionet_hab_get_type(hab) + "." + bionet_hab_get_id(hab))
+    print("BDM new hab: " + hab.name())
 
 
 def cb_bdm_new_node(node):
-    hab = bionet_node_get_hab(node)
+    hab = node.hab()
 	
-    print("BDM new node: " + bionet_node_get_name(node))
+    print("BDM new node: " + node.name())
 	
-    if (bionet_node_get_num_resources(node)):
+    if (node.numResources()):
         print("    BDM Resources:")
 	    
-        for i in range(bionet_node_get_num_resources(node)):
-            resource = bionet_node_get_resource_by_index(node, i)
-            datapoint = bionet_resource_get_datapoint_by_index(resource, 0)
+        for i in range(node.numResources()):
+            resource = node.Resource(i)
+            datapoint = resource.datapoint(0)
 		
             if (datapoint == None):
-                print("        BDM " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + bionet_resource_get_id(resource) + ": (no known value)")
+                print("        BDM " + resource.datatypeToString() + " " + resource.flavorToString() + " " + resource.id() + ": (no known value)")
             
             else:
-                value_str = bionet_value_to_str(bionet_datapoint_get_value(datapoint));
+                value = datapoint.value()
                 #%s %s %s = %s @ %s 
-                print("        BDM " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + bionet_resource_get_id(resource) + " = " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
+                print("        BDM " + resource.datatypeToString() + " " + resource.flavorToString() + " " + resource.id() + " = " + str(value) + " @ " + datapoint.timestampToString())
 
-    if (bionet_node_get_num_streams(node)):
-        print("    BDM Streams:")
-    
-        for i in range(bionet_node_get_num_streams(node)):
-            stream = bionet_node_get_stream_by_index(node, i)
-            print("        BDM " + bionet_stream_get_id(stream) + " " + bionet_stream_get_type(stream) + " " + bionet_stream_direction_to_string(bionet_stream_get_direction(stream)))
+# TODO: streams are not yet implemented in OO bindings
+#    if (bionet_node_get_num_streams(node)):
+#        print("    BDM Streams:")
+#    
+#        for i in range(bionet_node_get_num_streams(node)):
+#            stream = bionet_node_get_stream_by_index(node, i)
+#            print("        BDM " + bionet_stream_get_id(stream) + " " + bionet_stream_get_type(stream) + " " + bionet_stream_direction_to_string(bionet_stream_get_direction(stream)))
 
 
 def cb_bdm_lost_node(node):
-    hab = bionet_node_get_hab(node);
-    print("BDM lost node: " + bionet_node_get_name(node))
+    print("BDM lost node: " + node.name())
 
 
 def cb_bdm_datapoint(datapoint):
-    value = bionet_datapoint_get_value(datapoint);
-    resource = bionet_value_get_resource(value);
-    node = bionet_resource_get_node(resource);
-    hab = bionet_node_get_hab(node);
+    value = datapoint.value()
+    resource = datapoint.resource()
+    node = resource.node()
+    hab = node.hab()
     
-    value_str = bionet_value_to_str(value);
-    #"%s.%s.%s:%s = %s %s %s @ %s"    
-    print("BDM " + bionet_resource_get_name(resource) + " = " + bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)) + " " + bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)) + " " + value_str + " @ " + bionet_datapoint_timestamp_to_string(datapoint))
+    #"BDM %s.%s.%s:%s = %s %s %s @ %s"    
+    print("BDM " + resource.name() + " = " + resource.datatypeToString() + " " + resource.flavorToString() + " " + str(value) + " @ " + datapoint.timestampToString(datapoint))
 
     
 if (options.security_dir != None):
     bionet_init_security(options.security_dir, options.require_security)
 
-bdm_fd = -1
-bionet_fd = -1
+bn = None
+bdm_sub = None
 
 if (options.bdm_only == False):
-    bionet_fd = bionet_connect()
-    if (0 > bionet_fd):
+    bn = Bionet()
+    if (None == bn):
         logger.error("error connecting to Bionet")
         exit(1)
     else:
         logger.info("connected to Bionet")
 
 if (datapoint_start != None) or (datapoint_end != None):
-    bdm_fd = bdm_start() 
-    if (bdm_fd < 0):
-        logger.error("Failed to connect to Bionet Data Manager.")
+    bdm_sub = BdmSubscriber() 
+    if (None == bdm_sub):
+        logger.error("Failed to connect to Bionet Data Manager network.")
         exit(1)
     else:
-        logger.info("connected to Bionet Data Manager")
+        logger.info("connected to Bionet Data Manager network")
 
 
-if (bionet_fd == -1) and (bdm_fd == -1):
+if (None == bn) and (None == bdm_sub):
     logger.error("Failed to connect to both Bionet and Bionet Data Manager.")
     sys.exit(1)
 
 # register Bionet callbacks
-if (bionet_fd != -1):
-    pybionet_register_callback_new_hab(cb_new_hab)
-    pybionet_register_callback_lost_hab(cb_lost_hab);
-    pybionet_register_callback_new_node(cb_new_node);
-    pybionet_register_callback_lost_node(cb_lost_node);
-    pybionet_register_callback_datapoint(cb_datapoint);
+if (None != bn):
+    bn.newHabCallback = cb_new_hab;
+    bn.lostHabCallback = cb_lost_hab
+    bn.newNodeCallback = cb_new_node
+    bn.lostNodeCallback = cb_lost_node
+    bn.datapointCallback = cb_datapoint
 
     bionet_subscribed_to_something = 0;
 
     if (options.hab_name):
-        bionet_subscribe_hab_list_by_name(options.hab_name)
-        bionet_subscribed_to_something = 1;
+        bn.subscribe(options.hab_name)
+        bionet_subscribed_to_something = 1
     if (options.node_name):
-        bionet_subscribe_node_list_by_name(options.node_name)
-        bionet_subscribed_to_something = 1;
+        bn.subscribe(options.node_name)
+        bionet_subscribed_to_something = 1
     if (options.resource_name):
-        bionet_subscribe_datapoints_by_name(options.resource_name)
-        bionet_subscribed_to_something = 1;
+        bn.subscribe(options.resource_name)
+        bionet_subscribed_to_something = 1
 
     if (0 == bionet_subscribed_to_something):
-        bionet_subscribe_hab_list_by_name("*.*");
-        bionet_subscribe_node_list_by_name("*.*.*");
-        bionet_subscribe_datapoints_by_name("*.*.*:*");
+        bn.subscribe("*.*")
+        bn.subscribe("*.*.*")
+        bn.subscribe("*.*.*:*")
 
 
 # register BDM callbacks
-if (bdm_fd != -1):
-    pybdm_register_callback_new_hab(cb_bdm_new_hab, None)
-    pybdm_register_callback_lost_hab(cb_bdm_lost_hab, None);
-    pybdm_register_callback_new_node(cb_bdm_new_node, None);
-    pybdm_register_callback_lost_node(cb_bdm_lost_node, None);
-    pybdm_register_callback_datapoint(cb_bdm_datapoint, None);
+if (None != bdm_sub):
+    bdm_sub.newBdmCallback = cb_bdm_new_bdm
+    bdm_sub.lostBdmCallback = cb_bdm_lost_bdm
+    bdm_sub.newHabCallback = cb_bdm_new_hab
+    bdm_sub.lostHabCallback = cb_bdm_lost_hab
+    bdm_sub.newNodeCallback = cb_bdm_new_node
+    bdm_sub.lostNodeCallback = cb_bdm_lost_node
+    bdm_sub.datapointCallback = cb_bdm_datapoint
 
     bdm_subscribed_to_something = 0;
 
     if (options.hab_name):
-        bdm_subscribe_hab_list_by_name(options.hab_name)
-        bdm_subscribed_to_something = 1;
+        bdm_sub.subscribe(options.hab_name)
+        bdm_subscribed_to_something = 1
     if (options.node_name):
-        bdm_subscribe_node_list_by_name(options.node_name)
-        bdm_subscribed_to_something = 1;
+        bdm_sub.subscribe(options.node_name)
+        bdm_subscribed_to_something = 1
     if (options.resource_name):
-        bdm_subscribe_datapoints_by_name(options.resource_name, datapoint_start, datapoint_end)
-        bdm_subscribed_to_something = 1;
+        bdm_sub.subscribe(options.resource_name, datapoint_start, datapoint_end)
+        bdm_subscribed_to_something = 1
 
     if (0 == bdm_subscribed_to_something):
-        bdm_subscribe_hab_list_by_name("*.*");
-        bdm_subscribe_node_list_by_name("*.*.*");
-        bdm_subscribe_datapoints_by_name("*.*.*:*", datapoint_start, datapoint_end);
+        bdm_sub.subscribe("*.*")
+        bdm_sub.subscribe("*.*.*")
+        bdm_sub.subscribe("*.*.*:*", datapoint_start, datapoint_end)
 
 fd_list = []
-if (bionet_fd != -1):
-    fd_list.append(bionet_fd)
-if (bdm_fd != -1):
-    fd_list.append(bdm_fd)
+if (None != bn):
+    fd_list.append(bn.fd)
+if (None != bdm_sub):
+    fd_list.append(bdm_sub.fd)
 
 while(1):
      (rr, wr, er) = select(fd_list, [], [])
      for fd in rr:
-         if (fd == bionet_fd):
+         if (None != bn and fd == bn.fd):
              #logger.info("Reading from Bionet...");
-             bionet_read()
-         if (fd == bdm_fd):
+             bn.read()
+         if (None != bdm_sub and fd == bdm_sub.fd):
              #logger.info("Reading from BDM...");
-             bdm_read()
+             bdm_sub.read()
