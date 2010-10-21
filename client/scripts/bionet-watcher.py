@@ -160,7 +160,7 @@ def cb_bdm_new_node(node):
         print("    BDM Resources:")
 	    
         for i in range(node.numResources()):
-            resource = node.Resource(i)
+            resource = node.resource(i)
             datapoint = resource.datapoint(0)
 		
             if (datapoint == None):
@@ -191,7 +191,7 @@ def cb_bdm_datapoint(datapoint):
     hab = node.hab()
     
     #"BDM %s.%s.%s:%s = %s %s %s @ %s"    
-    print("BDM " + resource.name() + " = " + resource.datatypeToString() + " " + resource.flavorToString() + " " + str(value) + " @ " + datapoint.timestampToString(datapoint))
+    print("BDM " + resource.name() + " = " + resource.datatypeToString() + " " + resource.flavorToString() + " " + str(value) + " @ " + datapoint.timestampToString())
 
     
 if (options.security_dir != None):
@@ -270,9 +270,9 @@ if (None != bdm_sub):
         bdm_subscribed_to_something = 1
 
     if (0 == bdm_subscribed_to_something):
-        bdm_sub.subscribe("*.*")
-        bdm_sub.subscribe("*.*.*")
-        bdm_sub.subscribe("*.*.*:*", datapoint_start, datapoint_end)
+        bdm_sub.subscribeToHab("*.*")
+        bdm_sub.subscribeToNode("*.*.*")
+        bdm_sub.subscribeToDatapoints("*.*.*:*", datapoint_start, datapoint_end)
 
 fd_list = []
 if (None != bn):
