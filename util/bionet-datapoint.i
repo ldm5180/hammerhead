@@ -19,6 +19,7 @@
     ~Datapoint() {
 	int free_me = 0;
 	if (0 == bionet_datapoint_get_ref_count($self->this)) {
+	    bionet_datapoint_set_user_data($self->this, NULL);
 	    free_me = 1;
 	}
 	bionet_datapoint_free($self->this);

@@ -34,6 +34,7 @@
 	    bionet_hab_set_user_data(hab->this, ud);
 	}
 
+	bionet_hab_increment_ref_count(h);
 	return ud->hab;
     }
 
@@ -75,6 +76,7 @@
 	    bionet_resource_set_user_data(res, resource);
 	}
 
+	bionet_node_increment_ref_count(n);
 	return node;
     }
 
@@ -97,6 +99,7 @@
 	    bionet_bdm_set_user_data(bdm->this, bdm);
 	}
 
+	bionet_bdm_increment_ref_count(b);
 	return bdm;
     }
 

@@ -21,6 +21,11 @@ void bionet_bdm_free(bionet_bdm_t *bdm) {
         return;
     }
 
+    if(bdm->ref) {
+	bdm->ref = bdm->ref - 1;
+	return;
+    }
+
     /* run all the destructors */
     g_slist_foreach(bdm->destructors,
 		    bdm_destroy,

@@ -50,7 +50,7 @@ def add_resource(node, f):
         if (value):
             logger.info("    " + resource_id + " " + resource.datatypeToString() + " " +  resource.flavorToString() + " = " + str(value))
             if (f):
-                output_string = datapoint.timestampToString() + "," + hab.type() + "." + hab.id() + "." + node.id() + ":" + resource.id() + "," + str(value) + "\n"
+                output_string = datapoint.timestampToString() + "," + resource.name() + "," + str(value) + "\n"
                 f.write(output_string)
 
         else:

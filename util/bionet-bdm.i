@@ -24,6 +24,7 @@
     ~Bdm() {
 	int free_me = 0;
 	if (0 == bionet_bdm_get_ref_count($self->this)) {
+	    bionet_bdm_set_user_data($self->this, NULL);
 	    free_me = 1;
 	}
 	bionet_bdm_free($self->this);

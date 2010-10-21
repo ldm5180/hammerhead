@@ -50,6 +50,7 @@
     ~Hab() {
 	int free_me = 0;
 	if (0 == bionet_hab_get_ref_count($self->this)) {
+	    bionet_hab_set_user_data($self->this, NULL);
 	    free_me = 1;
 	}
 	bionet_hab_free($self->this);

@@ -19,6 +19,7 @@
     ~Node() {
 	int free_me = 0;
 	if (0 == bionet_node_get_ref_count($self->this)) {
+	    bionet_node_set_user_data($self->this, NULL);
 	    free_me = 1;
 	}
 	bionet_node_free($self->this);

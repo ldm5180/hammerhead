@@ -24,9 +24,6 @@ void bionet_resource_free(bionet_resource_t *resource) {
 
     if (resource->ref) {
 	resource->ref = resource->ref - 1;
-
-	//TODO: remove ptrs from values
-
 	return;
     }
 

@@ -36,9 +36,9 @@ def Update(habpublisher, f):
                 datapoint = resource.datapoint(0)
                 value = datapoint.value()
                 hab = node.hab()
-                logger.info("    " + resource.id() + " " + resource.datatypeToString() + " = " + resource.flavorToString() + " = " + value)
+                logger.info("    " + resource.id() + " " + resource.datatypeToString() + " = " + resource.flavorToString() + " = " + str(value))
                 if (f):
-                    output_string = datapoint.timestampToString() + "," + hab.type() + "." + hab.id() + "." + node.id() + ":" + resource.id() + "," + value + "\n"
+                    output_string = datapoint.timestampToString() + "," + resource.name() + "," + str(value) + "\n"
                     f.write(output_string)
 
 
