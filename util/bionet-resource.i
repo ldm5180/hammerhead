@@ -640,13 +640,35 @@
 								       resource_id); 
     }
 
-    bionet_epsilon_t * epsilon() { return bionet_resource_get_epsilon($self->this); }
+#ifdef LIBHAB
+    Epsilon * epsilon() { 
+	bionet_epsilon_t * e = bionet_resource_get_epsilon($self->this);
+	if (NULL == e) {
+	    return NULL;
+	}
 
-    int setEpislon(bionet_epsilon_t * epsilon) { return bionet_resource_set_epsilon($self->this, epsilon); }
+	Epsilon * epsilon = bionet_epsilon_get_user_data(e);
+	if (NULL == epsilon) {
+	    epsilon = (Epsilon *)calloc(1, sizeof(Epsilon));
+	    if (NULL == epsilon) {
+		g_warning("bionet-resource.i: Failed to allocate memory for epsilon");
+		return NULL;
+	    }
+	    epsilon->this = e;
+	    bionet_epsilon_set_user_data(epsilon->this, epsilon);
+	}
+
+	return epsilon;
+    }
+
+    int setEpislon(Epsilon * epsilon) { 
+	return bionet_resource_set_epsilon($self->this, epsilon->this); 
+    }
 
     int setDelta(struct timeval delta) { return bionet_resource_set_delta($self->this, delta); }
 
     const struct timeval * delta() { return bionet_resource_get_delta($self->this); }
+#endif /* LIBHAB */
 
     int add(void (*destructor)(bionet_resource_t * resource, void * user_data),
 		      void * user_data) {

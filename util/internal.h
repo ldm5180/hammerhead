@@ -80,6 +80,8 @@ struct bionet_stream_opaque_t {
     char *local_name;
 
     const void *user_data;  // const because the bionet library wont monkey with it
+    
+    unsigned int ref;
 };
 
 
@@ -108,21 +110,21 @@ typedef union {
     char *string_v; /**< NULL-terminated array of characters */
 } bionet_datapoint_value_t;
 
-typedef union {
+typedef union { 
     int binary_v; /**< 0 or 1, TRUE or FALSE */
-
+    
     uint8_t  uint8_v; /**< 8-bit unsigned integer */
     int8_t   int8_v; /**< 8-bit signed integer */
-
+    
     uint16_t uint16_v; /**< 16-bit unsigned integer */
     int16_t  int16_v; /**< 16-bit signed integer */
-
+    
     uint32_t uint32_v; /**< 32-bit unsigned integer */
     int32_t  int32_v; /**< 32-bit signed integer */
-
+    
     float float_v; /**< float */
     double double_v; /**< double */
-
+    
     int string_v; /**< return value of strncmp() */
 } bionet_epsilon_value_t;
 
@@ -184,6 +186,10 @@ struct bionet_datapoint_opaque_t {
 
 struct bionet_epsilon_opaque_t {
     bionet_epsilon_value_t content;
+
+    const void * user_data;
+
+    unsigned int ref;
 };
 
 

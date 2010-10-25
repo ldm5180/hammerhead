@@ -70,6 +70,7 @@ typedef struct timeval
 %include "bionet-wrappers.i"
 %include "bdm-callbacks.i"
 
+
 %inline %{
 #define SWIG_BDM_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_bdm_opaque_t, 1)
 #define SWIG_HAB_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_hab_opaque_t, 1)

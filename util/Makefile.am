@@ -54,10 +54,12 @@ libbionet_util_la_SOURCES =    \
     bdm-user-data.c            \
     event-get.c                \
     event-alloc.c              \
-    epsilon-free.c               \
-    epsilon-get.c                \
-    epsilon-new.c                \
-    epsilon-to-string.c          \
+    epsilon-free.c             \
+    epsilon-get.c              \
+    epsilon-incref.c           \
+    epsilon-new.c              \
+    epsilon-to-string.c        \
+    epsilon-user-data.c        \
     hab-add-node.c             \
     hab-destructor.c           \
     hab-event.c                \
@@ -129,6 +131,7 @@ libbionet_util_la_SOURCES =    \
     stream-user-data.c                  \
     stream-node.c                       \
     stream-hab.c                        \
+    stream-incref.c                     \
     value-as-string.c                   \
     value-check-epsilon-delta.c         \
     value-free.c                        \

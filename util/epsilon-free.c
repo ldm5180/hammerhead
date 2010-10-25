@@ -26,6 +26,11 @@ void bionet_epsilon_free(bionet_epsilon_t *epsilon)
 	return;
     }
     
+    if(epsilon->ref) {
+	epsilon->ref = epsilon->ref - 1;
+	return;
+    }
+
     free(epsilon);
 
     return;

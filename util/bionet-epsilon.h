@@ -393,6 +393,58 @@ int bionet_epsilon_get_str(const bionet_epsilon_t *epsilon,
 			   int * content);
 
 
+/**
+ * @brief Set the user-data annotation of a Epsilon
+ *
+ * @param[in] epsilon The Epsilon
+ * @param[in] user_data The data to annotate the Epsilon with.
+ *
+ * @note If the user sets the user data, then the user is 
+ *       responsible for freeing the it and setting it to 
+ *       NULL before the hab is free'd.
+ */
+BIONET_UTIL_API_DECL
+void bionet_epsilon_set_user_data(bionet_epsilon_t *epsilon, const void *user_data);
+
+
+/**
+ * @brief Get the user-data annotation of a Epsilon
+ *
+ * @param[in] epsilon The Epsilon
+ *
+ * @return The user_data pointer, or NULL if none has been set.
+ */
+BIONET_UTIL_API_DECL
+void *bionet_epsilon_get_user_data(const bionet_epsilon_t *epsilon);
+
+
+/**
+ * @brief Increment the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] epsilon Hab to increment the reference count for
+ */
+BIONET_UTIL_API_DECL
+void bionet_epsilon_increment_ref_count(bionet_epsilon_t * epsilon);
+
+
+/**
+ * @brief Get the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] epsilon Epsilon to get the reference count for
+ *
+ * @return Number of references currently held.
+ */
+BIONET_UTIL_API_DECL
+unsigned int bionet_epsilon_get_ref_count(bionet_epsilon_t * epsilon);
+
 
 #ifdef __cplusplus
 }

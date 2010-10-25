@@ -31,4 +31,13 @@ typedef struct {
     bionet_bdm_t * this;
 } Bdm;
 
+typedef struct {
+    bionet_epsilon_t * this;
+    bionet_resource_data_type_t datatype;
+} Epsilon;
+
+typedef struct {
+    bionet_stream_t * this;
+} Stream;
+
 #endif /* BIONET_SWIG_TYPES */

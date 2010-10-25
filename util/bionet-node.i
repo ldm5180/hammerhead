@@ -68,13 +68,55 @@
 	return (Resource *)bionet_resource_get_user_data(r);
     }
 
-    int addStream(bionet_stream_t * stream) { return bionet_node_add_stream((bionet_node_t *)$self->this, stream); }
+    int add(Stream * stream) { return bionet_node_add_stream($self->this, stream->this); }
 
     int numStreams() { return bionet_node_get_num_streams((bionet_node_t *)$self->this); }
 
-    bionet_stream_t * stream(unsigned int index) { return bionet_node_get_stream_by_index((bionet_node_t *)$self->this, index); }
+    Stream * stream(unsigned int index) { 
+	Stream * stream;
+	bionet_stream_t * s = bionet_node_get_stream_by_index($self->this, index); 
+	if (NULL == s) {
+	    return NULL;
+	}
+	
+	stream = bionet_stream_get_user_data(s);
+	if (NULL == stream) {
+	    stream = (Stream *)calloc(1, sizeof(Stream));
+	    if (NULL == stream) {
+		g_warning("bionet-node.i: Failed to allocate memory for stream.");
+		return NULL;
+	    }
 
-    bionet_stream_t * stream(const char * id) { return bionet_node_get_stream_by_id((bionet_node_t *)$self->this, id); }
+	    stream->this = s;
+	    bionet_stream_set_user_data(stream->this, stream);
+	}
+	
+	bionet_stream_increment_ref_count(stream->this);
+	return stream;
+    }
+
+    Stream * stream(const char * id) { 
+	Stream * stream;
+	bionet_stream_t * s = bionet_node_get_stream_by_id((bionet_node_t *)$self->this, id); 
+	if (NULL == s) {
+	    return NULL;
+	}
+	
+	stream = bionet_stream_get_user_data(s);
+	if (NULL == stream) {
+	    stream = (Stream *)calloc(1, sizeof(Stream));
+	    if (NULL == stream) {
+		g_warning("bionet-node.i: Failed to allocate memory for stream.");
+		return NULL;
+	    }
+
+	    stream->this = s;
+	    bionet_stream_set_user_data(stream->this, stream);
+	}
+	
+	bionet_stream_increment_ref_count(stream->this);
+	return stream;
+    }
 
     int matches(const char * id) { return bionet_node_matches_id((bionet_node_t *)$self->this, id); }
 
