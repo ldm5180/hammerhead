@@ -8,6 +8,7 @@ from hab import *
 import random
 import set_random_resource_value
 import logging
+import datetime
 
 logger = logging.getLogger("Bionet Random HAB")
 logger.setLevel(logging.DEBUG)
@@ -38,7 +39,7 @@ def Update(habpublisher, f):
                 hab = node.hab()
                 logger.info("    " + resource.id() + " " + resource.datatypeToString() + " = " + resource.flavorToString() + " = " + str(value))
                 if (f):
-                    output_string = datapoint.timestampToString() + "," + resource.name() + "," + str(value) + "\n"
+                    output_string = datapoint.timestampToString() + ",+D," + resource.name() + "," + resource.datatypeToString() + " " + resource.flavorToString() + " " + str(value) + " @ " + datapoint.timestampToString() + "\n"
                     f.write(output_string)
 
 

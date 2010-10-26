@@ -151,7 +151,7 @@ while 1:
                             res_type = bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource))
 
                             if resource:
-                                output_string = "%s,%s,%s,%s %s" % (bionet_event_get_timestamp_as_str(event), typestr, bionet_resource_get_name(resource), res_type, res_flavor)
+                                output_string = "%s,+R,%s,%s %s" % (bionet_event_get_timestamp_as_str(event), bionet_resource_get_name(resource), res_type, res_flavor)
                                 if (options.output == "csv"):
                                     print output_string
                                 else:

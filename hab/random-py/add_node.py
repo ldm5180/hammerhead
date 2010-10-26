@@ -14,6 +14,7 @@ import optparse
 import time
 import calendar
 import re
+import datetime
 
 logger = logging.getLogger("Bionet Random HAB")
 logger.setLevel(logging.DEBUG)
@@ -22,7 +23,9 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 
-def add_resource(node, f):
+loop_index = 0
+
+def add_resource(node, f, time_str):
     while(1):
         resource_id = random.choice(resource_ids.resources)
         if (node.resource(resource_id) == None):
@@ -39,6 +42,9 @@ def add_resource(node, f):
     if (r != 0):
         logger.warning("Error adding Resource")
 
+    output_string = time_str + ",+R," + resource.name() + "," + resource.datatypeToString() + " " + resource.flavorToString() + "\n"
+    f.write(output_string)
+
     if ((random.randint(0,1)) == 0):
         logger.info("    " + resource_id + " " + resource.datatypeToString() + " " +  resource.flavorToString() + " = " + "(starts with no value)")
     else:
@@ -50,14 +56,15 @@ def add_resource(node, f):
         if (value):
             logger.info("    " + resource_id + " " + resource.datatypeToString() + " " +  resource.flavorToString() + " = " + str(value))
             if (f):
-                output_string = datapoint.timestampToString() + "," + resource.name() + "," + str(value) + "\n"
+                output_string = time_str + ",+D," + resource.name() + "," + resource.datatypeToString() + " " + resource.flavorToString() + " " + str(value) + " @ " + datapoint.timestampToString() + "\n"
                 f.write(output_string)
 
         else:
-            logger.info("    " + resource_id + " " + resource.datatypeToString() + " " +  resource.flavorToString() + " = " + "No Value")
+            logger.info("    " + resource_id + " " + resource.datatypeToString() + " " +  resource.flavorToString() + " = " + "No Value") 
 
 
 def Add(habpublisher, f):
+    global loop_index
     while(1):
         node_id = random.choice(node_ids.names)
         if (habpublisher.hab.node(node_id) == None): 
@@ -66,11 +73,26 @@ def Add(habpublisher, f):
     logger.info("new Node " + node_id);
 
     node = Node(habpublisher.hab, node_id)
-    
+
+    cur = time.gmtime()
+    time_str = "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(sec)02d.%(float)06d" % {'year' : cur.tm_year,
+                                                                                     'month' : cur.tm_mon,
+                                                                                     'day' : cur.tm_mday,
+                                                                                     'hour' : cur.tm_hour,
+                                                                                     'minute' : cur.tm_min,
+                                                                                     'sec' : cur.tm_sec,
+                                                                                     'float' : datetime.datetime.now().microsecond}
+    loop_index += 1
+
     #add 0-29 resources
     num_resources = random.randint(0,30)
     for i in range(num_resources):
-        add_resource(node, f)
+        add_resource(node, f, time_str)
+
+    if (f):
+        output_string = time_str + ",+N," + node.name() + "\n"
+        f.write(output_string);
+    
         
     if (habpublisher.hab.add(node) != 0):
         logger.warning("HAB failed to add Node")

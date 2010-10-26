@@ -11,6 +11,7 @@ import optparse
 import logging
 import time
 import random
+import datetime
 from select import select 
 
 parser = optparse.OptionParser()
@@ -31,6 +32,8 @@ parser.add_option("-l", "--loop", dest="loops", default=0,
                   help="Number of times to do node updates before quitting.")
 parser.add_option("-s", "--security-dir", dest="security_dir", default=None,
                   help="Directory containing security certificates.")
+parser.add_option("-d", "--die", dest="die", default=None,
+                  help="Seconds to run before terminating.")
 
 (options, args) = parser.parse_args()
 
@@ -80,23 +83,38 @@ if (options.test):
 else:
     f = None;
 
+if (f):
+    cur = time.gmtime()
+    time_str = "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(sec)02d.%(float)06d" % {'year' : cur.tm_year,
+                                                                                                       'month' : cur.tm_mon,
+                                                                                                       'day' : cur.tm_mday,
+                                                                                                       'hour' : cur.tm_hour,
+                                                                                                       'minute' : cur.tm_min,
+                                                                                                       'sec' : cur.tm_sec,
+                                                                                                       'float': datetime.datetime.now().microsecond }
+    output_string = time_str + ",+H," + habp.hab.name() + "\n"
+    f.write(output_string);
+
 
 fd_list = []
 if (habp.fd != -1):
     fd_list.append(habp.fd)
 
-remaining = options.max_delay
+remaining = 3.0
 elapsed = 0
-while (int(options.loops) == 0) or (loops < int(options.loops)):
+start_time = time.time()
+
+while ((int(options.loops) == 0) or (loops < int(options.loops))) and (None == options.die or time.time() - start_time < float(options.die)):
     # select on the fd list and wait for some seconds.
     curtime = time.time()
+        
     (rr, wr, er) = select(fd_list, [], [], remaining)
     for fd in rr:
         if (fd == habp.fd):
             habp.read()
     elapsed += (time.time() - curtime)
     if (elapsed < remaining):
-        remaining = options.max_delay - elapsed
+        remaining = float(options.max_delay) - elapsed
         continue
     else:
         while (habp.hab.numNodes() < options.min_nodes):
@@ -115,4 +133,25 @@ while (int(options.loops) == 0) or (loops < int(options.loops)):
             update_node.Update(habp, f)
         
         loops = loops + 1
-        remaining = options.max_delay
+        remaining = float(options.max_delay)
+
+if (f):
+    cur = time.gmtime()
+    time_str = "%(year)d-%(month)d-%(day)d %(hour)d:%(minute)d:%(sec)d.%(float)d" % {'year' : cur.tm_year,
+                                                                                     'month' : cur.tm_mon,
+                                                                                     'day' : cur.tm_mday,
+                                                                                     'hour' : cur.tm_hour,
+                                                                                     'minute' : cur.tm_min,
+                                                                                     'sec' : cur.tm_sec,
+                                                                                     'float': habp.hab.numNodes() }
+    output_string = time_str + ",-H," + habp.hab.name() + "\n"
+    f.write(output_string);
+
+    i = 0;
+    while (i < habp.hab.numNodes()):
+        output_string = time_str + ",-N," + habp.hab.node(i).name() + "\n"
+        f.write(output_string)
+        i += 1
+
+    f.close()
+habp.hab.disconnect()
