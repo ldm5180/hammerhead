@@ -57,7 +57,7 @@ def cb_new_node(node, event):
 	resource = bionet_node_get_resource_by_index(node, i)
 	res_flavor = bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource))
 	res_type = bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource))
-	bdmlog.write("%s,+N,%s,%s %s\n" % (bionet_event_get_timestamp_as_str(event, timestamp_str, 64), bionet_resource_get_name(resource), res_type, res_flavor))
+	bdmlog.write("%s,+R,%s,%s %s\n" % (bionet_event_get_timestamp_as_str(event, timestamp_str, 64), bionet_resource_get_name(resource), res_type, res_flavor))
 
 	
 def cb_lost_node(node, event):
