@@ -96,7 +96,7 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
 
         if (output_mode == OM_BDM_CLIENT) {
             g_message(
-                "%s,+N,%s,%s %s",
+                "%s,+R,%s,%s %s",
                 time_str,
                 bionet_resource_get_name(resource),
                 bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),

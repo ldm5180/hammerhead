@@ -72,7 +72,7 @@ void cbbc_new_node(bionet_node_t *node, bionet_event_t * event, void* usr_data) 
             continue;
         }
         g_message(
-            "%s,+N,%s,%s %s",
+            "%s,+R,%s,%s %s",
             time_str,
             bionet_resource_get_name(resource),
             bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
@@ -88,7 +88,7 @@ void cbbc_new_node(bionet_node_t *node, bionet_event_t * event, void* usr_data) 
             }
 
             g_message(
-                "%s,+N,%s,%s %s",
+                "%s,+S,%s,%s %s",
                 time_str,
                 bionet_stream_get_name(stream),
                 bionet_stream_get_type(stream),
