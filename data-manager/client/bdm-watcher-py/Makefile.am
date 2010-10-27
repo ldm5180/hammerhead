@@ -7,4 +7,3 @@
 include $(top_srcdir)/common.am
 
 python_PYTHON = bdm-watcher.py
-
