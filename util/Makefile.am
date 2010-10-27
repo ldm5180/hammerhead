@@ -54,6 +54,8 @@ libbionet_util_la_SOURCES =    \
     bdm-user-data.c            \
     event-get.c                \
     event-alloc.c              \
+    event-incref.c             \
+    event-user-data.c          \
     epsilon-free.c             \
     epsilon-get.c              \
     epsilon-incref.c           \

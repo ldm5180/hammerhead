@@ -198,6 +198,10 @@ struct bionet_event_opaque_t {
     char * bdm_id;
     bionet_event_type_t type;
     int64_t seq;
+
+    const void * user_data;
+    
+    unsigned int ref;
 };
 
 
