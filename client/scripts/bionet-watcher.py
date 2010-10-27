@@ -49,13 +49,7 @@ import time
 
 # parse options 
 parser = optparse.OptionParser()
-parser.add_option("-d", "--hab", "--habs", dest="hab_name",
-                  help="Subscribe to a HAB list.", 
-                  metavar="HAB-Type.HAB-ID")
-parser.add_option("-n", "--node", "--nodes", dest="node_name",
-                  help="Subscribe to a Node list.", 
-                  metavar="HAB-Type.HAB-ID.Node-ID")
-parser.add_option("-r", "--resource", "--resources", dest="resource_name",
+parser.add_option("-f", "--filter", dest="filter",
                   help="Subscribe to a Resource list.", 
                   metavar="HAB-Type.HAB-ID.Node-ID:Resource-ID")
 parser.add_option("-s", "--security-dir", dest="security_dir",
@@ -146,13 +140,12 @@ def cb_new_node(node):
                 #%s %s %s = %s @ %s 
                 print("        " + resource.datatypeToString() + " " + resource.flavorToString() + " " + resource.id() + " = " + str(value) + " @ " + datapoint.timestampToString())
 
-# TODO: streams are not yet implemented in OO bindings
-#    if (bionet_node_get_num_streams(node)):
-#        print("    Streams:")
-#    
-#        for i in range(bionet_node_get_num_streams(node)):
-#            stream = bionet_node_get_stream_by_index(node, i)
-#            print("        " + bionet_stream_get_id(stream) + " " + bionet_stream_get_type(stream) + " " + bionet_stream_direction_to_string(bionet_stream_get_direction(stream)))
+    if (0 < node.numStreams()):
+        print("    Streams:")
+    
+        for i in range(node.numStreams()):
+            stream = node.stream(i)
+            print("        " + stream.id() + " " + stream.type() + " " + stream.directionToString())
 
 
 def cb_lost_node(node):
@@ -204,7 +197,7 @@ def cb_bdm_new_node(node):
             else:
                 value = datapoint.value()
                 #%s %s %s = %s @ %s 
-                print("        BDM " + resource.datatypeToString() + " " + resource.flavorToString() + " " + resource.id() + " = " + str(value) + " @ " + datapoint.timestampToString())
+                print("        BDM " + resource.datatypeToString() + " " + resource.flavorToString() + " " + resource.id() + " = " + str(datapoint))
 
 # TODO: streams are not yet implemented in OO bindings
 #    if (bionet_node_get_num_streams(node)):
@@ -226,7 +219,7 @@ def cb_bdm_datapoint(datapoint):
     hab = node.hab()
     
     #"BDM %s.%s.%s:%s = %s %s %s @ %s"    
-    print("BDM " + resource.name() + " = " + resource.datatypeToString() + " " + resource.flavorToString() + " " + str(value) + " @ " + datapoint.timestampToString())
+    print("BDM " + resource.name() + " = " + resource.datatypeToString() + " " + resource.flavorToString() + " " + str(datapoint))
 
     
 if (options.security_dir != None):
@@ -256,6 +249,10 @@ if (None == bn) and (None == bdm_sub):
     logger.error("Failed to connect to both Bionet and Bionet Data Manager.")
     sys.exit(1)
 
+if (options.filter):
+    (hab_type, hab_id, local_res_name) = options.filter.rsplit('.')
+    (node_id, res_id) = local_res_name.rsplit(':')
+
 # register Bionet callbacks
 if (None != bn):
     bn.newHabCallback = cb_new_hab;
@@ -266,16 +263,15 @@ if (None != bn):
 
     bionet_subscribed_to_something = 0;
 
-    if (options.hab_name):
-        bn.subscribe(options.hab_name)
-        bionet_subscribed_to_something = 1
-    if (options.node_name):
-        bn.subscribe(options.node_name)
-        bionet_subscribed_to_something = 1
-    if (options.resource_name):
-        bn.subscribe(options.resource_name)
-        bionet_subscribed_to_something = 1
-
+    if (options.filter):
+        (hab_type, hab_id, local_res_name) = options.filter.rsplit('.')
+        (node_id, res_id) = local_res_name.rsplit(':')
+        if (hab_type and hab_id and node_id and res_id):
+            bn.subscribe(hab_type + "." + hab_id)
+            bn.subscribe(hab_type + "." + hab_id + "." + node_id)
+            bn.subscribe(hab_type + "." + hab_id + "." + node_id + ":" + res_id)
+            bionet_subscribed_to_something = 1
+    
     if (0 == bionet_subscribed_to_something):
         bn.subscribe("*.*")
         bn.subscribe("*.*.*")
@@ -294,15 +290,14 @@ if (None != bdm_sub):
 
     bdm_subscribed_to_something = 0;
 
-    if (options.hab_name):
-        bdm_sub.subscribe(options.hab_name)
-        bdm_subscribed_to_something = 1
-    if (options.node_name):
-        bdm_sub.subscribe(options.node_name)
-        bdm_subscribed_to_something = 1
-    if (options.resource_name):
-        bdm_sub.subscribe(options.resource_name, datapoint_start, datapoint_end)
-        bdm_subscribed_to_something = 1
+    if (options.filter):
+        (hab_type, hab_id, local_res_name) = options.filter.rsplit('.')
+        (node_id, res_id) = local_res_name.rsplit(':')
+        if (hab_type and hab_id and node_id and res_id):
+            bdm_sub.subscribeToHab(hab_type + '.' + hab_id)
+            bdm_sub.subscribeToNode(hab_type + '.' + hab_id + '.' + node_id)
+            bdm_sub.subscribeToDatapoints(hab_type + '.' + hab_id + '.' + node_id + ':' + res_id, datapoint_start, datapoint_end)
+            bdm_subscribed_to_something = 1
 
     if (0 == bdm_subscribed_to_something):
         bdm_sub.subscribeToHab("*.*")
