@@ -60,6 +60,11 @@ void bionet_event_free(bionet_event_t *event) {
         return;
     }
 
+    if(event->ref) {
+	event->ref = event->ref - 1;
+	return;
+    }
+
     free(event->bdm_id);
     free(event);
 }

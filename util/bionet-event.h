@@ -127,6 +127,59 @@ BIONET_UTIL_API_DECL
 void bionet_event_set_seq(bionet_event_t * event, int64_t seq);
 
 
+/**
+ * @brief Set the user-data annotation of a Event
+ *
+ * @param[in] event The Event
+ * @param[in] user_data The data to annotate the Event with.
+ *
+ * @note If the user sets the user data, then the user is 
+ *       responsible for freeing the it and setting it to 
+ *       NULL before the event is free'd.
+ */
+BIONET_UTIL_API_DECL
+void bionet_event_set_user_data(bionet_event_t *event, const void *user_data);
+
+
+/**
+ * @brief Get the user-data annotation of a Event
+ *
+ * @param[in] event The Event
+ *
+ * @return The user_data pointer, or NULL if none has been set.
+ */
+BIONET_UTIL_API_DECL
+void *bionet_event_get_user_data(const bionet_event_t *event);
+
+
+/**
+ * @brief Increment the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] event Event to increment the reference count for
+ */
+BIONET_UTIL_API_DECL
+void bionet_event_increment_ref_count(bionet_event_t * event);
+
+
+/**
+ * @brief Get the reference count
+ *
+ * This function is used by wrappers of this interface. It is not
+ * needed for writing C, but is for SWIG-generated Python so that
+ * garbage collection works properly.
+ *
+ * @param[in] event Event to get the reference count for
+ *
+ * @return Number of references currently held.
+ */
+BIONET_UTIL_API_DECL
+unsigned int bionet_event_get_ref_count(bionet_event_t * event);
+
+
 #ifdef __cplusplus
 }
 #endif
