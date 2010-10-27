@@ -698,6 +698,7 @@ AC_CONFIG_FILES([Makefile
                  data-manager/client/py-libbdm/Makefile
                  data-manager/client/bdm-client/Makefile
                  data-manager/client/bdm-watcher/Makefile
+                 data-manager/client/bdm-watcher-py/Makefile
                  data-manager/client/bdmplot2/Makefile
                  data-manager/client/bp-commander/Makefile
                  data-manager/client/twisted/Makefile
