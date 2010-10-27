@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
 // Lesser General Public License for more details. A copy of the GNU 
 // Lesser General Public License v 2.1 can be found in the file named 
-// “COPYING.LESSER”.  You should have received a copy of the GNU Lesser 
+// "COPYING.LESSER".  You should have received a copy of the GNU Lesser 
 // General Public License along with this library; if not, write to the 
 // Free Software Foundation, Inc., 
 // 51 Franklin Street, Fifth Floor, 
