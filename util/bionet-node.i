@@ -68,7 +68,10 @@
 	return (Resource *)bionet_resource_get_user_data(r);
     }
 
-    int add(Stream * stream) { return bionet_node_add_stream($self->this, stream->this); }
+    int add(Stream * stream) { 
+	bionet_stream_increment_ref_count(stream->this);
+	return bionet_node_add_stream($self->this, stream->this); 
+    }
 
     int numStreams() { return bionet_node_get_num_streams((bionet_node_t *)$self->this); }
 
@@ -150,7 +153,10 @@
 	return event;
     }
 
-    int add(Event * event) { return bionet_node_add_event((bionet_node_t *)$self->this, event->this); }
+    int add(Event * event) { 
+	bionet_event_increment_ref_count(event->this);
+	return bionet_node_add_event((bionet_node_t *)$self->this, event->this); 
+    }
 
     int add(void (*destructor)(bionet_node_t * node, void * user_data),
 		      void * user_data) {

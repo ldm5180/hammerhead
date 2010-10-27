@@ -140,6 +140,8 @@ typedef struct timeval
 	    return NULL;
 	}
 
+	bionet_hab_increment_ref_count(hab->this);
+
 	hp->hab = hab;
 
 	hp->fd = -1;
@@ -155,6 +157,8 @@ typedef struct timeval
 	if ($self->ref_count) {
 	    $self->ref_count -= 1;
 	} else {
+	    hab_disconnect();
+	    bionet_hab_free($self->hab->this);
 	    free($self);
 	} 
     }

@@ -96,7 +96,7 @@ hab = Hab("Sample", None)
 hp = HabPublisher(hab)
 
 # register the set resource callback
-hp.setResourceCallback = cb_set_resource;
+hp.setResourceCallback = cb_set_resource
 
 # connect the HAB to the Bionet network
 hp.connect()

@@ -1,0 +1,133 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+set -e
+
+
+source $ROOT/test/config.sh
+
+
+if [ -z "$ENABLE_ION" ]; then
+    echo "Bionet not configured with ION. Skipping test"
+    exit $TEST_SKIP_CODE
+fi
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit $TEST_SKIP_CODE
+fi
+
+
+# We REALLY need to cleanup if we can
+cleanup() {
+    kill %1
+    kill %2
+    kill %3
+    wait
+    killm
+}
+
+
+on_die() {
+    cleanup
+    exit $TEST_FAIL_CODE
+}
+
+trap on_die EXIT
+
+
+UNIQUE=$$
+
+STRING_RESOURCE="commandable.$UNIQUE.set-me:commandable-String"
+STRING_BIONET_VALUE="hey from bionet"
+STRING_BP_VALUE="this one's via BP"
+
+INT32_RESOURCE="commandable.$UNIQUE.set-me:commandable-Int32"
+INT32_BIONET_VALUE="123"
+INT32_BP_VALUE="5678"
+
+SRC_EID="ipn:1.1"
+DEST_EID="ipn:1.2"
+
+
+echo starting ION Loopback interface
+rm -f ion.log
+CONFIGDIR="./ionconfig"
+ionstart                           \
+    -i ${CONFIGDIR}/loopback.ionrc \
+    -l ${CONFIGDIR}/loopback.ltprc \
+    -b ${CONFIGDIR}/loopback.bprc  \
+    -p ${CONFIGDIR}/loopback.ipnrc
+
+
+echo starting bionet-watcher
+rm -f out.bionet-watcher
+$ROOT/client/scripts/bionet-watcher.py --filter "*.$UNIQUE.*:*" >| out.bionet-watcher &
+
+echo starting commandable-hab
+rm -f out.commandable-hab
+$ROOT/hab/commandable/commandable-hab --id $UNIQUE >| out.commandable-hab &
+sleep 1
+
+
+echo commanding first directly via bionet
+$ROOT/client/commander/bionet-commander $STRING_RESOURCE "$STRING_BIONET_VALUE"
+$ROOT/client/commander/bionet-commander $INT32_RESOURCE "$INT32_BIONET_VALUE"
+sleep .5
+
+VAL=$($ROOT/client/get/bionet-get $STRING_RESOURCE)
+if [ "$VAL" != "$STRING_BIONET_VALUE" ]; then
+    echo "error commanding directly via bionet!"
+    echo "tried to set $STRING_RESOURCE to '$STRING_BIONET_VALUE', but ended up with '$VAL'"
+    exit $TEST_FAIL_CODE
+fi
+
+VAL=$($ROOT/client/get/bionet-get $INT32_RESOURCE)
+if [ "$VAL" != "$INT32_BIONET_VALUE" ]; then
+    echo "error commanding directly via bionet!"
+    echo "tried to set $INT32_RESOURCE to '$INT32_BIONET_VALUE', but ended up with '$VAL'"
+    exit $TEST_FAIL_CODE
+fi
+
+echo "commanding directly via bionet worked"
+
+
+echo "starting bionet BP commanding proxy on $DEST_EID"
+rm -f out.bionet-bp-command-proxy
+$ROOT/data-manager/client/bp-commander/bionet-bp-command-proxy $DEST_EID >| out.bionet-bp-command-proxy &
+sleep 1
+
+
+echo "commanding via BP"
+rm -f out.bionet-bp-commander
+$ROOT/data-manager/client/bp-commander/bionet-bp-commander $SRC_EID $STRING_RESOURCE "$STRING_BP_VALUE" $DEST_EID
+$ROOT/data-manager/client/bp-commander/bionet-bp-commander $SRC_EID $INT32_RESOURCE "$INT32_BP_VALUE" $DEST_EID
+sleep 10
+
+VAL=$($ROOT/client/get/bionet-get $STRING_RESOURCE)
+if [ "$VAL" != "$STRING_BP_VALUE" ]; then
+    echo "error commanding via BP!"
+    echo "tried to set $STRING_RESOURCE to '$STRING_BP_VALUE', but ended up with '$VAL'"
+    exit $TEST_FAIL_CODE
+fi
+
+VAL=$($ROOT/client/get/bionet-get $INT32_RESOURCE)
+if [ "$VAL" != "$INT32_BP_VALUE" ]; then
+    echo "error commanding via BP!"
+    echo "tried to set $INT32_RESOURCE to '$INT32_BP_VALUE', but ended up with '$VAL'"
+    exit $TEST_FAIL_CODE
+fi
+
+echo "commanding via BP worked!"
+
+
+trap - EXIT
+cleanup
+
+exit $TEST_SUCCEED_CODE
+
