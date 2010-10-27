@@ -81,7 +81,81 @@ error:
     strncpy(time_str, "invalid time", size);
     time_str[size-1] = '\0';
     return time_str;
-}
+} /* bionet_event_get_timestamp_as_str() */
+
+
+char * bionet_event_timestamp_to_string(bionet_event_t * event)
+{
+    char usec_str[10];
+    struct tm *tm;
+    int r;
+
+    int size = 64;
+    char * time_str;
+
+    // 
+    // sanity tests
+    //
+    if (event == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "%s(): NULL event passed in", __FUNCTION__);
+        goto error;
+    }
+
+    if (event->timestamp_str) {
+	return event->timestamp_str;
+    }
+
+    time_str = malloc(size);
+    if(NULL == time_str) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "Out of memory");
+        return NULL;
+    }
+
+    tm = gmtime((time_t *)&event->timestamp.tv_sec);
+    if (tm == NULL) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "%s(): error with gmtime: %s", __FUNCTION__,
+	      strerror(errno));
+        goto error;
+    }
+
+    r = strftime(time_str, size, "%Y-%m-%d %H:%M:%S", tm);
+    if (r <= 0) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "%s(): error with strftime: %s", __FUNCTION__,
+	      strerror(errno));
+        goto error;
+    }
+
+    r = snprintf(usec_str, sizeof(usec_str), ".%06ld", 
+            (long)event->timestamp.tv_usec);
+    if (r >= sizeof(usec_str)) {
+        // this should never happen, but it keeps Coverity happy
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "%s(): usec_str too small?!", __FUNCTION__);
+        goto error;
+    }
+
+    // sanity check destination memory size available
+    if ((strlen(usec_str) + 1 + strlen(time_str)) > size) {
+        g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "%s(): time_str too small?!", __FUNCTION__);
+        goto error;
+    }
+    strncat(time_str, usec_str, strlen(usec_str));
+
+    event->timestamp_str = time_str;
+
+    return event->timestamp_str;
+
+error:
+    strncpy(time_str, "invalid time", size);
+    time_str[size-1] = '\0';
+    return time_str;
+} /* bionet_event_timestamp_to_string() */
+
 
 /*
 bionet_bdm_t * bionet_event_get_bdm(const bionet_event_t * event)

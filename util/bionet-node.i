@@ -128,9 +128,29 @@
 
     int numEvents() { return bionet_node_get_num_events((bionet_node_t *)$self->this); }
 
-    bionet_event_t * event(unsigned int index) { return bionet_node_get_event_by_index((bionet_node_t *)$self->this, index); }
+    Event * event(unsigned int index) { 
+	Event * event;
+	bionet_event_t * e = bionet_node_get_event_by_index((bionet_node_t *)$self->this, index); 
+	if (NULL == e) {
+	    return NULL;
+	}
 
-    int add(const bionet_event_t * event) { return bionet_node_add_event((bionet_node_t *)$self->this, event); }
+	event = bionet_event_get_user_data(e);
+	if (NULL == event) {
+	    event = (Event *)calloc(1, sizeof(Event));
+	    if (NULL == event) {
+		g_warning("bionet-datapoint.i: Failed to allocate memory for Event wrapper.");
+		return NULL;
+	    }
+	    event->this = e;
+	    bionet_event_increment_ref_count(event->this);
+	    bionet_event_set_user_data(event->this, event);
+	}
+
+	return event;
+    }
+
+    int add(Event * event) { return bionet_node_add_event((bionet_node_t *)$self->this, event->this); }
 
     int add(void (*destructor)(bionet_node_t * node, void * user_data),
 		      void * user_data) {

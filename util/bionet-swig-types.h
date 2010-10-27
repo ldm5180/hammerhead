@@ -40,4 +40,8 @@ typedef struct {
     bionet_stream_t * this;
 } Stream;
 
+typedef struct {
+    bionet_event_t * this;
+} Event;
+
 #endif /* BIONET_SWIG_TYPES */

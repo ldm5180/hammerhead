@@ -78,7 +78,7 @@ loops = 0
 
 #test mode. open the output file and sleep to let subscribers catch up
 if (options.test):
-    f = open(options.test, "w")
+    f = open(options.test, "w", 0)
     time.sleep(3)
 else:
     f = None;

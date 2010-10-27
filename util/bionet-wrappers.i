@@ -7,6 +7,7 @@
 #define SWIG_DATAPOINTOO_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Datapoint, 1)
 #define SWIG_VALUEOO_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Value, 1)
 #define SWIG_BDMOO_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Bdm, 1)
+#define SWIG_EVENTOO_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_Event, 1)
 
     Hab * wrap_a_hab(bionet_hab_t * h) {
 	if (NULL == h) {
@@ -101,6 +102,29 @@
 
 	bionet_bdm_increment_ref_count(b);
 	return bdm;
+    }
+
+    Event * wrap_a_event(bionet_event_t * e) {
+	if (NULL == e) {
+	    g_warning("bionet-wrappers.i: Unable to wrap NULL bionet_event_t");
+	    return NULL;
+	}
+
+	Event * event = bionet_event_get_user_data(e);
+	if (NULL == event) {
+
+	    event = (Event *)calloc(1, sizeof(Event));
+	    if (NULL == event) {
+		g_warning("bionet-wrappers.i: Failed to allocate memory for Event");
+		return NULL;
+	    }
+	    
+	    event->this = e;
+	    bionet_event_set_user_data(event->this, event);
+	}
+
+	bionet_event_increment_ref_count(e);
+	return event;      
     }
 
 %}

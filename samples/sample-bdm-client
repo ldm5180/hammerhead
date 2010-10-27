@@ -37,15 +37,15 @@ logger.addHandler(ch)
 count = 0
 
 # New HAB callback is called each time a new HAB matching the subscription joins the Bionet network
-def cb_new_hab(hab):
+def cb_new_hab(hab, event):
     logger.info("new hab: %s" % hab.name())
 
 # Lost HAB callback is called each time a HAB matching the subscription disconnects from the Bionet network
-def cb_lost_hab(hab):
+def cb_lost_hab(hab, event):
     logger.info("lost hab: %s" % hab.name())
 
 # New Node callback is called each time a HAB reports a new node matching the subscription
-def cb_new_node(node):
+def cb_new_node(node, event):
     logger.info("  new node: %s" % node.name())
     logger.info("    resources:");
     for i in range(node.numResources()):
@@ -55,11 +55,11 @@ def cb_new_node(node):
                                                                 "id" : resource.id() } )
 
 # Lost Node callback is called each time a HAB reports a lost node matching the subscription
-def cb_lost_node(node):
+def cb_lost_node(node, event):
     logger.info("  lost node: %s" % node.name())
 
 # Datapoint callback is called each time a HAB publishes a datapoint matching the subscription
-def cb_datapoint(datapoint):
+def cb_datapoint(datapoint, event):
     resource = datapoint.resource()
     value = datapoint.value()
     logger.info("%(name)s = %(value)s @ %(timestamp)s", {"name" : resource.name(),
@@ -73,18 +73,18 @@ bionet_log_use_default_handler(None)
 # connect to Bionet as a client
 bdm_sub = BdmSubscriber()
 
-# subscribe to HABs, Nodes, and Datapoints. In this example, all HABs and Nodes 
-# are subscribed, but only datapoints from the Sample HAB.
-bdm_sub.subscribeToHab("*.*")
-bdm_sub.subscribeToNode("*.*.*")
-bdm_sub.subscribeToDatapoints("Sample.*.*:*", time.time(), None)
-
 # register all the callbacks desired
 bdm_sub.newHabCallback = cb_new_hab
 bdm_sub.lostHabCallback = cb_lost_hab
 bdm_sub.newNodeCallback = cb_new_node
 bdm_sub.lostNodeCallback = cb_lost_node
 bdm_sub.datapointCallback = cb_datapoint
+
+# subscribe to HABs, Nodes, and Datapoints. In this example, all HABs and Nodes 
+# are subscribed, but only datapoints from the Sample HAB.
+bdm_sub.subscribeToHab("*.*")
+bdm_sub.subscribeToNode("*.*.*")
+bdm_sub.subscribeToDatapoints("Sample.*.*:*", time.time(), None)
 
 # set up the selectable file descriptor list. Any time the file descriptor is
 # readable it should be read. It is readable any time a HAB published a

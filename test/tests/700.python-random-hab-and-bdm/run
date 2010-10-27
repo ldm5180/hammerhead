@@ -40,28 +40,31 @@ echo starting BDM
 $ROOT/data-manager/server/bionet-data-manager  -x bdm.ini.test --filter "RANDOM.$UNIQUE.*:*" &
 sleep 3 # let the bdm come up before starting the HAB
 
+echo subscribing to the bdm
+$ROOT/data-manager/client/bdm-watcher-py/bdm-watcher.py -o out.bdm-client.py -f "RANDOM.$UNIQUE.*:*" > /dev/null 2> /dev/null &
+
 echo starting random-hab
 $ROOT/hab/random-py/random-hab.py --id $UNIQUE --die 30 --test out.random-hab --max-delay 1 > /dev/null 2> /dev/null
 
-# Let the BDM commit the last info to disk
+# Let the BDM commit the last info to disk and publish it
 sleep 10
 
-echo getting data from bdm
-
-$ROOT/data-manager/scripts/bdm-client.py -o chrono -s localhost -T "$PREV_YEAR-01-01 00:00:00" -t "$NEXT_YEAR-12-31 12:59:59" -r "RANDOM.$UNIQUE.*:*" >| out.bdm-client.py
+echo "killing bdm-watcher"
+kill %2
+wait %2
 
 echo "killing BDM"
 kill %1
-wait
+wait %1
 
 normalize_bdm_client out.random-hab > norm.random-hab
 normalize_bdm_client out.bdm-client.py > norm.bdm-client.py
 if ! diff -q norm.random-hab norm.bdm-client.py; then
-    echo "ERROR: bdm-client.py output differs from random-hab output:"
+    echo "ERROR: bdm-watcher.py output differs from random-hab output:"
     diff -u norm.random-hab norm.bdm-client.py
     RETVAL=1
 else
-    echo "bdm-client.py output is identical to random-hab output, yay"
+    echo "bdm-watcher.py output is identical to random-hab output, yay"
 fi
 
 exit $RETVAL

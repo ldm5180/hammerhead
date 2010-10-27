@@ -79,6 +79,17 @@ char * bionet_event_get_timestamp_as_str(
 
 
 /**
+ * @brief Get the event's timestamp as a string
+ *
+ * @param[in] event The event
+ *
+ * @return Pointer to new buffer is owned by the bionet_event_t
+ */
+BIONET_UTIL_API_DECL
+char * bionet_event_timestamp_to_string(bionet_event_t * event);
+
+
+/**
  * @brief Get the id of the bdm that recorded this event
  *
  * @param[in] event The event

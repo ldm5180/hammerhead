@@ -50,9 +50,16 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_lost_hab(bionet_hab_t *h, bionet_event_t * event, void * user_data) {
+    void pybdmoo_callback_lost_hab(bionet_hab_t *h, bionet_event_t * e, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
+
+	/* wrap up the Event */
+	Event * event = wrap_a_event(e);
+	if (NULL == event) {
+	    g_warning("bdm-callbacks.i: Failed to wrap a bionet_event_t in an Event");
+	    return;
+	}
 
 	Hab * hab = wrap_a_hab(h);
 	if (NULL == hab) {
@@ -60,7 +67,7 @@
 	    return;
 	}
 
-	arglist = Py_BuildValue("(O)", SWIG_HABOO_WRAPPER(hab));
+	arglist = Py_BuildValue("(OO)", SWIG_HABOO_WRAPPER(hab), SWIG_EVENTOO_WRAPPER(event));
 	result = PyEval_CallObject(bdm_subscriber_singleton->lostHabCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
@@ -69,9 +76,16 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_new_hab(bionet_hab_t *h, bionet_event_t * event, void * user_data) {
+    void pybdmoo_callback_new_hab(bionet_hab_t *h, bionet_event_t * e, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
+
+	/* wrap up the Event */
+	Event * event = wrap_a_event(e);
+	if (NULL == event) {
+	    g_warning("bdm-callbacks.i: Failed to wrap a bionet_event_t in an Event");
+	    return;
+	}
 
 	Hab * hab = wrap_a_hab(h);
 	if (NULL == hab) {
@@ -79,7 +93,7 @@
 	    return;
 	}
 
-	arglist = Py_BuildValue("(O)", SWIG_HABOO_WRAPPER(hab));
+	arglist = Py_BuildValue("(OO)", SWIG_HABOO_WRAPPER(hab), SWIG_EVENTOO_WRAPPER(event));
 	result = PyEval_CallObject(bdm_subscriber_singleton->newHabCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
@@ -88,9 +102,16 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_lost_node(bionet_node_t *n, bionet_event_t * event, void * user_data) {
+    void pybdmoo_callback_lost_node(bionet_node_t *n, bionet_event_t * e, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
+
+	/* wrap up the Event */
+	Event * event = wrap_a_event(e);
+	if (NULL == event) {
+	    g_warning("bdm-callbacks.i: Failed to wrap a bionet_event_t in an Event");
+	    return;
+	}
 
 	Node * node = wrap_a_node(n);
 	if (NULL == node) {
@@ -98,7 +119,7 @@
 	    return;
 	}
 
-	arglist = Py_BuildValue("(O)", SWIG_NODEOO_WRAPPER(node));
+	arglist = Py_BuildValue("(OO)", SWIG_NODEOO_WRAPPER(node), SWIG_EVENTOO_WRAPPER(event));
 	result = PyEval_CallObject(bdm_subscriber_singleton->lostNodeCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
@@ -107,9 +128,16 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_new_node(bionet_node_t *n, bionet_event_t * event, void * user_data) {
+    void pybdmoo_callback_new_node(bionet_node_t *n, bionet_event_t * e, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
+
+	/* wrap up the Event */
+	Event * event = wrap_a_event(e);
+	if (NULL == event) {
+	    g_warning("bdm-callbacks.i: Failed to wrap a bionet_event_t in an Event");
+	    return;
+	}
 
 	Node * node = wrap_a_node(n);
 	if (NULL == node) {
@@ -117,7 +145,7 @@
 	    return;
 	}
 
-	arglist = Py_BuildValue("(O)", SWIG_NODEOO_WRAPPER(node));
+	arglist = Py_BuildValue("(OO)", SWIG_NODEOO_WRAPPER(node), SWIG_EVENTOO_WRAPPER(event));
 	result = PyEval_CallObject(bdm_subscriber_singleton->newNodeCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {
@@ -126,10 +154,17 @@
 	Py_DECREF(result);
     }
 
-    void pybdmoo_callback_datapoint(bionet_datapoint_t *d, bionet_event_t * event, void * user_data) {
+    void pybdmoo_callback_datapoint(bionet_datapoint_t *d, bionet_event_t * e, void * user_data) {
 	PyObject *arglist;
 	PyObject *result = NULL;
 	Datapoint * datapoint;
+
+	/* wrap up the Event */
+	Event * event = wrap_a_event(e);
+	if (NULL == event) {
+	    g_warning("bdm-callbacks.i: Failed to wrap a bionet_event_t in an Event");
+	    return;
+	}
 
 	/* wrap up the Hab */
 	bionet_node_t * n = bionet_datapoint_get_node(d);
@@ -161,7 +196,7 @@
 	    bionet_value_set_user_data(value->this, value);
 	}
 
-	arglist = Py_BuildValue("(O)", SWIG_DATAPOINTOO_WRAPPER(datapoint));
+	arglist = Py_BuildValue("(OO)", SWIG_DATAPOINTOO_WRAPPER(datapoint), SWIG_EVENTOO_WRAPPER(event));
 	result = PyEval_CallObject(bdm_subscriber_singleton->datapointCallback, arglist);
 	Py_DECREF(arglist);
 	if (result == NULL) {

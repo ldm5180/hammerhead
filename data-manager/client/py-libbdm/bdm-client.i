@@ -68,6 +68,7 @@ typedef struct timeval
 %include "bionet-datapoint.i"
 %include "bionet-value.i"
 %include "bionet-wrappers.i"
+%include "bionet-event.i"
 %include "bdm-callbacks.i"
 
 

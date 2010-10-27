@@ -65,6 +65,10 @@ void bionet_event_free(bionet_event_t *event) {
 	return;
     }
 
+    if (event->timestamp_str) {
+	free(event->timestamp_str);
+    }
+
     free(event->bdm_id);
     free(event);
 }

@@ -42,8 +42,9 @@ def add_resource(node, f, time_str):
     if (r != 0):
         logger.warning("Error adding Resource")
 
-    output_string = time_str + ",+R," + resource.name() + "," + resource.datatypeToString() + " " + resource.flavorToString() + "\n"
-    f.write(output_string)
+    if f:
+        output_string = time_str + ",+R," + resource.name() + "," + resource.datatypeToString() + " " + resource.flavorToString() + "\n"
+        f.write(output_string)
 
     if ((random.randint(0,1)) == 0):
         logger.info("    " + resource_id + " " + resource.datatypeToString() + " " +  resource.flavorToString() + " = " + "(starts with no value)")

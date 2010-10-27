@@ -199,6 +199,8 @@ struct bionet_event_opaque_t {
     bionet_event_type_t type;
     int64_t seq;
 
+    char * timestamp_str;
+
     const void * user_data;
     
     unsigned int ref;
