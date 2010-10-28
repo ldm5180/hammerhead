@@ -32,30 +32,30 @@ int translator_read_ini(char *config_file)
         return 1;
     }
 
-    // Collect state resource names
+    // Collect state resource names for DMM HAB
     default_settings->state_names = g_key_file_get_string_list(keyfile, "Translator",
                                              "resource_state_names", &length, &error); 
-    if((NULL == default_settings->state_names) || (NUM_STATES != length))
+    if((NULL == default_settings->state_names) || (NUM_ADCS != length))
     {
-        g_error("translator_read_ini: failed to get resource state names from the file %s. %s",
-                                                                  config_file, error->message);
+        g_error("translator_read_ini: failed to get resource state names from the file %s.",
+                                                                  config_file);
         return 1;
     }
 
-    // Collect calbration constant resource names first half
-    default_settings->adc_calibration = g_key_file_get_string_list(keyfile, "Translator",
-                                                     "adc_calibration", &length, &error);
-    if((NULL == default_settings->adc_calibration) || (NUM_ADCS != length))
+    // Collect calbration constant resources names for  DMM HAB
+    default_settings->dmm_calibrations = g_key_file_get_string_list(keyfile, "Translator",
+                                                     "dmm_calibrations", &length, &error);
+    if((NULL == default_settings->dmm_calibrations) || (NUM_DMM_CALIBRATIONS != length))
     {
-        g_error("translator_read_ini: failed to get adc_calibration from te file %s. %s",
-                                                            config_file, error->message);
+        g_error("translator_read_ini: failed to get adc_calibration from te file %s.",
+                                                            config_file);
         return 1;
     }
 
-    // Collect calbration constant resource names second half
-    default_settings->calibration_const = g_key_file_get_string_list(keyfile, "Translator",
-                                                       "constant_num", &length, &error);
-    if((NULL == default_settings->calibration_const) || (NUM_CONSTS != length))
+     // Collect translator adc resource names
+    default_settings->translator_adc = g_key_file_get_string_list(keyfile, "Translator",
+                                                       "translator_adc", &length, &error);
+    if((NULL == default_settings->translator_adc) || (NUM_ADCS != length))
     {
         g_error("translator_read_ini: failed to get cali consts from the file %s.",
                                                          config_file);

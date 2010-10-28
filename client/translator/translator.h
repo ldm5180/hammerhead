@@ -11,16 +11,15 @@
 #define ZERO_VOLT 0
 #define FIVE_VOLT 1
 
-#define NUM_STATES  16
 #define NUM_ADCS    16
-#define NUM_CONSTS   7
+#define NUM_DMM_CALIBRATIONS 112
 
 // used with ini file
 typedef struct
 {
     gchar **state_names;
-    gchar **adc_calibration;
-    gchar **calibration_const;
+    gchar **dmm_calibrations;
+    gchar **translator_adc;
 }translator_settings_t;
 
 //variables
