@@ -180,7 +180,7 @@ void add_resources(bionet_node_t *node, int num_resources) {
         }
         if (output_mode == OM_BDM_CLIENT) {
             printf(
-                "%s,+N,%s,%s %s\n",
+                "%s,+R,%s,%s %s\n",
                 time_str,
                 bionet_resource_get_name(resource),
                 bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
