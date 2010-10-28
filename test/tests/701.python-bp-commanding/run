@@ -76,8 +76,8 @@ sleep 1
 
 
 echo commanding first directly via bionet
-./bionet-pycommander --resource $STRING_RESOURCE --value "$STRING_BIONET_VALUE" -t 1
-./bionet-pycommander --resource $INT32_RESOURCE  --value "$INT32_BIONET_VALUE" -t 1
+./bionet-pycommander --resource $STRING_RESOURCE --value "$STRING_BIONET_VALUE" --seconds 1
+./bionet-pycommander --resource $INT32_RESOURCE  --value "$INT32_BIONET_VALUE" --seconds 1
 sleep 0.5
 
 VAL=$($ROOT/client/get/bionet-get $STRING_RESOURCE)
@@ -87,7 +87,7 @@ if [ "$VAL" != "$STRING_BIONET_VALUE" ]; then
     exit $TEST_FAIL_CODE
 fi
 
-VAL=$($ROOT/client/get/bionet-get $INT32_RESOURCE)
+VAL=$(./bionet-pyget --resource $INT32_RESOURCE --seconds 1)
 if [ "$VAL" != "$INT32_BIONET_VALUE" ]; then
     echo "error commanding directly via bionet!"
     echo "tried to set $INT32_RESOURCE to '$INT32_BIONET_VALUE', but ended up with '$VAL'"
@@ -109,14 +109,14 @@ $ROOT/data-manager/client/bp-commander/bionet-bp-commander $SRC_EID $STRING_RESO
 $ROOT/data-manager/client/bp-commander/bionet-bp-commander $SRC_EID $INT32_RESOURCE "$INT32_BP_VALUE" $DEST_EID
 sleep 10
 
-VAL=$($ROOT/client/get/bionet-get $STRING_RESOURCE)
+VAL=$(./bionet-pyget --resource $STRING_RESOURCE --seconds 1)
 if [ "$VAL" != "$STRING_BP_VALUE" ]; then
     echo "error commanding via BP!"
     echo "tried to set $STRING_RESOURCE to '$STRING_BP_VALUE', but ended up with '$VAL'"
     exit $TEST_FAIL_CODE
 fi
 
-VAL=$($ROOT/client/get/bionet-get $INT32_RESOURCE)
+VAL=$(./bionet-pyget --resource $INT32_RESOURCE --seconds 1)
 if [ "$VAL" != "$INT32_BP_VALUE" ]; then
     echo "error commanding via BP!"
     echo "tried to set $INT32_RESOURCE to '$INT32_BP_VALUE', but ended up with '$VAL'"

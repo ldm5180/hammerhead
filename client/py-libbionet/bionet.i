@@ -399,6 +399,34 @@
 	return bionet_read_many(tv, num);
     }
 
+    int read(unsigned int timeout) {
+	struct timeval tv;
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+	return bionet_read_with_timeout(&tv);
+    }
+
+    int read(float timeout) {
+	struct timeval tv;
+	tv.tv_sec = (int)timeout;
+	tv.tv_usec = timeout - (float)tv.tv_sec;
+	return bionet_read_with_timeout(&tv);
+    }
+
+    int read(unsigned int timeout, unsigned int num) {
+	struct timeval tv;
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+	return bionet_read_many(&tv, num);
+    }
+
+    int read(float timeout, unsigned int num) {
+	struct timeval tv;
+	tv.tv_sec = (int)timeout;
+	tv.tv_usec = timeout - (float)tv.tv_sec;
+	return bionet_read_many(&tv, num);
+    }
+
     int subscribe(const char * subscription) {
 	char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
 	char hab_id[BIONET_NAME_COMPONENT_MAX_LEN];
