@@ -294,7 +294,7 @@ restart_poll:
                                 continue;
                             }
                             printf(
-                                "%s,+N,%s,%s %s\n",
+                                "%s,+R,%s,%s %s\n",
                                 time_str,
                                 bionet_resource_get_name(resource),
                                 bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
