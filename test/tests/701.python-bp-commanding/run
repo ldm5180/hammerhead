@@ -71,14 +71,14 @@ $ROOT/client/scripts/bionet-watcher.py --filter "*.$UNIQUE.*:*" >| out.bionet-wa
 
 echo starting commandable-hab
 rm -f out.commandable-hab
-$ROOT/hab/commandable/commandable-hab --id $UNIQUE >| out.commandable-hab &
+./commandable-pyhab --id $UNIQUE >| out.commandable-hab &
 sleep 1
 
 
 echo commanding first directly via bionet
-$ROOT/client/commander/bionet-commander $STRING_RESOURCE "$STRING_BIONET_VALUE"
-$ROOT/client/commander/bionet-commander $INT32_RESOURCE "$INT32_BIONET_VALUE"
-sleep .5
+./bionet-pycommander --resource $STRING_RESOURCE --value "$STRING_BIONET_VALUE" -t 1
+./bionet-pycommander --resource $INT32_RESOURCE  --value "$INT32_BIONET_VALUE" -t 1
+sleep 0.5
 
 VAL=$($ROOT/client/get/bionet-get $STRING_RESOURCE)
 if [ "$VAL" != "$STRING_BIONET_VALUE" ]; then

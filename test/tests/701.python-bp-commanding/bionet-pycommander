@@ -1,0 +1,135 @@
+#!/usr/bin/python
+
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+
+# This library is free software. You can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as 
+# published by the Free Software Foundation, version 2.1 of the License.
+# This library is distributed in the hope that it will be useful, but 
+# WITHOUT ANY WARRANTY; without even the implied warranty of 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+# Lesser General Public License for more details. A copy of the GNU 
+# Lesser General Public License v 2.1 can be found in the file named 
+# "COPYING.LESSER".  You should have received a copy of the GNU Lesser 
+# General Public License along with this library; if not, write to the 
+# Free Software Foundation, Inc., 
+# 51 Franklin Street, Fifth Floor, 
+# Boston, MA 02110-1301 USA.
+ 
+# You may contact the Automation Group at:
+# bionet@bioserve.colorado.edu
+ 
+# Dr. Kevin Gifford
+# University of Colorado
+# Engineering Center, ECAE 1B08
+# Boulder, CO 80309
+ 
+# Because BioNet was developed at a university, we ask that you provide
+# attribution to the BioNet authors in any redistribution, modification, 
+# work, or article based on this library.
+ 
+# You may contribute modifications or suggestions to the University of
+# Colorado for the purpose of discussing and improving this software.
+# Before your modifications are incorporated into the master version 
+# distributed by the University of Colorado, we must have a contributor
+# license agreement on file from each contributor. If you wish to supply
+# the University with your modifications, please join our mailing list.
+# Instructions can be found on our website at 
+# http://bioserve.colorado.edu/developers-corner.
+
+
+import optparse
+import logging
+import time
+from select import select
+from bionet import *
+
+# initialize the Python logger
+logger = logging.getLogger("Bionet PyCommander")
+logger.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+# parse options 
+parser = optparse.OptionParser()
+parser.add_option("-r", "--resource", dest="resource",default=None,
+                  help="Resource name patter to command.")
+parser.add_option("-v", "--value", dest="value",default=None,
+                  help="Value to set.")
+parser.add_option("-t", "--time", dest="time", default="5.0",
+                  help="Seconds to wait around for resources to show up. 0 is infinite.")
+
+(options, args) = parser.parse_args()
+
+if None == options.resource or None == options.value:
+    logger.error("Both resource name pattern and value must be specified.")
+    sys.exit(1)
+
+bn = None
+
+def cb_new_hab(hab):
+    logger.debug("HAB %s showed up." % hab.name())
+    
+def cb_new_node(node):
+    global options
+    global bn
+    logger.debug("Node %s showed up with %d resources." % (node.name(), node.numResources()))
+
+    for i in range(node.numResources()):
+        resource = node.resource(i)
+        (node_name, resource_id) = options.resource.rsplit(':')
+        if (0 != resource.matches(resource_id)):
+            logger.debug("Resource %(resname)s showed up." % { 'resname' : resource.name() } )
+            logger.info("Setting %(resname)s to %(value)s." % { 'resname' : resource.name(),
+                                                                'value' : options.value } )
+            bn.set(resource, options.value)
+    logger.debug("Waiting for any more matching resources...")
+
+# set the default Bionet log handler
+bionet_log_use_default_handler(None)
+
+# connect to Bionet as a client
+bn = Bionet()
+
+# register all the callbacks desired
+bn.newHabCallback = cb_new_hab
+bn.newNodeCallback = cb_new_node
+
+# subscribe to HABs, Nodes, and Datapoints. In this example, all HABs and Nodes 
+# are subscribed, but only datapoints from the Sample HAB.
+(node_name, resource_id) = options.resource.rsplit(':')
+bn.subscribe(node_name)
+
+# set up the selectable file descriptor list. Any time the file descriptor is
+# readable it should be read. It is readable any time a HAB published a
+# datapoint, new/lost node, or new/lost HAB and you are subscribed to it. The
+# proper callback will be called automatically.
+#
+# include any file descriptors for your own hardware if there are any.
+fd_list = []
+if (bn.fd != -1):
+    fd_list.append(bn.fd)
+
+if (None == options.time or float(options.time) == 0.0):
+    wait = 5.0
+else:
+    wait = float(options.time)
+
+end = time.time() + wait
+
+while(0 < wait or float(options.time) == 0.0):
+    # select on the fd list
+    if (wait < 0):
+        wait = 5.0
+    (rr, wr, er) = select(fd_list, [], [], wait)
+    for fd in rr:
+        if (fd == bn.fd):
+            read = bn.read() # causes the callbacks to get called
+    wait = end - time.time()
+
+logger.debug("No more resources matching %s found." % options.resource)
