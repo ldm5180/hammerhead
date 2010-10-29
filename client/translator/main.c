@@ -36,12 +36,12 @@ int main(int argc, char* argv[])
             {"help", 0, 0, '?'},
             {"version", 0, 0, 'v'},
             {"id", 1, 0, 'i'},
-            {"p", 1, 0, 'p'},
-            {"d", 1, 0, 'd'},
+            {"proxr", 1, 0, 'p'},
+            {"dmm", 1, 0, 'd'},
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "?hvi:", long_options, &i);
+        c = getopt_long(argc, argv, "?hvp:d:i:", long_options, &i);
         if(c == -1)
         {
             break;
