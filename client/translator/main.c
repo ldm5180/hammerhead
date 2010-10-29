@@ -1,11 +1,11 @@
 #include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
 #include <signal.h>
-#include <search.h>
 
 #include "translator.h"
 
@@ -82,8 +82,8 @@ int main(int argc, char* argv[])
     }
 
     // read ini file
-    int r = translator_read_ini("translator.ini");
-    if(0 != r)
+    int error = translator_read_ini("translator.ini");
+    if(0 != error)
     {
         printf("failed to read ini file.\n");
         return 1;
@@ -126,11 +126,20 @@ int main(int argc, char* argv[])
     }
 
     // build hash table
-   /* ENTRY e, *ep;
-    char **data;
-    for(int i=0; i<1; i++)
+    ENTRY e, *ep;
+    hcreate(16);
+    int r = 0;
+    for(; r<16; r++)
     {
-    }*/
+        e.key = default_settings->translator_adc[r];
+        e.data = &r;
+        ep = hsearch(e, ENTER);
+        if(ep == NULL)
+        {
+            fprintf(stderr, "entry to hash table failed\n");
+            exit(1);
+        }
+    }
 
     // register callbacks
     bionet_register_callback_datapoint(cb_datapoint);
@@ -140,7 +149,7 @@ int main(int argc, char* argv[])
     char hab_name[64];
     strcpy(hab_name, dmm);            // DMM.
     strcat(hab_name, dmm_hab_id);     // DMM.hab_id
-    strcat(hab_name, ".0.");          // DMM.hab_id.0.
+    strcat(hab_name, ".0:");          // DMM.hab_id.0:
 
     // subscribe to DMM hab calibration constants
     for(int i=0; i<NUM_DMM_CALIBRATIONS; i++)

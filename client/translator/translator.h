@@ -1,5 +1,6 @@
 #include "hardware-abstractor.h"
 #include <glib.h>
+#include <search.h>
 #include "bionet-util.h"
 #include "bionet.h"
 
@@ -24,6 +25,7 @@ typedef struct
 
 //variables
 extern translator_settings_t *default_settings;
+extern ENTRY e, *ep;
 double table[16][256][2];
 double calibration_const[16][7];
 double adc_increment[16][1];

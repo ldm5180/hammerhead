@@ -34,7 +34,7 @@ int translator_read_ini(char *config_file)
 
     // Collect state resource names for DMM HAB
     default_settings->state_names = g_key_file_get_string_list(keyfile, "Translator",
-                                             "resource_state_names", &length, &error); 
+                                             "dmm_state_names", &length, &error); 
     if((NULL == default_settings->state_names) || (NUM_ADCS != length))
     {
         g_error("translator_read_ini: failed to get resource state names from the file %s.",
