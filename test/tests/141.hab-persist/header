@@ -1,10 +1,10 @@
 persist-test.17710.test:binary = Binary Sensor 1 @ 2010-05-20 17:30:15.071427
-persist-test.17710.test:uint8 = UInt8 Sensor 90 @ 2010-05-20 17:30:15.071530
-persist-test.17710.test:int8 = Int8 Sensor 68 @ 2010-05-20 17:30:15.071636
-persist-test.17710.test:uint16 = UInt16 Sensor 48540 @ 2010-05-20 17:30:15.071690
-persist-test.17710.test:int16 = Int16 Sensor 2451 @ 2010-05-20 17:30:15.071742
-persist-test.17710.test:uint32 = UInt32 Sensor 1274376615 @ 2010-05-20 17:30:15.071794
-persist-test.17710.test:int32 = Int32 Sensor 1274376615 @ 2010-05-20 17:30:15.071875
-persist-test.17710.test:float = Float Sensor 1274.377 @ 2010-05-20 17:30:15.071942
 persist-test.17710.test:double = Double Sensor 1274.376615072 @ 2010-05-20 17:30:15.072005
+persist-test.17710.test:float = Float Sensor 1274.377 @ 2010-05-20 17:30:15.071942
+persist-test.17710.test:int16 = Int16 Sensor 2451 @ 2010-05-20 17:30:15.071742
+persist-test.17710.test:int32 = Int32 Sensor 1274376615 @ 2010-05-20 17:30:15.071875
+persist-test.17710.test:int8 = Int8 Sensor 68 @ 2010-05-20 17:30:15.071636
 persist-test.17710.test:string = String Sensor 1274376615.07 @ 2010-05-20 17:30:15.072078
+persist-test.17710.test:uint16 = UInt16 Sensor 48540 @ 2010-05-20 17:30:15.071690
+persist-test.17710.test:uint32 = UInt32 Sensor 1274376615 @ 2010-05-20 17:30:15.071794
+persist-test.17710.test:uint8 = UInt8 Sensor 90 @ 2010-05-20 17:30:15.071530

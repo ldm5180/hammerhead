@@ -615,12 +615,24 @@
     int numDatapoints() { return bionet_resource_get_num_datapoints($self->this); }
 
     Datapoint * datapoint(unsigned int index) { 
+	Datapoint * datapoint = NULL;
 	bionet_datapoint_t * d = bionet_resource_get_datapoint_by_index($self->this, index); 
 	if (NULL == d) {
 	    return NULL;
 	}
 	bionet_datapoint_increment_ref_count(d);
-	return (Datapoint *)bionet_datapoint_get_user_data(d);
+	
+	datapoint = (Datapoint *)bionet_datapoint_get_user_data(d);
+	if (NULL == datapoint) {
+	    datapoint = (Datapoint *)calloc(1, sizeof(Datapoint));
+	    if (NULL == datapoint) {
+		g_warning("Failed to allocate memory to wrap bionet_datapoint_t");
+		return NULL;
+	    }
+	    datapoint->this = d;
+	    bionet_datapoint_set_user_data(datapoint->this, datapoint);
+	}
+	return datapoint;
     }
 
     void removeDatapoint(unsigned int index) { 

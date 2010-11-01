@@ -34,9 +34,22 @@
     }
 
     Value * value() {
+	Value * value;
 	bionet_value_t * v = bionet_datapoint_get_value($self->this); 
 	bionet_value_increment_ref_count(v);
-	return (Value *)bionet_value_get_user_data(v);
+
+	value = (Value *)bionet_value_get_user_data(v);
+	if (NULL == value) {
+	    value = (Value *)calloc(1, sizeof(Value));
+	    if (NULL == value) {
+		g_warning("Failed to allocate memory to wrap bionet_value_t");
+		return NULL;
+	    }
+	    value->this = v;
+	    bionet_value_set_user_data(value->this, value);
+	}
+
+	return value;
     }
 
     Resource * resource() {

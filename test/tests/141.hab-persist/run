@@ -28,13 +28,18 @@ UNIQUE=$$
 
 cp -R persist-test/canned persist-test/$UNIQUE
 
+sync
+
 $ROOT/client/watcher/bionet-watcher -r "persist-test.$UNIQUE.*:*" > out.watcher &
-./persist-hab-test.py -i $UNIQUE > out.persist-hab-test
+echo $PWD
+./persist-hab-test.py -i $UNIQUE > out.persist-hab-test-pre
 
 kill %1
 wait %1
 
 sleep 1
+
+grep -v "non-NULL user_data pointer" out.persist-hab-test-pre > out.persist-hab-test
 
 if ! diff -q out.persist-hab-test out.watcher; then
     echo "ERROR: bionet-watcher output differs from persist-hab-test output"

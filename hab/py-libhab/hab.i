@@ -205,4 +205,26 @@ typedef struct timeval
     void read(struct timeval * timeout) {
 	hab_read_with_timeout(timeout);
     }
+
+    int read(unsigned int timeout) {
+	struct timeval tv;
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+	return hab_read_with_timeout(&tv);
+    }
+
+    int read(float timeout) {
+	struct timeval tv;
+	tv.tv_sec = (int)timeout;
+	tv.tv_usec = timeout - (float)tv.tv_sec;
+	return hab_read_with_timeout(&tv);
+    }
+
+    int persist(Resource * resource) {
+	return hab_persist_resource(resource->this);
+    }
+
+    int setPersistDirectory(char * dir) {
+	return hab_set_persist_directory(dir);
+    }
 }

@@ -374,6 +374,34 @@ typedef struct timeval
 	return bdm_read_many(timeout, num);
     }
 
+    int read(unsigned int timeout) {
+	struct timeval tv;
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+	return bdm_read_with_timeout(&tv);
+    }
+
+    int read(float timeout) {
+	struct timeval tv;
+	tv.tv_sec = (int)timeout;
+	tv.tv_usec = timeout - (float)tv.tv_sec;
+	return bdm_read_with_timeout(&tv);
+    }
+
+    int read(unsigned int timeout, unsigned int num) {
+	struct timeval tv;
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+	return bdm_read_many(&tv, num);
+    }
+
+    int read(float timeout, unsigned int num) {
+	struct timeval tv;
+	tv.tv_sec = (int)timeout;
+	tv.tv_usec = timeout - (float)tv.tv_sec;
+	return bdm_read_many(&tv, num);
+    }
+
     int subscribeToBdm(const char * bdm_name) {
 	return bdm_subscribe_bdm_list_by_name(bdm_name);
     }

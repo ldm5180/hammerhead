@@ -7,6 +7,7 @@ import select
 import time
 import datetime
 from ctypes import *
+import sys, os
 
 #set up logging
 logger = logging.getLogger("Bionet Persist Test HAB")
@@ -25,239 +26,70 @@ parser.add_option("-i", "--id", dest="id", default=None,
 
 (options,args) = parser.parse_args()
 
-bionet_log_use_default_handler(None);
+bionet_log_use_default_handler(None)
 
-if hab_set_persist_directory("."):
+hab = Hab("persist-test", options.id)
+hp = HabPublisher(hab)
+
+if hp.setPersistDirectory("."):
     logger.error("Failed to set the persistency directory to this local dir")
     exit(1)
 
-hab = bionet_hab_new("persist-test", options.id)
-if (None == hab):
-    logger.error("Failed to create HAB, exiting")
-    exit(1)
-
-hab_fd = hab_connect(hab)
-if (0 > hab_fd):
-    logger.warning("problem connecting HAB to Bionet, exiting")
-    exit(1)
-
-node = bionet_node_new(hab, "test")
+node = Node(hp.hab, "test")
 if (None == node):
     logger.error("Failed to create node, exiting")
     exit(1)
-bionet_hab_add_node(hab, node)
+hp.hab.add(node)
 
-# binary 
-resource = bionet_resource_new(node, 
-                               BIONET_RESOURCE_DATA_TYPE_BINARY, 
-                               BIONET_RESOURCE_FLAVOR_SENSOR,
-                               "binary");
-if (None == resource):
-    logger.error("Failed to create resource, exiting")
-    exit(1)
-bionet_node_add_resource(node, resource)
-if (hab_persist_resource(resource)):
-    logger.warning("Not persisting resource %s" % bionet_resource_get_name(resource))
-if (None == bionet_resource_get_datapoint_by_index(resource, 0)):
-    bionet_resource_set_binary(resource, 0, None)
-value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                value_str,
-                                bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
 
-# uint8
-resource = bionet_resource_new(node, 
-                               BIONET_RESOURCE_DATA_TYPE_UINT8, 
-                               BIONET_RESOURCE_FLAVOR_SENSOR,
-                               "uint8");
-if (None == resource):
-    logger.error("Failed to create resource, exiting")
-    exit(1)
-bionet_node_add_resource(node, resource)
-if (hab_persist_resource(resource)):
-    logger.warning("Not persisting resource %s" % bionet_resource_get_name(resource))
-if (None == bionet_resource_get_datapoint_by_index(resource, 0)):
-    bionet_resource_set_uint8(resource, 0, None)
-value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                value_str,
-                                bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
+bionet_types = { "binary" : BIONET_RESOURCE_DATA_TYPE_BINARY,
+                 "uint8"  : BIONET_RESOURCE_DATA_TYPE_UINT8,
+                 "int8"   : BIONET_RESOURCE_DATA_TYPE_INT8,
+                 "uint16" : BIONET_RESOURCE_DATA_TYPE_UINT16,
+                 "int16"  : BIONET_RESOURCE_DATA_TYPE_INT16,
+                 "uint32" : BIONET_RESOURCE_DATA_TYPE_UINT32,
+                 "int32"  : BIONET_RESOURCE_DATA_TYPE_INT32,
+                 "float"  : BIONET_RESOURCE_DATA_TYPE_FLOAT,
+                 "double" : BIONET_RESOURCE_DATA_TYPE_DOUBLE,
+                 "string" : BIONET_RESOURCE_DATA_TYPE_STRING }
 
-# int8 
-resource = bionet_resource_new(node, 
-                               BIONET_RESOURCE_DATA_TYPE_INT8, 
-                               BIONET_RESOURCE_FLAVOR_SENSOR,
-                               "int8");
-if (None == resource):
-    logger.error("Failed to create resource, exiting")
-    exit(1)
-bionet_node_add_resource(node, resource)
-if (hab_persist_resource(resource)):
-    logger.warning("Not persisting resource %s" % bionet_resource_get_name(resource))
-if (None == bionet_resource_get_datapoint_by_index(resource, 0)):
-    bionet_resource_set_int8(resource, 0, None)
-value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                value_str,
-                                bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
+for k, v in sorted(bionet_types.iteritems()):
+    resource = Resource(node, 
+                        v, 
+                        BIONET_RESOURCE_FLAVOR_SENSOR,
+                        k);
+    if (None == resource):
+        logger.error("Failed to create resource, exiting")
+        exit(1)
+    
+    hp.hab.node("test").add(resource)
 
-# uint16 
-resource = bionet_resource_new(node, 
-                               BIONET_RESOURCE_DATA_TYPE_UINT16, 
-                               BIONET_RESOURCE_FLAVOR_SENSOR,
-                               "uint16");
-if (None == resource):
-    logger.error("Failed to create resource, exiting")
-    exit(1)
-bionet_node_add_resource(node, resource)
-if (hab_persist_resource(resource)):
-    logger.warning("Not persisting resource %s" % bionet_resource_get_name(resource))
-if (None == bionet_resource_get_datapoint_by_index(resource, 0)):
-    bionet_resource_set_uint16(resource, 0, None)
-value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                value_str,
-                                bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
+    if (hp.persist(hp.hab.node("test").resource(k))):
+        logger.warning("Not persisting resource %s" % resource.name())
 
-# int16 
-resource = bionet_resource_new(node, 
-                               BIONET_RESOURCE_DATA_TYPE_INT16, 
-                               BIONET_RESOURCE_FLAVOR_SENSOR,
-                               "int16");
-if (None == resource):
-    logger.error("Failed to create resource, exiting")
-    exit(1)
-bionet_node_add_resource(node, resource)
-if (hab_persist_resource(resource)):
-    logger.warning("Not persisting resource %s" % bionet_resource_get_name(resource))
-if (None == bionet_resource_get_datapoint_by_index(resource, 0)):
-    bionet_resource_set_int16(resource, 0, None)
-value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                value_str,
-                                bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
+    print ( "%s = %s %s %s" % (hp.hab.node("test").resource(k).name(),
+                               hp.hab.node("test").resource(k).datatypeToString(),
+                               hp.hab.node("test").resource(k).flavorToString(),
+                               str(hp.hab.node("test").resource(k).datapoint(0))))
 
-# uint32 
-resource = bionet_resource_new(node, 
-                               BIONET_RESOURCE_DATA_TYPE_UINT32, 
-                               BIONET_RESOURCE_FLAVOR_SENSOR,
-                               "uint32");
-if (None == resource):
-    logger.error("Failed to create resource, exiting")
+if (0 > hp.connect()):
+    logger.warning("problem connecting HAB to Bionet, exiting")
     exit(1)
-bionet_node_add_resource(node, resource)
-if (hab_persist_resource(resource)):
-    logger.warning("Not persisting resource %s" % bionet_resource_get_name(resource))
-if (None == bionet_resource_get_datapoint_by_index(resource, 0)):
-    bionet_resource_set_uint32(resource, 0, None)
-value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                value_str,
-                                bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
-
-# int32 
-resource = bionet_resource_new(node, 
-                               BIONET_RESOURCE_DATA_TYPE_INT32, 
-                               BIONET_RESOURCE_FLAVOR_SENSOR,
-                               "int32");
-if (None == resource):
-    logger.error("Failed to create resource, exiting")
-    exit(1)
-bionet_node_add_resource(node, resource)
-if (hab_persist_resource(resource)):
-    logger.warning("Not persisting resource %s" % bionet_resource_get_name(resource))
-if (None == bionet_resource_get_datapoint_by_index(resource, 0)):
-    bionet_resource_set_int32(resource, 0, None)
-value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                value_str,
-                                bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
-
-# float 
-resource = bionet_resource_new(node, 
-                               BIONET_RESOURCE_DATA_TYPE_FLOAT, 
-                               BIONET_RESOURCE_FLAVOR_SENSOR,
-                               "float");
-if (None == resource):
-    logger.error("Failed to create resource, exiting")
-    exit(1)
-bionet_node_add_resource(node, resource)
-if (hab_persist_resource(resource)):
-    logger.warning("Not persisting resource %s" % bionet_resource_get_name(resource))
-if (None == bionet_resource_get_datapoint_by_index(resource, 0)):
-    bionet_resource_set_float(resource, 0.0, None)
-value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                value_str,
-                                bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
-
-# double 
-resource = bionet_resource_new(node, 
-                               BIONET_RESOURCE_DATA_TYPE_DOUBLE, 
-                               BIONET_RESOURCE_FLAVOR_SENSOR,
-                               "double");
-if (None == resource):
-    logger.error("Failed to create resource, exiting")
-    exit(1)
-bionet_node_add_resource(node, resource)
-if (hab_persist_resource(resource)):
-    logger.warning("Not persisting resource %s" % bionet_resource_get_name(resource))
-if (None == bionet_resource_get_datapoint_by_index(resource, 0)):
-    bionet_resource_set_double(resource, 0.0, None)
-value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                value_str,
-                                bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
-
-# string
-resource = bionet_resource_new(node, 
-                               BIONET_RESOURCE_DATA_TYPE_STRING, 
-                               BIONET_RESOURCE_FLAVOR_SENSOR,
-                               "string");
-if (None == resource):
-    logger.error("Failed to create resource, exiting")
-    exit(1)
-bionet_node_add_resource(node, resource)
-if (hab_persist_resource(resource)):
-    logger.warning("Not persisting resource %s" % bionet_resource_get_name(resource))
-if (None == bionet_resource_get_datapoint_by_index(resource, 0)):
-    bionet_resource_set_str(resource, "0", None)
-value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                value_str,
-                                bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
 
 # report stuff
-hab_report_new_node(node)
-hab_report_datapoints(node)
+hp.reportNode(hp.hab.node("test"))
+hp.reportDatapoints(hp.hab.node("test"))
+
+
+
 
 i = 0
 next_pub = 0
 starttime = time.time()
 while(time.time() - starttime < 30):
-    (rr, wr, er) = select.select([hab_fd], [], [], 1.0)
+    (rr, wr, er) = select.select([hp.fd], [], [], 1.0)
     if (rr):
-        hab_read()
+        hp.read()
 
     i += 1
 
@@ -270,109 +102,37 @@ while(time.time() - starttime < 30):
     else: 
         continue
 
-    resource = bionet_node_get_resource_by_id(node, "binary")
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    bionet_resource_set_binary(resource, int(time.time() % 2), None)
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                    value_str,
-                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
+    for k, v in sorted(bionet_types.iteritems()):
+        resource = hp.hab.node("test").resource(k)
 
-    resource = bionet_node_get_resource_by_id(node, "uint8")
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    bionet_resource_set_uint8(resource, int(time.time() % 0xFF), None)
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                    value_str,
-                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
+        if (resource.datatype() == BIONET_RESOURCE_DATA_TYPE_BINARY):
+            resource.set(int(time.time() % 2))
+        elif (resource.datatype() == BIONET_RESOURCE_DATA_TYPE_UINT8):
+            resource.set(int(time.time() % 0xFF))
+        elif (resource.datatype() == BIONET_RESOURCE_DATA_TYPE_INT8):
+            resource.set(int(time.time() % 0x7F))
+        elif (resource.datatype() == BIONET_RESOURCE_DATA_TYPE_UINT16):
+            resource.set(int(time.time() % 0xFFFF))
+        elif (resource.datatype() == BIONET_RESOURCE_DATA_TYPE_INT16):
+            resource.set(int(time.time() % 0x7FFF))
+        elif (resource.datatype() == BIONET_RESOURCE_DATA_TYPE_UINT32):
+            resource.set(int(time.time()))
+        elif (resource.datatype() == BIONET_RESOURCE_DATA_TYPE_INT32):
+            resource.set(int(time.time()))
+        elif (resource.datatype() == BIONET_RESOURCE_DATA_TYPE_FLOAT):
+            resource.set(float(time.time() / 1000000.0))
+        elif (resource.datatype() == BIONET_RESOURCE_DATA_TYPE_DOUBLE):
+            resource.set(float(time.time() / 1000000.0))
+        elif (resource.datatype() == BIONET_RESOURCE_DATA_TYPE_STRING):
+            resource.set(str(time.time()))
 
-    resource = bionet_node_get_resource_by_id(node, "int8")
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    bionet_resource_set_int8(resource, int(time.time() % 0x7F), None)
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                    value_str,
-                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
 
-    resource = bionet_node_get_resource_by_id(node, "uint16")
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    bionet_resource_set_uint16(resource, int(time.time() % 0xFFFF), None)
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                    value_str,
-                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
-
-    resource = bionet_node_get_resource_by_id(node, "int16")
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    bionet_resource_set_int16(resource, int(time.time() % 0x7FFF), None)
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                    value_str,
-                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
-
-    resource = bionet_node_get_resource_by_id(node, "uint32")
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    bionet_resource_set_uint32(resource, int(time.time()), None)
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                    value_str,
-                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
-
-    resource = bionet_node_get_resource_by_id(node, "int32")
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    bionet_resource_set_int32(resource, int(time.time()), None)
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                    value_str,
-                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
-
-    resource = bionet_node_get_resource_by_id(node, "float")
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    bionet_resource_set_float(resource, float(time.time()/1000000.0), None)
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                    value_str,
-                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
-
-    resource = bionet_node_get_resource_by_id(node, "double")
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    bionet_resource_set_double(resource, float(time.time()/1000000.0), None)
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                    value_str,
-                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
-
-    resource = bionet_node_get_resource_by_id(node, "string")
-    val = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)))
-    bionet_resource_set_str(resource, str(time.time()), None)
-    value_str = bionet_value_to_str(bionet_datapoint_get_value(bionet_resource_get_datapoint_by_index(resource, 0)));
-    print ( "%s = %s %s %s @ %s" % (bionet_resource_get_name(resource),
-                                    bionet_resource_data_type_to_string(bionet_resource_get_data_type(resource)),
-                                    bionet_resource_flavor_to_string(bionet_resource_get_flavor(resource)),
-                                    value_str,
-                                    bionet_datapoint_timestamp_to_string(bionet_resource_get_datapoint_by_index(resource, 0))))
+        print ( "%s = %s %s %s" % (resource.name(),
+                                   resource.datatypeToString(),
+                                   resource.flavorToString(),
+                                   str(resource.datapoint(0))))
 
     #report stuff
-    hab_report_datapoints(node)
+    hp.reportDatapoints(hp.hab.node("test"))
 
-time.sleep(1)
-hab_read()
 exit(0)
