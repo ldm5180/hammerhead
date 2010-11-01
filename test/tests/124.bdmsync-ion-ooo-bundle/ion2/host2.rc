@@ -1,6 +1,6 @@
 # 2000.ctct-ctfails/config/host1.rc
 ## begin ionadmin 
-1 2 ionconfig/settings2.ionconfig
+1 2 host2.ionconfig
 s
 
 a contact +1 +3600 1 1 100000
@@ -25,14 +25,15 @@ a endpoint ipn:2.1 x
 a endpoint ipn:2.2 x
 
 a protocol file 1400 4
-a induct file filecla/host2 filecli
+a induct file ../filecla/host2 filecli
 a outduct file '*' fileclo
 
+s
 ## end bpadmin 
 
 ## begin ipnadmin 
-a plan 1 file/*,filecla/host1
-a plan 2 file/*,filecla/host2
+a plan 1 file/*,../filecla/host1
+a plan 2 file/*,../filecla/host2
 ## end ipnadmin 
 
 ## begin ionsecadmin

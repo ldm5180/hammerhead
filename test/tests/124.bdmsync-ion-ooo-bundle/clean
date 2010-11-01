@@ -1,0 +1,19 @@
+#!/bin/bash
+
+rm -f ion_nodes
+rm -f ion[12]/ion.log
+rm -f ion[12]/host[12].ionconfig
+rm -f ion[12]/ion[12].sdrlog
+
+rm -f orig-bdm.db sync-bdm.db
+
+rm -rf filecla
+
+rm -f sync-recv.log
+rm -f sync-send.log
+
+rm -f core core.*
+
+rm -f norm.*
+rm -f norm.*
+rm -f out.*
