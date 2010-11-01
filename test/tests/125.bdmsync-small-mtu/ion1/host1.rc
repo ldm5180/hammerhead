@@ -1,6 +1,6 @@
 # 
 ## begin ionadmin 
-1 1 ionconfig/settings1.ionconfig
+1 1 ion1/host1.ionconfig
 s
 
 a contact +1 +3600 1 1 100000
@@ -28,6 +28,7 @@ a protocol udp 700 100
 a induct udp 127.0.0.1:4556 udpcli
 a outduct udp '*' udpclo
 
+s
 ## end bpadmin 
 
 ## begin ipnadmin 

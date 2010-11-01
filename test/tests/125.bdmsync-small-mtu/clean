@@ -1,0 +1,20 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+rm -f ion_nodes
+rm -f ion[12]/ion.log
+rm -f ion[12]/host[12].ionconfig
+rm -f ion[12]/ion[12].sdrlog
+
+rm -f core core.*
+
+
+rm -f out.*
+rm -f norm.*
+rm -f orig-bdm.db sync-bdm.db
+rm -f sync-send.log
+rm -f sync-recv.log

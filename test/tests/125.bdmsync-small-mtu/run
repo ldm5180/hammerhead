@@ -63,9 +63,9 @@ test_error()
     kill `jobs -p`
 
     echo "Stopping ION Node 1..."
-    ionstop -k 0x100
+    ionstop -D ion1
     echo "Stopping ION Node 2..."
-    ionstop -k 0x200
+    ionstop -D ion2
 
     echo "Running killm"
     killm > /dev/null
@@ -83,50 +83,48 @@ NEXT_YEAR=$(($YEAR+1))
 ##################################################
 
 ulimit -Sc unlimited
-rm -f core core.*
 
-rm -f ion.log
+# Setup ION multi-node
+export ION_NODE_LIST_DIR=$PWD
 
-test_log "removing old DB file, and allowing bionet-data-manger to create schema"
-rm -f orig-bdm.db sync-bdm.db
+./clean
+test_log "removed old DB file, and allowing bionet-data-manger to create schema"
 
 ##################################################
 ### Start ION instances
 ##################################################
-CONFIGDIR="./ionconfig"
-
-rm -rf sdr1 sdr2
-mkdir sdr1 sdr2
-
-cat > ${CONFIGDIR}/settings1.ionconfig <<ENDCFG
+cat > ion1/host1.ionconfig <<ENDCFG
+wmKey 1
+sdrName ion1
 configFlags 5
-pathName ${PWD}/sdr1
+pathName ${PWD}/ion1
 ENDCFG
-cat > ${CONFIGDIR}/settings2.ionconfig <<ENDCFG
+
+cat > ion2/host2.ionconfig <<ENDCFG
+wmKey 2
+sdrName ion2
 configFlags 5
-pathName ${PWD}/sdr2
+pathName ${PWD}/ion2
 ENDCFG
 
 
 test_log "Starting ION node 1..."
-ionstart -I ${CONFIGDIR}/host1.rc -k 0x100
+ionstart -I ion1/host1.rc -D ion1
 test_log "Starting ION node 2..."
-ionstart -I ${CONFIGDIR}/host2.rc -k 0x200
+ionstart -I ion2/host2.rc -D ion2
 
 ##################################################
 ### Start Sync Receiver
 ##################################################
 
 test_log "Starting ION sync receiver BDM"
-rm -f sync-recv.log
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --ion-key 512 --no-resources --dtn-endpoint-id 'ipn:2.1' --dtn-sync-receiver  --debug --log-file=sync-recv.log &
+ION_NODE_WDNAME=$PWD/ion2 $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file sync-bdm.db --id sync-recv-$UNIQUE --no-resources --dtn-endpoint-id 'ipn:2.1' --dtn-sync-receiver  --debug --log-file=sync-recv.log &
 RECVPID=$!
 
 ##################################################
 ### Start BDM Recorder
 ##################################################
 test_log "starting recording bdm"
-rm -f sync-send.log
 $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*"  --port 11111  --debug --log-file=sync-send.log &
 SENDPID=$!
 
@@ -155,7 +153,7 @@ sleep 2
 test_log "Restarting recording bdm as a sync-sender"
 kill $SENDPID
 wait $SENDPID
-$ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --ion-key 256 --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.1' --sync-sender-config  bdm-sync-send.cfg --port 11111  --debug --log-file=sync-send.log &
+ION_NODE_WDNAME=$PWD/ion1 $ROOT/data-manager/server/bionet-data-manager -x bdm.ini.test --file orig-bdm.db --id sync-send-$UNIQUE --filter "random-hab.$UNIQUE.*:*" --dtn-endpoint-id 'ipn:1.1' --sync-sender-config  bdm-sync-send.cfg --port 11111  --debug --log-file=sync-send.log &
 SENDPID=$!
 
 test_log "Waiting for some data to sync"
@@ -195,9 +193,9 @@ bpstats 0x200
 
 # shut down ion processes
 echo "Stopping ION Node 1..."
-ionstop -k 0x100
+ionstop -D ion1
 echo "Stopping ION Node 2..."
-ionstop -k 0x200
+ionstop -D ion2
 echo "Running killm"
 killm > /dev/null
 
