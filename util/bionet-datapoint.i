@@ -36,6 +36,7 @@
     Value * value() {
 	Value * value;
 	bionet_value_t * v = bionet_datapoint_get_value($self->this); 
+
 	bionet_value_increment_ref_count(v);
 
 	value = (Value *)bionet_value_get_user_data(v);
@@ -54,8 +55,21 @@
 
     Resource * resource() {
 	bionet_resource_t * r = bionet_datapoint_get_resource($self->this); 
+
 	bionet_resource_increment_ref_count(r);
-	return (Resource *)bionet_resource_get_user_data(r);
+
+	Resource * resource = (Resource *)bionet_resource_get_user_data(r);
+	if (NULL == resource) {
+	    resource = (Resource *)calloc(1, sizeof(Resource));
+	    if (NULL == resource) {
+		g_warning("Failed to allocate memory to wrap bionet_resource_t");
+		return NULL;
+	    }
+	    resource->this = r;
+	    bionet_resource_set_user_data(resource->this, resource);
+	}
+
+	return resource;
     }
 
     const char * timestampToString() { return bionet_datapoint_timestamp_to_string($self->this); }

@@ -55,8 +55,21 @@
 	if (NULL == r) {
 	    return NULL;
 	}
+
 	bionet_resource_increment_ref_count(r);
-	return (Resource *)bionet_resource_get_user_data(r);
+
+	Resource * resource = (Resource *)bionet_resource_get_user_data(r);
+	if (NULL == resource) {
+	    resource = (Resource *)calloc(1, sizeof(Resource));
+	    if (NULL == resource) {
+		g_warning("Failed to allocate memory to wrap bionet_resource_t");
+		return NULL;
+	    }
+	    resource->this = r;
+	    bionet_resource_set_user_data(resource->this, resource);
+	}
+
+	return resource;
     }
 
     Resource * resource(const char * id) { 
@@ -64,8 +77,21 @@
 	if (NULL == r) {
 	    return NULL;
 	}
+
 	bionet_resource_increment_ref_count(r);
-	return (Resource *)bionet_resource_get_user_data(r);
+
+	Resource * resource = (Resource *)bionet_resource_get_user_data(r);
+	if (NULL == resource) {
+	    resource = (Resource *)calloc(1, sizeof(Resource));
+	    if (NULL == resource) {
+		g_warning("Failed to allocate memory to wrap bionet_resource_t");
+		return NULL;
+	    }
+	    resource->this = r;
+	    bionet_resource_set_user_data(resource->this, resource);
+	}
+
+	return resource;
     }
 
     int add(Stream * stream) { 

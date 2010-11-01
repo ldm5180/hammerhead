@@ -178,8 +178,21 @@
 
     Datapoint * datapoint() { 
 	bionet_datapoint_t * d = bionet_value_get_datapoint($self->this); 
+	
 	bionet_datapoint_increment_ref_count(d);
-	return (Datapoint *)bionet_datapoint_get_user_data(d);
+
+	Datapoint * datapoint = (Datapoint *)bionet_datapoint_get_user_data(d);
+	if (NULL == datapoint) {
+	    datapoint = (Datapoint *)calloc(1, sizeof(Datapoint));
+	    if (NULL == datapoint) {
+		g_warning("Failed to allocate memory to wrap bionet_datapoint_t");
+		return NULL;
+	    }
+	    datapoint->this = d;
+	    bionet_datapoint_set_user_data(datapoint->this, datapoint);
+	}
+
+	return datapoint;
     }
 
     char * __str__() {

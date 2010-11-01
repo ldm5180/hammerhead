@@ -620,6 +620,7 @@
 	if (NULL == d) {
 	    return NULL;
 	}
+
 	bionet_datapoint_increment_ref_count(d);
 	
 	datapoint = (Datapoint *)bionet_datapoint_get_user_data(d);
