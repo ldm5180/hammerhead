@@ -550,18 +550,17 @@ int bps_setopt(int impl_type, int opt, void* optval, size_t optlen)
             }
             opts.basekey = *(long*)optval;
 
-#if HAVE_SM_SET_BASEKEY
             if (load_ion() != 0) {
                 return -1;
             }
 
-            (*bdm_bp_funcs.sm_set_basekey)(opts.basekey);
+            if(bdm_bp_funcs.sm_set_basekey) {
+                (*bdm_bp_funcs.sm_set_basekey)(opts.basekey);
+            } else {
+                errno = ENOPROTOOPT;
+                return -1;
+            }
             break;
-#else	
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-                  "Setting ION basekey not supported");
-            return -1;
-#endif // HAVE_SM_SET_BASEKEY
 
         }
 

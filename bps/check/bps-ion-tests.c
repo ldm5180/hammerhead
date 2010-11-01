@@ -11,6 +11,7 @@
  */
 
 START_TEST (check_bps_setopt_ion_basekey) {
+#ifdef HAVE_SM_SET_BASEKEY
     int r;
 
     long base_key = 0x100;
@@ -23,6 +24,7 @@ START_TEST (check_bps_setopt_ion_basekey) {
     fail_unless(fd < 0, 
             "bps_socket succeeded when there should be no ION to connect to");
 
+#endif
 }
 END_TEST
 
@@ -38,9 +40,11 @@ START_TEST (check_bps_setopt_ion) {
     fail_unless(r<0, 
             "bps_setopt() didn't detect bad option");
 
+#ifdef HAVE_SM_SET_BASEKEY
     r = bps_setopt(BPST_ION, BPSO_ION_BASEKEY, &base_key, sizeof(base_key));
     fail_unless(0 == r, 
             "bps_setopt() error'd when setting basekey to 0");
+#endif
     
     int fd = bps_socket(0,0,0);
     fail_unless(fd >= 0,

@@ -29,6 +29,8 @@ a endpoint ipn:1.2 q
 a protocol udp 64000 100
 a induct udp 127.0.0.1:4556 udpcli
 a outduct udp * udpclo
+
+s 
 ## end bpadmin 
 
 ## begin ipnadmin 
