@@ -141,13 +141,11 @@ static GOptionEntry entries[] = {
         "FILE"
     },
 #if ENABLE_ION
-#if HAVE_SM_SET_BASEKEY
     {"ion-key",            'I', 
         0, G_OPTION_ARG_INT, &ion_key, 
-	"Alternate ION key to use if syncing over ION",
+	"Alternate ION key to use if syncing over ION. May not be supported.",
         "INT"
     },
-#endif
 #endif
     {"id",                 'i', 
         0, G_OPTION_ARG_STRING, &bdm_id, 
@@ -772,20 +770,14 @@ int main(int argc, char *argv[]) {
 
 #if ENABLE_ION
     if(ion_key){
-#if     HAVE_SM_SET_BASEKEY
-            int r;
-            r = bps_setopt(BPST_ION, BPSO_ION_BASEKEY, &ion_key, sizeof(long));
-            if ( r != 0 ) {
-                g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
-                    "Can't set custom ION SM basekey '%d': %s", 
-                    ion_key, strerror(errno));
-                return 1;
-            }
-#       else	
-            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-                  "Setting ION basekey not supported");
-            return (1);
-#       endif // HAVE_SM_SET_BASEKEY
+        int r;
+        r = bps_setopt(BPST_ION, BPSO_ION_BASEKEY, &ion_key, sizeof(long));
+        if ( r != 0 ) {
+            g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+                "Can't set custom ION SM basekey '%d': %s", 
+                ion_key, strerror(errno));
+            return 1;
+        }
     }
 #endif // ENABLE_ION
 

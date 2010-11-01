@@ -388,19 +388,14 @@ if test "x$with_ion" != "xno"; then
             [ -lici ]
         )
 
+        # We leave this check here, mainly so the check tests
+        # know what to expect
         if test "x$HAVE_BP_DETACH" != "x"; then
             AC_CHECK_FUNCS([bp_add_endpoint sm_set_basekey])
-            if test "x$ac_cv_func_bp_add_endpoint" != "x" && test "x$ac_cv_func_sm_set_basekey" != "x"; then
-                have_libbp=bst
+            if test "x$ac_cv_func_bp_add_endpoint" != "x"; then
                 AC_MSG_RESULT([Found ION with Bioserve mods])
-            else
-                if test "x$with_ion" != xcheck; then
-                    AC_MSG_FAILURE([--with-ion was given, but test for ion failed])
-                fi
-                with_ion=no
             fi
         fi
-
     fi
 fi
 
