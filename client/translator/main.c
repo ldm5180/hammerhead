@@ -126,20 +126,38 @@ int main(int argc, char* argv[])
     }
 
     // build hash table
+    // map translator_adc resources to 0-15
     ENTRY e, *ep;
-    hcreate(16);
-    int r = 0;
+    hcreate(128);
+    unsigned long int r = 0;
+    int jj = 0;
     for(; r<16; r++)
     {
         e.key = default_settings->translator_adc[r];
-        e.data = &r;
+        e.data = (void*)r;
         ep = hsearch(e, ENTER);
         if(ep == NULL)
         {
             fprintf(stderr, "entry to hash table failed\n");
             exit(1);
         }
+        int oldjj = jj;
+        for(; jj<oldjj+7; jj++)
+        {
+            e.key = default_settings->dmm_calibrations[jj];
+            e.data = (void*)r;
+            printf("%s ", default_settings->dmm_calibrations[jj]);
+            printf("r = %ld  j = %d\n", r, jj);
+            ep = hsearch(e, ENTER);
+            if(NULL == ep)
+            {
+                fprintf(stderr, "entry to hash table failed\n");
+                exit(1);
+            }
+        }
     }
+
+    
 
     // register callbacks
     bionet_register_callback_datapoint(cb_datapoint);

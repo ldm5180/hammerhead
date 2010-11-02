@@ -4,7 +4,7 @@
 void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
 {
     double content, voltage;
-    long int adc;
+    unsigned long int adc;
    // char *res_name = NULL;
     char id[9];
     bionet_node_t *node;
@@ -22,10 +22,11 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
     id[1] = res_name[5];
     id[2] = '\0';
     adc = strtol(id, NULL, 10);*/
+    printf("here\n");
 
     ep = hsearch(e, FIND);
-    printf("hash entry %s maps to %p\n", ep->key, ep->data);
-    adc = 0;
+    adc = (unsigned long int)ep->data;
+    printf("hash entry %s maps to %ld\n", ep->key, adc);
 
 
     // find corresponding voltage from engineering value

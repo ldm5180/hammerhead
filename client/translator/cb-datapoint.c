@@ -8,11 +8,12 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
     char *res_name = NULL;
     char *node_name = NULL;
     char id[3];
-    long int adc_id, calib_id, pot_id;
+    unsigned long int adc_id, calib_id, pot_id;
     double constant;
+    ENTRY e, *ep;
     
     resource = bionet_datapoint_get_resource(datapoint);
-    bionet_split_resource_name(bionet_resource_get_name(resource), NULL, NULL, &node_name, &res_name);
+    bionet_split_resource_name(bionet_resource_get_name(resource), NULL, NULL, &node_name, &e.key);
 
     // determine where the resource is coming from
     if(strcmp(node_name, "0") == 0)
@@ -20,7 +21,7 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
         // Check if it is a state resource update from DMM
         for(int i=0; i<16; i++)
         {
-            if(strcmp(default_settings->state_names[i], res_name) == 0)
+            if(strcmp(default_settings->state_names[i], e.key) == 0)
             {
                 int8_t value;
                 bionet_resource_get_int8(resource, &value, NULL);
@@ -33,13 +34,17 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
         // Wasn't state resource so must be a calibration 
 
         // use resource name to find adc number (0-15)
-        id[0] = res_name[3];
+       /* id[0] = res_name[3];
         id[1] = res_name[4];
         id[2] = '\0';   
-        adc_id = strtol(id, NULL, 10);
+        adc_id = strtol(id, NULL, 10);*/
+
+        ep = hsearch(e, FIND);
+        adc_id = (unsigned long int)ep->data;
+        printf("hash %s maps to %ld\n", ep->key, adc_id);
     
         // use resource name to find calibration constant number (0-6)
-        id[0] = res_name[19];
+        id[0] = e.key[19];
         id[1] = '\0';
         calib_id = strtol(id, NULL, 10);
 
