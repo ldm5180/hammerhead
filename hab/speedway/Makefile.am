@@ -44,23 +44,22 @@ speedway_SOURCES =         \
     handle-interrupt.c
 
 
-speedway_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) -I LTK-1.0.0.5/LTKC/Library $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) 
+speedway_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) -I LTK-1.0.0.8/LTKC/Library $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) 
 
-speedway_LDFLAGS = $(AM_LDFLAGS) $(GLIB_LIBS) -LLTK-1.0.0.5/LTKC/Library/LLRP.org -LLTK-1.0.0.5/LTKC/Library $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_CAL_SERVER) 
+speedway_LDFLAGS = $(AM_LDFLAGS) $(GLIB_LIBS) -LLTK-1.0.0.8/LTKC/Library/LLRP.org -LLTK-1.0.0.8/LTKC/Library $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_CAL_SERVER) 
 
 speedway_LDADD = $(AM_LDADD) -lltkc -lltkcllrporg -lm -lpthread $(LIBS_BIONET_HAB) $(LIBS_BIONET_UTIL) $(LIBS_BIONET_ASN1) $(LIBS_BIONET_CAL_SERVER)
 
-speedway_DEPENDENCIES = LTK-1.0.0.5/LTKC/Library/LLRP.org/libltkcllrporg.a LTK-1.0.0.5/LTKC/Library/libltkc.a $(INCLUDES_BIONET_HAB) $(INCLUDES_BIONET_UTIL) 
+speedway_DEPENDENCIES = LTK-1.0.0.8/LTKC/Library/LLRP.org/libltkcllrporg.a LTK-1.0.0.8/LTKC/Library/libltkc.a $(INCLUDES_BIONET_HAB) $(INCLUDES_BIONET_UTIL) 
 
 # we need to compile the LLRP Tool Kit before compiling the speedway hab
-LTK_TARBALL = ltkc_src_1_0_0_5.tgz
-LTK_DIR = LTK-1.0.0.5
-LTK_PATCH = ltkc-1.0.0.5.patch
+LTK_TARBALL = ltkc_src_1_0_0_8.tgz
+LTK_DIR = LTK-1.0.0.8
+LTK_PATCH = ltkc-1.0.0.8.patch
 BUILT_SOURCES = $(LTK_DIR)
 
 $(LTK_DIR):
 	tar -xzf $(LTK_TARBALL)
-	mv LTK $(LTK_DIR)
 	patch --dir=$(LTK_DIR) -p1 --quiet < $(LTK_PATCH) 
 	+$(MAKE) -C $(LTK_DIR)/LTKC
 
