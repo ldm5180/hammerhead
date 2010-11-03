@@ -20,7 +20,8 @@ Build-Depends: debhelper (>= 6), @ALSA_BUILD_DEP@ @ION_BUILD_DEP@
  sqlite3,
  bison,
  flex,
- libexpat1-dev
+ libexpat1-dev,
+ libxml2-dev
 Standards-Version: 3.8.0
 Section: net
 Homepage: http://bioserve.colorado.edu/bionet
