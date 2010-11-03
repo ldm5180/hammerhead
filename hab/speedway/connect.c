@@ -14,7 +14,10 @@
 #include <glib.h>
 
 #include "speedway.h"
+
+#if 0
 #include "out_impinj_ltkc.h"
+#endif
 
 /*
  * The steps done here are:
