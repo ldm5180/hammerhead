@@ -31,6 +31,7 @@ speedway_SOURCES =         \
     handle-gpi-event.c     \
     conn-status.c          \
     add-spec.c             \
+    add-direction-reporting.c \
     start-spec.c           \
     enable-spec.c          \
     transact.c             \

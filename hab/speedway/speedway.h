@@ -30,8 +30,14 @@ extern int scan_timeout;
 extern int immediate_trigger;
 extern int null_trigger;
 extern int gpi_trigger;
+extern int simple_report;
 
 extern llrp_u16_t rf_sensitivity;
+extern llrp_u16_t antenna_id;
+extern llrp_u16_t scrub_config;
+extern llrp_u16_t rf_sense_index;
+
+extern int use_sense_index;
 
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
@@ -70,6 +76,8 @@ int addROSpec_GPI();
 int startROSpec();
 int deleteAllROSpecs();
 int enableROSpec();
+
+LLRP_tSROReportSpec* getConfiguredROReportSpec(void);
 
 void handleReaderEventNotification( LLRP_tSReaderEventNotificationData *pNftData);
 void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent);

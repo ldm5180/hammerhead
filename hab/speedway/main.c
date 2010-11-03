@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <signal.h>
+#include <getopt.h>
 
 #include <glib.h>
 
@@ -30,11 +31,9 @@
  *
  */
 
-llrp_u16_t rf_sensitivity = 0;
-
 
 int main(int argc, char *argv[]) {
-    int i;
+    int i = 0;
     int bionet_fd;
 
     char* hab_type = "speedway";
@@ -54,6 +53,7 @@ int main(int argc, char *argv[]) {
 	    {"gpi-polarity", 1, 0, 'p'},
 	    {"num-scans", 1, 0, 'n'},
 	    {"rfsensitivity", 1, 0, 'r'},
+	    {"rf-sense-index", 1, 0, 'R'},
 	    {"scan-idle", 1, 0, 'l'},
 	    {"scan-timeout", 1, 0, 't'},
 	    {"show-messages", 0, 0, 'm'},
@@ -61,10 +61,13 @@ int main(int argc, char *argv[]) {
 	    {"immediate-trigger", 0, 0, 'c'},
 	    {"null-trigger", 0, 0, 'u'},
 	    {"gpi-trigger", 0, 0, 'g'},
+	    {"simple-report", 0, 0, 'S'},
+	    {"antenna-id", 1, 0, 'a' },
+	    {"disable-scrub", 0, 0, 'C' },
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:cug", long_options, &i);
+	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:cugS:a:CR:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -126,6 +129,7 @@ int main(int argc, char *argv[]) {
                     tmp = UINT16_MAX;
                 }
                 rf_sensitivity = tmp;
+		use_sense_index = 0;
             }
             break;
 
@@ -156,6 +160,30 @@ int main(int argc, char *argv[]) {
 	case 'g':
 	    immediate_trigger = 0;
 	    gpi_trigger = 1;
+	    break;
+
+	case 'S':
+	    simple_report = 1;
+	    break;
+
+	case 'a':
+	    antenna_id = strtol(optarg, NULL, 0);
+	    if (INT_MAX == antenna_id) {
+		g_warning("Failed to parse Antenna ID: %m");
+	    }
+	    break;
+
+	case 'C':
+	    scrub_config = 0;
+	    break;
+
+	case 'R':
+	    rf_sense_index = strtol(optarg, NULL, 0);
+	    if (INT_MAX == rf_sense_index) {
+		g_warning("Failed to parse RF Sense index: %m");
+	    } else {
+		use_sense_index = 1;
+	    }
 	    break;
 
 	default:

@@ -61,14 +61,18 @@ int configure_reader(void) {
 	cur_table_entry = LLRP_GeneralDeviceCapabilities_nextReceiveSensitivityTableEntry(cur_table_entry); 
     }
 
-    LLRP_tSRFReceiver rfreceiver_sensitivity = {
-	.hdr.elementHdr.pType = &LLRP_tdRFReceiver,
-	.ReceiverSensitivity = rf_sensitivity_index
-    };
+    LLRP_tSRFReceiver rfreceiver_sensitivity;
+    rfreceiver_sensitivity.hdr.elementHdr.pType = &LLRP_tdRFReceiver;
+    if (0 == use_sense_index) {
+	rfreceiver_sensitivity.ReceiverSensitivity = rf_sensitivity_index;
+    } else {
+	rfreceiver_sensitivity.ReceiverSensitivity = rf_sense_index;
+    }
 
+    // Assign the antenna config in the following (includes RX Sens. & TX power)
     LLRP_tSAntennaConfiguration antenna_config = {
 	    .hdr.elementHdr.pType = &LLRP_tdAntennaConfiguration,
-	    .AntennaID = 0,
+	    .AntennaID = antenna_id,
 	    .pRFReceiver = &rfreceiver_sensitivity,
 	    .pRFTransmitter = NULL,
 	    .listAirProtocolInventoryCommandSettings = NULL

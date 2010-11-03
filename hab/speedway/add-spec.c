@@ -94,12 +94,16 @@ int addROSpec_Immediate(void) {
         .EnableAccessSpecID     = 0,
     };
 
-    LLRP_tSROReportSpec ROReportSpec = {
-        .hdr.elementHdr.pType   = &LLRP_tdROReportSpec,
-        .eROReportTrigger       = LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec,
-        .N = 0, 
-	.pTagReportContentSelector = &TagReportContentSelector,
-    };
+    LLRP_tSROReportSpec ROReportSpec;
+    LLRP_tSROReportSpec * pROReportSpec = &ROReportSpec;
+    if (simple_report) {
+	pROReportSpec = getConfiguredROReportSpec();
+    } else {
+	ROReportSpec.hdr.elementHdr.pType   = &LLRP_tdROReportSpec;
+	ROReportSpec.eROReportTrigger       = LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec;
+	ROReportSpec.N = 0;
+	ROReportSpec.pTagReportContentSelector = &TagReportContentSelector;
+    }
 
     LLRP_tSROSpec ROSpec = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpec,
@@ -108,7 +112,7 @@ int addROSpec_Immediate(void) {
         .eCurrentState          = LLRP_ROSpecState_Disabled,
         .pROBoundarySpec        = &ROBoundarySpec,
         .listSpecParameter      = &AISpec.hdr,
-        .pROReportSpec          = &ROReportSpec,
+        .pROReportSpec          = pROReportSpec,
     };
 
     LLRP_tSADD_ROSPEC Cmd = {
@@ -219,12 +223,16 @@ int addROSpec_Null(void) {
         .EnableAccessSpecID     = 0,
     };
 
-    LLRP_tSROReportSpec ROReportSpec = {
-        .hdr.elementHdr.pType   = &LLRP_tdROReportSpec,
-        .eROReportTrigger       = LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec,
-        .N = 0, 
-	.pTagReportContentSelector = &TagReportContentSelector,
-    };
+    LLRP_tSROReportSpec ROReportSpec;
+    LLRP_tSROReportSpec * pROReportSpec = &ROReportSpec;
+    if (simple_report) {
+	pROReportSpec = getConfiguredROReportSpec();
+    } else {
+	ROReportSpec.hdr.elementHdr.pType   = &LLRP_tdROReportSpec;
+	ROReportSpec.eROReportTrigger       = LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec;
+	ROReportSpec.N = 0;
+	ROReportSpec.pTagReportContentSelector = &TagReportContentSelector;
+    }
 
     LLRP_tSROSpec ROSpec = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpec,
@@ -233,7 +241,7 @@ int addROSpec_Null(void) {
         .eCurrentState          = LLRP_ROSpecState_Disabled,
         .pROBoundarySpec        = &ROBoundarySpec,
         .listSpecParameter      = &AISpec.hdr,
-        .pROReportSpec          = &ROReportSpec,
+        .pROReportSpec          = pROReportSpec,
     };
 
     LLRP_tSADD_ROSPEC Cmd = {
@@ -351,12 +359,16 @@ int addROSpec_GPI(void) {
         .EnableAccessSpecID     = 0,
     };
 
-    LLRP_tSROReportSpec ROReportSpec = {
-        .hdr.elementHdr.pType   = &LLRP_tdROReportSpec,
-        .eROReportTrigger       = LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec,
-        .N = 0, 
-	.pTagReportContentSelector = &TagReportContentSelector,
-    };
+    LLRP_tSROReportSpec ROReportSpec;
+    LLRP_tSROReportSpec * pROReportSpec = &ROReportSpec;
+    if (simple_report) {
+	pROReportSpec = getConfiguredROReportSpec();
+    } else {
+	ROReportSpec.hdr.elementHdr.pType   = &LLRP_tdROReportSpec;
+	ROReportSpec.eROReportTrigger       = LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec;
+	ROReportSpec.N = 0;
+	ROReportSpec.pTagReportContentSelector = &TagReportContentSelector;
+    }
 
     LLRP_tSROSpec ROSpec = {
         .hdr.elementHdr.pType   = &LLRP_tdROSpec,
@@ -365,7 +377,7 @@ int addROSpec_GPI(void) {
         .eCurrentState          = LLRP_ROSpecState_Disabled,
         .pROBoundarySpec        = &ROBoundarySpec,
         .listSpecParameter      = &AISpec.hdr,
-        .pROReportSpec          = &ROReportSpec,
+        .pROReportSpec          = pROReportSpec,
     };
 
     LLRP_tSADD_ROSPEC Cmd = {

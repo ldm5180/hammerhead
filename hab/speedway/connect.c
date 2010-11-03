@@ -37,7 +37,7 @@ int speedway_connect(const char* reader_ip) {
 		g_warning("getTheTypeRegistry failed");
                 return -1;
 	}
-								     
+			
 	/*
 	 * Connstruct the connection using a 32kb max frame size for
 	 * send and receive. The connection object is valid, but not actually

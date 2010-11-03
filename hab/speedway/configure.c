@@ -20,10 +20,12 @@
 int speedway_configure() {
     int r;
 
-    r = scrubConfiguration();	
-    if (r != 0) {
-        g_warning("scrubConfiguration error");
-        return -1;
+    if (scrub_config) {
+	r = scrubConfiguration();	
+	if (r != 0) {
+	    g_warning("scrubConfiguration error");
+	    return -1;
+	}
     }
 
     r = get_reader_capabilities();
@@ -38,24 +40,25 @@ int speedway_configure() {
         return -1;
     }
 
-    if (immediate_trigger == 1) {
-	r = addROSpec_Immediate();
-    } else if (null_trigger == 1) {
-	r = addROSpec_Null();
-    } else if (gpi_trigger == 1) {
-	r = addROSpec_GPI();
-    }
-    if (r != 0) {
-        g_warning("addROSpec error");
-        return -1;
-    }
+    if (scrub_config) {
+	if (immediate_trigger == 1) {
+	    r = addROSpec_Immediate(simple_report);
+	} else if (null_trigger == 1) {
+	    r = addROSpec_Null(simple_report);
+	} else if (gpi_trigger == 1) {
+	    r = addROSpec_GPI(simple_report);
+	}
+	if (r != 0) {
+	    g_warning("addROSpec error");
+	    return -1;
+	}
 
-    r = enableROSpec();
-    if (r != 0) {
-        g_warning("enableROSpec error");
-        return -1;
+	r = enableROSpec(123);
+	if (r != 0) {
+	    g_warning("enableROSpec error");
+	    return -1;
+	}
     }
-
 
     return 0;
 }

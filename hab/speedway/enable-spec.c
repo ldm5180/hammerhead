@@ -23,12 +23,12 @@
  * </ENABLE_ROSPEC>
  */
 
-int enableROSpec (void)
+int enableROSpec (int spec)
 {
     LLRP_tSENABLE_ROSPEC Cmd = {
         .hdr.elementHdr.pType   = &LLRP_tdENABLE_ROSPEC,
         .hdr.MessageID          = 202,
-        .ROSpecID               = 123,
+        .ROSpecID               = spec,
     };
 
     LLRP_tSMessage *pRspMsg;
