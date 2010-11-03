@@ -34,6 +34,7 @@ speedway_SOURCES =         \
     add-direction-reporting.c \
     start-spec.c           \
     enable-spec.c          \
+    enable-impinj-extensions.c \
     transact.c             \
     llrp-status.c          \
     xml-message.c          \

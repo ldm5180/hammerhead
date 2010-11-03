@@ -14,6 +14,7 @@
 #include <glib.h>
 
 #include "speedway.h"
+#include "out_impinj_ltkc.h"
 
 /*
  * The steps done here are:
@@ -37,7 +38,12 @@ int speedway_connect(const char* reader_ip) {
 		g_warning("getTheTypeRegistry failed");
                 return -1;
 	}
-			
+	
+#if 0
+	/* Enroll the Impinj extensions. */
+	LLRP_enrollImpinjTypesIntoRegistry(pTypeRegistry);
+#endif
+		
 	/*
 	 * Connstruct the connection using a 32kb max frame size for
 	 * send and receive. The connection object is valid, but not actually

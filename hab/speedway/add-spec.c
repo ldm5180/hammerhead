@@ -101,7 +101,7 @@ int addROSpec_Immediate(void) {
     } else {
 	ROReportSpec.hdr.elementHdr.pType   = &LLRP_tdROReportSpec;
 	ROReportSpec.eROReportTrigger       = LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec;
-	ROReportSpec.N = 0;
+	ROReportSpec.N = 1;
 	ROReportSpec.pTagReportContentSelector = &TagReportContentSelector;
     }
 
@@ -230,7 +230,7 @@ int addROSpec_Null(void) {
     } else {
 	ROReportSpec.hdr.elementHdr.pType   = &LLRP_tdROReportSpec;
 	ROReportSpec.eROReportTrigger       = LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec;
-	ROReportSpec.N = 0;
+	ROReportSpec.N = 1;
 	ROReportSpec.pTagReportContentSelector = &TagReportContentSelector;
     }
 
@@ -366,7 +366,7 @@ int addROSpec_GPI(void) {
     } else {
 	ROReportSpec.hdr.elementHdr.pType   = &LLRP_tdROReportSpec;
 	ROReportSpec.eROReportTrigger       = LLRP_ROReportTriggerType_Upon_N_Tags_Or_End_Of_ROSpec;
-	ROReportSpec.N = 0;
+	ROReportSpec.N = 1;
 	ROReportSpec.pTagReportContentSelector = &TagReportContentSelector;
     }
 

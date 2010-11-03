@@ -33,11 +33,16 @@ extern int gpi_trigger;
 extern int simple_report;
 
 extern llrp_u16_t rf_sensitivity;
+extern llrp_u16_t rf_transmitpower;
 extern llrp_u16_t antenna_id;
 extern llrp_u16_t scrub_config;
 extern llrp_u16_t rf_sense_index;
+extern llrp_u16_t rf_txpower_index;
 
 extern int use_sense_index;
+extern int use_txpower_index;
+
+//extern int tag_direction;
 
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
@@ -78,6 +83,8 @@ int deleteAllROSpecs();
 int enableROSpec();
 
 LLRP_tSROReportSpec* getConfiguredROReportSpec(void);
+int enableImpinjExtensions (void);
+int addDirectionReporting (void);
 
 void handleReaderEventNotification( LLRP_tSReaderEventNotificationData *pNftData);
 void handleAntennaEvent(LLRP_tSAntennaEvent *pAntennaEvent);

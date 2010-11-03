@@ -1,4 +1,5 @@
 
+#if 0
 
 #include <errno.h>
 #include <stdio.h>
@@ -48,3 +49,4 @@ int enableImpinjExtensions (void)
     return 0;
 }
 
+#endif

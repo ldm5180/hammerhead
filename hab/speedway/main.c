@@ -54,6 +54,8 @@ int main(int argc, char *argv[]) {
 	    {"num-scans", 1, 0, 'n'},
 	    {"rfsensitivity", 1, 0, 'r'},
 	    {"rf-sense-index", 1, 0, 'R'},
+	    {"txpower-index", 1, 0, 'T'},
+//	    {"tx-power", 1, 0, 'x'},
 	    {"scan-idle", 1, 0, 'l'},
 	    {"scan-timeout", 1, 0, 't'},
 	    {"show-messages", 0, 0, 'm'},
@@ -64,10 +66,11 @@ int main(int argc, char *argv[]) {
 	    {"simple-report", 0, 0, 'S'},
 	    {"antenna-id", 1, 0, 'a' },
 	    {"disable-scrub", 0, 0, 'C' },
+//	    {"tag-direction", 0, 0, 'D' },
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:cugS:a:CR:", long_options, &i);
+	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:cugS:a:CR:T:x:D", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -185,6 +188,32 @@ int main(int argc, char *argv[]) {
 		use_sense_index = 1;
 	    }
 	    break;
+
+	case 'T':
+	    rf_txpower_index = strtol(optarg, NULL, 0);
+	    if (INT_MAX == rf_txpower_index) {
+		g_warning("Failed to parse RF TX Power index: %m");
+	    } else {
+		use_txpower_index = 1;
+	    }
+	    break;
+
+#if 0
+	case 'x':
+	    rf_transmitpower = strtol(optarg, NULL, 0);
+	    if (INT_MAX == rf_transmitpower) {
+		g_warning("Failed to parse TX Power: %m");
+	    } else {
+		use_txpower_index = 0;
+	    }
+	    break;
+#endif
+
+#if 0
+	case 'D':
+	    tag_direction = 1;
+	    break;
+#endif
 
 	default:
 	    break;

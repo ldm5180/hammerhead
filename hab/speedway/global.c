@@ -28,11 +28,16 @@ int gpi_trigger = 0;
 int simple_report = 0;
 
 llrp_u16_t rf_sensitivity   = 0;
+llrp_u16_t rf_transmitpower = 30;
 llrp_u16_t rf_sense_index   = 1;
+llrp_u16_t rf_txpower_index = 61;
 llrp_u16_t antenna_id       = 0;  //default antenna ID, 0 selects all antennas
 llrp_u16_t scrub_config     = 1;  //default is to scrub the reader config each time
                                   //the program is called
 int use_sense_index = 0;
+int use_txpower_index = 0;
+
+//int tag_direction = 0;
 
 LLRP_tSConnection *pConn;
 LLRP_tSTypeRegistry *pTypeRegistry;

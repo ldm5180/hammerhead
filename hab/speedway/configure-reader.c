@@ -69,12 +69,33 @@ int configure_reader(void) {
 	rfreceiver_sensitivity.ReceiverSensitivity = rf_sense_index;
     }
 
+    //Pick out the transmit power from the returned capabilities table
+#if 0
+    LLRP_tSTransmitPowerLevelTableEntry * cur_tx_table_entry =
+	pRspCapabilities->pGeneralDeviceCapabilities->listTransmitPowerLevelTableEntry;
+    while (cur_tx_table_entry && (0 == use_txpower_index)) {
+	if (cur_tx_table_entry->TransmitPowerValue == rf_transmitpower) {
+	    rf_txpower_index = cur_tx_table_entry->Index;
+	    break;
+	}
+	cur_tx_table_entry = LLRP_GeneralDeviceCapabilities_nextReceiveSensitivityTableEntry(cur_tx_table_entry); 
+    }
+#endif
+
+    //Assign the transmit power parameter in the following
+    LLRP_tSRFTransmitter rftransmit_param = {
+	.hdr.elementHdr.pType = &LLRP_tdRFTransmitter,
+	.TransmitPower = rf_txpower_index,
+	.HopTableID    = 1,
+	.ChannelIndex  = 0
+    };
+
     // Assign the antenna config in the following (includes RX Sens. & TX power)
     LLRP_tSAntennaConfiguration antenna_config = {
 	    .hdr.elementHdr.pType = &LLRP_tdAntennaConfiguration,
 	    .AntennaID = antenna_id,
 	    .pRFReceiver = &rfreceiver_sensitivity,
-	    .pRFTransmitter = NULL,
+	    .pRFTransmitter = &rftransmit_param,
 	    .listAirProtocolInventoryCommandSettings = NULL
     };
 

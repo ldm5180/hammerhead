@@ -20,6 +20,16 @@
 int speedway_configure() {
     int r;
 
+#if 0
+    //enable Impinj extensions
+    r = enableImpinjExtensions();
+    if (r != 0) {
+      //an error has been logged
+      g_warning("enableImpinjExtensions error");
+      return -1;
+    }
+#endif
+
     if (scrub_config) {
 	r = scrubConfiguration();	
 	if (r != 0) {
@@ -59,6 +69,22 @@ int speedway_configure() {
 	    return -1;
 	}
     }
+
+#if 0
+    //logic to add Impinj direction reporting to the reader configuration
+    if (tag_direction) {
+	r = addDirectionReporting();	
+	if (r != 0) {
+	    g_warning("Impinj Direction Reporting Error");
+	    return -1;
+	}
+	r = enableROSpec(1234);
+	if (r != 0) {
+	    g_warning("Trouble Enabling Impinj Direction Reporting ROSpec");
+	    return -1;
+    	}	
+    }
+#endif
 
     return 0;
 }
