@@ -26,7 +26,6 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
     LLRP_tSTagReportData *pTagReportData;
     int ni;
 
-
     // set all nodes to "not seen on any antenna"
     for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
         bionet_node_t *node = bionet_hab_get_node_by_index(hab, ni);
@@ -51,7 +50,6 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
         }
     }
 
-
     // handle each TagReportData entry separately
     // any reports of an antenna seeing a node update that antenna's resources on the node and set the still-here flag
     for(
@@ -61,7 +59,6 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
     ) {
         handle_tag_report_data(pTagReportData);
     }
-
 
     // report changes to the nodes (gone nodes, node with new datapoints
     for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
@@ -96,53 +93,53 @@ int poll_reader() {
     // we could roll it into select in our main loop
     pMessage = recvMessage(RECEIVE_TIMEOUT);
     if (pMessage == NULL) {
-        // timeout
-        return 1;
+	// timeout
+	return 1;
     }
-
-
+    
+    
     /*
      * What happens here depends on what kind of message was received.
      * Use the type label (pType) to discriminate message types.
      */
     pType = pMessage->elementHdr.pType;
-
+    
     /*
      * If this is a tag report, then process it.
      */
     if (&LLRP_tdRO_ACCESS_REPORT == pType) {
-        process_ro_access_report((LLRP_tSRO_ACCESS_REPORT *)pMessage);
-        freeMessage(pMessage);
-
-        scans_left_to_do --;
-        if (scans_left_to_do > 0) startROSpec();
-        return 1;
+	process_ro_access_report((LLRP_tSRO_ACCESS_REPORT *)pMessage);
+	freeMessage(pMessage);
+	
+	scans_left_to_do --;
+	if (scans_left_to_do > 0) startROSpec();
+	return 1;
     }
-
+    
     /*
      * If this is a reader event ...
      */
     else if (&LLRP_tdREADER_EVENT_NOTIFICATION == pType) {
-        LLRP_tSREADER_EVENT_NOTIFICATION *pNtf;
-        LLRP_tSReaderEventNotificationData *pNtfData;
-
-        pNtf = (LLRP_tSREADER_EVENT_NOTIFICATION *) pMessage;
-
-        pNtfData = LLRP_READER_EVENT_NOTIFICATION_getReaderEventNotificationData(pNtf);
-
-        if (pNtfData != NULL) {
-            handleReaderEventNotification(pNtfData);
-        } else {
-            // Should never happen.
-            g_warning("READER_EVENT_NOTIFICATION  without data");
-        }
+	LLRP_tSREADER_EVENT_NOTIFICATION *pNtf;
+	LLRP_tSReaderEventNotificationData *pNtfData;
+	
+	pNtf = (LLRP_tSREADER_EVENT_NOTIFICATION *) pMessage;
+	
+	pNtfData = LLRP_READER_EVENT_NOTIFICATION_getReaderEventNotificationData(pNtf);
+	
+	if (pNtfData != NULL) {
+	    handleReaderEventNotification(pNtfData);
+	} else {
+	    // Should never happen.
+	    g_warning("READER_EVENT_NOTIFICATION  without data");
+	}
     } else {
-        /*
-         * Something unexpected happened.
-         */
-        g_warning("Ignoring unexpected message during monitor: %s", pType->pName);
+	/*
+	 * Something unexpected happened.
+	 */
+	g_warning("Ignoring unexpected message during monitor: %s", pType->pName);
     }
-
+    
     freeMessage(pMessage);
 
     return 1;

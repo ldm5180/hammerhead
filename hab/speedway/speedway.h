@@ -42,13 +42,19 @@ extern llrp_u16_t rf_txpower_index;
 extern int use_sense_index;
 extern int use_txpower_index;
 
+extern int set_antenna_epsilon;
+extern int set_peakrssi_delta;
+extern int set_peakrssi_epsilon;
+
+extern unsigned int peakrssi_delta;
+extern unsigned int peakrssi_epsilon;
+
 //extern int tag_direction;
 
 extern LLRP_tSConnection *pConn;
 extern LLRP_tSTypeRegistry *pTypeRegistry;
 
 extern int scans_left_to_do;
-
 
 extern bionet_node_t *reader_node;
 int make_reader_node(void);
@@ -73,7 +79,7 @@ int get_reader_capabilities (void);
  */
 int poll_reader();
 
-void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData);
+int handle_tag_report_data(LLRP_tSTagReportData *pTagReportData);
 
 int addROSpec_Immediate();
 int addROSpec_Null();

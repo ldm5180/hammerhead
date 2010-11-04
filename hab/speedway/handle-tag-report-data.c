@@ -113,6 +113,21 @@ bionet_node_t *make_new_node(const char *node_id) {
             g_warning("error making a Resource %s:%s", node_id, resource_id);
             return NULL;
         }
+
+	if (set_antenna_epsilon) {
+	    bionet_epsilon_t * epsilon = bionet_epsilon_new_binary(1);
+	    if (NULL == epsilon) {
+		g_warning("Failed to get epsilon for squelching antenna datapoints for resource %s.",
+			  bionet_resource_get_name(resource));
+	    } else {
+		if (bionet_resource_set_epsilon(resource, epsilon)) {
+		    g_warning("Failed to set epsilon for squelching antenna datapoints for resource %s.",
+			      bionet_resource_get_name(resource));
+		    bionet_epsilon_free(epsilon);
+		}
+	    }
+	}
+
         r = bionet_node_add_resource(node, resource);
         if (r != 0) {
             g_warning("error making Resource %s:%s", node_id, resource_id);
@@ -130,6 +145,31 @@ bionet_node_t *make_new_node(const char *node_id) {
             g_warning("error making a Resource %s:%s", node_id, resource_id);
             return NULL;
         }
+
+	if (set_peakrssi_epsilon) {
+	    bionet_epsilon_t * epsilon = bionet_epsilon_new_int8(peakrssi_epsilon);
+	    if (NULL == epsilon) {
+		g_warning("Failed to get epsilon for squelching Peak RSSI datapoints for resource %s.",
+			  bionet_resource_get_name(resource));
+	    } else {
+		if (bionet_resource_set_epsilon(resource, epsilon)) {
+		    g_warning("Failed to set epsilon for squelching Peak RSSI datapoints for resource %s.",
+			      bionet_resource_get_name(resource));
+		    bionet_epsilon_free(epsilon);
+		}
+	    }
+	}
+
+	if (set_peakrssi_delta) {
+	    struct timeval delta;
+	    delta.tv_sec = peakrssi_delta;
+	    delta.tv_usec = 0;
+
+	    if (bionet_resource_set_delta(resource, delta)) {
+		g_warning("Failed to set minimum datapoint frequency for %s", bionet_resource_get_name(resource));
+	    }
+	}
+
         r = bionet_node_add_resource(node, resource);
         if (r != 0) {
             g_warning("error making Resource %s:%s", node_id, resource_id);
@@ -168,7 +208,7 @@ bionet_node_t *make_new_node(const char *node_id) {
 //    </TagReportData>
 //                                                
 
-void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
+int handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
     char *node_id;
     bionet_node_t *node;
     node_data_t *node_data;
@@ -178,17 +218,17 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
     bionet_resource_t *resource;
 
     node_id = get_tag_id(pTagReportData);
-    if (node_id == NULL) return;
+    if (node_id == NULL) return 0;
 
     node = bionet_hab_get_node_by_id(hab, node_id);
     if (node == NULL) {
         node = make_new_node(node_id);
-        if (node == NULL) return;
+        if (node == NULL) return -1;
     }
 
     if (pTagReportData->pAntennaID == NULL) {
         g_warning("no antenna for Tag %s!", node_id);
-        return;
+        return -1;
     }
 
     node_data = bionet_node_get_user_data(node);
@@ -201,7 +241,7 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
     resource = bionet_node_get_resource_by_id(node, resource_id);
     if (resource == NULL) {
         g_warning("error getting Resource %s:%s", node_id, resource_id);
-        return;
+        return -1;
     }
     bionet_resource_set_binary(resource, 1, NULL);
 
@@ -209,8 +249,10 @@ void handle_tag_report_data(LLRP_tSTagReportData *pTagReportData) {
     resource = bionet_node_get_resource_by_id(node, resource_id);
     if (resource == NULL) {
         g_warning("error getting Resource %s:%s", node_id, resource_id);
-        return;
+        return -1;
     }
     bionet_resource_set_int8(resource, pTagReportData->pPeakRSSI->PeakRSSI, NULL);
+    
+    return 1;
 }
 

@@ -68,10 +68,13 @@ int main(int argc, char *argv[]) {
 	    {"antenna-id", 1, 0, 'a' },
 	    {"disable-scrub", 0, 0, 'C' },
 //	    {"tag-direction", 0, 0, 'D' },
+	    {"antenna-squelch", 0, 0, 'A'},
+	    {"peak-rssi-squelch", 1, 0, 'P'},
+	    {"peak-rssi-frequency", 1, 0, 'f'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:cugS:a:CR:T:x:D", long_options, &i);
+	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:cugS:a:CR:T:x:DAf:P:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -219,6 +222,28 @@ int main(int argc, char *argv[]) {
 	    tag_direction = 1;
 	    break;
 #endif
+
+	case 'A':
+	    set_antenna_epsilon = 1;
+	    break;
+
+	case 'f':
+	    peakrssi_delta = strtoul(optarg, NULL, 0);
+	    if (ULONG_MAX == peakrssi_delta) {
+		g_warning("Failed to parse Peak RSSI Frequency.");
+	    } else {
+		set_peakrssi_delta = 1;
+	    }
+	    break;
+
+	case 'P':
+	    peakrssi_epsilon = strtoul(optarg, NULL, 0);
+	    if (ULONG_MAX == peakrssi_epsilon) {
+		g_warning("Failed to parse Peak RSSI Squelch.");
+	    } else {
+		set_peakrssi_epsilon = 1;
+	    }
+	    break;
 
 	default:
 	    break;

@@ -37,6 +37,13 @@ llrp_u16_t scrub_config     = 1;  //default is to scrub the reader config each t
 int use_sense_index = 0;
 int use_txpower_index = 0;
 
+int set_antenna_epsilon = 0;
+int set_peakrssi_delta = 0;
+int set_peakrssi_epsilon = 0;
+
+unsigned int peakrssi_delta = 0;
+unsigned int peakrssi_epsilon = 0;
+
 //int tag_direction = 0;
 
 LLRP_tSConnection *pConn;
