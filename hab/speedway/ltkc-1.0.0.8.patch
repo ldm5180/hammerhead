@@ -38,7 +38,7 @@ diff -ur LTK-1.0.0.8-orig/LTKC/Library/ltkc_xmltextencode.c LTK-1.0.0.8/LTKC/Lib
          strcpy(pBuffer, "ERROR: XMLTextEncoder_construct failed\n");
 diff -ur LTK-1.0.0.8-orig/LTKC/Library/Makefile LTK-1.0.0.8/LTKC/Library/Makefile
 --- LTK-1.0.0.8-orig/LTKC/Library/Makefile	2010-02-23 08:00:51.000000000 -0700
-+++ LTK-1.0.0.8/LTKC/Library/Makefile	2010-11-03 11:43:55.844264582 -0600
++++ LTK-1.0.0.8/LTKC/Library/Makefile	2010-11-04 08:54:50.238060895 -0600
 @@ -19,7 +19,7 @@
  AR              = ar
  CC              = gcc
@@ -48,6 +48,49 @@ diff -ur LTK-1.0.0.8-orig/LTKC/Library/Makefile LTK-1.0.0.8/LTKC/Library/Makefil
  
  LLRPDEF         = ../../Definitions/Core/llrp-1x0-def.xml
  
+@@ -53,10 +53,10 @@
+ 
+ 
+ all:    $(LTKC_LIB)
+-	cd LLRP.org; make all
++	+make -C LLRP.org all
+ 
+ everything:
+-	make all
++	+make all
+ 
+ $(LTKC_LIB) : $(LTKC_OBJS)
+ 	$(AR) crv $(LTKC_LIB) $(LTKC_OBJS)
+diff -ur LTK-1.0.0.8-orig/LTKC/Makefile LTK-1.0.0.8/LTKC/Makefile
+--- LTK-1.0.0.8-orig/LTKC/Makefile	2008-01-29 17:56:24.000000000 -0700
++++ LTK-1.0.0.8/LTKC/Makefile	2010-11-04 08:58:21.070172906 -0600
+@@ -17,18 +17,18 @@
+ 
+ 
+ all:
+-	cd Library;  make all
+-	cd Tests;    make all
+-	cd Examples; make all
++	+make -C Library all
++	+make -C Tests all
++	+make -C Examples all
+ 
+ everything:
+-	cd Library;  make everything
+-	cd Tests;    make everything
+-	cd Examples; make everything
++	+make -C Library everything
++	+make -C Tests everything
++	+make -C Examples everything
+ 
+ release:
+-	make everything
+-	cd Release; make all
++	+make everything
++	+make -C Release all
+ 
+ clean:
+ 	cd Library;  make clean
 diff -ur LTK-1.0.0.8-orig/LTKC/Release/Makefile LTK-1.0.0.8/LTKC/Release/Makefile
 --- LTK-1.0.0.8-orig/LTKC/Release/Makefile	2010-02-23 08:00:51.000000000 -0700
 +++ LTK-1.0.0.8/LTKC/Release/Makefile	2010-11-03 11:41:26.651697708 -0600
@@ -100,3 +143,24 @@ diff -ur LTK-1.0.0.8-orig/LTKC/Tests/Makefile LTK-1.0.0.8/LTKC/Tests/Makefile
  LTKC_HDRS = \
  	$(LIBDIR)/ltkc.h		\
  	$(LIBDIR)/ltkc_base.h		\
+diff -ur LTK-1.0.0.8-orig/LTKC/Tests/xml2llrp.c LTK-1.0.0.8/LTKC/Tests/xml2llrp.c
+--- LTK-1.0.0.8-orig/LTKC/Tests/xml2llrp.c	2010-02-23 08:00:52.000000000 -0700
++++ LTK-1.0.0.8/LTKC/Tests/xml2llrp.c	2010-11-04 08:57:26.829822555 -0600
+@@ -151,7 +151,7 @@
+         exit(3);
+     }
+ 
+-    if(strcmp(pNode->name, "packetSequence") != 0)
++    if(strcmp((const char *)pNode->name, "packetSequence") != 0)
+     {
+         fprintf(stderr, "ERROR: Could not get XML PacketSequence node.  " \
+                         "Found %s instead\n", pNode->name);
+@@ -174,7 +174,7 @@
+             xmlChar *           pMessageIDStr = NULL;
+ 
+             /* It helps to know the message ID for debugging */
+-            pMessageIDStr = xmlGetProp(pNode, "MessageID");
++            pMessageIDStr = xmlGetProp((xmlNodePtr)pNode, (const xmlChar *)"MessageID");
+ 
+             /*
+              * Construct a frame decoder. It references the
