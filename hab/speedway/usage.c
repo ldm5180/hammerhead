@@ -44,6 +44,7 @@ void usage(void) {
 	    "                              Causes Peak RSSI datapoint updates to be published if N seconds\n"
 	    "                              have expired since last datapoint even if the squench value is\n"
 	    "                              not reached.\n"
+	    " -l,--lost-tag-timeout <N>    Wait N seconds before reporting the tag as lost.\n"
 	    " -s,--security-dir <dir>      Directory containing security certificates\n"
 	    " -v,--version                 Print version number\n"
 	    "\n"

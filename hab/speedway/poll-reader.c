@@ -22,9 +22,75 @@
 #define RECEIVE_TIMEOUT 100
 
 
+static void process_ro_access_report_with_loss_timeout(LLRP_tSRO_ACCESS_REPORT *report) {
+    LLRP_tSTagReportData *pTagReportData;
+    int ni;
+
+    // handle each TagReportData entry separately
+    // any reports of an antenna seeing a node update that antenna's resources on the node and set the still-here flag
+    for(
+        pTagReportData = report->listTagReportData;
+        NULL != pTagReportData;
+        pTagReportData = (LLRP_tSTagReportData *)pTagReportData->hdr.pNextSubParameter
+    ) {
+        handle_tag_report_data(pTagReportData);
+    }
+
+    // set all nodes to "not seen on any antenna"
+    for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
+        bionet_node_t *node = bionet_hab_get_node_by_index(hab, ni);
+        node_data_t *node_data = bionet_node_get_user_data(node);
+        int i;
+
+        if (node == reader_node) continue;
+
+	int counter = 0;
+
+        for (i = 1; i <= 4; i ++) {
+            char resource_id[BIONET_NAME_COMPONENT_MAX_LEN];
+            bionet_resource_t *resource;
+
+            snprintf(resource_id, sizeof(resource_id), "Antenna-%d", i);
+            resource = bionet_node_get_resource_by_id(node, resource_id);
+            if (resource == NULL) {
+                g_warning("error getting Resource %s:%s", bionet_node_get_id(node), resource_id);
+                return;
+            }
+
+	    int value;
+	    struct timeval tv = { 0, 0 };
+	    struct timeval curtime;
+            if (0 == bionet_resource_get_num_datapoints(resource) || bionet_resource_get_binary(resource, &value, &tv)) {
+		counter++;
+	    } else {
+		gettimeofday(&curtime, NULL);
+		struct timeval diff = bionet_timeval_subtract(&curtime, &tv);
+		if (diff.tv_sec >= loss_timeout) {
+		    bionet_resource_set_binary(resource, 0, NULL);
+		    counter++;
+		}
+	    }
+	}
+
+	if (counter == 4) {
+            free(node_data);
+            bionet_node_set_user_data(node, NULL);
+            bionet_hab_remove_node_by_id(hab, bionet_node_get_id(node));
+            hab_report_lost_node(node);
+            bionet_node_free(node);
+            ni --;	    
+        }
+
+	hab_report_datapoints(node);
+    }
+
+}
+
+
 static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
     LLRP_tSTagReportData *pTagReportData;
     int ni;
+
 
     // set all nodes to "not seen on any antenna"
     for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
@@ -50,6 +116,7 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
         }
     }
 
+
     // handle each TagReportData entry separately
     // any reports of an antenna seeing a node update that antenna's resources on the node and set the still-here flag
     for(
@@ -59,6 +126,7 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
     ) {
         handle_tag_report_data(pTagReportData);
     }
+
 
     // report changes to the nodes (gone nodes, node with new datapoints
     for (ni = 0; ni < bionet_hab_get_num_nodes(hab); ni ++) {
@@ -79,7 +147,6 @@ static void process_ro_access_report(LLRP_tSRO_ACCESS_REPORT *report) {
         }
     }
 }
-
 
 
 
@@ -108,7 +175,11 @@ int poll_reader() {
      * If this is a tag report, then process it.
      */
     if (&LLRP_tdRO_ACCESS_REPORT == pType) {
-	process_ro_access_report((LLRP_tSRO_ACCESS_REPORT *)pMessage);
+	if (loss_timeout != UINT_MAX) { 
+	    process_ro_access_report_with_loss_timeout((LLRP_tSRO_ACCESS_REPORT *)pMessage);
+	} else {
+	    process_ro_access_report((LLRP_tSRO_ACCESS_REPORT *)pMessage);
+	}
 	freeMessage(pMessage);
 	
 	scans_left_to_do --;

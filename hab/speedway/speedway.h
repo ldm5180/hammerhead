@@ -48,6 +48,7 @@ extern int set_peakrssi_epsilon;
 
 extern unsigned int peakrssi_delta;
 extern unsigned int peakrssi_epsilon;
+extern unsigned int loss_timeout;
 
 //extern int tag_direction;
 

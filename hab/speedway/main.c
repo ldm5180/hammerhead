@@ -71,10 +71,11 @@ int main(int argc, char *argv[]) {
 	    {"antenna-squelch", 0, 0, 'A'},
 	    {"peak-rssi-squelch", 1, 0, 'P'},
 	    {"peak-rssi-frequency", 1, 0, 'f'},
+	    {"lost-tag-timeout", 1, 0, 'L'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:cugS:a:CR:T:x:DAf:P:", long_options, &i);
+	c = getopt_long(argc, argv, "?vhd:p:n:r:i:t:ms:cugS:a:CR:T:x:DAf:P:L:l:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -242,6 +243,13 @@ int main(int argc, char *argv[]) {
 		g_warning("Failed to parse Peak RSSI Squelch.");
 	    } else {
 		set_peakrssi_epsilon = 1;
+	    }
+	    break;
+
+	case 'L':
+	    loss_timeout = strtoul(optarg, NULL, 0);
+	    if (ULONG_MAX == loss_timeout) {
+		g_warning("Failed to parse Lost Tag Timeout.");
 	    }
 	    break;
 

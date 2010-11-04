@@ -43,7 +43,7 @@ int set_peakrssi_epsilon = 0;
 
 unsigned int peakrssi_delta = 0;
 unsigned int peakrssi_epsilon = 0;
-
+unsigned int loss_timeout = UINT_MAX;
 //int tag_direction = 0;
 
 LLRP_tSConnection *pConn;
