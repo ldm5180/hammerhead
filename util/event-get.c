@@ -99,7 +99,7 @@ char * bionet_event_timestamp_to_string(bionet_event_t * event)
     if (event == NULL) {
         g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 	      "%s(): NULL event passed in", __FUNCTION__);
-        goto error;
+        return NULL;
     }
 
     if (event->timestamp_str) {
