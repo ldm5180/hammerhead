@@ -62,28 +62,28 @@ def add_node(hab, xb_address_16):
             sys.exit(1)
         resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Amps")
         if (resource == None):
-            logger.critical("Critical - Error creating Resource - AMPS")
+            logger.critical("Critical - Error creating Resource - Amps")
             sys.exit(1)
         if (bionet_node_add_resource(node, resource)):
             logger.critical("Error adding resource to node")
             sys.exit(1)
         resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Watts")
         if (resource == None):
-            logger.critical("Critical - Error creating Resource - WATTS")
+            logger.critical("Critical - Error creating Resource - Watts")
             sys.exit(1)
         if (bionet_node_add_resource(node, resource)):
             logger.critical("Error adding resource to node")
             sys.exit(1)
-        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "WHour")
+        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "KW-Hours")
         if (resource == None):
-            logger.critical("Critical - Error creating Resource - WHOUR")
+            logger.critical("Critical - Error creating Resource - KW-Hours")
             sys.exit(1)
         if (bionet_node_add_resource(node, resource)):
             logger.critical("Error adding resource to node")
             sys.exit(1)
-        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "TotalWHour")
+        resource = bionet_resource_new(node, BIONET_RESOURCE_DATA_TYPE_FLOAT, BIONET_RESOURCE_FLAVOR_SENSOR, "Total-KW-Hours")
         if (resource == None):
-            logger.critical("Critical - Error creating Resource - TOTALWHOUR")
+            logger.critical("Critical - Error creating Resource - Total-KW-Hours")
             sys.exit(1)
         if (bionet_node_add_resource(node, resource)):
             logger.critical("Error adding resource to node")
@@ -275,15 +275,15 @@ def update_graph(idleevent):
         else:
             bionet_resource_set_float(resource, new_calculations["newwatts"], None)
 
-        resource = bionet_node_get_resource_by_id(node, "WHour")
+        resource = bionet_node_get_resource_by_id(node, "KW-Hours")
         if (resource == None):
-            logger.error("Error no such resource - WHour")
+            logger.error("Error no such resource - W-Hours")
         else:
             bionet_resource_set_float(resource, new_calculations["WattHr"], None)
 
-        resource = bionet_node_get_resource_by_id(node, "TotalWHour")
+        resource = bionet_node_get_resource_by_id(node, "Total-KW-Hours")
         if (resource == None):
-            logger.error("Error no such resource - TotalWHour")
+            logger.error("Error no such resource - Total-KW-Hours")
         else:
             bionet_resource_set_float(resource, new_calculations["TotalWattHr"], None)
         hab_report_datapoints (node)
