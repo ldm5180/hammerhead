@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
 
     signal(SIGINT, handle_interrupt);
 
+    unsigned int temp;
     int c;
     while(1) {
 	static struct option long_options[] = {
@@ -170,10 +171,11 @@ int main(int argc, char *argv[]) {
 	    break;
 
 	case 'a':
-	    antenna_id = strtol(optarg, NULL, 0);
+	    temp = strtoul(optarg, NULL, 0);
 	    if (INT_MAX == antenna_id) {
 		g_warning("Failed to parse Antenna ID: %m");
 	    }
+	    antenna_id = (llrp_u16_t)temp;
 	    break;
 
 	case 'C':
@@ -181,31 +183,34 @@ int main(int argc, char *argv[]) {
 	    break;
 
 	case 'R':
-	    rf_sense_index = strtol(optarg, NULL, 0);
+	    temp = strtoul(optarg, NULL, 0);
 	    if (INT_MAX == rf_sense_index) {
 		g_warning("Failed to parse RF Sense index: %m");
 	    } else {
 		use_sense_index = 1;
 	    }
+	    rf_sense_index = (llrp_u16_t)temp;
 	    break;
 
 	case 'T':
-	    rf_txpower_index = strtol(optarg, NULL, 0);
+	    temp = strtoul(optarg, NULL, 0);
 	    if (INT_MAX == rf_txpower_index) {
 		g_warning("Failed to parse RF TX Power index: %m");
 	    } else {
 		use_txpower_index = 1;
 	    }
+	    rf_txpower_index = (llrp_u16_t)temp;
 	    break;
 
 #if 0
 	case 'x':
-	    rf_transmitpower = strtol(optarg, NULL, 0);
+	    temp = strtoul(optarg, NULL, 0);
 	    if (INT_MAX == rf_transmitpower) {
 		g_warning("Failed to parse TX Power: %m");
 	    } else {
 		use_txpower_index = 0;
 	    }
+	    rf_transmitpower = (llrp_u16_t)temp;
 	    break;
 #endif
 
