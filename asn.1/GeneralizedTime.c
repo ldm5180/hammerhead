@@ -655,7 +655,7 @@ asn_time2GT_frac(GeneralizedTime_t *opt_gt, const struct tm *tm, int frac_value,
 
 	if(force_gmt) {
 		*p++ = 0x5a;	/* "Z" */
-		*p++ = 0;
+		*p = 0;
 		size++;
 	} else {
 		int ret;
