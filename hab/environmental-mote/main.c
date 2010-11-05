@@ -136,6 +136,10 @@ int main(int argc, char** argv)
 	    if (FD_ISSET(gw_fd, &readers))
 	    {
 		num_read = gateway_read(gw_src);
+		if (1 == num_read)
+		{
+		    usleep(5000);
+		}
 	    }
 	}
     }
