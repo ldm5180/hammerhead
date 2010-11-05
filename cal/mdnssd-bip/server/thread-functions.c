@@ -974,6 +974,14 @@ SELECT_LOOP_CONTINUE:
 
         // block until there's something to do
         r = select(max_fd + 1, &readers, &writers, NULL, timeout);
+	if (0 > r) {
+	    if (errno == EINTR) {
+		g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Select returned error. %m");
+	    } else {
+		g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Select returned error. %m");
+	    }
+	    goto SELECT_LOOP_CONTINUE;
+	}
 
         cal_pthread_mutex_lock(&avahi_mutex);
         mDNSProcessFDSetServer(&readers);
