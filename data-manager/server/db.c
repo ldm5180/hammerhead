@@ -450,7 +450,7 @@ int db_insert_hab(
 	return -1;
     }
 
-    r = sqlite3_bind_text(this_stmt, param++, hab_id, -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(this_stmt, param, hab_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-hab SQL bind error");
 	return -1;
@@ -529,7 +529,7 @@ int db_get_hab_rowid(
 	return -1;
     }
 
-    r = sqlite3_bind_text(this_stmt, param++, hab_id, -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(this_stmt, param, hab_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-hab SQL bind error");
 	return -1;
@@ -610,7 +610,7 @@ int db_insert_node(
 	return -1;
     }
 
-    r = sqlite3_bind_text(this_stmt, param++, hab_id, -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(this_stmt, param, hab_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-node SQL bind error");
 	return -1;
@@ -697,7 +697,7 @@ int db_get_node_rowid(
 	return -1;
     }
 
-    r = sqlite3_bind_text(this_stmt, param++, node_id, -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(this_stmt, param, node_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "insert-node SQL bind error");
 	return -1;
@@ -905,7 +905,7 @@ int db_insert_resource(
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error: %d", param);
 	return -1;
     }
-    r = sqlite3_bind_text(this_stmt, param++, bionet_resource_flavor_to_string(flavor), -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(this_stmt, param, bionet_resource_flavor_to_string(flavor), -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-resource SQL bind error: %d", param);
 	return -1;
@@ -981,7 +981,7 @@ int db_insert_bdm(
     sqlite3_stmt * this_stmt = all_stmts[INSERT_BDM_STMT];
 
     int param = 1;
-    r = sqlite3_bind_text(this_stmt, param++, bdm_id, -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(this_stmt, param, bdm_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-bdm SQL bind error");
 	return -1;
@@ -1045,7 +1045,7 @@ int db_get_bdm_rowid(
     sqlite3_stmt * this_stmt = all_stmts[ROWFOR_BDM_STMT];
 
     int param = 1;
-    r = sqlite3_bind_text(this_stmt, param++, bdm_id, -1, SQLITE_STATIC);
+    r = sqlite3_bind_text(this_stmt, param, bdm_id, -1, SQLITE_STATIC);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add-bdm SQL bind error");
 	return -1;
@@ -1165,7 +1165,7 @@ int db_insert_datapoint(sqlite3* db,
 	return -1;
     }
 
-    r = sqlite3_bind_int( this_stmt, param++,  dp->timestamp.tv_usec);
+    r = sqlite3_bind_int( this_stmt, param,  dp->timestamp.tv_usec);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "add_datapoint_to_db SQL bind error: %d", param);
 	return -1;
@@ -1268,7 +1268,7 @@ int db_get_datapoint_rowid(sqlite3* db,
 	return -1;
     }
 
-    r = sqlite3_bind_int( this_stmt, param++,  dp->timestamp.tv_usec);
+    r = sqlite3_bind_int( this_stmt, param,  dp->timestamp.tv_usec);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s SQL bind error: %d", 
                 __FUNCTION__, param);
@@ -3115,7 +3115,7 @@ int db_save_dangling_datapoints(
 	return -1;
     }
 
-    r = sqlite3_bind_int64(this_stmt, param++, last_seq);
+    r = sqlite3_bind_int64(this_stmt, param, last_seq);
     if(r != SQLITE_OK){
 	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "%s() SQL bind error", __FUNCTION__);
 	return -1;
