@@ -94,7 +94,10 @@ per_get_many_bits(asn_per_data_t *pd, uint8_t *dst, int alright, int nbits) {
 				*dst++ = value >> 16;
 			if(nbits > 8)
 				*dst++ = value >> 8;
-			*dst++ = value;
+			*dst = value;
+			if (nbits) {
+			    dst++;
+			}
 			break;
 		}
 	}
