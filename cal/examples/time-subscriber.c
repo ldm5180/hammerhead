@@ -156,6 +156,11 @@ int main(int argc, char *argv[]) {
     cal_client.subscribe(cal_handle, "time-publisher", "time");
 
     cal_fd = cal_client.get_fd(cal_handle);
+    if (0 > cal_fd) {
+	printf("error getting CAL fd.");
+	cal_client.shutdown(cal_handle);
+	return 0;
+    }
 
     while (1) {
         int r;
@@ -166,7 +171,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	FD_ZERO(&readers);
-	FD_SET(cal_fd, &readers);
+	FD_SET(cal_fd, &readers); // CSA in LLVM 2.7 says there is a bug here. This should be fixed in LLVM v2.8
 
 	r = select(cal_fd + 1, &readers, NULL, NULL, NULL);
 	if (r == -1) {
