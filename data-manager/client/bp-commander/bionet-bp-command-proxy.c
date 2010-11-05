@@ -65,6 +65,9 @@ void handle_bundle(Sdr *sdr, BpDelivery *dlv) {
     syslog(LOG_INFO, "parsing Bionet command bundle...");
 
     payload_length = zco_source_data_length(*sdr, dlv->adu);
+    if (0 >= payload_length) {
+	syslog(LOG_WARNING, "handle_bundle: data length of bundle = %d", payload_length);
+    }
 
     sdr_begin_xn(*sdr);
     zco_start_receiving(*sdr, dlv->adu, &reader);
