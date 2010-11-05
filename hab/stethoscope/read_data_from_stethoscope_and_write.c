@@ -74,7 +74,7 @@ int read_data_from_stethoscope_and_write(int fd, bionet_stream_t * stream, int n
     {
         r = read(fd, buffer+buffer_size, 8-buffer_size);
 
-        if (r <= 0)
+        if (r < 0)
         {
             if (errno == EAGAIN)
                 return 0;
@@ -89,6 +89,14 @@ int read_data_from_stethoscope_and_write(int fd, bionet_stream_t * stream, int n
             if ((r = ame_is_modem_command(buffer)))
             {
                 r = read(fd, buffer+buffer_size, r-buffer_size);
+		if (0 > r) {
+		    if (EAGAIN == errno || EINTR == errno) {
+			return 0;
+		    } else {
+			g_warning("Read error: %m");
+			return -1;
+		    }
+		}
                 buffer_size = 0;
             }
             else
@@ -229,3 +237,9 @@ int read_data_from_stethoscope_and_write(int fd, bionet_stream_t * stream, int n
 
     return 0;
 }
+
+// Emacs cruft
+// Local Variables:
+// mode: C
+// c-file-style: "Stroustrup"
+// End:
