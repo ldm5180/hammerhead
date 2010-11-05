@@ -499,21 +499,18 @@ static void _flush_foreach_event(void *data, void *user_data) {
     sqlite_int64 rowid;
     sqlite_int64 data_rowid;
 
-    dbb_hab_t * hab = NULL;
     dbb_node_t * node = NULL;
     bdm_datapoint_t * dp = NULL;
 
     switch(event->type) {
     case DBB_NEW_HAB_EVENT:
     case DBB_LOST_HAB_EVENT:
-	hab = event->data.hab;
-	data_rowid = hab->rowid;
+	data_rowid = event->data.hab->rowid;
 	break;
 	
     case DBB_NEW_NODE_EVENT:
     case DBB_LOST_NODE_EVENT:
 	node = event->data.node;
-	hab = node->hab;
 	data_rowid = node->rowid;
 	break;
 	
