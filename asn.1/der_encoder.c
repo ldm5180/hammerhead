@@ -128,6 +128,11 @@ der_write_tags(asn_TYPE_descriptor_t *sd,
 	if(!lens) {
 		errno = ENOMEM;
 		return -1;
+	} else {
+	    /* initialize the memory allocated so that Clang Static Analyzer doesn't complain */
+	    for (i = 0; i < tags_count; i++) {
+		lens[i] = 0;
+	    }
 	}
 
 	/*
