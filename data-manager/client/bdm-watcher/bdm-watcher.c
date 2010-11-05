@@ -108,19 +108,6 @@ void signal_handler(int signo) {
 #endif /* defined(LINUX) || defined(MACOSX) */
 
 
-static int str_to_int(const char * str) {
-    char * endptr;
-    int i;
-
-    i = strtol(str, &endptr, 10);
-    if(*endptr != '\0') {
-        printf("error parsing int string '%s': Unknown characters '%s'\n", 
-            str, endptr);
-        exit(1);
-    }
-    return i;
-}
-
 void str_to_timeval(const char *str, struct timeval *tv) {
     struct tm tm;
     char *p;
@@ -202,8 +189,6 @@ void usage(void) {
             "                                    Subscribe to updates to this resource name pattern\n"
             "                                    \"[[BDM-ID,]Recording-BDM-ID/]HAB-Type.HAB-ID.Node-ID:Resource-ID\"\n"
 	    "                                    May contain wildcards. (default: \"*,*/*.*.*:*\")\n"
-	    " -s,--server <server:port>          Also subscribe to updates from this BDM\n"
-            "                                    Needed only if the BDM is not on the local link\n"
 	    " -T,--datapoint-start <start-time>  Timestamp of datapoint as reported by the HAB\n"
 	    "                                    time (default: Current time)\n"
 	    " -t,--datapoint-end <end-time>      Timestamp of datapoint as reported by the HAB\n"
@@ -235,8 +220,6 @@ static int bdm_readable_handler(GIOChannel *listening_ch,
         
 
 int main(int argc, char *argv[]) {
-    char *bdm_hostname = NULL;
-    uint16_t bdm_port = 0 ;
     int subscribed_to_something = 0;
     struct timeval datapointStart, datapointEnd;
     struct timeval * pDatapointStart = NULL;
@@ -272,13 +255,11 @@ int main(int argc, char *argv[]) {
 	    {"resources", 1, 0, 'r'},
 	    {"datapoint-start", 1, 0, 'T'},
 	    {"datapoint-end", 1, 0, 't'},
-	    {"port", 1, 0, 'p'},
-	    {"server", 1, 0, 's'},
 	    {"output-mode", 1, 0, 'o'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
-	c = getopt_long(argc, argv, "?h:vn:o:p:r:s:T:t:", long_options, &i);
+	c = getopt_long(argc, argv, "?h:vn:o:r:T:t:", long_options, &i);
 	if (c == -1) {
 	    break;
 	}
@@ -307,19 +288,6 @@ int main(int argc, char *argv[]) {
 	    dp_list = g_slist_append(dp_list, optarg);
 	    subscribed_to_something = 1;
 	    break;
-
-	case 's': {
-	    bdm_hostname = strdup(optarg);
-            char * p = strchr(bdm_hostname, ':'); 
-            if ( NULL == p ) {
-                fprintf(stderr, "%s not <hostname>:<port>\n", optarg);
-                return 1;
-            }
-            p[0] = '\0';
-            p++;
-            bdm_port = str_to_int(p);
-	    break;
-        }
 
 	case 'T':
 	    str_to_timeval(optarg, &datapointStart);
