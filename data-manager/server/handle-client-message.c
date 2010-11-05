@@ -28,7 +28,6 @@ static int libbdm_process_resourceDatapointsQuery(
     struct timeval datapoint_start, datapoint_end;
     int entry_start, entry_end;
     struct timeval *pDatapointStart = NULL;
-    struct timeval *pDatapointEnd = NULL;
     int r, bi;
     int ret = -1;
 
@@ -71,9 +70,6 @@ static int libbdm_process_resourceDatapointsQuery(
             strerror(errno)
         );
         return -1;  // FIXME: return an error message to the client
-    }
-    if (datapoint_end.tv_sec != 0 || datapoint_end.tv_usec != 0) {
-	pDatapointEnd = &datapoint_end;
     }
 
     entry_start = rdpq->entryStart;
