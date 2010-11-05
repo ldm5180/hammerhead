@@ -245,7 +245,7 @@ static int db_insert_sync_recipient(sync_sender_config_t * sync_config) {
             "SyncRecipients SQL bind error");
         return -1;
     }
-    r = sqlite3_bind_int64(this_stmt, param++, sync_config->last_metadata_sync);
+    r = sqlite3_bind_int64(this_stmt, param, sync_config->last_metadata_sync);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "SyncRecipients SQL bind error");
@@ -338,7 +338,7 @@ sqlite_int64 db_get_sync_sent(sqlite3 *db, int firstSeq, int lastSeq, int isData
         return -1;
     }
     // is Datapoint
-    r = sqlite3_bind_int(this_stmt, param++, isDatapoint);
+    r = sqlite3_bind_int(this_stmt, param, isDatapoint);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "isDatapoint SQL bind error");
@@ -408,7 +408,7 @@ sqlite_int64 db_insert_sync_sent(sqlite3 *db, int firstSeq, int lastSeq, int isD
         return -1;
     }
     // is Datapoint
-    r = sqlite3_bind_int(this_stmt, param++, isDatapoint);
+    r = sqlite3_bind_int(this_stmt, param, isDatapoint);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "isDatapoint SQL bind error");
@@ -474,7 +474,7 @@ sqlite_int64 db_record_sync(sync_sender_config_t * sync_config, int firstSeq, in
         return -1;
     }
     // sync msg
-    r = sqlite3_bind_int64(this_stmt, param++, sync_msg_rowid);
+    r = sqlite3_bind_int64(this_stmt, param, sync_msg_rowid);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "SQL bind error");
@@ -602,7 +602,7 @@ int db_record_sync_ack(
         return -1;
     }
     // recipient
-    r = sqlite3_bind_int64(this_stmt, param++, channid);
+    r = sqlite3_bind_int64(this_stmt, param, channid);
     if(r != SQLITE_OK){
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
             "SQL bind error");
