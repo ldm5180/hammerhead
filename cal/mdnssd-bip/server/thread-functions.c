@@ -1105,6 +1105,14 @@ SHUTDOWN_SELECT_LOOP_CONTINUE:
 
         // block until there's something to do
         r = select(max_fd + 1, NULL, &writers, NULL, timeout);
+	if (0 > r) {
+	    if (errno == EINTR) {
+		g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Select returned error. %m");
+	    } else {
+		g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Select returned error. %m");
+	    }
+	    goto SHUTDOWN_SELECT_LOOP_CONTINUE;
+	}
 
         // See if we can write to our peers
         {
