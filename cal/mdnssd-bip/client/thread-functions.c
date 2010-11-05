@@ -1052,6 +1052,14 @@ SELECT_LOOP_CONTINUE:
 
         // block until there's something to do
         r = select(max_fd + 1, &readers, &writers, NULL, timeout);
+	if (0 > r) {
+	    if (errno == EINTR) {
+		g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Select returned error. %m");
+	    } else {
+		g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Select returned error. %m");
+	    }
+	    goto SELECT_LOOP_CONTINUE;
+	}
 
         // See if any connect()s have finished. 
         for ( dptr = this->connecting_peer_list; dptr != NULL; dptr = dptr->next) {
