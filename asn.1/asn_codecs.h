@@ -62,7 +62,11 @@ typedef struct asn_enc_rval_s {
 	tmp_error.encoded = -1;					\
 	tmp_error.failed_type = td;				\
 	tmp_error.structure_ptr = sptr;				\
-	ASN_DEBUG("Failed to encode element %s", td->name);	\
+	if (td) {                                               \
+	    ASN_DEBUG("Failed to encode element %s", td->name);	\
+        } else {						\
+	    ASN_DEBUG("Failed to encode NULL element");         \
+        }                                                       \
 	return tmp_error;					\
 } while(0)
 #define	_ASN_ENCODED_OK(rval) do {				\
