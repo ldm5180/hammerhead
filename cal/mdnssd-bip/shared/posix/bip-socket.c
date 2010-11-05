@@ -30,7 +30,6 @@ int bip_socket_set_blocking(int s, int blocking) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, 
             "%s: error getting scket flags: %s", 
                 __FUNCTION__, strerror(errno));
-        flags = 0;
         return -1;
     }
     if (fcntl(s, F_SETFL, flags | O_NONBLOCK) < 0) {
