@@ -55,7 +55,7 @@ int print_ecg;
 
 int main ( int argc, char** argv )
 {
-    int cpod_fd, verbose, hab_fd, period, streaming, daemon;
+    int cpod_fd, verbose, hab_fd, period, daemon;
     char * security_dir = NULL;
     bdaddr_t device;
 
@@ -67,7 +67,6 @@ int main ( int argc, char** argv )
     cpod_fd = -1;
     print_ecg = 0;
     verbose = 0;
-    streaming = 0;
     bacpy(&device, BDADDR_ANY);
     period = 10;
 
