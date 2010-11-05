@@ -42,6 +42,14 @@ void read_parsec(int fd) {
   bionet_resource_t *resource;
 
   size = recvfrom(fd, buffer, BUFFER_SIZE, 0, 0, 0);
+  if (0 == size) {
+      g_warning("%s(): orderly shutdown occurred.", __FUNCTION__);
+      return;
+  } else if (0 > size) {
+      g_warning("%s(): error recvfrom: %m", __FUNCTION__);
+      return;
+  }
+ 
   if (gettimeofday(&timestamp, NULL)) {
       g_warning("Failed to get time of day: %m");
       return;
