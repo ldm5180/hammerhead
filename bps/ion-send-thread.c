@@ -125,10 +125,6 @@ static void * _send_thread_main(void * v_args) {
         }
 
         // This may block...
-        int ttl = dgram->ttl;
-        if ( ttl <= 0 ) {
-            ttl = args->ttl;
-        }
         r = _send_bundle_zco(args, dgram);
         int errno_save = errno;
         free(dgram->dst_eid);
