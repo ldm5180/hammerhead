@@ -507,7 +507,7 @@ asn_double2REAL(REAL_t *st, double dbl_value) {
 	int littleEndian = *(unsigned char *)&LE;
 #endif
 	uint8_t buf[16];	/* More than enough for 8-byte dbl_value */
-	uint8_t dscr[sizeof(dbl_value)];	/* double value scratch pad */
+	uint8_t dscr[sizeof(dbl_value)] = { 0 };	/* double value scratch pad */
 	/* Assertion guards: won't even compile, if unexpected double size */
 	char assertion_buffer1[9 - sizeof(dbl_value)] __attribute__((unused));
 	char assertion_buffer2[sizeof(dbl_value) - 7] __attribute__((unused));
