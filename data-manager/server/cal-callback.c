@@ -287,7 +287,11 @@ static void bdm_send_state(
     // send the state to the BDM
     // NOTE: cal_client.sendto assumes control of buf
     r = cal_server.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size);
-
+    if (0 == r) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
+	      "%s: CAL Server Sendto failed sending to %s",
+	      __FUNCTION__, peer_name);
+    }
 }
 
 //
