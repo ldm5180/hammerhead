@@ -492,7 +492,8 @@ int bps_sendto(int sockfd, void *buf, size_t len, int flags,
 
 int bps_close(int sockfd)
 {
-    int r;
+    int r = 0;
+    int errno_save;
     bps_socket_t * sock = bps_sock_table_lookup_fd(sockfd);
     if ( NULL == sock ) {
         errno = EBADF;
@@ -502,6 +503,9 @@ int bps_close(int sockfd)
     if ( sock->bundle ) {
         // An accept sock
         r = _bdl_close(sock->bundle, &sock->accept.reader);
+	if (r) {
+	    errno_save = errno;
+	}
         sock->bundle = NULL;
     }
 
@@ -526,8 +530,12 @@ int bps_close(int sockfd)
     }
 
     free(sock);
+    
+    if (r) {
+	errno = errno_save;
+    }
 
-    return 0;
+    return r;
 }
 
 void bps_destroy(void) {
