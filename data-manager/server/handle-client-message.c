@@ -27,7 +27,6 @@ static int libbdm_process_resourceDatapointsQuery(
     GPtrArray *bdm_list;
     struct timeval datapoint_start, datapoint_end;
     int entry_start, entry_end;
-    struct timeval *pDatapointStart = NULL;
     int r, bi;
     int ret = -1;
 
@@ -55,9 +54,6 @@ static int libbdm_process_resourceDatapointsQuery(
             strerror(errno)
         );
         return -1;  // FIXME: return an error message to the client
-    }
-    if (datapoint_start.tv_sec != 0 || datapoint_start.tv_usec != 0) {
-	pDatapointStart = &datapoint_start;
     }
 
     r = bionet_GeneralizedTime_to_timeval(&rdpq->datapointEndTime, &datapoint_end);
