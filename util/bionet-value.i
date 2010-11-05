@@ -52,13 +52,14 @@
 	default:
 	    free(value);
 	    value = NULL;
+	    g_warning("bionet-value.i: Failed to create value of unknown type.");
 	    break;
 	}
 
-	if (NULL == value->this) {
+	if ((NULL != value) && (NULL == value->this)) {
 	    free(value);
 	    value = NULL;
-	} else {
+	} else if (NULL != value) {
 	    bionet_value_set_user_data(value->this, value);
 	}
 	return value;
@@ -88,13 +89,14 @@
 
 	default:
 	    value = NULL;
+	    g_warning("bionet-value.i: Failed to create value of unknown type.");
 	    break;
 	}
 
-	if (NULL == value->this) {
+	if ((NULL != value) && (NULL == value->this)) {
 	    free(value);
 	    value = NULL;
-	} else {
+	} else if (NULL != value) {
 	    bionet_value_set_user_data(value->this, value);
 	}
 
@@ -151,13 +153,14 @@
 
 	default:
 	    value = NULL;
+	    g_warning("bionet-value.i: Failed to create value of unknown type.");
 	    break;
 	}
 
-	if (NULL == value->this) {
+	if ((NULL != value) && (NULL == value->this)) {
 	    free(value);
 	    value = NULL;
-	} else {
+	} else if (NULL != value) {
 	    bionet_value_set_user_data(value->this, value);
 	}
 	
