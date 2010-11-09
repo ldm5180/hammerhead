@@ -56,11 +56,9 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
     else if(strcmp(node_name, "potentiometers") == 0)
     {
         // extract pot number from resource name (0-15)
-        id[0] = e.key[4];
-        id[1] = e.key[5];
-        id[2] = '\0';
-        pot_id = strtol(id, NULL, 10); 
-
+        ep = hsearch(e, FIND);
+        pot_id = (unsigned long int)ep->data;
+       
         // store the resource
         proxr_resource[pot_id] = resource;
 

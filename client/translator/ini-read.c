@@ -62,5 +62,15 @@ int translator_read_ini(char *config_file)
         return 1;
     }
 
+     // Collect proxr adc resource names
+    default_settings->proxr_adc = g_key_file_get_string_list(keyfile, "Translator",
+                                                       "proxr_adc", &length, &error);
+    if((NULL == default_settings->proxr_adc) || (NUM_ADCS != length))
+    {
+        g_error("translator_read_ini: failed to get cali consts from the file %s.",
+                                                         config_file);
+        return 1;
+    }
+
     return 0;
 }

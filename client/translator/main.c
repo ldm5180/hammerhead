@@ -128,11 +128,12 @@ int main(int argc, char* argv[])
     // build hash table
     // map translator_adc resources to 0-15
     ENTRY e, *ep;
-    hcreate(128);
+    hcreate(144);
     unsigned long int r = 0;
     int jj = 0;
     for(; r<16; r++)
     {
+        // add translator resource names to hash table
         e.key = default_settings->translator_adc[r];
         e.data = (void*)r;
         ep = hsearch(e, ENTER);
@@ -141,15 +142,23 @@ int main(int argc, char* argv[])
             fprintf(stderr, "entry to hash table failed\n");
             exit(1);
         }
-        int oldjj = jj;
+        // add proxr resource names to hash table
+        e.key = default_settings->proxr_adc[r];
+        e.data = (void*)r;
+        ep = hsearch(e, ENTER);
+        if(ep == NULL)
+        {
+            fprintf(stderr, "entry to hash table failed\n");
+            exit(1);
+        }
+
         // map each calibration resource  to 0-15
         // each calibration resource has 7 calibration constants
+        int oldjj = jj;
         for(; jj<oldjj+7; jj++)
         {
             e.key = default_settings->dmm_calibrations[jj];
             e.data = (void*)r;
-            printf("%s ", default_settings->dmm_calibrations[jj]);
-            printf("r = %ld  j = %d\n", r, jj);
             ep = hsearch(e, ENTER);
             if(NULL == ep)
             {

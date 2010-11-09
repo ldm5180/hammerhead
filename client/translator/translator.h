@@ -21,6 +21,7 @@ typedef struct
     gchar **state_names;
     gchar **dmm_calibrations;
     gchar **translator_adc;
+    gchar **proxr_adc;
 }translator_settings_t;
 
 //variables
