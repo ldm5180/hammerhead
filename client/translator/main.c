@@ -142,6 +142,8 @@ int main(int argc, char* argv[])
             exit(1);
         }
         int oldjj = jj;
+        // map each calibration resource  to 0-15
+        // each calibration resource has 7 calibration constants
         for(; jj<oldjj+7; jj++)
         {
             e.key = default_settings->dmm_calibrations[jj];

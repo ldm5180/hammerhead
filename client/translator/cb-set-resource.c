@@ -18,16 +18,8 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
     bionet_split_resource_name(bionet_resource_get_name(resource), NULL, NULL, NULL, &e.key);    
 
     // get adc number from resource name
-   /* id[0] = res_name[4];
-    id[1] = res_name[5];
-    id[2] = '\0';
-    adc = strtol(id, NULL, 10);*/
-    printf("here\n");
-
     ep = hsearch(e, FIND);
     adc = (unsigned long int)ep->data;
-    printf("hash entry %s maps to %ld\n", ep->key, adc);
-
 
     // find corresponding voltage from engineering value
     voltage = find_voltage(adc, content);
