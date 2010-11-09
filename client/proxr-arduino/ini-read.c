@@ -43,7 +43,7 @@ int pa_read_ini(char *config_file)
     }
 
      // Collect mins_names resource names 
-    //default_settings->mins_names = g_key_file_get_string_list(keyfile, "PA", "translator_mins", &length, &error);
+    default_settings->mins_names = g_key_file_get_string_list(keyfile, "PA", "translator_mins", &length, &error);
     if((NULL == default_settings->mins_names) || (PA_NUM_NAMES != length))
     {
         g_error("pa_read_ini: failed to get mins_names names from file %s. %s", config_file, error->message);
@@ -51,7 +51,7 @@ int pa_read_ini(char *config_file)
     }
     
     // Collect maxs_names resource names
-    //default_settings->maxs_names = g_key_file_get_string_list(keyfile, "PA", "translator_maxs", &length, &error);
+    default_settings->maxs_names = g_key_file_get_string_list(keyfile, "PA", "translator_maxs", &length, &error);
     if((NULL == default_settings->maxs_names) || (PA_NUM_NAMES != length))
     {
         g_error("pa_read_ini: failed to get maxs_names names from file %s. %s", config_file, error->message);
