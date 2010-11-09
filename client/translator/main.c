@@ -6,6 +6,8 @@
 #include <string.h>
 #include <getopt.h>
 #include <signal.h>
+#include <search.h>
+#include <stdio.h>
 
 #include "translator.h"
 
