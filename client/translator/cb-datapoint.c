@@ -5,7 +5,6 @@
 void cb_datapoint(bionet_datapoint_t *datapoint)
 {
     bionet_resource_t *resource = NULL;
-    char *res_name = NULL;
     char *node_name = NULL;
     char id[3];
     unsigned long int adc_id, calib_id, pot_id;
