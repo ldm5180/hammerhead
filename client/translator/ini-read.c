@@ -16,7 +16,7 @@ int translator_read_ini(char *config_file)
     flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;
 
     // Load the GKeyFile from keyfile.conf or return
-    g_debug("Loading configuration from keyfile.");
+    //g_debug("Loading configuration from keyfile.");
     if(!g_key_file_load_from_file(keyfile, config_file, flags, &error))
     {
         g_error("%s", error->message);
@@ -24,7 +24,7 @@ int translator_read_ini(char *config_file)
     }
 
     // Create the default settings struct
-    g_debug("Creating default settings struct.");
+    //g_debug("Creating default settings struct.");
     default_settings = g_slice_new0(translator_settings_t);
     if(NULL == default_settings)
     {

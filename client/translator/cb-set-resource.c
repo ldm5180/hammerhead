@@ -5,7 +5,6 @@ void cb_set_resource(bionet_resource_t *resource, bionet_value_t *value)
 {
     double content, voltage;
     unsigned long int adc;
-   // char *res_name = NULL;
     char id[9];
     bionet_node_t *node;
 
