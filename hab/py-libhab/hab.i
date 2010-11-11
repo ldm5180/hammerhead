@@ -49,6 +49,7 @@ typedef struct timeval
 %include "bionet-datapoint.i"
 %include "bionet-value.i"
 %include "bionet-wrappers.i"
+%include "value-operators.i"
 
 %inline %{
 #define SWIG_RESOURCE_WRAPPER(name) SWIG_NewPointerObj((void*)name, SWIGTYPE_p_bionet_resource_opaque_t, 1)

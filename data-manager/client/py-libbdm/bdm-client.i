@@ -70,6 +70,7 @@ typedef struct timeval
 %include "bionet-wrappers.i"
 %include "bionet-event.i"
 %include "bdm-callbacks.i"
+%include "value-operators.i"
 
 
 %inline %{

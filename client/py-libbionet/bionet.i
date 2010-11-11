@@ -58,6 +58,7 @@
 %include "bionet-value.i"
 %include "bionet-wrappers.i"
 %include "bionet-callbacks.i"
+%include "value-operators.i"
 
 
 %inline %{
