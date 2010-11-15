@@ -3027,4 +3027,903 @@
 	return value;
 	
     }
+
+    Value * __and__(int rval) {
+	Resource * resource = (Resource *)bionet_resource_get_user_data(bionet_value_get_resource($self->this));
+	Value * value = (Value *)calloc(1, sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
+	switch (bionet_resource_get_data_type(bionet_value_get_resource($self->this))) {
+
+	case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	{
+	    int val = 0;
+	    int result;
+	    bionet_value_get_binary($self->this, &val);
+	    result = val & rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    uint8_t result;
+	    bionet_value_get_uint8($self->this, &val);
+	    result = val & (uint8_t)rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    int8_t result;
+	    bionet_value_get_int8($self->this, &val);
+	    result = val & (int8_t)rval;
+	    value->this = bionet_value_new_int8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    uint16_t result;
+	    bionet_value_get_uint16($self->this, &val);
+	    result = val & (uint16_t)rval;
+	    value->this = bionet_value_new_uint16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    int16_t result;
+	    bionet_value_get_int16($self->this, &val);
+	    result = val & (int16_t)rval;
+	    value->this = bionet_value_new_int16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    uint32_t result;
+	    bionet_value_get_uint32($self->this, &val);
+	    result = val & (uint32_t)rval;
+	    value->this = bionet_value_new_uint32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    int32_t result;
+	    bionet_value_get_int32($self->this, &val);
+	    result = val & (int32_t)rval;
+	    value->this = bionet_value_new_int32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion for '&' operator: %s",
+		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(bionet_value_get_resource($self->this))));
+	    free(value);
+	    return NULL;
+	}
+
+	if ((NULL != value) && (NULL == value->this)) {
+	    free(value);
+	    value = NULL;
+	} else if (NULL != value) {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	return value;
+	
+    }
+
+    Value * __rand__(int rval) {
+	Resource * resource = (Resource *)bionet_resource_get_user_data(bionet_value_get_resource($self->this));
+	Value * value = (Value *)calloc(1, sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
+	switch (bionet_resource_get_data_type(bionet_value_get_resource($self->this))) {
+
+	case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	{
+	    int val = 0;
+	    int result;
+	    bionet_value_get_binary($self->this, &val);
+	    result = val & rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    uint8_t result;
+	    bionet_value_get_uint8($self->this, &val);
+	    result = val & (uint8_t)rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    int8_t result;
+	    bionet_value_get_int8($self->this, &val);
+	    result = val & (int8_t)rval;
+	    value->this = bionet_value_new_int8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    uint16_t result;
+	    bionet_value_get_uint16($self->this, &val);
+	    result = val & (uint16_t)rval;
+	    value->this = bionet_value_new_uint16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    int16_t result;
+	    bionet_value_get_int16($self->this, &val);
+	    result = val & (int16_t)rval;
+	    value->this = bionet_value_new_int16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    uint32_t result;
+	    bionet_value_get_uint32($self->this, &val);
+	    result = val & (uint32_t)rval;
+	    value->this = bionet_value_new_uint32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    int32_t result;
+	    bionet_value_get_int32($self->this, &val);
+	    result = val & (int32_t)rval;
+	    value->this = bionet_value_new_int32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion for '&' operator: %s",
+		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(bionet_value_get_resource($self->this))));
+	    free(value);
+	    return NULL;
+	}
+
+	if ((NULL != value) && (NULL == value->this)) {
+	    free(value);
+	    value = NULL;
+	} else if (NULL != value) {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	return value;
+	
+    }
+
+    Value * __or__(int rval) {
+	Resource * resource = (Resource *)bionet_resource_get_user_data(bionet_value_get_resource($self->this));
+	Value * value = (Value *)calloc(1, sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
+	switch (bionet_resource_get_data_type(bionet_value_get_resource($self->this))) {
+
+	case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	{
+	    int val = 0;
+	    int result;
+	    bionet_value_get_binary($self->this, &val);
+	    result = val | rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    uint8_t result;
+	    bionet_value_get_uint8($self->this, &val);
+	    result = val | (uint8_t)rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    int8_t result;
+	    bionet_value_get_int8($self->this, &val);
+	    result = val | (int8_t)rval;
+	    value->this = bionet_value_new_int8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    uint16_t result;
+	    bionet_value_get_uint16($self->this, &val);
+	    result = val | (uint16_t)rval;
+	    value->this = bionet_value_new_uint16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    int16_t result;
+	    bionet_value_get_int16($self->this, &val);
+	    result = val | (int16_t)rval;
+	    value->this = bionet_value_new_int16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    uint32_t result;
+	    bionet_value_get_uint32($self->this, &val);
+	    result = val | (uint32_t)rval;
+	    value->this = bionet_value_new_uint32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    int32_t result;
+	    bionet_value_get_int32($self->this, &val);
+	    result = val | (int32_t)rval;
+	    value->this = bionet_value_new_int32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion for '|' operator: %s",
+		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(bionet_value_get_resource($self->this))));
+	    free(value);
+	    return NULL;
+	}
+
+	if ((NULL != value) && (NULL == value->this)) {
+	    free(value);
+	    value = NULL;
+	} else if (NULL != value) {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	return value;
+	
+    }
+
+    Value * __ror__(int rval) {
+	Resource * resource = (Resource *)bionet_resource_get_user_data(bionet_value_get_resource($self->this));
+	Value * value = (Value *)calloc(1, sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
+	switch (bionet_resource_get_data_type(bionet_value_get_resource($self->this))) {
+
+	case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	{
+	    int val = 0;
+	    int result;
+	    bionet_value_get_binary($self->this, &val);
+	    result = val | rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    uint8_t result;
+	    bionet_value_get_uint8($self->this, &val);
+	    result = val | (uint8_t)rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    int8_t result;
+	    bionet_value_get_int8($self->this, &val);
+	    result = val | (int8_t)rval;
+	    value->this = bionet_value_new_int8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    uint16_t result;
+	    bionet_value_get_uint16($self->this, &val);
+	    result = val | (uint16_t)rval;
+	    value->this = bionet_value_new_uint16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    int16_t result;
+	    bionet_value_get_int16($self->this, &val);
+	    result = val | (int16_t)rval;
+	    value->this = bionet_value_new_int16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    uint32_t result;
+	    bionet_value_get_uint32($self->this, &val);
+	    result = val | (uint32_t)rval;
+	    value->this = bionet_value_new_uint32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    int32_t result;
+	    bionet_value_get_int32($self->this, &val);
+	    result = val | (int32_t)rval;
+	    value->this = bionet_value_new_int32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion for '|' operator: %s",
+		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(bionet_value_get_resource($self->this))));
+	    free(value);
+	    return NULL;
+	}
+
+	if ((NULL != value) && (NULL == value->this)) {
+	    free(value);
+	    value = NULL;
+	} else if (NULL != value) {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	return value;
+	
+    }
+
+    Value * __xor__(int rval) {
+	Resource * resource = (Resource *)bionet_resource_get_user_data(bionet_value_get_resource($self->this));
+	Value * value = (Value *)calloc(1, sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
+	switch (bionet_resource_get_data_type(bionet_value_get_resource($self->this))) {
+
+	case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	{
+	    int val = 0;
+	    int result;
+	    bionet_value_get_binary($self->this, &val);
+	    result = val ^ rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    uint8_t result;
+	    bionet_value_get_uint8($self->this, &val);
+	    result = val ^ (uint8_t)rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    int8_t result;
+	    bionet_value_get_int8($self->this, &val);
+	    result = val ^ (int8_t)rval;
+	    value->this = bionet_value_new_int8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    uint16_t result;
+	    bionet_value_get_uint16($self->this, &val);
+	    result = val ^ (uint16_t)rval;
+	    value->this = bionet_value_new_uint16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    int16_t result;
+	    bionet_value_get_int16($self->this, &val);
+	    result = val ^ (int16_t)rval;
+	    value->this = bionet_value_new_int16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    uint32_t result;
+	    bionet_value_get_uint32($self->this, &val);
+	    result = val ^ (uint32_t)rval;
+	    value->this = bionet_value_new_uint32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    int32_t result;
+	    bionet_value_get_int32($self->this, &val);
+	    result = val ^ (int32_t)rval;
+	    value->this = bionet_value_new_int32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion for '^' operator: %s",
+		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(bionet_value_get_resource($self->this))));
+	    free(value);
+	    return NULL;
+	}
+
+	if ((NULL != value) && (NULL == value->this)) {
+	    free(value);
+	    value = NULL;
+	} else if (NULL != value) {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	return value;
+	
+    }
+
+    Value * __rxor__(int rval) {
+	Resource * resource = (Resource *)bionet_resource_get_user_data(bionet_value_get_resource($self->this));
+	Value * value = (Value *)calloc(1, sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
+	switch (bionet_resource_get_data_type(bionet_value_get_resource($self->this))) {
+
+	case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	{
+	    int val = 0;
+	    int result;
+	    bionet_value_get_binary($self->this, &val);
+	    result = val ^ rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    uint8_t result;
+	    bionet_value_get_uint8($self->this, &val);
+	    result = val ^ (uint8_t)rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    int8_t result;
+	    bionet_value_get_int8($self->this, &val);
+	    result = val ^ (int8_t)rval;
+	    value->this = bionet_value_new_int8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    uint16_t result;
+	    bionet_value_get_uint16($self->this, &val);
+	    result = val ^ (uint16_t)rval;
+	    value->this = bionet_value_new_uint16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    int16_t result;
+	    bionet_value_get_int16($self->this, &val);
+	    result = val ^ (int16_t)rval;
+	    value->this = bionet_value_new_int16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    uint32_t result;
+	    bionet_value_get_uint32($self->this, &val);
+	    result = val ^ (uint32_t)rval;
+	    value->this = bionet_value_new_uint32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    int32_t result;
+	    bionet_value_get_int32($self->this, &val);
+	    result = val ^ (int32_t)rval;
+	    value->this = bionet_value_new_int32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion for '^' operator: %s",
+		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(bionet_value_get_resource($self->this))));
+	    free(value);
+	    return NULL;
+	}
+
+	if ((NULL != value) && (NULL == value->this)) {
+	    free(value);
+	    value = NULL;
+	} else if (NULL != value) {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	return value;
+	
+    }
+
+    Value * __mod__(int rval) {
+	Resource * resource = (Resource *)bionet_resource_get_user_data(bionet_value_get_resource($self->this));
+	Value * value = (Value *)calloc(1, sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
+	switch (bionet_resource_get_data_type(bionet_value_get_resource($self->this))) {
+
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    uint8_t result;
+	    bionet_value_get_uint8($self->this, &val);
+	    result = val % (uint8_t)rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    int8_t result;
+	    bionet_value_get_int8($self->this, &val);
+	    result = val % (int8_t)rval;
+	    value->this = bionet_value_new_int8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    uint16_t result;
+	    bionet_value_get_uint16($self->this, &val);
+	    result = val % (uint16_t)rval;
+	    value->this = bionet_value_new_uint16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    int16_t result;
+	    bionet_value_get_int16($self->this, &val);
+	    result = val % (int16_t)rval;
+	    value->this = bionet_value_new_int16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    uint32_t result;
+	    bionet_value_get_uint32($self->this, &val);
+	    result = val % (uint32_t)rval;
+	    value->this = bionet_value_new_uint32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    int32_t result;
+	    bionet_value_get_int32($self->this, &val);
+	    result = val % (int32_t)rval;
+	    value->this = bionet_value_new_int32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion for 'mod' operator: %s",
+		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(bionet_value_get_resource($self->this))));
+	    free(value);
+	    return NULL;
+	}
+
+	if ((NULL != value) && (NULL == value->this)) {
+	    free(value);
+	    value = NULL;
+	} else if (NULL != value) {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	return value;
+	
+    }
+
+    Value * __mod__(float rval) {
+	Resource * resource = (Resource *)bionet_resource_get_user_data(bionet_value_get_resource($self->this));
+	Value * value = (Value *)calloc(1, sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
+	switch (bionet_resource_get_data_type(bionet_value_get_resource($self->this))) {
+
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    uint8_t result;
+	    bionet_value_get_uint8($self->this, &val);
+	    result = val % (uint8_t)rval;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    int8_t result;
+	    bionet_value_get_int8($self->this, &val);
+	    result = val % (int8_t)rval;
+	    value->this = bionet_value_new_int8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    uint16_t result;
+	    bionet_value_get_uint16($self->this, &val);
+	    result = val % (uint16_t)rval;
+	    value->this = bionet_value_new_uint16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    int16_t result;
+	    bionet_value_get_int16($self->this, &val);
+	    result = val % (int16_t)rval;
+	    value->this = bionet_value_new_int16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    uint32_t result;
+	    bionet_value_get_uint32($self->this, &val);
+	    result = val % (uint32_t)rval;
+	    value->this = bionet_value_new_uint32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    int32_t result;
+	    bionet_value_get_int32($self->this, &val);
+	    result = val % (int32_t)rval;
+	    value->this = bionet_value_new_int32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion for 'mod' operator: %s",
+		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(bionet_value_get_resource($self->this))));
+	    free(value);
+	    return NULL;
+	}
+
+	if ((NULL != value) && (NULL == value->this)) {
+	    free(value);
+	    value = NULL;
+	} else if (NULL != value) {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	return value;
+	
+    }
+
+    Value * __rmod__(int rval) {
+	Resource * resource = (Resource *)bionet_resource_get_user_data(bionet_value_get_resource($self->this));
+	Value * value = (Value *)calloc(1, sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
+	switch (bionet_resource_get_data_type(bionet_value_get_resource($self->this))) {
+
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    uint8_t result;
+	    bionet_value_get_uint8($self->this, &val);
+	    result = (uint8_t)rval % val;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    int8_t result;
+	    bionet_value_get_int8($self->this, &val);
+	    result = (int8_t)rval % val;
+	    value->this = bionet_value_new_int8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    uint16_t result;
+	    bionet_value_get_uint16($self->this, &val);
+	    result = (uint16_t)rval % val;
+	    value->this = bionet_value_new_uint16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    int16_t result;
+	    bionet_value_get_int16($self->this, &val);
+	    result = (int16_t)rval % val;
+	    value->this = bionet_value_new_int16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    uint32_t result;
+	    bionet_value_get_uint32($self->this, &val);
+	    result = (uint32_t)rval % val;
+	    value->this = bionet_value_new_uint32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    int32_t result;
+	    bionet_value_get_int32($self->this, &val);
+	    result = (int32_t)rval % val;
+	    value->this = bionet_value_new_int32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion for 'mod' operator: %s",
+		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(bionet_value_get_resource($self->this))));
+	    free(value);
+	    return NULL;
+	}
+
+	if ((NULL != value) && (NULL == value->this)) {
+	    free(value);
+	    value = NULL;
+	} else if (NULL != value) {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	return value;
+	
+    }
+
+    Value * __rmod__(float rval) {
+	Resource * resource = (Resource *)bionet_resource_get_user_data(bionet_value_get_resource($self->this));
+	Value * value = (Value *)calloc(1, sizeof(Value));
+	if (NULL == value) {
+	    return NULL;
+	}
+
+	switch (bionet_resource_get_data_type(bionet_value_get_resource($self->this))) {
+
+	case BIONET_RESOURCE_DATA_TYPE_UINT8:
+	{
+	    uint8_t val = 0;
+	    uint8_t result;
+	    bionet_value_get_uint8($self->this, &val);
+	    result = (uint8_t)rval % val;
+	    value->this = bionet_value_new_uint8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT8:
+	{
+	    int8_t val = 0;
+	    int8_t result;
+	    bionet_value_get_int8($self->this, &val);
+	    result = (int8_t)rval % val;
+	    value->this = bionet_value_new_int8(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT16:
+	{
+	    uint16_t val = 0;
+	    uint16_t result;
+	    bionet_value_get_uint16($self->this, &val);
+	    result = (uint16_t)rval % val;
+	    value->this = bionet_value_new_uint16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT16:
+	{
+	    int16_t val = 0;
+	    int16_t result;
+	    bionet_value_get_int16($self->this, &val);
+	    result = (int16_t)rval % val;
+	    value->this = bionet_value_new_int16(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_UINT32:
+	{
+	    uint32_t val = 0;
+	    uint32_t result;
+	    bionet_value_get_uint32($self->this, &val);
+	    result = (uint32_t)rval % val;
+	    value->this = bionet_value_new_uint32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_INT32:
+	{
+	    int32_t val = 0;
+	    int32_t result;
+	    bionet_value_get_int32($self->this, &val);
+	    result = (int32_t)rval % val;
+	    value->this = bionet_value_new_int32(resource->this, result);
+	    break;
+	}
+	case BIONET_RESOURCE_DATA_TYPE_FLOAT:
+	case BIONET_RESOURCE_DATA_TYPE_DOUBLE:
+	case BIONET_RESOURCE_DATA_TYPE_BINARY:
+	case BIONET_RESOURCE_DATA_TYPE_STRING:
+	case BIONET_RESOURCE_DATA_TYPE_INVALID:
+	default:
+	    g_warning("bionet-value.i: Invalid datatype conversion for 'mod' operator: %s",
+		      bionet_resource_data_type_to_string(bionet_resource_get_data_type(bionet_value_get_resource($self->this))));
+	    free(value);
+	    return NULL;
+	}
+
+	if ((NULL != value) && (NULL == value->this)) {
+	    free(value);
+	    value = NULL;
+	} else if (NULL != value) {
+	    bionet_value_set_user_data(value->this, value);
+	}
+	return value;
+	
+    }
+
 }
