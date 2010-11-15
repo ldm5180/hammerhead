@@ -17,5 +17,5 @@ SUBDIRS += bp-commander
 endif
 
 if ENABLE_PYTHON
-SUBDIRS += py-libbdm bdmplot2 twisted bdmplot
+SUBDIRS += py-libbdm bdmplot2 twisted bdmplot bdm-get bdm-watcher-py
 endif

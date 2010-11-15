@@ -1,0 +1,125 @@
+#!/usr/bin/python
+
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+
+from bdm_client import *
+
+import sys
+import time
+from select import select
+import os
+import random
+import optparse
+
+# parse options 
+parser = optparse.OptionParser()
+parser.add_option("-f", "--filter", dest="filter",
+                  help="Subscribe to a Resource list.", 
+                  metavar="HAB-Type.HAB-ID.Node-ID:Resource-ID",
+                  default="*.*.*:*")
+parser.add_option("-s", "--security-dir", dest="security_dir",
+                  help="Directory containing security certificates.",
+                  metavar="dir", default=None)
+parser.add_option("-e", "--require-security", dest="require_security",
+                  help="Require secured connections.",
+                  action="store_true", default=False)
+parser.add_option("-T", "--datapoint-start", dest="datapoint_start",
+                  help="Datapoint Start Time for BDM subscriptions", 
+                  metavar="YYYY-MM-DD HH:MM:SS",
+                  default=None)
+parser.add_option("-t", "--datapoint-end", dest="datapoint_end",
+                  help="Datapoint End Time for BDM subscriptions", 
+                  metavar="YYYY-MM-DD HH:MM:SS",
+                  default=None)
+parser.add_option("-w", "--wait", dest="wait",
+                  help="Seconds to wait for a datapoint.",
+                  metavar="Seconds",
+                  default=None)
+(options, args) = parser.parse_args()
+
+
+# import Bionet's Hardware Abstractor module
+from bdm_client import *    
+
+dp = None
+
+# New HAB callback is called each time a new HAB matching the subscription joins the Bionet network
+def cb_new_hab(hab, event):
+    None
+
+# Lost HAB callback is called each time a HAB matching the subscription disconnects from the Bionet network
+def cb_lost_hab(hab, event):
+    None
+
+# New Node callback is called each time a HAB reports a new node matching the subscription
+def cb_new_node(node, event):
+    None
+
+# Lost Node callback is called each time a HAB reports a lost node matching the subscription
+def cb_lost_node(node, event):
+    None
+
+# Datapoint callback is called each time a HAB publishes a datapoint matching the subscription
+def cb_datapoint(datapoint, event):
+    global dp
+
+    resource = datapoint.resource()
+    value = datapoint.value()
+    if (None == options.wait):
+        print(str(value))                
+        exit(0)
+    else:
+        if (None == dp):
+            dp = datapoint
+        elif(datapoint.compareTimeval(dp.timestamp()) > 0):
+            dp = datapoint
+
+
+# set the default Bionet log handler
+bionet_log_use_default_handler(None)
+
+# connect to Bionet Data Manager Network as a client
+bdm_sub = BdmSubscriber()
+
+bdm_sub.newHabCallback = cb_new_hab
+bdm_sub.lostHabCallback = cb_lost_hab
+bdm_sub.newNodeCallback = cb_new_node
+bdm_sub.lostNodeCallback = cb_lost_node
+bdm_sub.datapointCallback = cb_datapoint
+
+datapoint_start = time.time()
+datapoint_end = None
+if (options.datapoint_start):
+    datapoint_start = int(time.mktime(time.strptime(options.datapoint_start, 
+                                                    "%Y-%m-%d %H:%M:%S")))
+if (options.datapoint_end):
+    datapoint_end = int(time.mktime(time.strptime(options.datapoint_end, 
+                                                  "%Y-%m-%d %H:%M:%S")))
+
+bdm_sub.subscribeToDatapoints("*.*.*:*", datapoint_start, datapoint_end)
+
+fd_list = []
+if (bdm_sub.fd != -1):
+    fd_list.append(bdm_sub.fd)
+
+if (options.wait):
+    endtime = time.time() + float(options.wait)
+
+if (options.wait):
+    wait_time = float(options.wait)
+else:
+    wait_time = None
+
+while(1):
+    # select on the fd list
+    (rr, wr, er) = select(fd_list, [], [], wait_time)
+    for fd in rr:
+        if (fd == bdm_sub.fd):
+            read = bdm_sub.read() # causes the callbacks to get called
+    if options.wait:
+        if (time.time() > endtime):
+            if (dp):
+                print(str(dp.value()))
+            exit(0)
