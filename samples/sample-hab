@@ -71,10 +71,9 @@ def process(hp):
     # at this time the python wrapper is still in development, there is no way
     # get the value without converting to a string and back again. In C this is
     # not a problem.
-    uptimestr = int(hp.hab.node("process").resource("uptime").datapoint(0).value())
-    intervalstr = int(hp.hab.node("process").resource("update-interval").datapoint(0).value())
-    val = uptimestr + intervalstr
-    hp.hab.node("process").resource("uptime").set(val)
+    uptime = hp.hab.node("process").resource("uptime").datapoint(0).value()
+    update_interval = hp.hab.node("process").resource("update-interval").datapoint(0).value()
+    hp.hab.node("process").resource("uptime").set(uptime + update_interval)
 
     # publish all the new datapoints
     hp.reportDatapoints(hp.hab.node("process"))
