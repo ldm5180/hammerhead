@@ -56,6 +56,21 @@ in the release branch:
 
     upload the tarball to bioserve.colorado.edu:/data/bionet-release
 
+    Update the bionet-release apt repository:
+     - Wait for the bionet2 pacakges to be built with the version number
+       changes
+     - For all dists and architectures, copy all the .deb and .changes files
+       for this specific version to the reletive directory in
+       bioserve.colorado.edu:/data/bionet-release/dists 
+     - For all dists, copy all the .dsc itar.gz and _source.changes files for
+       this specific version to the reletive directory in
+       bioserve.colorado.edu:/data/bionet-release/dists 
+     - For newly supported dists, copy and edit the Releas.head file from a
+       previous dist
+     - cd /data/bionet-release and run:
+       - update-source-repo --all-dists --all-comps
+       - update-binary-repo --all-dists --all-comps --all-archs /PATH/TO/GPGDIR
+
     Build iPhone App for AdHoc distribution:
      - Build supporting libs with './configure-make-install-iphone.sh'
      - Open the BioNetMonitor.xcodeproj
