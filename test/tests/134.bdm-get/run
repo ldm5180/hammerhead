@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2010, Regents of the University of Colorado.
+# This work was supported by NASA contracts NNJ05HE10G, NNC06CB40C, and
+# NNC07CB47C.
+#
+
+
+if [ -z "$ROOT" ]; then
+    echo "ROOT environment variable is undefined"
+    exit 1
+fi
+
+if [ -z "$TEST_DURATION" ]; then
+    TEST_DURATION=30
+fi
+
+
+UNIQUE=$$
+RESULT=0
+
+STRING_RESOURCE="commandable.$UNIQUE.set-me:commandable-String"
+STRING_BIONET_VALUE="hey from bionet"
+
+YEAR=`date +%Y`
+PREV_YEAR=$(($YEAR-1))
+NEXT_YEAR=$(($YEAR+1))
+
+. ../../testlib.sh
+
+ulimit -Sc unlimited
+rm -f core core.*
+
+echo "making DB file"
+rm -f bdm.db
+pushd $ROOT/data-manager/server > /dev/null
+./bdm-make-db > /dev/null
+popd > /dev/null
+mv $ROOT/data-manager/server/bdm.db .
+
+echo starting BDM
+$ROOT/data-manager/server/bionet-data-manager --id $UNIQUE -x bdm.ini.test --filter "commandable.$UNIQUE.set-me:*" &
+sleep 3 # let the bdm come up before starting the HAB
+
+echo starting commandable-hab
+rm -f out.commandable-hab
+$ROOT/hab/commandable/commandable-hab --id $UNIQUE >| out.commandable-hab &
+sleep 1
+
+echo commanding directly via bionet
+$ROOT/client/commander/bionet-commander $STRING_RESOURCE "$STRING_BIONET_VALUE"
+sleep .5
+
+echo getting data from bionet
+VAL=$($ROOT/client/get/bionet-get $STRING_RESOURCE)
+if [ "$VAL" != "$STRING_BIONET_VALUE" ]; then
+    echo "error commanding via bionet!"
+    echo "tried to set $STRING_RESOURCE to '$STRING_BIONET_VALUE', but ended up with '$VAL'"
+    RESULT=$TEST_FAIL_CODE
+else
+    echo "success."
+fi
+
+echo killing commandable-hab
+kill %2
+wait %2
+
+echo getting data from bdm
+BDMVAL=$($ROOT/data-manager/client/bdm-get/bdm-get --wait 5 --bdm $UNIQUE $STRING_RESOURCE)
+if [ "$BDMVAL" != "$STRING_BIONET_VALUE" ]; then
+    echo "error getting most recent value via BDM"
+    echo "tried to set $STRING_RESOURCE to '$STRING_BIONET_VALUE', but ended up with '$BDMVAL'"
+    RESULT=$TEST_FAIL_CODE
+else
+    echo "success."
+fi
+
+echo "killing BDM"
+kill %1
+wait
+
+exit $RESULT
+
