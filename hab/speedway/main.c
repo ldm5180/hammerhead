@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
 
 	case 'a':
 	    temp = strtoul(optarg, NULL, 0);
-	    if (INT_MAX == antenna_id) {
+	    if (INT_MAX == temp) {
 		g_warning("Failed to parse Antenna ID: %m");
 	    }
 	    antenna_id = (llrp_u16_t)temp;
@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
 
 	case 'R':
 	    temp = strtoul(optarg, NULL, 0);
-	    if (INT_MAX == rf_sense_index) {
+	    if (INT_MAX == temp) {
 		g_warning("Failed to parse RF Sense index: %m");
 	    } else {
 		use_sense_index = 1;
@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
 
 	case 'T':
 	    temp = strtoul(optarg, NULL, 0);
-	    if (INT_MAX == rf_txpower_index) {
+	    if (INT_MAX == temp) {
 		g_warning("Failed to parse RF TX Power index: %m");
 	    } else {
 		use_txpower_index = 1;
