@@ -826,12 +826,10 @@ int bionet_split_name_components_r(const char * name_pattern,
 
 
     // get the Resource-ID
-    int query_offset = 0;
     p = separator + 1;
     separator = strchr(p, '?');
     if (separator) {
         size = separator - p;
-        query_offset = p-name_pattern;
     } else {
         size = strlen(p);
     }
