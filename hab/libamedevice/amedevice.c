@@ -253,6 +253,11 @@ char* ame_response_return_name(int fd)
 
     name = malloc(25);
     i = ame_read_command(fd, name, 24);
+    if (0 >= i) {
+	fprintf(stderr, "ame_respoinse_return_name(): No name.");
+	free(name);
+	return NULL;
+    }
     name[24] = '\0';
 
 
