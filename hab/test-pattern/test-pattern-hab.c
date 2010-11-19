@@ -244,6 +244,9 @@ int main(int argc, char *argv[]) {
             FD_SET(bionet_fd, &fds);
 
             r = select(bionet_fd+1, &fds, NULL, NULL, &diff);
+	    if ((-1 == r) && (EINTR != errno)) {
+		g_warning("select() returned error: %m");
+	    }
 
             hab_read();
 
