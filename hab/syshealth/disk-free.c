@@ -86,7 +86,10 @@ static void get_partition_list(void) {
 
             if (strcmp(start, "/") == 0) { 
                 r = snprintf(rid, sizeof(rid), "MB-free-on-root");
-
+		if (sizeof(rid) <= r) {
+		    g_warning("get_partition_list(): Not enough space in dest buf of snprintf for MB-free-on-root.");
+		    continue;
+		}
             } else {
                 char *p;
 
@@ -115,7 +118,10 @@ static void get_partition_list(void) {
 
             if (strcmp(start, "/") == 0) { 
                 r = snprintf(rid, sizeof(rid), "inodes-free-on-root");
-
+		if (sizeof(rid) <= r) {
+		    g_warning("get_partition_list(): Not enough space in dest buf of snprintf for inodes-free-on-root.");
+		    continue;
+		}
             } else {
                 char *p;
 		
