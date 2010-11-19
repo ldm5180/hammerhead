@@ -166,8 +166,10 @@ int push_send_bundle(int usrfd, Object bundleZco, char * dst_eid,
 
     ssize_t bytes = send(usrfd, &dgram, sizeof(send_dgram_t*), MSG_NOSIGNAL);
     if (bytes != sizeof(send_dgram_t*)) {
+	free(dgram);
         return -1;
     }
+    free(dgram);
     return 0;
 }
 
