@@ -142,7 +142,7 @@
 	    return NULL;
 	}
 	int r = snprintf(newstr, 2048, "%s @ %s", 
-			 bionet_value_to_str(value),
+			 bionet_value_as_str(value),
 			 bionet_datapoint_timestamp_to_string($self->this));
 	if (r >= 2048) {
 	    g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "Datapoint.__str__(): String to too long.");
