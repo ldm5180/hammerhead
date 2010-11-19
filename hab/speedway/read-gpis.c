@@ -51,10 +51,9 @@ int read_gpis(int gpi[4]) {
         NULL != pGPIPortCurrentState;
         pGPIPortCurrentState = (LLRP_tSGPIPortCurrentState *)pGPIPortCurrentState->hdr.pNextSubParameter
     ) {
-        int port_num, config, state;
+        int port_num, state;
 
         port_num = pGPIPortCurrentState->GPIPortNum;
-        config = pGPIPortCurrentState->Config;
         state = pGPIPortCurrentState->eState;
 
         port_num --;
