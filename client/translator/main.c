@@ -2,11 +2,9 @@
 #include <stdint.h>
 #include <math.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <string.h>
 #include <getopt.h>
 #include <signal.h>
-#include <search.h>
 #include <stdio.h>
 
 #include "translator.h"
@@ -127,50 +125,36 @@ int main(int argc, char* argv[])
         }
     }
 
+
     // build hash table
     // map translator_adc resources to 0-15
-    ENTRY e, *ep;
-    hcreate(144);
-    unsigned long int r = 0;
-    int jj = 0;
+    hash_table = g_hash_table_new(g_str_hash, g_str_equal);
+    int r = 0;
+    //int jj = 0;
     for(; r<16; r++)
     {
         // add translator resource names to hash table
-        e.key = default_settings->translator_adc[r];
-        e.data = (void*)r;
-        ep = hsearch(e, ENTER);
-        if(ep == NULL)
-        {
-            fprintf(stderr, "entry to hash table failed\n");
-            exit(1);
-        }
+        g_hash_table_insert(hash_table, default_settings->translator_adc[r], &r);
+
         // add proxr resource names to hash table
-        e.key = default_settings->proxr_adc[r];
-        e.data = (void*)r;
-        ep = hsearch(e, ENTER);
-        if(ep == NULL)
-        {
-            fprintf(stderr, "entry to hash table failed\n");
-            exit(1);
-        }
+        g_hash_table_insert(hash_table, default_settings->proxr_adc[r], &r);
 
         // map each calibration resource  to 0-15
         // each calibration resource has 7 calibration constants
-        int oldjj = jj;
+        /*int oldjj = jj;
         for(; jj<oldjj+7; jj++)
         {
-            e.key = default_settings->dmm_calibrations[jj];
-            e.data = (void*)r;
-            ep = hsearch(e, ENTER);
-            if(NULL == ep)
-            {
-                fprintf(stderr, "entry to hash table failed\n");
-                exit(1);
-            }
-        }
+            g_hash_table_insert(hash_table, default_settings->dmm_calibrations[jj], &r);
+        }*/
     }
 
-    
+    for(int i=0; i<16; i++)
+    {   
+        int *test = g_hash_table_lookup(hash_table, default_settings->translator_adc[i]);
+        printf("%s mapped to %d.\n", default_settings->translator_adc[i], *test);
+    }
+
+        
 
     // register callbacks
     bionet_register_callback_datapoint(cb_datapoint);

@@ -6,13 +6,13 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
 {
     bionet_resource_t *resource = NULL;
     char *node_name = NULL;
+    char *res_name = NULL;
     char id[3];
     unsigned long int adc_id, calib_id, pot_id;
     double constant;
-    ENTRY e, *ep;
     
     resource = bionet_datapoint_get_resource(datapoint);
-    bionet_split_resource_name(bionet_resource_get_name(resource), NULL, NULL, &node_name, &e.key);
+    bionet_split_resource_name(bionet_resource_get_name(resource), NULL, NULL, &node_name, &res_name);
 
     // determine where the resource is coming from
     if(strcmp(node_name, "0") == 0)
@@ -20,7 +20,7 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
         // Check if it is a state resource update from DMM
         for(int i=0; i<16; i++)
         {
-            if(strcmp(default_settings->state_names[i], e.key) == 0)
+            if(strcmp(default_settings->state_names[i], res_name) == 0)
             {
                 int8_t value;
                 bionet_resource_get_int8(resource, &value, NULL);
@@ -33,11 +33,12 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
         // Wasn't state resource so must be a calibration 
 
         // use resource name to find adc number (0-15)
-        ep = hsearch(e, FIND);
-        adc_id = (unsigned long int)ep->data;
+        //ep = hsearch(e, FIND);
+        //adc_id = (unsigned long int)ep->data;
+        adc_id = 0;
     
         // use resource name to find calibration constant number (0-6)
-        id[0] = e.key[19];
+        id[0] = res_name[19];
         id[1] = '\0';
         calib_id = strtol(id, NULL, 10);
 
@@ -56,8 +57,9 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
     else if(strcmp(node_name, "potentiometers") == 0)
     {
         // extract pot number from resource name (0-15)
-        ep = hsearch(e, FIND);
-        pot_id = (unsigned long int)ep->data;
+        //ep = hsearch(e, FIND);
+        //pot_id = (unsigned long int)ep->data;
+        pot_id = 0;
        
         // store the resource
         proxr_resource[pot_id] = resource;
