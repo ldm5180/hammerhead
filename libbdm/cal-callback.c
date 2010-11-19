@@ -417,13 +417,16 @@ static void bdm_handle_server_subscribe(const cal_event_t *event) {
     enc_rval = der_encode(&asn_DEF_BDM_C2S_Message, &m, bionet_accumulate_asn_buffer, &buf);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_BDM_C2S_Message, &m);
     if (enc_rval.encoded == -1) {
-        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_get_resource_datapoints(): error with der_encode(): %s", strerror(errno));
+        g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_handle_server_subscribe(): error with der_encode(): %s", strerror(errno));
         goto cleanup;
     }
 
     // send the state to the BDM
     // NOTE: cal_client.sendto assumes controll of buf
     r = cal_client.sendto(libbdm_cal_handle, peer_name, buf.buf, buf.size);
+    if (0 == r) {
+	g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "bdm_handle_server_subscribe(): error in sendto(): %m");
+    }
 
     return;
 
