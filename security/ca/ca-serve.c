@@ -70,7 +70,10 @@ int main (int argc, char * argv[], char * envp[]){
     printf("Effective GID\t= %d\n", getegid());
 	*/
 
-    setreuid(geteuid(), geteuid());
+    if (-1 == setreuid(geteuid(), geteuid())) {
+	fprintf(stderr, "Failed setreuid(): %m");
+	exit(1);
+    }
 
     char * const new_argv[] = {
     	"/usr/bin/openssl", 
