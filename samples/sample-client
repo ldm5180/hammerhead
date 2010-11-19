@@ -23,6 +23,7 @@ import random
 
 # import Bionet's Hardware Abstractor module
 from bionet import *    
+from bionet_generators import *
 
 # initialize the Python logger
 logger = logging.getLogger("Bionet Sample Client")
@@ -48,8 +49,7 @@ def cb_lost_hab(hab):
 def cb_new_node(node):
     logger.info("  new node: %s" % node.name())
     logger.info("    resources:");
-    for i in range(node.numResources()):
-        resource = node.resource(i)
+    for resource in resourceGenerator(node):
         logger.info("        %(datatype)s %(flavor)s %(id)s" % {"datatype" : resource.datatypeToString(),
                                                                 "flavor" : resource.flavorToString(),
                                                                 "id" : resource.id() } )

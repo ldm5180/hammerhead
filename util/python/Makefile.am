@@ -6,4 +6,4 @@
 
 include $(top_srcdir)/common.am
 
-python_PYTHON = datapoints_to_dict.py timechooser.py timespan.py
+python_PYTHON = datapoints_to_dict.py timechooser.py timespan.py bionet_generators.py
