@@ -40,7 +40,6 @@ speedway_SOURCES =         \
     xml-message.c          \
     factory-defaults.c     \
     delete-specs.c         \
-    antenna-event.c        \
     exception-event.c	   \
     handle-interrupt.c
 

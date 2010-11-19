@@ -29,7 +29,6 @@ void handleReaderEventNotification(LLRP_tSReaderEventNotificationData *pNtfData)
 
     pAntennaEvent = LLRP_ReaderEventNotificationData_getAntennaEvent(pNtfData);
     if (pAntennaEvent != NULL) {
-        handleAntennaEvent(pAntennaEvent);
         nReported++;
     }
 
