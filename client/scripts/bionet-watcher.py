@@ -88,6 +88,7 @@ def gmt_convert(loctime):
 
 from bionet import *
 from bdm_client import *
+from bionet_generators import *
 
 if (options.datapoint_start != None):
     datapoint_start = timeval()
@@ -128,8 +129,7 @@ def cb_new_node(node):
     if (node.numResources()):
         print("    Resources:")
 	    
-        for i in range(node.numResources()):
-            resource = node.resource(i)
+        for resource in resourceGenerator(node):
             datapoint = resource.datapoint(0)
 		
             if (datapoint == None):
@@ -143,8 +143,7 @@ def cb_new_node(node):
     if (0 < node.numStreams()):
         print("    Streams:")
     
-        for i in range(node.numStreams()):
-            stream = node.stream(i)
+        for stream in streamGenerator(node):
             print("        " + stream.id() + " " + stream.type() + " " + stream.directionToString())
 
 
@@ -187,8 +186,7 @@ def cb_bdm_new_node(node):
     if (node.numResources()):
         print("    BDM Resources:")
 	    
-        for i in range(node.numResources()):
-            resource = node.resource(i)
+        for resource in resourceGenerator(node):
             datapoint = resource.datapoint(0)
 		
             if (datapoint == None):

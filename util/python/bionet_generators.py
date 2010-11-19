@@ -15,6 +15,11 @@ def resourceGenerator(node):
     for i in reslist:
         yield node.resource(i)
 
+def streamGenerator(node):
+    streamlist = range(node.numStreams())
+    for i in streamlist:
+        yield node.stream(i)
+
 def datapointGenerator(resource):
     dplist = range(resource.numDatapoints())
     for i in dplist:
