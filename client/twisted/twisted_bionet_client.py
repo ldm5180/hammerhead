@@ -42,13 +42,17 @@
 from twisted.internet import interfaces
 from bionet import *
 
+
 class Client():
     """twisted_bionet.Client eats a Bionet Client and implements the
     twisted.internet.interfaces.IReadDescriptor interface."""
+    bn = None
 
-    def __init__(self):
-        self.bionet_fd = bionet_connect()
-        if self.bionet_fd < 0:
+    def __init__(self, bn_client):
+        global bn 
+        bn = bn_client
+        self.fd = bn.fd
+        if self.fd < 0:
             # FIXME: retry later?
             print "problem connecting to Bionet, exiting"
             reactor.stop()
@@ -56,10 +60,11 @@ class Client():
 
 
     def doRead(self):
-        bionet_read()
+        global bn
+        bn.read()
 
     def fileno(self):
-        return self.bionet_fd
+        return self.fd
 
     def connectionLost(self, reason):
         print "connection to bionet is lost:", reason

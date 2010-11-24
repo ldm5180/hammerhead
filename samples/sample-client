@@ -20,6 +20,8 @@ import time
 from select import select
 import os
 import random
+from twisted.internet import reactor
+import twisted_bionet_client
 
 # import Bionet's Hardware Abstractor module
 from bionet import *    
@@ -101,14 +103,9 @@ bn.datapointCallback = cb_datapoint
 # proper callback will be called automatically.
 #
 # include any file descriptors for your own hardware if there are any.
-fd_list = []
-if (bn.fd != -1):
-    fd_list.append(bn.fd)
+twisted_bn = twisted_bionet_client.Client(bn)
+reactor.addReader(twisted_bn)
+    
+reactor.run()
 
-while(1):
-    # select on the fd list
-    (rr, wr, er) = select(fd_list, [], [], None)
-    for fd in rr:
-        if (fd == bn.fd):
-            read = bn.read() # causes the callbacks to get called
         
