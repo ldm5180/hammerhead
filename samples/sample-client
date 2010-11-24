@@ -38,6 +38,7 @@ logger.addHandler(ch)
 
 
 count = 0
+bn = None
 
 # New HAB callback is called each time a new HAB matching the subscription joins the Bionet network
 def cb_new_hab(hab):
@@ -72,30 +73,30 @@ def cb_datapoint(datapoint):
     global count
     count = count + 1
     if (count % 5 == 0):
-        global bn
+        global twisted_client
         node = resource.node()
         resource_name = node.name() + ":" +  "update-interval"
-        bn.set(resource_name, random.randint(1, 3))
+        twisted_client.bionet.set(resource_name, random.randint(1, 3))
 
 
 # set the default Bionet log handler
 bionet_log_use_default_handler(None)
 
 # connect to Bionet as a client
-bn = Bionet()
+twisted_client = twisted_bionet_client.Client(None)
 
 # subscribe to HABs, Nodes, and Datapoints. In this example, all HABs and Nodes 
 # are subscribed, but only datapoints from the Sample HAB.
-bn.subscribe("*.*")
-bn.subscribe("*.*.*")
-bn.subscribe("Sample.*.*:*")
+twisted_client.bionet.subscribe("*.*")
+twisted_client.bionet.subscribe("*.*.*")
+twisted_client.bionet.subscribe("Sample.*.*:*")
 
 # register all the callbacks desired
-bn.newHabCallback = cb_new_hab
-bn.lostHabCallback = cb_lost_hab
-bn.newNodeCallback = cb_new_node
-bn.lostNodeCallback = cb_lost_node
-bn.datapointCallback = cb_datapoint
+twisted_client.bionet.newHabCallback = cb_new_hab
+twisted_client.bionet.lostHabCallback = cb_lost_hab
+twisted_client.bionet.newNodeCallback = cb_new_node
+twisted_client.bionet.lostNodeCallback = cb_lost_node
+twisted_client.bionet.datapointCallback = cb_datapoint
 
 # set up the selectable file descriptor list. Any time the file descriptor is
 # readable it should be read. It is readable any time a HAB published a
@@ -103,8 +104,7 @@ bn.datapointCallback = cb_datapoint
 # proper callback will be called automatically.
 #
 # include any file descriptors for your own hardware if there are any.
-twisted_bn = twisted_bionet_client.Client(bn)
-reactor.addReader(twisted_bn)
+reactor.addReader(twisted_client)
     
 reactor.run()
 
