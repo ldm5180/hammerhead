@@ -17,7 +17,7 @@
 
 
 
-
+#ifdef LINUX
 static float uptime_get(void) {
     // Precondition: None
     // Postcondition: Returns the computer uptime as a float
@@ -50,7 +50,47 @@ static float uptime_get(void) {
 
     return time;
 }
+#endif
 
+#ifdef MACOSX
+static float uptime_get(void) {
+    FILE *fp;
+    char uptime[1024];
+    int r;
+
+    fp = popen("sysctl -n kern.boottime", "r");
+    if (NULL == fp) {
+	g_warning("Failed to get load average: %m");
+	return -1;
+    }
+
+    r = fread(uptime, 1, sizeof(uptime), fp);
+    if (0 == r) {
+	g_warning("Unable to read load average: %m");
+	pclose(fp);
+	return -1;
+    }
+
+    char * last;
+    char * token[10];
+    int i = 0;
+    token[i] = strtok_r(uptime, " ,", &last);
+    while ((token[i]) && i < 10) {
+	i++;
+	token[i] = strtok_r(NULL, " ,", &last);
+    } 
+	
+    pclose(fp);
+    
+    struct timeval boottime;
+    boottime.tv_sec = strtoul(token[3], NULL, 0);
+
+    struct timeval curtime;
+    gettimeofday(&curtime, NULL);
+
+    return (float)(curtime.tv_sec - boottime.tv_sec);
+}
+#endif
 
 
 

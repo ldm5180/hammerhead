@@ -12,6 +12,10 @@ if ENABLE_DARWIN
 SYSTEM_DEFINES = -DMACOSX
 endif
 
+if ENABLE_LINUX
+SYSTEM_DEFINES = -DLINUX
+endif
+
 syshealth_hab_SOURCES =      \
     syshealth.c              \
     disk-free.c              \
