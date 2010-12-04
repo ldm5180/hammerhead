@@ -8,6 +8,9 @@ include $(top_srcdir)/common.am
 
 bin_PROGRAMS = syshealth-hab
 
+if ENABLE_DARWIN
+SYSTEM_DEFINES = -DMACOSX
+endif
 
 syshealth_hab_SOURCES =      \
     syshealth.c              \
@@ -21,7 +24,7 @@ syshealth_hab_SOURCES =      \
     scheduling-latency.c
 
 
-syshealth_hab_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) 
+syshealth_hab_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_HAB) $(CFLAGS_BIONET_UTIL) $(SYSTEM_DEFINES)
 
 syshealth_hab_LDFLAGS = $(AM_LDFLAGS) $(GLIB_LIBS) $(AVAHI_COMPAT_LIBDNS_SD_LIBS) $(DBUS_LIBS) $(LDFLAGS_BIONET_ASN1) $(LDFLAGS_BIONET_CAL_SERVER) 
 

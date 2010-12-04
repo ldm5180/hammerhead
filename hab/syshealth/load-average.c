@@ -11,12 +11,13 @@
 
 #include <glib.h>
 #include <hardware-abstractor.h>
+#include <string.h>
 
 #include "syshealth.h"
 
 
 
-
+#ifdef LINUX
 static float load_average(void) {
     // Precondition: None
     // Postcondition: Returns the 15 minute average load as a float
@@ -70,9 +71,40 @@ static float load_average(void) {
 
     return avgload[2];
 }
+#endif
 
+#ifdef MACOSX
+static float load_average(void) {
+    FILE *fp;
+    char loadavg[1024];
+    int r;
 
+    fp = popen("sysctl -n vm.loadavg", "r");
+    if (NULL == fp) {
+	g_warning("Failed to get load average: %m");
+	return -1;
+    }
 
+    r = fread(loadavg, 1, sizeof(loadavg), fp);
+    if (0 == r) {
+	g_warning("Unable to read load average: %m");
+	pclose(fp);
+	return -1;
+    }
+
+    char * last;
+    char * token[5];
+    int i = 0;
+    token[i] = strtok_r(loadavg, " ", &last);
+    while ((token[i]) && i < 5) {
+	i++;
+	token[i] = strtok_r(NULL, " ", &last);
+    } 
+	
+    pclose(fp);
+    return strtof(token[3], NULL);
+}
+#endif
 
 int load_average_init(bionet_node_t *node) {
     int r;
