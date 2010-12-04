@@ -437,9 +437,9 @@ static gboolean sync_check(gpointer data) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Syncing Metadata to %s seq [%d,%d]", 
                 cfg->sync_recipient, start_seq, curr_seq);
 	r = sync_send_metadata(cfg, start_seq, curr_seq);
-        if ( r ) return TRUE;
-
-        cfg->last_metadata_sync = curr_seq;
+        if ( 0 == r ) {
+	    cfg->last_metadata_sync = curr_seq;
+	}
     }
 	
     if (curr_seq > cfg->last_datapoint_sync) {
@@ -449,9 +449,9 @@ static gboolean sync_check(gpointer data) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "Syncing Datapoints to %s seq [%d,%d]", 
                 cfg->sync_recipient, start_seq, curr_seq);
 	r = sync_send_datapoints(cfg, start_seq, curr_seq);
-        if ( r ) return TRUE;
-
-        cfg->last_datapoint_sync = curr_seq;
+        if ( 0 == r ) {
+	    cfg->last_datapoint_sync = curr_seq;
+	}
     }
 
     return TRUE;
