@@ -229,9 +229,15 @@ AM_CONDITIONAL(GCOV, test x"$gcov" = "xtrue")
 AC_ARG_ENABLE(gprof,
 	      AS_HELP_STRING([--enable-gprof],
                              [enable profiling with gprof @<:@default=no@:>@]),
-	      [gprof=$enableval],
-	      [gprof=no])
-AM_CONDITIONAL(GPROF, test x"$gprof" = "xyes")
+              [case "${enableval}" in
+                 yes) gprof=true ;;
+                 no)  gprof=false ;;
+                 *)   AC_MSG_ERROR([bad value ${enableval} for --enable-gprof]) ;;
+               esac],
+              [gprof=false])
+
+AM_CONDITIONAL(GPROF, test x"$gprof" = "xtrue")
+
 
 ###
 #
