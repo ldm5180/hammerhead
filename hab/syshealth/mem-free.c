@@ -9,12 +9,13 @@
 
 #include <glib.h>
 #include <hardware-abstractor.h>
+#include <stdlib.h>
 
 #include "syshealth.h"
 
 
 
-
+#ifdef LINUX
 static int mem_free_get(void) {
     // Precondition: none
     // Returns the KB memory free as an int
@@ -102,8 +103,42 @@ static int mem_free_get(void) {
 
     return ret;
 }
+#endif
 
+#ifdef MACOSX
+static int mem_free_get(void) {
+    FILE *fp;
+    char memfree[1024];
+    int r;
 
+    fp = popen("vm_stat | grep \"Pages free\"", "r");
+    if (NULL == fp) {
+	g_warning("Failed to get load average: %m");
+	return -1;
+    }
+
+    r = fread(memfree, 1, sizeof(memfree), fp);
+    if (0 == r) {
+	g_warning("Unable to read load average: %m");
+	pclose(fp);
+	return -1;
+    }
+
+    char * last;
+    char * token[10];
+    int i = 0;
+    token[i] = strtok_r(memfree, " .", &last);
+    while ((token[i]) && i < 10) {
+	i++;
+	token[i] = strtok_r(NULL, " .", &last);
+    } 
+	
+    pclose(fp);
+    
+    unsigned int mem = strtoul(token[2], NULL, 0);
+    return mem * 4096;
+}
+#endif
 
 
 int mem_free_init(bionet_node_t *node) {
