@@ -34,9 +34,9 @@ typedef struct {
 static partition_t *partition = NULL;
 static int num_partitions = 0;
 
-
+#ifdef LINUX
 static void get_partition_list(void) {
-    FILE *f;
+    FILE *f = NULL;
     char tmp[100];
 
     f = fopen("/etc/mtab", "r");
@@ -46,11 +46,12 @@ static void get_partition_list(void) {
     }
 
     while (! feof(f)) {
-        char *start, *p;
+        char *start;
         partition_t *part;
 
         if (fgets(tmp, sizeof(tmp), f) == NULL) break;
 
+	char * p;
         if (strncmp(tmp, "/dev/", 5) != 0) continue;
 
         start = memchr(tmp, ' ', strlen(tmp));
@@ -75,9 +76,8 @@ static void get_partition_list(void) {
             fclose(f);
             return;
         }
-
         part = &partition[num_partitions - 1];
-        part->mount_point = strdup(start);
+	part->mount_point = strdup(start);
 
         // MB free resource id
         {
@@ -144,14 +144,81 @@ static void get_partition_list(void) {
 
     fclose(f);
 }
+#endif
 
+#ifdef MACOSX
+static void get_partition_list(void) {
+    FILE * fp;
+    char tmp[256];
+    char partname[1024];
+    char tmppartname[1024];
+    char rid[1024];
 
+    fp = popen("ls -1 /Volumes", "r");
+    
+    while (! feof(fp)) {
+	partition_t * part;
+
+	memset(partname, 0, sizeof(partname));
+	memset(tmppartname, 0, sizeof(tmppartname));
+	memset(tmp, 0, sizeof(tmp));
+
+	if (fgets(tmp, sizeof(tmp), fp) == NULL) break;
+
+	int i = 0;
+	while(tmp[i]) {
+	    if (tmp[i] == '\n') {
+		tmp[i] = '\0';
+		break;
+	    }
+	    i++;
+	}
+
+	int r = snprintf(partname, sizeof(partname), "/Volumes/%s", tmp);
+	if (r >= sizeof(partname)) break;;
+
+	partition = (partition_t *)realloc(partition, (num_partitions+1) * sizeof(partition_t));
+	part = &partition[num_partitions];
+
+	i = 0;
+	int j = 0;
+	while(partname[i]) {
+	    if (partname[i] == ' ') {
+		tmppartname[j] = '\\';
+		j++;
+		tmppartname[j] = partname[i];
+		j++;
+		partname[i] = '_';
+		i++;
+	    } else {
+		tmppartname[j] = partname[i];
+		j++;
+		i++;
+	    }
+	}
+	part->mount_point = strdup(tmppartname);
+	num_partitions++;
+
+	r = snprintf(rid, sizeof(rid), "MB-free-on-%s", partname);
+	if (r >= sizeof(rid)) {
+	    g_log("", G_LOG_LEVEL_WARNING, "partition %s resource id too long!", part->mount_point);
+	    part->mb_free_resource_id = "NULL";
+	    continue;
+	}
+	part->mb_free_resource_id = strdup(rid);
+    }
+
+    pclose(fp);
+}
+#endif
+
+#ifdef LINUX
 static int disk_free_get(char location[], int *mb_free, int *inodes_free) {
     //Precondition: input a string of the harddrive sector; ie., "/";
     //Postcondition: Returns 0 if it worked, -1 if it didnt work.
     
     struct statvfs buff;
-    
+
     if (statvfs(location, &buff) != 0)
     {
 	g_log("", G_LOG_LEVEL_WARNING, "Unable to open: %s \n", location);
@@ -163,7 +230,35 @@ static int disk_free_get(char location[], int *mb_free, int *inodes_free) {
 
     return 0;
 }
+#endif
 
+#ifdef MACOSX
+static int disk_free_get(char location[], int *mb_free, int *inodes_free) {
+    FILE * fp;
+    char freemem[1024];
+    char cmd[1024];
+    int r;
+
+    r = snprintf(cmd, sizeof(cmd), "df -m %s | grep -v \"Available\" | awk '{print $4;}'", location);
+    if (r >= sizeof(cmd)) {
+	g_warning("Unable to create command to read disk free for %s: %m", location);
+	return -1;
+    }
+
+    fp = popen(cmd, "r");
+    r = fread(freemem, 1, sizeof(freemem), fp);
+    if (0 >= r) {
+	g_warning("Unable to read disk free for %s: %m", location);
+	pclose(fp);
+	return -1;
+    }
+
+    *mb_free = strtol(freemem, NULL, 0);
+
+    pclose(fp);
+    return 0;
+}
+#endif
 
 
 
@@ -213,7 +308,7 @@ int disk_free_init(bionet_node_t *node) {
 
         added_some = 1;
 
-
+#ifdef LINUX
         resource = bionet_resource_new(node,
                 BIONET_RESOURCE_DATA_TYPE_INT32,
                 BIONET_RESOURCE_FLAVOR_SENSOR,
@@ -234,6 +329,7 @@ int disk_free_init(bionet_node_t *node) {
             g_log("", G_LOG_LEVEL_WARNING, "disk_free_init(): node unable to add resource %s", part->inodes_free_resource_id);
             continue;
         }
+#endif
 
     }
 
@@ -274,7 +370,7 @@ void disk_free_update(bionet_node_t *node) {
             g_log("", G_LOG_LEVEL_WARNING, "disk_free_update(): error setting value for resource %s", part->mb_free_resource_id);
         }
 
-
+#ifdef LINUX
         resource = bionet_node_get_resource_by_id(node, part->inodes_free_resource_id);
         if (resource == NULL) {
             g_log("", G_LOG_LEVEL_WARNING, "disk_free_update(): looking for non-existent resource %s", part->inodes_free_resource_id);
@@ -285,6 +381,7 @@ void disk_free_update(bionet_node_t *node) {
         if (r < 0) {
             g_log("", G_LOG_LEVEL_WARNING, "disk_free_update(): error setting value for resource %s", part->inodes_free_resource_id);
         }
+#endif
 
     }
 }
