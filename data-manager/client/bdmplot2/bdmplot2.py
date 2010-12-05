@@ -44,7 +44,7 @@ from twisted.protocols import basic
 from twisted.web import server, resource
 from twisted.web.static import File
 from twisted.web.server import Site
-from twisted.web.resource import Resource
+from twisted.web.resource import Resource as TwistedResource
 
 from twisted_bdm_client import *
 from bdm_client import *
@@ -179,7 +179,7 @@ def main():
     data = DataServer()
     full = Datapoints()
     
-    root = Resource()
+    root = TwistedResource()
     root.putChild('bdmplot', File("plot.html"))
     root.putChild('flot', File("flot"))
     root.putChild('data', data)
