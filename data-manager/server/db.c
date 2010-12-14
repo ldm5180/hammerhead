@@ -1916,7 +1916,7 @@ get_events_make_hab_list(
             return -1;
         }
 
-        if(event_class == _DB_GET_DP_EVENTS) {
+        if(event_class == _DB_GET_DP_EVENTS || event_class == _DB_GET_LATEST_DP_EVENT) {
             int err = 0;
             bionet_value_t * value = _sql_value_to_bionet(stmt, column_idx, resource);
             if (value)
@@ -1924,7 +1924,7 @@ get_events_make_hab_list(
                 bionet_datapoint_t * datapoint = bionet_datapoint_new(resource, value, dp_timestamp);
                 if (datapoint) {
                     bionet_resource_add_datapoint(resource, datapoint);
-                    if(event_class == _DB_GET_DP_EVENTS) {
+                    if(event_class == _DB_GET_DP_EVENTS || event_class == _DB_GET_LATEST_DP_EVENT) {
                         bionet_datapoint_add_event(datapoint, event);
                     }
                 } else {
@@ -2047,7 +2047,7 @@ get_events_make_bdm_list(
             return -1;
         }
 
-        if(event_class == _DB_GET_DP_EVENTS) {
+        if(event_class == _DB_GET_DP_EVENTS || event_class == _DB_GET_LATEST_DP_EVENT) {
             int err = 0;
             bionet_value_t * value = _sql_value_to_bionet(stmt, column_idx, resource);
             if (value)
@@ -2084,19 +2084,11 @@ get_events_make_bdm_list(
 
 }
 
-
-
-// 
-// Return events for the given filter parameters by
-// calling the specified callback
-//
-// Calls the callback for every batch_size events, and once for the
-// remainder
-//
-// The return code of the user's callback affects how this procedure
-// continues
-//
-int db_get_events(sqlite3* db, 
+/*
+ * Convert the list or filters into a SQL string
+ */
+static int _db_get_events_sql(
+    char * sql, size_t sql_size,
     const char *bdm_id,
     const char *hab_type,
     const char *hab_id,
@@ -2108,12 +2100,9 @@ int db_get_events(sqlite3* db,
     const struct timeval *event_end,
     int entry_start,
     int entry_end,
-    db_get_event_class_t event_class,
-    db_get_events_cb_t row_handler,
-    void * user_data)
+    db_get_event_class_t event_class)
 {
     int r;
-    char sql[2048];
 
     char bdm_id_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
     char hab_type_restriction[2 * BIONET_NAME_COMPONENT_MAX_LEN];
@@ -2198,6 +2187,8 @@ int db_get_events(sqlite3* db,
     const char * where = NULL;
     const char * event_where = NULL;
 
+    const char * orderlimit = " ORDER BY e.seq ASC";
+
     switch(event_class) {
         case _DB_GET_HAB_EVENTS:
             fields = " NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL";
@@ -2234,6 +2225,10 @@ int db_get_events(sqlite3* db,
             event_where = " (e.node = n.key) ";
             break;
 
+        case _DB_GET_LATEST_DP_EVENT:
+            orderlimit = " ORDER BY d.timestamp_sec DESC, d.timestamp_usec DESC "
+                         " LIMIT 1 ";
+            // fall through to next case
         case _DB_GET_DP_EVENTS:
             fields = 
                 " n.Node_ID,"
@@ -2261,12 +2256,13 @@ int db_get_events(sqlite3* db,
                 " AND d.Resource_Key=r.Key";
 
             event_where = " (e.datapoint = d.key )";
+
             break;
 
 
     }
 
-    r = snprintf(sql, sizeof(sql),
+    r = snprintf(sql, sql_size,
         "SELECT"
         "    h.hab_type,"
         "    h.hab_id,"
@@ -2294,8 +2290,7 @@ int db_get_events(sqlite3* db,
         "    %s" //hab_id
         "    %s" //node_id
         "    %s" //resource_id
-        " ORDER BY"
-        "     e.seq ASC",
+        " %s",   // ORDER/LIMIT
             // Fields
             fields, 
             // Tables
@@ -2312,10 +2307,11 @@ int db_get_events(sqlite3* db,
             hab_type_restriction,
             hab_id_restriction,
             node_id_restriction,
-            resource_id_restriction
+            resource_id_restriction,
+            orderlimit
         );
 
-    if (r >= sizeof(sql)) {
+    if (r >= sql_size) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "db_get_events(): SQL doesnt fit in buffer!");
         return -1;
     }
@@ -2331,6 +2327,7 @@ int db_get_events(sqlite3* db,
             type = "NODE";
             break;
 
+        case _DB_GET_LATEST_DP_EVENT:
         case _DB_GET_DP_EVENTS:
             type = "DP";
             break;
@@ -2342,6 +2339,47 @@ int db_get_events(sqlite3* db,
         type, sql
     );
 #endif
+
+    return 0;
+}
+
+
+// 
+// Return events for the given filter parameters by
+// calling the specified callback
+//
+// Calls the callback for every batch_size events, and once for the
+// remainder
+//
+// The return code of the user's callback affects how this procedure
+// continues
+//
+int db_get_events(sqlite3* db, 
+    const char *bdm_id,
+    const char *hab_type,
+    const char *hab_id,
+    const char *node_id,
+    const char *resource_id,
+    const struct timeval *datapoint_start,
+    const struct timeval *datapoint_end,
+    const struct timeval *event_start,
+    const struct timeval *event_end,
+    int entry_start,
+    int entry_end,
+    db_get_event_class_t event_class,
+    db_get_events_cb_t row_handler,
+    void * user_data)
+{
+    int r;
+    char sql[2048];
+
+    r = _db_get_events_sql(sql, sizeof(sql), bdm_id,
+            hab_type, hab_id, node_id, resource_id,
+            datapoint_start, datapoint_end,
+            event_start, event_end, entry_start, entry_end,
+            event_class);
+    if (r) return r;
+    
 
     sqlite3_stmt *stmt;
     int row_count = 0;
@@ -2574,6 +2612,7 @@ GPtrArray *db_get_resource_datapoints_bdm_list(
 // 
 // Finds all matching datapoints, and returns them as a GPtrArray of bionet_hab_t.
 // Use hab_list_free to free the list returned
+// If a datapoint_start filter is given, then this will also return the most-recent datapoint
 //
 GPtrArray *db_get_resource_datapoints(
     sqlite3 *db,
@@ -2596,6 +2635,24 @@ GPtrArray *db_get_resource_datapoints(
     // We want to return an empty list if 
     // no results, NULL on error
     data.list = g_ptr_array_new();
+
+    if(datapoint_start ) {
+        // Get the most recent, so long as it isn't past the 
+        r = db_get_events(db, 
+                bdm_id,
+                hab_type,
+                hab_id,
+                node_id,
+                resource_id,
+                NULL, // dp_start
+                datapoint_end,
+                event_start, event_end,
+                entry_start,
+                entry_end,
+                _DB_GET_LATEST_DP_EVENT,
+                get_events_make_hab_list,
+                (void*)&data);
+    }
 
     r = db_get_events(db, 
             bdm_id,
@@ -2980,7 +3037,7 @@ get_events_publish_dp(
     int r, i;
     bdm_db_batch_t * tmp_dbb = (bdm_db_batch_t*)usr_data;
 
-    if(event_class != _DB_GET_DP_EVENTS) {
+    if(event_class != _DB_GET_DP_EVENTS && event_class != _DB_GET_LATEST_DP_EVENT) {
         g_log(BDM_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
               "%s(): usage error: wrong query class", __FUNCTION__);
     }

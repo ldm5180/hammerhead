@@ -71,8 +71,10 @@ typedef enum {
 typedef enum {
     _DB_GET_HAB_EVENTS,
     _DB_GET_NODE_EVENTS,
-    _DB_GET_DP_EVENTS
+    _DB_GET_DP_EVENTS,
+    _DB_GET_LATEST_DP_EVENT
 } db_get_event_class_t;
+
 
 /**
  * Function pointer that gets called with every row
@@ -96,6 +98,22 @@ typedef bdm_handle_row_status_t (*db_get_events_cb_t)(
         const int column_idx,
         sqlite3_stmt * stmt,
         void * usr_data);
+
+int db_get_events(sqlite3* db, 
+    const char *bdm_id,
+    const char *hab_type,
+    const char *hab_id,
+    const char *node_id,
+    const char *resource_id,
+    const struct timeval *datapoint_start,
+    const struct timeval *datapoint_end,
+    const struct timeval *event_start,
+    const struct timeval *event_end,
+    int entry_start,
+    int entry_end,
+    db_get_event_class_t event_class,
+    db_get_events_cb_t row_handler,
+    void * user_data);
 
 // 
 // Finds all matching datapoints, and returns them as a GPtrArray of bionet_hab_t.
