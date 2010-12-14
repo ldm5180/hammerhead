@@ -48,7 +48,7 @@ class Client():
     twisted.internet.interfaces.IReadDescriptor interface."""
     bionet = None
 
-    def __init__(self, bn_client):
+    def __init__(self, bn_client=None):
         
         if (None == bn_client):
             bn_client = Bionet()
