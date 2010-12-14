@@ -1922,9 +1922,39 @@ get_events_make_hab_list(
             if (value)
             {
                 bionet_datapoint_t * datapoint = bionet_datapoint_new(resource, value, dp_timestamp);
+                int unique = 1;
+                int di;
                 if (datapoint) {
-                    bionet_resource_add_datapoint(resource, datapoint);
-                    if(event_class == _DB_GET_DP_EVENTS || event_class == _DB_GET_LATEST_DP_EVENT) {
+                    for(di=0; di<bionet_resource_get_num_datapoints(resource); di++){
+                        bionet_datapoint_t * old_dp = bionet_resource_get_datapoint_by_index(resource, di);
+                        if(0 == bionet_datapoint_iseq(datapoint, old_dp)){
+                            int ei;
+                            for(ei=0; ei<bionet_datapoint_get_num_events(old_dp); ei++){
+                                bionet_event_t * old_event = bionet_datapoint_get_event_by_index(old_dp, ei);
+                                if(NULL == old_event) {
+                                    unique = 0;
+                                    break;
+                                }
+
+                                const struct timeval * ts = bionet_event_get_timestamp(old_event);
+                                const char * old_bdm_id = bionet_event_get_bdm_id(old_event);
+                                bionet_event_type_t e_type = bionet_event_get_type(old_event);
+                                if(ts->tv_sec == event_timestamp->tv_sec
+                                && ts->tv_usec == event_timestamp->tv_usec
+                                && 0 == strcmp(old_bdm_id, bdm_id)
+                                && e_type == event_type)
+                                {
+                                    unique = 0;
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+
+                    if(unique) {
+                        // This datapoint is unique
+                        bionet_resource_add_datapoint(resource, datapoint);
                         bionet_datapoint_add_event(datapoint, event);
                     }
                 } else {

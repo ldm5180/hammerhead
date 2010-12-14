@@ -157,10 +157,9 @@ void check_hab_list_for_dp_str(
         const char * resource_id,
         const struct timeval *dp_ts,
         const struct timeval *event_ts,
-        const char * val_str)
+        const char * val_str,
+        int dp_idx)
 {
-    int r;
-    bionet_event_t * event;
 
     bionet_hab_t * hab = g_ptr_array_index(hab_list, 0);
     fail_if(NULL == hab, "No value for hab %d", 0);
@@ -184,24 +183,33 @@ void check_hab_list_for_dp_str(
 
 
     char * str;
-    struct timeval tv;
-    r = bionet_resource_get_str(resource, &str, &tv);
-    fail_unless(0 == r, "Failed to get string resource");
-    fail_if(strcmp(val_str, str), "Wrong string value for datapoint: %s", str);
-    if(dp_ts) {
-        fail_unless(0 == timeval_cmp(&tv, dp_ts), "Wrong time for datapoint");
+    bionet_datapoint_t * datapoint;
+    bionet_event_t * event;
+    
+    datapoint = bionet_resource_get_datapoint_by_index(resource, dp_idx);
+    if(NULL == val_str) {
+        fail_unless(NULL == datapoint, "Datapoint %d found when none expected", dp_idx);
+    } else {
+        fail_if(NULL == datapoint, "Failed to get datapoint pointer");
+
+        str = bionet_resource_value_to_string(resource, dp_idx);
+        fail_if(strcmp(str, val_str), 
+                    "Wrong string value for datapoint: %s", str);
+
+        if(dp_ts) {
+            struct timeval *ts = bionet_datapoint_get_timestamp(datapoint);
+            fail_unless(0 == timeval_cmp(ts, dp_ts), 
+                    "Wrong time for datapoint");
+        }
+
+        event = bionet_datapoint_get_event_by_index(datapoint, 0);
+        fail_if(NULL == event, "No event from database");
+        if(event_ts){
+            fail_unless(0 == timeval_cmp(event_ts, bionet_event_get_timestamp(event)), "Wrong time for event");
+        }
+
+        fail_unless(0 == strcmp(bdm_id, bionet_event_get_bdm_id(event)), "Wrong bdm id for event");
     }
-
-    bionet_datapoint_t * datapoint = bionet_resource_get_datapoint_by_index(resource, 0);
-    fail_if(NULL == datapoint, "Failed to get datapoint pointer");
-
-    event = bionet_datapoint_get_event_by_index(datapoint, 0);
-    fail_if(NULL == event, "No event from database");
-    if(event_ts){
-        fail_unless(0 == timeval_cmp(event_ts, bionet_event_get_timestamp(event)), "Wrong time for event");
-    }
-
-    fail_unless(0 == strcmp(bdm_id, bionet_event_get_bdm_id(event)), "Wrong bdm id for event");
 }
 
 
@@ -856,7 +864,7 @@ START_TEST (check_db_get_most_recent)
         struct timeval dp_ts = {54,5000};
         check_hab_list_for_dp_str(hab_list, 
                     "bdm-id", "hab-type", "hab-id", "node-id", "resource-id",
-                    &dp_ts, NULL, "value string 54");
+                    &dp_ts, NULL, "value string 54", 0);
     }
 
     db_shutdown(db);
@@ -897,12 +905,65 @@ START_TEST (check_db_get_most_recent_with_end_filter)
         struct timeval dp_ts = {51,5000};
         check_hab_list_for_dp_str(hab_list, 
                     "bdm-id", "hab-type", "hab-id", "node-id", "resource-id",
-                    &dp_ts, NULL, "value string 51");
+                    &dp_ts, NULL, "value string 51", 0);
     }
 
     db_shutdown(db);
 }
 END_TEST
+
+/*
+ * Request the datapoints with timestamps between a and b, 
+ * which matches exactly 1 datapoint
+ *
+ * EXPECT: The matching datapoint is returned
+ */
+START_TEST (check_db_get_most_recent_with_matching_filter)
+{
+    _insert_datapoints();
+
+    {
+        GPtrArray * hab_list;
+
+        // Datapoint timestamp filter matches nothing,
+        // but should return the newest datapoint
+        struct timeval dpstart = {54,1000};
+        struct timeval dpend = {54,9000};
+
+        hab_list = db_get_resource_datapoints(db,
+                "bdm-id", "hab-type", "hab-id", "node-id", "resource-id",
+                &dpstart, &dpend, NULL, NULL, -1, -1);
+
+        fail_if(NULL == hab_list, "Error running query");
+
+        fail_unless(hab_list->len == 1, 
+                "Wrong number of HABs returned (%d, not %d)", 
+                hab_list->len, 1);
+
+        struct timeval dp_ts = {54,5000};
+        check_hab_list_for_dp_str(hab_list, 
+                    "bdm-id", "hab-type", "hab-id", "node-id", "resource-id",
+                    &dp_ts, NULL, "value string 54", 0);
+        check_hab_list_for_dp_str(hab_list, 
+                    "bdm-id", "hab-type", "hab-id", "node-id", "resource-id",
+                    &dp_ts, NULL, NULL, 1);
+
+        int r;
+        int num_events = 0;
+        r = db_get_events(db,
+                "bdm-id", "hab-type", "hab-id", "node-id", "resource-id",
+                &dpstart, &dpend, NULL, NULL, -1, -1,
+                _DB_GET_DP_EVENTS, count_events, (void*)&num_events);
+
+        fail_unless(r == 0, "Failed to count events");
+        fail_unless(num_events == 1, "Wrong number of events: %d", num_events);
+
+    }
+
+    db_shutdown(db);
+}
+END_TEST
+
 
 void check_bdm_db_init(Suite *s) {
     TCase * tc = tcase_create ("db");
@@ -925,6 +986,7 @@ void check_bdm_db_init(Suite *s) {
 
     tcase_add_test (tc, check_db_get_most_recent);
     tcase_add_test (tc, check_db_get_most_recent_with_end_filter);
+    tcase_add_test (tc, check_db_get_most_recent_with_matching_filter);
 
 
     suite_add_tcase(s, tc);
