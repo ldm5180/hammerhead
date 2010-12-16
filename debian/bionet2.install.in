@@ -26,6 +26,9 @@ usr/lib/python*/*/timechooser.py
 usr/lib/python*/*/timespan.py
 usr/lib/python*/*/datapoints_to_dict.py
 
+usr/lib/python*/*/bdm-watcher.py
+usr/lib/python*/*/bdm-get
+usr/lib/python*/*/bionet_generators.py
 
 # HABs
 usr/bin/syshealth-hab
