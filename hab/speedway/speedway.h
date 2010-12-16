@@ -46,9 +46,9 @@ extern int set_antenna_epsilon;
 extern int set_peakrssi_delta;
 extern int set_peakrssi_epsilon;
 
-extern unsigned int peakrssi_delta;
-extern unsigned int peakrssi_epsilon;
-extern unsigned int loss_timeout;
+extern unsigned long peakrssi_delta;
+extern unsigned long peakrssi_epsilon;
+extern unsigned long loss_timeout;
 
 //extern int tag_direction;
 
