@@ -169,7 +169,9 @@ int push_send_bundle(int usrfd, Object bundleZco, char * dst_eid,
 	free(dgram);
         return -1;
     }
-    free(dgram);
+
+    // The send succeeded, so the dgram object has been handed off to the user thread.
+    // DO NOT FREE IT
     return 0;
 }
 
