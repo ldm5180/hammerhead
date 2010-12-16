@@ -31,6 +31,8 @@ int main(int argc, char * argv[])
     printf("==============================================================\n");
     printf("Starting ION for ALL checks...\n");
     fflush(stdout);
+    rc = system("killm");
+    printf("killm => %d\n", WEXITSTATUS(rc));
     rc = system("ionstart -I ion.rc");
     fflush(stdout);
     printf("ionstart => %d\n", WEXITSTATUS(rc));
@@ -53,6 +55,9 @@ int main(int argc, char * argv[])
     printf("Stopping ION\n");
     fflush(stdout);
     rc = system("ionstop");
+    printf("ionstop => %d\n", WEXITSTATUS(rc));
+    rc = system("killm");
+    printf("killm => %d\n", WEXITSTATUS(rc));
     printf("==============================================================\n");
     printf("\n");
     fflush(stdout);
