@@ -493,7 +493,7 @@ int bps_sendto(int sockfd, void *buf, size_t len, int flags,
 int bps_close(int sockfd)
 {
     int r = 0;
-    int errno_save;
+    int errno_save = errno;
     bps_socket_t * sock = bps_sock_table_lookup_fd(sockfd);
     if ( NULL == sock ) {
         errno = EBADF;
