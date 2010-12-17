@@ -127,14 +127,8 @@ def bdmplot(kwargs, bionet_resources):
     for resource in args['resource name']:
         plotargs = []
 
-        if (title != ""):
-            title += " vs "
-
         (updated, results) = datapoints_to_dict(timespan_vals, resource, args['timespan'], args["regexp"], bionet_resources)
-        title += resource
-        if (args['resource name'].index(resource) == (len(args['resource name'])-1)):
-            f.suptitle(title, fontsize=12)
-
+        
         # if it hasn't been updated then just use the cached image
         if (updated == False):
             return (fname, args['format'])
