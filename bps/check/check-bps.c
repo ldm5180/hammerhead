@@ -33,6 +33,7 @@ int main(int argc, char * argv[])
     fflush(stdout);
     rc = system("killm");
     printf("killm => %d\n", WEXITSTATUS(rc));
+    sleep(7);
     rc = system("ionstart -I ion.rc");
     fflush(stdout);
     printf("ionstart => %d\n", WEXITSTATUS(rc));
