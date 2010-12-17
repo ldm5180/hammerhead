@@ -23,14 +23,24 @@ LDCONFIG_EXE = /sbin/ldconfig
 endif
 
 if ENABLE_DOXYGEN
-doc_DATA = doc/quickstart.html doxygen/html/index.html $(DOXYGEN_FILES)
+doc_DATA = doc/quickstart.html
+
 DOXYGEN_INPUT = $(top_srcdir)/libbionet/bionet.h $(top_srcdir)/libhab/hardware-abstractor.h $(top_srcdir)/libbdm/bdm-client.h $(top_srcdir)/util/bionet-bdm.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-util.h $(top_srcdir)/mainpage.h $(top_srcdir)/bps/bps_socket.h
+if DISABLE_DOT
+DOXYFILE = Doxyfile.nodot
+else
 DOXYFILE = Doxyfile
 endif
 
-if DISABLE_DOT
-DOXYFILE = Doxyfile.nodot
-endif
+install-data-local: 
+	$(MKDIR_P) $(DESTDIR)$(docdir)
+	for f in doxygen/html/*; do \
+	   $(INSTALL_DATA) $(srcdir)/$$f $(DESTDIR)$(docdir)/.; \
+	done 
+
+endif 
+#end ENABLE_DOXYGEN
+
 
 all-local: $(DOXYGEN_INPUT) doxygen/html/index.html
 
