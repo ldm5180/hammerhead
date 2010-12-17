@@ -5,7 +5,7 @@ from twisted.protocols import basic
 from twisted.web import server, resource
 from twisted.web.static import File
 from twisted.web.server import Site
-from twisted.web.resource import Resource
+from twisted.web.resource import Resource as TwistedResource
 
 import time
 
@@ -123,7 +123,7 @@ def main():
     
     full = Datapoints()
     
-    root = Resource()
+    root = TwistedResource()
     root.putChild('bdmplot', full)
     factory = Site(root)
     
