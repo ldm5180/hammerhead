@@ -4,3 +4,5 @@ if [ "$1" = "configure" ]; then
     mkdir -p /var/lib/bionet
     chmod -R 2777 /var/lib/bionet
 fi
+
+#DEBHELPER#

@@ -8,4 +8,4 @@ if [ "$1" = "purge" ]; then
     rm -f $BDM_DB_FILE
 fi
 
-
+#DEBHELPER#

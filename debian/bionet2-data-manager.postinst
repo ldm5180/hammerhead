@@ -17,3 +17,4 @@ if [ "$1" = "configure" ]; then
     update-alternatives --install /etc/bdm.ini bdm.ini /etc/bdm.ini.default       50
 fi
 
+#DEBHELPER#

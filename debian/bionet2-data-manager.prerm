@@ -8,4 +8,4 @@ if [ "$1" = "remove" ]; then
     update-alternatives --remove bdm.ini /etc/bdm.ini.default
 fi
 
-
+#DEBHELPER#
