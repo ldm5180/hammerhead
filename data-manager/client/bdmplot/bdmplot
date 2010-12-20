@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from sys import exit
+
 from twisted.internet import reactor, interfaces, protocol
 from twisted.protocols import basic
 from twisted.web import server, resource
@@ -12,6 +14,7 @@ import time
 from twisted_bdm_client import *
 from bdm_client import *
 from bdmplot_callback_cacher import *
+import bdmplot_daemon
 import bdmplot_lib
 
 import optparse
@@ -95,7 +98,11 @@ class Datapoints(resource.Resource):
         return f.read()
         #return retval
 
-def main():
+class BdmplotDaemon(bdmplot_daemon.Daemon):
+    def run(self):
+        main()
+
+def startup():
     global options
 
     # parse options 
@@ -108,10 +115,26 @@ def main():
                       help=optparse.SUPPRESS_HELP,
                       metavar="<ID>",
                       default="*")
+    parser.add_option("-d", action="store_true", dest="daemonize",
+                      help="Become a daemon",
+                      default=False)
+    parser.add_option("-k", action="store_true", dest="killdaemon",
+                      help="Kill the running bdmplot daemon",
+                      default=False)
     
     (options, args) = parser.parse_args()
 
+    daemon = BdmplotDaemon('/var/run/bdmplot.pid', stderr='/var/log/bdmplot.log')
+    if(options.killdaemon == True):
+        daemon.stop()
+        exit(0)
 
+    if(options.daemonize == True):
+        daemon.start()
+    else:
+        main()
+
+def main():
     twisted_bdmclient = BdmClient()
 
     #register BDM callbacks
@@ -134,4 +157,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    startup()

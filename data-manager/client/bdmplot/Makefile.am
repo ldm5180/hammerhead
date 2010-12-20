@@ -10,6 +10,7 @@ python_PYTHON = bdmplot_lib.py \
 	bdmplot_callback_cacher.py \
 	prune_datapoints.py \
 	bdmplot_timespan.py \
+	bdmplot_daemon.py \
 	bdmplot_datapoints_to_dict.py
 
 bin_SCRIPTS = bdmplot

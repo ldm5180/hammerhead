@@ -1,23 +1,41 @@
 #!/bin/sh
+PIDFILE=/var/run/bdmplot.pid
 
 case "$1" in
 
     start)
         echo -n "Starting bdmplot: "
-        bdmplot --default-bdm-id $(hostname) &
+        bdmplot --default-bdm-id $(hostname) -d &
         # sleep for a while here so that it can initialize and be ready to publish to any subscribers
         sleep 1
-        echo ok
+        if [ -e $PIDFILE ] && [ -e /proc/$(cat $PIDFILE) ]; then
+            echo ok
+        else
+            echo "Error (see /var/log/bdmplot.log)"
+        fi
         ;;
 
     stop)
         echo -n "Stopping bdmplot: "
-        kill `pidof -x bdmplot`
-        echo ok
+        if bdmplot -k; then
+            echo ok
+        fi
+        ;;
+
+    restart)
+        $0 stop && $0 start && exit 0
+        ;;
+
+    status)
+        if [ -e PIDFILE ] && [ -e /proc/$(cat $PIDFILE) ]; then
+            echo "Bdmplot: running"
+        else
+            echo "Bdmplot: not running"
+        fi
         ;;
 
     *)
-        echo "Usage: $0 {start|stop}"
+        echo "Usage: $0 {start|stop|restart|status}"
         exit 1
 
 esac
