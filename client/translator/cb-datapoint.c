@@ -33,9 +33,8 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
         // Wasn't state resource so must be a calibration 
 
         // use resource name to find adc number (0-15)
-        //ep = hsearch(e, FIND);
-        //adc_id = (unsigned long int)ep->data;
-        adc_id = 0;
+        adc_id = (unsigned long int)g_hash_table_lookup(hash_table, res_name);
+	printf("%s mapped to %ld.\n", res_name, adc_id);
     
         // use resource name to find calibration constant number (0-6)
         id[0] = res_name[19];
@@ -57,10 +56,9 @@ void cb_datapoint(bionet_datapoint_t *datapoint)
     else if(strcmp(node_name, "potentiometers") == 0)
     {
         // extract pot number from resource name (0-15)
-        //ep = hsearch(e, FIND);
-        //pot_id = (unsigned long int)ep->data;
-        pot_id = 0;
-       
+        pot_id = (unsigned long int)g_hash_table_lookup(hash_table, res_name);
+	printf("%s mapped to %ld.\n", res_name, pot_id);
+        
         // store the resource
         proxr_resource[pot_id] = resource;
 

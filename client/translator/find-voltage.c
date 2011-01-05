@@ -1,7 +1,7 @@
 #include "translator.h"
 #include <stdlib.h>
 
-double find_voltage(int adc, double ev)
+double find_voltage(unsigned long int adc, double ev)
 {
     // two types of cooked values are generated in the table
     // type one increases as voltage increases and type to decreases as voltage increases

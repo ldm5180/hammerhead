@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdint.h>
 #include <math.h>
 #include <unistd.h>
 #include <string.h>
@@ -129,31 +128,40 @@ int main(int argc, char* argv[])
     // build hash table
     // map translator_adc resources to 0-15
     hash_table = g_hash_table_new(g_str_hash, g_str_equal);
-    int r = 0;
-    //int jj = 0;
+    unsigned long int r = 0;
+    int jj = 0;
     for(; r<16; r++)
     {
+        //unsigned long int x = r;
         // add translator resource names to hash table
-        g_hash_table_insert(hash_table, default_settings->translator_adc[r], &r);
+        g_hash_table_insert(hash_table, default_settings->translator_adc[r], (gpointer)r);
 
         // add proxr resource names to hash table
-        g_hash_table_insert(hash_table, default_settings->proxr_adc[r], &r);
+        g_hash_table_insert(hash_table, default_settings->proxr_adc[r], (gpointer)r);
 
         // map each calibration resource  to 0-15
         // each calibration resource has 7 calibration constants
-        /*int oldjj = jj;
-        for(; jj<oldjj+7; jj++)
+        int prev_jj = jj;
+        for(; jj<prev_jj+7; jj++)
         {
-            g_hash_table_insert(hash_table, default_settings->dmm_calibrations[jj], &r);
-        }*/
+            g_hash_table_insert(hash_table, default_settings->dmm_calibrations[jj], (gpointer)r);
+        }
     }
 
+    /*unsigned long int test;
     for(int i=0; i<16; i++)
     {   
-        int *test = g_hash_table_lookup(hash_table, default_settings->translator_adc[i]);
-        printf("%s mapped to %d.\n", default_settings->translator_adc[i], *test);
+        test = (unsigned long int)g_hash_table_lookup(hash_table, default_settings->translator_adc[i]);
+        printf("%s mapped to %ld.\n", default_settings->translator_adc[i], test);
+	test = (unsigned long int)g_hash_table_lookup(hash_table, default_settings->proxr_adc[i]);
+	printf("%s mapped to %ld.\n", default_settings->proxr_adc[i], test);
     }
 
+    for(int i=0; i<112; i++)
+    {
+	test = (unsigned long int)g_hash_table_lookup(hash_table, default_settings->dmm_calibrations[i]);
+	printf("%s mapped to %ld.\n", default_settings->dmm_calibrations[i], test);
+    }*/
         
 
     // register callbacks
@@ -208,9 +216,7 @@ int main(int argc, char* argv[])
     create_node(hab, "translator");
 
     g_message("%s connected to Bionet!", bionet_hab_get_name(hab));
-    printf("2 ^ 3 = %f\n", pow(2, 3));
-    printf("4.73 ^ 12 = %f\n", pow(4.73,12));
-    printf("32.01 ^ 1.54 = %f\n", pow(32.01, 1.54));
+
 
     while(1)
     {

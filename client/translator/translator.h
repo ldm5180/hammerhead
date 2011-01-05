@@ -43,9 +43,9 @@ bionet_resource_t* create_range_resource(bionet_node_t *node, char *name);
 bionet_resource_t* create_state_resource(bionet_node_t *node, char *name);
 
 //translation stuff
-void set_calibration_const(int adc, int calib, double constant);
-void generate_table(int adc);
-double find_voltage(int adc, double value);
+void set_calibration_const(unsigned long int adc, unsigned long int calib, double constant);
+void generate_table(unsigned long int adc);
+double find_voltage(unsigned long int adc, double value);
 
 //misc
 int translator_read_ini(char *config_file);

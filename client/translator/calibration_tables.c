@@ -1,7 +1,7 @@
 #include "translator.h"
 #include <math.h>
 
-void set_calibration_const(int adc, int calib, double constant)
+void set_calibration_const(unsigned long int adc, unsigned long int calib, double constant)
 {
     // set constant
     calibration_const[adc][calib] = constant;
@@ -9,7 +9,7 @@ void set_calibration_const(int adc, int calib, double constant)
     generate_table(adc);
 }
 
-void generate_table(int adc)
+void generate_table(unsigned long int adc)
 {
     for(int i=0; i<256; i++)
     {
