@@ -29,8 +29,8 @@ void bionet_glib_log_handler(
     FILE* log_file = stdout;
 
     static bionet_log_context_t default_log_context = {
-        destination: BIONET_LOG_TO_STDOUT,
-        log_limit: G_LOG_LEVEL_INFO
+        .destination = BIONET_LOG_TO_STDOUT,
+        .log_limit = G_LOG_LEVEL_INFO
     };
 
     bionet_log_context_t *lc;

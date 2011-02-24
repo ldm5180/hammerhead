@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 	server.sin_port = htons(port);
 
 	if (bind(parsec_fd, (struct sockaddr*)&server, sizeof(server)) != 0) {
-        g_critical("Can't bind to port %hu, quitting./n", port);
+	  g_critical("Can't bind to port %hu, quitting./n", (unsigned short)port);
         exit(3);	
 	}
 

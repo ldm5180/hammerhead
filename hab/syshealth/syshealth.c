@@ -87,8 +87,8 @@ int main(int argc, char **argv) {
     int publish_info = 0;
 
     bionet_log_context_t log_context = {
-        destination: BIONET_LOG_TO_SYSLOG,
-        log_limit: G_LOG_LEVEL_INFO
+        .destination = BIONET_LOG_TO_SYSLOG,
+        .log_limit = G_LOG_LEVEL_INFO
     };
 
 

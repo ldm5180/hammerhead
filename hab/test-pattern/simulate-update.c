@@ -43,7 +43,7 @@ void new_node(struct new_node_event_t *event, struct timeval *tv) {
 
     if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
         g_message("new node: %s", bionet_node_get_name(node));
-    if ((output_mode == OM_BDM_CLIENT)){
+    if (output_mode == OM_BDM_CLIENT){
         timeval_as_str(NULL, time_str, sizeof(time_str));
         g_message("%s,+N,%s", time_str, bionet_node_get_name(node));
     }
@@ -317,7 +317,7 @@ void simulate_updates(gpointer data, gpointer user_data) {
 		
 		if ((output_mode == OM_BIONET_WATCHER) || (output_mode == OM_NODES_ONLY))
 		    g_message("lost node: %s", bionet_node_get_name(bionet_hab_get_node_by_id(hab, lost_event->id)));
-                if ((output_mode == OM_BDM_CLIENT)){
+                if (output_mode == OM_BDM_CLIENT){
                     char time_str[64];
                     timeval_as_str(NULL, time_str, sizeof(time_str));
                     g_message("%s,-N,%s", time_str, bionet_node_get_name(bionet_hab_get_node_by_id(hab, lost_event->id)));

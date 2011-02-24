@@ -38,37 +38,37 @@ struct cpod_data
 }__attribute__ ((packed));
 
 
-inline int is_blood_pressure(uint8_t flags)
+static inline int is_blood_pressure(uint8_t flags)
 {
     return flags & 0x08;
 }
 
-inline int is_gps_data(uint8_t flags)
+static inline int is_gps_data(uint8_t flags)
 {
     return flags & 0x10;
 }
 
-inline int is_co2_data(uint8_t flags)
+static inline int is_co2_data(uint8_t flags)
 {
     return flags & 0x20;
 }
 
-inline int is_event(uint8_t flags)
+static inline int is_event(uint8_t flags)
 {
     return flags & 0x01;
 }
 
-inline int lost_data(uint8_t flags)
+static inline int lost_data(uint8_t flags)
 {
     return flags & 0x02;
 }
 
-inline uint16_t first_group(uint16_t data)
+static inline uint16_t first_group(uint16_t data)
 {
     return g_ntohs(data) >> 4;
 }
 
-inline uint16_t second_group(uint16_t data)
+static inline uint16_t second_group(uint16_t data)
 {
     return g_ntohs(data) & 0x0fff;
 }

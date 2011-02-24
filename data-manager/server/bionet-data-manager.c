@@ -629,8 +629,8 @@ int main(int argc, char *argv[]) {
     int switch_to_syslog = 1;
 
     bdm_log_context_t lc = {
-        log_to: stdout,
-        log_limit: G_LOG_LEVEL_INFO
+        .log_to = stdout,
+        .log_limit = G_LOG_LEVEL_INFO
     };
 
     //bionet_log_use_default_handler(&lc);

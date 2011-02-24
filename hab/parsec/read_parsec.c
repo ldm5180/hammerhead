@@ -66,7 +66,7 @@ void read_parsec(int fd) {
 	  return;
 	}
 
-	snprintf(char_id, 16, "%hd", id);
+	snprintf(char_id, 16, "%hd", (short)id);
 
 	node = bionet_hab_get_node_by_id(parsec_hab, char_id);
 	if (node == NULL) {

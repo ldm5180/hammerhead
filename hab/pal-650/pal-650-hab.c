@@ -37,9 +37,9 @@ int main(int argc, char *argv[]) {
 
     // this writes the log messages to the correct location
     bionet_log_context_t log_context = {
-        // destination: BIONET_LOG_TO_SYSLOG,
-        destination: BIONET_LOG_TO_STDOUT,
-        log_limit: G_LOG_LEVEL_INFO
+        // .destination = BIONET_LOG_TO_SYSLOG,
+        .destination = BIONET_LOG_TO_STDOUT,
+        .log_limit = G_LOG_LEVEL_INFO
     };
 
     bionet_log_use_default_handler(&log_context);

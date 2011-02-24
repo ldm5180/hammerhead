@@ -83,8 +83,8 @@ int main(int argc, char *argv[]) {
     struct simulate_updates_args_t simulate_updates_args; 
 
     bionet_log_context_t log_context = {
-        destination: BIONET_LOG_TO_STDOUT,
-        log_limit: G_LOG_LEVEL_INFO
+        .destination = BIONET_LOG_TO_STDOUT,
+        .log_limit = G_LOG_LEVEL_INFO
     };
     bionet_log_use_default_handler(&log_context);
 
@@ -268,7 +268,7 @@ int main(int argc, char *argv[]) {
 
     if (output_mode == OM_BIONET_WATCHER)
         g_message("new hab: %s", bionet_hab_get_name(hab));
-    if ((output_mode == OM_BDM_CLIENT)){
+    if (output_mode == OM_BDM_CLIENT){
         char time_str[64];
         timeval_as_str(NULL, time_str, sizeof(time_str));
         g_message("%s,+H,%s", time_str, bionet_hab_get_name(hab));
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
     
     if (output_mode == OM_BIONET_WATCHER)
         g_message("lost hab: %s", bionet_hab_get_name(hab));
-    if ((output_mode == OM_BDM_CLIENT)){
+    if (output_mode == OM_BDM_CLIENT){
         char time_str[64];
         timeval_as_str(NULL, time_str, sizeof(time_str));
         g_message("%s,-H,%s", time_str, bionet_hab_get_name(hab));
