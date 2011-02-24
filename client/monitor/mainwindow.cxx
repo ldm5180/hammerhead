@@ -179,10 +179,10 @@ OPTIONS:\n\
 
 
 void MainWindow::about() {
-    QMessageBox::about(this, tr("BioNet Monitor How-To"), 
-        "The BioNet-Monitor program is a graphical \n\
+    QMessageBox::about(this, tr("Bionet Monitor How-To"), 
+        "The Bionet-Monitor program is a graphical \n\
 user interface client for viewing and \n\
-commanding BioNet sensors, parameters, \n\
+commanding Bionet sensors, parameters, \n\
 and actuators.\n\
 \n\
 For command line options run \n\
@@ -202,7 +202,7 @@ field on the right.");
 
 
 void MainWindow::cuts() {
-    QMessageBox::about(this, tr("BioNet Monitor Shortcuts"), "Space \t Plot (when \"Plot\" button is active)\n\
+    QMessageBox::about(this, tr("Bionet Monitor Shortcuts"), "Space \t Plot (when \"Plot\" button is active)\n\
 Tab   \t Alternate Panes\n\
 Ctrl-P\t Plot active resource\n\
 Ctrl-W\t Close active window\n\
