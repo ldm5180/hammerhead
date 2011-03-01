@@ -152,36 +152,6 @@ static GOptionEntry entries[] = {
 	"ID of Bionet Data Manager",
         "ID"
     },
-    {"habs",               'h', 
-        0, G_OPTION_ARG_STRING_ARRAY, &filter_patterns, 
-	"DEPRECATED. Use --filter instead",
-        "pattern"
-    },
-    {"hab",                'h', 
-        0, G_OPTION_ARG_STRING_ARRAY, &filter_patterns, 
-	"DEPRECATED. Use --filter instead",
-        "pattern"
-    },
-    {"nodes",              'n', 
-        0, G_OPTION_ARG_STRING_ARRAY, &filter_patterns,
-	"DEPRECATED. Use --filter instead",
-        "pattern"
-    },
-    {"node",               'n', 
-        0, G_OPTION_ARG_STRING_ARRAY, &filter_patterns,
-	"DEPRECATED. Use --filter instead",
-        "pattern"
-    },
-    {"resources",          'r', 
-        0, G_OPTION_ARG_STRING_ARRAY, &filter_patterns,
-	"DEPRECATED. Use --filter instead",
-        "pattern"
-    },
-    {"resource",           0, 
-        0, G_OPTION_ARG_STRING_ARRAY, &filter_patterns,
-	"DEPRECATED. Use --filter instead",
-        "pattern"
-    },
     {"filter",             'l', 
         0, G_OPTION_ARG_STRING_ARRAY, &filter_patterns,
 	"\"HAB-Type.HAB-ID.Node-ID:Resource-ID\"" HELP_WRAP
