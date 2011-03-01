@@ -32,7 +32,7 @@
 #include "syshealth.h"
 
 
-
+char *hab_id = NULL;
 
 typedef struct {
     char *name;
@@ -66,8 +66,9 @@ void usage(FILE * fp) {
 	    "\n"
 	    "usage: syshealth-hab [OPTIONS]\n"
 	    "\n"
-	    "-d,--delay <sec>         Wait N seconds between updates.  Default is 300\n"
-	    "-i,--info                Publish Bionet library information\n"
+	    "-d,--delay <sec>         Wait N seconds between updates. (default: 300)\n"
+	    "-b,--info                Publish Bionet library information\n"
+	    "-i,--id <HAB-ID>         HAB ID (default: hostname)\n"
 	    "-h,--help                Show this help and exit\n"
 	    "-s,--security-dir <dir>  Directory containing security certificates\n"
 	    "-v,--version             Show the version number\n");
@@ -106,7 +107,8 @@ int main(int argc, char **argv) {
 	    {"verison", 0, 0, 'v'},
 	    {"delay", 1, 0, 'd'},
 	    {"security-dir", 1, 0, 's'},
-	    {"info", 0, 0, 'i'},
+	    {"info", 0, 0, 'b'},
+	    {"id", 1, 0, 'i'},
 	    {0, 0, 0, 0} //this must be last in the list
 	};
 
@@ -122,6 +124,10 @@ int main(int argc, char **argv) {
 	    usage(stdout);
 	    return 0;
 
+	case 'b':
+	    publish_info = 1;
+	    break;
+
 	case 'd':
 	    seconds_to_sleep = strtol(optarg, NULL, 0);
 	    if (LONG_MIN == seconds_to_sleep || LONG_MAX == seconds_to_sleep) {
@@ -131,7 +137,7 @@ int main(int argc, char **argv) {
 	    break;
 
 	case 'i':
-	    publish_info = 1;
+	    hab_id = optarg;
 	    break;
 
 	case 's':
@@ -158,7 +164,7 @@ int main(int argc, char **argv) {
     //
 
     { 
-        hab = bionet_hab_new("syshealth", NULL);
+        hab = bionet_hab_new("syshealth", hab_id);
         if (hab == NULL) {
             g_log("", G_LOG_LEVEL_ERROR, "error creating the hab");
             exit(1);
