@@ -602,4 +602,53 @@ typedef struct timeval
 	return hab;	
     }
 
+    Hab * hab(const char * hab_name) {
+	Hab * hab = NULL;
+
+	/* split the name */
+	char type[BIONET_NAME_COMPONENT_MAX_LEN];
+	char id[BIONET_NAME_COMPONENT_MAX_LEN];
+	if (bionet_split_hab_name_r(hab_name, type, id)) {
+	    return NULL;
+	}
+
+	bionet_hab_t * h = bdm_cache_lookup_hab(type, id);
+	if (NULL == h) {
+	    return NULL;
+	}
+	
+	hab = bionet_hab_get_user_data(h);
+
+	if (NULL == hab) {
+	    hab = (Hab *)calloc(1, sizeof(Hab));
+	    if (NULL == hab) {
+		return NULL;
+	    }
+	    hab->this = h;
+	    bionet_hab_set_user_data(hab->this, hab);
+	}
+
+	return hab;	
+    }
+
+    Node * node(const char *hab_type, const char *hab_id, const char *node_id) {
+	// TODO not yet implemented
+	return NULL;
+    }
+
+    Node * node(const char *node_name) {
+	// TODO not yet implemented
+	return NULL;
+    }
+
+    Resource * resource(const char *hab_type, const char *hab_id, const char *node_id, const char * resource_id) {
+	// TODO not yet implemented
+	return NULL;
+    }
+
+    Resource * resource(const char *resource_name) {
+	// TODO not yet implemented
+	return NULL;
+    }
+
 }
