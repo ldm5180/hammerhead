@@ -452,6 +452,10 @@ typedef struct timeval
 	return bdm_subscribe_datapoints_by_name(resource_name, NULL, &tv_end);
     }
 
+    int subscribe(const char * resource_name) {
+	return bdm_subscribe_datapoints_by_name(resource_name, NULL, NULL);
+    }
+
     unsigned int numBdms() {
 	return bdm_cache_get_num_bdms();
     }
