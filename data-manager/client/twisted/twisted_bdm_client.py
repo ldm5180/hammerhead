@@ -45,9 +45,11 @@ from bdm_client import *
 class BdmClient():
     """twisted_bionet.Client eats a Bionet Client and implements the
     twisted.internet.interfaces.IReadDescriptor interface."""
-
+    bdm = None
+    
     def __init__(self):
-        self.bdm_fd = bdm_start()
+        self.bdm = BdmSubscriber()
+        self.bdm_fd = self.bdm.fd
         if self.bdm_fd < 0:
             # FIXME: retry later?
             print "problem connecting to BDM, exiting"
