@@ -452,8 +452,62 @@ typedef struct timeval
 	return bdm_subscribe_datapoints_by_name(resource_name, NULL, &tv_end);
     }
 
+    int subscribe(const char * resource_name, float start_time, float end_time) {
+	struct timeval tv_start;
+	struct timeval tv_end;
+
+	tv_start.tv_sec = (time_t)start_time;
+	tv_start.tv_usec = (suseconds_t)((start_time - (float)tv_start.tv_sec) * 1000000);
+
+	tv_end.tv_sec = (time_t)end_time;
+	tv_end.tv_usec = (suseconds_t)((end_time - (float)tv_end.tv_sec) * 1000000);
+
+
+	return bdm_subscribe_datapoints_by_name(resource_name, &tv_start, &tv_end);
+    }
+
+    int subscribe(const char * resource_name, float start_time, void * Null) {
+	struct timeval tv_start;
+
+	tv_start.tv_sec = (time_t)start_time;
+	tv_start.tv_usec = (suseconds_t)((start_time - (float)tv_start.tv_sec) * 1000000);
+
+	return bdm_subscribe_datapoints_by_name(resource_name, &tv_start, NULL);
+    }
+
+    int subscribe(const char * resource_name, void * Null, float end_time) {
+	struct timeval tv_end;
+
+	tv_end.tv_sec = (time_t)end_time;
+	tv_end.tv_usec = (suseconds_t)((end_time - (float)tv_end.tv_sec) * 1000000);
+
+
+	return bdm_subscribe_datapoints_by_name(resource_name, NULL, &tv_end);
+    }
+
     int subscribe(const char * resource_name) {
-	return bdm_subscribe_datapoints_by_name(resource_name, NULL, NULL);
+	int r;
+	char peer_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+	char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+	char hab_type[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+	char hab_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+	char node_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+	char resource_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+
+	r = bdm_split_resource_name_r(resource_name,
+				      peer_id, bdm_id,
+				      hab_type, hab_id,
+				      node_id, resource_id);
+
+	if (hab_type[0] && hab_id[0] && node_id[0] && resource_id[0]) {
+	    return bdm_subscribe_datapoints_by_name(resource_name, NULL, NULL);
+	} else if (hab_type[0] && hab_id[0] && node_id[0]) {
+	    return bdm_subscribe_node_list_by_name(resource_name);
+	} else if (hab_type[0] && hab_id[0]) {
+	    return bdm_subscribe_hab_list_by_name(resource_name);
+	}
+
+	return 1;
     }
 
     unsigned int numBdms() {
