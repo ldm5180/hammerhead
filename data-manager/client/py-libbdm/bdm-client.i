@@ -486,7 +486,6 @@ typedef struct timeval
     }
 
     int subscribe(const char * resource_name) {
-	int r;
 	char peer_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
 	char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
 	char hab_type[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
@@ -494,10 +493,10 @@ typedef struct timeval
 	char node_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
 	char resource_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
 
-	r = bdm_split_resource_name_r(resource_name,
-				      peer_id, bdm_id,
-				      hab_type, hab_id,
-				      node_id, resource_id);
+	bdm_split_resource_name_r(resource_name,
+				  peer_id, bdm_id,
+				  hab_type, hab_id,
+				  node_id, resource_id);
 
 	if (hab_type[0] && hab_id[0] && node_id[0] && resource_id[0]) {
 	    return bdm_subscribe_datapoints_by_name(resource_name, NULL, NULL);
@@ -632,23 +631,106 @@ typedef struct timeval
     }
 
     Node * node(const char *hab_type, const char *hab_id, const char *node_id) {
-	// TODO not yet implemented
-	return NULL;
+	Node * node = NULL;
+	bionet_node_t * n = bdm_cache_lookup_node(hab_type, hab_id, node_id);
+	if (NULL == n) {
+	    return NULL;
+	}
+	
+	node = bionet_node_get_user_data(n);
+
+	if (NULL == node) {
+	    node = (Node *)calloc(1, sizeof(Node));
+	    if (NULL == node) {
+		return NULL;
+	    }
+	    node->this = n;
+	    bionet_node_set_user_data(node->this, node);
+	}
+
+	return node;	
     }
 
     Node * node(const char *node_name) {
-	// TODO not yet implemented
-	return NULL;
-    }
+	Node * node = NULL;
+	
+	char hab_type[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+	char hab_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+	char node_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+
+	bionet_split_node_name_r(node_name,
+				 hab_type, hab_id,
+				 node_id);
+
+	bionet_node_t * n = bdm_cache_lookup_node(hab_type, hab_id, node_id);
+	if (NULL == n) {
+	    return NULL;
+	}
+	
+	node = bionet_node_get_user_data(n);
+
+	if (NULL == node) {
+	    node = (Node *)calloc(1, sizeof(Node));
+	    if (NULL == node) {
+		return NULL;
+	    }
+	    node->this = n;
+	    bionet_node_set_user_data(node->this, node);
+	}
+
+	return node;	
+     }
 
     Resource * resource(const char *hab_type, const char *hab_id, const char *node_id, const char * resource_id) {
-	// TODO not yet implemented
-	return NULL;
+	Resource * resource = NULL;
+	bionet_resource_t * r = bdm_cache_lookup_resource(hab_type, hab_id, node_id, resource_id);
+	if (NULL == r) {
+	    return NULL;
+	}
+	
+	resource = bionet_resource_get_user_data(r);
+
+	if (NULL == resource) {
+	    resource = (Resource *)calloc(1, sizeof(Resource));
+	    if (NULL == resource) {
+		return NULL;
+	    }
+	    resource->this = r;
+	    bionet_resource_set_user_data(resource->this, resource);
+	}
+
+	return resource;	
     }
 
     Resource * resource(const char *resource_name) {
-	// TODO not yet implemented
-	return NULL;
+	Resource * resource = NULL;
+
+	char hab_type[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+	char hab_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+	char node_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+	char resource_id[BIONET_NAME_COMPONENT_MAX_LEN] = "\0";
+
+	bionet_split_resource_name_r(resource_name,
+				     hab_type, hab_id,
+				     node_id, resource_id);
+
+	bionet_resource_t * r = bdm_cache_lookup_resource(hab_type, hab_id, node_id, resource_id);
+	if (NULL == r) {
+	    return NULL;
+	}
+	
+	resource = bionet_resource_get_user_data(r);
+
+	if (NULL == resource) {
+	    resource = (Resource *)calloc(1, sizeof(Resource));
+	    if (NULL == resource) {
+		return NULL;
+	    }
+	    resource->this = r;
+	    bionet_resource_set_user_data(resource->this, resource);
+	}
+
+	return resource;	
     }
 
 }

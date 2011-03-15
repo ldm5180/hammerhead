@@ -551,5 +551,35 @@ bionet_hab_t *bdm_cache_get_hab_by_index(unsigned int index);
 bionet_hab_t *bdm_cache_lookup_hab(const char *hab_type, const char *hab_id);
 
 
+/**
+ * @brief Looks through the locally cached information for a specific Node.
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ * @param[in] node_id The Node-ID to look up
+ *
+ * @return Pointer to the NULL if found
+ * @retval NULL Not found
+ */
+bionet_node_t *bdm_cache_lookup_node(const char *hab_type, const char *hab_id,
+				    const char * node_id);
+
+
+/**
+ * @brief Looks through the locally cached information for a specific Resource.
+ *
+ * @param[in] hab_type The HAB-Type to look up
+ * @param[in] hab_id The HAB-ID to look up
+ * @param[in] node_id The Node-ID to look up
+ * @param[in] resource_id The Resource-ID to look up
+ *
+ * @return Pointer to the NULL if found
+ * @retval NULL Not found
+ */
+bionet_resource_t *bdm_cache_lookup_resource(const char *hab_type, const char *hab_id,
+					     const char * node_id,
+					     const char * resource_id);
+
+
 #endif
 
