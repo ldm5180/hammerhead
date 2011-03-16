@@ -504,10 +504,17 @@ int bdm_subscribe_datapoints_by_name(const char * resource_name,
  * "<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>" where any component may be
  * the wildcard "*".
  *
+ * @param[in] start_time Only report datapoints with a timestamp after this value. May be NULL
+ * for no start filter
+ *
+ * @param[in] stop_time Only report datapoints with a timestamp before this value. May be NULL
+ * for no stop filter
+ *
  * @retval 0 Success
  * @retval -1 Error
  */
-int bdm_unsubscribe_datapoints_by_name(const char *resource_name);
+int bdm_unsubscribe_datapoints_by_name(const char *resource_name,
+				       struct timeval *start_time, struct timeval *stop_time);
 
 
 /**

@@ -20,7 +20,9 @@ int bdm_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *pe
 								  const char *hab_type,
 								  const char *hab_id, 
 								  const char *node_id, 
-								  const char *resource_id) {
+								  const char *resource_id,
+								  struct timeval *datapoint_start,
+								  struct timeval *datapoint_end) {
     int r;
     char topic[(BIONET_NAME_COMPONENT_MAX_LEN * 2) + 2];  // the +2 is one for the leading "D " to specify the subscription family
     GSList *i = libbdm_datapoint_subscriptions;
@@ -62,8 +64,24 @@ int bdm_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *pe
 
         libbdm_cache_cleanup_nodes();
 
-        r = snprintf(topic, sizeof(topic), "D %s/%s.%s.%s:%s", 
-		     bdm_id, hab_type, hab_id, node_id, resource_id);
+	if ( datapoint_start && datapoint_end ) {
+	    r = snprintf(topic, sizeof(topic), "D %s/%s.%s.%s:%s?dpstart=%ld.%06ld&dpend=%ld.%06ld", 
+			 bdm_id, hab_type, hab_id, node_id, resource_id,
+			 (long)datapoint_start->tv_sec, (long)datapoint_start->tv_usec,
+			 (long)datapoint_end->tv_sec, (long)datapoint_end->tv_usec);
+	} else if ( datapoint_start ) {
+	    r = snprintf(topic, sizeof(topic), "D %s/%s.%s.%s:%s?dpstart=%ld.%06ld",
+			 bdm_id, hab_type, hab_id, node_id, resource_id,
+			 (long)datapoint_start->tv_sec, (long)datapoint_start->tv_usec);
+	} else if ( datapoint_end ) {
+	    r = snprintf(topic, sizeof(topic), "D %s/%s.%s.%s:%s?dpend=%ld.%06ld",
+			 bdm_id, hab_type, hab_id, node_id, resource_id,
+			 (long)datapoint_end->tv_sec, (long)datapoint_end->tv_usec);
+	} else {
+	    r = snprintf(topic, sizeof(topic), "D %s/%s.%s.%s:%s", 
+			 bdm_id, hab_type, hab_id, node_id, resource_id);
+	}
+
         if (r >= sizeof(topic)) {
             g_log(BIONET_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
 		  "%s: topic '%s:%s' too long", 
@@ -80,12 +98,12 @@ int bdm_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *pe
 
     errno = ENOENT;
     return -1;
-}
+} /* bdm_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid() */
 
 
-
-
-int bdm_unsubscribe_datapoints_by_name(const char *resource_name) {
+int bdm_unsubscribe_datapoints_by_name(const char *resource_name, 
+				       struct timeval *datapoint_start,
+				       struct timeval *datapoint_end) {
     char peer_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char bdm_id[BIONET_NAME_COMPONENT_MAX_LEN];
     char hab_type[BIONET_NAME_COMPONENT_MAX_LEN];
@@ -102,6 +120,7 @@ int bdm_unsubscribe_datapoints_by_name(const char *resource_name) {
 
     return bdm_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid(peer_id, bdm_id, 
 									 hab_type, hab_id, 
-									 node_id, resource_id);
-}
+									 node_id, resource_id,
+									 datapoint_start, datapoint_end);
+} /* bdm_unsubscribe_datapoints_by_name() */
 

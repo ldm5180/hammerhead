@@ -71,7 +71,9 @@ int bdm_unsubscribe_datapoints_by_habtype_habid_nodeid_resourceid(const char *pe
 								  const char *hab_type,
 								  const char *hab_id, 
 								  const char *node_id, 
-								  const char *resource_id);
+								  const char *resource_id,
+								  struct timeval *start_time, 
+								  struct timeval *stop_time);
 
 // Split the bdm pattern in the form [peer-id,]bdm-id
 // peer-id is '*' if not specified
