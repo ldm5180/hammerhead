@@ -489,6 +489,28 @@ int bdm_subscribe_datapoints_by_name(const char * resource_name,
 
 
 /**
+ * @brief Removes a subscription to a list of datapoints.
+ *
+ * If the specified pattern matches a subscription, the matched subscription
+ * is removed (the client will no longer be notified when matching datapoints
+ * join or leave the network). Otherwise, this function does nothing and
+ * returns failure, check errno:
+ *
+ * EINVAL  = Invalid hab name
+ *
+ * ENOENT  = Matching subscription does not exist
+ *
+ * @param resource_name A string in the form 
+ * "<HAB-Type>.<HAB-ID>.<Node-ID>:<Resource-ID>" where any component may be
+ * the wildcard "*".
+ *
+ * @retval 0 Success
+ * @retval -1 Error
+ */
+int bdm_unsubscribe_datapoints_by_name(const char *resource_name);
+
+
+/**
  * @brief Get the number of BDMs available
  * 
  * @return Number of available BDMs

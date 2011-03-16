@@ -36,6 +36,7 @@ libbdm_la_SOURCES =             \
     subscribe-hab-list.c        \
     subscribe-node-list.c       \
     subscribe-datapoints.c      \
+    unsubscribe-datapoints.c    \
     global.c                    \
     register-callback.c
 

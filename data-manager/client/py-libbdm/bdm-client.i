@@ -509,6 +509,10 @@ typedef struct timeval
 	return 1;
     }
 
+    int unsubscribe(const char *resource_name) {
+	return bdm_unsubscribe_datapoints_by_name(resource_name);
+    }
+
     unsigned int numBdms() {
 	return bdm_cache_get_num_bdms();
     }
