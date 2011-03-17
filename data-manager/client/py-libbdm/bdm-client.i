@@ -711,49 +711,44 @@ typedef struct timeval
     }
 
     Hab * hab(unsigned int index) {
-	Hab * hab = NULL;
-	bionet_hab_t * h = bdm_cache_get_hab_by_index(index);
-	if (NULL == h) {
+	Hab * hab = (Hab *)malloc(sizeof(Hab));
+	if (NULL == hab) {
+	    return NULL;
+	}
+
+	hab->this = bdm_cache_get_hab_by_index(index);
+	if (NULL == hab->this) {
+	    free(hab);
 	    return NULL;
 	}
 	
-	hab = bionet_hab_get_user_data(h);
-
-	if (NULL == hab) {
-	    hab = (Hab *)calloc(1, sizeof(Hab));
-	    if (NULL == hab) {
-		return NULL;
-	    }
-	    hab->this = h;
-	    bionet_hab_set_user_data(hab->this, hab);
-	}
+	bionet_hab_set_user_data(hab->this, hab);
 
 	return hab;
     }
 
     Hab * hab(const char * type, const char * id) {
-	Hab * hab = NULL;
-	bionet_hab_t * h = bdm_cache_lookup_hab(type, id);
-	if (NULL == h) {
+	Hab * hab = (Hab *)malloc(sizeof(Hab));
+	if (NULL == hab) {
+	    return NULL;
+	}
+
+	hab->this = bdm_cache_lookup_hab(type, id);
+	if (NULL == hab->this) {
+	    free(hab);
 	    return NULL;
 	}
 	
-	hab = bionet_hab_get_user_data(h);
+	bionet_hab_set_user_data(hab->this, hab);
 
-	if (NULL == hab) {
-	    hab = (Hab *)calloc(1, sizeof(Hab));
-	    if (NULL == hab) {
-		return NULL;
-	    }
-	    hab->this = h;
-	    bionet_hab_set_user_data(hab->this, hab);
-	}
-
-	return hab;	
+	return hab;
     }
 
     Hab * hab(const char * hab_name) {
-	Hab * hab = NULL;
+	Hab * hab = (Hab *)malloc(sizeof(Hab));
+	if (NULL == hab) {
+	    return NULL;
+	}
 
 	/* split the name */
 	char type[BIONET_NAME_COMPONENT_MAX_LEN];
@@ -762,23 +757,15 @@ typedef struct timeval
 	    return NULL;
 	}
 
-	bionet_hab_t * h = bdm_cache_lookup_hab(type, id);
-	if (NULL == h) {
+	hab->this = bdm_cache_lookup_hab(type, id);
+	if (NULL == hab->this) {
+	    free(hab);
 	    return NULL;
 	}
 	
-	hab = bionet_hab_get_user_data(h);
+	bionet_hab_set_user_data(hab->this, hab);
 
-	if (NULL == hab) {
-	    hab = (Hab *)calloc(1, sizeof(Hab));
-	    if (NULL == hab) {
-		return NULL;
-	    }
-	    hab->this = h;
-	    bionet_hab_set_user_data(hab->this, hab);
-	}
-
-	return hab;	
+	return hab;
     }
 
     Node * node(const char *hab_type, const char *hab_id, const char *node_id) {
