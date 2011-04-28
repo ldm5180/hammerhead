@@ -21,8 +21,8 @@ int main(int argc, char* argv[])
     char *hab_id = NULL;            // translators hab_id
     char *proxr_hab_id = NULL;      // proxr's hab id
     char *dmm_hab_id = NULL;        // dmm's hab id
-    char dmm[] = "DMM.";            // dmm's hab type (used for subscribing)
-    char proxr[] = "proxr.";        // proxr's hab type (used for subscribing)
+    char dmm[] = "DMM";             // dmm's hab type (used for subscribing)
+    char proxr[] = "proxr";         // proxr's hab type (used for subscribing)
 
 
     int bionet_fd, bionet_hab_fd, i; 
@@ -168,49 +168,52 @@ int main(int argc, char* argv[])
     bionet_register_callback_datapoint(cb_datapoint);
     hab_register_callback_set_resource(cb_set_resource);
 
-    char full_name[64];
-    char hab_name[64];
-    strcpy(hab_name, dmm);            // DMM.
-    strcat(hab_name, dmm_hab_id);     // DMM.hab_id
-    strcat(hab_name, ".0:");          // DMM.hab_id.0:
+    int ret;
+    char full_name[BIONET_NAME_COMPONENT_MAX_LEN * 4 + 1];
 
     // subscribe to DMM hab calibration constants
     for(int i=0; i<NUM_DMM_CALIBRATIONS; i++)
     {
-        // copy hab name in
-        strcpy(full_name, hab_name);
-        // cat resource name
-        strcat(full_name, default_settings->dmm_calibrations[i]);
+        ret = snprintf(full_name, sizeof(full_name), "%s.%s.%d:%s", 
+                     dmm, dmm_hab_id, 0, default_settings->dmm_calibrations[i]);
+        if (sizeof(full_name) >= ret) {
+            fprintf(stderr, "Failed to create full name for resource %s",
+                    default_settings->dmm_calibrations[i]);
+            continue;
+        }
+
         // subscribe to resource
-        int ret = bionet_subscribe_datapoints_by_name(full_name);
+        ret = bionet_subscribe_datapoints_by_name(full_name);
         if(ret < 0)
             printf("error subscribing to datapoint %s.\n", default_settings->dmm_calibrations[i]);
-        // empty full_name for next loop
-        full_name[0] = '\0';
      }
 
      // subscribe to DMM hab adc states 
     for(int i=0; i<NUM_ADCS; i++)
     {
-        // copy hab name into empty full_name
-        strcpy(full_name, hab_name);
-        // cat the resource name to the hab_name
-        strcat(full_name, default_settings->state_names[i]);
+        ret = snprintf(full_name, sizeof(full_name), "%s.%s.%d:%s", 
+                     dmm, dmm_hab_id, 0, default_settings->state_names[i]);
+        if (sizeof(full_name) >= ret) {
+            fprintf(stderr, "Failed to create full name for resource %s",
+                    default_settings->state_names[i]);
+            continue;
+        }
+
         // subscribe to resource
         int ret = bionet_subscribe_datapoints_by_name(full_name);
         if(ret < 0)
             printf("error subscribing to datapoint %s.\n", default_settings->state_names[i]);
-        // make full_name appear empty for next loop
-        full_name[0]='\0';
     }
 
-    hab_name[0] = '\0';
-    strcpy(hab_name, proxr);             // proxr.
-    strcat(hab_name, proxr_hab_id);      // proxr.hab_id
-    strcat(hab_name, ".*:*");            // proxr.hab_id.*:*
+    ret = snprintf(full_name, sizeof(full_name), "%s.%s.*.*", 
+                 proxr, proxr_hab_id);
+    if (sizeof(full_name) >= ret) {
+        fprintf(stderr, "Failed to create full name for resource %s",
+                default_settings->dmm_calibrations[i]);
+    }
 
     // subscribe to proxr resources
-    bionet_subscribe_datapoints_by_name(hab_name);
+    bionet_subscribe_datapoints_by_name(full_name);
 
     // add node and resources to hab
     create_node(hab, "translator");
