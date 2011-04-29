@@ -11,7 +11,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-
+#include <string.h>
 
 #include "amedevice.h"
 #include "hardware-abstractor.h"
@@ -110,14 +110,14 @@ int read_data_from_stethoscope_and_write(int fd, bionet_stream_t * stream, int n
         {
         case '#':
             g_debug("attempting to purge buffer of crap...buffer_size = %d", buffer_size);
-            memcpy(buffer, buffer+6, buffer_size - 6);
+            memmove(buffer, buffer+6, buffer_size - 6);
             buffer_size -= 6;
             state = RSP_STATUS_WAITING;
             break;
 
         case RSP_HEADER:
             g_debug("attempting to purge buffer of crap byte...buffer_size = %d", buffer_size);
-            memcpy(buffer, buffer+1, buffer_size - 1);
+            memmove(buffer, buffer+1, buffer_size - 1);
             buffer_size -= 1;
             state = RSP_STATUS_WAITING;
             break;
