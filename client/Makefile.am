@@ -17,10 +17,10 @@ SUBDIRS += py-libbionet twisted plot
 endif
 
 if ENABLE_CLIENTS
-SUBDIRS += realtime-watcher stream commander get translator
+SUBDIRS += realtime-watcher stream commander get
 
 if ENABLE_QT4
-SUBDIRS += monitor stream-manager proxr-arduino
+SUBDIRS += monitor stream-manager
 endif
 
 if ENABLE_BDM
