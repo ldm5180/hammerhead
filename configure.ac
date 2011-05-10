@@ -657,7 +657,6 @@ AC_CONFIG_FILES([Makefile
                  libbionet/Makefile
                  libbdm/Makefile
                  client/Makefile
-                 client/proxr-arduino/Makefile
 		 client/commander/Makefile
 		 client/get/Makefile
                  client/libbionet-qt4/Makefile
@@ -667,7 +666,6 @@ AC_CONFIG_FILES([Makefile
                  client/realtime-watcher/Makefile
                  client/stream/Makefile
 		 client/stream-manager/Makefile
-         client/translator/Makefile
 		 client/twisted/Makefile
                  client/watcher/Makefile
                  hab/Makefile
@@ -691,8 +689,6 @@ AC_CONFIG_FILES([Makefile
                  hab/bpstats2/Makefile
                  hab/mon/Makefile
                  hab/commandable/Makefile
-                 hab/proxr/Makefile
-                 hab/arduino/Makefile
                  data-manager/Makefile
                  data-manager/server/Makefile
                  data-manager/client/Makefile
