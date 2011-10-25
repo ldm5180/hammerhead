@@ -26,11 +26,7 @@ if ENABLE_DOXYGEN
 doc_DATA = doc/quickstart.html
 
 DOXYGEN_INPUT = $(top_srcdir)/libbionet/bionet.h $(top_srcdir)/libhab/hardware-abstractor.h $(top_srcdir)/libbdm/bdm-client.h $(top_srcdir)/util/bionet-bdm.h $(top_srcdir)/util/bionet-hab.h $(top_srcdir)/util/bionet-node.h $(top_srcdir)/util/bionet-resource.h $(top_srcdir)/util/bionet-stream.h $(top_srcdir)/util/bionet-util.h $(top_srcdir)/mainpage.h $(top_srcdir)/bps/bps_socket.h
-if DISABLE_DOT
-DOXYFILE = Doxyfile.nodot
-else
 DOXYFILE = Doxyfile
-endif
 
 install-data-local: 
 	$(MKDIR_P) $(DESTDIR)$(docdir)

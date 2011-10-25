@@ -537,13 +537,19 @@ fi
 AM_CONDITIONAL([TINYOSMIG_DISABLED], [test "x$TOSROOT" = "x"])
 
 #doxygen
+AC_PATH_PROG(DOT, dot, no)
 AC_ARG_ENABLE(doxygen, AC_HELP_STRING([--disable-doxygen],
       [disable doxygen documentation generation]),
       [ENABLE_DOXYGEN=$enableval],
       [ENABLE_DOXYGEN=yes])
 if test "x$ENABLE_DOXYGEN" = "xyes" ; then
    AC_PATH_PROG(DOXYGEN, doxygen, no)
-   AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
+   if test "x$DOT" = "xno"; then
+      AC_MSG_WARN([Bionet Doxygen requires dot, disabling doxygen])
+      AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x" = "y"])
+   else
+      AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x$DOXYGEN" != "xno"])
+   fi
 else
    AM_CONDITIONAL([ENABLE_DOXYGEN], [test "x" = "y"])
 fi
@@ -578,9 +584,6 @@ else
 fi
 AC_ARG_VAR([BIONET_BUILD_TAG], [Bionet build ID])
 
-AC_PATH_PROG(DOT, dot, no)
-AM_CONDITIONAL([DISABLE_DOT], [test "x$DOT" = "xno"])
-		      
 #bluetooth
 AC_ARG_ENABLE(bluetooth, AC_HELP_STRING([--disable-bluetooth],
       [disable bluetooth dependent parts]),
