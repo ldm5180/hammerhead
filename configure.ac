@@ -58,6 +58,7 @@ AC_CHECK_TOOL([STRIP],[strip])
 
 AC_SUBST(docdir)
 
+AM_CONDITIONAL(CC_CLANG, test "x$CC" = "xclang")
 
 AC_ARG_VAR([PKG_CONFIG_LIBDIR], [Replacement search path for pkg-config. Set when cross-compiling])
 # $cross_compiling is set automatically by this point, 

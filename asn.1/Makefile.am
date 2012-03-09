@@ -23,6 +23,10 @@ libbionet_asn_la_CPPFLAGS = $(AM_CPPFLAGS) -DBUILDING_LIBBIONET_ASN
 
 libbionet_asn_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS_BIONET_UTIL) -fno-strict-aliasing
 
+if CC_CLANG
+libbionet_asn_la_CFLAGS += -Wno-parentheses-equality
+endif
+
 libbionet_asn_la_LIBADD = $(AM_LDADD) $(LIBS_BIONET_UTIL) $(GLIB_LIBS) -lm 
 
 if ENABLE_WIN32
