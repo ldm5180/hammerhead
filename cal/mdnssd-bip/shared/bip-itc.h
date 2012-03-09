@@ -10,28 +10,39 @@
 
 #include "cal-util.h"
 
+typedef enum {
+    BIP_MSG_QUEUE_TO_USER = 0,
+    BIP_MSG_QUEUE_FROM_USER
+} bip_msg_queue_direction_t;
 
 #ifdef _WIN32
 typedef struct {
     int user; //inet socket
     int thread; //inet socket
 } bip_msg_queue_t; 
+static inline int bip_msg_queue_get_handle(bip_msg_queue_t *q,
+                                           bip_msg_queue_direction_t dir) {
+  if (BIP_MSG_QUEUE_TO_USER == dir) {
+    return q->user;
+  }
 
-#define bip_msg_queue_get_handle(q,dir) (dir==BIP_MSG_QUEUE_TO_USER?(q)->user:(q)->thread)
-
+  return q->thread;
+} // bip_msg_queue_get_handle()
 #else
 typedef struct {
     int to_user[2]; // pipe(2)
     int from_user[2]; // pipe(2)
 } bip_msg_queue_t; 
-#define bip_msg_queue_get_handle(q,dir) (dir==BIP_MSG_QUEUE_TO_USER?(q)->to_user[0]:(q)->from_user[0])
+static inline int bip_msg_queue_get_handle(bip_msg_queue_t *q,
+                                           bip_msg_queue_direction_t dir) {
+  if (BIP_MSG_QUEUE_TO_USER == dir) {
+    return q->to_user[0];
+  }
 
+  return q->from_user[0];
+} // bip_msg_queue_get_handle()
 #endif
 
-typedef enum {
-    BIP_MSG_QUEUE_TO_USER = 0,
-    BIP_MSG_QUEUE_FROM_USER
-} bip_msg_queue_direction_t;
 
 /**
  * Init the queue, with a reference count of 1
