@@ -10,6 +10,7 @@ bin_PROGRAMS = bionet-data-manager
 noinst_LTLIBRARIES = libbionet-data-manager.la
 
 AM_CFLAGS += -fstrict-aliasing -Wstrict-aliasing
+AM_LDFLAGS += $(LDFLAGS_BDM) $(LIBS_BDM)
 
 TESTS = check/check-db
 

@@ -204,6 +204,7 @@ START_TEST (check_db_sync_ackd)
         &ival,
         &zErrMsg
     );
+    fail_if(r != 0, "Failed to execute sqlite statement.");
     fail_unless(ival == 2, "Wrong number of syncs recorded: %d", ival);
 
     r = sqlite3_exec(db,
@@ -212,6 +213,7 @@ START_TEST (check_db_sync_ackd)
         &ival,
         &zErrMsg
     );
+    fail_if(r != 0, "Failed to execute sqlite statement.");
     fail_unless(ival == 2, "Wrong number of syncs recorded: %d", ival);
 
     // "Record" the ack
@@ -230,6 +232,7 @@ START_TEST (check_db_sync_ackd)
         &ival,
         &zErrMsg
     );
+    fail_if(r != 0, "Failed to execute sqlite statement.");
     fail_unless(ival == 0, "Wrong number of syncs recorded: %d", ival);
 
     r = sqlite3_exec(db,
@@ -238,6 +241,7 @@ START_TEST (check_db_sync_ackd)
         &ival,
         &zErrMsg
     );
+    fail_if(r != 0, "Failed to execute sqlite statement.");
     fail_unless(ival == 0, "Wrong number of syncs recorded: %d", ival);
 
 }
