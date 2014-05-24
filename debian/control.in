@@ -4,8 +4,9 @@ Maintainer: Sebastian Kuzminsky <seb@highlab.com>
 Build-Depends: debhelper (>= 6), @ALSA_BUILD_DEP@ @ION_BUILD_DEP@
  @EMDNSSD_BUILD_DEP@
  autoconf,
+ automake1.9
  check,
- libglib2.0-dev,
+ libglib2.0-dev (>= 2.32.0),
  doxygen,
  graphviz,
  libssl-dev,
