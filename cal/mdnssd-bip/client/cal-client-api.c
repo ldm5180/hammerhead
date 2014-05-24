@@ -49,10 +49,6 @@ void * cal_client_mdnssd_bip_init(
 
     bip_shared_config_init();
 
-    // initialize threading, if the user hasn't already
-    if (!g_thread_supported()) g_thread_init(NULL);
-
-
     if (network_type == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: NULL network_type specified!");
         goto fail0;
@@ -82,10 +78,9 @@ void * cal_client_mdnssd_bip_init(
     client_thread_data->callback = callback;
 
     // Create and start the client thread
-    client_thread_data->client_thread = g_thread_create(cal_client_mdnssd_bip_function,
-						     client_thread_data,
-						     TRUE,
-						     &err);
+    client_thread_data->client_thread = g_thread_new("CAL Client",
+						     cal_client_mdnssd_bip_function,
+						     client_thread_data);
 
     if ( client_thread_data->client_thread == NULL ) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, ID "init: cannot create thread: %s", err->message);

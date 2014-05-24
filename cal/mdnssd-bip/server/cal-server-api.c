@@ -51,10 +51,6 @@ void * cal_server_mdnssd_bip_init(const char *network_type,
 
     bip_shared_config_init();
 
-    // initialize threading, if the user hasn't already
-    if (!g_thread_supported()) g_thread_init(NULL);
-
-
     if (network_type == NULL) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_ERROR, ID "init: NULL network_type passed in");
 	goto fail0;
@@ -148,10 +144,9 @@ void * cal_server_mdnssd_bip_init(const char *network_type,
     // record the user's callback function
     server_thread_data->callback = callback;
 
-    server_thread_data->server_thread = g_thread_create(cal_server_mdnssd_bip_function, 
-							server_thread_data,
-							TRUE,
-							&err);
+    server_thread_data->server_thread = g_thread_new("CAL Server",
+						     cal_server_mdnssd_bip_function, 
+						     server_thread_data);
     if ( server_thread_data->server_thread == NULL ) {
         g_log(CAL_LOG_DOMAIN, G_LOG_LEVEL_WARNING, 
                 ID "init: cannot start publisher thread: %s", err->message);

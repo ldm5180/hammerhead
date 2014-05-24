@@ -673,8 +673,6 @@ int main(int argc, char *argv[]) {
     // Now, interperet the options we've gathered
     //
 
-    g_thread_init(NULL);
-
     if ( keep_self_stats ) {
         ignore_self = 0;
     }

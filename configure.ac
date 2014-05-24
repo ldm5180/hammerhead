@@ -526,8 +526,10 @@ if test "x$HAVE_DARWIN" = "xyes"; then
     echo "checking for LTKC... disabled"
     AM_CONDITIONAL(ENABLE_LTKC, test "x$HAVE_DARWIN" = "false")
 else
+    # FIXME(lenny) LTKC does not compile due to bad initializers and what not.
+    # Turned off until someone makes it work.
     echo "checking for LTKC... yes"
-    AM_CONDITIONAL(ENABLE_LTKC, test "x$HAVE_LINUX" = "x$HAVE_LINUX")
+    AM_CONDITIONAL(ENABLE_LTKC, test "x$HAVE_LINUX" = "false")
 fi
 
 if test "x$TOSROOT" = "x"; then

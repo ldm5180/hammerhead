@@ -30,8 +30,6 @@ static void parse_line(char* line) {
     struct tm csa_time;
 
     static int base_day, base_year, base_month;
-    static int serial_number, calibration_month, calibration_date, TWA_timebase, reset_month, reset_day, reset_year;
-
 
     //  not sure what TWA time base is
     //  lots of the unknowns correspond to TWA alarm, but not sure
@@ -76,7 +74,6 @@ static void parse_line(char* line) {
         return;
     } else if (s_success == 6) {
         int r;
-        struct timeval resource_time;
 
         memset(&csa_time, (char)0, sizeof(struct tm));
 
@@ -91,9 +88,6 @@ static void parse_line(char* line) {
         csa_time.tm_hour = i_1;
         csa_time.tm_min  = i_2;
         csa_time.tm_sec  = 0;
-
-        resource_time.tv_sec = mktime(&csa_time);
-        resource_time.tv_usec = 0;
 
         o2 = i_5 / 10.0;
 
@@ -141,16 +135,6 @@ static void parse_line(char* line) {
 
         hab_report_datapoints(node);
 
-    } else if (s_success == 21) {
-        // sets the initial values
-        
-        serial_number = i_1;
-        calibration_month = i_3;
-        calibration_date = i_4;
-        TWA_timebase = i_18;
-        reset_day = i_19;
-        reset_month = i_20;
-        reset_year = i_21;
     }
 }
 
