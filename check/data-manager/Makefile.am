@@ -32,6 +32,7 @@ check_data_manager_LDFLAGS = $(AM_LDFLAGS) $(CHECK_LIBS) \
     $(LDFLAGS_BIONET_CLIENT) \
     $(LDFLAGS_BDM) \
     $(LDFLAGS_BIONET_ASN1) \
+    $(LDFLAGS_BIONET_HAB) \
     $(GLIB_LIBS)
 
 check_data_manager_LDADD = \
