@@ -15,6 +15,7 @@ Build-Depends: debhelper (>= 6), @ALSA_BUILD_DEP@ @ION_BUILD_DEP@
  libasound-dev,
  libavahi-compat-libdnssd-dev,
  libavahi-compat-libdnssd1,
+ libbluetooth-dev,
  libqt4-dev,
  libqwt5-qt4-dev,
  libtool,
