@@ -61,7 +61,7 @@ logger.addHandler(ch)
 def cb_set_resource(resource, value):
     resource.set(value)
     logger.debug("callback: setting " + resource.name() + " to " + str(resource.datapoint(0).value()))
-    hp = HabPublisher(resource.node().hab())
+    global hp
     hp.reportDatapoints(resource.node())
 
 def process(hp):
