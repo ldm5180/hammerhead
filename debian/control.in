@@ -5,6 +5,7 @@ Build-Depends: debhelper (>= 6), @ALSA_BUILD_DEP@ @ION_BUILD_DEP@
  @EMDNSSD_BUILD_DEP@
  autoconf,
  automake1.9,
+ build-essential,
  check,
  libglib2.0-dev (>= 2.32.0),
  doxygen,
@@ -13,6 +14,7 @@ Build-Depends: debhelper (>= 6), @ALSA_BUILD_DEP@ @ION_BUILD_DEP@
  swig,
  libqt4-dev,
  libqwt5-qt4-dev,
+ libtool,
  python-dev,
  python-support,
  xsltproc,
