@@ -670,6 +670,7 @@ AC_CONFIG_FILES([Makefile
 		 client/plot/Makefile
                  client/py-libbionet/Makefile
                  client/realtime-watcher/Makefile
+                 client/redis-gateway/Makefile
                  client/stream/Makefile
 		 client/stream-manager/Makefile
 		 client/twisted/Makefile
