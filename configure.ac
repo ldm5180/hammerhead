@@ -8,7 +8,7 @@
 
 # Prelude.
 AC_PREREQ([2.59])
-AC_INIT([Bionet], [2.6], [bionet@bioserve.colorado.edu])
+AC_INIT([Hammerhead], [2.6], [lenny@colorado.edu])
 # unique source file --- primitive safety check 
 AC_CONFIG_SRCDIR([cal/cal-server.h])
 
@@ -26,9 +26,7 @@ AC_CANONICAL_SYSTEM
 
 # fairly severe build strictness
 # change foreign to gnu or gnits to comply with gnu standards
-AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.9.2])
-
-
+AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.9.2 subdir-objects])
 
 # Checks for programs.
 # We don't want to use the default AC_PROG_* flags set by these macros,
@@ -51,10 +49,13 @@ CFLAGS="$USERCFLAGS"
 CPPFLAGS="$USERCPPFLAGS"
 CXXFLAGS="$USERCXXFLAGS"
 
+AM_PROG_AR
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
 AC_CHECK_TOOL([STRIP],[strip])
+
+m4_pattern_allow([^AC_])
 
 AC_SUBST(docdir)
 
@@ -333,82 +334,82 @@ AC_ARG_WITH(
 #(These all add to the list of libs to link into future tests)
 # Set ION_LIBS if ion enabled
 
-if test "x$with_ion" != "xno"; then
-    if test "$cross_compiling" != yes; then
-        AX_EXT_HAVE_HEADER(
-            [ion.h], 
-            [/usr/include/ion /usr/local/include /opt/include],
-            [ have_ion_h=yes ],
-            [
-                if test "x$with_ion" != xcheck; then
-                    AC_MSG_FAILURE([--with-ion was given, but test for ion failed])
-                fi
-                with_ion=no
-            ]
-        ) 
-    fi
-fi
+#if test "x$with_ion" != "xno"; then
+#    if test "$cross_compiling" != yes; then
+#        AX_EXT_HAVE_HEADER(
+#            [ion.h], 
+#            [/usr/include/ion /usr/local/include /opt/include],
+#            [ have_ion_h=yes ],
+#            [
+#                if test "x$with_ion" != xcheck; then
+#                    AC_MSG_FAILURE([--with-ion was given, but test for ion failed])
+#                fi
+#                with_ion=no
+#            ]
+#        ) 
+#    fi
+#fi
 
 
 #
 # If we have found ion.h, next we make sure we have *some* version of libbp.so.
 #
 
-if test "x$with_ion" != "xno"; then
+#if test "x$with_ion" != "xno"; then
+#
+#    # this first check looks for ION NASA Baseline 1.1.0
+#    AX_EXT_HAVE_LIB(
+#        [/usr/lib /usr/local/lib /opt/lib], 
+#        [bp],
+#        [bp_send], 
+#        [
+#            have_libbp=inb-1.1.0
+#            AC_MSG_RESULT([Found ION INB-1.1.0])
+#            AC_DEFINE([ENABLE_ION], 1, [Define if you have BP support via ION])
+#            AC_DEFINE([ION_VERSION], [INB-1.1.0], [Select ION version, INB-1.1.0 or BST])
+#            AC_SUBST([ENABLE_ION], 1)
+#            AC_SUBST([LIBS_ION], ["-lbp -lbpP -lici"])
+#        ],
+#        [ have_libbp=no ],
+#        [ -lbpP -lici ]
+#    )
+#
+#    if test "x$have_libbp" == "xno"; then
+#        # didnt find inb-1.1.0, look for the bioserve version of ion instead
+#        AX_EXT_HAVE_LIB(
+#            [/usr/lib /usr/local/lib /opt/lib], 
+#            [bp],
+#            [bp_detach], 
+#           [
+#               HAVE_BP_DETACH=yes
+#               AC_DEFINE([ENABLE_ION], 1, [Define if you have BP support via ION])
+#               AC_DEFINE([ION_VERSION], [BST], [Select ION version, INB-1.1.0 or BST])
+#                AC_SUBST([ENABLE_ION], 1)
+#                AC_SUBST([LIBS_ION], ["-lbp -lici"])
+#            ],
+#            [ 
+#                if test "x$with_ion" != xcheck; then
+#                    AC_MSG_FAILURE([--with-ion was given, but test for ion failed])
+#                fi
+#                with_ion=no
+#            ],
+#            [ -lici ]
+#        )
+#
+#        # We leave this check here, mainly so the check tests
+#        # know what to expect
+#        if test "x$HAVE_BP_DETACH" != "x"; then
+#            AC_CHECK_FUNCS([bp_add_endpoint sm_set_basekey])
+#            if test "x$ac_cv_func_bp_add_endpoint" != "x"; then
+#                AC_MSG_RESULT([Found ION with Bioserve mods])
+#            fi
+#        fi
+#    fi
+#fi
 
-    # this first check looks for ION NASA Baseline 1.1.0
-    AX_EXT_HAVE_LIB(
-        [/usr/lib /usr/local/lib /opt/lib], 
-        [bp],
-        [bp_send], 
-        [
-            have_libbp=inb-1.1.0
-            AC_MSG_RESULT([Found ION INB-1.1.0])
-            AC_DEFINE([ENABLE_ION], 1, [Define if you have BP support via ION])
-            AC_DEFINE([ION_VERSION], [INB-1.1.0], [Select ION version, INB-1.1.0 or BST])
-            AC_SUBST([ENABLE_ION], 1)
-            AC_SUBST([LIBS_ION], ["-lbp -lbpP -lici"])
-        ],
-        [ have_libbp=no ],
-        [ -lbpP -lici ]
-    )
-
-    if test "x$have_libbp" == "xno"; then
-        # didnt find inb-1.1.0, look for the bioserve version of ion instead
-        AX_EXT_HAVE_LIB(
-            [/usr/lib /usr/local/lib /opt/lib], 
-            [bp],
-            [bp_detach], 
-            [
-                HAVE_BP_DETACH=yes
-                AC_DEFINE([ENABLE_ION], 1, [Define if you have BP support via ION])
-                AC_DEFINE([ION_VERSION], [BST], [Select ION version, INB-1.1.0 or BST])
-                AC_SUBST([ENABLE_ION], 1)
-                AC_SUBST([LIBS_ION], ["-lbp -lici"])
-            ],
-            [ 
-                if test "x$with_ion" != xcheck; then
-                    AC_MSG_FAILURE([--with-ion was given, but test for ion failed])
-                fi
-                with_ion=no
-            ],
-            [ -lici ]
-        )
-
-        # We leave this check here, mainly so the check tests
-        # know what to expect
-        if test "x$HAVE_BP_DETACH" != "x"; then
-            AC_CHECK_FUNCS([bp_add_endpoint sm_set_basekey])
-            if test "x$ac_cv_func_bp_add_endpoint" != "x"; then
-                AC_MSG_RESULT([Found ION with Bioserve mods])
-            fi
-        fi
-    fi
-fi
-
-if test "x$with_ion" == "xno"; then
-    AC_MSG_RESULT([No ION found, disabling BDM sync over BP])
-fi
+#if test "x$with_ion" == "xno"; then
+#    AC_MSG_RESULT([No ION found, disabling BDM sync over BP])
+#fi
 
 AM_CONDITIONAL(ENABLE_ION, [test "x$with_ion" != "xno"])
 
@@ -471,7 +472,7 @@ AC_CHECK_DECL(isfinite,
 AC_ARG_ENABLE(python, AC_HELP_STRING([--disable-python],
       [disable python dependent parts]),
       [ENABLE_PYTHON=$enableval],
-      [ENABLE_PYTHON=yes])
+      [ENABLE_PYTHON=no])
 if test "x$ENABLE_PYTHON" = "xyes" ; then
    AM_PATH_PYTHON([2.5])
    AC_PROG_SWIG
@@ -491,7 +492,7 @@ AC_ARG_ENABLE(qt4, AC_HELP_STRING([--disable-qt4],
 #            [[$ac_path_QMAKE -version | grep -iq 'qt version 4' && ac_cv_path_QMAKE=$ac_path_QMAKE ac_path_QMAKE_found=:]],
 #            [AC_MSG_ERROR([could not find qmake for QT4 ])])])
 if test "x$ENABLE_QT4" = "xyes" ; then
-    AT_WITH_QT([svg])
+    #AT_WITH_QT([svg])
 
     qt_ok=yes
     AC_PATH_PROGS([QMAKE], 
@@ -502,12 +503,7 @@ if test "x$ENABLE_QT4" = "xyes" ; then
         qt_ok=no
     else
         AC_SUBST([QMAKE], [$ac_cv_path_QMAKE])
-
-        AC_FIND_QWT(5.0.0,4,
-            [qwt-qt4 qwt], 
-            [/usr/include/qwt5 /usr/include/qwt-qt4 /opt/local/include /opt/local/include/qwt],
-            [/opt/local/lib],
-            [qt_ok=no])
+        AC_SUBST(qwt)
     fi
 
     if test "x$qt_ok" = "xno"; then

@@ -6,9 +6,6 @@
 
 include $(top_srcdir)/common.am
 
-include $(top_srcdir)/build-aux/autotroll.mk
-
-
 bin_PROGRAMS = stream-manager
 
 stream_manager_DEPENDENCIES = $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_CLIENT_QT4)

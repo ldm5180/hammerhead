@@ -6,8 +6,6 @@
 
 include $(top_srcdir)/common.am
 
-include $(top_srcdir)/build-aux/autotroll.mk
-
 lib_LTLIBRARIES = libbionet-qt4.la
 
 libbionet_qt4_la_DEPENDENCIES = $(INCLUDES_BIONET_CLIENT) $(INCLUDES_BIONET_UTIL) $(INCLUDES_BIONET_ASN1) $(INCLUDES_BIONET_CAL_CLIENT)
